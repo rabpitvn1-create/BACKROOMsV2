@@ -1,0 +1,38 @@
+name: Haiku GM Style Distill
+
+on:
+  push:
+    branches:
+      - release/pr06-gm-prose
+    paths:
+      - 'android-apk/tools/haiku_style_distill.py'
+      - '.github/workflows/haiku-style-distill.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  distill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Haiku configuration
+        run: |
+          set -euo pipefail
+          for name in HAIKU_API HAIKU_BASE_URL HAIKU_MODEL; do
+            test -n "${!name:-}" || (echo "Missing $name" && exit 1)
+          done
+      - name: Distill Game Master prose voice from 100 samples
+        run: python3 android-apk/tools/haiku_style_distill.py
+      - name: Upload distillation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: haiku-gm-style-distill
+          path: haiku-style-distill.json
+          if-no-files-found: error
+          retention-days: 7
