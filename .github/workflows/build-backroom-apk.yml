@@ -41,6 +41,7 @@ jobs:
           test -s android-apk/patch-mobile-swipe-ui.py
           test -s android-apk/patch-mobile-swipe-ui-final.py
           test -s android-apk/patch-pr3-layout-hotfix.py
+          test -s android-apk/patch-level-transition-final.py
           test ! -e android-apk/patch-luna-text.py
           test ! -e android-apk/patch-luna-model-failover-final.py
           test ! -e android-apk/patch-provider-deadline-final.py
@@ -82,7 +83,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -94,6 +95,8 @@ jobs:
           grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'PR3_KAI_SHIFT_RIGHT' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'LEVEL TRANSITION STATE LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'LEVEL_TRANSITION_STATE_SYNC' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
           grep -q 'PR3_HEADER_SAFE_INSET' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_search.webp' android-apk/app/src/main/assets/index.html
