@@ -130,12 +130,21 @@ if "function canonicalFallbackEquipment(member)" not in index:
 # such as MadGod still renders normally; only legacy items whose display identity is superseded
 # by current canon are replaced with non-clickable canon cards so stale legacy abilities are not
 # exposed under a new name.
-old_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[];grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item)rendered.push(card(item,slots.join(' / ')))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){inventory.innerHTML=(member.inventory||[]).map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
-new_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[],represented=new Set();grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item&&integratedKaiLegacyItem(member,item))return;const slotLabel=slots.join(' / ');const alias=canonicalDisplayAlias(member,item);if(alias)rendered.push(displayOnlyEquipmentCard(alias,slotLabel));else if(item)rendered.push(card(item,slotLabel));else rendered.push(displayOnlyEquipmentCard(id,slotLabel));slots.forEach(slot=>represented.add(String(slot)))});canonicalFallbackEquipment(member).forEach(x=>{const slot=String(x[0]);if(!represented.has(slot)){rendered.push(displayOnlyEquipmentCard(x[1],slot));represented.add(slot)}});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){const visible=(member.inventory||[]).filter(x=>!integratedKaiLegacyItem(member,x));inventory.innerHTML=visible.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
-if new_equipment_render not in index:
-    if old_equipment_render not in index:
+old_grouped_renderer = "    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[];grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item)rendered.push(card(item,slots.join(' / ')))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n"
+new_grouped_renderer = "    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[],represented=new Set();grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item&&integratedKaiLegacyItem(member,item))return;const slotLabel=slots.join(' / ');const alias=canonicalDisplayAlias(member,item);if(alias)rendered.push(displayOnlyEquipmentCard(alias,slotLabel));else if(item)rendered.push(card(item,slotLabel));else rendered.push(displayOnlyEquipmentCard(id,slotLabel));slots.forEach(slot=>represented.add(String(slot)))});canonicalFallbackEquipment(member).forEach(x=>{const slot=String(x[0]);if(!represented.has(slot)){rendered.push(displayOnlyEquipmentCard(x[1],slot));represented.add(slot)}});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n"
+if new_grouped_renderer not in index:
+    if old_grouped_renderer not in index:
         raise RuntimeError("Final grouped Character Detail equipment renderer anchor missing")
-    index = index.replace(old_equipment_render, new_equipment_render, 1)
+    index = index.replace(old_grouped_renderer, new_grouped_renderer, 1)
+
+# New Game/capacity finalization already hides equipped items from Inventory. Preserve that rule
+# and additionally prevent retired Kai submodules from reappearing as carried items in an old save.
+old_visible_inventory = "    const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true);if(inventory){inventory.innerHTML=visibleInventory.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
+new_visible_inventory = "    const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true&&!integratedKaiLegacyItem(member,x));if(inventory){inventory.innerHTML=visibleInventory.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
+if new_visible_inventory not in index:
+    if old_visible_inventory not in index:
+        raise RuntimeError("Final Character Detail inventory-capacity renderer anchor missing")
+    index = index.replace(old_visible_inventory, new_visible_inventory, 1)
 
 for marker in [
     "SRU Assault Rifle MK19",
@@ -151,6 +160,7 @@ for marker in [
     "Đồng hồ định vị quân sự",
     "function integratedKaiLegacyItem(member,item)",
     "const grouped=new Map();Object.keys(eq).sort()",
+    "x&&x.equipped!==true&&!integratedKaiLegacyItem(member,x)",
 ]:
     if marker not in index:
         raise RuntimeError(f"Canonical equipment display marker missing: {marker}")
