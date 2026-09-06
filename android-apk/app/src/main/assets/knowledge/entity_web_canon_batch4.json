@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "policy": "WEB_REFERENCE_ONLY: records enrich Entity keys already present in the game; project hard-lock/state authority wins on conflict.",
+  "records": [
+    {
+      "id": "WEB.ENTITY.CLUMP",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "clump",
+      "visual": "Thị giác: Clump là một khối sinh học đặc, cồng kềnh được tạo nên từ rất nhiều chi người quấn, ép và chồng lên nhau, khiến silhouette tổng thể không có thân, đầu hay tư thế humanoid hoàn chỉnh. Từ lõi khối, tay và chân người vươn ra theo nhiều hướng với độ dài và góc gập khác nhau; các chi có thể co rút, quẫy và duỗi mạnh để kéo toàn bộ khối cơ thể di chuyển. Điểm nhận dạng quan trọng nhất là cảm giác một bó chi người sống đang tự vận động như một sinh vật duy nhất, thay vì một con nhện có vài cánh tay gắn lên thân riêng. Nguồn hiện hành xác nhận Clump thường giấu mình trong các không gian chật như vent, tủ, drain, pipe và chimney, nên Snapshot có thể cho một phần khối bị ép trong miệng thông gió hoặc khe hẹp, với vài cánh tay thò ra trước khi toàn bộ hình dạng lộ diện. Các chi đủ khỏe và linh hoạt để bám, kéo, chống nền và đẩy cơ thể đi rất nhanh. Khi bất động, một hoặc vài tay có thể nằm lẫn với môi trường, tạo ấn tượng sai rằng đó chỉ là vật thể hoặc phần cơ thể vô hại. Không tự thêm một khuôn mặt trung tâm, mắt, sừng, lông, da quái vật, chân côn trùng hoặc cấu trúc xương ngoài vì trang nguồn không khóa các đặc điểm đó. Màu da, số lượng chi chính xác, kích thước tuyệt đối và cấu trúc lõi bên trong cũng không được xác định chắc chắn. Khi dựng chuyển động, các cánh tay nên là cơ chế vận động chính: duỗi ra, bấu vào bề mặt rồi co mạnh để kéo khối chi tiến tới. Tổng thể phải đọc ngay là một mass of human limbs sống, nặng, rối và có khả năng phục kích từ nơi chật hẹp.",
+      "canon": "Canon web: Clumps là Entity thù địch, mạnh và nhanh bất thường, thường ẩn trong không gian chật và phục kích Wanderer. Chúng có thể dùng các chi thích nghi để thao tác môi trường hoặc tạo tín hiệu đánh lừa con mồi, và đặc biệt nguy hiểm khi mục tiêu đến gần. Nguồn khuyên giữ im lặng, giữ khoảng cách và rút lui thay vì tương tác. Không chuyển tốc độ, khoảng cách hay hành vi web thành luật combat/spawn nếu runtime game đã khóa khác.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-5", "anchor": "Description; Do's and Don'ts"},
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["clump", "clumps", "entity 5", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.DULLER",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "duller",
+      "visual": "Thị giác: Duller là một humanoid màu xám đậm với hình thể người rõ ràng nhưng thiếu các đặc điểm nổi bật của đầu người. Nguồn hiện hành mô tả chúng không có khuôn mặt và không có tai; vì vậy phần đầu nên là một khối đầu người tối, trơn và vô diện, không tự thêm mắt, miệng, mũi, hốc mắt phát sáng hay vành tai. Silhouette nên giữ tỷ lệ humanoid và sắc xám tối làm đặc điểm chính, thay vì biến thành bóng đen hoàn toàn hoặc quái vật bốn chân. Canon web hiện tại không khóa chính xác chiều cao, độ gầy, tóc, quần áo, bàn tay, bàn chân, chất liệu da hay cấu trúc cơ bắp, nên các phần đó phải được thể hiện tiết chế và không biến chi tiết từ phiên bản game/fan khác thành anatomy chắc chắn. Duller có khả năng no-clip cánh tay xuyên qua một bức tường để bắt con mồi ở hành lang phía bên kia; nếu Snapshot mô tả khoảnh khắc săn mồi, có thể cho một cánh tay xám tối đi xuyên qua mặt phẳng tường mà không cần tạo lỗ vỡ, bụi hay hư hại vật lý, nhấn mạnh đây là hiện tượng xuyên vật chất chứ không phải đập thủng tường. Ngoài tình huống đó, chúng thường rời xa thứ tiến đến gần, vì vậy pose tự nhiên có thể là quay người hoặc chạy lặng lẽ khỏi người quan sát. Không thêm máu, móng vuốt, răng, xúc tu, vũ khí hay hiệu ứng siêu nhiên quanh cơ thể nếu không có nguồn khác khóa chúng. Điểm hình ảnh cốt lõi cần giữ là một người xám đậm, vô diện, không tai, có sự hiện diện im lặng và khả năng cánh tay xuyên qua vật cản trong đúng ngữ cảnh săn mồi.",
+      "canon": "Canon web: Dullers thường bỏ chạy khi có thứ tiến gần nhưng vẫn được xem là thù địch. Cách săn được ghi nhận là đứng ở một hành lang, no-clip cánh tay xuyên qua bức tường ngăn với hành lang khác, chộp nạn nhân rồi kéo họ sang phía của nó; điều xảy ra sau khi bắt được vẫn chưa rõ. Chúng đôi khi lấy các vật thể ngẫu nhiên, mục đích không xác định. Không suy diễn cơ chế giết hoặc mục đích của đồ vật.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-6", "anchor": "Description; Behaviors"},
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["duller", "dullers", "entity 6", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.PREDATORY_WINDOW",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "predatory_window",
+      "visual": "Thị giác: Windows, Entity 2, trước hết phải được dựng như một cửa sổ kiến trúc chứ không mặc định là một con quái vật đứng sau kính. Instance có thể xuất hiện trên nhiều loại bề mặt nhưng thường tuân theo logic kiến trúc cơ bản và ưu tiên vị trí trên tường; nơi đã có cửa sổ bình thường, Entity có thể chiếm đúng vị trí đó. Hình dáng và phong cách khung thay đổi theo Level, thường phù hợp với kiến trúc xung quanh, vì vậy không có một mẫu khung, kích thước, vật liệu hay màu sắc duy nhất. Phía bên kia cửa sổ hiển thị một phong cảnh có thể hoàn toàn không liên quan đến không gian thật phía ngoài bức tường. Quan trọng hơn, cảnh này là sản phẩm của nhận thức con người: những người khác nhau nhìn cùng một Window có thể thấy những phong cảnh khác nhau. Vì vậy Snapshot nên thể hiện một cửa sổ có vẻ hợp lý với căn phòng nhưng cảnh bên ngoài tạo cảm giác sai lệch hoặc không thể kiểm chứng, thay vì khóa một thế giới ngoài cửa cụ thể thành canon. Entity bất động sau khi hình thành, nên không thêm chân, tay, mắt đỏ, móng vuốt hay humanoid sau kính chỉ vì các bản chuyển thể trò chơi khác dùng hình tượng đó. Nếu cần nhấn mạnh tính săn mồi, giữ mối đe dọa ở bản thân cửa sổ và sự hấp dẫn của cảnh quan, không biến nó thành sinh vật reptile hữu hình khi nguồn Wikidot hiện hành không hỗ trợ. Không tự khóa thời tiết, giờ trong ngày, loại phong cảnh, độ sạch của kính hay tình trạng rèm. Điểm hình ảnh cốt lõi là một cửa sổ vật lý hòa vào kiến trúc, đứng yên, nhưng cho thấy một ngoại cảnh chủ quan và không đáng tin, khiến ranh giới giữa khung cửa thật và cảnh được tâm trí dựng nên trở nên bất an.",
+      "canon": "Canon web: Entity 2 là biểu hiện vật lý của một predatory thoughtspace được cấu thành từ hoạt động nhận thức duy trì. Các instance bất động sau khi hình thành và cảnh nhìn qua cửa không phải ngoại cảnh nội tại của Entity; nó được nhận thức con người dựng nên, nên mỗi người có thể thấy một cảnh khác nhau. Giữ mô tả này ở lớp reference, không biến thành cơ chế runtime hoặc hidden escape solution.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-2", "anchor": "Description"},
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["predatory_window", "windows", "entity 2", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    }
+  ]
+}
