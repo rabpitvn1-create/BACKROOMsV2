@@ -16,11 +16,8 @@ android {
     applicationId 'com.rabpit.backroom'
     minSdk 24
     targetSdk 35
-    versionCode 65
-    versionName '1.1.63'
-    buildConfigField "String", "LUNA_API_KEY", "\"" + secret("LUNA_API_KEY") + "\""
-    buildConfigField "String", "LUNA_BASE_URL", "\"" + secret("LUNA_BASE_URL") + "\""
-    buildConfigField "String", "LUNA_MODEL", "\"" + secret("LUNA_MODEL") + "\""
+    versionCode 66
+    versionName '1.1.64'
     buildConfigField "String", "GEMINI_API_KEY_1", "\"" + secret("GEMINI_API_KEY_1") + "\""
     buildConfigField "String", "GEMINI_API_KEY_2", "\"" + secret("GEMINI_API_KEY_2") + "\""
     buildConfigField "String", "GEMINI_API_KEY_3", "\"" + secret("GEMINI_API_KEY_3") + "\""

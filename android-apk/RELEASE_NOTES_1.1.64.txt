@@ -1,0 +1,7 @@
+Backroom 1.1.64 Debug
+
+- Phát hành đầu tiên từ repository BACKROOMsV2 sau khi tái tạo lịch sử Git sạch từ baseline Backroom 1.1.63.
+- Bump Android versionCode từ 65 lên 66 và versionName từ 1.1.63 lên 1.1.64.
+- Giữ nguyên gameplay/canon của baseline 1.1.63; thay đổi hạ tầng provider để V2 dùng Gemini-only.
+- Khôi phục pipeline build APK đã được kiểm chứng trên 1.1.63: train LiteRT intent model, áp dụng runtime patch chain, chạy Kotlin tests, verify APK và phát hành GitHub Release.
+- Loại bỏ Luna API fallback và toàn bộ cấu hình Luna khỏi APK/pipeline; Game Master dùng pool 5 Gemini API key cùng Gemini model failover.
