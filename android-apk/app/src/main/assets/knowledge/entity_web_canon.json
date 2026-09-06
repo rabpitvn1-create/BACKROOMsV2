@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "policy": "WEB_REFERENCE_ONLY: records remain distinct from project WORLD_CANON; project hard-lock/state authority wins on conflict.",
+  "records": [
+    {
+      "id": "WEB.ENTITY.PARTYGOER",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: Partygoer là một sinh vật hai chân cao, dáng người nhưng tỷ lệ bị bóp méo. Da trơn, dai như da thuộc, màu thường gặp là vàng sáng; các biến thể đỏ, xanh lam, xanh lục và trắng cũng đã được ghi nhận. Trên phần đầu là một khuôn mặt cười bị khắc trực tiếp vào bề mặt da và lem máu, đường cong của nụ cười luôn là dấu hiệu nhận dạng nổi bật dù màu cơ thể thay đổi. Chân dày, vuông và nặng khối hơn chân người, khiến phần thân dưới trông chắc, gần như cột trụ. Ngực được che bởi một lớp giáp mai kín đáo, không phải áo giáp mặc ngoài mà là cấu trúc cơ thể; khi mở, khoang này có thể phóng ra các cánh tay dị thường với bàn tay lớn và móng sắc. Hai tay ngoài dài, mềm và ngoằn ngoèo như ống hoặc thân lươn; đầu mỗi tay không có bàn tay bình thường mà kết thúc bằng miệng hút, bên trong xếp các răng móc. Khi các tay bị chặt rời, chúng vẫn có thể quẫy và ngoạm. Bên trong cơ thể là một cấu trúc chimera: phần người bị hợp nhất với Phobic Centipede và các thành phần giáp xác nhỏ; cơ quan người không còn bố trí hay hoạt động theo sinh lý bình thường. Một số cá thể mới biến đổi mang bóng bay đỏ gắn ở tay, nhưng đặc điểm này không xuất hiện ở mọi cá thể. Tổng thể phải đọc ngay là humanoid màu tiệc tùng nhưng phi nhân ở tay, miệng hút, giáp ngực và nụ cười khắc máu, không nên vẽ thành người mặc mascot hay bộ đồ hóa trang.",
+      "canon": "Canon web: Partygoers săn người để ăn, giải trí và tăng số lượng bằng cách biến nạn nhân thành Partygoer. Chúng có trí tuệ cao, phối hợp theo nhóm, đặt bẫy, hiểu máy móc/lập trình và có thể dùng poster hoặc dữ liệu giả để dụ người. Trang hiện hành mô tả chúng có thể di chuyển qua các Level bằng lối vào/lối ra; ‘Level Fun’ được mô tả như một tàu du lịch mang tên S.S. Fun =), nhưng các đường vào được đồn đại thường là thông tin sai. Da rất bền, chống cắt/đâm, chịu lửa và che chắn điện từ; tay ngoài là điểm dễ tổn thương hơn. Không nâng các chi tiết web này lên WORLD_CANON nội bộ nếu chúng xung đột với hard-lock của dự án.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-67",
+        "anchor": "Description; Behaviors; Habitat(s); Biology (Updated)"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 74,
+      "tags": ["partygoer", "partygoers", "entity 67", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.TINY",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: Tiny là một humanoid thủy sinh cao khoảng 244 cm, vóc lớn và dài, được quan sát chủ yếu trong nước lạnh của Level 7. Cơ thể có nền hình thái lưỡng cư hơn là người: da bên dưới có cảm giác cao su nhưng cực bền, hoạt động như một lớp giáp tự nhiên. Trên bề mặt da có các dấu phát quang sinh học; trong môi trường tối và dưới nước, những dấu này cùng đôi mắt tạo các điểm sáng rõ, còn mắt mờ đi đáng kể khi ra khỏi nước. Phần đầu bị che gần như toàn bộ bởi một lớp carapace cứng, chỉ để lộ đôi mắt; lớp giáp mặt có thể mở ra, để lộ một miệng lớn đầy răng. Phần lớn cơ thể thường còn được phủ bởi một lớp tar dày, tối và nhớt, làm các đường nét thân thể bị che hoặc bóng đen; Tiny có thể chủ động tống lớp tar này khỏi người để cản trở và làm rối mục tiêu. Ngoài lớp tar, Tiny còn thường được thấy khoác da của một sinh vật giống cá khác, khiến silhouette có thêm lớp vật liệu hữu cơ như áo choàng hoặc tấm da săn được. Khi chiến đấu, Tiny dùng móng vuốt và một cây giáo; do tốc độ bơi rất cao, hình ảnh nên ưu tiên dáng thủy động, tư thế lao trong nước và các mảng phát quang xuyên qua nền tối, thay vì dựng thành người khổng lồ đứng thẳng trên cạn. Điểm nhận dạng cốt lõi là carapace che mặt, mắt phát sáng, miệng răng ẩn sau giáp, da lưỡng cư có bioluminescence, lớp tar phủ ngoài và tấm da cá khoác trên thân.",
+      "canon": "Canon web: Tiny cư trú ở Level 7, thù địch rõ ràng với người, thông minh, có thể giao tiếp thần giao cách cảm và được mô tả là kiêu ngạo, ác ý. Nó bơi tới khoảng 80 mph, chịu biến đổi độ sâu/áp suất nhanh, có thể phát hiện va động trên mặt nước từ khoảng cách rất lớn, và không có phương thức tấn công nào được ghi nhận là gây thương tổn vật lý. Hai hạn chế được ghi nhận là nhạy với tiếng động lớn và không thể đi trên cạn. Lớp tar có thể được phóng ra để làm chậm hoặc gây rối nạn nhân. Không biến các con số hay điểm yếu này thành WORLD_CANON nội bộ nếu dự án chưa khóa chúng.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-720",
+        "anchor": "Description; Behaviors; Biology"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["tiny", "entity 720", "level 7", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.NUMBED_MAN",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: The Numbed Man có hình người nhưng cơ thể được mô tả như đã tự phá hủy gần như mọi cơ quan cảm giác. Dáng tổng quát vẫn là humanoid, song khuôn mặt không còn các điểm nhận diện lành lặn: mắt đã bị móc bỏ, mũi bị làm biến dạng nặng và màng nhĩ bị phá hủy. Toàn bộ bề mặt cơ thể đã bị đốt đến mức lớp da dùng cho xúc giác không còn nguyên vẹn; vì vậy khi dựng hình, bề mặt phải đọc như mô sẹo cháy, thô, khô và tổn thương sâu chứ không phải một zombie phân hủy ngẫu nhiên. Sự đáng sợ của nó không đến từ kích thước khổng lồ, giáp hay nhiều chi, mà từ việc vẫn giữ silhouette của một người trong khi mọi bộ phận phục vụ nhìn, ngửi, nghe và chạm đều đã bị cố ý làm vô dụng. Không thêm mắt phát sáng, răng nanh, sừng, xúc tu, áo giáp hay đặc điểm sinh vật nào không có trong nguồn. Nguồn cũng không khóa quần áo, màu tóc, giới tính sinh học, chiều cao cụ thể hay tỷ lệ cơ thể khác thường, nên các phần đó phải để trung tính/không xác định thay vì tự điền. Nếu cần Snapshot, ưu tiên tư thế im lặng và khó đọc, đầu hướng không nhất thiết trùng với mục tiêu vì nó không dùng thị giác thông thường; các hốc mắt trống, mũi bị hủy, vùng tai tổn thương và toàn thân bỏng là bốn cụm dấu hiệu thị giác có căn cứ. Tránh biến nó thành một quái vật cơ bắp: trang mô tả nó yếu và dễ bị giết nếu bị đánh đúng lúc, nên cơ thể nên giữ cảm giác mong manh hơn là siêu lực sĩ.",
+      "canon": "Canon web: The Numbed Man là Entity dạng người, yếu về thể chất nhưng săn mồi thông qua cơ chế thông tin siêu nhiên của chính bài ghi chép: biết càng nhiều về nó thì nó càng biết nhiều về người đọc và càng dễ tìm đến. Nó không bị giới hạn bởi tầng hoặc rào cản vật lý theo trang, và việc chạy có thể để lộ vị trí qua tiếng bước chân khi nó đã ‘nghe’ được mục tiêu. Trang mô tả cách hạ nó là đánh từ phía sau, nhưng đồng thời biến việc biết điểm yếu thành một phần của cơ chế săn mồi. Giữ cơ chế này ở lớp web-reference; không dùng nó để phá hard-lock/state authority hay tự động spawn Entity chỉ vì người chơi đọc codex.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-50",
+        "anchor": "Survival Guide; Description; Dos and Don'ts"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["the numbed man", "numbed man", "entity 50", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    }
+  ]
+}

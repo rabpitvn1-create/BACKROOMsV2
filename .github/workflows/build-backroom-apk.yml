@@ -33,13 +33,15 @@ jobs:
       - name: Verify release version and provider baseline
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 67' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.65'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.65.txt
+          grep -Fq 'versionCode 68' android-apk/app/build.gradle
+          grep -Fq "versionName '1.1.66'" android-apk/app/build.gradle
+          test -s android-apk/RELEASE_NOTES_1.1.66.txt
           test -s android-apk/sync-kai-sru-assets.py
           test -s android-apk/patch-kai-sru-visuals.py
           test -s android-apk/patch-mobile-swipe-ui.py
           test -s android-apk/patch-mobile-swipe-ui-final.py
+          test -s android-apk/patch-pr3-layout-hotfix.py
+          test -s android-apk/patch-level-transition-final.py
           test ! -e android-apk/patch-luna-text.py
           test ! -e android-apk/patch-luna-model-failover-final.py
           test ! -e android-apk/patch-provider-deadline-final.py
@@ -81,7 +83,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -92,7 +94,13 @@ jobs:
           grep -q 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'PR3_KAI_SHIFT_RIGHT' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'LEVEL TRANSITION STATE LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'levelNarrativeStateIssuesAndroid' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'level_narrative_state_mismatch' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'bãi đỗ xe' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
+          grep -q 'PR3_HEADER_SAFE_INSET' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_search.webp' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_execute.webp' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_explore.webp' android-apk/app/src/main/assets/index.html
@@ -115,53 +123,53 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.65.apk
+        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.66.apk
 
       - name: Verify packaged APK
         run: |
           set -euo pipefail
-          test -s Backroom-1.1.65.apk
+          test -s Backroom-1.1.66.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.65.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.65.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='67' versionName='1.1.65'" <<<"$BADGING"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.66.apk
+          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.66.apk)
+          grep -q "package: name='com.rabpit.backroom' versionCode='68' versionName='1.1.66'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.65.apk
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/avatars/MadGod.jpg'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_entity_overlay.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/avatars/kai_avatar.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_search.webp'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_execute.webp'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_explore.webp'
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/slenderman.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/avatars/MadGod.jpg'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_snapshot_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/avatars/kai_avatar.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/ui/action_search.webp'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/ui/action_execute.webp'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/ui/action_explore.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Backroom-1.1.65-debug-apk
-          path: Backroom-1.1.65.apk
+          name: Backroom-1.1.66-debug-apk
+          path: Backroom-1.1.66.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish GitHub Release v1.1.65
+      - name: Publish GitHub Release v1.1.66
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='v1.1.65'
-          TITLE='Backroom 1.1.65 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.65.txt)
+          TAG='v1.1.66'
+          TITLE='Backroom 1.1.66 Debug'
+          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.66.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.65.apk --clobber
+            gh release upload "$TAG" Backroom-1.1.66.apk --clobber
           else
-            gh release create "$TAG" Backroom-1.1.65.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" Backroom-1.1.66.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
           fi
 
       - name: Verify published APK
@@ -170,7 +178,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download v1.1.65 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.65.apk' --output Backroom-1.1.65-verified.apk
-          test -s Backroom-1.1.65-verified.apk
-          cmp Backroom-1.1.65.apk Backroom-1.1.65-verified.apk
-          sha256sum Backroom-1.1.65-verified.apk
+          gh release download v1.1.66 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.66.apk' --output Backroom-1.1.66-verified.apk
+          test -s Backroom-1.1.66-verified.apk
+          cmp Backroom-1.1.66.apk Backroom-1.1.66-verified.apk
+          sha256sum Backroom-1.1.66-verified.apk

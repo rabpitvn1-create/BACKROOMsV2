@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "policy": "WEB_REFERENCE_ONLY: records enrich Entity keys already present in the game; project hard-lock/state authority wins on conflict.",
+  "records": [
+    {
+      "id": "WEB.ENTITY.HOUND",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "hound",
+      "visual": "Thị giác: Hound là một Entity humanoid được cấu tạo để bò bằng cả bốn chi, vì vậy silhouette phải mang nền tảng cơ thể người nhưng tư thế vận động giống một thú săn thấp sát sàn. Tay và chân dài, gập để chịu lực khi chạy bốn chân; nguồn mô tả cơ thể nhìn tổng thể gầy gò, ốm yếu nhưng lực tấn công lại rất lớn, nên không dựng thành chó bốn chân bình thường hay quái vật cơ bắp. Phần đầu có tóc đen rất dài, dày đến mức thường che gần hết khuôn mặt. Bên dưới lớp tóc là một cái miệng cực lớn với nhiều răng sắc; các chi kết thúc bằng móng vuốt nhọn dùng để vồ và xé. Điểm nhận dạng cốt lõi vì thế là hình người bò bốn chân, tóc đen dài phủ mặt, miệng rộng bất thường và móng sắc. Nguồn hiện hành không khóa màu da, chiều cao, quần áo, số răng, màu mắt hay chi tiết giải phẫu ngoài các đặc điểm trên; Snapshot không nên tự thêm mắt phát sáng, lông phủ toàn thân, tai chó, đuôi, mõm chó hoặc bộ xương lộ ra. Khi dựng cảnh, giữ trọng tâm thấp, lưng và vai kéo theo hướng chuyển động, bốn chi bám nền như một cơ thể người đã thích nghi với tư thế bò. Nếu miệng lộ khỏi tóc, nó phải tạo cảm giác lớn quá tỷ lệ khuôn mặt và có răng sắc, nhưng phần còn lại của khuôn mặt nên bị che thay vì tự sáng tác thêm. Tổng thể phải đọc là một humanoid săn mồi dị dạng mang hành vi “hound”, không phải một con chó bị đột biến.",
+      "canon": "Canon web: Hounds cực kỳ hung hãn với người và thường lao vào cắn xé khi phát hiện mục tiêu. Chúng có thể bị chững lại tạm thời bằng giao tiếp mắt trực tiếp và thái độ không hoảng loạn, nhưng hiệu quả không kéo dài; nghe tiếng gầm là dấu hiệu nên tránh khỏi tầm nhìn. Trang hiện hành ghi Hounds nở từ trứng có nguồn gốc ở Level 276. Không biến chi tiết hành vi hoặc nguồn gốc này thành luật spawn/hard-lock nếu dự án đã khóa khác.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-8",
+        "anchor": "Description; Behaviors; Biology"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["hound", "entity 8", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.SKIN_STEALER",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "skin-stealer",
+      "visual": "Thị giác: Skin-Stealer ở dạng thật là một humanoid cao lớn, da vàng nhạt, mắt trắng trũng sâu và bề mặt thịt phủ vô số gờ siêu nhỏ giống giác hút trên xúc tu bạch tuộc. Những gờ này là cấu trúc cơ thể chứ không phải vảy hay lông; chúng bám vào lớp da người bị lột và kéo, ép, điều chỉnh da cho vừa cơ thể. Khi không khoác da nạn nhân, silhouette nên rõ là một sinh vật hình người cao, nhợt vàng, với đôi mắt trắng lõm và bề mặt da không hoàn toàn trơn. Khi đang ngụy trang, lớp da người bên ngoài có thể trông ấm, sống và gần như nguyên vẹn vì Entity bơm máu và dưỡng chất vào da, đồng thời chữa các vết cắt khiến dấu hiệu nhận biết trực quan trở nên rất khó. Vì vậy Snapshot không nên tự gắn các đường may Frankenstein, mảng da thối, máu khô hoặc khe hở rõ ràng nếu nguồn không yêu cầu; ngụy trang của nó có thể giống người thật. Máu của Skin-Stealer trong suốt hoàn toàn, đây là dấu hiệu sinh học quan trọng nếu cảnh có vết thương hoặc chất lỏng. Nguồn không khóa tóc, quần áo, giới tính, khuôn mặt hay màu da của lớp ngụy trang vì các yếu tố đó phụ thuộc nạn nhân; khi dùng dạng cải trang phải kế thừa hình thái người bị lấy da thay vì tạo một “mẫu Skin-Stealer mặc định”. Không thêm móng vuốt, sừng, xúc tu hoặc răng nanh khi không có căn cứ. Điểm hình ảnh cốt lõi của dạng thật là humanoid cao, da vàng nhạt, mắt trắng trũng và lớp vi-giác hút; của dạng giả người là vẻ ngoài thuyết phục bất thường, chỉ để lộ manh mối nếu ngữ cảnh cho phép.",
+      "canon": "Canon web: Skin-Stealers thường lang thang thụ động khi không đói và trở nên săn mồi khi cần ăn, nhắm vào người đi một mình rồi dùng sức mạnh cơ thể để xé nạn nhân. Chúng có thể mặc da người như ngụy trang trong khoảng một ngày trước khi hấp thụ lớp da qua bề mặt cơ thể. Chúng bắt chước lời nói đã nghe nhưng không hiểu ngôn ngữ, nên có thể lặp các cụm từ rời rạc. Máu hoàn toàn trong suốt là dấu hiệu nhận biết có căn cứ. Giữ đây là web-reference, không thay hard-lock nội bộ.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-10",
+        "anchor": "Description; Behaviors; Biology"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["skin-stealer", "skin stealer", "entity 10", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.SMILER",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "smiler",
+      "visual": "Thị giác: Smiler được nhận diện chủ yếu trong bóng tối bởi hai mắt trắng phát sáng và một nụ cười dài chứa nhiều răng sắc cũng phản sáng/trắng sáng. Phần cơ thể còn lại không được canon hiện hành xác định chắc chắn và thường không nhìn thấy bằng mắt người; vì vậy hình ảnh chuẩn không nên tự dựng một humanoid hoàn chỉnh, bộ xương, xúc tu, chân dài hay da đen chỉ để lấp vùng tối. Nguồn có nhắc lời đồn về một cơ thể phi nhân với tay chân bẻ ở các góc lạ, nhưng đánh dấu rõ đây là thông tin chưa xác nhận. Khi dựng Snapshot, ưu tiên một vùng tối đủ sâu để chỉ mắt và hàng răng hiện ra thành hai cụm sáng, tạo cảm giác khuôn mặt lơ lửng mà không khẳng định giải phẫu phía sau. Nụ cười phải kéo dài rõ rệt, gồm nhiều răng nhọn; mắt nằm phía trên và phát sáng trắng. Không thêm đồng tử, mống mắt, da mặt, mũi, môi, tóc, tai hay màu cơ thể nếu cảnh không có nguồn khác khóa chúng. Nếu cần gợi chuyển động, dùng sự thay đổi vị trí của mắt và răng trong bóng tối thay vì phơi ra toàn thân. Ánh sáng môi trường là yếu tố quan trọng: Smiler nổi bật nhất ở khu vực tối, còn nguồn sáng do người mang theo có thể thu hút nó. Do đó hình ảnh nên giữ độ tương phản mạnh giữa nền gần đen và các chi tiết phản sáng của mắt/răng. Điểm nhận dạng bắt buộc chỉ là ánh mắt trắng và nụ cười răng sắc trong bóng tối; mọi anatomy khác phải được xem là không xác định hoặc, nếu dùng lời đồn, phải trình bày như biến thể chưa xác nhận chứ không phải hình mẫu canon chắc chắn.",
+      "canon": "Canon web: Smilers thường thù địch và xuất hiện ở nhiều Level, đặc biệt các vùng tối. Chúng bị thu hút bởi nguồn sáng; hoảng loạn, bỏ chạy hoặc tạo tiếng động lớn có thể kích hoạt truy đuổi. Hướng dẫn trên trang khuyên giữ giao tiếp mắt, giữ yên lặng, tắt nguồn sáng đang mang và lùi chậm. Sinh học ngoài mắt phát sáng và hàm răng vẫn chưa được xác nhận. Không dùng các lời đồn về cơ thể để khóa model game.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-3",
+        "anchor": "Description; Behaviors; Biology"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["smiler", "smilers", "entity 3", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    }
+  ]
+}
