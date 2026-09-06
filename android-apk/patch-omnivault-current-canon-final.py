@@ -10,8 +10,11 @@ FACADE = CORE / "GameCoreFacade.kt"
 INVENTORY_UI = CORE / "InventoryUiActions.kt"
 ITEM_CATALOG = CORE / "ItemCatalog.kt"
 V4_TEST = TESTS / "InventoryV4ArchitectureTest.kt"
+CORE_TEST = TESTS / "GameStateCoreTest.kt"
+POLICY_TEST = TESTS / "InventoryPolicyTest.kt"
+NATURAL_TEST = TESTS / "OmnivaultNaturalFlowTest.kt"
 
-for required in (OMNIVAULT, FACADE, INVENTORY_UI, ITEM_CATALOG, MAIN, V4_TEST):
+for required in (OMNIVAULT, FACADE, INVENTORY_UI, ITEM_CATALOG, MAIN, V4_TEST, CORE_TEST, POLICY_TEST):
     if not required.is_file():
         raise RuntimeError("Omnivault current-canon source missing: " + required.name)
 
@@ -26,6 +29,27 @@ def method_scope(text: str, signature: str) -> tuple[int, int]:
         if pos >= 0:
             candidates.append(pos)
     return start, min(candidates) if candidates else len(text)
+
+
+def replace_test_function(text: str, name: str, replacement: str) -> str:
+    marker = f"  @Test fun {name}() {{"
+    start = text.find(marker)
+    if start < 0:
+        raise RuntimeError("Omnivault stale regression missing: " + name)
+    brace = text.find("{", start)
+    depth = 0
+    end = -1
+    for i in range(brace, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                end = i + 1
+                break
+    if end < 0:
+        raise RuntimeError("Omnivault stale regression brace mismatch: " + name)
+    return text[:start] + replacement.rstrip() + text[end:]
 
 
 # ---------------------------------------------------------------------------
@@ -139,28 +163,32 @@ if "omnivaultScanAndCopyAreRetiredWithoutMutation" not in test:
 
   @Test fun omnivaultScanAndCopyAreRetiredWithoutMutation() {
     val state = GameState.initial()
+    val beforeItems = state.inventories[KAI_ID]?.items.orEmpty()
+    val beforeStored = state.omnivault.storedItems
     for (operation in listOf(OmnivaultCommand.Operation.SCAN, OmnivaultCommand.Operation.COPY)) {
       val result = StateReducer.execute(state, OmnivaultCommand(
-        commandId = "retired-${operation.name}", turnId = "TURN_1", actorId = KAI_ID,
+        commandId = "retired-${operation.name}", turnId = state.turn.currentTurnId, actorId = KAI_ID,
         source = CommandSource.SYSTEM, operation = operation,
         itemId = "water-bottle", itemName = "Chai nước", quantity = 1
       ))
       assertFalse(result.applied)
       assertEquals("omnivault_operation_retired", result.validation.reason)
-      assertEquals(state, result.state)
-      assertTrue(result.state.inventories.getValue(KAI_ID).items.isEmpty())
-      assertTrue(result.state.omnivault.storedItems.isEmpty())
+      assertEquals(beforeItems, result.state.inventories[KAI_ID]?.items.orEmpty())
+      assertEquals(beforeStored, result.state.omnivault.storedItems)
+      assertTrue(result.state.omnivault.scanSlots.isEmpty())
+      assertTrue(result.state.omnivault.markedSourceIds.isEmpty())
     }
   }
 
   @Test fun omnivaultStoreAndWithdrawStillMoveExistingItemsOnly() {
-    var state = StateReducer.execute(GameState.initial(), ItemCommand(
-      "grant-store-water", "TURN_1", KAI_ID, source = CommandSource.SYSTEM,
+    val initial = GameState.initial()
+    var state = StateReducer.execute(initial, ItemCommand(
+      "grant-store-water", initial.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
       operation = ItemCommand.Operation.PICKUP, itemId = "water-bottle", itemName = "Chai nước", quantity = 1
     )).state
 
     val stored = StateReducer.execute(state, OmnivaultCommand(
-      "store-water", "TURN_1", KAI_ID, source = CommandSource.SYSTEM,
+      "store-water", state.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
       operation = OmnivaultCommand.Operation.STORE,
       itemId = "water-bottle", itemName = "Chai nước", quantity = 1
     ))
@@ -169,7 +197,7 @@ if "omnivaultScanAndCopyAreRetiredWithoutMutation" not in test:
     assertEquals(1, stored.state.omnivault.storedItems.getValue("water-bottle").quantity)
 
     val withdrawn = StateReducer.execute(stored.state, OmnivaultCommand(
-      "withdraw-water", "TURN_1", KAI_ID, source = CommandSource.SYSTEM,
+      "withdraw-water", stored.state.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
       operation = OmnivaultCommand.Operation.WITHDRAW,
       itemId = "water-bottle", itemName = "Chai nước", quantity = 1
     ))
@@ -195,6 +223,75 @@ if "omnivaultScanAndCopyAreRetiredWithoutMutation" not in test:
     test = test[:close] + insert + test[close:]
 V4_TEST.write_text(test, encoding="utf-8")
 
+# Historical tests are generated earlier in the release patch chain and still assert the retired
+# Scan -> Copy behavior. Rewrite only those named regressions after all historical patches.
+core_test = CORE_TEST.read_text(encoding="utf-8")
+core_test = replace_test_function(core_test, "omnivaultThreeSlotsAndCopyRemainGameplayMechanics", r'''  @Test fun omnivaultScanAndCopyAreRetiredGameplayMechanics() {
+    val state = GameState.initial()
+    for (operation in listOf(OmnivaultCommand.Operation.SCAN, OmnivaultCommand.Operation.COPY)) {
+      val result = StateReducer.execute(state, OmnivaultCommand(
+        "retired-${operation.name}", state.turn.currentTurnId, KAI_ID,
+        source = CommandSource.RULE, operation = operation,
+        itemId = "water-bottle", itemName = "Chai nước", quantity = 1
+      ))
+      assertFalse(result.applied)
+      assertEquals("omnivault_operation_retired", result.validation.reason)
+      assertEquals(state.inventories, result.state.inventories)
+      assertTrue(result.state.omnivault.scanSlots.isEmpty())
+      assertTrue(result.state.omnivault.markedSourceIds.isEmpty())
+    }
+  }''')
+CORE_TEST.write_text(core_test, encoding="utf-8")
+
+policy_test = POLICY_TEST.read_text(encoding="utf-8")
+policy_test = replace_test_function(policy_test, "equippedKaiSignatureItemCannotBeScanned", r'''  @Test fun omnivaultScanIsRetiredBeforeSignatureChecks() {
+    val state = GameState.initial()
+    val result = StateReducer.execute(state, OmnivaultCommand(
+      "retired-scan", state.turn.currentTurnId, KAI_ID,
+      source = CommandSource.RULE, operation = OmnivaultCommand.Operation.SCAN,
+      itemId = KAI_WHITE_WRAITH_ID, itemName = KaiStartingEquipment.WEAPON_NAME
+    ))
+    assertFalse(result.applied)
+    assertEquals("omnivault_operation_retired", result.validation.reason)
+  }''')
+POLICY_TEST.write_text(policy_test, encoding="utf-8")
+
+if NATURAL_TEST.is_file():
+    NATURAL_TEST.write_text(r'''package com.rabpit.backroom.core
+
+import org.junit.Assert.*
+import org.junit.Test
+
+class OmnivaultNaturalFlowTest {
+  @Test fun scanAndCopyAreRetiredInNaturalFlow() {
+    val state = GameState.initial()
+    for (operation in listOf(OmnivaultCommand.Operation.SCAN, OmnivaultCommand.Operation.COPY)) {
+      val result = StateReducer.execute(state, OmnivaultCommand(
+        "retired-natural-${operation.name}", state.turn.currentTurnId, KAI_ID,
+        source = CommandSource.RULE, operation = operation,
+        itemId = "water-bottle", itemName = "Chai nước", quantity = 2
+      ))
+      assertFalse(result.applied)
+      assertEquals("omnivault_operation_retired", result.validation.reason)
+      assertEquals(state.inventories, result.state.inventories)
+      assertEquals(state.omnivault.storedItems, result.state.omnivault.storedItems)
+    }
+  }
+
+  @Test fun copyCannotCreateInventoryWithoutExistingStoredItem() {
+    val state = GameState.initial()
+    val result = StateReducer.execute(state, OmnivaultCommand(
+      "retired-copy-no-template", state.turn.currentTurnId, KAI_ID,
+      source = CommandSource.RULE, operation = OmnivaultCommand.Operation.COPY,
+      itemId = "almond-water", itemName = "Nước Hạnh Nhân", quantity = 99
+    ))
+    assertFalse(result.applied)
+    assertEquals("omnivault_operation_retired", result.validation.reason)
+    assertEquals(state.inventories, result.state.inventories)
+  }
+}
+''', encoding="utf-8")
+
 # Fail closed on the exact final generated runtime.
 checks = {
     "OmnivaultEngine.kt": OMNIVAULT.read_text(encoding="utf-8"),
@@ -203,7 +300,11 @@ checks = {
     "ItemCatalog.kt": ITEM_CATALOG.read_text(encoding="utf-8"),
     "MainActivity.java": MAIN.read_text(encoding="utf-8"),
     "InventoryV4ArchitectureTest.kt": V4_TEST.read_text(encoding="utf-8"),
+    "GameStateCoreTest.kt": CORE_TEST.read_text(encoding="utf-8"),
+    "InventoryPolicyTest.kt": POLICY_TEST.read_text(encoding="utf-8"),
 }
+if NATURAL_TEST.is_file():
+    checks["OmnivaultNaturalFlowTest.kt"] = NATURAL_TEST.read_text(encoding="utf-8")
 required_markers = (
     'return invalid(state, "omnivault_operation_retired")',
     "retiredOmnivaultIntent",
@@ -215,6 +316,8 @@ required_markers = (
     "markedSourceIds = emptySet()",
     "omnivaultScanAndCopyAreRetiredWithoutMutation",
     "omnivaultStoreAndWithdrawStillMoveExistingItemsOnly",
+    "omnivaultScanAndCopyAreRetiredGameplayMechanics",
+    "omnivaultScanIsRetiredBeforeSignatureChecks",
 )
 combined = "\n".join(checks.values())
 for marker in required_markers:
@@ -224,8 +327,12 @@ for marker in required_markers:
 for forbidden in (
     '"omnivault_scanned" ->',
     '"omnivault_copied" ->',
+    "omnivaultThreeSlotsAndCopyRemainGameplayMechanics",
+    "equippedKaiSignatureItemCannotBeScanned",
+    "scanThenCopyCarriesReferenceAndTargetsRequestedTotal",
+    "copyWithoutTemplateStillRequiresCanonicalScan",
 ):
-    if forbidden in checks["GameCoreFacade.kt"]:
-        raise RuntimeError("Retired Omnivault success path survived: " + forbidden)
+    if forbidden in combined:
+        raise RuntimeError("Retired Omnivault behavior survived final regression layer: " + forbidden)
 
-print("Omnivault current canon applied: STORE/WITHDRAW preserved; Scan/Copy/item creation retired and legacy scan state purged.")
+print("Omnivault current canon applied: STORE/WITHDRAW preserved; Scan/Copy/item creation retired, stale regressions replaced, legacy scan state purged.")
