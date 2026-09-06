@@ -66,8 +66,8 @@ for button_id, asset in (
     sprite = f'<img class="action-sprite" src="ui/action_{asset}.webp" alt="" aria-hidden="true">'
     if sprite in html:
         continue
-    pattern = rf'(<button[^>]*\\bid="{re.escape(button_id)}"[^>]*>\\s*)<svg\\b.*?</svg>(\\s*<span>)'
-    html, count = re.subn(pattern, rf'\\1{sprite}\\2', html, count=1, flags=re.S)
+    pattern = rf'(<button[^>]*\bid="{re.escape(button_id)}"[^>]*>\s*)<svg\b.*?</svg>(\s*<span>)'
+    html, count = re.subn(pattern, rf'\1{sprite}\2', html, count=1, flags=re.S)
     if count != 1:
         raise RuntimeError(f"Primary action icon anchor not found: {button_id}")
 
