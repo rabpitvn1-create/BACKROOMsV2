@@ -21,9 +21,6 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     env:
-      LUNA_API_KEY: ${{ secrets.LUNA_API_KEY }}
-      LUNA_BASE_URL: https://api.vilao.ai/v1
-      LUNA_MODEL: ${{ secrets.LUNA_MODEL }}
       GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
       GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
       GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
@@ -33,17 +30,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify release version
+      - name: Verify release version and provider baseline
         run: |
           set -euo pipefail
           grep -Fq 'versionCode 66' android-apk/app/build.gradle
           grep -Fq "versionName '1.1.64'" android-apk/app/build.gradle
           test -s android-apk/RELEASE_NOTES_1.1.64.txt
+          test ! -e android-apk/patch-luna-text.py
+          test ! -e android-apk/patch-luna-model-failover-final.py
+          test ! -e android-apk/patch-provider-deadline-final.py
+          ! grep -q 'LUNA_' android-apk/app/build.gradle
 
       - name: Validate Game Master configuration
         run: |
           set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5 LUNA_API_KEY LUNA_MODEL; do
+          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
             test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
           done
 
@@ -68,12 +69,14 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-luna-text.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-provider-deadline-final.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
           done
           git diff --check
+          ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
 
       - uses: actions/setup-java@v5
         with:
