@@ -1,0 +1,7 @@
+Backroom 1.1.65 Debug
+
+- Cập nhật bộ hình Kai SRU mới từ nguồn Google Drive được ghim SHA-256 và kiểm tra trước khi đóng gói APK.
+- Thay overlay Snapshot mặc định của Kai bằng Kai_SRU mới.
+- Thay avatar Kai trong giao diện nhân vật bằng SRU_AVATAR mới.
+- Thêm overlay riêng khi Kai đang trực tiếp gặp/đối đầu Entity: Kai_SRU2 với tư thế ngắm súng.
+- Giữ nguyên Entity local asset runtime, Game State Core, gameplay/canon và pool 5 Gemini của 1.1.64.
