@@ -77,10 +77,13 @@ INDEX.write_text(index, encoding="utf-8")
 print("PR3 mobile + Entity overlay hotfix verified: Kai right shift, canonical Entity left-bottom overlay, CombatRuntime visual authority.")
 
 # Inventory V4 is deliberately the final gameplay/UI layer in PR #3. Earlier release patches still
-# generate legacy inventory/content structures, so apply the new authority contract only after all of
-# them have finished mutating Kotlin, Java and HTML.
+# generate legacy inventory/content structures, so prepare stable anchors against the final generated
+# sources, then apply the new authority contract after every historical mutation has finished.
 import runpy
+inventory_compat = ROOT / "patch-inventory-v4-anchor-compat.py"
 inventory_v4 = ROOT / "patch-inventory-v4-final.py"
-if not inventory_v4.is_file():
-    raise RuntimeError("Inventory V4 finalizer missing")
+for required in (inventory_compat, inventory_v4):
+    if not required.is_file():
+        raise RuntimeError("Inventory V4 patch missing: " + required.name)
+runpy.run_path(str(inventory_compat), run_name="__main__")
 runpy.run_path(str(inventory_v4), run_name="__main__")
