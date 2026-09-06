@@ -22,12 +22,22 @@ for name, encoded in SPRITES.items():
 
 main = MAIN.read_text(encoding="utf-8")
 
-prompt_anchor = '          String prompt = "Bạn là Game Master duy nhất của text game Backrooms, phát ngôn như người kể chuyện trong game. Trả DUY NHẤT một JSON hợp lệ, không markdown. " +\n'
-prompt_rule = '            "PLAYER ADDRESS HARD LOCK: trong trường reply, mọi mô tả hành động, trạng thái hoặc phản hồi trực tiếp tới nhân vật do người dùng điều khiển phải viết ở ngôi thứ hai và chỉ gọi là Bạn. Không dùng Kai, Kai Akechi, Player, người chơi, hắn, anh, cậu hoặc đại từ khác để thay cho Bạn. Tên Kai chỉ được dùng trong dữ liệu state nội bộ, không dùng để xưng hô hay làm chủ ngữ đại diện người dùng trong reply. " +\n'
-if prompt_rule not in main:
-    if prompt_anchor not in main:
-        raise RuntimeError("Final GM prompt anchor not found")
-    main = main.replace(prompt_anchor, prompt_anchor + prompt_rule, 1)
+# The prompt is composed by an earlier runtime patch. Inject after the first prompt line rather
+# than depending on the exact full line, because downstream provider hardening may extend it.
+if "PLAYER ADDRESS HARD LOCK:" not in main:
+    prompt_start = main.find('String prompt = "Bạn là Game Master duy nhất')
+    if prompt_start < 0:
+        prompt_start = main.find('String prompt = "Bạn là Game Master')
+    if prompt_start < 0:
+        raise RuntimeError("Final GM prompt start not found")
+    prompt_line_end = main.find("\n", prompt_start)
+    if prompt_line_end < 0:
+        raise RuntimeError("Final GM prompt line end not found")
+    prompt_rule = (
+        '            "PLAYER ADDRESS HARD LOCK: trong trường reply, mọi mô tả hành động, trạng thái hoặc phản hồi trực tiếp tới nhân vật do người dùng điều khiển phải viết ở ngôi thứ hai và chỉ gọi là Bạn. '
+        'Không dùng Kai, Kai Akechi, Player, người chơi, hắn, anh, cậu hoặc đại từ khác để thay cho Bạn. Tên Kai chỉ được dùng trong dữ liệu state nội bộ, không dùng để xưng hô hay làm chủ ngữ đại diện người dùng trong reply. " +\n'
+    )
+    main = main[:prompt_line_end + 1] + prompt_rule + main[prompt_line_end + 1:]
 
 normalize_helper = r'''  private String normalizePlayerAddress(String reply) {
     if (reply == null) return "";
@@ -40,36 +50,53 @@ normalize_helper = r'''  private String normalizePlayerAddress(String reply) {
     return normalized;
   }
 
-'''
+'''.replace('\\"', '"')
 bridge_anchor = "  private class GameBridge {\n"
 if "private String normalizePlayerAddress(String reply)" not in main:
     if bridge_anchor not in main:
         raise RuntimeError("GameBridge anchor not found for player-address normalizer")
     main = main.replace(bridge_anchor, normalize_helper + bridge_anchor, 1)
 
-reply_anchor = '          String reply = generated.optString("reply", "").trim();\n'
-reply_normalized = reply_anchor + '          reply = normalizePlayerAddress(reply);\n'
-if 'reply = normalizePlayerAddress(reply);' not in main:
-    if reply_anchor not in main:
+if "reply = normalizePlayerAddress(reply);" not in main:
+    reply_pattern = re.compile(r'(?m)^(\s*String reply\s*=\s*generated\.optString\("reply",\s*""\)\.trim\(\);\s*)$')
+    match = reply_pattern.search(main)
+    if not match:
         raise RuntimeError("GM reply normalization anchor not found")
-    main = main.replace(reply_anchor, reply_normalized, 1)
+    indent = re.match(r'\s*', match.group(1)).group(0)
+    main = main[:match.end()] + "\n" + indent + "reply = normalizePlayerAddress(reply);" + main[match.end():]
+
+for marker in ("PLAYER ADDRESS HARD LOCK:", "private String normalizePlayerAddress(String reply)", "reply = normalizePlayerAddress(reply);"):
+    if marker not in main:
+        raise RuntimeError("GM address-lock marker missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
 
 html = INDEX.read_text(encoding="utf-8")
+
+def replace_action_icon(source: str, button_id: str, asset: str) -> str:
+    sprite = f'<img class="action-sprite" src="ui/action_{asset}.webp" alt="" aria-hidden="true">'
+    button_re = re.compile(rf'<button\b(?=[^>]*\bid="{re.escape(button_id)}")[^>]*>.*?</button>', re.S)
+    match = button_re.search(source)
+    if not match:
+        raise RuntimeError(f"Primary action button not found: {button_id}")
+    block = match.group(0)
+    if sprite in block:
+        return source
+    cleaned, removed = re.subn(r'<svg\b.*?</svg>', '', block, count=1, flags=re.S)
+    if removed != 1:
+        raise RuntimeError(f"Primary action SVG not found: {button_id}")
+    span_pos = cleaned.find('<span')
+    if span_pos < 0:
+        raise RuntimeError(f"Primary action label not found: {button_id}")
+    cleaned = cleaned[:span_pos] + sprite + cleaned[span_pos:]
+    return source[:match.start()] + cleaned + source[match.end():]
 
 for button_id, asset in (
     ("searchActionButton", "search"),
     ("submit", "execute"),
     ("exploreActionButton", "explore"),
 ):
-    sprite = f'<img class="action-sprite" src="ui/action_{asset}.webp" alt="" aria-hidden="true">'
-    if sprite in html:
-        continue
-    pattern = rf'(<button[^>]*\bid="{re.escape(button_id)}"[^>]*>\s*)<svg\b.*?</svg>(\s*<span>)'
-    html, count = re.subn(pattern, rf'\1{sprite}\2', html, count=1, flags=re.S)
-    if count != 1:
-        raise RuntimeError(f"Primary action icon anchor not found: {button_id}")
+    html = replace_action_icon(html, button_id, asset)
 
 html = html.replace('placeholder="Kai sẽ làm gì tiếp theo?"', 'placeholder="Bạn sẽ làm gì tiếp theo?"', 1)
 html = html.replace('placeholder="Kai làm gì trong Turn hiện tại?"', 'placeholder="Bạn sẽ làm gì tiếp theo?"', 1)
@@ -144,8 +171,10 @@ for marker in (
     if marker not in html:
         raise RuntimeError("Mobile swipe UI marker missing: " + marker)
 
-if '<svg class="action-icon' in html:
-    raise RuntimeError("Legacy SVG primary-action icon survived")
+for button_id, asset in (("searchActionButton", "search"), ("submit", "execute"), ("exploreActionButton", "explore")):
+    button_match = re.search(rf'<button\b(?=[^>]*\bid="{re.escape(button_id)}")[^>]*>.*?</button>', html, re.S)
+    if not button_match or f'ui/action_{asset}.webp' not in button_match.group(0):
+        raise RuntimeError("WebP action sprite verification failed: " + button_id)
 
 INDEX.write_text(html, encoding="utf-8")
 print("Mobile-first two-page swipe UI, compact full-width Snapshot layout, WebP pixel action sprites, and GM Bạn-address lock applied.")
