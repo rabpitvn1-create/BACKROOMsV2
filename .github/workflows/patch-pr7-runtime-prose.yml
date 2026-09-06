@@ -1,0 +1,63 @@
+name: Patch PR7 Runtime Prose
+
+on:
+  push:
+    branches:
+      - release/pr06-gm-prose
+    paths:
+      - '.github/workflows/patch-pr7-runtime-prose.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync distilled prose rules into build-time writer prompt
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('android-apk/patch-ai-orchestrator.py')
+          text = path.read_text(encoding='utf-8')
+          marker = 'VĂN PHONG RUNTIME (distilled từ Haiku teacher):'
+          if marker in text:
+              raise SystemExit('Runtime prose marker already present; refusing duplicate patch')
+
+          anchor = '''            "Nếu meta=true, chỉ trả thông tin được hỏi, ops=[] và snapshotEvent=false. Không nhắc canon/state/roll/prompt trong văn xuôi.\\n\\n" +\n'''
+          replacement = anchor + '''            "VĂN PHONG RUNTIME (distilled từ Haiku teacher): Đi thẳng từ hành động của người chơi tới hệ quả, phản ứng hoặc điều Kai trực tiếp nhận thấy; không diễn giải lại hành động vừa nhập. " +\n            "Giữ điểm nhìn gần với những gì Kai có thể thấy, nghe, chạm, ngửi, cảm nhận về nhiệt độ, khoảng cách và không gian. Ưu tiên chi tiết vật lý chính xác và động từ quen mà đúng hơn là tính từ nồng, từ hiếm hoặc ẩn dụ xếp chồng. " +\n            "Tránh dùng các nhãn chung như 'đáng sợ', 'bí ẩn', 'bất an', 'căng thẳng' để thay cho cảnh; để bằng chứng cụ thể và phản ứng có căn cứ tự mang cảm xúc. " +\n            "Cảnh yên được phép yên. Không ép mỗi lượt thành cao trào, điềm báo, phát hiện hoặc mối đe dọa. Nhịp câu gọn hơn khi nguy hiểm trực tiếp và nới hơn khi quan sát hoặc hồi phục. " +\n            "Nếu có hội thoại, để nhân vật nói như người thật trong tình huống: có thể ngắn, lệch ý, ngập ngừng hoặc bị ngắt; không biến NPC thành loa giải thích lore và không tiết lộ kiến thức họ không có. " +\n            "Không kể theo kiểu báo cáo state, không dự báo điều chưa xảy ra và kết thúc phản hồi ở một điểm tự nhiên để người chơi còn quyền chọn hành động tiếp theo. " +\n'''
+
+          count = text.count(anchor)
+          if count != 1:
+              raise SystemExit(f'Runtime writer prompt anchor expected exactly once, found {count}')
+          text = text.replace(anchor, replacement, 1)
+
+          required = (
+              marker,
+              'không diễn giải lại hành động vừa nhập',
+              'Cảnh yên được phép yên',
+              'Không kể theo kiểu báo cáo state',
+              'người chơi còn quyền chọn hành động tiếp theo',
+          )
+          for item in required:
+              if text.count(item) != 1:
+                  raise SystemExit(f'Runtime prose verification failed for: {item}')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+          python3 -m py_compile android-apk/patch-ai-orchestrator.py
+          git diff --check
+
+      - name: Commit runtime prompt sync and remove temporary workflow
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/patch-pr7-runtime-prose.yml
+          git add android-apk/patch-ai-orchestrator.py
+          git diff --cached --check
+          git commit -m 'Sync Haiku prose rules into runtime prompt'
+          git push
