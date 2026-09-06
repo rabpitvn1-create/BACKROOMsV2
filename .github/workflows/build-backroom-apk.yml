@@ -96,7 +96,9 @@ jobs:
           grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'PR3_KAI_SHIFT_RIGHT' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'LEVEL TRANSITION STATE LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'LEVEL_TRANSITION_STATE_SYNC' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'levelNarrativeStateIssuesAndroid' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'level_narrative_state_mismatch' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'bãi đỗ xe' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
           grep -q 'PR3_HEADER_SAFE_INSET' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_search.webp' android-apk/app/src/main/assets/index.html
