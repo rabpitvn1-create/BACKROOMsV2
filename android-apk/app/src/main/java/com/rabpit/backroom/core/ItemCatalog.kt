@@ -242,7 +242,8 @@ object ItemCatalog {
 
   fun canonicalize(definition: ItemDefinition, item: ItemStack): ItemStack {
     val cleanMetadata = item.metadata - setOf(
-      "remainingContent", "contentAmount", "contentPercent", "contentState", "containerPersistent"
+      "remainingContent", "contentAmount", "contentPercent", "contentState", "containerPersistent",
+      "omnivaultCopyCount", "scanSlot", "markedSource"
     )
     return item.copy(
       itemId = definition.id,
