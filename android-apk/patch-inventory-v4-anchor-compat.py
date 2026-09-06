@@ -146,6 +146,21 @@ finalizer = finalizer.replace(
     "          String result = requireGameCore().processInventoryUiAction(\n",
 )
 
+# JSONObject.put throws checked JSONException in this Android API. The fallback path must not create
+# a new JSONObject inside the catch block, otherwise javac rejects the bridge itself.
+checked_fallback = '''          emit("backroomInventoryAction", new JSONObject()
+            .put("handled", true)
+            .put("applied", false)
+            .put("message", "Không thể thực hiện thao tác vật phẩm.")
+            .toString());
+'''
+safe_fallback = '''          emit("backroomInventoryAction", "{\\\"handled\\\":true,\\\"applied\\\":false,\\\"message\\\":\\\"Không thể thực hiện thao tác vật phẩm.\\\"}");
+'''
+if safe_fallback not in finalizer:
+    if finalizer.count(checked_fallback) != 1:
+        raise RuntimeError("Inventory V4 compat: Java fallback JSON anchor missing")
+    finalizer = finalizer.replace(checked_fallback, safe_fallback, 1)
+
 # UI-only prose rejection must also terminate the ActionRuntime session started by submitAction().
 old_ui_gate = '''    if (uiOnlyItemIntent != null) {
       val result = syncLegacy(legacy, state, incrementTurn = false)
@@ -170,4 +185,4 @@ if "rollSuccess(rolls, \"loot\") || (acquisitionIntent(action) && establishedStr
     raise RuntimeError("Inventory V4 compat: direct reward gate missing")
 FINALIZER.write_text(finalizer, encoding="utf-8")
 
-print("Inventory V4 compatibility prepared: UI-only authority, generated saves, writer catalog and direct reward semantics preserved.")
+print("Inventory V4 compatibility prepared: UI-only authority, generated saves, writer catalog, direct rewards and Java bridge preserved.")
