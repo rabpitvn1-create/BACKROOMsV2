@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "policy": "WEB_REFERENCE_ONLY: records remain distinct from project WORLD_CANON; project hard-lock/state authority wins on conflict.",
+  "records": [
+    {
+      "id": "WEB.ENTITY.WRANGLER",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: Wrangler là một Entity dạng rắn khổng lồ, thân kéo dài cực độ và có khả năng xoắn, uốn, vặn thành nhiều góc để di chuyển xuyên các hệ hang hoặc hành lang. Da luôn ẩm và dính; ở cá thể trẻ, lớp da có độ trong mờ đủ để nhìn thấy cấu trúc bên trong cơ thể, còn khi già dần nó chuyển xám và đục hơn. Hai mắt phát ánh trắng mạnh, là điểm sáng dễ nhận ra trong bóng tối. Hình thái khác nhau theo giới tính: Wrangler đực có khuôn mặt mang nét gần người hơn, miệng tạo thành một nụ cười rộng và bề mặt da thô hơn; Wrangler cái thiên về hình giun, phần miệng thay bằng các càng/kìm. Kích thước không nên được dựng như một con trăn thông thường: nguồn ghi cá thể trưởng thành có thể dài từ khoảng 10 đến 90 dặm, vì vậy trong Snapshot chỉ nên cho thấy một đoạn cơ thể khổng lồ tiếp tục khuất khỏi khung hình, xuyên qua đường hầm hoặc mất hút vào tường, thay vì cố nhét toàn thân vào cảnh. Khi đào vật lý, thân Wrangler xoay theo chuyển động kiểu mũi khoan để cắt xuyên vật chất; cá thể già có thể No-Clip để “đào”. Dáng chuyển động vì thế cần nhấn vào trục thân xoắn và cảm giác một khối sinh vật dài vô tận đang lướt xuyên kiến trúc. Không tự thêm vảy, sừng, chân, cánh hay màu mắt khác: các dấu hiệu được khóa từ nguồn là thân rắn khổng lồ, da ẩm-dính, độ trong thay đổi theo tuổi, mắt trắng phát sáng và dị hình khuôn mặt theo giới tính.",
+      "canon": "Canon web: Wranglers xuất hiện chủ yếu ở hệ hang hoặc vùng ẩm. Chúng có thể xoắn thân như mũi khoan để đào và tạo hiệu ứng gần thôi miên nhằm làm rối, dụ con mồi. Con đực thường săn để ăn và có thể ăn gần như mọi thứ; con cái thường rút lui và ăn thực vật/khoáng đá, nhưng có thể ăn người khi mang thai. Con non đào bằng thân, cá thể già chuyển sang No-Clip để burrow. Tránh tiếp xúc; rung động/tiếng đào lớn là dấu hiệu nên rời khu vực. Giữ toàn bộ dữ liệu này ở lớp web-reference nếu xung đột hard-lock dự án.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-75", "anchor": "Description; Behaviors; Biology"},
+      "authority": "WEB_REFERENCE_CANON", "mutability": "REFERENCE", "priority": 76,
+      "tags": ["wrangler", "wranglers", "entity 75", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"], "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.DEATHMOTH",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: Deathmoth là côn trùng lai mang đặc điểm của nhiều loài bướm đêm và sinh vật khác, không phải một “bướm đêm khổng lồ” đồng nhất. Với Common Deathmoth, cấu trúc cơ bản gồm hai cặp cánh màng phủ vảy và sợi cực nhỏ, hai mắt kép kèm hai mắt đơn, một cặp râu dạng lông chim và sáu chân phân đốt kết thúc bằng bàn chân có móng. Con đực nhỏ hơn, sải cánh khoảng 30–35 cm, thân dài 40–50 mm; râu cảm giác phát triển mạnh và bộ hàm tiêu giảm thành vòi dài dạng kim dùng để xuyên và hút chất lỏng. Con cái lớn hơn, sải cánh 40–45 cm, thân 60–70 mm, ngực và bụng dày hơn; chúng giữ bộ hàm kéo dài cùng cấu trúc miệng gia cường để xé thịt thay vì vòi hút. Praetorian là caste lớn và nặng hơn rõ rệt: cao gần một mét, thân đường kính khoảng 15–20 cm, sải cánh xấp xỉ 60 cm. Empress có silhouette khác hẳn, thân dài khoảng 1,5 m, cao gần 75 cm và sải cánh gần 3 m; nửa dưới cơ thể kéo dài thành khoang ấp trứng lớn, râu dài nhất trong loài. Ấu trùng dài khoảng 5–10 cm, đường kính khoảng 4 cm, có một tá chân phân đốt, hàm răng cưa sắc và giáp lưng phủ các gai rỗng dài khoảng 7 cm. Khi dựng hình phải chọn đúng caste thay vì trộn mọi đặc điểm vào một cá thể; điểm chung của cá thể trưởng thành là hình thái côn trùng, cánh màng có vảy, mắt kép, râu và chân phân đốt.",
+      "canon": "Canon web hiện hành: Deathmoths là loài côn trùng chimera có vòng đời và hệ caste gồm Common, Praetorian và Empress. Common đực chủ yếu scavenger, tương đối thụ động; Common cái hung hãn hơn và săn theo bầy. Praetorian là biến thể chiến đấu nguy hiểm, còn Empress duy trì sinh sản và có thể điều phối colony bằng pheromone. Tổ là cấu trúc bán hữu cơ từ vật chất sinh học, sợi thực vật và resin. Không trộn đặc điểm của các caste hoặc nâng dữ liệu web này thành WORLD_CANON khi dự án khóa khác.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-4", "anchor": "Introduction; Analysis; Physical Description; Behavior"},
+      "authority": "WEB_REFERENCE_CANON", "mutability": "REFERENCE", "priority": 76,
+      "tags": ["deathmoth", "deathmoths", "entity 4", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"], "affordances": ["direct_threat", "visual_reference"]
+    },
+    {
+      "id": "WEB.ENTITY.WRETCH",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "visual": "Thị giác: Wretch là phần còn lại của một con người sau Wretched Cycle, giữ silhouette người nhưng bị suy kiệt và biến dạng nặng. Ở giai đoạn hoàn toàn nhiễm, da mang sắc nâu đỏ, khô và bong vảy, rải nhiều lỗ cùng mụn mủ tiết ra chất đặc màu đỏ-nâu. Thân thường gầy trơ xương, tạo cảm giác mong manh dù nguồn ghi phần lớn cá thể có sức mạnh vượt người. Dấu vết danh tính cũ có thể còn trên cơ thể dưới dạng quần áo, vật tư hoặc đồ cá nhân, nhưng thường đã rách nát và biến dạng đến khó nhận. Ở Stage 3, móng và răng rụng khỏi vị trí tự nhiên rồi có thể mọc lại ở những nơi khác với số lượng và kích thước bất thường; mí mắt, môi và sụn tan biến, khiến mắt luôn mở và đảo hỗn loạn trong hốc. Miệng cùng các lỗ cơ thể liên tục rỉ chất bùn nâu. Đột biến không có một mẫu duy nhất: nguồn ghi nhận mắt mọc sai vị trí, chi bị trật cấu trúc hoặc mọc thừa, thậm chí các “cánh” bằng thịt và xương; một biến thể hiếm có thể trở thành khối thịt méo mó gần như toàn mắt, miệng và các lỗ không rõ chức năng. Vì ngoại hình biến thiên mạnh, Snapshot không nên khóa Wretch thành một model quái vật duy nhất. Nền tảng thị giác phải vẫn đọc được là cơ thể người suy kiệt với da nâu đỏ khô, tổn thương tiết dịch và dấu tích đời sống cũ; các đột biến chỉ thêm khi biến thể cụ thể yêu cầu, không tự động gắn mọi mắt thừa, chi thừa hay cánh lên cùng một cá thể.",
+      "canon": "Canon web: Wretches từng là người và liên quan đến Wretched Cycle, một quá trình được cho là gắn với thiếu thức ăn, nước, giấc ngủ và có thể tăng nhanh khi cô lập. Giai đoạn muộn không thể đảo ngược bằng cách thông thường. Wretches thường có trí tuệ thấp nhưng sức mạnh rất lớn; tốc độ biến thiên từ lê bước đến chạy vượt người. Một số hiếm thể hiện trí tuệ hoặc dùng vũ khí, và nhóm Wretch có thể hành động đồng bộ. Ngoại hình/đột biến biến thiên mạnh nên không suy diễn một model duy nhất. Dữ liệu này chỉ là web-reference khi xung đột hard-lock dự án.",
+      "source": {"document": "https://backrooms-wiki.wikidot.com/entity-15", "anchor": "Description; Behaviors; Biology"},
+      "authority": "WEB_REFERENCE_CANON", "mutability": "REFERENCE", "priority": 76,
+      "tags": ["wretch", "wretches", "entity 15", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"], "affordances": ["direct_threat", "visual_reference"]
+    }
+  ]
+}
