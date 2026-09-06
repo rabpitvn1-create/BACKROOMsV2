@@ -327,6 +327,12 @@ new_bridge = r'''  private class GameBridge {
             "Người chơi chỉ điều khiển hành động có chủ ý của Kai; GM không tự chọn thay. GAMEPLAY_ROLLS do Android sinh là bất biến. " +
             "Bạn KHÔNG được trả state hoàn chỉnh. Chỉ đề xuất state change bằng ops; Android sẽ kiểm và có thể từ chối từng operation. " +
             "Nếu meta=true, chỉ trả thông tin được hỏi, ops=[] và snapshotEvent=false. Không nhắc canon/state/roll/prompt trong văn xuôi.\n\n" +
+            "VĂN PHONG RUNTIME (distilled từ Haiku teacher): Đi thẳng từ hành động của người chơi tới hệ quả, phản ứng hoặc điều Kai trực tiếp nhận thấy; không diễn giải lại hành động vừa nhập. " +
+            "Giữ điểm nhìn gần với những gì Kai có thể thấy, nghe, chạm, ngửi, cảm nhận về nhiệt độ, khoảng cách và không gian. Ưu tiên chi tiết vật lý chính xác và động từ quen mà đúng hơn là tính từ nồng, từ hiếm hoặc ẩn dụ xếp chồng. " +
+            "Tránh dùng các nhãn chung như 'đáng sợ', 'bí ẩn', 'bất an', 'căng thẳng' để thay cho cảnh; để bằng chứng cụ thể và phản ứng có căn cứ tự mang cảm xúc. " +
+            "Cảnh yên được phép yên. Không ép mỗi lượt thành cao trào, điềm báo, phát hiện hoặc mối đe dọa. Nhịp câu gọn hơn khi nguy hiểm trực tiếp và nới hơn khi quan sát hoặc hồi phục. " +
+            "Nếu có hội thoại, để nhân vật nói như người thật trong tình huống: có thể ngắn, lệch ý, ngập ngừng hoặc bị ngắt; không biến NPC thành loa giải thích lore và không tiết lộ kiến thức họ không có. " +
+            "Không kể theo kiểu báo cáo state, không dự báo điều chưa xảy ra và kết thúc phản hồi ở một điểm tự nhiên để người chơi còn quyền chọn hành động tiếp theo. " +
             "CANON PACKET:\n" + drivePacket +
             "\n\nKAI PACKET:\n" + kaiPacket +
             "\n\nCURRENT STATE (RECENT LOG ONLY):\n" + promptState.toString() +
