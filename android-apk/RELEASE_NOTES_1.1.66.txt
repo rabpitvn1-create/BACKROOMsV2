@@ -4,4 +4,6 @@ Backroom 1.1.66 Debug
 - Thêm khoảng lùi an toàn bên trái cho header để dòng BACKROOM TEXT GAME và tiêu đề Level không bị cạnh bo/cutout của màn hình che mất ký tự đầu.
 - Giữ nguyên chiều cao header đã thu gọn; không trả lại padding/gutter thừa của giao diện cũ.
 - Dịch overlay Kai trong Snapshot sang phải nhẹ khoảng 4% chiều rộng vùng Snapshot, không đổi kích thước, tỷ lệ hoặc căn đáy.
-- Giữ nguyên Snapshot 16:9, object-fit contain, gameplay state, GM logic, inventory, party, save và toàn bộ gameplay/canon của 1.1.65.
+- Ổn định Inventory V4: vật phẩm nguyên vẹn theo số lượng nguyên, Item Catalog là whitelist, reward hợp lệ cấp trực tiếp vào kho, quản lý vật phẩm qua giao diện Sử dụng/Chuyển/Vứt bỏ.
+- Đồng bộ Omnivault theo canon hiện hành: chỉ còn lưu trữ/lấy vật đã cất và Hoàn nguyên trang bị; Quét, Sao chép, tạo vật phẩm, tạo bản sao và Marked không còn là khả năng runtime.
+- Giữ nguyên Snapshot 16:9, object-fit contain, party, save compatibility, combat và Entity canon ngoài các thay đổi Inventory/Omnivault nêu trên.
