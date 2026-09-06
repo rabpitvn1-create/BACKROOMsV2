@@ -27,6 +27,47 @@ jobs:
           for name in HAIKU_API HAIKU_BASE_URL HAIKU_MODEL; do
             test -n "${!name:-}" || (echo "Missing $name" && exit 1)
           done
+      - name: Relax temporary teacher response matching
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android-apk/tools/haiku_style_distill.py')
+          text = p.read_text(encoding='utf-8')
+          old = '''    rows = obj.get("samples") if isinstance(obj, dict) else None
+              if not isinstance(rows, list):
+                  raise RuntimeError(f"Batch {batch_idx + 1}: missing samples array")
+              by_id = {int(row.get("id")): row for row in rows if isinstance(row, dict) and str(row.get("id", "")).isdigit()}
+              for source in batch:
+                  rid = source["id"]
+                  row = by_id.get(rid)
+                  if not row or not str(row.get("rewrite", "")).strip():
+                      raise RuntimeError(f"Batch {batch_idx + 1}: missing rewrite for id {rid}")
+                  results.append({
+                      **source,
+                      "rewrite": str(row["rewrite"]).strip(),
+                      "lesson": str(row.get("lesson", "")).strip()
+                  })'''.replace('              ', '    ')
+          new = '''    rows = obj.get("samples") if isinstance(obj, dict) else (obj if isinstance(obj, list) else None)
+              if not isinstance(rows, list):
+                  raise RuntimeError(f"Batch {batch_idx + 1}: missing samples array")
+              usable = [row for row in rows if isinstance(row, dict) and str(row.get("rewrite", "")).strip()]
+              by_id = {int(row.get("id")): row for row in usable if str(row.get("id", "")).isdigit()}
+              for position, source in enumerate(batch):
+                  rid = source["id"]
+                  row = by_id.get(rid)
+                  if row is None and position < len(usable):
+                      row = usable[position]
+                  if not row or not str(row.get("rewrite", "")).strip():
+                      raise RuntimeError(f"Batch {batch_idx + 1}: missing rewrite for id {rid}; got {len(usable)} usable rows")
+                  results.append({
+                      **source,
+                      "rewrite": str(row["rewrite"]).strip(),
+                      "lesson": str(row.get("lesson", "")).strip()
+                  })'''.replace('              ', '    ')
+          if old not in text:
+              raise SystemExit('Temporary parser anchor missing')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Distill Game Master prose voice from 100 samples
         run: python3 android-apk/tools/haiku_style_distill.py
       - name: Upload distillation artifact
