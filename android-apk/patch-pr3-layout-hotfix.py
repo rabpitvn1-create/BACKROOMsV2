@@ -11,10 +11,11 @@ index = INDEX.read_text(encoding="utf-8")
 
 # Field screenshot hotfix: move the rendered Kai overlay slightly to the right without
 # changing its scale/aspect ratio. Scope the replacement to the final Snapshot character CSS.
+# Issue #4 keeps the existing 4% transparent-padding compensation and nudges Kai 5px farther right.
 if "PR3_KAI_SHIFT_RIGHT" not in main:
     pattern = re.compile(r"(\.snapshot \.snapshot-character\{[^}]*?)right:0;")
     main, count = pattern.subn(
-        r"\1right:-4%;/* PR3_KAI_SHIFT_RIGHT */",
+        r"\1right:calc(-4% - 5px);/* PR3_KAI_SHIFT_RIGHT */",
         main,
         count=1,
     )
@@ -67,8 +68,8 @@ for marker in entity_markers:
 
 # Beast of Level 5 and Hotel Corpse Lure intentionally share the same visual asset. Do not add
 # uniqueness/hash checks here; canonical key presence is the release contract.
-for marker in ("PR3_KAI_SHIFT_RIGHT", "right:-4%;", "PR3_HEADER_SAFE_INSET", "padding-left:14px!important"):
-    target = main if marker in ("PR3_KAI_SHIFT_RIGHT", "right:-4%;") else index
+for marker in ("PR3_KAI_SHIFT_RIGHT", "right:calc(-4% - 5px);", "PR3_HEADER_SAFE_INSET", "padding-left:14px!important"):
+    target = main if marker in ("PR3_KAI_SHIFT_RIGHT", "right:calc(-4% - 5px);") else index
     if marker not in target:
         raise RuntimeError("PR3 mobile position marker missing: " + marker)
 
