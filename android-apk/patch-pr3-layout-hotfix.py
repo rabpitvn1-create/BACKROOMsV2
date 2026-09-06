@@ -92,3 +92,58 @@ runpy.run_path(str(inventory_compat), run_name="__main__")
 runpy.run_path(str(inventory_v4), run_name="__main__")
 runpy.run_path(str(inventory_regression), run_name="__main__")
 runpy.run_path(str(omnivault_current), run_name="__main__")
+
+# The packaged knowledge database is authoritative input to the Game Master. Runtime rejection of
+# retired Omnivault commands is not sufficient if retrieval can still teach the writer old Scan/Copy
+# canon, so correct the final generated knowledge after every historical patch has run.
+import json
+KNOWLEDGE_DB = ROOT / "app/src/main/assets/knowledge/knowledge_db.json"
+KNOWLEDGE_SOURCE_MAP = ROOT / "KNOWLEDGE_SOURCE_MAP.md"
+for required in (KNOWLEDGE_DB, KNOWLEDGE_SOURCE_MAP):
+    if not required.is_file():
+        raise RuntimeError("PR3 Omnivault knowledge source missing: " + required.name)
+
+knowledge = json.loads(KNOWLEDGE_DB.read_text(encoding="utf-8"))
+omnivault_records = [record for record in knowledge.get("records", []) if record.get("id") == "CHAR.KAI.OMNIVAULT"]
+if len(omnivault_records) != 1:
+    raise RuntimeError(f"PR3 Omnivault knowledge contract: expected 1 record, found {len(omnivault_records)}")
+
+omnivault_record = omnivault_records[0]
+omnivault_record["text"] = (
+    "Omnivault Ring is an unlimited spatial storage for inanimate objects and never acts on living beings. "
+    "Current canon keeps only two capabilities: store/retrieve the same existing objects and Restore/Hoàn nguyên existing equipment. "
+    "Scan, Copy, item creation, duplicate creation, Marked and Upgrade are retired. Storage never increases authoritative item quantity. "
+    "Restore returns the same existing equipment item to its best previously existing state; it cannot upgrade, copy, transform, or create an item. "
+    "A successful Restore gives that item a 24-hour per-item cooldown. Omnivault does not store or recreate living beings."
+)
+omnivault_record["tags"] = ["kai", "omnivault", "nhẫn vạn tàng", "storage", "restore", "hoàn nguyên"]
+KNOWLEDGE_DB.write_text(json.dumps(knowledge, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+source_map = KNOWLEDGE_SOURCE_MAP.read_text(encoding="utf-8")
+stale_source_row = "| `CHAR.KAI.OMNIVAULT` | `Kai_Codex.docx` | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | IMMUTABLE | Inanimate-only storage; 3 scan/copy slots and codex restore constraints. |"
+current_source_row = "| `CHAR.KAI.OMNIVAULT` | `Kai_Codex.docx` | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | IMMUTABLE | Unlimited inanimate storage; store/retrieve existing objects and Restore existing equipment only. No Scan/Copy/item creation/Marked/Upgrade; successful Restore has a 24-hour per-item cooldown. |"
+if stale_source_row in source_map:
+    source_map = source_map.replace(stale_source_row, current_source_row, 1)
+elif current_source_row not in source_map:
+    raise RuntimeError("PR3 Omnivault source-map contract missing expected row")
+KNOWLEDGE_SOURCE_MAP.write_text(source_map, encoding="utf-8")
+
+final_knowledge = KNOWLEDGE_DB.read_text(encoding="utf-8")
+final_source_map = KNOWLEDGE_SOURCE_MAP.read_text(encoding="utf-8")
+for forbidden in (
+    "scan-copy memory has exactly 3 slots",
+    "Copies cannot themselves be scanned",
+    "once before being Marked",
+    "3 scan/copy slots",
+):
+    if forbidden in final_knowledge or forbidden in final_source_map:
+        raise RuntimeError("PR3 stale Omnivault knowledge survived final layer: " + forbidden)
+for marker in (
+    "Storage never increases authoritative item quantity.",
+    "Scan, Copy, item creation, duplicate creation, Marked and Upgrade are retired.",
+    "No Scan/Copy/item creation/Marked/Upgrade",
+):
+    if marker not in final_knowledge + "\n" + final_source_map:
+        raise RuntimeError("PR3 current Omnivault knowledge marker missing: " + marker)
+
+print("PR3 Omnivault knowledge verified: storage/restore only; Scan/Copy/item creation removed from packaged GM knowledge.")
