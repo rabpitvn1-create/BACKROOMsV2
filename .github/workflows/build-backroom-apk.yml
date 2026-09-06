@@ -26,6 +26,9 @@ jobs:
       GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
       GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
       GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -42,6 +45,7 @@ jobs:
           test -s android-apk/patch-mobile-swipe-ui-final.py
           test -s android-apk/patch-pr3-layout-hotfix.py
           test -s android-apk/patch-level-transition-final.py
+          test -s android-apk/patch-haiku-provider-final.py
           test ! -e android-apk/patch-luna-text.py
           test ! -e android-apk/patch-luna-model-failover-final.py
           test ! -e android-apk/patch-provider-deadline-final.py
@@ -50,8 +54,8 @@ jobs:
       - name: Validate Game Master configuration
         run: |
           set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
-            test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
+          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5 HAIKU_API HAIKU_BASE_URL HAIKU_MODEL; do
+            test -n "${!name:-}" || (echo "Missing Game Master configuration: $name" && exit 1)
           done
 
       - uses: actions/setup-python@v5
@@ -83,7 +87,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-haiku-provider-final.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -91,6 +95,14 @@ jobs:
           git diff --check
           ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'BuildConfig.HAIKU_API' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'BuildConfig.HAIKU_BASE_URL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'BuildConfig.HAIKU_MODEL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'private String haikuText' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'parseModelJson(auditText(prompt, excludedWorker))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
+          grep -q 'buildConfigField "String", "HAIKU_BASE_URL"' android-apk/app/build.gradle
+          grep -q 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
           grep -q 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
