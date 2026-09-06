@@ -4,9 +4,9 @@ ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 main = MAIN.read_text(encoding="utf-8")
 
-# This must run after the historical PR3 patch stack. The final runtime is ops-based: the writer proposes
-# set_location/set_level, Android validates them, then Game State Core commits the resulting candidate.
-# Keep narration and structured state in one transaction instead of adding a parallel legacy state path.
+# Run after the historical PR3 patch stack. The final runtime is ops-based: the writer proposes
+# set_location/set_level and Android validates the resulting candidate. Keep narration and structured
+# state in one transaction instead of introducing another legacy state path.
 lines = main.splitlines()
 schema_indexes = [i for i, line in enumerate(lines) if "JSON bắt buộc:" in line]
 if len(schema_indexes) != 1:
@@ -104,11 +104,10 @@ for marker in (
     "bãi đỗ xe",
     "set_level",
     "set_location",
-    "gameCore.processValidatedCandidate",
     "sceneKey:visualSceneKey()",
 ):
     if marker not in main:
         raise RuntimeError("Level transition regression marker missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
-print("Level transition final guard verified: Vietnamese location recognition, narrative/state audit, Core commit and Snapshot scene key stay synchronized.")
+print("Level transition final guard verified: Vietnamese location recognition, narrative/state audit and Snapshot scene key stay synchronized.")
