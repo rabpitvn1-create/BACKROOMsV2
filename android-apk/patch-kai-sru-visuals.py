@@ -34,10 +34,14 @@ if count != 1:
     raise RuntimeError(f"Kai Entity overlay switch anchor: expected exactly 1 match, found {count}")
 text = text.replace(old, new, 1)
 
+# The default Kai overlay may be rewritten by later Snapshot/MadGod composition patches, so
+# validate its packaged asset separately rather than requiring one brittle literal URI here.
+# This finalizer only owns the temporary Entity-encounter swap and restoration of whatever
+# authoritative base overlay is already selected by the existing runtime.
 for marker in [
-    "file:///android_asset/kai_snapshot_overlay.png",
     "file:///android_asset/kai_entity_overlay.png",
     "box.querySelector('.snapshot-character')",
+    "kai.dataset.kaiBaseSrc",
     "function activeEntityKey()",
     "window.backroomEntityOverlay=function(payload)",
 ]:
@@ -45,4 +49,4 @@ for marker in [
         raise RuntimeError(f"Kai SRU runtime marker missing: {marker}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Kai SRU visuals applied: new normal overlay/avatar and dedicated armed overlay while an Entity is present.")
+print("Kai SRU visuals applied: packaged default overlay/avatar plus dedicated armed overlay while an Entity is present.")
