@@ -4,4 +4,6 @@ Backroom 1.1.65 Debug
 - Thay overlay Snapshot mặc định của Kai bằng Kai_SRU mới.
 - Thay avatar Kai trong giao diện nhân vật bằng SRU_AVATAR mới.
 - Thêm overlay riêng khi Kai đang trực tiếp gặp/đối đầu Entity: Kai_SRU2 với tư thế ngắm súng.
-- Giữ nguyên Entity local asset runtime, Game State Core, gameplay/canon và pool 5 Gemini của 1.1.64.
+- Đồng bộ trang bị hiển thị trong Character Detail theo Character Codex hiện hành: Kai dùng SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring; Syvial dùng GodKiller + Lucifer Armor; Iris dùng IVORY & EBONY + Project 07; Lucia hiển thị M4A1 cá nhân hóa, súng ngắn màu đen chưa khóa model, dao găm chiến đấu và đồng hồ định vị quân sự.
+- Giữ các legacy equipment ID/stat nội bộ của Kai để tương thích save/gameplay cũ, nhưng không còn hiển thị Demon Jaw Mask, Talon Gauntlets và Phantom Greaves như ba món trang bị canon độc lập vì chức năng của chúng đã được tích hợp vào SRU-MK20.
+- Giữ nguyên Entity local asset runtime, Game State Core, gameplay/canon và pool 5 Gemini của 1.1.64 ngoài các thay đổi hiển thị/canon nêu trên.
