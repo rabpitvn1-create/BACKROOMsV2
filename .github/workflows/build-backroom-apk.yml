@@ -38,6 +38,7 @@ jobs:
           test -s android-apk/RELEASE_NOTES_1.1.65.txt
           test -s android-apk/sync-kai-sru-assets.py
           test -s android-apk/patch-kai-sru-visuals.py
+          test -s android-apk/patch-mobile-swipe-ui.py
           test ! -e android-apk/patch-luna-text.py
           test ! -e android-apk/patch-luna-model-failover-final.py
           test ! -e android-apk/patch-provider-deadline-final.py
@@ -79,7 +80,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -88,6 +89,16 @@ jobs:
           ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
+          grep -q 'ui/action_search.webp' android-apk/app/src/main/assets/index.html
+          grep -q 'ui/action_execute.webp' android-apk/app/src/main/assets/index.html
+          grep -q 'ui/action_explore.webp' android-apk/app/src/main/assets/index.html
+          ! grep -q '<svg class="action-icon' android-apk/app/src/main/assets/index.html
+          test -s android-apk/app/src/main/assets/ui/action_search.webp
+          test -s android-apk/app/src/main/assets/ui/action_execute.webp
+          test -s android-apk/app/src/main/assets/ui/action_explore.webp
 
       - uses: actions/setup-java@v5
         with:
@@ -124,6 +135,9 @@ jobs:
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_snapshot_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_entity_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/avatars/kai_avatar.png'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_search.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_execute.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ui/action_explore.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
