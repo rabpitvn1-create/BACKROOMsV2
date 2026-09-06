@@ -4,8 +4,6 @@ ROOT = Path(__file__).resolve().parent
 ASSETS = ROOT / "app/src/main/assets"
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 INDEX = ASSETS / "index.html"
-EQUIPMENT_SYSTEM = ROOT / "app/src/main/java/com/rabpit/backroom/core/CharacterEquipmentSystem.kt"
-GAME_STATE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameState.kt"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -61,50 +59,10 @@ for marker in [
 
 MAIN.write_text(text, encoding="utf-8")
 
-# Keep legacy item IDs and combat numbers for save/gameplay compatibility, but expose the
-# current Character Codex names/types through the projection used by Character Detail.
-system = EQUIPMENT_SYSTEM.read_text(encoding="utf-8")
-system = replace_once(
-    system,
-    'id = KAI_WHITE_WRAITH_ID, name = "White Wraith Magnum", type = "MAGNUM", primarySlot = EquipmentSlot.WEAPON,',
-    'id = KAI_WHITE_WRAITH_ID, name = "SRU Assault Rifle MK19", type = "ASSAULT RIFLE", primarySlot = EquipmentSlot.WEAPON,',
-    "Kai current weapon display metadata",
-)
-system = replace_once(
-    system,
-    'id = KAI_BLACKBLOOD_ARMOR_ID, name = "Blackblood Armor", type = "ARMOR", primarySlot = EquipmentSlot.ARMOR,',
-    'id = KAI_BLACKBLOOD_ARMOR_ID, name = "SRU-MK20", type = "POWERED ARMOR", primarySlot = EquipmentSlot.ARMOR,',
-    "Kai current armor display metadata",
-)
-system = replace_once(
-    system,
-    'id = IRIS_RECON_FRAME_ID, name = "Blackblood Recon Frame R03", type = "RECON ARMOR", primarySlot = EquipmentSlot.ARMOR,',
-    'id = IRIS_RECON_FRAME_ID, name = "Project 07", type = "COMBAT ARMOR", primarySlot = EquipmentSlot.ARMOR,',
-    "Iris current armor display metadata",
-)
-EQUIPMENT_SYSTEM.write_text(system, encoding="utf-8")
-
-# The old constants are still referenced by migration/save compatibility code. Change only the
-# human-facing names, never the stable legacy IDs or slot behavior.
-game_state = GAME_STATE.read_text(encoding="utf-8")
-game_state = replace_once(
-    game_state,
-    'const val WEAPON_NAME = "W.W Magnum"',
-    'const val WEAPON_NAME = "SRU Assault Rifle MK19"',
-    "Kai starting weapon display name",
-)
-game_state = replace_once(
-    game_state,
-    'const val ARMOR_NAME = "Blackblood Armor & linked modules"',
-    'const val ARMOR_NAME = "SRU-MK20"',
-    "Kai starting armor display name",
-)
-GAME_STATE.write_text(game_state, encoding="utf-8")
-
-# Final Character Detail display pass. Runtime equipment remains authoritative when a slot is
-# actually occupied; canon defaults only fill missing slots. Kai's retired standalone mask,
-# gauntlets and greaves remain internal for old-save/stat compatibility but are no longer shown
-# as separate current-canon equipment because their functions are integrated into SRU-MK20.
+# Character Detail is the only layer changed below. Legacy equipment IDs, gameplay stats,
+# save migration, combat math and slot ownership remain untouched. This matters because the
+# old Kai item IDs are still part of save compatibility even though the current Character Codex
+# presents SRU-MK20/MK19 and integrates the old mask/gauntlet/greave functions into the armor.
 index = INDEX.read_text(encoding="utf-8")
 
 old_static = '<span>W.W Magnum</span><span>Blackblood Armor & linked modules</span><span>Omnivault Ring</span>'
@@ -130,13 +88,33 @@ helpers = r'''  function canonicalCharacterKey(member){
     kai:[['weapon','SRU Assault Rifle MK19'],['armor','SRU-MK20'],['ring','Omnivault Ring']],
     syvial:[['weapon','GodKiller'],['armor','Lucifer Armor']],
     iris:[['weapon','IVORY & EBONY'],['armor','Project 07']],
-    lucia:[['weapon','M4A1 cá nhân hóa'],['sidearm','Súng ngắn màu đen (model chưa khóa)'],['melee','Dao găm chiến đấu'],['watch','Đồng hồ định vị quân sự']]
+    lucia:[['weapon','M4A1 cá nhân hóa'],['sidearm','Súng ngắn màu đen (model chưa khóa)'],['blade','Dao găm chiến đấu'],['wrist','Đồng hồ định vị quân sự']]
   };
   function canonicalFallbackEquipment(member){return canonicalEquipmentDefaults[canonicalCharacterKey(member)]||[]}
-  function hiddenIntegratedKaiItem(member,item){
+  function integratedKaiLegacyItem(member,item){
     if(canonicalCharacterKey(member)!=='kai'||!item)return false;
     const raw=(String(item.id||'')+' '+String(item.name||'')).toLowerCase();
     return raw.includes('demon-jaw')||raw.includes('demon jaw')||raw.includes('talon-gaunt')||raw.includes('talon gaunt')||raw.includes('phantom-greave')||raw.includes('phantom greave');
+  }
+  function canonicalDisplayAlias(member,item){
+    if(!item)return null;
+    const who=canonicalCharacterKey(member);
+    const raw=(String(item.id||'')+' '+String(item.name||'')).toLocaleLowerCase('vi-VN');
+    if(who==='kai'){
+      if(raw.includes('white-wraith')||raw.includes('white wraith')||raw.includes('w.w magnum'))return 'SRU Assault Rifle MK19';
+      if(raw.includes('blackblood')||raw.includes('black blood'))return 'SRU-MK20';
+      if(raw.includes('omnivault')||raw.includes('vạn tàng')||raw.includes('van tang'))return 'Omnivault Ring';
+    }
+    if(who==='iris'){
+      if(raw.includes('ivory')&&raw.includes('ebony'))return 'IVORY & EBONY';
+      if(raw.includes('recon-frame')||raw.includes('recon frame')||raw.includes('blackblood recon'))return 'Project 07';
+    }
+    if(who==='lucia'){
+      if(raw.includes('m4a1'))return 'M4A1 cá nhân hóa';
+      if(raw.includes('combat-knife')||raw.includes('dao găm'))return 'Dao găm chiến đấu';
+      if(raw.includes('military-watch')||raw.includes('đồng hồ'))return 'Đồng hồ định vị quân sự';
+    }
+    return null;
   }
   function displayOnlyEquipmentCard(name,slot){
     return '<div class="equipment-card canon-display-only"><div class="equipment-card-icon">EQ</div><div class="equipment-card-main"><strong>'+e(name)+'</strong><small>'+e(String(slot).toUpperCase())+'</small></div><div class="equipment-badges"><span class="equipment-badge equipped">CANON</span></div></div>';
@@ -147,11 +125,16 @@ if "function canonicalFallbackEquipment(member)" not in index:
         raise RuntimeError("Canonical Character Detail helper anchor missing")
     index = index.replace(helper_anchor, helper_anchor + helpers, 1)
 
-old_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const rendered=[];Object.keys(eq).sort().forEach(slot=>{const id=eq[slot],item=details.find(x=>String(x.id)===String(id))||itemById(member,id);if(item)rendered.push(card(item,slot))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){inventory.innerHTML=(member.inventory||[]).map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
-new_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const rendered=[],represented=new Set();Object.keys(eq).sort().forEach(slot=>{const id=eq[slot],item=details.find(x=>String(x.id)===String(id))||itemById(member,id);if(item&&hiddenIntegratedKaiItem(member,item))return;if(item)rendered.push(card(item,slot));else rendered.push(displayOnlyEquipmentCard(String(id),slot));represented.add(String(slot))});canonicalFallbackEquipment(member).forEach(x=>{const slot=String(x[0]);if(!represented.has(slot)){rendered.push(displayOnlyEquipmentCard(x[1],slot));represented.add(slot)}});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){const visible=(member.inventory||[]).filter(x=>!hiddenIntegratedKaiItem(member,x));inventory.innerHTML=visible.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
+# The final capacity patch groups multi-slot equipment before this finalizer runs. Patch that
+# authoritative final renderer, not the earlier per-slot renderer. Existing dynamic equipment
+# such as MadGod still renders normally; only legacy items whose display identity is superseded
+# by current canon are replaced with non-clickable canon cards so stale legacy abilities are not
+# exposed under a new name.
+old_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[];grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item)rendered.push(card(item,slots.join(' / ')))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){inventory.innerHTML=(member.inventory||[]).map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
+new_equipment_render = "    const eq=member.equipment||{},details=member.equipmentItems||[];\n    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[],represented=new Set();grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item&&integratedKaiLegacyItem(member,item))return;const slotLabel=slots.join(' / ');const alias=canonicalDisplayAlias(member,item);if(alias)rendered.push(displayOnlyEquipmentCard(alias,slotLabel));else if(item)rendered.push(card(item,slotLabel));else rendered.push(displayOnlyEquipmentCard(id,slotLabel));slots.forEach(slot=>represented.add(String(slot)))});canonicalFallbackEquipment(member).forEach(x=>{const slot=String(x[0]);if(!represented.has(slot)){rendered.push(displayOnlyEquipmentCard(x[1],slot));represented.add(slot)}});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n    if(inventory){const visible=(member.inventory||[]).filter(x=>!integratedKaiLegacyItem(member,x));inventory.innerHTML=visible.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
 if new_equipment_render not in index:
     if old_equipment_render not in index:
-        raise RuntimeError("Rich Character Detail equipment renderer anchor missing")
+        raise RuntimeError("Final grouped Character Detail equipment renderer anchor missing")
     index = index.replace(old_equipment_render, new_equipment_render, 1)
 
 for marker in [
@@ -166,10 +149,11 @@ for marker in [
     "Súng ngắn màu đen (model chưa khóa)",
     "Dao găm chiến đấu",
     "Đồng hồ định vị quân sự",
-    "function hiddenIntegratedKaiItem(member,item)",
+    "function integratedKaiLegacyItem(member,item)",
+    "const grouped=new Map();Object.keys(eq).sort()",
 ]:
-    if marker not in index + system + game_state:
+    if marker not in index:
         raise RuntimeError(f"Canonical equipment display marker missing: {marker}")
 
 INDEX.write_text(index, encoding="utf-8")
-print("Kai SRU visuals and current-canon equipment display applied for Kai, Syvial, Iris and Lucia.")
+print("Kai SRU visuals and current-canon equipment display applied for Kai, Syvial, Iris and Lucia without changing gameplay IDs/stats.")
