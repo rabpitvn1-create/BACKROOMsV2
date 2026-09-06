@@ -238,10 +238,13 @@ new_generate = r'''  private String generateText(String prompt) throws Exception
     throw geminiError;
   }
 '''
-pattern = r'  private String generateText\(String prompt\) throws Exception \{.*?\n  \}\n(?=\n  private JSONObject parseModelJson)'
-text, count = re.subn(pattern, lambda _: new_generate.rstrip("\n"), text, count=1, flags=re.S)
-if count != 1:
-    raise RuntimeError(f"Haiku generateText integration: expected 1 method, found {count}")
+generate_start = text.find(generate_anchor)
+if generate_start < 0:
+    raise RuntimeError("Haiku generateText method start missing")
+parse_start = text.find("\n  private JSONObject parseModelJson", generate_start)
+if parse_start < 0:
+    raise RuntimeError("Haiku parseModelJson boundary missing")
+text = text[:generate_start] + new_generate.rstrip("\n") + text[parse_start:]
 
 old_audit_call = '    JSONObject result = parseModelJson(geminiAuditText(prompt, excludedWorker));\n'
 new_audit_call = '    JSONObject result = parseModelJson(auditText(prompt, excludedWorker));\n'
