@@ -11,17 +11,15 @@ object InventoryV4State {
   fun normalize(state: GameState): GameState {
     val inventories = state.inventories.mapValues { (_, inventory) -> normalizeInventory(inventory) }
     val stored = normalizeItems(state.omnivault.storedItems.values)
-    val scans = state.omnivault.scanSlots.mapNotNull { slot ->
-      if (ItemCatalog.isLegacyResidual(slot.templateItem)) null
-      else slot.copy(templateItem = normalizeItem(slot.templateItem))
-    }
-    val marked = state.omnivault.markedSourceIds.map { id ->
-      val definition = ItemCatalog.resolve(id)
-      definition?.id ?: id.replace(Regex(":(?:full|low|empty)$", RegexOption.IGNORE_CASE), "")
-    }.toSet()
     return state.copy(
       inventories = inventories,
-      omnivault = state.omnivault.copy(storedItems = stored, scanSlots = scans, markedSourceIds = marked)
+      omnivault = state.omnivault.copy(
+        storedItems = stored,
+        // Omnivault canon no longer has Scan/Copy/Marked. Keep legacy fields only in the
+        // save schema for backward decoding, but purge their runtime contents on normalization.
+        scanSlots = emptyList(),
+        markedSourceIds = emptySet()
+      )
     )
   }
 
@@ -44,7 +42,10 @@ object InventoryV4State {
     return if (definition != null) ItemCatalog.canonicalize(definition, item)
     else item.copy(
       contentState = ContentState.NONE,
-      metadata = item.metadata - setOf("remainingContent", "contentAmount", "contentPercent", "contentState", "containerPersistent")
+      metadata = item.metadata - setOf(
+        "remainingContent", "contentAmount", "contentPercent", "contentState", "containerPersistent",
+        "omnivaultCopyCount", "scanSlot", "markedSource"
+      )
     )
   }
 }
