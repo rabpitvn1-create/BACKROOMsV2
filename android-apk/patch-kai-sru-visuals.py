@@ -119,6 +119,10 @@ helpers = r'''  function canonicalCharacterKey(member){
   function displayOnlyEquipmentCard(name,slot){
     return '<div class="equipment-card canon-display-only"><div class="equipment-card-icon">EQ</div><div class="equipment-card-main"><strong>'+e(name)+'</strong><small>'+e(String(slot).toUpperCase())+'</small></div><div class="equipment-badges"><span class="equipment-badge equipped">CANON</span></div></div>';
   }
+  function displayOnlyInventoryCard(name,item){
+    const qty=Math.max(1,Number(item&&item.quantity)||1);
+    return '<div class="equipment-card canon-display-only"><div class="equipment-card-icon">IN</div><div class="equipment-card-main"><strong>'+e(name)+'</strong><small>INVENTORY · x'+e(qty)+'</small></div><div class="equipment-badges"><span class="equipment-badge">CANON</span></div></div>';
+  }
 '''
 if "function canonicalFallbackEquipment(member)" not in index:
     if helper_anchor not in index:
@@ -137,10 +141,11 @@ if new_grouped_renderer not in index:
         raise RuntimeError("Final grouped Character Detail equipment renderer anchor missing")
     index = index.replace(old_grouped_renderer, new_grouped_renderer, 1)
 
-# New Game/capacity finalization already hides equipped items from Inventory. Preserve that rule
-# and additionally prevent retired Kai submodules from reappearing as carried items in an old save.
+# New Game/capacity finalization already hides equipped items from Inventory. Preserve that rule,
+# prevent retired Kai submodules from reappearing in old saves, and alias any unequipped legacy
+# item to its current-canon display name without exposing stale legacy detail sheets.
 old_visible_inventory = "    const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true);if(inventory){inventory.innerHTML=visibleInventory.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
-new_visible_inventory = "    const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true&&!integratedKaiLegacyItem(member,x));if(inventory){inventory.innerHTML=visibleInventory.map(x=>card(x,null)).join('')||'<span>Trống.</span>'}\n"
+new_visible_inventory = "    const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true&&!integratedKaiLegacyItem(member,x));if(inventory){inventory.innerHTML=visibleInventory.map(x=>{const alias=canonicalDisplayAlias(member,x);return alias?displayOnlyInventoryCard(alias,x):card(x,null)}).join('')||'<span>Trống.</span>'}\n"
 if new_visible_inventory not in index:
     if old_visible_inventory not in index:
         raise RuntimeError("Final Character Detail inventory-capacity renderer anchor missing")
@@ -159,8 +164,9 @@ for marker in [
     "Dao găm chiến đấu",
     "Đồng hồ định vị quân sự",
     "function integratedKaiLegacyItem(member,item)",
+    "function displayOnlyInventoryCard(name,item)",
     "const grouped=new Map();Object.keys(eq).sort()",
-    "x&&x.equipped!==true&&!integratedKaiLegacyItem(member,x)",
+    "alias?displayOnlyInventoryCard(alias,x):card(x,null)",
 ]:
     if marker not in index:
         raise RuntimeError(f"Canonical equipment display marker missing: {marker}")
