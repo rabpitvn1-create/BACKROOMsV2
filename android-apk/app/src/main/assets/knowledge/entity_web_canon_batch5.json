@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "policy": "WEB_REFERENCE_ONLY: records enrich Entity keys already present in the game; project hard-lock/state authority wins on conflict.",
+  "records": [
+    {
+      "id": "WEB.ENTITY.HOSTILE_FACELING",
+      "domain": "ENTITY",
+      "kind": "web-reference",
+      "targetEntityKey": "hostile_faceling",
+      "visual": "Thị giác: Hostile Faceling trong game phải giữ nền tảng hình thể của Faceling thường: một humanoid gần như con người về tỷ lệ cơ thể, tóc, da, quần áo, giới tính biểu hiện, vóc dáng và độ tuổi bề ngoài đều có thể biến thiên mạnh giữa từng cá thể. Dấu hiệu nhận dạng quan trọng nhất của dạng phổ biến là khuôn mặt thiếu các đặc điểm mặt người: không có mắt, mũi, miệng hay tai theo cấu trúc hoàn chỉnh, khiến bề mặt vùng mặt trông trống và vô diện trong khi phần còn lại vẫn dễ bị nhầm với một người bình thường từ xa. Không khóa một màu da, kiểu tóc, bộ quần áo hay giới tính duy nhất cho sprite/cảnh vì nguồn xác nhận Facelings có phổ ngoại hình rộng. Nội tạng của chúng có thể thiếu hoặc kém phát triển, nhưng đây không phải chi tiết phải phô ra ở một cá thể nguyên vẹn. Một số Faceling tiến hóa có thể xuất hiện các cơ quan mặt hoàn chỉnh hơn nhưng dị dạng: mắt nhỏ và nguyên thủy, lỗ mũi có thể dính một phần, miệng thiếu môi và thường há do hàm kém phát triển, tai bẹt; tuy nhiên không được áp các đặc điểm tiến hóa này lên mọi Hostile Faceling. Khi một cá thể trở nên hung hãn, sự đe dọa nên thể hiện chủ yếu qua tư thế và hành động: lao tới, vung tay, đánh, cào, phá đồ hoặc bảo vệ Faceling khác, thay vì tự biến đổi thành quái vật có móng vuốt, răng nanh, mắt phát sáng hay tăng cơ bắp. Child Faceling có thể nhỏ theo vóc trẻ em và khi mất kiểm soát thường đánh, cào dữ dội; Adult Faceling vẫn mang vóc người trưởng thành. Snapshot cần ưu tiên cảm giác một con người gần hoàn chỉnh nhưng khuôn mặt bị thiếu, với cơn giận biểu hiện qua ngôn ngữ cơ thể chứ không qua nét mặt không tồn tại.",
+      "canon": "Canon web: phần lớn Facelings vốn docile và bắt chước các vai trò, thói quen, văn hóa và tương tác xã hội của con người. Chúng dễ bị kích động bởi xáo trộn hoặc hành vi gây hấn; khi nổi giận có thể tấn công vật lý và phá môi trường. Chúng phản ứng đặc biệt mạnh khi thấy một Faceling khác bị cố ý làm hại, nhất là trẻ nhỏ hoặc cá thể có quan hệ xã hội gần. Child Facelings có khả năng điều tiết cảm xúc kém hơn và có thể đánh, cào khi bùng phát. Vì game key là hostile_faceling, chỉ dùng trạng thái thù địch khi runtime/encounter đã xác lập; web canon không có nghĩa mọi Faceling đều hostile.",
+      "source": {
+        "document": "https://backrooms-wiki.wikidot.com/entity-9",
+        "anchor": "Description; Faceling Types; Biology; Behaviour"
+      },
+      "authority": "WEB_REFERENCE_CANON",
+      "mutability": "REFERENCE",
+      "priority": 76,
+      "tags": ["hostile_faceling", "faceling", "facelings", "entity 9", "web-canon"],
+      "references": ["ENTITY.GLOBAL_HARD_LOCK"],
+      "affordances": ["direct_threat", "visual_reference"]
+    }
+  ]
+}
