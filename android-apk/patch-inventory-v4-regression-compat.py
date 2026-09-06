@@ -43,7 +43,7 @@ class PhysiologyItemEffectTest {
     val result = StateReducer.execute(
       state,
       ItemCommand(
-        commandId = "grant-$itemId-${state.executedCommandIds.size}",
+        commandId = "grant-$itemId",
         turnId = "TURN_1",
         actorId = KAI_ID,
         source = CommandSource.SYSTEM,
