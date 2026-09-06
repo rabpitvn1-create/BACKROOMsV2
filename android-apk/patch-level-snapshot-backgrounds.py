@@ -8,12 +8,22 @@ main = MAIN.read_text(encoding="utf-8")
 # Previously the required Gemini JSON omitted `level`, and MainActivity copied only title/location
 # before handing the candidate to Game State Core. The GM could therefore describe a completed
 # Level transition while the persisted state (and Snapshot input) remained on the previous Level.
-prompt_old = '"JSON bắt buộc: {\\"reply\\":\\"phản hồi Game Master\\",\\"title\\":\\"giữ nguyên hoặc cập nhật\\",\\"location\\":\\"vị trí sau lượt\\",\\"player\\":{},\\"party\\":[],\\"inventory\\":[],\\"flags\\":{}}";'
-prompt_new = '"Nếu phản hồi xác nhận môi trường đã chuyển hẳn sang Level khác, phải đồng bộ title, location và level trong cùng JSON; không được mô tả đã hoàn tất chuyển Level nhưng giữ state ở Level cũ. " +\n            "JSON bắt buộc: {\\"reply\\":\\"phản hồi Game Master\\",\\"title\\":\\"giữ nguyên hoặc cập nhật\\",\\"location\\":\\"vị trí sau lượt\\",\\"player\\":{},\\"party\\":[],\\"inventory\\":[],\\"flags\\":{},\\"level\\":{\\"number\\":0,\\"name\\":\\"Level 0\\"}}";'
-count = main.count(prompt_old)
-if count != 1:
-    raise RuntimeError(f"Level transition GM schema anchor: expected 1 match, found {count}")
-main = main.replace(prompt_old, prompt_new, 1)
+lines = main.splitlines()
+schema_indexes = [index for index, line in enumerate(lines) if "JSON bắt buộc:" in line]
+if len(schema_indexes) != 1:
+    raise RuntimeError(f"Level transition GM schema anchor: expected 1 line, found {len(schema_indexes)}")
+schema_index = schema_indexes[0]
+schema_line = lines[schema_index]
+schema_tail = r'\"flags\":{}}";'
+schema_replacement = r'\"flags\":{},\"level\":{\"number\":0,\"name\":\"Level 0\"}}";'
+if schema_tail not in schema_line:
+    raise RuntimeError("Level transition GM schema flags tail not found")
+lines[schema_index] = schema_line.replace(schema_tail, schema_replacement, 1)
+lines.insert(
+    schema_index,
+    '            "Nếu phản hồi xác nhận môi trường đã chuyển hẳn sang Level khác, phải đồng bộ title, location và level trong cùng JSON; không được mô tả đã hoàn tất chuyển Level nhưng giữ state ở Level cũ. " +',
+)
+main = "\n".join(lines) + ("\n" if main.endswith("\n") else "")
 
 bridge_old = '''          String location = generated.optString("location", "").trim();
           if (!title.isEmpty()) state.put("title", title);
@@ -48,7 +58,7 @@ main = main.replace(old_css, new_css, 1)
 
 for marker in (
     "LEVEL_TRANSITION_STATE_SYNC",
-    '\\"level\\":{\\"number\\":0,\\"name\\":\\"Level 0\\"}',
+    r'\"level\":{\"number\":0,\"name\":\"Level 0\"}',
     "var explicit=Number(state&&state.level&&state.level.number)",
 ):
     if marker not in main:
