@@ -22,23 +22,21 @@ for name, encoded in SPRITES.items():
 
 main = MAIN.read_text(encoding="utf-8")
 
-# The prompt is composed by an earlier runtime patch. Inject after the first prompt line rather
-# than depending on the exact full line, because downstream provider hardening may extend it.
+# patch-knowledge-context-builder.py is the late authority that owns writerPrompt(). Patch that
+# final prompt instead of an earlier prompt string that no longer survives the composed runtime.
+writer_anchor = '    return "Bạn là Game Master của text game Backrooms. Trả DUY NHẤT JSON hợp lệ, không markdown. " +\n'
+writer_locked = (
+    writer_anchor
+    + '      "PLAYER ADDRESS HARD LOCK: trong reply, mọi mô tả hành động, trạng thái hoặc phản hồi trực tiếp tới nhân vật do người dùng điều khiển phải dùng ngôi thứ hai và chỉ gọi là Bạn. " +\n'
+    + '      "Không dùng Kai, Kai Akechi, Player, người chơi, hắn, anh, cậu hay đại từ khác để thay cho Bạn khi chủ thể là người dùng. Tên Kai chỉ được dùng trong dữ liệu/state/canon nội bộ, không dùng làm cách gọi người dùng trong reply. " +\n'
+)
 if "PLAYER ADDRESS HARD LOCK:" not in main:
-    prompt_start = main.find('String prompt = "Bạn là Game Master duy nhất')
-    if prompt_start < 0:
-        prompt_start = main.find('String prompt = "Bạn là Game Master')
-    if prompt_start < 0:
-        raise RuntimeError("Final GM prompt start not found")
-    prompt_line_end = main.find("\n", prompt_start)
-    if prompt_line_end < 0:
-        raise RuntimeError("Final GM prompt line end not found")
-    prompt_rule = (
-        '            "PLAYER ADDRESS HARD LOCK: trong trường reply, mọi mô tả hành động, trạng thái hoặc phản hồi trực tiếp tới nhân vật do người dùng điều khiển phải viết ở ngôi thứ hai và chỉ gọi là Bạn. '
-        'Không dùng Kai, Kai Akechi, Player, người chơi, hắn, anh, cậu hoặc đại từ khác để thay cho Bạn. Tên Kai chỉ được dùng trong dữ liệu state nội bộ, không dùng để xưng hô hay làm chủ ngữ đại diện người dùng trong reply. " +\n'
-    )
-    main = main[:prompt_line_end + 1] + prompt_rule + main[prompt_line_end + 1:]
+    if writer_anchor not in main:
+        raise RuntimeError("Final writerPrompt anchor not found")
+    main = main.replace(writer_anchor, writer_locked, 1)
 
+# Output normalization is deliberately narrow: replace only unambiguous player aliases. Broadly
+# replacing pronouns such as hắn/anh/cậu here would corrupt dialogue that legitimately refers to NPCs.
 normalize_helper = r'''  private String normalizePlayerAddress(String reply) {
     if (reply == null) return "";
     String normalized = reply;
@@ -50,7 +48,7 @@ normalize_helper = r'''  private String normalizePlayerAddress(String reply) {
     return normalized;
   }
 
-'''.replace('\\"', '"')
+'''
 bridge_anchor = "  private class GameBridge {\n"
 if "private String normalizePlayerAddress(String reply)" not in main:
     if bridge_anchor not in main:
