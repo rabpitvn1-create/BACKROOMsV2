@@ -30,23 +30,14 @@ object InventoryV4State {
     val result = linkedMapOf<String, ItemStack>()
     items.forEach { raw ->
       if (ItemCatalog.isLegacyResidual(raw)) return@forEach
-      val item = normalizeItem(raw)
+      // ItemCatalog is the sole Inventory whitelist. Anything retired from the catalog, including
+      // old ammo, legacy Kai equipment and MadGod items, is dropped during load normalization.
+      val definition = ItemCatalog.resolveLegacy(raw) ?: return@forEach
+      val item = ItemCatalog.canonicalize(definition, raw)
       val old = result[item.itemId]
       result[item.itemId] = if (old == null) item else old.copy(quantity = old.quantity + item.quantity)
     }
     return result
-  }
-
-  private fun normalizeItem(item: ItemStack): ItemStack {
-    val definition = ItemCatalog.resolveLegacy(item)
-    return if (definition != null) ItemCatalog.canonicalize(definition, item)
-    else item.copy(
-      contentState = ContentState.NONE,
-      metadata = item.metadata - setOf(
-        "remainingContent", "contentAmount", "contentPercent", "contentState", "containerPersistent",
-        "omnivaultCopyCount", "scanSlot", "markedSource"
-      )
-    )
   }
 }
 

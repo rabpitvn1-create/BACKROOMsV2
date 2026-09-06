@@ -18,6 +18,7 @@ object ItemContentRules {
   fun hasForbiddenPreciseAmount(text: String): Boolean = forbiddenPreciseAmount.containsMatchIn(text)
 
   fun normalize(item: ItemStack): ItemStack {
+    HealingItems.normalize(item)?.let { return it }
     val profile = profileFor(item.name, item.archetypeId)
     if (profile == null) {
       return item.copy(contentState = ContentState.NONE, metadata = item.metadata - "remainingContent" - "contentAmount" - "contentPercent")
@@ -91,8 +92,6 @@ object ItemContentRules {
         ContentProfile("generic-container", "Hộp", "Hộp còn ít vật chứa", "Hộp rỗng")
       hint.contains("fuel-container") || n.contains("bình nhiên liệu") || n.contains("can nhiên liệu") ->
         ContentProfile("fuel-container", "Bình nhiên liệu", "Bình nhiên liệu còn ít", "Bình rỗng")
-      hint.contains("ammo-cartridge") || n.contains("viên đạn") || n.contains("vỏ đạn") ->
-        ContentProfile("ammo-cartridge", "Viên đạn", "Viên đạn", "Vỏ đạn", supportsLow = false)
       else -> null
     }
   }

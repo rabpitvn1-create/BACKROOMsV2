@@ -100,10 +100,10 @@ class PhysiologyItemEffectTest {
   }
 
   @Test fun catalogNonUsableItemRejectsWithoutMutation() {
-    val granted = grant(stateWithPhysiology(), "ammo-cartridge", "Viên đạn")
+    val granted = grant(stateWithPhysiology(), "electrical:charged-cell", "Pin tích điện")
     val before = granted.characters.getValue(KAI_ID).physiology
 
-    val result = use(granted, "use-ammo", "ammo-cartridge")
+    val result = use(granted, "use-charged-cell", "electrical:charged-cell")
 
     assertFalse(result.applied)
     assertEquals("item_use_not_supported", result.validation.reason)
@@ -228,6 +228,7 @@ combined = PHYS.read_text(encoding="utf-8") + "\n" + SPECIAL.read_text(encoding=
 for marker in (
     "waterEffectResetsOnlyWaterCounterAndConsumesWholeUnit",
     "catalogNonUsableItemRejectsWithoutMutation",
+    '"electrical:charged-cell", "Pin tích điện"',
     "catalogDefinitionOverridesUntrustedPhysiologyMetadata",
     'mapOf("almond-water" to ItemStack("almond-water", "Nước Hạnh Nhân", 19))',
     '"inventory_stack_limit"',
@@ -241,8 +242,9 @@ for stale in (
     "water-bottle:full",
     "food-container:full",
     "water-bottle:empty",
+    '"ammo-cartridge", "Viên đạn"',
 ):
     if stale in PHYS.read_text(encoding="utf-8"):
-        raise RuntimeError("Pre-V4 physiology fixture survived: " + stale)
+        raise RuntimeError("Pre-V4/retired physiology fixture survived: " + stale)
 
 print("Inventory V4 regression compatibility applied: canonical physiology fixtures and follower stack identity aligned.")
