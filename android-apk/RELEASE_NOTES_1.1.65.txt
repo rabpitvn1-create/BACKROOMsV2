@@ -1,0 +1,13 @@
+Backroom 1.1.65 Debug
+
+- Cập nhật bộ hình Kai SRU mới từ nguồn Google Drive được ghim SHA-256 và kiểm tra trước khi đóng gói APK.
+- Thay overlay Snapshot mặc định của Kai bằng Kai_SRU mới.
+- Thay avatar Kai trong giao diện nhân vật bằng SRU_AVATAR mới.
+- Thêm overlay riêng khi Kai đang trực tiếp gặp/đối đầu Entity: Kai_SRU2 với tư thế ngắm súng.
+- Đồng bộ trang bị hiển thị trong Character Detail theo Character Codex hiện hành: Kai dùng SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring; Syvial dùng GodKiller + Lucifer Armor; Iris dùng IVORY & EBONY + Project 07; Lucia hiển thị M4A1 cá nhân hóa, súng ngắn màu đen chưa khóa model, dao găm chiến đấu và đồng hồ định vị quân sự.
+- Giữ các legacy equipment ID/stat nội bộ của Kai để tương thích save/gameplay cũ, nhưng không còn hiển thị Demon Jaw Mask, Talon Gauntlets và Phantom Greaves như ba món trang bị canon độc lập vì chức năng của chúng đã được tích hợp vào SRU-MK20.
+- Chuẩn hóa lời GM hướng tới nhân vật do người dùng điều khiển: dùng ngôi thứ hai và gọi duy nhất là “Bạn”; prompt hard-lock và lớp chuẩn hóa đầu ra chặn các alias Kai/Kai Akechi/Player/người chơi trong reply.
+- Thiết kế lại giao diện theo mobile-first thành hai page vuốt ngang: PAGE 1 chứa Snapshot, bảng GM và thanh hành động; PAGE 2 chứa thông tin nhân vật, Save/Load và Party. Việc chuyển page chỉ di chuyển các DOM node hiện có, không reload trang và không reset gameplay state, Snapshot, inventory, party hay save.
+- Thu gọn header, bỏ padding/khung thừa hai cạnh màn hình và cho khu gameplay chiếm toàn bộ viewport; Snapshot dùng toàn chiều rộng, giữ tỷ lệ 16:9 và object-fit contain để không méo hoặc crop sai.
+- Thay icon SVG của ba hành động chính Tìm kiếm / Thực hiện / Khám phá bằng pixel sprite WebP nền trong suốt, kích thước và căn chỉnh đồng nhất.
+- Giữ nguyên Entity local asset runtime, Game State Core, gameplay/canon và pool 5 Gemini của 1.1.64 ngoài các thay đổi hiển thị/canon nêu trên.
