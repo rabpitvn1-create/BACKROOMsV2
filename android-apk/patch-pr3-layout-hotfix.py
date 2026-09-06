@@ -78,12 +78,15 @@ print("PR3 mobile + Entity overlay hotfix verified: Kai right shift, canonical E
 
 # Inventory V4 is deliberately the final gameplay/UI layer in PR #3. Earlier release patches still
 # generate legacy inventory/content structures, so prepare stable anchors against the final generated
-# sources, then apply the new authority contract after every historical mutation has finished.
+# sources, apply the authority contract after every historical mutation, then normalize obsolete
+# generated regression fixtures to the same catalog/whole-unit semantics.
 import runpy
 inventory_compat = ROOT / "patch-inventory-v4-anchor-compat.py"
 inventory_v4 = ROOT / "patch-inventory-v4-final.py"
-for required in (inventory_compat, inventory_v4):
+inventory_regression = ROOT / "patch-inventory-v4-regression-compat.py"
+for required in (inventory_compat, inventory_v4, inventory_regression):
     if not required.is_file():
         raise RuntimeError("Inventory V4 patch missing: " + required.name)
 runpy.run_path(str(inventory_compat), run_name="__main__")
 runpy.run_path(str(inventory_v4), run_name="__main__")
+runpy.run_path(str(inventory_regression), run_name="__main__")
