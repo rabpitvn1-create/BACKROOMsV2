@@ -19,6 +19,9 @@ data class ItemDefinition(
  *
  * Narrative nouns never become Items by themselves. A story/system reward must resolve here
  * before it can enter authoritative Inventory state.
+ *
+ * PR #04 intentionally keeps this catalog small. Equipment is a separate gameplay concern and
+ * retired/legacy equipment IDs are not Inventory Items.
  */
 object ItemCatalog {
   private val definitions = listOf(
@@ -27,166 +30,137 @@ object ItemCatalog {
       displayName = "Chai nước",
       aliases = setOf("chai nước", "water bottle", "nước đóng chai"),
       usable = true,
-      metadata = mapOf("consumable" to "true", "consumedOnUse" to "true", "physiologyEffect" to "WATER")
+      metadata = mapOf(
+        "itemCategory" to "drink",
+        "directUse" to "true",
+        "consumable" to "true",
+        "consumedOnUse" to "true",
+        "physiologyEffect" to "WATER",
+        "healHp" to "0",
+        "tags" to "water,hydration,survival"
+      )
     ),
     ItemDefinition(
       id = "food-container",
       displayName = "Hộp đồ hộp",
       aliases = setOf("hộp đồ hộp", "đồ hộp", "hộp thức ăn", "hộp đồ ăn", "canned food"),
       usable = true,
-      metadata = mapOf("consumable" to "true", "consumedOnUse" to "true", "physiologyEffect" to "FOOD")
+      metadata = mapOf(
+        "itemCategory" to "food",
+        "directUse" to "true",
+        "consumable" to "true",
+        "consumedOnUse" to "true",
+        "physiologyEffect" to "FOOD",
+        "healHp" to "0",
+        "tags" to "food,ration,hunger,survival"
+      )
     ),
     ItemDefinition(
       id = "almond-water",
       displayName = "Nước Hạnh Nhân",
       aliases = setOf("nước hạnh nhân", "almond water"),
       usable = true,
-      metadata = mapOf("consumable" to "true", "consumedOnUse" to "true", "physiologyEffect" to "WATER")
+      metadata = mapOf(
+        "itemCategory" to "drink",
+        "directUse" to "true",
+        "consumable" to "true",
+        "consumedOnUse" to "true",
+        "physiologyEffect" to "WATER",
+        "healHp" to "0",
+        "anomalous" to "true",
+        "tags" to "almond-water,hydration,anomalous,survival,alertness-support"
+      )
     ),
     ItemDefinition(
-      id = "medical:bandage",
-      displayName = "Băng gạc",
+      id = BANDAGE_ID,
+      displayName = HealingItems.BANDAGE_NAME,
       aliases = setOf("băng gạc", "băng", "bandage"),
       usable = true,
-      metadata = mapOf("consumable" to "true", "consumedOnUse" to "true", "itemCategory" to "medical")
+      metadata = mapOf(
+        "itemCategory" to "medical",
+        "directUse" to "true",
+        "consumable" to "true",
+        "consumedOnUse" to "true",
+        "healHp" to HealingItems.BANDAGE_HEAL_HP.toString(),
+        "dropRoll" to HealingItems.DROP_ROLL_KEY,
+        "tags" to "medical,bandage,wound,healing"
+      )
     ),
     ItemDefinition(
-      id = "medical:antiseptic",
-      displayName = "Thuốc sát trùng",
+      id = ANTISEPTIC_ID,
+      displayName = HealingItems.ANTISEPTIC_NAME,
       aliases = setOf("thuốc sát trùng", "thuốc sát khuẩn", "antiseptic"),
       usable = true,
-      metadata = mapOf("consumable" to "true", "consumedOnUse" to "true", "itemCategory" to "medical")
-    ),
-    ItemDefinition(
-      id = "ammo-cartridge",
-      displayName = "Viên đạn",
-      aliases = setOf("viên đạn", "đạn", "ammo", "cartridge"),
-      usable = false
+      metadata = mapOf(
+        "itemCategory" to "medical",
+        "directUse" to "true",
+        "consumable" to "true",
+        "consumedOnUse" to "true",
+        "healHp" to HealingItems.ANTISEPTIC_HEAL_HP.toString(),
+        "dropRoll" to HealingItems.DROP_ROLL_KEY,
+        "tags" to "medical,antiseptic,infection-control,healing"
+      )
     ),
     ItemDefinition(
       id = "fuel-container",
       displayName = "Bình nhiên liệu",
       aliases = setOf("bình nhiên liệu", "can nhiên liệu", "fuel container"),
-      usable = false
+      metadata = mapOf(
+        "itemCategory" to "fuel",
+        "directUse" to "false",
+        "roles" to "generator,fire,cooking,utility",
+        "tags" to "fuel,generator,fire,cooking,utility"
+      )
     ),
     ItemDefinition(
       id = "object:greek-fire",
       displayName = "Greek Fire",
       aliases = setOf("greek fire"),
-      usable = false
+      metadata = mapOf(
+        "itemCategory" to "anomalous_incendiary",
+        "directUse" to "false",
+        "anomalous" to "true",
+        "hazardLevel" to "HIGH",
+        "roles" to "fire,heat,cooking,combat",
+        "tags" to "greek-fire,incendiary,fuel,heat,weapon,anomalous"
+      )
     ),
     ItemDefinition(
       id = "object:liquid-pain",
       displayName = "Liquid Pain",
       aliases = setOf("liquid pain"),
-      usable = false
+      metadata = mapOf(
+        "itemCategory" to "hazardous_chemical",
+        "directUse" to "false",
+        "hazardLevel" to "EXTREME",
+        "toxic" to "true",
+        "corrosive" to "true",
+        "roles" to "trap,anti-entity",
+        "tags" to "liquid-pain,corrosive,toxic,chemical,trap,anti-entity"
+      )
     ),
     ItemDefinition(
       id = "electrical:charged-cell",
       displayName = "Pin tích điện",
       aliases = setOf("pin tích điện", "charged cell", "battery pack", "pin"),
-      usable = false
+      metadata = mapOf(
+        "itemCategory" to "power_resource",
+        "directUse" to "false",
+        "roles" to "device,power",
+        "tags" to "battery,charged-cell,electricity,power,device"
+      )
     ),
     ItemDefinition(
       id = "salvage:ceiling-wire",
       displayName = "Dây điện",
       aliases = setOf("dây điện", "ceiling wire"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "salvage:tripse-alloy",
-      displayName = "Hợp kim Tripse",
-      aliases = setOf("hợp kim tripse", "tripse alloy"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "salvage:industrial",
-      displayName = "Phế liệu công nghiệp",
-      aliases = setOf("phế liệu công nghiệp", "industrial salvage"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "salvage:electrical",
-      displayName = "Phế liệu điện",
-      aliases = setOf("phế liệu điện", "electrical salvage"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "salvage:office",
-      displayName = "Phế liệu văn phòng",
-      aliases = setOf("phế liệu văn phòng", "office salvage"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "salvage:boiler",
-      displayName = "Phế liệu lò hơi",
-      aliases = setOf("phế liệu lò hơi", "boiler salvage"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "resource:dry-wallpaper-fiber",
-      displayName = "Sợi giấy dán tường khô",
-      aliases = setOf("sợi giấy dán tường khô", "dry wallpaper fiber"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "chemical:dupont-bayer-solution",
-      displayName = "Dung dịch DuPont–Bayer",
-      aliases = setOf("dung dịch dupont bayer", "dupont bayer solution"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "item:brass-key",
-      displayName = "Chìa khóa đồng",
-      aliases = setOf("chìa khóa đồng", "brass key"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "resource:reliable-paper",
-      displayName = "Giấy sạch",
-      aliases = setOf("giấy sạch", "reliable paper"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "resource:fire-material",
-      displayName = "Vật liệu nhóm lửa",
-      aliases = setOf("vật liệu nhóm lửa", "fire material", "gỗ khô"),
-      usable = false
-    ),
-    ItemDefinition(
-      id = "madgod:set",
-      displayName = "MadGod Set",
-      aliases = setOf("madgod set", "madgod"),
-      usable = false,
-      transferable = false,
-      discardable = false
-    ),
-    ItemDefinition(
-      id = KAI_WHITE_WRAITH_ID,
-      displayName = KaiStartingEquipment.WEAPON_NAME,
-      aliases = setOf("white wraith magnum", "w.w magnum", "white wraith"),
-      usable = false,
-      transferable = false,
-      discardable = false,
-      rewardable = false
-    ),
-    ItemDefinition(
-      id = KAI_BLACKBLOOD_ARMOR_ID,
-      displayName = KaiStartingEquipment.ARMOR_NAME,
-      aliases = setOf("blackblood armor", "blackblood armor & linked modules"),
-      usable = false,
-      transferable = false,
-      discardable = false,
-      rewardable = false
-    ),
-    ItemDefinition(
-      id = KAI_OMNIVAULT_RING_ID,
-      displayName = KaiStartingEquipment.RING_NAME,
-      aliases = setOf("omnivault ring", "nhẫn omnivault", "nhẫn vạn tàng"),
-      usable = false,
-      transferable = false,
-      discardable = false,
-      rewardable = false
+      metadata = mapOf(
+        "itemCategory" to "salvage",
+        "directUse" to "false",
+        "craftMaterial" to "true",
+        "roles" to "electrical-repair,power-connection,binding,simple-trap",
+        "tags" to "wire,electrical,salvage,repair,crafting,trap"
+      )
     )
   )
 
@@ -236,8 +210,8 @@ object ItemCatalog {
     if (item.contentState == ContentState.EMPTY) return true
     if (item.itemId.endsWith(":empty", true)) return true
     val n = normalize(item.name)
-    return n == "vo dan" || n.contains("chai rong") || n.contains("hop rong") ||
-      n.contains("hop thuc an rong") || n.contains("binh rong") || n.startsWith("vo chai") || n.startsWith("vo hop")
+    return n.contains("chai rong") || n.contains("hop rong") || n.contains("hop thuc an rong") ||
+      n.contains("binh rong") || n.startsWith("vo chai") || n.startsWith("vo hop")
   }
 
   fun canonicalize(definition: ItemDefinition, item: ItemStack): ItemStack {
