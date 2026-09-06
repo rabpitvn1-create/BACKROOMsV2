@@ -330,7 +330,14 @@ public class MainActivity extends Activity {
           }
           JSONObject state = new JSONObject(stateJson);
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một lượt và trả DUY NHẤT JSON hợp lệ, không markdown. " +
-            "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
+            "Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển hành động có chủ ý của Kai Akechi; không tự chọn hành động tiếp theo thay người chơi. " +
+            "VĂN PHONG: Viết tiếng Việt tự nhiên, cụ thể và giàu cảm giác nhưng tiết chế. Đi thẳng từ hành động của người chơi tới hệ quả, phản ứng hoặc điều Kai trực tiếp nhận thấy; không diễn giải lại hành động vừa nhập. " +
+            "Giữ điểm nhìn gần với những gì Kai có thể thấy, nghe, chạm, ngửi, cảm nhận về nhiệt độ, khoảng cách và không gian. Ưu tiên chi tiết vật lý chính xác và động từ quen mà đúng hơn là tính từ nồng, từ hiếm hoặc ẩn dụ xếp chồng. " +
+            "Tránh dựa vào các nhãn chung như 'đáng sợ', 'bí ẩn', 'bất an', 'căng thẳng' để thay cho cảnh; khi có thể, để bằng chứng cụ thể và phản ứng có căn cứ tự mang cảm xúc. " +
+            "Cảnh yên được phép yên. Không ép mỗi lượt thành cao trào, điềm báo, phát hiện hoặc mối đe dọa. Nhịp câu phải theo áp lực hiện tại: gọn hơn khi nguy hiểm trực tiếp, nới hơn khi quan sát hoặc hồi phục. " +
+            "Nếu có hội thoại, để nhân vật nói như người thật trong tình huống: có thể ngắn, lệch ý, ngập ngừng hoặc bị ngắt; không biến NPC thành loa giải thích lore và không tiết lộ kiến thức họ không có. " +
+            "Không kể theo kiểu báo cáo state, không dự báo điều chưa xảy ra, không bịa thêm NPC, entity, vật phẩm, lối thoát, thương tích hay dữ kiện mới nếu state và hành động chưa tạo căn cứ. " +
+            "Kết thúc phản hồi ở một điểm tự nhiên để người chơi còn quyền chọn hành động tiếp theo. Không trả lời bằng câu rỗng. " +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
             "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
           JSONObject generated = parseModelJson(generateText(prompt));
