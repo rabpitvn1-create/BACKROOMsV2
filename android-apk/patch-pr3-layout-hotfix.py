@@ -147,3 +147,10 @@ for marker in (
         raise RuntimeError("PR3 current Omnivault knowledge marker missing: " + marker)
 
 print("PR3 Omnivault knowledge verified: storage/restore only; Scan/Copy/item creation removed from packaged GM knowledge.")
+
+# Supplemental web-researched Entity canon is kept in its own source file and merged only at the
+# final knowledge layer. It never rewrites project WORLD_CANON records; project hard-lock/state wins.
+web_entity_canon = ROOT / "patch-web-entity-canon.py"
+if not web_entity_canon.is_file():
+    raise RuntimeError("PR3 web Entity canon patch missing: " + web_entity_canon.name)
+runpy.run_path(str(web_entity_canon), run_name="__main__")
