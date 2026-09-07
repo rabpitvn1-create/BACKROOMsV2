@@ -116,6 +116,10 @@ runpy.run_path(str(ROOT / "patch-healing-items-finalize.py"), run_name="__main__
 runpy.run_path(str(ROOT / "patch-lucia-combat-scout-finalize.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-lucia-combat-evasion-compat.py"), run_name="__main__")
 
-# Companion skill gameplay/UI is deliberately the last layer. It only wraps the finalized
+# Companion skill gameplay/UI is deliberately the last gameplay layer. It only wraps the finalized
 # Kai/Diệp Minh/Lucia combat and Character Detail contracts, so no older patch can erase it.
 runpy.run_path(str(ROOT / "patch-companion-skills-ui-finalize.py"), run_name="__main__")
+
+# Level 0's two local WebPs are a visual-only selector. Apply them after every gameplay/UI patch so
+# the established exact-string contracts above remain untouched and every turn can rotate A/B.
+runpy.run_path(str(ROOT / "patch-level0-turn-snapshot-final.py"), run_name="__main__")
