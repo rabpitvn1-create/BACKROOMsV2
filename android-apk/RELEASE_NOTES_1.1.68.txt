@@ -1,0 +1,7 @@
+Backroom 1.1.68 Debug
+
+- Thêm hiệu ứng chuyển nhân vật trong combat khi actor đang hiển thị thay đổi trên Snapshot overlay.
+- Nhân vật cũ fade/slide ra trong 180 ms và nhân vật mới fade/slide vào trong 240 ms, nằm trong nhịp combat hiện có thay vì cộng thêm một khoảng chờ dài.
+- Hỗ trợ prefers-reduced-motion để chuyển ngay lập tức khi người dùng bật chế độ giảm chuyển động.
+- Nhân vật chưa có combat overlay giữ placeholder trống có chủ ý; không dùng avatar thường thay thế và không tự tạo artwork.
+- Transition chỉ thuộc presentation layer, không thay đổi HP, combat roll, status effect, targeting, Entity cleanup hay quyền sở hữu turn.
