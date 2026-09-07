@@ -47,6 +47,7 @@ jobs:
           test -s android-apk/patch-level-transition-final.py
           test -s android-apk/patch-haiku-provider-final.py
           test -s android-apk/patch-pressure-combat.py
+          test -s android-apk/patch-party-turn-combat-final.py
           test ! -e android-apk/patch-luna-text.py
           test ! -e android-apk/patch-luna-model-failover-final.py
           test ! -e android-apk/patch-provider-deadline-final.py
@@ -88,7 +89,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py patch-haiku-provider-final.py patch-pressure-combat.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-mobile-swipe-ui-final.py patch-pr3-layout-hotfix.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -112,11 +113,9 @@ jobs:
           grep -q 'levelNarrativeStateIssuesAndroid' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'level_narrative_state_mismatch' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'bãi đỗ xe' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'gameCore.processCombat(stateJson, action)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'fun processCombat(legacyStateJson: String, action: String)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt
-          grep -q 'PARTY_TURN_COMBAT_V2' android-apk/app/src/main/assets/index.html
-          grep -q 'window.backroomCombat' android-apk/app/src/main/assets/index.html
-          grep -q 'setTimeout(step,2000)' android-apk/app/src/main/assets/index.html
+          grep -q 'requireGameCore().processCombat(stateJson, actionKind, action)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'fun processCombat(legacyStateJson: String, actionKind: String, action: String)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt
+          grep -q 'PRESSURE_COMBAT_HUD_V1' android-apk/app/src/main/assets/index.html
           grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
           grep -q 'PR3_HEADER_SAFE_INSET' android-apk/app/src/main/assets/index.html
           grep -q 'ui/action_search.webp' android-apk/app/src/main/assets/index.html
