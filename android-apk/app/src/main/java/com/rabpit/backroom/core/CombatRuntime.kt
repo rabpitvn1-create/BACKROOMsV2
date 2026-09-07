@@ -1,6 +1,5 @@
 package com.rabpit.backroom.core
 
-import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlin.math.max
@@ -11,7 +10,6 @@ object CombatRuntime {
   private const val PREFIX = "combat."
   private const val PLAYER_HP = "combat.playerHp"
   private const val PLAYER_MAX_HP = "combat.playerMaxHp"
-  private const val MAX_PARTY_SLOTS = 4
 
   enum class Phase { ACTIVE, RESOLVED }
   enum class RangeBand { CLOSE, NEAR, FAR }
@@ -50,35 +48,10 @@ object CombatRuntime {
     val seed: Long
   )
 
-  data class CombatEvent(
-    val actorId: String,
-    val actorName: String,
-    val side: String,
-    val text: String,
-    val overlayRef: String = "",
-    val entityHp: Int,
-    val entityMaxHp: Int,
-    val playerHp: Int,
-    val playerMaxHp: Int
-  ) {
-    fun toJson(): JSONObject = JSONObject().apply {
-      put("actorId", actorId)
-      put("actorName", actorName)
-      put("side", side)
-      put("text", text)
-      put("overlayRef", overlayRef)
-      put("entityHp", entityHp)
-      put("entityMaxHp", entityMaxHp)
-      put("playerHp", playerHp)
-      put("playerMaxHp", playerMaxHp)
-    }
-  }
-
   data class Resolution(
     val state: GameState,
     val handled: Boolean,
     val reply: String = "",
-    val events: List<CombatEvent> = emptyList(),
     val entityDestroyed: Boolean = false,
     val escaped: Boolean = false
   )
@@ -108,14 +81,13 @@ object CombatRuntime {
 
   fun start(state: GameState, entityKey: String): GameState {
     if (active(state) != null) return state
-    val normalizedKey = normalizeEntityKey(entityKey)
-    val profile = profiles[normalizedKey] ?: return state
+    val profile = profiles[entityKey] ?: return state
     val playerMax = state.metadata[PLAYER_MAX_HP]?.toIntOrNull()?.coerceIn(1, 999) ?: 100
     val playerHp = state.metadata[PLAYER_HP]?.toIntOrNull()?.coerceIn(0, playerMax) ?: playerMax
-    val seed = stableSeed(normalizedKey, state.turn.currentTurnId, state.time.elapsedSubjectiveMinutes)
+    val seed = stableSeed(entityKey, state.turn.currentTurnId, state.time.elapsedSubjectiveMinutes)
     val snapshot = Snapshot(
-      encounterId = "${state.turn.currentTurnId}:$normalizedKey:${abs(seed)}",
-      entityKey = normalizedKey,
+      encounterId = "${state.turn.currentTurnId}:${entityKey}:${abs(seed)}",
+      entityKey = entityKey,
       entityName = profile.displayName,
       phase = Phase.ACTIVE,
       playerHp = playerHp,
@@ -137,20 +109,13 @@ object CombatRuntime {
     return encode(state, snapshot)
   }
 
-  /**
-   * Resolves one player-submitted combat round.
-   * Turn order is always Kai -> Entity -> each real party member -> Entity.
-   * Empty UI slots never become actors.
-   */
   fun resolve(state: GameState, actionKind: String, action: String): Resolution {
     val current = active(state) ?: return Resolution(state, handled = false)
     val profile = profiles[current.entityKey] ?: return Resolution(clear(state), handled = false)
     val intent = classify(actionKind, action)
-    val participants = activePartyMembers(state)
     var c = current.copy(eventCounter = current.eventCounter + 1)
-    val events = mutableListOf<CombatEvent>()
+    val log = mutableListOf<String>()
 
-    val kaiText: String
     when (intent) {
       Intent.READ -> {
         c = c.copy(
@@ -158,7 +123,7 @@ object CombatRuntime {
           opening = min(3, c.opening + 1),
           momentum = min(3, c.momentum + 1)
         )
-        kaiText = "Kai quan sát ${c.entityName} • Opening +1."
+        log += "Kai đọc được nhịp tấn công của ${c.entityName}; sơ hở tăng lên."
       }
       Intent.EVADE -> {
         val goodCounter = c.telegraph in setOf("LUNGE", "GRAB", "RUSH")
@@ -169,7 +134,7 @@ object CombatRuntime {
           escapeProgress = min(100, c.escapeProgress + if (goodCounter) 18 else 10),
           cover = if (c.cover == Cover.EXPOSED) Cover.PARTIAL else c.cover
         )
-        kaiText = "Kai né đòn • Escape ${c.escapeProgress}%."
+        log += if (goodCounter) "Kai né đúng telegraph, cướp thế chủ động." else "Kai đổi góc và giảm áp lực trực diện."
       }
       Intent.MOVE -> {
         val nextRange = when (c.range) {
@@ -183,64 +148,80 @@ object CombatRuntime {
           escapeProgress = min(100, c.escapeProgress + 15),
           momentum = min(3, c.momentum + 1)
         )
-        kaiText = "Kai đổi vị trí • ${c.range.name} • Cover ${c.cover.name}."
+        log += "Kai tái định vị, kéo giãn khoảng cách và tìm vật che chắn."
       }
       Intent.GUARD -> {
         c = c.copy(cover = Cover.HARD, momentum = min(3, c.momentum + 1), opening = min(3, c.opening + 1))
-        kaiText = "Kai phòng thủ • Cover HARD."
+        log += "Kai khóa tư thế phòng thủ và ép ${c.entityName} phải lộ hướng tấn công."
       }
       Intent.ESCAPE -> {
         val gain = 20 + c.momentum.coerceAtLeast(0) * 5 + when (c.cover) { Cover.HARD -> 15; Cover.PARTIAL -> 8; Cover.EXPOSED -> 0 }
         c = c.copy(escapeProgress = min(100, c.escapeProgress + gain), momentum = min(3, c.momentum + 1))
-        kaiText = "Kai tìm đường thoát • ${c.escapeProgress}%."
+        log += "Kai dồn ưu thế vào đường thoát (${c.escapeProgress}%)."
       }
       Intent.ATTACK -> {
-        val attack = resolvePartyAttack(c, profile, KAI_ID, isKai = true)
-        c = attack.first
-        kaiText = attack.second
+        val roll = roll(c, 100)
+        val rangeBonus = when (c.range) { RangeBand.CLOSE -> 18; RangeBand.NEAR -> 10; RangeBand.FAR -> -5 }
+        val hitChance = (58 + rangeBonus + c.opening * 11 + c.momentum * 6).coerceIn(20, 96)
+        if (roll < hitChance) {
+          val variance = 4 + roll(c.copy(eventCounter = c.eventCounter + 17), 9)
+          val base = 18 + variance + c.opening * 7 + max(0, c.momentum) * 3
+          val damage = max(1, base - profile.armor)
+          val hp = max(0, c.entityHp - damage)
+          c = c.copy(
+            entityHp = hp,
+            entityCondition = condition(hp, c.entityMaxHp),
+            momentum = min(3, c.momentum + 1),
+            opening = max(0, c.opening - 1),
+            noise = min(100, c.noise + 35)
+          )
+          log += "Đòn đánh trúng ${c.entityName}: -$damage HP (${c.entityHp}/${c.entityMaxHp})."
+        } else {
+          c = c.copy(momentum = max(-3, c.momentum - 1), opening = max(0, c.opening - 1), noise = min(100, c.noise + 28))
+          log += "Đòn đánh trượt; ${c.entityName} giành lại áp lực."
+        }
       }
       Intent.OTHER -> {
         c = c.copy(momentum = max(-3, c.momentum - 1))
-        kaiText = "Kai chưa tạo được lợi thế rõ ràng."
+        log += "Hành động không tạo được lợi thế chiến đấu rõ ràng."
       }
     }
-    events += combatEvent(state, c, KAI_ID, "party", kaiText)
 
-    if (c.entityHp <= 0) return destroyedResult(state, c, events)
-    if (c.escapeProgress >= 100) return escapedResult(state, c, events)
-
-    c = c.copy(eventCounter = c.eventCounter + 1)
-    val firstEntityTurn = resolveEntityTurn(c, profile, intent)
-    c = firstEntityTurn.first
-    events += combatEvent(state, c, "entity:${c.entityKey}", "entity", firstEntityTurn.second)
-
-    if (c.playerHp <= 0) {
-      val next = encode(state, c)
-      return Resolution(next, true, events.joinToString(" ") { it.text }, events)
+    if (c.entityHp <= 0) {
+      val persisted = encode(state, c.copy(phase = Phase.RESOLVED, entityCondition = EntityCondition.DESTROYED))
+      val cleared = clearCombatOnly(persisted)
+      return Resolution(cleared, true, log.joinToString(" ") + " ${c.entityName} đã bị tiêu diệt.", entityDestroyed = true)
+    }
+    if (c.escapeProgress >= 100) {
+      val persisted = encode(state, c.copy(phase = Phase.RESOLVED))
+      val cleared = clearCombatOnly(persisted)
+      return Resolution(cleared, true, log.joinToString(" ") + " Kai cắt được truy đuổi và thoát khỏi encounter.", escaped = true)
     }
 
-    participants.drop(1).forEach { actorId ->
-      if (c.entityHp <= 0 || c.playerHp <= 0) return@forEach
-      c = c.copy(eventCounter = c.eventCounter + 1)
-      val attack = resolvePartyAttack(c, profile, actorId, isKai = false)
-      c = attack.first
-      events += combatEvent(state, c, actorId, "party", attack.second)
-      if (c.entityHp <= 0) return@forEach
-
-      c = c.copy(eventCounter = c.eventCounter + 1)
-      val entityTurn = resolveEntityTurn(c, profile, Intent.OTHER)
-      c = entityTurn.first
-      events += combatEvent(state, c, "entity:${c.entityKey}", "entity", entityTurn.second)
+    // Enemy response. READ/guard/evasion reduce expected incoming damage; attacking blindly is riskier.
+    val incomingRoll = roll(c.copy(eventCounter = c.eventCounter + 31), 100)
+    val defense = when (intent) { Intent.EVADE -> 34; Intent.GUARD -> 30; Intent.MOVE -> 18; Intent.READ -> 12; else -> 0 } +
+      when (c.cover) { Cover.HARD -> 22; Cover.PARTIAL -> 10; Cover.EXPOSED -> 0 } + max(0, c.momentum) * 4
+    val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7).coerceIn(8, 88)
+    if (incomingRoll < enemyChance) {
+      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+      val hp = max(0, c.playerHp - damage)
+      c = c.copy(playerHp = hp, momentum = max(-3, c.momentum - 1))
+      log += "${c.entityName} phản công: Kai -$damage HP (${c.playerHp}/${c.playerMaxHp})."
+    } else {
+      log += "${c.entityName} không xuyên được thế phòng thủ/di chuyển của Kai."
     }
 
-    if (c.entityHp <= 0) return destroyedResult(state, c, events)
-
+    c = c.copy(
+      telegraph = telegraphFor(profile, c.seed, c.eventCounter),
+      telegraphRevealed = false,
+      opening = max(0, c.opening - if (intent == Intent.READ) 0 else 1)
+    )
     val next = encode(state, c)
-    return Resolution(next, true, events.joinToString(" ") { it.text }, events)
+    return Resolution(next, true, log.joinToString(" "))
   }
 
   fun toJson(state: GameState): JSONObject? = decode(state)?.let { c -> JSONObject().apply {
-    val participants = activePartyMembers(state)
     put("active", c.phase == Phase.ACTIVE)
     put("encounterId", c.encounterId)
     put("entityKey", c.entityKey)
@@ -253,149 +234,9 @@ object CombatRuntime {
     put("escapeProgress", c.escapeProgress); put("noise", c.noise)
     put("telegraph", if (c.telegraphRevealed) c.telegraph else "UNKNOWN")
     put("telegraphRevealed", c.telegraphRevealed)
-    put("activeActorId", KAI_ID)
-    put("participantCount", participants.size)
-    put("turnOrder", JSONArray().apply {
-      participants.forEach { id ->
-        put(id)
-        put("entity:${c.entityKey}")
-      }
-    })
-    put("slots", JSONArray().apply {
-      repeat(MAX_PARTY_SLOTS) { index ->
-        val id = participants.getOrNull(index)
-        put(JSONObject().apply {
-          put("slot", index)
-          put("occupied", id != null)
-          if (id != null) {
-            put("id", id)
-            put("name", combatActorName(state, id))
-            put("overlayRef", combatOverlayRef(state, id))
-          } else {
-            put("id", "")
-            put("name", "")
-            put("overlayRef", "")
-          }
-        })
-      }
-    })
   } }
 
   fun clear(state: GameState): GameState = clearCombatOnly(state)
-
-  private fun resolvePartyAttack(c: Snapshot, profile: Profile, actorId: String, isKai: Boolean): Pair<Snapshot, String> {
-    val rangeBonus = when (c.range) { RangeBand.CLOSE -> 18; RangeBand.NEAR -> 10; RangeBand.FAR -> -5 }
-    val hitChance = if (isKai) {
-      (58 + rangeBonus + c.opening * 11 + c.momentum * 6).coerceIn(20, 96)
-    } else {
-      (62 + rangeBonus / 2 + c.opening * 8 + c.momentum * 4).coerceIn(24, 94)
-    }
-    val hitRoll = roll(c, 100)
-    val actorName = if (actorId == KAI_ID) "Kai" else actorId
-    if (hitRoll >= hitChance) {
-      val next = c.copy(
-        momentum = max(-3, c.momentum - if (isKai) 1 else 0),
-        opening = max(0, c.opening - 1),
-        noise = min(100, c.noise + if (isKai) 28 else 20)
-      )
-      return next to "$actorName đánh trượt ${c.entityName}."
-    }
-
-    val variance = if (isKai) 4 + roll(c.copy(eventCounter = c.eventCounter + 17), 9) else 3 + roll(c.copy(eventCounter = c.eventCounter + 19), 7)
-    val base = if (isKai) 18 + variance + c.opening * 7 + max(0, c.momentum) * 3 else 15 + variance + c.opening * 4 + max(0, c.momentum) * 2
-    val damage = max(1, base - profile.armor)
-    val hp = max(0, c.entityHp - damage)
-    val next = c.copy(
-      entityHp = hp,
-      entityCondition = condition(hp, c.entityMaxHp),
-      momentum = min(3, c.momentum + 1),
-      opening = max(0, c.opening - 1),
-      noise = min(100, c.noise + if (isKai) 35 else 24)
-    )
-    return next to "$actorName đánh trúng ${c.entityName} • -$damage HP (${next.entityHp}/${next.entityMaxHp})."
-  }
-
-  private fun resolveEntityTurn(c: Snapshot, profile: Profile, defenseIntent: Intent): Pair<Snapshot, String> {
-    val incomingRoll = roll(c.copy(eventCounter = c.eventCounter + 31), 100)
-    val defense = when (defenseIntent) { Intent.EVADE -> 34; Intent.GUARD -> 30; Intent.MOVE -> 18; Intent.READ -> 12; else -> 0 } +
-      when (c.cover) { Cover.HARD -> 22; Cover.PARTIAL -> 10; Cover.EXPOSED -> 0 } + max(0, c.momentum) * 4
-    val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7).coerceIn(8, 88)
-    var next = c
-    val text = if (incomingRoll < enemyChance) {
-      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
-      val hp = max(0, c.playerHp - damage)
-      next = c.copy(playerHp = hp, momentum = max(-3, c.momentum - 1))
-      "${c.entityName} đánh trúng Kai • -$damage HP (${next.playerHp}/${next.playerMaxHp})."
-    } else {
-      "${c.entityName} đánh trượt."
-    }
-    next = next.copy(
-      telegraph = telegraphFor(profile, next.seed, next.eventCounter),
-      telegraphRevealed = false,
-      opening = max(0, next.opening - if (defenseIntent == Intent.READ) 0 else 1)
-    )
-    return next to text
-  }
-
-  private fun destroyedResult(state: GameState, c: Snapshot, events: MutableList<CombatEvent>): Resolution {
-    if (events.isNotEmpty()) {
-      val last = events.last()
-      events[events.lastIndex] = last.copy(text = last.text + " • ${c.entityName} bị tiêu diệt.")
-    }
-    val persisted = encode(state, c.copy(phase = Phase.RESOLVED, entityCondition = EntityCondition.DESTROYED))
-    val cleared = clearCombatOnly(persisted)
-    return Resolution(cleared, true, events.joinToString(" ") { it.text }, events, entityDestroyed = true)
-  }
-
-  private fun escapedResult(state: GameState, c: Snapshot, events: MutableList<CombatEvent>): Resolution {
-    if (events.isNotEmpty()) {
-      val last = events.last()
-      events[events.lastIndex] = last.copy(text = last.text + " • Thoát khỏi encounter.")
-    }
-    val persisted = encode(state, c.copy(phase = Phase.RESOLVED))
-    val cleared = clearCombatOnly(persisted)
-    return Resolution(cleared, true, events.joinToString(" ") { it.text }, events, escaped = true)
-  }
-
-  private fun combatEvent(state: GameState, c: Snapshot, actorId: String, side: String, text: String): CombatEvent {
-    val entityActor = side == "entity"
-    val actorName = if (entityActor) c.entityName else combatActorName(state, actorId)
-    val overlay = if (entityActor) "entity/${c.entityKey.replace('-', '_')}.png" else combatOverlayRef(state, actorId)
-    return CombatEvent(
-      actorId = actorId,
-      actorName = actorName,
-      side = side,
-      text = if (side == "party" && actorId != KAI_ID) replaceActorIdPrefix(text, actorId, actorName) else text,
-      overlayRef = overlay,
-      entityHp = c.entityHp,
-      entityMaxHp = c.entityMaxHp,
-      playerHp = c.playerHp,
-      playerMaxHp = c.playerMaxHp
-    )
-  }
-
-  private fun replaceActorIdPrefix(text: String, actorId: String, actorName: String): String =
-    if (text.startsWith(actorId)) actorName + text.removePrefix(actorId) else text
-
-  private fun activePartyMembers(state: GameState): List<String> {
-    val limit = state.party.maxMembers.coerceIn(1, MAX_PARTY_SLOTS)
-    return (listOf(KAI_ID) + state.party.memberIds)
-      .distinct()
-      .filter { id -> id == KAI_ID || state.characters[id]?.presence == CharacterPresence.ACTIVE }
-      .take(limit)
-  }
-
-  private fun combatActorName(state: GameState, actorId: String): String {
-    if (actorId == KAI_ID) return "Kai"
-    val raw = state.characters[actorId]?.name?.trim().orEmpty()
-    if (raw.isBlank()) return actorId
-    return raw.substringBefore(" \"").ifBlank { raw }
-  }
-
-  private fun combatOverlayRef(state: GameState, actorId: String): String {
-    if (actorId == KAI_ID) return "kai_entity_overlay.png"
-    return state.characters[actorId]?.metadata?.get("combatOverlay")?.trim().orEmpty()
-  }
 
   private fun encode(state: GameState, c: Snapshot): GameState {
     val metadata = state.metadata.toMutableMap()
@@ -469,23 +310,6 @@ object CombatRuntime {
     if (actionKind.equals("SEARCH", true) || containsAny(text, "quan sát", "đọc", "nhìn kỹ", "theo dõi", "observe", "read")) return Intent.READ
     if (actionKind.equals("EXPLORE", true) || containsAny(text, "lùi", "tiến", "di chuyển", "núp", "vòng", "move", "reposition")) return Intent.MOVE
     return Intent.OTHER
-  }
-
-  private fun normalizeEntityKey(raw: String): String {
-    val direct = raw.trim().lowercase()
-    if (profiles.containsKey(direct)) return direct
-    val key = direct.replace('-', '_').replace(' ', '_')
-    return when (key) {
-      "skin_stealer", "skinstealer" -> "skin-stealer"
-      "faceling", "hostilefaceling" -> "hostile_faceling"
-      "death_moth" -> "deathmoth"
-      "falsepuddle" -> "false_puddle"
-      "cablemimic" -> "cable_mimic"
-      "beast_of_level_5", "thebeastoflevel5" -> "the_beast_of_level_5"
-      "jeff", "jeffthekiller" -> "jeff_the_killer"
-      "jane", "janethekiller" -> "jane_the_killer"
-      else -> key
-    }
   }
 
   private fun containsAny(text: String, vararg needles: String) = needles.any(text::contains)
