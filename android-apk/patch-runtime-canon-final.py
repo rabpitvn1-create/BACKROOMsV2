@@ -1,44 +1,16 @@
 from pathlib import Path
-import re
+import json
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
-INDEX = ROOT / "app/src/main/assets/index.html"
 ENTITY_ASSETS = ROOT / "app/src/main/assets/entity"
 
+# PR3 used to mix display-layout hotfixes with gameplay/canon finalization. The
+# layout responsibility now belongs exclusively to apply-android-ui.py; this file
+# retains only the non-visual runtime/canon responsibilities.
 main = MAIN.read_text(encoding="utf-8")
-index = INDEX.read_text(encoding="utf-8")
 
-# Field screenshot hotfix: move the rendered Kai overlay slightly to the right without
-# changing its scale/aspect ratio. Scope the replacement to the final Snapshot character CSS.
-# Issue #4 keeps the existing 4% transparent-padding compensation and nudges Kai 5px farther right.
-if "PR3_KAI_SHIFT_RIGHT" not in main:
-    pattern = re.compile(r"(\.snapshot \.snapshot-character\{[^}]*?)right:0;")
-    main, count = pattern.subn(
-        r"\1right:calc(-4% - 5px);/* PR3_KAI_SHIFT_RIGHT */",
-        main,
-        count=1,
-    )
-    if count != 1:
-        raise RuntimeError(f"PR3 Kai Snapshot position anchor: expected 1 match, found {count}")
-
-# Keep the compact header height, but give the left title block a small safe inset so rounded
-# mobile display edges/cutouts cannot eat the first letters. This override runs after all prior UI CSS.
-if "PR3_HEADER_SAFE_INSET" not in index:
-    style = r'''<style id="pr3MobilePositionHotfix">
-/* PR3_HEADER_SAFE_INSET */
-.topbar{padding-left:14px!important}
-@supports(padding-left:max(0px,env(safe-area-inset-left))){.topbar{padding-left:max(14px,env(safe-area-inset-left))!important}}
-</style>
-'''
-    if "</head>" not in index:
-        raise RuntimeError("PR3 header style insertion anchor missing")
-    index = index.replace("</head>", style + "</head>", 1)
-
-# PR3 Entity visual contract. The Entity stack is installed transitively by the gameplay/status
-# patch chain before this final hotfix, so do not run those historical patch scripts a second time.
-# Instead, make the final release fail closed if the canonical local overlay bridge, CombatRuntime
-# visual authority, left-bottom Entity placement, Diệp Minh extension, or any canonical asset is lost.
 canonical_entities = (
     "hound", "clump", "duller", "deathmoth", "hostile_faceling", "false_puddle", "paintings",
     "smiler", "skin-stealer", "predatory_window", "biological_pipeline", "wretch", "cable_mimic",
@@ -47,7 +19,7 @@ canonical_entities = (
 )
 missing_assets = [key for key in canonical_entities if not (ENTITY_ASSETS / f"{key}.png").is_file()]
 if missing_assets:
-    raise RuntimeError("PR3 Entity assets missing: " + ", ".join(missing_assets))
+    raise RuntimeError("Canonical Entity assets missing: " + ", ".join(missing_assets))
 
 entity_markers = (
     "file:///android_asset/entity/",
@@ -64,50 +36,36 @@ entity_markers = (
 )
 for marker in entity_markers:
     if marker not in main:
-        raise RuntimeError("PR3 final Entity overlay contract missing: " + marker)
+        raise RuntimeError("Final Entity overlay contract missing: " + marker)
 
-# Beast of Level 5 and Hotel Corpse Lure intentionally share the same visual asset. Do not add
-# uniqueness/hash checks here; canonical key presence is the release contract.
-for marker in ("PR3_KAI_SHIFT_RIGHT", "right:calc(-4% - 5px);", "PR3_HEADER_SAFE_INSET", "padding-left:14px!important"):
-    target = main if marker in ("PR3_KAI_SHIFT_RIGHT", "right:calc(-4% - 5px);") else index
-    if marker not in target:
-        raise RuntimeError("PR3 mobile position marker missing: " + marker)
-
-MAIN.write_text(main, encoding="utf-8")
-INDEX.write_text(index, encoding="utf-8")
-print("PR3 mobile + Entity overlay hotfix verified: Kai right shift, canonical Entity left-bottom overlay, CombatRuntime visual authority.")
-
-# Inventory V4 is deliberately the final gameplay/UI layer in PR #3. Earlier release patches still
-# generate legacy inventory/content structures, so prepare stable anchors against the final generated
-# sources, apply the authority contract after every historical mutation, normalize obsolete generated
-# regression fixtures, then enforce the current Omnivault canon after all historical copy/scan code.
-import runpy
+# Inventory V4 remains the final inventory/gameplay layer. Earlier historical
+# patches still generate legacy structures, so normalize anchors and enforce the
+# current Omnivault contract after those mutations.
 inventory_compat = ROOT / "patch-inventory-v4-anchor-compat.py"
 inventory_v4 = ROOT / "patch-inventory-v4-final.py"
 inventory_regression = ROOT / "patch-inventory-v4-regression-compat.py"
 omnivault_current = ROOT / "patch-omnivault-current-canon-final.py"
 for required in (inventory_compat, inventory_v4, inventory_regression, omnivault_current):
     if not required.is_file():
-        raise RuntimeError("PR3 final gameplay patch missing: " + required.name)
+        raise RuntimeError("Final gameplay patch missing: " + required.name)
 runpy.run_path(str(inventory_compat), run_name="__main__")
 runpy.run_path(str(inventory_v4), run_name="__main__")
 runpy.run_path(str(inventory_regression), run_name="__main__")
 runpy.run_path(str(omnivault_current), run_name="__main__")
 
-# The packaged knowledge database is authoritative input to the Game Master. Runtime rejection of
-# retired Omnivault commands is not sufficient if retrieval can still teach the writer old Scan/Copy
-# canon, so correct the final generated knowledge after every historical patch has run.
-import json
+# Packaged knowledge is authoritative GM input. Remove retired Omnivault
+# Scan/Copy semantics from both the database and source map after all historical
+# knowledge writers have run.
 KNOWLEDGE_DB = ROOT / "app/src/main/assets/knowledge/knowledge_db.json"
 KNOWLEDGE_SOURCE_MAP = ROOT / "KNOWLEDGE_SOURCE_MAP.md"
 for required in (KNOWLEDGE_DB, KNOWLEDGE_SOURCE_MAP):
     if not required.is_file():
-        raise RuntimeError("PR3 Omnivault knowledge source missing: " + required.name)
+        raise RuntimeError("Omnivault knowledge source missing: " + required.name)
 
 knowledge = json.loads(KNOWLEDGE_DB.read_text(encoding="utf-8"))
 omnivault_records = [record for record in knowledge.get("records", []) if record.get("id") == "CHAR.KAI.OMNIVAULT"]
 if len(omnivault_records) != 1:
-    raise RuntimeError(f"PR3 Omnivault knowledge contract: expected 1 record, found {len(omnivault_records)}")
+    raise RuntimeError(f"Omnivault knowledge contract: expected 1 record, found {len(omnivault_records)}")
 
 omnivault_record = omnivault_records[0]
 omnivault_record["text"] = (
@@ -126,7 +84,7 @@ current_source_row = "| `CHAR.KAI.OMNIVAULT` | `Kai_Codex.docx` | `KAI-EQP-OMNIV
 if stale_source_row in source_map:
     source_map = source_map.replace(stale_source_row, current_source_row, 1)
 elif current_source_row not in source_map:
-    raise RuntimeError("PR3 Omnivault source-map contract missing expected row")
+    raise RuntimeError("Omnivault source-map contract missing expected row")
 KNOWLEDGE_SOURCE_MAP.write_text(source_map, encoding="utf-8")
 
 final_knowledge = KNOWLEDGE_DB.read_text(encoding="utf-8")
@@ -138,20 +96,20 @@ for forbidden in (
     "3 scan/copy slots",
 ):
     if forbidden in final_knowledge or forbidden in final_source_map:
-        raise RuntimeError("PR3 stale Omnivault knowledge survived final layer: " + forbidden)
+        raise RuntimeError("Stale Omnivault knowledge survived final layer: " + forbidden)
 for marker in (
     "Storage never increases authoritative item quantity.",
     "Scan, Copy, item creation, duplicate creation, Marked and Upgrade are retired.",
     "No Scan/Copy/item creation/Marked/Upgrade",
 ):
     if marker not in final_knowledge + "\n" + final_source_map:
-        raise RuntimeError("PR3 current Omnivault knowledge marker missing: " + marker)
+        raise RuntimeError("Current Omnivault knowledge marker missing: " + marker)
 
-print("PR3 Omnivault knowledge verified: storage/restore only; Scan/Copy/item creation removed from packaged GM knowledge.")
-
-# Supplemental web-researched Entity canon is kept in its own source file and merged only at the
-# final knowledge layer. It never rewrites project WORLD_CANON records; project hard-lock/state wins.
+# Supplemental web-researched Entity canon remains isolated and merged only at
+# the final knowledge layer. Project world/state authority still wins.
 web_entity_canon = ROOT / "patch-web-entity-canon.py"
 if not web_entity_canon.is_file():
-    raise RuntimeError("PR3 web Entity canon patch missing: " + web_entity_canon.name)
+    raise RuntimeError("Web Entity canon patch missing: " + web_entity_canon.name)
 runpy.run_path(str(web_entity_canon), run_name="__main__")
+
+print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement.")
