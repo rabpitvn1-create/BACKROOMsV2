@@ -320,7 +320,7 @@ class InventoryCapacityNewGameTest {
     assertEquals(140, kai.currentHp)
     assertEquals(140, kai.maxHp)
     assertEquals("∞", kai.energyDisplay)
-    assertEquals(4, kai.regenPerCompletedTurn)
+    assertEquals(20, kai.regenPerCompletedTurn)
     assertEquals(107, kai.str.effective)
     assertEquals(109, kai.df.effective)
     assertEquals(112, kai.agi.effective)

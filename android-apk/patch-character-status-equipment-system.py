@@ -324,6 +324,13 @@ object EquipmentCatalog {
 }
 
 object CharacterStatEngine {
+  private fun regenAmount(rule: HpRegenRule, maxHp: Int): Int {
+    val percentAmount = if (rule.percentOfMaxHp > 0) {
+      ((maxHp.toLong() * rule.percentOfMaxHp.coerceIn(0, 100) + 99L) / 100L).toInt()
+    } else 0
+    return (rule.amountPerCompletedTurn.toLong() + percentAmount.toLong()).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+  }
+
   fun effective(state: GameState, characterId: String): EffectiveCharacterStats {
     val character = state.characters[characterId] ?: return fallback(characterId)
     val definitions = state.equipment[character.equipmentId]?.slots.orEmpty().values
@@ -341,13 +348,13 @@ object CharacterStatEngine {
       agi = character.statProfile.agi + agi,
       crit = character.statProfile.crit + crit,
       energy = character.statProfile.energy,
-      regenPerCompletedTurn = if (character.statProfile.regen.enabled) character.statProfile.regen.amountPerCompletedTurn else 0
+      regenPerCompletedTurn = if (character.statProfile.regen.enabled) regenAmount(character.statProfile.regen, (character.statProfile.baseMaxHp + hp).coerceAtLeast(1)) else 0
     )
   }
 
   private fun fallback(characterId: String): EffectiveCharacterStats {
     val base = CharacterStatProfiles.forId(characterId)
-    return EffectiveCharacterStats(base.baseMaxHp, 0, base.str, base.df, base.agi, base.crit, base.energy, if (base.regen.enabled) base.regen.amountPerCompletedTurn else 0)
+    return EffectiveCharacterStats(base.baseMaxHp, 0, base.str, base.df, base.agi, base.crit, base.energy, if (base.regen.enabled) regenAmount(base.regen, base.baseMaxHp) else 0)
   }
 
   fun conditionFor(currentHp: Int, maxHp: Int, old: CharacterCondition? = null, presence: CharacterPresence? = null): CharacterCondition {
@@ -395,12 +402,17 @@ object CharacterStatEngine {
         return@forEach
       }
       val rule = character.statProfile.regen
-      if (!rule.enabled || rule.amountPerCompletedTurn <= 0 || character.vitalState.lastRegenCompletedTurnId == completedTurnId) return@forEach
-      val healed = (hp + rule.amountPerCompletedTurn).coerceAtMost(effective.maxHp)
+      val healAmount = regenAmount(rule, effective.maxHp)
+      if (!rule.enabled || healAmount <= 0 || character.vitalState.lastRegenCompletedTurnId == completedTurnId) return@forEach
+      val interval = rule.intervalCompletedTurns.coerceAtLeast(1)
+      val progress = (character.vitalState.completedTurnsTowardRegen + 1).coerceAtMost(interval)
+      val due = progress >= interval
+      val healed = if (due) (hp.toLong() + healAmount.toLong()).coerceAtMost(effective.maxHp.toLong()).toInt() else hp
       val vital = character.vitalState.copy(
         currentHp = healed,
         condition = conditionFor(healed, effective.maxHp, character.vitalState.condition, character.presence),
-        lastRegenCompletedTurnId = completedTurnId
+        lastRegenCompletedTurnId = completedTurnId,
+        completedTurnsTowardRegen = if (due) 0 else progress
       )
       next = next.copy(characters = next.characters + (id to character.copy(vitalState = vital)))
     }
@@ -526,6 +538,9 @@ object CharacterEquipmentSystem {
       val effective = CharacterStatEngine.effective(next, id)
       val hp = character.vitalState.currentHp.coerceIn(0, effective.maxHp)
       characters[id] = character.copy(
+        statProfile = character.statProfile.copy(
+          regen = if (id == KAI_ID) CharacterStatProfiles.forId(KAI_ID).regen else character.statProfile.regen
+        ),
         vitalState = character.vitalState.copy(
           currentHp = hp,
           condition = CharacterStatEngine.conditionFor(hp, effective.maxHp, character.vitalState.condition, character.presence)
@@ -1128,16 +1143,26 @@ class CharacterStatusEquipmentSystemTest {
 
   @Test fun energyAndRegenProfilesAreCorrect() {
     val s = state()
-    listOf(KAI_ID, IRIS_ID, SYVIAL_ID).forEach { id -> assertEquals(EnergyMode.INFINITE, s.characters.getValue(id).statProfile.energy.mode); assertEquals(4, s.characters.getValue(id).statProfile.regen.amountPerCompletedTurn) }
+    assertEquals(EnergyMode.INFINITE, s.characters.getValue(KAI_ID).statProfile.energy.mode); assertEquals(20, s.characters.getValue(KAI_ID).statProfile.regen.amountPerCompletedTurn)
+    listOf(IRIS_ID, SYVIAL_ID).forEach { id -> assertEquals(EnergyMode.INFINITE, s.characters.getValue(id).statProfile.energy.mode); assertEquals(4, s.characters.getValue(id).statProfile.regen.amountPerCompletedTurn) }
     assertEquals(EnergyMode.NOT_APPLICABLE, s.characters.getValue(AN_NHIEN_ID).statProfile.energy.mode); assertFalse(s.characters.getValue(AN_NHIEN_ID).statProfile.regen.enabled)
   }
 
   @Test fun regenRunsExactlyOnceAndZeroHpCannotBeRescued() {
     var s = state(); s = CharacterStatEngine.setCurrentHp(s, KAI_ID, 50)
-    val once = CharacterStatEngine.applyCompletedTurnRegen(s, "TURN_X"); assertEquals(54, once.characters.getValue(KAI_ID).vitalState.currentHp)
-    val twice = CharacterStatEngine.applyCompletedTurnRegen(once, "TURN_X"); assertEquals(54, twice.characters.getValue(KAI_ID).vitalState.currentHp)
+    val once = CharacterStatEngine.applyCompletedTurnRegen(s, "TURN_X"); assertEquals(70, once.characters.getValue(KAI_ID).vitalState.currentHp)
+    val twice = CharacterStatEngine.applyCompletedTurnRegen(once, "TURN_X"); assertEquals(70, twice.characters.getValue(KAI_ID).vitalState.currentHp)
     val zero = CharacterStatEngine.setCurrentHp(s, KAI_ID, 0); val after = CharacterStatEngine.applyCompletedTurnRegen(zero, "TURN_Z")
     assertEquals(0, after.characters.getValue(KAI_ID).vitalState.currentHp); assertEquals(CharacterCondition.DEFEATED, after.characters.getValue(KAI_ID).vitalState.condition)
+  }
+
+  @Test fun normalizationUpgradesLegacyKaiRegenToCurrentBalance() {
+    val current = state(); val kai = current.characters.getValue(KAI_ID)
+    val legacy = current.copy(characters = current.characters + (KAI_ID to kai.copy(
+      statProfile = kai.statProfile.copy(regen = HpRegenRule(4, "kai:passive-regeneration", true))
+    )))
+    val normalized = CharacterEquipmentSystem.normalize(legacy)
+    assertEquals(20, normalized.characters.getValue(KAI_ID).statProfile.regen.amountPerCompletedTurn)
   }
 
   @Test fun omnivaultMayHaveZeroCombatStatsWithAbilities() {

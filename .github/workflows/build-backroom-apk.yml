@@ -42,6 +42,7 @@ jobs:
           test -s android-apk/sync-kai-sru-assets.py
           test -s android-apk/patch-kai-sru-visuals.py
           test -s android-apk/apply-android-ui.py
+          test -s android-apk/patch-android-launch-safety.py
           test -s android-apk/patch-player-address-lock.py
           test -s android-apk/patch-runtime-canon-final.py
           test -s android-apk/patch-level-transition-final.py
@@ -95,7 +96,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py apply-android-ui.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -115,6 +116,10 @@ jobs:
           grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'ANDROID_DISPLAY_GEOMETRY_V1' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'ANDROID_DISPLAY_LAUNCH_SAFE_V2' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'safeApplyAndroidDisplayMode()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'safePushAndroidDisplayGeometry(insets)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'ANDROID_UI_KAI_SHIFT_RIGHT' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'getRoundedCorner(position)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -q 'LEVEL TRANSITION STATE LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
