@@ -119,4 +119,12 @@ if not sru_canon.is_file():
     raise RuntimeError("SRU canon patch missing: " + sru_canon.name)
 runpy.run_path(str(sru_canon), run_name="__main__")
 
-print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon.")
+# Conditional-audit historically rebuilds writerPrompt after the original prose contract.
+# Re-assert narrative clarity and current SRU identity only after all historical runtime
+# transformations have settled, then reuse the existing hard-issue repair transaction.
+narrative_sru = ROOT / "patch-narrative-sru-final.py"
+if not narrative_sru.is_file():
+    raise RuntimeError("Narrative/SRU final patch missing: " + narrative_sru.name)
+runpy.run_path(str(narrative_sru), run_name="__main__")
+
+print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, narrative clarity guard.")
