@@ -182,3 +182,5 @@ if pre_attach:
 
 MAIN.write_text(text, encoding="utf-8")
 print("Android launch safety V2 applied: OEM-safe immersive startup, Android 15+ cutout mode, attached WebView insets, geometry fallbacks.")
+
+# Release-branch CI trigger marker.
