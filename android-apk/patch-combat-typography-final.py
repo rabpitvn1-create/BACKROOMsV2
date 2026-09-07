@@ -111,7 +111,7 @@ skill_names = extract_skill_names()
 item_names = extract_item_names()
 
 html = INDEX.read_text(encoding="utf-8")
-for marker in ("PRESSURE_COMBAT_HUD_V1", 'id="log"', 'class="message'):
+for marker in ("PRESSURE_COMBAT_HUD_V1", 'id="log"', ".message"):
     if marker not in html:
         raise RuntimeError("Combat typography requires final UI marker: " + marker)
 
@@ -160,7 +160,12 @@ if marker not in html:
   if(window.__combatTypographyV1)return;window.__combatTypographyV1=true;
   var ITEM_NAMES=__ITEMS__;
   var SKILL_NAMES=__SKILLS__;
-  var STATIC_NAMES=['Kai Akechi','Kai','Iris','Syvial','Lucia "Lục"','Lucia Lục','Lucia','An Nhiên'];
+  var STATIC_NAMES=[
+    'Kai Akechi','Kai','Iris','Syvial','Lucia "Lục"','Lucia Lục','Lucia','An Nhiên',
+    'The Beast of Level 5','Biological Pipeline','Predatory Window','Hostile Faceling','Hotel Corpse Lure',
+    'Jeff the Killer','Jane the Killer','Skin-Stealer','Cable Mimic','False Puddle','Deathmoth','Slenderman',
+    'Paintings','Smiler','Wretch','Duller','Clump','Hound','Diệp Minh'
+  ];
   var scheduled=false;
 
   function escRe(value){return String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
