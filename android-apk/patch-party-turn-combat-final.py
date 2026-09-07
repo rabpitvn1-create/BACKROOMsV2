@@ -119,6 +119,7 @@ INDEX.write_text(html, encoding="utf-8")
 print("Combat actor swap transition installed: 180ms fade/slide out + 240ms fade/slide in, reduced-motion safe, empty-overlay placeholder supported.")
 
 # Keep the old automatic-combat layer as the compatibility baseline, then make
-# actor ownership authoritative and round-aware in the final true-turn pass.
+# actor ownership authoritative and round-aware in the final true-turn pass while
+# preserving Lucia's existing Entity-evasion gate.
 runpy.run_path(str(ROOT / "patch-auto-party-combat-final.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-true-turn-combat-final.py"), run_name="__main__")
+runpy.run_path(str(ROOT / "patch-true-turn-evasion-compat.py"), run_name="__main__")
