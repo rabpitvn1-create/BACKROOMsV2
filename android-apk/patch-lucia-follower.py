@@ -38,7 +38,7 @@ object LuciaCanon {
   const val NAME = "Lucia \"Lục\""
   const val AGE = 19
   const val HOME_LEVEL = 0
-  const val ENCOUNTER_CHANCE = "50%"
+  const val ENCOUNTER_CHANCE = "100%"
   const val AVATAR_REF = "avatars/lucia_avatar.jpg"
 
   val equipmentSlots: Map<String, String> = linkedMapOf(
@@ -121,7 +121,12 @@ if 'private val lucia = CharacterStatProfile(' not in stats:
     lucia_profile = '''  private val lucia = CharacterStatProfile(
     baseMaxHp = 100,
     energy = EnergyProfile.notApplicable(),
-    regen = HpRegenRule(),
+    regen = HpRegenRule(
+      sourceId = "lucia:passive-regeneration",
+      enabled = true,
+      percentOfMaxHp = 3,
+      intervalCompletedTurns = 3
+    ),
     str = 7,
     df = 7,
     agi = 8,
@@ -272,13 +277,13 @@ POLICY.write_text(policy, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Android runtime: 50% encounter only while EXPLORE is active in Level 0.
+# Android runtime: guaranteed encounter while EXPLORE is active in Level 0.
 # Once encountered, Lucia is persisted and the roll becomes ineligible.
 # ---------------------------------------------------------------------------
 main = MAIN.read_text(encoding="utf-8")
 if 'rolls.put("luciaEncounter"' not in main:
     roll_anchor = '    rolls.put("syvialReunion", thresholdRoll("syvialReunion", 10000, 25, physical && reunionEligibleAndroid(state, "syvial"), " follower encounter"));\n'
-    roll_line = roll_anchor + '    rolls.put("luciaEncounter", thresholdRoll("luciaEncounter", 10000, 5000, exploreAction && level == 0 && !flagSpawned(state, "lucia"), " Level 0 Lucia follower encounter"));\n'
+    roll_line = roll_anchor + '    rolls.put("luciaEncounter", thresholdRoll("luciaEncounter", 10000, 10000, exploreAction && level == 0 && !flagSpawned(state, "lucia"), " Level 0 Lucia follower encounter"));\n'
     if roll_anchor not in main:
         raise RuntimeError("Lucia encounter roll anchor missing")
     main = main.replace(roll_anchor, roll_line, 1)
@@ -316,7 +321,7 @@ if 'ensureSpecialFollowerInLegacyParty(state, "lucia", "Lucia \\"Lục\\"", fals
 
 if 'LUCIA FOLLOWER HARD LOCK:' not in main:
     return_anchor = '    return actionDirective + "\\nACTION_RUNTIME: " + actionRuntimeContext + "\\n" +\n'
-    return_new = '    return actionDirective + "\\nLUCIA FOLLOWER HARD LOCK: Lucia \\\"Lục\\\", nữ 19 tuổi, con người, binh nhì và chỉ huy cấp tiểu đội đặc nhiệm. luciaEncounter chỉ roll khi EXPLORE ở Level 0, xác suất 50%, và chỉ success=true mới cho cô xuất hiện. Sau lần gặp đầu, không roll lại. Nếu Party còn chỗ cô gia nhập follower; nếu đầy thì giữ present + joinPending, không đuổi thành viên khác. HP nền 100; STR 7, DF 7, AGI 8, CRIT 7. Trang bị đúng 3 slot: M4A1 cá nhân hóa với laser xanh 5mW, dao găm chiến đấu, đồng hồ định vị quân sự mất tín hiệu vệ tinh. Đạn khởi đầu 150 viên gồm 60 đang nạp và 90 dự phòng; đây là nguồn đạn riêng, không chiếm 3 loại vật phẩm quà tặng. Inventory quà tặng tối đa 3 loại, tối đa 100 mỗi loại. Ở Level 0, Lucia chỉ nghi ngờ tiếng động giờ thứ 4 là Hound; không được xác nhận Hound cư trú ở Level 0. Không tự thêm năng lực siêu nhiên hoặc lore.\\nACTION_RUNTIME: " + actionRuntimeContext + "\\n" +\n'
+    return_new = '    return actionDirective + "\\nLUCIA FOLLOWER HARD LOCK: Lucia \\\"Lục\\\", nữ 19 tuổi, con người, binh nhì và chỉ huy cấp tiểu đội đặc nhiệm. luciaEncounter chỉ roll khi EXPLORE ở Level 0, xác suất 100%, và chỉ success=true mới cho cô xuất hiện. Sau lần gặp đầu, không roll lại. Nếu Party còn chỗ cô gia nhập follower; nếu đầy thì giữ present + joinPending, không đuổi thành viên khác. HP nền 100; tự hồi 3% HP tối đa sau mỗi 3 lượt hoàn tất. STR 7, DF 7, AGI 8, CRIT 7. Trang bị đúng 3 slot: M4A1 cá nhân hóa với laser xanh 5mW, dao găm chiến đấu, đồng hồ định vị quân sự mất tín hiệu vệ tinh. Đạn khởi đầu 150 viên gồm 60 đang nạp và 90 dự phòng; đây là nguồn đạn riêng, không chiếm 3 loại vật phẩm quà tặng. Inventory quà tặng tối đa 3 loại, tối đa 100 mỗi loại. Ở Level 0, Lucia chỉ nghi ngờ tiếng động giờ thứ 4 là Hound; không được xác nhận Hound cư trú ở Level 0. Không tự thêm năng lực siêu nhiên hoặc lore.\\nACTION_RUNTIME: " + actionRuntimeContext + "\\n" +\n'
     if return_anchor not in main:
         raise RuntimeError("Lucia GM prompt anchor missing")
     main = main.replace(return_anchor, return_new, 1)
@@ -380,12 +385,28 @@ class LuciaFollowerTest {
     val state = GameState.initial()
     val lucia = state.characters.getValue(LUCIA_ID)
     assertFalse(LUCIA_ID in state.party.memberIds)
-    assertEquals("50%", lucia.metadata["encounterChance"])
+    assertEquals("100%", lucia.metadata["encounterChance"])
+    assertTrue(lucia.statProfile.regen.enabled)
+    assertEquals(3, lucia.statProfile.regen.percentOfMaxHp)
+    assertEquals(3, lucia.statProfile.regen.intervalCompletedTurns)
     assertEquals("0", lucia.metadata["encounterLevels"])
     assertEquals("EXPLORE", lucia.metadata["encounterAction"])
     assertEquals("60", lucia.metadata["startingLoadedAmmo"])
     assertEquals("90", lucia.metadata["startingReserveAmmo"])
     assertEquals("150", lucia.metadata["startingTotalAmmo"])
+  }
+
+  @Test fun luciaRegeneratesThreePercentEveryThirdCompletedTurn() {
+    var state = CharacterStatEngine.setCurrentHp(GameState.initial(), LUCIA_ID, 80)
+    state = CharacterStatEngine.applyCompletedTurnRegen(state, "TURN_L1")
+    assertEquals(80, state.characters.getValue(LUCIA_ID).vitalState.currentHp)
+    state = CharacterStatEngine.applyCompletedTurnRegen(state, "TURN_L2")
+    assertEquals(80, state.characters.getValue(LUCIA_ID).vitalState.currentHp)
+    state = CharacterStatEngine.applyCompletedTurnRegen(state, "TURN_L3")
+    assertEquals(83, state.characters.getValue(LUCIA_ID).vitalState.currentHp)
+    val duplicate = CharacterStatEngine.applyCompletedTurnRegen(state, "TURN_L3")
+    assertEquals(83, duplicate.characters.getValue(LUCIA_ID).vitalState.currentHp)
+    assertEquals(0, duplicate.characters.getValue(LUCIA_ID).vitalState.completedTurnsTowardRegen)
   }
 }
 ''', encoding="utf-8")
@@ -402,11 +423,11 @@ for marker in (
     'BLADE("blade")', 'WRIST("wrist")',
     'LUCIA_ID -> linkedMapOf(',
     'val LUCIA = InventoryProfile(maxTypes = 3, maxPerType = 100)',
-    'thresholdRoll("luciaEncounter", 10000, 5000, exploreAction && level == 0 && !flagSpawned(state, "lucia")',
+    'thresholdRoll("luciaEncounter", 10000, 10000, exploreAction && level == 0 && !flagSpawned(state, "lucia")',
     'LUCIA FOLLOWER HARD LOCK:',
     'assertEquals(3, profile.maxTypes)', 'assertEquals(100, profile.maxPerType)',
 ):
     if marker not in combined:
         raise RuntimeError("Lucia follower contract missing: " + marker)
 
-print("Lucia follower installed: Level 0 EXPLORE 50%, HP 100, stats <= 10, 3 equipment slots, 3x100 gift inventory.")
+print("Lucia follower installed: Level 0 EXPLORE 100%, 3% max-HP regen every 3 turns, HP 100, stats <= 10, 3 equipment slots, 3x100 gift inventory.")

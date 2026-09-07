@@ -40,7 +40,9 @@ data class EnergyProfile(
 data class HpRegenRule(
   val amountPerCompletedTurn: Int = 0,
   val sourceId: String? = null,
-  val enabled: Boolean = false
+  val enabled: Boolean = false,
+  val percentOfMaxHp: Int = 0,
+  val intervalCompletedTurns: Int = 1
 )
 
 data class CharacterStatProfile(
@@ -58,7 +60,8 @@ data class CharacterStatProfile(
 data class CharacterVitalState(
   val currentHp: Int = 100,
   val condition: CharacterCondition = CharacterCondition.HEALTHY,
-  val lastRegenCompletedTurnId: String? = null
+  val lastRegenCompletedTurnId: String? = null,
+  val completedTurnsTowardRegen: Int = 0
 )
 
 /** Derived-only view. Equipment integration comes in the later equipment step. */
@@ -77,7 +80,7 @@ object CharacterStatProfiles {
   private val kai = CharacterStatProfile(
     baseMaxHp = 100,
     energy = EnergyProfile.infinite(),
-    regen = HpRegenRule(4, "kai:passive-regeneration", true),
+    regen = HpRegenRule(20, "kai:passive-regeneration", true),
     str = 82,
     df = 78,
     agi = 92,
@@ -249,6 +252,8 @@ new_decode_end = '''    statusIds = json.optJSONArray("statusIds").strings().toS
     put("amountPerCompletedTurn", value.amountPerCompletedTurn)
     putNullable("sourceId", value.sourceId)
     put("enabled", value.enabled)
+    put("percentOfMaxHp", value.percentOfMaxHp)
+    put("intervalCompletedTurns", value.intervalCompletedTurns)
   }
 
   private fun decodeHpRegenRule(json: JSONObject?, fallback: HpRegenRule): HpRegenRule {
@@ -256,7 +261,9 @@ new_decode_end = '''    statusIds = json.optJSONArray("statusIds").strings().toS
     return HpRegenRule(
       amountPerCompletedTurn = json.optInt("amountPerCompletedTurn", fallback.amountPerCompletedTurn).coerceAtLeast(0),
       sourceId = json.nullableString("sourceId") ?: fallback.sourceId,
-      enabled = json.optBoolean("enabled", fallback.enabled)
+      enabled = json.optBoolean("enabled", fallback.enabled),
+      percentOfMaxHp = json.optInt("percentOfMaxHp", fallback.percentOfMaxHp).coerceIn(0, 100),
+      intervalCompletedTurns = json.optInt("intervalCompletedTurns", fallback.intervalCompletedTurns).coerceAtLeast(1)
     )
   }
 
@@ -264,6 +271,7 @@ new_decode_end = '''    statusIds = json.optJSONArray("statusIds").strings().toS
     put("currentHp", value.currentHp)
     put("condition", value.condition.name)
     putNullable("lastRegenCompletedTurnId", value.lastRegenCompletedTurnId)
+    put("completedTurnsTowardRegen", value.completedTurnsTowardRegen)
   }
 
   private fun decodeCharacterVitalState(json: JSONObject?, profile: CharacterStatProfile): CharacterVitalState {
@@ -271,7 +279,8 @@ new_decode_end = '''    statusIds = json.optJSONArray("statusIds").strings().toS
     return CharacterVitalState(
       currentHp = json.optInt("currentHp", profile.baseMaxHp).coerceAtLeast(0),
       condition = enumOr(CharacterCondition.HEALTHY, json.optString("condition")),
-      lastRegenCompletedTurnId = json.nullableString("lastRegenCompletedTurnId")
+      lastRegenCompletedTurnId = json.nullableString("lastRegenCompletedTurnId"),
+      completedTurnsTowardRegen = json.optInt("completedTurnsTowardRegen", 0).coerceAtLeast(0)
     )
   }
 
@@ -292,7 +301,7 @@ class CharacterStatSchemaTest {
     val kai = CharacterStatProfiles.forId(KAI_ID)
     assertEquals(100, kai.baseMaxHp)
     assertEquals(EnergyMode.INFINITE, kai.energy.mode)
-    assertEquals(4, kai.regen.amountPerCompletedTurn)
+    assertEquals(20, kai.regen.amountPerCompletedTurn)
     assertEquals(82, kai.str)
     assertEquals(78, kai.df)
     assertEquals(92, kai.agi)
@@ -330,7 +339,7 @@ class CharacterStatSchemaTest {
       id = KAI_ID,
       name = "Kai Akechi",
       statProfile = CharacterStatProfiles.forId(KAI_ID),
-      vitalState = CharacterVitalState(63, CharacterCondition.WOUNDED, "TURN_12")
+      vitalState = CharacterVitalState(63, CharacterCondition.WOUNDED, "TURN_12", 2)
     )
     val state = GameState.initial().copy(characters = GameState.initial().characters + (KAI_ID to custom))
     val decoded = GameStateCodec.decode(GameStateCodec.encode(state))
@@ -355,6 +364,9 @@ combined = SCHEMA.read_text(encoding="utf-8") + GAME_STATE.read_text(encoding="u
 for marker in (
     "data class CharacterStatProfile(",
     "data class CharacterVitalState(",
+    "val percentOfMaxHp: Int = 0",
+    "val intervalCompletedTurns: Int = 1",
+    "val completedTurnsTowardRegen: Int = 0",
     "data class EffectiveCharacterStats(",
     "COMMANDER / SUPREME MARKSMAN / HIGH-MOBILITY COMBATANT",
     "SCOUT / TARGET ELIMINATOR / DUAL-GUN MARKSMAN",
