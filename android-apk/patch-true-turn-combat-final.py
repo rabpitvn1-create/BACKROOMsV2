@@ -24,7 +24,8 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 # but committed one whole combat round at Kai's visual step. This finalizer makes
 # those visual turns authoritative subturns while preserving existing round-based
 # mechanics exactly once per full cycle:
-#   Kai -> Entity targets Kai -> Lucia -> Entity targets Lucia.
+#   Kai -> Entity targets Kai -> Lucia -> Entity targets Lucia
+#   -> Syvial -> Entity targets Syvial (when those companions are ACTIVE).
 #
 # Combat eventCounter, Entity regeneration, Kai completed-turn regeneration,
 # elapsed game time, Quick Step countdown and other round-scoped effects only
@@ -72,12 +73,21 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     return LUCIA_ID in state.party.memberIds && lucia.presence == CharacterPresence.ACTIVE && lucia.vitalState.currentHp > 0
   }
 
+  private fun syvialAvailableForAuto(state: GameState): Boolean {
+    val syvial = state.characters[SYVIAL_ID] ?: return false
+    return SYVIAL_ID in state.party.memberIds && syvial.presence == CharacterPresence.ACTIVE && syvial.vitalState.currentHp > 0
+  }
+
   private fun autoTurnOrder(state: GameState): List<String> = buildList {
     add("kai")
     add("entity:kai")
     if (luciaAvailableForAuto(state)) {
       add("lucia")
       add("entity:lucia")
+    }
+    if (syvialAvailableForAuto(state)) {
+      add("syvial")
+      add("entity:syvial")
     }
   }
 
@@ -96,14 +106,17 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
   private fun autoActorName(c: Snapshot, actorId: String): String = when (actorId) {
     "kai" -> "Kai Akechi"
     "lucia" -> "Lucia \"Lục\""
+    "syvial" -> "Syvial"
     "entity:kai" -> "${c.entityName} → Kai"
     "entity:lucia" -> "${c.entityName} → Lucia"
+    "entity:syvial" -> "${c.entityName} → Syvial"
     else -> actorId
   }
 
   private fun autoActorOverlay(actorId: String): String = when (actorId) {
     "kai" -> "file:///android_asset/kai_entity_overlay.png"
     "lucia" -> "file:///android_asset/lucia_entity_overlay.png"
+    "syvial" -> "file:///android_asset/syvial_entity_overlay.png"
     else -> ""
   }
 
@@ -155,9 +168,36 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
 '''
     combat = replace_once(combat, lucia_roll_old, lucia_roll_new, "Lucia independent hit chance scope")
 
-    # Lucia commits only her own attack and hands ownership to the Entity->Lucia subturn.
+    # Syvial gets an authoritative attack subturn instead of having a packaged
+    # overlay that can never be selected by the runtime.
     bleed_marker = '    if (c.entityHp > 0 && bleedTurns > 0) {\n'
-    lucia_boundary = r'''    if (splitAuto && autoActor == "lucia") {
+    lucia_boundary = r'''    if (splitAuto && autoActor == "syvial") {
+      val syvial = activePartyCharacter(resolvedState, SYVIAL_ID)
+      if (syvial != null && c.entityHp > 0) {
+        val syvialRangeBonus = when (c.range) { RangeBand.CLOSE -> 18; RangeBand.NEAR -> 10; RangeBand.FAR -> -5 }
+        val syvialHitChance = (58 + syvialRangeBonus + c.opening * 11 + c.momentum * 6).coerceIn(20, 96)
+        val syvialRoll = roll(c.copy(eventCounter = c.eventCounter + 307), 100)
+        val syvialEvasionRoll = roll(c.copy(eventCounter = c.eventCounter + 311), 100)
+        if (syvialRoll < syvialHitChance && syvialEvasionRoll >= ENTITY_EVASION_PERCENT) {
+          val weaponDamage = CharacterStatEngine.weaponDamage(resolvedState, SYVIAL_ID)
+          val damage = max(1, weaponDamage - profile.armor)
+          val hp = max(0, c.entityHp - damage)
+          c = c.copy(entityHp = hp, entityCondition = condition(hp, c.entityMaxHp), noise = min(100, c.noise + 20))
+          log += "Syvial tấn công: -$damage HP (${c.entityHp}/${c.entityMaxHp})."
+        } else {
+          log += "Syvial tấn công nhưng ${c.entityName} tránh được đòn."
+        }
+      }
+      if (c.entityHp <= 0) {
+        val persisted = encode(resolvedState, c.copy(phase = Phase.RESOLVED, entityCondition = EntityCondition.DESTROYED))
+        return Resolution(clearCombatOnly(persisted), true, log.joinToString(" ") + " ${c.entityName} đã bị tiêu diệt.", entityDestroyed = true)
+      }
+      val staged = withAutoCursor(encode(resolvedState, c), (autoCursor + 1) % autoOrder.size)
+      return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
+    }
+
+    // Lucia commits only her own attack and hands ownership to the Entity->Lucia subturn.
+    if (splitAuto && autoActor == "lucia") {
       if (c.entityHp <= 0) {
         val persisted = encode(resolvedState, c.copy(phase = Phase.RESOLVED, entityCondition = EntityCondition.DESTROYED))
         val cleared = clearCombatOnly(persisted)
@@ -214,7 +254,7 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
 '''
     combat = replace_once(combat, response_marker, kai_boundary + response_marker, "Kai -> Entity subturn boundary")
 
-    # Target Lucia on the second Entity subturn. The existing response block is left
+    # Target Lucia or Syvial on their Entity subturn. The existing response block is left
     # byte-for-byte intact for manual combat and Entity->Kai, including Diệp Minh,
     # Quick Step and Silent Lullaby behavior.
     resolve_start = combat.index(resolve_anchor)
@@ -222,16 +262,18 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     response_start = combat.index(response_marker, resolve_start, resolve_end)
     quick_start = combat.index('    if (quickStepTurns > 0) {\n', response_start, resolve_end)
     existing_response = combat[response_start + len(response_marker):quick_start]
-    lucia_response = r'''    if (splitAuto && autoActor == "entity:lucia") {
-      val lucia = resolvedState.characters[LUCIA_ID]
+    lucia_response = r'''    if (splitAuto && (autoActor == "entity:lucia" || autoActor == "entity:syvial")) {
+      val targetId = if (autoActor == "entity:syvial") SYVIAL_ID else LUCIA_ID
+      val targetName = if (targetId == SYVIAL_ID) "Syvial" else "Lucia \"Lục\""
+      val target = resolvedState.characters[targetId]
       if (entityStunnedThisTurn) {
         log += "Silent Lullaby: ${c.entityName} bị Stun và mất lượt phản ứng hiện tại."
-      } else if (lucia == null || lucia.presence != CharacterPresence.ACTIVE || lucia.vitalState.currentHp <= 0) {
-        log += "${c.entityName} không còn mục tiêu Lucia hợp lệ cho lượt phản ứng này."
+      } else if (target == null || target.presence != CharacterPresence.ACTIVE || target.vitalState.currentHp <= 0) {
+        log += "${c.entityName} không còn mục tiêu $targetName hợp lệ cho lượt phản ứng này."
       } else {
-        val effective = CharacterStatEngine.effective(resolvedState, LUCIA_ID)
-        val luciaMaxHp = effective.maxHp
-        val luciaHp = lucia.vitalState.currentHp.coerceIn(0, luciaMaxHp)
+        val effective = CharacterStatEngine.effective(resolvedState, targetId)
+        val targetMaxHp = effective.maxHp
+        val targetHp = target.vitalState.currentHp.coerceIn(0, targetMaxHp)
         val incomingRoll = roll(c.copy(eventCounter = c.eventCounter + 157), 100)
         val defense = when (c.cover) { Cover.HARD -> 22; Cover.PARTIAL -> 10; Cover.EXPOSED -> 0 } +
           CombatStatMath.agilityDefense(effective.agi) * 4 + max(0, c.momentum) * 2
@@ -239,21 +281,21 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         if (incomingRoll < enemyChance) {
           val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
           val damage = if (c.entityKey == DIEP_MINH_KEY) {
-            percentDamage(luciaMaxHp, DIEP_MINH_ATTACK_PERCENT)
+            percentDamage(targetMaxHp, DIEP_MINH_ATTACK_PERCENT)
           } else {
             max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 173), 7) -
               when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
           }
-          resolvedState = CharacterStatEngine.setCurrentHp(resolvedState, LUCIA_ID, luciaHp - damage)
-          val after = resolvedState.characters[LUCIA_ID]?.vitalState?.currentHp ?: max(0, luciaHp - damage)
+          resolvedState = CharacterStatEngine.setCurrentHp(resolvedState, targetId, targetHp - damage)
+          val after = resolvedState.characters[targetId]?.vitalState?.currentHp ?: max(0, targetHp - damage)
           c = c.copy(momentum = max(-3, c.momentum - 1))
           log += if (c.entityKey == DIEP_MINH_KEY) {
-            "Diệp Minh phản công Lucia \"Lục\": -$damage HP (${DIEP_MINH_ATTACK_PERCENT}% Max HP; $after/$luciaMaxHp)."
+            "Diệp Minh phản công $targetName: -$damage HP (${DIEP_MINH_ATTACK_PERCENT}% Max HP; $after/$targetMaxHp)."
           } else {
-            "${c.entityName} phản công Lucia \"Lục\": -$damage HP ($after/$luciaMaxHp)."
+            "${c.entityName} phản công $targetName: -$damage HP ($after/$targetMaxHp)."
           }
         } else {
-          log += "Lucia \"Lục\" tránh được lượt phản công của ${c.entityName}."
+          log += "$targetName tránh được lượt phản công của ${c.entityName}."
         }
       }
     } else {
@@ -261,11 +303,17 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     wrapped_response = response_marker + lucia_response + existing_response + '    }\n\n'
     combat = combat[:response_start] + wrapped_response + combat[quick_start:]
 
-    # With Lucia alive, Entity->Kai is an intermediate subturn. Do not tick
+    # With a companion alive, Entity->Kai is an intermediate subturn. Do not tick
     # Quick Step, Entity regeneration, telegraph reset, time, or completed-turn
     # regeneration until Entity->Lucia closes the round.
     quick_marker = '    if (quickStepTurns > 0) {\n'
-    entity_kai_boundary = r'''    if (splitAuto && autoActor == "entity:kai" && luciaAvailableForAuto(resolvedState)) {
+    entity_kai_boundary = r'''    if (splitAuto && autoActor == "entity:kai" &&
+      (luciaAvailableForAuto(resolvedState) || syvialAvailableForAuto(resolvedState))) {
+      val staged = withAutoCursor(encode(resolvedState, c), (autoCursor + 1) % autoOrder.size)
+      return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
+    }
+
+    if (splitAuto && autoActor == "entity:lucia" && syvialAvailableForAuto(resolvedState)) {
       val staged = withAutoCursor(encode(resolvedState, c), (autoCursor + 1) % autoOrder.size)
       return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
     }
@@ -293,7 +341,7 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     put("activeActorId", actorId)
     put("activeActorName", autoActorName(c, actorId))
     put("activeActorSlot", cursor)
-    put("activeActorTargetId", when (actorId) { "entity:kai" -> "kai"; "entity:lucia" -> "lucia"; else -> JSONObject.NULL })
+    put("activeActorTargetId", when (actorId) { "entity:kai" -> "kai"; "entity:lucia" -> "lucia"; "entity:syvial" -> "syvial"; else -> JSONObject.NULL })
     put("activeActorOverlayUri", autoActorOverlay(actorId))
     put("autoMode", "TRUE_TURN_V2")
 '''
@@ -306,7 +354,10 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         'actionKind.equals("AUTO_COMBAT_STEP", true)',
         'autoActor == "lucia"',
         'autoActor == "entity:lucia"',
-        'CharacterStatEngine.setCurrentHp(resolvedState, LUCIA_ID',
+        'autoActor == "syvial"',
+        'autoActor == "entity:syvial"',
+        'file:///android_asset/syvial_entity_overlay.png',
+        'CharacterStatEngine.setCurrentHp(resolvedState, targetId',
         'roundCompleted = false',
         'put("autoMode", "TRUE_TURN_V2")',
         'put("autoOrder", JSONArray(order))',
@@ -413,9 +464,9 @@ new_script = r'''<script>
   function orderIds(c){return Array.isArray(c&&c.autoOrder)&&c.autoOrder.length?c.autoOrder.map(String):['kai','entity:kai'];}
   function actorForId(c,id){
     id=String(id||'kai');
-    if(id.indexOf('entity:')===0){var target=id.split(':')[1]||'';return {id:id,name:String(c.entityName||c.entityKey||'Entity')+' → '+(target==='lucia'?'Lucia':'Kai'),type:'entity',overlayUri:''};}
+    if(id.indexOf('entity:')===0){var target=id.split(':')[1]||'';return {id:id,name:String(c.entityName||c.entityKey||'Entity')+' → '+(target==='lucia'?'Lucia':target==='syvial'?'Syvial':'Kai'),type:'entity',overlayUri:''};}
     var member=partyMembers(c).find(function(x){return x.id===id;});
-    var uri=id==='kai'?'file:///android_asset/kai_entity_overlay.png':id==='lucia'?'file:///android_asset/lucia_entity_overlay.png':'';
+    var uri=id==='kai'?'file:///android_asset/kai_entity_overlay.png':id==='lucia'?'file:///android_asset/lucia_entity_overlay.png':id==='syvial'?'file:///android_asset/syvial_entity_overlay.png':'';
     return member||{id:id,name:id,type:'party',overlayUri:uri};
   }
   function currentFromCore(c){
@@ -508,6 +559,7 @@ new_tests = r'''
     var state = initial.copy(party = PartyState(memberIds = listOf(KAI_ID, LUCIA_ID)))
     state = CombatRuntime.start(state, "diep_minh")
     assertEquals("kai", CombatRuntime.toJson(state)!!.getString("activeActorId"))
+    assertEquals("file:///android_asset/kai_entity_overlay.png", CombatRuntime.toJson(state)!!.getString("activeActorOverlayUri"))
 
     val kai = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
     assertTrue(kai.handled)
@@ -522,6 +574,7 @@ new_tests = r'''
     assertFalse(entityKai.roundCompleted)
     assertEquals(1, CombatRuntime.active(entityKai.state)!!.eventCounter)
     assertEquals("lucia", CombatRuntime.toJson(entityKai.state)!!.getString("activeActorId"))
+    assertEquals("file:///android_asset/lucia_entity_overlay.png", CombatRuntime.toJson(entityKai.state)!!.getString("activeActorOverlayUri"))
 
     val lucia = CombatRuntime.resolve(entityKai.state, "AUTO_COMBAT_STEP", "auto")
     assertTrue(lucia.handled)
@@ -535,6 +588,27 @@ new_tests = r'''
     assertTrue(entityLucia.roundCompleted)
     assertEquals(1, CombatRuntime.active(entityLucia.state)!!.eventCounter)
     assertEquals("kai", CombatRuntime.toJson(entityLucia.state)!!.getString("activeActorId"))
+  }
+
+  @Test fun trueTurnAutoCombatExposesSyvialOverlayAndIndependentSubturns() {
+    val initial = SpecialFollowersCanon.ensure(GameState.initial())
+    var state = initial.copy(party = PartyState(memberIds = listOf(KAI_ID, SYVIAL_ID)))
+    state = CombatRuntime.start(state, "diep_minh")
+
+    val kai = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
+    val entityKai = CombatRuntime.resolve(kai.state, "AUTO_COMBAT_STEP", "auto")
+    val syvialJson = CombatRuntime.toJson(entityKai.state)!!
+    assertEquals("syvial", syvialJson.getString("activeActorId"))
+    assertEquals("file:///android_asset/syvial_entity_overlay.png", syvialJson.getString("activeActorOverlayUri"))
+
+    val syvial = CombatRuntime.resolve(entityKai.state, "AUTO_COMBAT_STEP", "auto")
+    assertFalse(syvial.roundCompleted)
+    assertTrue(syvial.reply.contains("Syvial tấn công"))
+    assertEquals("entity:syvial", CombatRuntime.toJson(syvial.state)!!.getString("activeActorId"))
+
+    val entitySyvial = CombatRuntime.resolve(syvial.state, "AUTO_COMBAT_STEP", "auto")
+    assertTrue(entitySyvial.roundCompleted)
+    assertEquals("kai", CombatRuntime.toJson(entitySyvial.state)!!.getString("activeActorId"))
   }
 
   @Test fun trueTurnAutoCombatWithoutLuciaCompletesAfterEntityTargetsKai() {
@@ -568,8 +642,10 @@ for marker in (
     "trueTurnAutoCombatCommitsKaiEntityLuciaEntityAsIndependentSubturns",
     "trueTurnAutoCombatWithoutLuciaCompletesAfterEntityTargetsKai",
     "trueTurnAutoCursorSurvivesCodecSaveLoadBetweenActors",
+    "trueTurnAutoCombatExposesSyvialOverlayAndIndependentSubturns",
     'CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")',
     'assertEquals("entity:lucia", CombatRuntime.toJson(lucia.state)!!.getString("activeActorId"))',
+    'assertEquals("file:///android_asset/syvial_entity_overlay.png", syvialJson.getString("activeActorOverlayUri"))',
 ):
     if marker not in test:
         raise RuntimeError("True-turn combat regression marker missing: " + marker)

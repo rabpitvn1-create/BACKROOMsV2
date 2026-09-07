@@ -21,6 +21,18 @@ for marker in (
 if "PRESSURE_COMBAT_HUD_V1" not in html:
     raise RuntimeError("Combat actor transition requires the final Pressure Combat HUD")
 
+# The native snapshot bridge renders the default Kai image after WebView render/turn
+# callbacks. Re-apply the authoritative combat actor after that render so Lucia or
+# Syvial is not immediately overwritten by Kai.
+snapshot_scroll_old = "renderSnapshot();scrollBottom();"
+snapshot_scroll_new = "renderSnapshot();if(typeof window.syncCombatActorTransition==='function')window.syncCombatActorTransition();scrollBottom();"
+snapshot_render_count = main.count(snapshot_scroll_old)
+if snapshot_render_count < 2:
+    raise RuntimeError(f"Expected native Snapshot render callbacks, found {snapshot_render_count}")
+main = main.replace(snapshot_scroll_old, snapshot_scroll_new)
+if main.count(snapshot_scroll_new) != snapshot_render_count:
+    raise RuntimeError("Combat actor transition must survive every native Snapshot rendering callback")
+
 style = r'''<style id="combatActorSwapStyle">
 /* COMBAT_ACTOR_SWAP_V1 */
 .snapshot .snapshot-character{will-change:opacity,transform,filter}
@@ -116,6 +128,7 @@ for marker in (
         raise RuntimeError("Combat actor transition marker missing: " + marker)
 
 INDEX.write_text(html, encoding="utf-8")
+MAIN.write_text(main, encoding="utf-8")
 print("Combat actor swap transition installed: 180ms fade/slide out + 240ms fade/slide in, reduced-motion safe, empty-overlay placeholder supported.")
 
 # Keep the old automatic-combat layer as the compatibility baseline, then make
