@@ -173,9 +173,28 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
       return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
     }
 
+    // Entity response handling also needs these party-presence flags after the
+    // Kai-only skill block has closed.
+    val irisActive = activePartyCharacter(resolvedState, IRIS_ID) != null
+    val syvialActive = activePartyCharacter(resolvedState, SYVIAL_ID) != null
+
     if (!splitAuto || autoActor == "kai") {
 '''
     combat = replace_once(combat, bleed_marker, lucia_boundary + bleed_marker, "Lucia subturn boundary")
+
+    companion_scope_old = '''    val irisActive = activePartyCharacter(resolvedState, IRIS_ID) != null
+    val syvialCharacter = activePartyCharacter(resolvedState, SYVIAL_ID)
+    val syvialActive = syvialCharacter != null
+'''
+    companion_scope_new = '''    val syvialCharacter = activePartyCharacter(resolvedState, SYVIAL_ID)
+'''
+    companion_scope_count = combat.count(companion_scope_old)
+    if companion_scope_count != 1:
+        raise RuntimeError(
+            "true-turn companion presence scope: expected exactly 1 anchor, "
+            f"found {companion_scope_count}"
+        )
+    combat = combat.replace(companion_scope_old, companion_scope_new, 1)
 
     response_marker = '    // Enemy response. Diệp Minh uses percentage damage; all other Entity behavior remains unchanged.\n'
     kai_boundary = r'''    }
