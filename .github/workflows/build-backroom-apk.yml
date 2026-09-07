@@ -2,10 +2,15 @@ name: Build Backroom APK
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/build-backroom-apk.yml'
   push:
     branches:
       - main
-      - 'release/**'
     paths:
       - 'android-apk/**'
       - '.github/workflows/build-backroom-apk.yml'
