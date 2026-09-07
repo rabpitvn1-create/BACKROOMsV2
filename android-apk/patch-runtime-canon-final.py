@@ -112,4 +112,11 @@ if not web_entity_canon.is_file():
     raise RuntimeError("Web Entity canon patch missing: " + web_entity_canon.name)
 runpy.run_path(str(web_entity_canon), run_name="__main__")
 
-print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement.")
+# Latest user-locked SRU organization canon is applied after the historical
+# knowledge layers so retired Black Blood organization labels cannot win back.
+sru_canon = ROOT / "patch-sru-canon.py"
+if not sru_canon.is_file():
+    raise RuntimeError("SRU canon patch missing: " + sru_canon.name)
+runpy.run_path(str(sru_canon), run_name="__main__")
+
+print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon.")
