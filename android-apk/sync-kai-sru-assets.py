@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import hashlib
 import io
+import runpy
 import urllib.request
 
 from PIL import Image
@@ -90,3 +91,6 @@ print(
     "Kai SRU visuals synchronized and verified: "
     f"snapshot={len(snapshot)} bytes, entity={len(entity)} bytes, avatar_png={avatar_output.stat().st_size} bytes"
 )
+
+# Keep all Entity-encounter character overlays in the same verified release-input step.
+runpy.run_path(str(ROOT / "sync-party-combat-assets.py"), run_name="__main__")
