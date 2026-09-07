@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -116,3 +117,6 @@ for marker in (
 
 INDEX.write_text(html, encoding="utf-8")
 print("Combat actor swap transition installed: 180ms fade/slide out + 240ms fade/slide in, reduced-motion safe, empty-overlay placeholder supported.")
+
+# The last layer now turns the transition shell into a complete automatic Party combat loop.
+runpy.run_path(str(ROOT / "patch-auto-party-combat-final.py"), run_name="__main__")
