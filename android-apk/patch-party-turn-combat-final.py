@@ -1,45 +1,118 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core/CombatRuntime.kt"
-FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 INDEX = ROOT / "app/src/main/assets/index.html"
 
-
-def section(text: str, start: str, end: str, label: str) -> str:
-    a = text.find(start)
-    if a < 0:
-        raise RuntimeError(f"{label}: start marker missing: {start}")
-    b = text.find(end, a + len(start))
-    if b < 0:
-        raise RuntimeError(f"{label}: end marker missing: {end}")
-    return text[a:b]
-
-
-# Temporary inspection pass. This file is intentionally promoted to the final implementation
-# after the generated combat/status patch stack is inspected on CI.
-combat = CORE.read_text(encoding="utf-8")
-facade = FACADE.read_text(encoding="utf-8")
 main = MAIN.read_text(encoding="utf-8")
 html = INDEX.read_text(encoding="utf-8")
 
-print("=== PARTY TURN FINAL INSPECTION: CombatRuntime.resolve ===")
-print(section(combat, "  fun resolve(state: GameState, actionKind: String, action: String): Resolution {", "\n  fun toJson(state: GameState): JSONObject?", "CombatRuntime.resolve"))
-print("=== PARTY TURN FINAL INSPECTION: CombatRuntime model/header ===")
-print(combat[:combat.find("  fun resolve(state: GameState")])
-print("=== PARTY TURN FINAL INSPECTION: GameCoreFacade.processCombat ===")
-print(section(facade, "  fun processCombat(legacyStateJson: String, actionKind: String, action: String): String {", "\n  private fun loadOrMigrate", "GameCoreFacade.processCombat"))
-print("=== PARTY TURN FINAL INSPECTION: Android combat bridge ===")
-needle = "requireGameCore().processCombat(stateJson, actionKind, action)"
-pos = main.find(needle)
-if pos < 0:
-    raise RuntimeError("Android processCombat bridge missing")
-print(main[max(0, pos - 900):pos + 1200])
-print("=== PARTY TURN FINAL INSPECTION: renderer role/class ===")
-for token in ('x.role===\"player\"', 'PRESSURE_COMBAT_HUD_V1'):
-    pos = html.find(token)
-    if pos >= 0:
-        print(html[max(0, pos - 500):pos + 1200])
+# This finalizer runs after the complete Android patch stack. Keep the transition at the
+# presentation layer so it does not alter combat math, turn ownership, HP, status effects,
+# Entity cleanup, or any canonical gameplay rule.
+for marker in (
+    "box.querySelector('.snapshot-character')",
+    "file:///android_asset/kai_entity_overlay.png",
+    "function activeEntityKey()",
+):
+    if marker not in main:
+        raise RuntimeError("Combat actor transition requires final Snapshot marker: " + marker)
+if "PRESSURE_COMBAT_HUD_V1" not in html:
+    raise RuntimeError("Combat actor transition requires the final Pressure Combat HUD")
 
-print("Party turn final inspection completed.")
+style = r'''<style id="combatActorSwapStyle">
+/* COMBAT_ACTOR_SWAP_V1 */
+.snapshot .snapshot-character{will-change:opacity,transform,filter}
+.snapshot .snapshot-character.combat-actor-swap-out{animation:combatActorSwapOut .18s ease-in forwards}
+.snapshot .snapshot-character.combat-actor-swap-in{animation:combatActorSwapIn .24s cubic-bezier(.2,.8,.2,1) both}
+.snapshot.combat-actor-empty .snapshot-character{visibility:hidden!important}
+.snapshot .combat-actor-empty-slot{position:absolute;right:calc(-4% - 5px);bottom:0;width:42%;height:86%;pointer-events:none;opacity:0}
+.snapshot .combat-actor-empty-slot.combat-actor-swap-in{animation:combatActorEmptyIn .24s ease-out both}
+@keyframes combatActorSwapOut{from{opacity:1;transform:translateX(0) scale(1);filter:blur(0)}to{opacity:0;transform:translateX(-14px) scale(.985);filter:blur(1.5px)}}
+@keyframes combatActorSwapIn{from{opacity:0;transform:translateX(14px) scale(.985);filter:blur(1.5px)}to{opacity:1;transform:translateX(0) scale(1);filter:blur(0)}}
+@keyframes combatActorEmptyIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.snapshot .snapshot-character.combat-actor-swap-out,.snapshot .snapshot-character.combat-actor-swap-in,.snapshot .combat-actor-empty-slot.combat-actor-swap-in{animation:none!important;transform:none!important;filter:none!important}}
+</style>
+'''
+
+script = r'''<script>
+/* COMBAT_ACTOR_SWAP_V1 */
+(function(){
+  if(window.__combatActorSwapV1)return;window.__combatActorSwapV1=true;
+  var OUT_MS=180,IN_MS=240,token=0;
+  function payloadObject(raw){
+    if(raw&&typeof raw==='object')return raw;
+    try{return JSON.parse(String(raw||'{}'));}catch(e){return {};}
+  }
+  function reducedMotion(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}
+  function snapshotBox(){return document.getElementById('snapshot');}
+  function characterImage(box){return box&&box.querySelector('.snapshot-character');}
+  function removeEmpty(box){var old=box&&box.querySelector('.combat-actor-empty-slot');if(old)old.remove();if(box)box.classList.remove('combat-actor-empty');}
+  function emptySlot(box){
+    removeEmpty(box);
+    var slot=document.createElement('div');slot.className='combat-actor-empty-slot';slot.setAttribute('aria-hidden','true');box.appendChild(slot);box.classList.add('combat-actor-empty');return slot;
+  }
+  function finishIncoming(box,img,p,myToken){
+    if(myToken!==token||!box)return;
+    removeEmpty(box);
+    var hasOverlay=p.hasOverlay===true&&String(p.overlayUri||'').trim()!=='';
+    if(hasOverlay){
+      if(!img){img=document.createElement('img');img.className='snapshot-character';img.alt=String(p.name||p.actorId||'Combat actor');box.appendChild(img);}
+      img.style.visibility='';img.hidden=false;img.src=String(p.overlayUri);img.dataset.combatActorId=String(p.actorId||'');img.dataset.combatActorSlot=String(p.slot==null?'':p.slot);
+      img.classList.remove('combat-actor-swap-out','combat-actor-swap-in');
+      void img.offsetWidth;img.classList.add('combat-actor-swap-in');
+      window.setTimeout(function(){if(myToken===token&&img)img.classList.remove('combat-actor-swap-in');},IN_MS+40);
+    }else{
+      if(img){img.classList.remove('combat-actor-swap-out','combat-actor-swap-in');img.style.visibility='hidden';img.dataset.combatActorId=String(p.actorId||'');img.dataset.combatActorSlot=String(p.slot==null?'':p.slot);}
+      var blank=emptySlot(box);void blank.offsetWidth;blank.classList.add('combat-actor-swap-in');
+    }
+    box.dataset.combatActorId=String(p.actorId||'');box.dataset.combatActorSlot=String(p.slot==null?'':p.slot);
+  }
+  window.backroomCombatActorSwap=function(raw){
+    var p=payloadObject(raw),box=snapshotBox();if(!box)return false;
+    var actorId=String(p.actorId||'').trim();if(!actorId)return false;
+    var currentId=String(box.dataset.combatActorId||'');
+    if(currentId===actorId&&!p.force)return true;
+    var img=characterImage(box),myToken=++token;
+    if(reducedMotion()||!img||img.style.visibility==='hidden'){
+      finishIncoming(box,img,p,myToken);return true;
+    }
+    img.classList.remove('combat-actor-swap-in','combat-actor-swap-out');void img.offsetWidth;img.classList.add('combat-actor-swap-out');
+    window.setTimeout(function(){finishIncoming(box,img,p,myToken);},OUT_MS);
+    return true;
+  };
+  window.backroomCombatActorTransitionMs=OUT_MS+IN_MS;
+  window.backroomCombatActorForState=function(){
+    var c=window.state&&state.combat;if(!c||c.active!==true)return null;
+    var actorId=String(c.activeActorId||c.actorId||'').trim();if(!actorId)return null;
+    var slot=Number(c.activeActorSlot);if(!Number.isFinite(slot))slot=0;
+    var uri=String(c.activeActorOverlayUri||'').trim();
+    return {actorId:actorId,slot:slot,name:String(c.activeActorName||actorId),overlayUri:uri,hasOverlay:!!uri};
+  };
+  function syncCombatActor(){var p=window.backroomCombatActorForState();if(p)window.backroomCombatActorSwap(p);}
+  var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){var r=oldRender.apply(this,arguments);syncCombatActor();return r;};}
+  var oldTurn=window.backroomTurn;if(typeof oldTurn==='function'){window.backroomTurn=function(json){var r=oldTurn.call(this,json);syncCombatActor();return r;};}
+  window.syncCombatActorTransition=syncCombatActor;
+})();
+</script>
+'''
+
+if "COMBAT_ACTOR_SWAP_V1" not in html:
+    if "</head>" not in html or "</body>" not in html:
+        raise RuntimeError("Combat actor transition insertion anchors missing")
+    html = html.replace("</head>", style + "</head>", 1)
+    html = html.replace("</body>", script + "</body>", 1)
+
+for marker in (
+    "COMBAT_ACTOR_SWAP_V1",
+    "window.backroomCombatActorSwap=function(raw)",
+    "window.backroomCombatActorTransitionMs=OUT_MS+IN_MS",
+    "prefers-reduced-motion:reduce",
+    "combat-actor-empty-slot",
+    "c.activeActorId||c.actorId",
+):
+    if marker not in html:
+        raise RuntimeError("Combat actor transition marker missing: " + marker)
+
+INDEX.write_text(html, encoding="utf-8")
+print("Combat actor swap transition installed: 180ms fade/slide out + 240ms fade/slide in, reduced-motion safe, empty-overlay placeholder supported.")
