@@ -183,4 +183,15 @@ if pre_attach:
 MAIN.write_text(text, encoding="utf-8")
 print("Android launch safety V2 applied: OEM-safe immersive startup, Android 15+ cutout mode, attached WebView insets, geometry fallbacks.")
 
+# apply-android-ui.py runs immediately before this finalizer, so install the Header artwork only
+# after the canonical topbar CSS exists. Keeping it separate prevents the launch-safety logic from
+# owning presentation details while still using the established post-UI ordering.
+header_patch = ROOT / "patch-header-image.py"
+if not header_patch.is_file():
+    raise RuntimeError("Header image patch missing")
+exec(compile(header_patch.read_text(encoding="utf-8"), str(header_patch), "exec"), {
+    "__name__": "__main__",
+    "__file__": str(header_patch),
+})
+
 # Release-branch CI trigger marker.
