@@ -1,0 +1,9 @@
+Backroom 1.1.67 Debug
+
+- Tinh chỉnh giọng văn Game Master bằng lightweight Haiku teacher distillation trên 100 mẫu, không thay đổi trọng số model runtime.
+- Đồng bộ các quy tắc văn phong mới vào cả prompt nền trong MainActivity.java và prompt runtime do patch-ai-orchestrator.py sinh ra, tránh bị mất khi build APK.
+- Giảm việc lặp lại hành động người chơi; ưu tiên đi thẳng vào hệ quả, phản ứng và điều Kai trực tiếp nhận thấy.
+- Ưu tiên chi tiết giác quan/không gian cụ thể, động từ chính xác và nhịp câu phù hợp áp lực hiện tại; cho phép lượt yên giữ nhịp yên thay vì ép cao trào.
+- Giữ hội thoại tự nhiên, hạn chế exposition và tránh để NPC tiết lộ kiến thức họ không có.
+- Tránh văn phong kiểu báo cáo state, dự báo vô căn cứ, chồng tính từ và các nhãn kinh dị chung chung thay cho bằng chứng cụ thể.
+- Giữ nguyên GameCore, state authority, routing, validation, inventory, snapshot, transition logic và provider fallback; thay đổi chỉ tập trung vào prose của Game Master.
