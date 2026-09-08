@@ -22,6 +22,14 @@ new_combined = '''combined = "\\n".join(read(path) for path in [
 if text.count(old_combined) != 1:
     raise RuntimeError(f"legacy assertion scope anchor count: {text.count(old_combined)}")
 text = text.replace(old_combined, new_combined, 1)
+old_required = '''    "Storytelling",
+    "sync-play-font-assets.py",
+):'''
+new_required = '''    "Storytelling",
+):'''
+if text.count(old_required) != 1:
+    raise RuntimeError(f"canonical required-list anchor count: {text.count(old_required)}")
+text = text.replace(old_required, new_required, 1)
 path.write_text(text, encoding="utf-8")
 self_path.unlink()
-print("Fixed one-time migration delimiters and legacy assertion scope.")
+print("Fixed one-time migration delimiters and assertion scopes.")
