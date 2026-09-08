@@ -14,15 +14,21 @@ function requireText(needle, label = needle) {
 }
 
 requireText("STORYTELLING_SINGLE_FRAME_V3");
+requireText("function storytellingViewport(log)");
 requireText("function storytellingSurface(log)");
 requireText("function markGameMasterSegment(message)");
 requireText("function positionStorytellingSurface(log,surface)");
-requireText("log.insertBefore(article,log.firstChild)", "Storytelling surface is a direct log child");
+requireText("viewport.insertBefore(article,log)", "Storytelling surface is fixed outside the scrolling log");
 requireText("message.classList.add('storytelling-segment')", "GM messages remain in transcript order");
 requireText(":scope > .message.storytelling-segment", "only direct GM message children join Storytelling");
+requireText(".storytelling-viewport{position:relative;flex:1 1 auto;min-height:0;overflow:hidden}", "fixed Storytelling viewport");
+requireText(".storytelling-surface{position:absolute;z-index:0;inset:5px", "fixed rectangular Storytelling frame");
+requireText(".storytelling-viewport>.log{position:relative;z-index:1;width:100%;height:100%;min-height:0;overflow-y:auto", "only log content scrolls");
 assert.equal(count("function storytellingSurface(log)"), 1, "Exactly one Storytelling frame authority must be packaged");
 assert.ok(!html.includes("surface.appendChild(message)"), "Messages must never be moved inside Storytelling");
 assert.ok(!html.includes("body.appendChild(segment)"), "Legacy GM regrouping must not survive");
+assert.ok(!html.includes("surface.style.top="), "Storytelling frame must not follow scroll content");
+assert.ok(!html.includes("surface.style.height="), "Storytelling frame height must not follow message positions");
 assert.ok(!html.includes("while(i<children.length&&roleOf(children[i])==='GAME MASTER'"), "Consecutive-only GM grouping must not survive");
 
 for (const rule of [
