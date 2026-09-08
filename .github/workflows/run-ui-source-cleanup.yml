@@ -1,0 +1,42 @@
+name: One-time UI source cleanup
+
+on:
+  push:
+    branches:
+      - cleanup/ui-typography-authority
+    paths:
+      - 'android-apk/migrate-ui-authority.py'
+      - '.github/workflows/run-ui-source-cleanup.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cleanup/ui-typography-authority
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Consolidate gameplay UI source authority
+        run: |
+          set -euo pipefail
+          python android-apk/migrate-ui-authority.py
+          git diff --check
+          test ! -e android-apk/migrate-ui-authority.py
+          test ! -e .github/workflows/run-ui-source-cleanup.yml
+          test ! -e android-apk/patch-game-master-storytelling-frame-final.py
+          test ! -e android-apk/patch-combat-typography-final.py
+          grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2' android-apk/apply-android-ui.py
+          grep -q 'sync-play-font-assets.py' .github/workflows/build-backroom-apk.yml
+      - name: Commit migrated sources
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Consolidate gameplay UI presentation authority'
+          git push origin HEAD:cleanup/ui-typography-authority
