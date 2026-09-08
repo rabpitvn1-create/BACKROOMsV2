@@ -1,7 +1,6 @@
 """Apply the Entity dice/reward contract after all legacy runtime generators."""
 from pathlib import Path
 import re
-import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -86,11 +85,3 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity policy applied: independent 2% dice including boss; queued encounters; guaranteed catalog kill drops.")
-
-# Presentation-only final layer. Run after the Entity policy because this script is
-# the last entry in the Android patch chain; no gameplay math/state/canon code is
-# changed by the typography finalizer.
-typography_final = ROOT / "patch-combat-typography-final.py"
-if not typography_final.is_file():
-    raise RuntimeError("Combat typography finalizer missing: " + typography_final.name)
-runpy.run_path(str(typography_final), run_name="__main__")

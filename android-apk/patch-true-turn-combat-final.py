@@ -517,28 +517,12 @@ new_script = r'''<script>
 </script>'''
 html = html[:script_start] + new_script + html[script_end:]
 
-# Party overlays need a real safe inset. Entity placement is deliberately untouched
-# because Entity sprites have heterogeneous dimensions and will be tuned separately.
-ui_style = r'''<style id="trueTurnCombatUiStyle">
-/* TRUE_TURN_COMBAT_UI_V2 */
-.snapshot .snapshot-character{right:8px!important}
-.log{padding-top:calc(var(--ui-gap,10px) + 8px)!important}
-.log .message:not(.player){width:calc(100% - 10px);margin-left:auto;margin-right:auto;box-shadow:0 0 0 1px rgba(88,101,111,.18)}
-</style>
-'''
-if "TRUE_TURN_COMBAT_UI_V2" not in html:
-    if "</head>" not in html:
-        raise RuntimeError("True-turn UI head anchor missing")
-    html = html.replace("</head>", ui_style + "</head>", 1)
 
 for marker in (
     "TRUE_TURN_AUTOPLAY_V2",
     "AUTO_COMBAT_STEP",
     "TRUE TURN AUTO",
     "c.activeActorId",
-    "TRUE_TURN_COMBAT_UI_V2",
-    ".snapshot .snapshot-character{right:8px!important}",
-    ".log .message:not(.player){width:calc(100% - 10px)",
 ):
     if marker not in html:
         raise RuntimeError("True-turn WebView marker missing: " + marker)

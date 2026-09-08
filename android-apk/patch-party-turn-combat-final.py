@@ -138,4 +138,3 @@ print("Combat actor swap transition installed: 180ms fade/slide out + 240ms fade
 # preserving Lucia's existing Entity-evasion gate.
 runpy.run_path(str(ROOT / "patch-auto-party-combat-final.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-true-turn-evasion-compat.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-game-master-storytelling-frame-final.py"), run_name="__main__")
