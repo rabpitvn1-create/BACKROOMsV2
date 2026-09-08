@@ -6,6 +6,7 @@ on:
       - cleanup/ui-typography-authority
     paths:
       - 'android-apk/migrate-ui-authority.py'
+      - 'android-apk/fix-ui-migration-delimiters.py'
       - '.github/workflows/run-ui-source-cleanup.yml'
 
 permissions:
@@ -24,8 +25,10 @@ jobs:
       - name: Consolidate gameplay UI source authority
         run: |
           set -euo pipefail
+          python android-apk/fix-ui-migration-delimiters.py
           python android-apk/migrate-ui-authority.py
           git diff --check
+          test ! -e android-apk/fix-ui-migration-delimiters.py
           test ! -e android-apk/migrate-ui-authority.py
           test ! -e .github/workflows/run-ui-source-cleanup.yml
           test ! -e android-apk/patch-game-master-storytelling-frame-final.py
