@@ -155,7 +155,7 @@ for asset_name in ("kai_entity_overlay.png", "lucia_entity_overlay.png", "syvial
 
 # ---------------------------------------------------------------------------
 # WebView: repair the pre-existing HUD/actor-swap state lookup, add a COMBAT
-# popup, lock manual actions during combat, and replay one visual actor subturn
+# popup, keep only navigation macros locked during combat, and replay one visual actor subturn
 # every two seconds. Exactly one authoritative AUTO_COMBAT resolve is submitted
 # per complete visual cycle. Entity subturns are presentation steps only, so
 # Diệp Minh cannot fire his round-scoped ultimate multiple times in one cycle.
@@ -183,20 +183,12 @@ sync_old = '''function syncPrimaryActions(){
 sync_new = '''function syncPrimaryActions(){
   const hasText=!!(actionEl&&actionEl.value.trim());
   const combatLocked=!!(state&&state.combat&&state.combat.active===true);
-  if(submitEl)submitEl.disabled=busy||combatLocked||!hasText;
+  if(submitEl)submitEl.disabled=busy||!hasText;
   if(searchActionButton)searchActionButton.disabled=busy||combatLocked;
   if(exploreActionButton)exploreActionButton.disabled=busy||combatLocked;
-  if(actionEl)actionEl.disabled=combatLocked;
 }
 '''
-html = replace_once(html, sync_old, sync_new, "combat manual-action lock")
-
-html = replace_once(
-    html,
-    'formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;',
-    'formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy||(state&&state.combat&&state.combat.active===true))return;',
-    "combat form submit lock",
-)
+html = replace_once(html, sync_old, sync_new, "combat macro-action lock")
 html = replace_once(
     html,
     'function submitMacroAction(kind,label){\n  if(busy)return;\n',
@@ -373,6 +365,6 @@ INDEX.write_text(html, encoding="utf-8")
 
 print(
     "Auto Party Combat V1 installed: repaired Pressure Combat state binding, automatic round resolution, "
-    "2-second Kai/Entity/follower visual rotation, Lucia auto-attack, COMBAT popup, manual-input lock, "
+    "2-second Kai/Entity/follower visual rotation, Lucia auto-attack, COMBAT popup, navigation-macro lock, "
     "and round-atomic Diệp Minh protection."
 )
