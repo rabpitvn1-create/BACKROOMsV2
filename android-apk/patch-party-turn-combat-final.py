@@ -60,6 +60,16 @@ script = r'''<script>
   function reducedMotion(){return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);}
   function snapshotBox(){return document.getElementById('snapshot');}
   function characterImage(box){return box&&box.querySelector('.snapshot-character');}
+  function imageSrc(img){return String((img&&img.getAttribute('src'))||(img&&img.src)||'').trim();}
+  function actorDomMatches(box,img,p){
+    var actorId=String(p.actorId||'').trim(),overlayUri=String(p.overlayUri||'').trim();
+    var hasOverlay=p.hasOverlay===true&&overlayUri!=='';
+    if(hasOverlay){
+      return !!img&&img.style.visibility!=='hidden'&&!img.hidden&&imageSrc(img)===overlayUri&&String(img.dataset.combatActorId||'')===actorId;
+    }
+    var blank=box&&box.querySelector('.combat-actor-empty-slot');
+    return !!blank&&(!img||img.style.visibility==='hidden'||img.hidden);
+  }
   function removeEmpty(box){var old=box&&box.querySelector('.combat-actor-empty-slot');if(old)old.remove();if(box)box.classList.remove('combat-actor-empty');}
   function emptySlot(box){
     removeEmpty(box);
@@ -86,8 +96,9 @@ script = r'''<script>
     var p=payloadObject(raw),box=snapshotBox();if(!box)return false;
     var actorId=String(p.actorId||'').trim();if(!actorId)return false;
     var currentId=String(box.dataset.combatActorId||'');
-    if(currentId===actorId&&!p.force)return true;
-    var img=characterImage(box),myToken=++token;
+    var img=characterImage(box);
+    if(currentId===actorId&&!p.force&&actorDomMatches(box,img,p))return true;
+    var myToken=++token;
     if(reducedMotion()||!img||img.style.visibility==='hidden'){
       finishIncoming(box,img,p,myToken);return true;
     }
@@ -124,6 +135,8 @@ for marker in (
     "prefers-reduced-motion:reduce",
     "combat-actor-empty-slot",
     "img=characterImage(box)||img",
+    "function actorDomMatches(box,img,p)",
+    "currentId===actorId&&!p.force&&actorDomMatches(box,img,p)",
     "c.activeActorId||c.actorId",
 ):
     if marker not in html:
