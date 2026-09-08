@@ -142,7 +142,7 @@ jobs:
           grep -q 'ANDROID_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
           grep -q 'ANDROID_THREE_ACTIONS_V1' android-apk/app/src/main/assets/index.html
           grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2' android-apk/app/src/main/assets/index.html
-          grep -q 'STORYTELLING_SINGLE_FRAME_V4' android-apk/app/src/main/assets/index.html
+          grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5' android-apk/app/src/main/assets/index.html
           grep -q 'ANDROID_SWIPE_GESTURE_V2' android-apk/app/src/main/assets/index.html
           grep -q -- '--android-radius-tl' android-apk/app/src/main/assets/index.html
           grep -q 'grid-template-columns:repeat(3,minmax(0,1fr))' android-apk/app/src/main/assets/index.html
@@ -201,7 +201,7 @@ jobs:
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_EDGE_UI_V1'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_SWIPE_UI_V1'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2'
-          unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'STORYTELLING_SINGLE_FRAME_V4'
+          unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_SWIPE_GESTURE_V2'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'data:image/webp;base64,'
           ! unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1'
