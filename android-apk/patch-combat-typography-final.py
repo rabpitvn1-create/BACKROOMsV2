@@ -17,7 +17,7 @@ FONT_LICENSE_PATH = FONT_DIR / "OFL-Play.txt"
 
 # Pin the upstream font source to an immutable Google Fonts commit. Play Bold is
 # a compact futuristic display face with Vietnamese glyph coverage. It is used
-# only for combat names/skills, never for body copy.
+# for combat names/skills and Game Master log typography, never for player copy.
 PLAY_COMMIT = "e36afc7567e2c4dbe669ca5810e0c77f307295a0"
 PLAY_FONT_URL = (
     "https://raw.githubusercontent.com/google/fonts/"
@@ -151,6 +151,13 @@ if marker not in html:
   font-weight:700;
   letter-spacing:.025em;
 }
+/* GAME_MASTER_PLAY_FONT_V1: same local Play Bold face used by combat display typography. */
+.message.game-master-play .role,
+.message.game-master-play .text{
+  font-family:'BackroomPlay',system-ui,sans-serif;
+  font-weight:700;
+  letter-spacing:.025em;
+}
 </style>
 '''
 
@@ -232,12 +239,19 @@ if marker not in html:
     if(cursor<text.length)fragment.appendChild(document.createTextNode(text.slice(cursor)));
     node.parentNode.replaceChild(fragment,node);return true;
   }
+  function isGameMasterMessage(message){
+    if(!message)return false;
+    var role=message.querySelector('.role');
+    return !!(role&&String(role.textContent||'').trim().toUpperCase()==='GAME MASTER');
+  }
   function isCombatMessage(message){
     if(!message)return false;
     if(message.classList.contains('combat'))return true;
     var role=message.querySelector('.role');return !!(role&&String(role.textContent||'').trim().toUpperCase()==='COMBAT');
   }
   function decorateMessage(message){
+    if(!message)return;
+    if(isGameMasterMessage(message))message.classList.add('game-master-play');
     if(!isCombatMessage(message)||message.dataset.combatTypography==='1')return;
     var textRoot=message.querySelector('.text')||message;
     var walker=document.createTreeWalker(textRoot,NodeFilter.SHOW_TEXT,null);
@@ -271,12 +285,15 @@ if marker not in html:
 
 for required in (
     "COMBAT_TYPOGRAPHY_V1",
+    "GAME_MASTER_PLAY_FONT_V1",
     "fonts/Play-Bold.ttf",
     "combat-sem-item",
     "combat-sem-damage",
     "combat-sem-heal",
     "combat-sem-name",
     "combat-sem-skill",
+    "game-master-play",
+    "isGameMasterMessage",
     "MutationObserver",
     "backroomDecorateCombatTypography",
 ):
@@ -289,6 +306,6 @@ for forbidden in ("data:font/", "font/ttf;base64", "application/x-font-ttf;base6
 
 INDEX.write_text(html, encoding="utf-8")
 print(
-    "Combat typography applied: cyan-green underlined Items, blood-red DMG, bright-green healing, "
-    f"Play Bold names/skills; items={len(item_names)}, skills={len(skill_names)}."
+    "Typography applied: cyan-green underlined Items, blood-red DMG, bright-green healing, "
+    f"Play Bold combat names/skills and Game Master text; items={len(item_names)}, skills={len(skill_names)}."
 )
