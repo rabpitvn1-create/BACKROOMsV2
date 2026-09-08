@@ -357,8 +357,8 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 .topbar>div:first-child{min-width:0;overflow:hidden}.eyebrow{font-size:8px;line-height:1;letter-spacing:.12em}.topbar h1{margin:2px 0 0;font-size:14px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.turn{font-size:9px;line-height:1;white-space:nowrap}.turn strong{font-size:16px}
 .snapshot{position:relative;flex:0 0 clamp(148px,24dvh,250px);width:auto;height:auto;margin:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) 0 calc(var(--android-safe-left) + var(--ui-edge));border:1px solid #2b3339;border-radius:var(--panel-radius);overflow:hidden;background:#080a0c}
 .snapshot img{width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center}
-.log{flex:1 1 auto;height:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));display:grid;align-content:start;gap:var(--ui-gap)}
-.message{width:100%;border:1px solid #283137;border-left:3px solid #454e56;border-radius:var(--panel-radius);padding:9px 10px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message.gm{border-left-color:#71808a;background:#171e23}.role{margin-bottom:4px}.text{line-height:1.45}
+.log{position:relative;flex:1 1 auto;height:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));display:grid;align-content:start;gap:var(--ui-gap)}
+.message{position:relative;z-index:1;width:100%;border:1px solid #283137;border-left:3px solid #454e56;border-radius:var(--panel-radius);padding:9px 10px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message.gm{border-left-color:#71808a;background:#171e23}.role{margin-bottom:4px}.text{line-height:1.45}
 .composer{flex:0 0 auto;display:grid;gap:var(--ui-gap);padding:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge))}
 .composer textarea{width:100%;min-height:54px;max-height:92px;resize:none;padding:9px 10px;border:1px solid #303a42;border-radius:var(--control-radius);background:#090c0f;color:#fff;outline:none}.composer textarea:focus{border-color:#65727c}
 .primary-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ui-gap);width:100%}
@@ -381,11 +381,11 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 @font-face{font-family:'BackroomPlay';src:url('fonts/Play-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}
 .snapshot .snapshot-character{right:8px!important}
 .log{padding-top:calc(var(--ui-gap,10px) + 8px)!important}
-.message.storytelling{width:calc(100% - 10px);margin-left:auto;margin-right:auto;border:1px solid #3b444d;border-left:3px solid #71808a;background:#171e23;box-shadow:none;padding:0;overflow:hidden;font-family:var(--gameplay-font);font-weight:400}
-.storytelling-header{padding:8px 10px 7px;color:#c9d2da;border-bottom:1px solid #2b3137;background:#171e23;font-family:var(--gameplay-font);font-size:10px;font-weight:400;letter-spacing:.12em}
-.storytelling-body{padding:10px}
-.storytelling-segment{white-space:pre-wrap;line-height:1.55;font-family:var(--gameplay-font);font-weight:400;color:#eef1f3}
-.storytelling-segment+.storytelling-segment{margin-top:14px}
+.storytelling-surface{position:absolute;z-index:0;left:calc(var(--android-safe-left) + var(--ui-edge) + 5px);right:calc(var(--android-safe-right) + var(--ui-edge) + 5px);border:1px solid #3b444d;border-left:3px solid #71808a;border-radius:var(--panel-radius);background:#171e23;box-shadow:none;pointer-events:none;overflow:hidden}
+.storytelling-header{padding:8px 10px 7px;color:#c9d2da;border-bottom:1px solid #2b3137;background:#171e23;font-family:var(--gameplay-font);font-size:10px;font-weight:700;letter-spacing:.12em}
+.message.storytelling-segment{width:calc(100% - 10px);margin-left:auto;margin-right:auto;border:0;background:transparent;box-shadow:none;padding:10px;font-family:var(--gameplay-font);font-weight:400;color:#eef1f3;white-space:pre-wrap;line-height:1.55}
+.message.storytelling-segment.storytelling-first{padding-top:43px}
+.message.player,.message.player .text,.status{font-family:var(--gameplay-font);font-weight:400}
 .message.combat,.message.combat .role,.message.combat .text{font-family:var(--gameplay-font);font-weight:400}
 #combatHud{display:none;margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));border:1px solid #444b52;border-radius:var(--panel-radius);background:#0b0e10;padding:10px;font-family:var(--gameplay-font);font-weight:400}
 #combatHud.active{display:block}
@@ -524,39 +524,40 @@ presentation_script_template = r'''<script id="androidGameplayPresentation">
   }
   function roleOf(message){var role=message&&message.querySelector('.role');return role?String(role.textContent||'').trim().toUpperCase():'';}
   function isWarning(message){return !!(message&&message.classList.contains('warning'));}
-  function storytellingContainer(log){
+  function storytellingSurface(log){
     for(var i=0;i<log.children.length;i++){
       var child=log.children[i];
-      if(child.classList&&child.classList.contains('storytelling')&&child.dataset.storytelling==='1')return child;
+      if(child.classList&&child.classList.contains('storytelling-surface')&&child.dataset.storytelling==='1')return child;
     }
-    var article=document.createElement('article');article.className='message storytelling';article.dataset.storytelling='1';
+    var article=document.createElement('aside');article.className='storytelling-surface';article.dataset.storytelling='1';article.setAttribute('aria-hidden','true');
     var header=document.createElement('div');header.className='storytelling-header';header.textContent='Storytelling';
-    var body=document.createElement('div');body.className='storytelling-body';
-    article.appendChild(header);article.appendChild(body);log.insertBefore(article,log.firstChild);return article;
+    article.appendChild(header);log.insertBefore(article,log.firstChild);return article;
   }
-  function moveGameMasterIntoStorytelling(message,body){
-    var segment=document.createElement('div');segment.className='storytelling-segment';
-    if(message.dataset&&message.dataset.pending==='1')segment.dataset.pending='1';
-    if(message.classList&&message.classList.contains('pending'))segment.classList.add('pending');
-    var text=message.querySelector('.text');
-    if(text){while(text.firstChild)segment.appendChild(text.firstChild);}else{segment.textContent=String(message.textContent||'').trim();}
-    body.appendChild(segment);message.remove();decorateRoot(segment);
+  function markGameMasterSegment(message){
+    message.classList.add('storytelling-segment');message.dataset.storytellingSegment='1';
+    decorateRoot(message.querySelector('.text')||message);
+  }
+  function positionStorytellingSurface(log,surface){
+    var segments=Array.prototype.slice.call(log.querySelectorAll(':scope > .message.storytelling-segment'));
+    log.querySelectorAll(':scope > .message.storytelling-first').forEach(function(node){node.classList.remove('storytelling-first');});
+    if(!segments.length){if(surface)surface.remove();return;}
+    if(!surface)surface=storytellingSurface(log);
+    segments[0].classList.add('storytelling-first');
+    var first=segments[0],last=segments[segments.length-1],top=first.offsetTop,bottom=last.offsetTop+last.offsetHeight;
+    surface.style.top=top+'px';surface.style.height=Math.max(0,bottom-top)+'px';
   }
   function normalizeLog(){
     var log=document.getElementById('log');if(!log||normalizing)return;normalizing=true;
     try{
-      var children=Array.prototype.slice.call(log.children),gm=[];
+      var children=Array.prototype.slice.call(log.children),hasStorytelling=false;
       children.forEach(function(message){
         if(!message.classList||!message.classList.contains('message'))return;
         var role=roleOf(message);
         if(role==='COMBAT'){message.classList.add('combat');decorateRoot(message.querySelector('.text')||message);return;}
-        if(role==='GAME MASTER'&&!isWarning(message))gm.push(message);
+        if(role==='GAME MASTER'&&!isWarning(message)){markGameMasterSegment(message);hasStorytelling=true;}
       });
-      if(gm.length){
-        var article=storytellingContainer(log),body=article.querySelector('.storytelling-body');
-        gm.forEach(function(message){moveGameMasterIntoStorytelling(message,body);});
-        decorateRoot(body);
-      }
+      if(!hasStorytelling)hasStorytelling=!!log.querySelector(':scope > .message.storytelling-segment');
+      positionStorytellingSurface(log,hasStorytelling?storytellingSurface(log):log.querySelector(':scope > .storytelling-surface'));
     }finally{normalizing=false;}
   }
   function decorateGameplay(){
@@ -600,8 +601,9 @@ for token in (
     "STORYTELLING_SINGLE_FRAME_V3",
     "header.textContent='Storytelling'",
     "function finishSwipe(dx,dy)",
-    "function storytellingContainer(log)",
-    "function moveGameMasterIntoStorytelling(message,body)",
+    "function storytellingSurface(log)",
+    "function markGameMasterSegment(message)",
+    "function positionStorytellingSurface(log,surface)",
     "storytelling-segment",
     'id="searchActionButton"',
     'id="submit"',
@@ -620,7 +622,7 @@ for token in (
 
 if "while(i<children.length&&roleOf(children[i])==='GAME MASTER'" in html:
     raise RuntimeError("Legacy consecutive-only Storytelling grouping survived single-frame normalization")
-if "storytelling-entry-role" in html:
+if "storytelling-entry-role" in html or "surface.appendChild(message)" in html:
     raise RuntimeError("Player/Combat transcript entries must remain outside the Storytelling frame")
 
 INDEX.write_text(html, encoding="utf-8")
