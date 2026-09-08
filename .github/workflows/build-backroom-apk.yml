@@ -145,6 +145,10 @@ jobs:
           grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5' android-apk/app/src/main/assets/index.html
           grep -q 'ANDROID_SWIPE_GESTURE_V2' android-apk/app/src/main/assets/index.html
           grep -q -- '--android-radius-tl' android-apk/app/src/main/assets/index.html
+          grep -q -- '--android-ime-bottom' android-apk/app/src/main/assets/index.html
+          grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0' android-apk/app/src/main/assets/index.html
+          grep -Fq 'WindowInsets.Type.ime()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'android:windowSoftInputMode="adjustResize"' android-apk/app/src/main/AndroidManifest.xml
           grep -q 'grid-template-columns:repeat(3,minmax(0,1fr))' android-apk/app/src/main/assets/index.html
           grep -q 'data:image/webp;base64,' android-apk/app/src/main/assets/index.html
           grep -q "font-family:var(--gameplay-font)" android-apk/app/src/main/assets/index.html
@@ -187,6 +191,8 @@ jobs:
           BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.70.apk)
           grep -q "package: name='com.rabpit.backroom' versionCode='72' versionName='1.1.70'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
+          MANIFEST_TREE=$("$BUILD_TOOLS/aapt" dump xmltree Backroom-1.1.70.apk AndroidManifest.xml)
+          grep -Eq 'windowSoftInputMode.*0x10' <<<"$MANIFEST_TREE"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.70.apk
           unzip -l Backroom-1.1.70.apk | grep -q 'assets/index.html'
           unzip -l Backroom-1.1.70.apk | grep -q 'assets/entity/hound.png'
@@ -203,6 +209,8 @@ jobs:
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'ANDROID_SWIPE_GESTURE_V2'
+          unzip -p Backroom-1.1.70.apk assets/index.html | grep -q -- '--android-ime-bottom'
+          unzip -p Backroom-1.1.70.apk assets/index.html | grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0'
           unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'data:image/webp;base64,'
           ! unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1'
           ! unzip -p Backroom-1.1.70.apk assets/index.html | grep -q 'COMBAT_TYPOGRAPHY_V1'
