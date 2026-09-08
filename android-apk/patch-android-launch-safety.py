@@ -167,6 +167,9 @@ required = (
     "Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM",
     "safePushAndroidDisplayGeometry(insets)",
     "safePushAndroidDisplayGeometry(view.getRootWindowInsets())",
+    "WindowInsets.Type.ime()",
+    "getSystemWindowInsetBottom() - insets.getStableInsetBottom()",
+    "--android-ime-bottom",
     'Log.w("BackroomDisplay"',
 )
 for marker in required:
