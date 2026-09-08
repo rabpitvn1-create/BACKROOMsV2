@@ -1,0 +1,9 @@
+Backroom 1.1.70 Debug
+
+- Hợp nhất Storytelling, COMBAT log, Pressure Combat HUD và combat popup về một presentation authority duy nhất trong apply-android-ui.py.
+- Game Master giờ dùng một khung Storytelling nguyên khối với header riêng, không còn mỗi đoạn bị bọc thành card độc lập.
+- Đồng bộ Storytelling, COMBAT, nội dung COMBAT, Pressure Combat HUD và combat popup về Roboto/system UI weight 800.
+- Giới hạn Play Bold chỉ cho semantic gameplay như tên riêng, Entity, kỹ năng, effect, item, equipment, DMG và HP; dùng chung bảng màu semantic.
+- Loại bỏ các lớp presentation cũ patch-game-master-storytelling-frame-final.py và patch-combat-typography-final.py cùng CSS trùng lặp từ các combat finalizer.
+- Giữ fix combat overlay của Lucia/Syvial từ PR #22, bao gồm kiểm tra DOM thực tế để tránh trạng thái actor cũ làm overlay không cập nhật.
+- Thêm CI guards để các marker/style presentation cũ không thể quay lại âm thầm trong APK build.
