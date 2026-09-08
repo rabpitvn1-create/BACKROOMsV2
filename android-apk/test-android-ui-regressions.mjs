@@ -13,22 +13,21 @@ function requireText(needle, label = needle) {
   assert.ok(html.includes(needle), `Missing Android UI contract: ${label}`);
 }
 
-requireText("STORYTELLING_SINGLE_FRAME_V3");
-requireText("function storytellingViewport(log)");
-requireText("function storytellingSurface(log)");
+requireText("STORYTELLING_SINGLE_FRAME_V4");
+requireText("function storytellingLayout(log)");
 requireText("function markGameMasterSegment(message)");
-requireText("function positionStorytellingSurface(log,surface)");
-requireText("viewport.insertBefore(article,log)", "Storytelling surface is fixed outside the scrolling log");
+requireText("panel.appendChild(header);panel.appendChild(body)", "Storytelling header stays outside its scrolling body");
+requireText("log.appendChild(panel);log.appendChild(external)", "Storytelling and external transcript are separate siblings");
 requireText("message.classList.add('storytelling-segment')", "GM messages remain in transcript order");
-requireText(":scope > .message.storytelling-segment", "only direct GM message children join Storytelling");
-requireText(".storytelling-viewport{position:relative;flex:1 1 auto;min-height:0;overflow:hidden}", "fixed Storytelling viewport");
-requireText(".storytelling-surface{position:absolute;z-index:0;inset:5px", "fixed rectangular Storytelling frame");
-requireText(".storytelling-viewport>.log{position:relative;z-index:1;width:100%;height:100%;min-height:0;overflow-y:auto", "only log content scrolls");
-assert.equal(count("function storytellingSurface(log)"), 1, "Exactly one Storytelling frame authority must be packaged");
-assert.ok(!html.includes("surface.appendChild(message)"), "Messages must never be moved inside Storytelling");
-assert.ok(!html.includes("body.appendChild(segment)"), "Legacy GM regrouping must not survive");
-assert.ok(!html.includes("surface.style.top="), "Storytelling frame must not follow scroll content");
-assert.ok(!html.includes("surface.style.height="), "Storytelling frame height must not follow message positions");
+requireText("layout.body.appendChild(message);gmMoved=true;return", "only GM messages enter Storytelling body");
+requireText("layout.external.appendChild(message);externalMoved=true", "player and combat messages stay outside Storytelling");
+requireText(".log{flex:1 1 auto;height:auto;min-height:0;overflow:hidden", "outer log cannot leak text");
+requireText(".storytelling-panel{flex:1 1 auto;min-height:0;", "fixed Storytelling panel");
+requireText("background:#171e23;box-shadow:none;overflow:hidden;display:flex;flex-direction:column", "Storytelling clips both edges");
+requireText(".storytelling-body{flex:1 1 auto;min-height:0;overflow-y:auto", "only GM body scrolls");
+requireText(".external-transcript{flex:0 1 auto;", "player/combat transcript is outside the panel");
+assert.equal(count("function storytellingLayout(log)"), 1, "Exactly one Storytelling layout authority must be packaged");
+assert.ok(!html.includes("storytelling-surface"), "Obsolete underlay Storytelling surface must not survive");
 assert.ok(!html.includes("while(i<children.length&&roleOf(children[i])==='GAME MASTER'"), "Consecutive-only GM grouping must not survive");
 
 for (const rule of [
