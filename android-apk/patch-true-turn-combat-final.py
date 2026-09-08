@@ -78,17 +78,17 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     return SYVIAL_ID in state.party.memberIds && syvial.presence == CharacterPresence.ACTIVE && syvial.vitalState.currentHp > 0
   }
 
-  private fun autoTurnOrder(state: GameState): List<String> = buildList {
-    add("kai")
-    add("entity:kai")
-    if (luciaAvailableForAuto(state)) {
-      add("lucia")
-      add("entity:lucia")
+  private fun autoCombatantIds(state: GameState): List<String> = buildList {
+    add(KAI_ID)
+    state.party.memberIds.forEach { memberId ->
+      if (memberId == KAI_ID || memberId in this) return@forEach
+      if (memberId == LUCIA_ID && luciaAvailableForAuto(state)) add(memberId)
+      if (memberId == SYVIAL_ID && syvialAvailableForAuto(state)) add(memberId)
     }
-    if (syvialAvailableForAuto(state)) {
-      add("syvial")
-      add("entity:syvial")
-    }
+  }
+
+  private fun autoTurnOrder(state: GameState): List<String> = autoCombatantIds(state).flatMap { memberId ->
+    listOf(memberId, "entity:$memberId")
   }
 
   private fun currentAutoCursor(state: GameState, order: List<String>): Int {
@@ -114,9 +114,9 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
   }
 
   private fun autoActorOverlay(actorId: String): String = when (actorId) {
-    "kai" -> "file:///android_asset/kai_entity_overlay.png"
-    "lucia" -> "file:///android_asset/lucia_entity_overlay.png"
-    "syvial" -> "file:///android_asset/syvial_entity_overlay.png"
+    "kai", "entity:kai" -> "file:///android_asset/kai_entity_overlay.png"
+    "lucia", "entity:lucia" -> "file:///android_asset/lucia_entity_overlay.png"
+    "syvial", "entity:syvial" -> "file:///android_asset/syvial_entity_overlay.png"
     else -> ""
   }
 
@@ -303,23 +303,16 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     wrapped_response = response_marker + lucia_response + existing_response + '    }\n\n'
     combat = combat[:response_start] + wrapped_response + combat[quick_start:]
 
-    # With a companion alive, Entity->Kai is an intermediate subturn. Do not tick
-    # Quick Step, Entity regeneration, telegraph reset, time, or completed-turn
-    # regeneration until Entity->Lucia closes the round.
+    # Every Entity->member response except the last pair is an intermediate
+    # subturn. Party slot order, not a hard-coded companion name, selects next.
     quick_marker = '    if (quickStepTurns > 0) {\n'
-    entity_kai_boundary = r'''    if (splitAuto && autoActor == "entity:kai" &&
-      (luciaAvailableForAuto(resolvedState) || syvialAvailableForAuto(resolvedState))) {
-      val staged = withAutoCursor(encode(resolvedState, c), (autoCursor + 1) % autoOrder.size)
-      return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
-    }
-
-    if (splitAuto && autoActor == "entity:lucia" && syvialAvailableForAuto(resolvedState)) {
+    entity_kai_boundary = r'''    if (splitAuto && autoActor.startsWith("entity:") && autoCursor < autoOrder.lastIndex) {
       val staged = withAutoCursor(encode(resolvedState, c), (autoCursor + 1) % autoOrder.size)
       return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
     }
 
 '''
-    combat = replace_once(combat, quick_marker, entity_kai_boundary + quick_marker, "Entity Kai -> Lucia boundary")
+    combat = replace_once(combat, quick_marker, entity_kai_boundary + quick_marker, "Entity response -> next Party member boundary")
 
     final_old = '''    val next = encode(resolvedState, c)
     return Resolution(next, true, log.joinToString(" "))
@@ -351,11 +344,13 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         "TRUE_TURN_COMBAT_V2",
         'val roundCompleted: Boolean = true',
         'AUTO_CURSOR_KEY = "combat.autoCursor"',
+        'autoCombatantIds(state).flatMap',
         'actionKind.equals("AUTO_COMBAT_STEP", true)',
         'autoActor == "lucia"',
         'autoActor == "entity:lucia"',
         'autoActor == "syvial"',
         'autoActor == "entity:syvial"',
+        'autoCursor < autoOrder.lastIndex',
         'file:///android_asset/syvial_entity_overlay.png',
         'CharacterStatEngine.setCurrentHp(resolvedState, targetId',
         'roundCompleted = false',
@@ -438,7 +433,7 @@ script_start = html.index(old_script_marker)
 script_end = html.index('</script>', script_start) + len('</script>')
 
 new_script = r'''<script>
-/* TRUE_TURN_AUTOPLAY_V2 / COMBAT_POPUP_V1 */
+/* TRUE_TURN_AUTOPLAY_V3 / COMBAT_POPUP_V1 */
 (function(){
   if(window.__trueTurnAutoplayV2)return;window.__trueTurnAutoplayV2=true;
   var STEP_MS=2000,timer=0,inFlight=false,currentActor=null,popupOpen=false;
@@ -474,6 +469,11 @@ new_script = r'''<script>
     var actor=actorForId(c,id);actor.overlayUri=String(c.activeActorOverlayUri||actor.overlayUri||'');return actor;
   }
   function displayRound(c){var r=Math.max(0,Number(c&&c.round)||0);return Math.max(1,r+(String(c&&c.activeActorId||'')==='kai'?1:0));}
+  function syncTurnHeader(c){
+    if(!turnEl||!turnEl.parentElement)return;var host=turnEl.parentElement,node=host.firstChild;
+    var label=c?'COMBAT • ROUND ':'TURN ';if(node&&node.nodeType===3)node.nodeValue=label;
+    turnEl.textContent=c?String(displayRound(c)):String(state&&state.turn||1);
+  }
   function setActor(c){
     var actor=currentFromCore(c);currentActor=actor;
     if(typeof window.backroomCombatActorSwap==='function')window.backroomCombatActorSwap({actorId:actor.id,slot:Number(c.activeActorSlot)||0,name:String(c.activeActorName||actor.name),overlayUri:actor.overlayUri,hasOverlay:!!actor.overlayUri});
@@ -496,21 +496,22 @@ new_script = r'''<script>
   function openPopup(){popupOpen=true;renderPopup();}
   function closePopup(){popupOpen=false;var root=document.getElementById('combatPopup');if(root)root.hidden=true;}
   function clearTimer(){if(timer){window.clearTimeout(timer);timer=0;}}
-  function queue(ms){clearTimer();timer=window.setTimeout(step,ms);}
+  function queueSubmit(ms){clearTimer();timer=window.setTimeout(submitAutoStep,ms);}
   function submitAutoStep(){
-    timer=0;var c=combat();if(!c){stop();return false;}if(inFlight||busy){queue(250);return false;}if(!window.Android||typeof window.Android.submitAction!=='function'){if(statusEl)statusEl.textContent='Không tìm thấy Android bridge cho combat.';stop();return false;}
-    var actor=setActor(c);inFlight=true;if(statusEl)statusEl.textContent='COMBAT AUTO • round '+displayRound(c)+' • '+String(c.activeActorName||actor.name);
+    timer=0;var c=combat();if(!c){stop();return false;}if(inFlight||busy){queueSubmit(250);return false;}if(!window.Android||typeof window.Android.submitAction!=='function'){if(statusEl)statusEl.textContent='Không tìm thấy Android bridge cho combat.';stop();return false;}
+    var actor=currentFromCore(c);if(!currentActor||currentActor.id!==actor.id){step();return false;}
+    inFlight=true;if(statusEl)statusEl.textContent='COMBAT AUTO • round '+displayRound(c)+' • '+String(c.activeActorName||actor.name);
     window.Android.submitAction(JSON.stringify(state),'AUTO_COMBAT_STEP','Tự động xử lý lượt '+String(c.activeActorName||actor.name));return true;
   }
-  function stop(){clearTimer();currentActor=null;inFlight=false;closePopup();if(typeof syncPrimaryActions==='function')syncPrimaryActions();}
+  function stop(){clearTimer();currentActor=null;inFlight=false;closePopup();syncTurnHeader(null);if(typeof syncPrimaryActions==='function')syncPrimaryActions();}
   function step(){
-    timer=0;var c=combat();if(!c){stop();return;}var actor=setActor(c);renderPopup();if(typeof syncPrimaryActions==='function')syncPrimaryActions();
-    if(inFlight||busy){queue(250);return;}if(statusEl)statusEl.textContent='COMBAT AUTO • round '+displayRound(c)+' • lượt '+String(c.activeActorName||actor.name);
-    timer=window.setTimeout(submitAutoStep,STEP_MS);
+    timer=0;var c=combat();if(!c){stop();return;}syncTurnHeader(c);var actor=setActor(c);renderPopup();if(typeof syncPrimaryActions==='function')syncPrimaryActions();
+    if(statusEl)statusEl.textContent='COMBAT AUTO • round '+displayRound(c)+' • lượt '+String(c.activeActorName||actor.name);
+    queueSubmit(inFlight||busy?250:STEP_MS);
   }
 
   document.addEventListener('click',function(ev){var open=ev.target&&ev.target.closest&&ev.target.closest('#combatPopupButton');if(open){openPopup();return;}var close=ev.target&&ev.target.closest&&ev.target.closest('.combat-popup-close');if(close){closePopup();return;}var root=document.getElementById('combatPopup');if(root&&ev.target===root)closePopup();});
-  var oldTurn=window.backroomTurn;if(typeof oldTurn==='function')window.backroomTurn=function(json){var r=oldTurn.call(this,json);inFlight=false;var c=combat();if(c){setActor(c);renderPopup();queue(80);}else stop();return r;};
+  var oldTurn=window.backroomTurn;if(typeof oldTurn==='function')window.backroomTurn=function(json){var r=oldTurn.call(this,json);inFlight=false;if(combat())step();else stop();return r;};
   window.trueTurnCombatStep=step;window.trueTurnCombatStop=stop;window.openCombatPopup=openPopup;window.closeCombatPopup=closePopup;
   window.setTimeout(step,120);
 })();
@@ -519,14 +520,16 @@ html = html[:script_start] + new_script + html[script_end:]
 
 
 for marker in (
-    "TRUE_TURN_AUTOPLAY_V2",
+    "TRUE_TURN_AUTOPLAY_V3",
     "AUTO_COMBAT_STEP",
     "TRUE TURN AUTO",
     "c.activeActorId",
+    "queueSubmit(inFlight||busy?250:STEP_MS)",
+    "function syncTurnHeader(c)",
 ):
     if marker not in html:
         raise RuntimeError("True-turn WebView marker missing: " + marker)
-if "Exactly one authoritative AUTO_COMBAT resolve" in html:
+if "queue(80)" in html or "Exactly one authoritative AUTO_COMBAT resolve" in html:
     raise RuntimeError("Legacy visual-only autoplay description survived")
 INDEX.write_text(html, encoding="utf-8")
 
@@ -552,6 +555,7 @@ new_tests = r'''
     assertFalse(kai.reply.contains("phản công: Kai"))
     assertEquals(1, CombatRuntime.active(kai.state)!!.eventCounter)
     assertEquals("entity:kai", CombatRuntime.toJson(kai.state)!!.getString("activeActorId"))
+    assertEquals("file:///android_asset/kai_entity_overlay.png", CombatRuntime.toJson(kai.state)!!.getString("activeActorOverlayUri"))
 
     val entityKai = CombatRuntime.resolve(kai.state, "AUTO_COMBAT_STEP", "auto")
     assertTrue(entityKai.handled)
@@ -566,6 +570,7 @@ new_tests = r'''
     assertTrue(lucia.reply.contains("Lucia \"Lục\""))
     assertEquals(1, CombatRuntime.active(lucia.state)!!.eventCounter)
     assertEquals("entity:lucia", CombatRuntime.toJson(lucia.state)!!.getString("activeActorId"))
+    assertEquals("file:///android_asset/lucia_entity_overlay.png", CombatRuntime.toJson(lucia.state)!!.getString("activeActorOverlayUri"))
 
     val entityLucia = CombatRuntime.resolve(lucia.state, "AUTO_COMBAT_STEP", "auto")
     assertTrue(entityLucia.handled)
@@ -607,6 +612,27 @@ new_tests = r'''
     assertEquals("kai", CombatRuntime.toJson(entityKai.state)!!.getString("activeActorId"))
   }
 
+  @Test fun trueTurnAutoCombatUsesLivePartySlotOrderForEveryAttackResponsePair() {
+    val withLucia = LuciaCanon.ensure(GameState.initial())
+    val initial = SpecialFollowersCanon.ensure(withLucia)
+    var state = initial.copy(party = PartyState(memberIds = listOf(KAI_ID, SYVIAL_ID, LUCIA_ID)))
+    state = CombatRuntime.start(state, "diep_minh")
+    val order = CombatRuntime.toJson(state)!!.getJSONArray("autoOrder")
+    assertEquals(
+      listOf("kai", "entity:kai", "syvial", "entity:syvial", "lucia", "entity:lucia"),
+      (0 until order.length()).map { order.getString(it) }
+    )
+
+    val kai = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
+    val entityKai = CombatRuntime.resolve(kai.state, "AUTO_COMBAT_STEP", "auto")
+    assertEquals("syvial", CombatRuntime.toJson(entityKai.state)!!.getString("activeActorId"))
+    val syvial = CombatRuntime.resolve(entityKai.state, "AUTO_COMBAT_STEP", "auto")
+    assertEquals("entity:syvial", CombatRuntime.toJson(syvial.state)!!.getString("activeActorId"))
+    val entitySyvial = CombatRuntime.resolve(syvial.state, "AUTO_COMBAT_STEP", "auto")
+    assertFalse(entitySyvial.roundCompleted)
+    assertEquals("lucia", CombatRuntime.toJson(entitySyvial.state)!!.getString("activeActorId"))
+  }
+
   @Test fun trueTurnAutoCursorSurvivesCodecSaveLoadBetweenActors() {
     val initial = LuciaCanon.ensure(GameState.initial())
     var state = initial.copy(party = PartyState(memberIds = listOf(KAI_ID, LUCIA_ID)))
@@ -627,8 +653,11 @@ for marker in (
     "trueTurnAutoCombatWithoutLuciaCompletesAfterEntityTargetsKai",
     "trueTurnAutoCursorSurvivesCodecSaveLoadBetweenActors",
     "trueTurnAutoCombatExposesSyvialOverlayAndIndependentSubturns",
+    "trueTurnAutoCombatUsesLivePartySlotOrderForEveryAttackResponsePair",
     'CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")',
     'assertEquals("entity:lucia", CombatRuntime.toJson(lucia.state)!!.getString("activeActorId"))',
+    'assertEquals("file:///android_asset/kai_entity_overlay.png", CombatRuntime.toJson(kai.state)!!.getString("activeActorOverlayUri"))',
+    'assertEquals("file:///android_asset/lucia_entity_overlay.png", CombatRuntime.toJson(lucia.state)!!.getString("activeActorOverlayUri"))',
     'assertEquals("file:///android_asset/syvial_entity_overlay.png", syvialJson.getString("activeActorOverlayUri"))',
 ):
     if marker not in test:
@@ -636,6 +665,6 @@ for marker in (
 TEST.write_text(test, encoding="utf-8")
 
 print(
-    "True Turn Combat V2 applied: authoritative Kai/Entity/Lucia/Entity subturns, round-scoped time/regen, "
-    "save-persistent actor cursor, 8px Party overlay safe inset, and separated GM/combat cards."
+    "True Turn Combat V3 applied: Party-slot attack/response pairs, stable 2-second target overlays, "
+    "separate Combat Round header, round-scoped time/regen, and save-persistent actor cursor."
 )
