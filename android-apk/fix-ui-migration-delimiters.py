@@ -30,6 +30,18 @@ new_required = '''    "Storytelling",
 if text.count(old_required) != 1:
     raise RuntimeError(f"canonical required-list anchor count: {text.count(old_required)}")
 text = text.replace(old_required, new_required, 1)
+old_entity_write = '''if "patch-combat-typography-final.py" in entity_rates or "typography_final" in entity_rates:
+    raise RuntimeError("Typography finalizer reference survived Entity policy cleanup")
+write(entity_rates_path, entity_rates)
+'''
+new_entity_write = '''if "patch-combat-typography-final.py" in entity_rates or "typography_final" in entity_rates:
+    raise RuntimeError("Typography finalizer reference survived Entity policy cleanup")
+entity_rates = entity_rates.rstrip() + "\\n"
+write(entity_rates_path, entity_rates)
+'''
+if text.count(old_entity_write) != 1:
+    raise RuntimeError(f"entity rate whitespace anchor count: {text.count(old_entity_write)}")
+text = text.replace(old_entity_write, new_entity_write, 1)
 path.write_text(text, encoding="utf-8")
 self_path.unlink()
-print("Fixed one-time migration delimiters and assertion scopes.")
+print("Fixed one-time migration delimiters, assertions, and output whitespace.")
