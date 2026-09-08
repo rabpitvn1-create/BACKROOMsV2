@@ -70,6 +70,9 @@ assert.ok(!actorSwapScript.includes("var oldTurn=window.backroomTurn"), "legacy 
 requireText("ANDROID_SWIPE_GESTURE_V2");
 requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
 requireText("#managementPage{overflow-y:auto", "Management vertical scrolling remains enabled");
+requireText("--android-ime-bottom:0px", "IME inset has a deterministic CSS fallback");
+requireText("height:calc(100dvh - var(--android-ime-bottom));min-height:0", "keyboard inset shrinks the fixed app shell");
+assert.ok(!canonicalStyle.includes(".shell{width:100%;height:100dvh;min-height:100dvh"), "full-height shell must not trap the composer behind the keyboard");
 requireText("if(axis==='x'&&e.cancelable)e.preventDefault()", "preventDefault is horizontal-only");
 requireText("'pointermove'", "pointer move path");
 requireText("'touchmove'", "touch fallback move path");
