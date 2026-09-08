@@ -85,3 +85,19 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity policy applied: independent 2% dice including boss; queued encounters; guaranteed catalog kill drops.")
+
+# Temporary diagnostics for generated WebView output; remove after CI root-cause isolation.
+_index = (ROOT / "app/src/main/assets/index.html").read_text(encoding="utf-8")
+for _marker in (
+    "PRESSURE_COMBAT_HUD_V1", "ANDROID_EDGE_UI_V1", "ANDROID_SWIPE_UI_V1",
+    "ANDROID_THREE_ACTIONS_V1", "ANDROID_GAMEPLAY_PRESENTATION_V2",
+    "font-family:var(--gameplay-font)", "header.textContent='Storytelling'",
+    "font-family:'BackroomPlay'",
+):
+    print("UI_DIAG present", _marker, _marker in _index)
+for _marker in (
+    "GAME_MASTER_STORYTELLING_FRAME_V1", "GAME_MASTER_PLAY_FONT_V1",
+    "COMBAT_TYPOGRAPHY_V1", "TRUE_TURN_COMBAT_UI_V2",
+    "autoPartyCombatStyle", "pressureCombatStyle",
+):
+    print("UI_DIAG absent", _marker, _marker not in _index)
