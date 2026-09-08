@@ -50,3 +50,13 @@ for required in (
 
 INDEX.write_text(html, encoding="utf-8")
 print("Header image installed behind title/turn text with contrast gradient and text shadows.")
+
+# apply-android-ui.py has already installed the three action buttons. Keep the supplied
+# navigation artwork in a dedicated post-UI patch so icon changes do not touch action semantics.
+navigation_patch = ROOT / "patch-navigation-icons.py"
+if not navigation_patch.is_file():
+    raise RuntimeError("Navigation icon patch missing")
+exec(compile(navigation_patch.read_text(encoding="utf-8"), str(navigation_patch), "exec"), {
+    "__name__": "__main__",
+    "__file__": str(navigation_patch),
+})
