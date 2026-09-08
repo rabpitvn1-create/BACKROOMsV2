@@ -24,13 +24,13 @@ if "PRESSURE_COMBAT_HUD_V1" not in html:
 # The native snapshot bridge renders the default Kai image after WebView render/turn
 # callbacks. Re-apply the authoritative combat actor after that render so Lucia or
 # Syvial is not immediately overwritten by Kai.
-snapshot_scroll_old = "renderSnapshot();scrollBottom();"
-snapshot_scroll_new = "renderSnapshot();if(typeof window.syncCombatActorTransition==='function')window.syncCombatActorTransition();scrollBottom();"
-snapshot_render_count = main.count(snapshot_scroll_old)
-if snapshot_render_count < 2:
-    raise RuntimeError(f"Expected native Snapshot render callbacks, found {snapshot_render_count}")
-main = main.replace(snapshot_scroll_old, snapshot_scroll_new)
-if main.count(snapshot_scroll_new) != snapshot_render_count:
+snapshot_render_call = "renderSnapshot();"
+snapshot_render_synced = "renderSnapshot();if(typeof window.syncCombatActorTransition==='function')window.syncCombatActorTransition();"
+snapshot_render_count = main.count(snapshot_render_call)
+if snapshot_render_count < 4:
+    raise RuntimeError(f"Expected all native Snapshot render callbacks, found {snapshot_render_count}")
+main = main.replace(snapshot_render_call, snapshot_render_synced)
+if main.count(snapshot_render_synced) != snapshot_render_count:
     raise RuntimeError("Combat actor transition must survive every native Snapshot rendering callback")
 
 style = r'''<style id="combatActorSwapStyle">
@@ -67,6 +67,7 @@ script = r'''<script>
   }
   function finishIncoming(box,img,p,myToken){
     if(myToken!==token||!box)return;
+    img=characterImage(box)||img;
     removeEmpty(box);
     var hasOverlay=p.hasOverlay===true&&String(p.overlayUri||'').trim()!=='';
     if(hasOverlay){
@@ -122,6 +123,7 @@ for marker in (
     "window.backroomCombatActorTransitionMs=OUT_MS+IN_MS",
     "prefers-reduced-motion:reduce",
     "combat-actor-empty-slot",
+    "img=characterImage(box)||img",
     "c.activeActorId||c.actorId",
 ):
     if marker not in html:
