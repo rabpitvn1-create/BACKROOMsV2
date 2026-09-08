@@ -1,4 +1,4 @@
-# one-time cleanup attempt 4
+# one-time cleanup attempt 7
 name: One-time UI source cleanup
 
 on:
@@ -36,9 +36,11 @@ jobs:
           test ! -e android-apk/patch-combat-typography-final.py
           grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2' android-apk/apply-android-ui.py
           grep -q 'sync-play-font-assets.py' .github/workflows/build-backroom-apk.yml
-      - name: Commit migrated sources
+      - name: Commit migrated Android sources
         run: |
           set -euo pipefail
+          git restore --source=HEAD -- .github/workflows/build-backroom-apk.yml .github/workflows/run-ui-source-cleanup.yml android-apk/migrate-ui-authority.py android-apk/fix-ui-migration-delimiters.py
+          git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
