@@ -365,7 +365,7 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 .primary-action{min-width:0;min-height:44px;border-radius:var(--control-radius);display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 5px;white-space:nowrap;font-size:11px}.primary-action.execute-action{font-weight:800;border-color:#56616a;background:#20272d}.primary-action .action-sprite{width:21px;height:21px;flex:0 0 21px;display:block;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
 .status{flex:0 0 auto;min-height:20px;padding:4px calc(var(--android-safe-right) + var(--ui-edge)) calc(var(--android-safe-bottom) + 5px) calc(var(--android-safe-left) + var(--ui-edge));font-size:10px;line-height:1.25;border-top:1px solid #252b31}
 /* ANDROID_GAMEPLAY_PRESENTATION_V2: one presentation/typography authority. */
-/* STORYTELLING_SINGLE_FRAME_V3: one solid transcript frame, no per-turn narrative cards. */
+/* STORYTELLING_SINGLE_FRAME_V3: only Game Master prose lives in one persistent frame. */
 :root{
   --gameplay-font:'Roboto',system-ui,sans-serif;
   --semantic-item:#36f0c3;
@@ -383,16 +383,9 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 .log{padding-top:calc(var(--ui-gap,10px) + 8px)!important}
 .message.storytelling{width:calc(100% - 10px);margin-left:auto;margin-right:auto;border:1px solid #3b444d;border-left:3px solid #71808a;background:#171e23;box-shadow:none;padding:0;overflow:hidden;font-family:var(--gameplay-font);font-weight:400}
 .storytelling-header{padding:8px 10px 7px;color:#c9d2da;border-bottom:1px solid #2b3137;background:#171e23;font-family:var(--gameplay-font);font-size:10px;font-weight:400;letter-spacing:.12em}
-.storytelling-body{padding:2px 0 4px}
-.storytelling-entry{padding:10px;white-space:pre-wrap;line-height:1.55;font-family:var(--gameplay-font);font-weight:400;color:#eef1f3}
-.storytelling-entry+.storytelling-entry{padding-top:6px}
-.storytelling-entry-role{margin-bottom:4px;color:#8f9aa4;font-family:var(--gameplay-font);font-size:10px;font-weight:400;letter-spacing:.12em}
-.storytelling-player{background:rgba(255,255,255,.025)}
-.storytelling-player .storytelling-entry-text{color:#e4e9ec}
-.storytelling-warning{background:rgba(217,154,43,.055)}
-.storytelling-warning .storytelling-entry-role{color:#e3a83a}
-.storytelling-combat{background:rgba(226,59,80,.035)}
-.storytelling-combat .storytelling-entry-role{color:#d7dfe4}
+.storytelling-body{padding:10px}
+.storytelling-segment{white-space:pre-wrap;line-height:1.55;font-family:var(--gameplay-font);font-weight:400;color:#eef1f3}
+.storytelling-segment+.storytelling-segment{margin-top:14px}
 .message.combat,.message.combat .role,.message.combat .text{font-family:var(--gameplay-font);font-weight:400}
 #combatHud{display:none;margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));border:1px solid #444b52;border-radius:var(--panel-radius);background:#0b0e10;padding:10px;font-family:var(--gameplay-font);font-weight:400}
 #combatHud.active{display:block}
@@ -541,29 +534,29 @@ presentation_script_template = r'''<script id="androidGameplayPresentation">
     var body=document.createElement('div');body.className='storytelling-body';
     article.appendChild(header);article.appendChild(body);log.insertBefore(article,log.firstChild);return article;
   }
-  function entryFromMessage(message){
-    var role=roleOf(message),entry=document.createElement('div'),entryRole=null,entryText=document.createElement('div');
-    entry.className='storytelling-entry';entry.dataset.storytellingEntry='1';entryText.className='storytelling-entry-text';
-    if(message.dataset&&message.dataset.pending==='1')entry.dataset.pending='1';
-    if(message.classList&&message.classList.contains('pending'))entry.classList.add('pending');
-    if(role==='COMBAT'||(message.classList&&message.classList.contains('combat'))){entry.classList.add('storytelling-combat');entryRole=document.createElement('div');entryRole.className='storytelling-entry-role';entryRole.textContent='COMBAT';}
-    else if(message.classList&&message.classList.contains('player')){entry.classList.add('storytelling-player');entryRole=document.createElement('div');entryRole.className='storytelling-entry-role';entryRole.textContent='BẠN';}
-    else if(isWarning(message)){entry.classList.add('storytelling-warning');entryRole=document.createElement('div');entryRole.className='storytelling-entry-role';entryRole.textContent=role||'HỆ THỐNG';}
-    else{entry.classList.add('storytelling-gm');}
+  function moveGameMasterIntoStorytelling(message,body){
+    var segment=document.createElement('div');segment.className='storytelling-segment';
+    if(message.dataset&&message.dataset.pending==='1')segment.dataset.pending='1';
+    if(message.classList&&message.classList.contains('pending'))segment.classList.add('pending');
     var text=message.querySelector('.text');
-    if(text){while(text.firstChild)entryText.appendChild(text.firstChild);}else{entryText.textContent=String(message.textContent||'').trim();}
-    if(entryRole)entry.appendChild(entryRole);entry.appendChild(entryText);return entry;
+    if(text){while(text.firstChild)segment.appendChild(text.firstChild);}else{segment.textContent=String(message.textContent||'').trim();}
+    body.appendChild(segment);message.remove();decorateRoot(segment);
   }
   function normalizeLog(){
     var log=document.getElementById('log');if(!log||normalizing)return;normalizing=true;
     try{
-      var article=storytellingContainer(log),body=article.querySelector('.storytelling-body');
-      var children=Array.prototype.slice.call(log.children);
+      var children=Array.prototype.slice.call(log.children),gm=[];
       children.forEach(function(message){
-        if(message===article||!message.classList||!message.classList.contains('message'))return;
-        var entry=entryFromMessage(message);body.appendChild(entry);message.remove();decorateRoot(entry);
+        if(!message.classList||!message.classList.contains('message'))return;
+        var role=roleOf(message);
+        if(role==='COMBAT'){message.classList.add('combat');decorateRoot(message.querySelector('.text')||message);return;}
+        if(role==='GAME MASTER'&&!isWarning(message))gm.push(message);
       });
-      decorateRoot(body);
+      if(gm.length){
+        var article=storytellingContainer(log),body=article.querySelector('.storytelling-body');
+        gm.forEach(function(message){moveGameMasterIntoStorytelling(message,body);});
+        decorateRoot(body);
+      }
     }finally{normalizing=false;}
   }
   function decorateGameplay(){
@@ -608,7 +601,8 @@ for token in (
     "header.textContent='Storytelling'",
     "function finishSwipe(dx,dy)",
     "function storytellingContainer(log)",
-    "storytelling-entry",
+    "function moveGameMasterIntoStorytelling(message,body)",
+    "storytelling-segment",
     'id="searchActionButton"',
     'id="submit"',
     'id="exploreActionButton"',
@@ -626,6 +620,8 @@ for token in (
 
 if "while(i<children.length&&roleOf(children[i])==='GAME MASTER'" in html:
     raise RuntimeError("Legacy consecutive-only Storytelling grouping survived single-frame normalization")
+if "storytelling-entry-role" in html:
+    raise RuntimeError("Player/Combat transcript entries must remain outside the Storytelling frame")
 
 INDEX.write_text(html, encoding="utf-8")
-print("Canonical Android edge-to-edge UI installed: native geometry, equal action controls, one Storytelling frame, normal Roboto gameplay text, and robust two-page swipe.")
+print("Canonical Android edge-to-edge UI installed: native geometry, equal action controls, one GM-only Storytelling frame, normal Roboto gameplay text, and robust two-page swipe.")
