@@ -491,7 +491,7 @@ if "ANDROID_SWIPE_UI_V1" not in html:
 
 
 presentation_script_template = r'''<script id="androidGameplayPresentation">
-/* ANDROID_GAMEPLAY_PRESENTATION_V2 */
+/* ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2 */
 (function(){
   if(window.__androidGameplayPresentationV2)return;window.__androidGameplayPresentationV2=true;
   var NAMES=__NAMES__,ENTITIES=__ENTITIES__,SKILLS=__SKILLS__,EFFECTS=__EFFECTS__,ITEMS=__ITEMS__,EQUIPMENT=__EQUIPMENT__;
@@ -573,7 +573,7 @@ presentation_script = presentation_script.replace("__SKILLS__", json.dumps(seman
 presentation_script = presentation_script.replace("__EFFECTS__", json.dumps(semantic_effects, ensure_ascii=False))
 presentation_script = presentation_script.replace("__ITEMS__", json.dumps(semantic_items, ensure_ascii=False))
 presentation_script = presentation_script.replace("__EQUIPMENT__", json.dumps(semantic_equipment, ensure_ascii=False))
-if "ANDROID_GAMEPLAY_PRESENTATION_V2" not in html:
+if "ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2" not in html:
     if "</body>" not in html:
         raise RuntimeError("Canonical gameplay presentation body anchor missing")
     html = html.replace("</body>", presentation_script + "\n</body>", 1)
@@ -592,6 +592,8 @@ for token in (
     "ANDROID_SWIPE_UI_V1",
     "ANDROID_THREE_ACTIONS_V1",
     "ANDROID_GAMEPLAY_PRESENTATION_V2",
+    "ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2",
+    "header.textContent='Storytelling'",
     'id="searchActionButton"',
     'id="submit"',
     'id="exploreActionButton"',
