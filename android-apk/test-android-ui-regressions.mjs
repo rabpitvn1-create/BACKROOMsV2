@@ -13,25 +13,26 @@ function requireText(needle, label = needle) {
   assert.ok(html.includes(needle), `Missing Android UI contract: ${label}`);
 }
 
-requireText("STORYTELLING_SINGLE_FRAME_V4");
+requireText("STORYTELLING_CHRONOLOGICAL_FRAME_V5");
 requireText("function storytellingLayout(log)");
-requireText("function markGameMasterSegment(message)");
+requireText("function markTranscriptEntry(message)");
 requireText("panel.appendChild(header);panel.appendChild(body)", "Storytelling header stays outside its scrolling body");
-requireText("log.appendChild(panel);log.appendChild(external)", "Storytelling and external transcript are separate siblings");
-requireText("message.classList.add('storytelling-segment')", "GM messages remain in transcript order");
-requireText("layout.body.appendChild(message);gmMoved=true;return", "only GM messages enter Storytelling body");
-requireText("layout.external.appendChild(message);externalMoved=true", "player and combat messages stay outside Storytelling");
+requireText("panel.appendChild(header);panel.appendChild(body);log.appendChild(panel)", "exactly one transcript panel is attached to the log");
+requireText("message.classList.add('storytelling-entry')", "every message receives the flat transcript presentation");
+requireText("layout.body.appendChild(message);moved=true", "GM, player, and combat messages share chronological order");
 requireText(".log{flex:1 1 auto;height:auto;min-height:0;overflow:hidden", "outer log cannot leak text");
 requireText(".storytelling-panel{flex:1 1 auto;min-height:0;", "fixed Storytelling panel");
 requireText("background:#171e23;box-shadow:none;overflow:hidden;display:flex;flex-direction:column", "Storytelling clips both edges");
-requireText(".storytelling-body{flex:1 1 auto;min-height:0;overflow-y:auto", "only GM body scrolls");
-requireText(".external-transcript{flex:0 1 auto;", "player/combat transcript is outside the panel");
+requireText(".storytelling-body{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto", "only transcript body scrolls");
+requireText(".message.storytelling-entry>.role::before{content:'\\2022\\00a0'}", "each transcript line starts with a bullet");
+requireText(".message.storytelling-entry>.role::after{content:':\\00a0'}", "each visible speaker label ends with a colon");
 assert.equal(count("function storytellingLayout(log)"), 1, "Exactly one Storytelling layout authority must be packaged");
 assert.ok(!html.includes("storytelling-surface"), "Obsolete underlay Storytelling surface must not survive");
+assert.ok(!html.includes("external-transcript"), "Separate transcript must not squeeze the Combat HUD");
 assert.ok(!html.includes("while(i<children.length&&roleOf(children[i])==='GAME MASTER'"), "Consecutive-only GM grouping must not survive");
 
 for (const rule of [
-  ".message.storytelling-segment{",
+  ".message.storytelling-entry{",
   ".message.player,.message.player .text,.status{font-family:var(--gameplay-font);font-weight:400}",
   ".message.combat,.message.combat .role,.message.combat .text{font-family:var(--gameplay-font);font-weight:400}",
   "#combatHud{",
@@ -40,13 +41,18 @@ for (const rule of [
 
 const canonicalStyle = html.match(/<style id="androidEdgeUiStyle">([\s\S]*?)<\/style>/)?.[1] ?? "";
 assert.ok(canonicalStyle, "Canonical Android style must be packaged");
-for (const selector of [".message.storytelling-segment", ".message.player", ".message.combat", "#combatHud", "#combatPopup", ".status"]) {
+for (const selector of [".message.storytelling-entry", ".message.player", ".message.combat", "#combatHud", "#combatPopup", ".status"]) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const rules = Array.from(canonicalStyle.matchAll(new RegExp(`${escaped}[^\\{]*\\{[^}]*\\}`, "g")), match => match[0]);
   assert.ok(rules.some(rule => rule.includes("font-weight:400")) || selector === ".status", `${selector} must resolve to normal weight`);
 }
 assert.ok(!/storytelling[^{}]*\{[^}]*font-weight:800/i.test(canonicalStyle), "Storytelling prose must not be forced to 800");
 assert.ok(!/(?:message\.combat|#combatHud|#combatPopup)[^{}]*\{[^}]*font-weight:800/i.test(canonicalStyle), "Combat prose/HUD must not be forced to 800");
+
+requireText("if(submitEl)submitEl.disabled=busy||!hasText", "typed Execute remains available during active combat");
+requireText("if(busy||(state&&state.combat&&state.combat.active===true))return", "navigation macros remain locked during active combat");
+assert.ok(!html.includes("if(!a||busy||(state&&state.combat&&state.combat.active===true))return"), "typed combat submit must reach CombatRuntime");
+assert.ok(!html.includes("if(actionEl)actionEl.disabled=combatLocked"), "combat must not disable the typed action field");
 
 requireText("ANDROID_SWIPE_GESTURE_V2");
 requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
