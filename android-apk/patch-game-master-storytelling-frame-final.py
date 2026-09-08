@@ -99,27 +99,27 @@ for required in (
     "game-master-storytelling",
     "Game Master's Storytelling",
     "box-shadow:inset 0 0 0 1px",
-    "data.gameMasterStorytelling",
+    "dataset.gameMasterStorytelling",
     "MutationObserver",
 ):
     if required not in html:
         raise RuntimeError("Game Master storytelling frame marker missing: " + required)
 
-# Scope guard: this patch must not reposition any existing UI component.
+# Scope guard: the injected frame itself must not reposition existing UI components.
+style_start = html.index('id="gameMasterStorytellingFrameStyle"')
+style_end = html.index("</style>", style_start)
+injected_style = html[style_start:style_end]
 for forbidden in (
-    ".shell{",
-    ".game{",
-    ".topbar{",
-    ".snapshot{",
-    ".log{",
-    ".composer{",
-    ".side{",
-    "grid-template-columns:",
-    "position:fixed",
-    "position:absolute",
+    "margin:",
+    "padding:",
+    "width:",
+    "height:",
+    "grid-template",
+    "display:",
+    "position:",
+    "transform:",
 ):
-    injected = html[html.index('id="gameMasterStorytellingFrameStyle"'):]
-    if forbidden in injected:
+    if forbidden in injected_style:
         raise RuntimeError("Game Master frame must not reposition existing UI: " + forbidden)
 
 INDEX.write_text(html, encoding="utf-8")
