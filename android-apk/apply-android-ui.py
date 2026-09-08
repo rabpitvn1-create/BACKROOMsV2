@@ -164,6 +164,7 @@ geometry_methods = r'''
     int safeRight = 0;
     int safeBottom = 0;
     int safeLeft = 0;
+    int imeBottom = 0;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       DisplayCutout cutout = insets.getDisplayCutout();
       if (cutout != null) {
@@ -178,12 +179,18 @@ geometry_methods = r'''
       // Bottom gesture space protects the action row. Side gestures deliberately do not
       // widen every content column on portrait phones.
       safeBottom = Math.max(safeBottom, gestures.bottom);
+      imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom;
+    } else {
+      // On API 24-29 the legacy system-window bottom grows when the IME opens.
+      // Subtract the stable navigation inset so only the keyboard occlusion shrinks the shell.
+      imeBottom = Math.max(0, insets.getSystemWindowInsetBottom() - insets.getStableInsetBottom());
     }
 
     float top = displayCssPx(safeTop);
     float right = displayCssPx(safeRight);
     float bottom = displayCssPx(safeBottom);
     float left = displayCssPx(safeLeft);
+    float ime = displayCssPx(imeBottom);
     float tl = 0f;
     float tr = 0f;
     float br = 0f;
@@ -212,13 +219,14 @@ geometry_methods = r'''
             + "s.setProperty('--android-safe-right','%.2fpx');"
             + "s.setProperty('--android-safe-bottom','%.2fpx');"
             + "s.setProperty('--android-safe-left','%.2fpx');"
+            + "s.setProperty('--android-ime-bottom','%.2fpx');"
             + "s.setProperty('--android-radius-tl','%.2fpx');"
             + "s.setProperty('--android-radius-tr','%.2fpx');"
             + "s.setProperty('--android-radius-br','%.2fpx');"
             + "s.setProperty('--android-radius-bl','%.2fpx');"
             + "document.documentElement.classList.add('android-geometry-ready');"
             + "})();",
-        top, right, bottom, left, tl, tr, br, bl);
+        top, right, bottom, left, ime, tl, tr, br, bl);
     webView.post(() -> webView.evaluateJavascript(script, null));
   }
 
@@ -253,6 +261,9 @@ for token in (
     "ANDROID_DISPLAY_GEOMETRY_V1",
     "getRoundedCorner(position)",
     "--android-radius-tl",
+    "--android-ime-bottom",
+    "WindowInsets.Type.ime()",
+    "getSystemWindowInsetBottom() - insets.getStableInsetBottom()",
     "webView.setOnApplyWindowInsetsListener",
     "getWindow().setDecorFitsSystemWindows(false)",
     "ANDROID_UI_KAI_SHIFT_RIGHT",
@@ -342,12 +353,13 @@ canonical_css = r'''
 /* ANDROID_EDGE_UI_V1 */
 :root{
   --android-safe-top:0px;--android-safe-right:0px;--android-safe-bottom:0px;--android-safe-left:0px;
+  --android-ime-bottom:0px;
   --android-radius-tl:0px;--android-radius-tr:0px;--android-radius-br:0px;--android-radius-bl:0px;
   --ui-edge:8px;--ui-gap:7px;--panel-radius:12px;--control-radius:11px;
 }
 html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#080a0c}
 body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-right-radius:var(--android-radius-tr);border-bottom-right-radius:var(--android-radius-br);border-bottom-left-radius:var(--android-radius-bl);overflow:hidden}
-.shell{width:100%;height:100dvh;min-height:100dvh;padding:0;overflow:hidden;background:#080a0c}
+.shell{width:100%;height:calc(100dvh - var(--android-ime-bottom));min-height:0;padding:0;overflow:hidden;background:#080a0c}
 .page-track{display:flex;width:100%;height:100%;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.2,.72,.2,1);will-change:transform;touch-action:pan-y;overscroll-behavior-x:contain}
 .page-track.show-management{transform:translate3d(-100%,0,0)}
 .app-page{flex:0 0 100%;width:100%;min-width:0;height:100%;overflow-x:hidden;background:#080a0c}
@@ -608,6 +620,8 @@ for token in (
     'grid-template-columns:repeat(3,minmax(0,1fr))',
     "--android-radius-tl",
     "--android-safe-bottom",
+    "--android-ime-bottom",
+    "height:calc(100dvh - var(--android-ime-bottom))",
     "data:image/webp;base64,",
     'Android.submitAction(JSON.stringify(state),"EXECUTE",a)',
     'submitMacroAction("SEARCH","Tìm kiếm")',
