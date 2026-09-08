@@ -222,21 +222,6 @@ html = replace_once(
     "combat decorated log role",
 )
 
-style = r'''<style id="autoPartyCombatStyle">
-/* AUTO_PARTY_COMBAT_V1 / COMBAT_POPUP_V1 */
-.combat-popup-button{appearance:none;border:1px solid #69747d;background:#20282e;color:#f1f4f6;border-radius:6px;padding:4px 8px;font:800 10px/1 system-ui,sans-serif;letter-spacing:.08em;cursor:pointer}
-.combat-popup-button:active{transform:translateY(1px)}
-#combatPopup[hidden]{display:none!important}
-#combatPopup{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,sans-serif}
-.combat-popup-sheet{width:min(520px,100%);max-height:min(82vh,720px);overflow:auto;background:#0b0e10;border:1px solid #4b555e;border-radius:12px;box-shadow:0 20px 55px rgba(0,0,0,.55);padding:14px;color:#edf1f4}
-.combat-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.combat-popup-head h2{font-size:16px;letter-spacing:.12em;margin:0}.combat-popup-auto{font-size:10px;font-weight:800;border:1px solid #4b555e;border-radius:999px;padding:3px 7px;color:#c9d2d9}.combat-popup-close{border:0;background:transparent;color:#e8edf0;font-size:24px;line-height:1;cursor:pointer;padding:2px 6px}
-.combat-popup-target,.combat-popup-current{border:1px solid #343c43;background:#11161a;border-radius:8px;padding:9px;margin-top:10px}.combat-popup-target{display:flex;justify-content:space-between;gap:10px;font-size:12px}.combat-popup-current{font-size:12px;font-weight:800;letter-spacing:.04em}
-.combat-popup-order{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:thin}.combat-turn-chip{flex:0 0 auto;border:1px solid #343c43;border-radius:999px;padding:5px 8px;font-size:10px;white-space:nowrap;color:#c7d0d6}.combat-turn-chip.current{border-color:#e2e8ec;color:#fff;background:#283139}
-.combat-popup-party{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.combat-popup-slot{min-width:0;border:1px solid #343c43;border-radius:8px;padding:8px;background:#101519;text-align:center}.combat-popup-slot.current{border-color:#e2e8ec;background:#252d33}.combat-popup-slot.empty{opacity:.45}.combat-popup-slot strong{display:block;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.combat-popup-slot span{display:block;font-size:9px;color:#9da8b0;margin-top:3px}
-@media(max-width:430px){.combat-popup-party{grid-template-columns:repeat(2,minmax(0,1fr))}.combat-popup-sheet{padding:12px}}
-@media(prefers-reduced-motion:reduce){.combat-popup-button:active{transform:none}}
-</style>
-'''
 
 script = r'''<script>
 /* AUTO_PARTY_COMBAT_V1 / COMBAT_POPUP_V1 */
@@ -363,9 +348,8 @@ script = r'''<script>
 '''
 
 if "AUTO_PARTY_COMBAT_V1" not in html:
-    if "</head>" not in html or "</body>" not in html:
-        raise RuntimeError("Auto-party combat HTML anchors missing")
-    html = html.replace("</head>", style + "</head>", 1)
+    if "</body>" not in html:
+        raise RuntimeError("Auto-party combat HTML body anchor missing")
     html = html.replace("</body>", script + "</body>", 1)
 
 for marker in (

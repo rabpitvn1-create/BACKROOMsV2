@@ -1,7 +1,6 @@
 """Apply the Entity dice/reward contract after all legacy runtime generators."""
 from pathlib import Path
 import re
-import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -87,10 +86,18 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity policy applied: independent 2% dice including boss; queued encounters; guaranteed catalog kill drops.")
 
-# Presentation-only final layer. Run after the Entity policy because this script is
-# the last entry in the Android patch chain; no gameplay math/state/canon code is
-# changed by the typography finalizer.
-typography_final = ROOT / "patch-combat-typography-final.py"
-if not typography_final.is_file():
-    raise RuntimeError("Combat typography finalizer missing: " + typography_final.name)
-runpy.run_path(str(typography_final), run_name="__main__")
+# Temporary diagnostics for generated WebView output; remove after CI root-cause isolation.
+_index = (ROOT / "app/src/main/assets/index.html").read_text(encoding="utf-8")
+for _marker in (
+    "PRESSURE_COMBAT_HUD_V1", "ANDROID_EDGE_UI_V1", "ANDROID_SWIPE_UI_V1",
+    "ANDROID_THREE_ACTIONS_V1", "ANDROID_GAMEPLAY_PRESENTATION_V2",
+    "font-family:var(--gameplay-font)", "header.textContent='Storytelling'",
+    "font-family:'BackroomPlay'",
+):
+    print("UI_DIAG present", _marker, _marker in _index)
+for _marker in (
+    "GAME_MASTER_STORYTELLING_FRAME_V1", "GAME_MASTER_PLAY_FONT_V1",
+    "COMBAT_TYPOGRAPHY_V1", "TRUE_TURN_COMBAT_UI_V2",
+    "autoPartyCombatStyle", "pressureCombatStyle",
+):
+    print("UI_DIAG absent", _marker, _marker not in _index)

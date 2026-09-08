@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import re
 
 ROOT = Path(__file__).resolve().parent
@@ -7,6 +8,55 @@ INDEX = ROOT / "app/src/main/assets/index.html"
 
 main = MAIN.read_text(encoding="utf-8")
 html = INDEX.read_text(encoding="utf-8")
+
+CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core"
+
+
+def _ui_read_optional(path: Path) -> str:
+    return path.read_text(encoding="utf-8") if path.is_file() else ""
+
+
+def _ui_unique(values):
+    seen = set()
+    out = []
+    for value in values:
+        clean = str(value or "").strip()
+        key = clean.casefold()
+        if clean and key not in seen:
+            seen.add(key)
+            out.append(clean)
+    return sorted(out, key=lambda value: (-len(value), value.casefold()))
+
+
+# Build semantic literals from the same authoritative gameplay sources that generate
+# the final APK. Fallback patch sources are build-time source catalogs, not a second UI layer.
+_combat_source = _ui_read_optional(CORE / "CombatRuntime.kt")
+_item_source = _ui_read_optional(CORE / "ItemCatalog.kt") + "\n" + _ui_read_optional(CORE / "HealingItems.kt")
+_skill_path = CORE / "CompanionSkillCatalog.kt"
+_skill_source = _ui_read_optional(_skill_path if _skill_path.is_file() else ROOT / "patch-companion-skills-ui.py")
+_equipment_path = CORE / "CharacterEquipmentSystem.kt"
+_equipment_source = _ui_read_optional(_equipment_path if _equipment_path.is_file() else ROOT / "patch-character-status-equipment-system.py")
+
+semantic_entities = _ui_unique(re.findall(r'Profile\("[^"]+",\s*"([^"\\]+)"', _combat_source))
+semantic_items = _ui_unique(
+    re.findall(r'displayName\s*=\s*"([^"\\]+)"', _item_source)
+    + re.findall(r'const val (?:BANDAGE_NAME|ANTISEPTIC_NAME)\s*=\s*"([^"\\]+)"', _item_source)
+)
+semantic_skills = _ui_unique(re.findall(r'\bs\("([^"\\]+)"\s*,', _skill_source))
+semantic_equipment = _ui_unique(
+    re.findall(r'EquipmentDefinition\([\s\S]{0,360}?\bname\s*=\s*"([^"\\]+)"', _equipment_source)
+    + re.findall(r'EquipmentComponent\("([^"\\]+)"', _equipment_source)
+)
+semantic_effects = _ui_unique(
+    re.findall(r'\bability\("([^"\\]+)"', _equipment_source)
+    + [
+        "Guilty Crown Override", "Quick Step", "Silent Lullaby", "Evasion",
+        "Stun", "Bleed", "Burn", "Poison", "WOUNDED", "CRITICAL", "DESTROYED",
+    ]
+)
+semantic_names = _ui_unique([
+    'Lucia "Lục"', "Lucia Lục", "Kai Akechi", "An Nhiên", "Syvial", "Iris", "Lucia", "Kai", "Diệp Minh",
+])
 
 
 def ensure_import(source: str, anchor: str, import_line: str, label: str) -> str:
@@ -314,7 +364,89 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 .primary-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ui-gap);width:100%}
 .primary-action{min-width:0;min-height:44px;border-radius:var(--control-radius);display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 5px;white-space:nowrap;font-size:11px}.primary-action.execute-action{font-weight:800;border-color:#56616a;background:#20272d}.primary-action .action-sprite{width:21px;height:21px;flex:0 0 21px;display:block;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
 .status{flex:0 0 auto;min-height:20px;padding:4px calc(var(--android-safe-right) + var(--ui-edge)) calc(var(--android-safe-bottom) + 5px) calc(var(--android-safe-left) + var(--ui-edge));font-size:10px;line-height:1.25;border-top:1px solid #252b31}
-#combatHud{margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));border-radius:var(--panel-radius)}
+/* ANDROID_GAMEPLAY_PRESENTATION_V2: one presentation/typography authority. */
+:root{
+  --gameplay-font:'Roboto',system-ui,sans-serif;
+  --semantic-item:#36f0c3;
+  --semantic-damage:#e23b50;
+  --semantic-heal:#78f59a;
+  --semantic-entity:#f0c979;
+  --semantic-skill:#c9d2da;
+  --semantic-effect:#e2e8ec;
+  --semantic-equipment:#9fc8e0;
+  --semantic-name:#eef1f3;
+  --semantic-hp:#d8dee3;
+}
+@font-face{font-family:'BackroomPlay';src:url('fonts/Play-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}
+.snapshot .snapshot-character{right:8px!important}
+.log{padding-top:calc(var(--ui-gap,10px) + 8px)!important}
+.message.storytelling,.message.combat{width:calc(100% - 10px);margin-left:auto;margin-right:auto}
+.message.storytelling{
+  border:1px solid #3b444d;
+  border-left:3px solid #71808a;
+  background:#171e23;
+  box-shadow:none;
+  padding:0;
+  overflow:hidden;
+  font-family:var(--gameplay-font);
+  font-weight:800;
+}
+.storytelling-header{
+  padding:8px 10px 7px;
+  color:#c9d2da;
+  border-bottom:1px solid #2b3137;
+  font-family:var(--gameplay-font);
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.storytelling-body{padding:10px}
+.storytelling-segment{white-space:pre-wrap;line-height:1.55;font-family:var(--gameplay-font);font-weight:800}
+.storytelling-segment+.storytelling-segment{margin-top:14px}
+.message.combat,.message.combat .role,.message.combat .text{
+  font-family:var(--gameplay-font);
+  font-weight:800;
+}
+#combatHud{
+  display:none;
+  margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));
+  border:1px solid #444b52;
+  border-radius:var(--panel-radius);
+  background:#0b0e10;
+  padding:10px;
+  font-family:var(--gameplay-font);
+  font-weight:800;
+}
+#combatHud.active{display:block}
+.combat-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.08em;margin-bottom:7px}
+.combat-row{display:grid;grid-template-columns:70px 1fr 62px;align-items:center;gap:7px;margin:5px 0;font-size:11px;font-weight:800}
+.combat-bar{height:12px;background:#252b30;border:1px solid #343c43;overflow:hidden}
+.combat-fill{height:100%;background:linear-gradient(90deg,#757f88,#d8dee3);transition:width .18s ease}
+.combat-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.combat-meta span{border:1px solid #343c43;padding:3px 5px;font-size:10px;color:#c8d0d6;font-weight:800}
+.combat-telegraph{margin-top:7px;font-size:11px;color:#f0c979;font-weight:800}
+.combat-popup-button{appearance:none;border:1px solid #69747d;background:#20282e;color:#f1f4f6;border-radius:6px;padding:4px 8px;font:800 10px/1 var(--gameplay-font);letter-spacing:.08em;cursor:pointer}
+.combat-popup-button:active{transform:translateY(1px)}
+#combatPopup[hidden]{display:none!important}
+#combatPopup{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--gameplay-font);font-weight:800}
+.combat-popup-sheet{width:min(520px,100%);max-height:min(82vh,720px);overflow:auto;background:#0b0e10;border:1px solid #4b555e;border-radius:12px;box-shadow:0 20px 55px rgba(0,0,0,.55);padding:14px;color:#edf1f4}
+.combat-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.combat-popup-head h2{font-size:16px;font-weight:800;letter-spacing:.12em;margin:0}.combat-popup-auto{font-size:10px;font-weight:800;border:1px solid #4b555e;border-radius:999px;padding:3px 7px;color:#c9d2d9}.combat-popup-close{border:0;background:transparent;color:#e8edf0;font-size:24px;font-weight:800;line-height:1;cursor:pointer;padding:2px 6px}
+.combat-popup-target,.combat-popup-current{border:1px solid #343c43;background:#11161a;border-radius:8px;padding:9px;margin-top:10px;font-weight:800}.combat-popup-target{display:flex;justify-content:space-between;gap:10px;font-size:12px}.combat-popup-current{font-size:12px;letter-spacing:.04em}
+.combat-popup-order{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:thin}.combat-turn-chip{flex:0 0 auto;border:1px solid #343c43;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;white-space:nowrap;color:#c7d0d6}.combat-turn-chip.current{border-color:#e2e8ec;color:#fff;background:#283139}
+.combat-popup-party{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.combat-popup-slot{min-width:0;border:1px solid #343c43;border-radius:8px;padding:8px;background:#101519;text-align:center}.combat-popup-slot.current{border-color:#e2e8ec;background:#252d33}.combat-popup-slot.empty{opacity:.45}.combat-popup-slot strong{display:block;font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.combat-popup-slot span{display:block;font-size:9px;font-weight:800;color:#9da8b0;margin-top:3px}
+.gameplay-semantic{font-family:'BackroomPlay',var(--gameplay-font);font-weight:700;letter-spacing:.025em}
+.gameplay-sem-name{color:var(--semantic-name)}
+.gameplay-sem-entity{color:var(--semantic-entity)}
+.gameplay-sem-skill{color:var(--semantic-skill)}
+.gameplay-sem-effect{color:var(--semantic-effect)}
+.gameplay-sem-equipment{color:var(--semantic-equipment)}
+.gameplay-sem-item{color:var(--semantic-item);text-decoration-line:underline;text-decoration-thickness:1px;text-underline-offset:.16em;text-decoration-color:var(--semantic-item)}
+.gameplay-sem-damage{color:var(--semantic-damage)}
+.gameplay-sem-heal{color:var(--semantic-heal)}
+.gameplay-sem-hp{color:var(--semantic-hp)}
+@media(max-width:430px){.combat-popup-party{grid-template-columns:repeat(2,minmax(0,1fr))}.combat-popup-sheet{padding:12px}}
+@media(prefers-reduced-motion:reduce){.combat-popup-button:active{transform:none}}
+
 #managementPage{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #managementPage .side{width:100%;margin:0;padding:calc(var(--android-safe-top) + var(--ui-edge)) calc(var(--android-safe-right) + var(--ui-edge)) calc(var(--android-safe-bottom) + 16px) calc(var(--android-safe-left) + var(--ui-edge));gap:var(--ui-gap)}
 #managementPage .card{width:100%;margin:0;box-shadow:none;padding:10px;border-radius:var(--panel-radius)}
@@ -357,6 +489,95 @@ if "ANDROID_SWIPE_UI_V1" not in html:
         raise RuntimeError("Canonical Android swipe body anchor missing")
     html = html.replace("</body>", swipe_script + "\n</body>", 1)
 
+
+presentation_script_template = r'''<script id="androidGameplayPresentation">
+/* ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2 */
+(function(){
+  if(window.__androidGameplayPresentationV2)return;window.__androidGameplayPresentationV2=true;
+  var NAMES=__NAMES__,ENTITIES=__ENTITIES__,SKILLS=__SKILLS__,EFFECTS=__EFFECTS__,ITEMS=__ITEMS__,EQUIPMENT=__EQUIPMENT__;
+  var scheduled=false,normalizing=false;
+
+  function escRe(value){return String(value||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+  function literal(value,cls,priority){return {re:new RegExp(escRe(value),'gi'),cls:cls,priority:priority};}
+  function patterns(){
+    var out=[
+      {re:/-\s*\d+(?:[.,]\d+)?\s*HP\b/gi,cls:'gameplay-sem-damage',priority:120},
+      {re:/\+\s*\d+(?:[.,]\d+)?\s*HP\b/gi,cls:'gameplay-sem-heal',priority:120},
+      {re:/(?:\d+(?:[.,]\d+)?%\s*)?DMG\b/gi,cls:'gameplay-sem-damage',priority:118},
+      {re:/\b\d+\s*\/\s*\d+(?:\s*HP)?\b/gi,cls:'gameplay-sem-hp',priority:116},
+      {re:/\bHP\b/gi,cls:'gameplay-sem-hp',priority:110}
+    ];
+    ITEMS.forEach(function(v){out.push(literal(v,'gameplay-sem-item',100));});
+    EQUIPMENT.forEach(function(v){out.push(literal(v,'gameplay-sem-equipment',96));});
+    SKILLS.forEach(function(v){out.push(literal(v,'gameplay-sem-skill',94));});
+    EFFECTS.forEach(function(v){out.push(literal(v,'gameplay-sem-effect',92));});
+    ENTITIES.forEach(function(v){out.push(literal(v,'gameplay-sem-entity',90));});
+    NAMES.forEach(function(v){out.push(literal(v,'gameplay-sem-name',88));});
+    return out;
+  }
+  function ranges(text){
+    var candidates=[];
+    patterns().forEach(function(p){p.re.lastIndex=0;var m;while((m=p.re.exec(text))!==null){if(!m[0]){p.re.lastIndex++;continue;}candidates.push({start:m.index,end:m.index+m[0].length,cls:p.cls,priority:p.priority});}});
+    candidates.sort(function(a,b){return a.start-b.start||b.priority-a.priority||(b.end-b.start)-(a.end-a.start);});
+    var selected=[];
+    candidates.forEach(function(c){for(var i=0;i<selected.length;i++){var s=selected[i];if(c.start<s.end&&c.end>s.start)return;}selected.push(c);});
+    selected.sort(function(a,b){return a.start-b.start;});return selected;
+  }
+  function decorateTextNode(node){
+    if(!node||!node.parentElement||node.parentElement.closest('[data-gameplay-semantic]'))return;
+    if(node.parentElement.closest('script,style,textarea,button'))return;
+    var text=node.nodeValue||'';if(!text.trim())return;var rs=ranges(text);if(!rs.length)return;
+    var frag=document.createDocumentFragment(),cursor=0;
+    rs.forEach(function(r){if(r.start>cursor)frag.appendChild(document.createTextNode(text.slice(cursor,r.start)));var span=document.createElement('span');span.className='gameplay-semantic '+r.cls;span.dataset.gameplaySemantic='1';span.textContent=text.slice(r.start,r.end);frag.appendChild(span);cursor=r.end;});
+    if(cursor<text.length)frag.appendChild(document.createTextNode(text.slice(cursor)));node.parentNode.replaceChild(frag,node);
+  }
+  function decorateRoot(root){
+    if(!root)return;var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],node;while((node=walker.nextNode()))nodes.push(node);nodes.forEach(decorateTextNode);
+  }
+  function roleOf(message){var role=message&&message.querySelector('.role');return role?String(role.textContent||'').trim().toUpperCase():'';}
+  function isWarning(message){return !!(message&&message.classList.contains('warning'));}
+  function normalizeLog(){
+    var log=document.getElementById('log');if(!log||normalizing)return;normalizing=true;
+    try{
+      var children=Array.prototype.slice.call(log.children),i=0;
+      while(i<children.length){
+        var message=children[i],role=roleOf(message);
+        if(role==='COMBAT'){message.classList.add('combat');decorateRoot(message.querySelector('.text')||message);i++;continue;}
+        if(role!=='GAME MASTER'||isWarning(message)){i++;continue;}
+        var group=[];
+        while(i<children.length&&roleOf(children[i])==='GAME MASTER'&&!isWarning(children[i])){group.push(children[i]);i++;}
+        if(!group.length)continue;
+        var article=document.createElement('article');article.className='message storytelling';article.dataset.storytelling='1';
+        var header=document.createElement('div');header.className='storytelling-header';header.textContent='Storytelling';
+        var body=document.createElement('div');body.className='storytelling-body';
+        group.forEach(function(old){var segment=document.createElement('div');segment.className='storytelling-segment';var text=old.querySelector('.text');if(text){while(text.firstChild)segment.appendChild(text.firstChild);}body.appendChild(segment);});
+        article.appendChild(header);article.appendChild(body);log.insertBefore(article,group[0]);group.forEach(function(old){old.remove();});decorateRoot(body);
+      }
+      log.querySelectorAll('.message.combat .text,.storytelling-body').forEach(decorateRoot);
+    }finally{normalizing=false;}
+  }
+  function decorateGameplay(){
+    scheduled=false;normalizeLog();
+    var hud=document.getElementById('combatHud');if(hud)decorateRoot(hud);
+    var popup=document.getElementById('combatPopup');if(popup)decorateRoot(popup);
+  }
+  function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(decorateGameplay);}
+  function install(){decorateGameplay();var root=document.body;if(root)new MutationObserver(schedule).observe(root,{childList:true,subtree:true});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+  window.backroomNormalizeGameplayPresentation=schedule;
+})();
+</script>'''
+presentation_script = presentation_script_template.replace("__NAMES__", json.dumps(semantic_names, ensure_ascii=False))
+presentation_script = presentation_script.replace("__ENTITIES__", json.dumps(semantic_entities, ensure_ascii=False))
+presentation_script = presentation_script.replace("__SKILLS__", json.dumps(semantic_skills, ensure_ascii=False))
+presentation_script = presentation_script.replace("__EFFECTS__", json.dumps(semantic_effects, ensure_ascii=False))
+presentation_script = presentation_script.replace("__ITEMS__", json.dumps(semantic_items, ensure_ascii=False))
+presentation_script = presentation_script.replace("__EQUIPMENT__", json.dumps(semantic_equipment, ensure_ascii=False))
+if "ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2" not in html:
+    if "</body>" not in html:
+        raise RuntimeError("Canonical gameplay presentation body anchor missing")
+    html = html.replace("</body>", presentation_script + "\n</body>", 1)
+
 for forbidden in (
     "MOBILE_SWIPE_UI_V1",
     "PR3_HEADER_SAFE_INSET",
@@ -370,6 +591,9 @@ for token in (
     "ANDROID_EDGE_UI_V1",
     "ANDROID_SWIPE_UI_V1",
     "ANDROID_THREE_ACTIONS_V1",
+    "ANDROID_GAMEPLAY_PRESENTATION_V2",
+    "ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2",
+    "header.textContent='Storytelling'",
     'id="searchActionButton"',
     'id="submit"',
     'id="exploreActionButton"',
