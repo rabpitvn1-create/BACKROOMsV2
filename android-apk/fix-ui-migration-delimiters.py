@@ -13,6 +13,15 @@ new_close = "    html = html.replace(\"</body>\", presentation_script + \"\\n</b
 if text.count(old_close) != 1:
     raise RuntimeError(f"outer presentation string close anchor count: {text.count(old_close)}")
 text = text.replace(old_close, new_close, 1)
+old_combined = '''combined = "\\n".join(read(path) for path in [
+    apply_path, pressure_path, auto_path, true_turn_path, party_path, entity_rates_path, WORKFLOW,
+])'''
+new_combined = '''combined = "\\n".join(read(path) for path in [
+    apply_path, pressure_path, auto_path, true_turn_path, party_path, entity_rates_path,
+])'''
+if text.count(old_combined) != 1:
+    raise RuntimeError(f"legacy assertion scope anchor count: {text.count(old_combined)}")
+text = text.replace(old_combined, new_combined, 1)
 path.write_text(text, encoding="utf-8")
 self_path.unlink()
-print("Fixed one-time migration string delimiters.")
+print("Fixed one-time migration delimiters and legacy assertion scope.")
