@@ -54,6 +54,19 @@ requireText("if(busy||(state&&state.combat&&state.combat.active===true))return",
 assert.ok(!html.includes("if(!a||busy||(state&&state.combat&&state.combat.active===true))return"), "typed combat submit must reach CombatRuntime");
 assert.ok(!html.includes("if(actionEl)actionEl.disabled=combatLocked"), "combat must not disable the typed action field");
 
+requireText("TRUE_TURN_AUTOPLAY_V3", "single authoritative combat overlay scheduler");
+requireText("var STEP_MS=2000", "every authoritative combat subturn is displayed for two seconds");
+requireText("queueSubmit(inFlight||busy?250:STEP_MS)", "next subturn waits for the stable two-second display window");
+requireText("function actorVisualMatches(box,img,p)", "same target overlay remains mounted across the attack/response pair");
+requireText("combatPendingActorId", "an in-progress overlay transition is deduplicated");
+requireText("function syncTurnHeader(c)", "gameplay Turn and Combat Round use separate header states");
+requireText("var label=c?'COMBAT • ROUND ':'TURN '", "combat subturns do not masquerade as gameplay turns");
+assert.ok(!html.includes("queue(80)"), "legacy 80ms overlay rescheduling must not survive");
+const actorSwapScript = html.match(/\/\* COMBAT_ACTOR_SWAP_V1 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
+assert.ok(actorSwapScript, "Combat actor transition script must be packaged");
+assert.ok(!actorSwapScript.includes("var oldRender=window.render"), "legacy render overlay owner must be removed");
+assert.ok(!actorSwapScript.includes("var oldTurn=window.backroomTurn"), "legacy turn overlay owner must be removed");
+
 requireText("ANDROID_SWIPE_GESTURE_V2");
 requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
 requireText("#managementPage{overflow-y:auto", "Management vertical scrolling remains enabled");
