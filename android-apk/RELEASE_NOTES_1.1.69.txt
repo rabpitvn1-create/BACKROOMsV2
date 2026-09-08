@@ -1,7 +1,8 @@
 Backroom 1.1.69 Debug
 
-- Thêm combat typography / semantic coloring cho log COMBAT: Item cyan-green đậm và gạch chân, sát thương đỏ máu, hồi HP xanh sáng.
-- Tên kỹ năng, nhân vật và Entity trong combat dùng font Play Bold đóng gói local trong APK, không phụ thuộc tải mạng lúc chạy.
-- Semantic decoration chỉ thuộc presentation layer; không thay đổi damage calculation, combat turn, HP logic, healing math, state reducer hay canon.
-- Cải thiện độ rõ của văn phong Game Master và đồng bộ danh tính tổ chức theo SRU hiện hành, đồng thời giữ Blackblood Armor là tên trang bị hợp lệ.
-- Sửa overlay combat Lucia/Syvial bị Kai ghi đè và đưa Syvial vào true-turn combat với lượt tấn công/Entity phản ứng riêng.
+- Thêm combat typography / semantic coloring chỉ ở presentation layer: Item cyan-green đậm và gạch chân, damage đỏ máu, healing xanh sáng.
+- Tên kỹ năng, nhân vật và Entity trong COMBAT dùng Play Bold đóng gói local trong APK, có kèm giấy phép OFL và không cần tải font khi chạy game.
+- Sửa Lucia và Syvial combat overlay để actor hiện tại không bị Snapshot renderer ghi đè thành Kai.
+- Đưa Syvial vào authoritative true-turn combat với lượt tấn công riêng và Entity response subturn tương ứng.
+- Giữ nguyên damage calculation, HP/healing math, combat turn ownership, state reducer và canon đối với lớp typography mới.
+- Giữ các narrative clarity / SRU organization guards đã merge trước đó, bao gồm việc loại tham chiếu tổ chức Black Blood lỗi thời nhưng vẫn bảo toàn tên trang bị Blackblood Armor.
