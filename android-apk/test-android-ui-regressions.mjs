@@ -76,7 +76,7 @@ requireText("combat-hit-impact", "target receives flash and pixel recoil");
 requireText("combat-hit-number", "floating RPG damage number is packaged");
 requireText("Math.max(0,Math.round(oldHp-newHp))", "damage presentation uses authoritative HP delta");
 requireText("var hitBefore=(inFlight&&typeof window.captureCombatHitState==='function')", "hit snapshot is limited to authoritative autoplay submissions");
-const hitVfxScript = html.match(/\/\* COMBAT_HIT_VFX_V1 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
+const hitVfxScript = html.match(/<script>\s*\/\* COMBAT_HIT_VFX_V1 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
 assert.ok(hitVfxScript, "Combat Hit VFX script must be packaged");
 assert.ok(!hitVfxScript.includes("combat-bar"), "hit VFX must not create a duplicate HP bar");
 new Function(hitVfxScript);
