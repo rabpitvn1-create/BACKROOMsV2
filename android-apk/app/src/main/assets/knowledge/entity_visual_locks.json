@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "policy": "PNG_VISUAL_LOCK: the exact packaged local Entity PNG is authoritative for narratable appearance only. These locks do not alter Entity behavior, ontology, combat stats, encounter rates or world canon.",
+  "records": [
+    {
+      "key": "hound",
+      "displayName": "Hound",
+      "width": 128,
+      "height": 128,
+      "sha256": "ef7143a4c4ec7d13fb61365d9f2915dbd5e1830f0ab6a35fc70e53832500ffcf",
+      "visual": "Hound hiện ra như một sinh vật hình người gầy quắt bò bằng cả bốn chi. Da/thịt tối màu lộ các mảng đỏ, tóc đen dài rối phủ đầu và lưng; đôi mắt đỏ sáng, miệng đầy răng nhọn và các ngón dài kết thúc như vuốt."
+    },
+    {
+      "key": "clump",
+      "displayName": "Clump",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "a7776f353412753875d4742498135ea7053f60512a82fdf48c350c1e03135b21",
+      "visual": "Clump là một khối thịt đỏ đặc quánh, gần như không có đầu hay thân riêng, được tạo bởi vô số tay chân người quấn chặt quanh một cái miệng khổng lồ ở lõi. Miệng mở rộng với nhiều răng trắng nhọn; bàn tay và ngón tay vươn ra theo mọi hướng."
+    },
+    {
+      "key": "duller",
+      "displayName": "Duller",
+      "width": 1192,
+      "height": 1319,
+      "sha256": "64f85af7f614321d04fc635b0ba6936b8009406d35a07f679d6f5b0330296e64",
+      "visual": "Duller có dáng humanoid cực kỳ cao, gầy và kéo dài, toàn thân tối đen với các viền phản sáng nâu-vàng. Đầu lớn trơn như một khối rỗng không thấy mặt; tay chân dài bất thường, khớp gập lỏng lẻo và các ngón tay chân mảnh như móc."
+    },
+    {
+      "key": "deathmoth",
+      "displayName": "Deathmoth",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "65c82199035c47fe31b57a57a65fa12a6bc89059e36daa46debaa6777fac11bc",
+      "visual": "Deathmoth có hình một con bướm đêm lớn đang xòe cánh đối xứng. Cánh mang họa tiết đen, trắng kem và vàng; râu dài dạng lông chim. Phần đầu-ngực nổi bật bằng một hình sọ trắng rõ rệt, còn bụng phân đốt thuôn nhọn xuống dưới."
+    },
+    {
+      "key": "hostile_faceling",
+      "displayName": "Hostile Faceling",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "463045c1a5946a03a776688cc15291d8d56f8b2698170873198b6af8d3a0c0ed",
+      "visual": "Hostile Faceling mang vóc một người trưởng thành, mặc áo dài tay đen, quần xám nâu và giày tối màu. Điểm bất thường nằm ở khuôn mặt màu da hoàn toàn trơn, không có mắt, mũi hay miệng; trong sprite, một cánh tay của nó đang giơ cao."
+    },
+    {
+      "key": "false_puddle",
+      "displayName": "False Puddle",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "f53b359322ccc9fc98ddd06f96e07d49bacd2e6a4690ac93557b178a13bee17f",
+      "visual": "False Puddle trông như một vũng chất lỏng vàng óng, sệt và phản sáng đang trồi lên thành một khối thân trên gù. Giữa khối vàng là một hốc miệng đen sâu với răng nhọn; một cánh tay dài, chảy nhỏ giọt, chống xuống phần vũng đang loang ra."
+    },
+    {
+      "key": "paintings",
+      "displayName": "Paintings",
+      "width": 1536,
+      "height": 1024,
+      "sha256": "7e2ee6c31165e1ee6cee724a06cee553b23da9b431f625f100d58ff1a4c49182",
+      "visual": "Paintings xuất hiện như một bức tranh lớn trong khung vàng chạm trổ cầu kỳ. Nền tranh đỏ sẫm; bên trong là một nhóm sáu hình thể phủ vải trắng-xám như những bóng ma, mỗi hình chỉ có hai lỗ mắt đen nhỏ, đứng tụ lại thành cụm."
+    },
+    {
+      "key": "smiler",
+      "displayName": "Smiler",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "9cd8eccba8d8524466cedeed932470f97da794ab8612c0337c6e751f6ac1c18b",
+      "visual": "Smiler trong sprite là một humanoid đen cao và gầy, tay dài gần chạm đất, bàn tay lớn với các ngón nhọn, chân khuỵu. Trên cái đầu tối chỉ nổi bật hai mắt trắng phát sáng và một nụ cười trắng cực rộng đầy răng, tương phản mạnh với toàn thân đen."
+    },
+    {
+      "key": "skin-stealer",
+      "displayName": "Skin-Stealer",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "405da46af901ea6a86782fba980dd1087cdbfa2b516c6eb0e6aa424db6a3b231",
+      "visual": "Skin-Stealer hiện ra như một humanoid cao, lực lưỡng và gần như không có da: các bó cơ đỏ cùng những dải thịt xám-trắng lộ rõ khắp người. Đầu trọc, mắt trắng nhợt, miệng đỏ toang; bàn tay và bàn chân đỏ kéo dài thành các đầu ngón giống vuốt."
+    },
+    {
+      "key": "predatory_window",
+      "displayName": "Predatory Window",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "994de30ea6aeb1006ee8556156fe504e26f6d86655d754e3c9ad25e9a2e69228",
+      "visual": "Predatory Window là một khung cửa sổ cũ màu xám với bốn ô kính xanh xám lạnh. Sau lớp kính không có cảnh vật rõ ràng mà là những mảng bóng đen lớn, méo mó áp sát các ô; các vệt phản sáng trên kính làm hình dạng phía sau càng khó đọc."
+    },
+    {
+      "key": "biological_pipeline",
+      "displayName": "Biological Pipeline",
+      "width": 1086,
+      "height": 1448,
+      "sha256": "0474fa10a7ff4f06089df8c5b937576278a11951ae73f24cd2c1afd5cb78f413",
+      "visual": "Biological Pipeline có hình một humanoid rất cao và mảnh, toàn thân đen bóng như được ghép từ ống, dây và khớp cơ khí-hữu cơ. Đầu là một khối bầu dục trơn không thấy mặt; quanh cổ, vai và lồng ngực có nhiều vòng ống, tay chân dài kết thúc bằng các ngón mảnh."
+    },
+    {
+      "key": "wretch",
+      "displayName": "Wretch",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "6716b4bee87b5dcc80f1f4fa25ab37baecb44165aa84e632c98dc2f13b82449a",
+      "visual": "Wretch là một humanoid gầy trơ, đỏ-nâu như bị lột da hoặc bỏng sâu, để lộ sườn, gân và các bó cơ. Đầu tối đỏ bóng, tay chân dài khẳng khiu, bàn chân như vuốt; trong sprite nó cầm một cán dài cong gắn lưỡi móc/rìu méo ở đầu."
+    },
+    {
+      "key": "cable_mimic",
+      "displayName": "Cable Mimic",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "15ccdd6a14c0e80e0acec072090aaeb134c6c6b66570cc4e05c9041017399fdb",
+      "visual": "Cable Mimic là một humanoid đen rất cao, mảnh như được kéo từ những sợi cáp. Đầu bầu dục bóng loáng không có nét mặt; cổ, vai, thân và các chi là những đường dây dài ngoằn ngoèo, nhiều sợi buông rủ xuống, tay kết thúc bằng các ngón dây mảnh."
+    },
+    {
+      "key": "the_beast_of_level_5",
+      "displayName": "The Beast of Level 5",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "2286b0b113b5ab7131402c093d3cadae048ad5c34595cdd1096ff8fc1872ae04",
+      "visual": "The Beast of Level 5 mang thân hình người cao trong bộ suit xám nâu, áo sơ mi sáng và giày đen. Thay cho đầu người là một khối sinh vật tối màu có phần đỉnh nhô dài và nhiều xúc tu dày rủ xuống quanh cổ-ngực; một tay cầm con dao dài sáng kim loại."
+    },
+    {
+      "key": "hotel_corpse_lure",
+      "displayName": "Hotel Corpse Lure",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "2286b0b113b5ab7131402c093d3cadae048ad5c34595cdd1096ff8fc1872ae04",
+      "visual": "Hotel Corpse Lure trong asset hiện dùng đúng cùng một sprite với The Beast of Level 5: thân người cao mặc suit xám nâu và giày đen, đầu là khối tối màu có phần đỉnh nhô dài cùng nhiều xúc tu rủ xuống; một tay cầm con dao dài sáng kim loại."
+    },
+    {
+      "key": "jeff_the_killer",
+      "displayName": "Jeff the Killer",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "8783556524be40ce33b61e47e0446b51667b796b47442f8403b0875a4d568157",
+      "visual": "Jeff the Killer có dáng nam trẻ gầy, tóc đen dài rối, da mặt trắng bệch, hốc mắt đen với điểm mắt trắng và nụ cười đỏ kéo rộng bất thường. Hắn mặc hoodie trắng-xám và quần đen vấy nhiều vệt đỏ, giày đen-trắng; một tay cầm dao dính đỏ."
+    },
+    {
+      "key": "jane_the_killer",
+      "displayName": "Jane the Killer",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "0a55c8e144893e546195fb7b5296cbe7b8d63ea5f7c4d96ae56bb4029120d4c3",
+      "visual": "Jane the Killer có dáng nữ cao gầy, tóc đen rất dài và dày, khuôn mặt trắng bệch với vùng mắt tối cùng các điểm đỏ. Cô mặc trang phục đen ôm người gồm áo ngắn, quần ngắn, dây đùi/tất rách và bốt đen; một tay cầm con dao dính đỏ."
+    },
+    {
+      "key": "slenderman",
+      "displayName": "Slenderman",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "5bcb33b7b4e9513543ca0fda8ab4c6772152cc41d91c9a8a96681da3826b2201",
+      "visual": "Slenderman là một humanoid cực cao và mảnh, đầu trắng hoàn toàn trơn không có mắt, mũi hay miệng. Hắn mặc suit đen, sơ mi trắng, cà vạt đen; tay dài quá tỷ lệ người, và từ lưng-vai tỏa ra nhiều xúc tu đen dài uốn cong quanh cơ thể."
+    },
+    {
+      "key": "diep_minh",
+      "displayName": "Diệp Minh",
+      "width": 1086,
+      "height": 1448,
+      "sha256": "ac5c6c2471f00bc560fd4b37c694d978d5f04aeddda4074678e096a24067b52a",
+      "visual": "Diệp Minh hiện ra như một nam chiến binh tóc đen trong giáp và trường bào đen-trắng-vàng cực kỳ cầu kỳ, phủ ký hiệu, bùa vàng và biểu tượng âm-dương. Một nửa cơ thể mang giáp tối; nửa còn lại bị phủ bởi khối đỏ-đen phát sáng, các tua hữu cơ cuộn ra sau. Anh cầm một thanh kiếm dài phát ánh vàng cam."
+    }
+  ]
+}
