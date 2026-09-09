@@ -1,6 +1,9 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
+runpy.run_path(str(ROOT / "patch-ime-keyboard-state-final.py"), run_name="__main__")
+
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 main = MAIN.read_text(encoding="utf-8")
 
