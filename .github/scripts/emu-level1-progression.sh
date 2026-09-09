@@ -43,7 +43,6 @@ for n in root.iter('node'):
     desc = norm(n.attrib.get('content-desc'))
     rid = n.attrib.get('resource-id') or ''
     cls = n.attrib.get('class') or ''
-    hay = f'{text} {desc}'.strip()
     match = False
     if kind == 'gotit':
         match = rid == 'android:id/ok' or text == 'got it' or desc == 'got it'
@@ -52,9 +51,9 @@ for n in root.iter('node'):
     elif kind == 'deny_permission':
         match = text in ("don't allow", 'dont allow', 'deny') or desc in ("don't allow", 'dont allow', 'deny')
     elif kind == 'submit':
-        match = 'thuc hien' in hay or rid.endswith(':id/submit')
+        match = rid.endswith(':id/submit') or (cls.endswith('Button') and (text == 'thuc hien' or desc == 'thuc hien'))
     elif kind == 'input':
-        match = cls.endswith('EditText') or 'ban se lam gi tiep theo' in hay or 'kai lam gi' in hay
+        match = cls.endswith('EditText')
     if match:
         bounds = n.attrib.get('bounds') or ''
         if bounds:
@@ -66,21 +65,13 @@ PY
 input_value() {
   local xml="$1"
   python3 - "$xml" <<'PY'
-import sys, unicodedata, xml.etree.ElementTree as ET
-
-def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
-    value = unicodedata.normalize('NFKD', value)
-    return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
+import sys, xml.etree.ElementTree as ET
 
 root=ET.parse(sys.argv[1]).getroot()
 for n in root.iter('node'):
     cls=n.attrib.get('class') or ''
-    text=n.attrib.get('text') or ''
-    desc=n.attrib.get('content-desc') or ''
-    hay=norm(text+' '+desc)
-    if cls.endswith('EditText') or 'ban se lam gi tiep theo' in hay or 'kai lam gi' in hay:
-        print(text)
+    if cls.endswith('EditText'):
+        print(n.attrib.get('text') or '')
         break
 PY
 }
