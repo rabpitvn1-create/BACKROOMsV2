@@ -215,7 +215,9 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     combat = companion_scope_prefix + companion_scope_new + companion_scope_suffix
 
     companion_marker = '    // COMPANION_SKILLS_R01: Iris, Syvial and An Nhien wrap the finalized combat response.\n'
-    combat = replace_once(combat, companion_marker, '    }\n\n' + companion_marker, "close Kai-only mechanics before companion actors")
+    if combat.count(companion_marker) != 1:
+        raise RuntimeError("close Kai-only mechanics: companion marker must be unique")
+    combat = combat.replace(companion_marker, '    }\n\n' + companion_marker, 1)
     combat = replace_once(
         combat,
         companion_marker + '\n    if (irisActive && c.entityHp > 0) {\n',
