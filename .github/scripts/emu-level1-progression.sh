@@ -32,7 +32,7 @@ node_bounds() {
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D')
+    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
 
@@ -49,6 +49,8 @@ for n in root.iter('node'):
         match = rid == 'android:id/ok' or text == 'got it' or desc == 'got it'
     elif kind == 'wait':
         match = text == 'wait' or desc == 'wait'
+    elif kind == 'deny_permission':
+        match = text in ("don't allow", 'dont allow', 'deny') or desc in ("don't allow", 'dont allow', 'deny')
     elif kind == 'submit':
         match = 'thuc hien' in hay or rid.endswith(':id/submit')
     elif kind == 'input':
@@ -67,7 +69,7 @@ input_value() {
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D')
+    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
 
@@ -89,7 +91,7 @@ ui_is_busy() {
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D')
+    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold()
 
@@ -100,7 +102,6 @@ for n in root.iter('node'):
 joined='\n'.join(texts)
 busy = (
     'dang xu ly luot' in joined
-    or 'dang xu ly lượt' in joined
     or 'dang tim kiem khu vuc hien tai' in joined
     or 'dang kham pha khu vuc chua khao sat' in joined
 )
@@ -114,20 +115,18 @@ authoritative_level() {
 import re, sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D')
+    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
 
 root=ET.parse(sys.argv[1]).getroot()
 texts=[(n.attrib.get('text') or '').strip() for n in root.iter('node')]
-# Prefer the value immediately following the authoritative UI label "Vị trí".
 for i,text in enumerate(texts):
     if norm(text) == 'vi tri':
         for candidate in texts[i+1:i+5]:
             m=re.match(r'^level\s*([0-6])\s*/', candidate, re.I)
             if m:
                 print(m.group(1)); raise SystemExit(0)
-# Fallback only to short state-like strings, never long narrative log entries.
 for text in texts:
     if len(text) > 180:
         continue
@@ -158,9 +157,21 @@ tap_bounds() {
   adb shell input tap "$x" "$y"
 }
 
+is_keyboard_permission_prompt() {
+  local xml="$1"
+  grep -Fq 'package="com.android.permissioncontroller"' "$xml" \
+    && grep -Eqi 'Android Keyboard \(AOSP\).*contacts|access your contacts' "$xml"
+}
+
+is_known_system_overlay() {
+  local xml="$1"
+  grep -Eqi "Viewing full screen|is(n't| not) responding|is not responding" "$xml" \
+    || is_keyboard_permission_prompt "$xml"
+}
+
 dismiss_system_overlays() {
   local attempt xml text bounds acted
-  for attempt in $(seq 1 8); do
+  for attempt in $(seq 1 12); do
     xml=$(dump_ui "system-${attempt}")
     [[ -s "$xml" ]] || { sleep 1; continue; }
     text=$(cat "$xml")
@@ -172,6 +183,16 @@ dismiss_system_overlays() {
       tap_bounds "$bounds"
       acted=1
       sleep 1
+    fi
+
+    if is_keyboard_permission_prompt "$xml"; then
+      bounds=$(node_bounds "$xml" deny_permission || true)
+      if [[ -n "$bounds" ]]; then
+        echo "Dismissing emulator AOSP-keyboard contacts permission with Don't allow"
+        tap_bounds "$bounds"
+        acted=1
+        sleep 1
+      fi
     fi
 
     if grep -Eqi "is(n't| not) responding|is not responding" <<<"$text"; then
@@ -192,26 +213,40 @@ is_app_resumed() {
   adb shell dumpsys activity activities 2>/dev/null | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
 }
 
+top_resumed_activity() {
+  adb shell dumpsys activity activities 2>/dev/null \
+    | sed -nE 's/.*(topResumedActivity|ResumedActivity):?[^A-Za-z0-9_.]*ActivityRecord\{[^ ]+ u[0-9]+ ([^ ]+).*/\2/p' \
+    | head -1
+}
+
 wait_until_not_busy() {
-  local label="$1" deadline attempt tmp
+  local label="$1" deadline attempt tmp non_app_attempts top
   deadline=$((SECONDS + TURN_TIMEOUT_SECONDS))
   attempt=0
+  non_app_attempts=0
   tmp="/tmp/backroom-ready-${label}.xml"
 
   while (( SECONDS < deadline )); do
     attempt=$((attempt + 1))
-    if ! is_app_resumed; then
-      harness_error="MainActivity is no longer resumed while waiting for $label"
-      return 1
-    fi
     dump_ui_to "$tmp" || { sleep "$POLL_SECONDS"; continue; }
 
-    # A fresh emulator can surface Android-owned dialogs asynchronously.
-    if grep -Eqi "Viewing full screen|is(n't| not) responding|is not responding" "$tmp"; then
+    if is_known_system_overlay "$tmp"; then
       dismiss_system_overlays
       sleep 1
       continue
     fi
+
+    if ! is_app_resumed; then
+      non_app_attempts=$((non_app_attempts + 1))
+      if (( non_app_attempts >= 5 )); then
+        top=$(top_resumed_activity || true)
+        harness_error="MainActivity did not resume after system-UI recovery while waiting for $label${top:+ (top=$top)}"
+        return 1
+      fi
+      sleep "$POLL_SECONDS"
+      continue
+    fi
+    non_app_attempts=0
 
     if ! ui_is_busy "$tmp"; then
       cp "$tmp" "$OUT/${label}.xml"
@@ -257,13 +292,32 @@ submit_action() {
 
   adb shell input tap "$ix" "$iy"
   sleep 1
+  dismiss_system_overlays
+  if ! is_app_resumed; then
+    sleep 1
+    dismiss_system_overlays
+  fi
+  if ! is_app_resumed; then
+    harness_error="MainActivity did not resume after focusing action input $index"
+    return 1
+  fi
+
   adb shell input keyevent KEYCODE_MOVE_END || true
   adb shell input text "${action// /%s}"
   sleep 1
 
-  # adjustResize moves the submit button when the IME opens. Re-dump after typing so the tap uses
-  # the post-keyboard bounds instead of the stale pre-keyboard coordinate.
   typed_xml=$(dump_ui "typed-${index}")
+  if is_known_system_overlay "$typed_xml"; then
+    dismiss_system_overlays
+    sleep 1
+    typed_xml=$(dump_ui "typed-${index}-recovered")
+  fi
+  stale=$(input_value "$typed_xml" || true)
+  if [[ -z "${stale//[[:space:]]/}" ]]; then
+    harness_error="Probe action $index was not present in the input after keyboard/system-UI handling"
+    return 1
+  fi
+
   submit_bounds=$(node_bounds "$typed_xml" submit || true)
   if [[ -n "$submit_bounds" ]]; then
     read -r bx by < <(center_from_bounds "$submit_bounds")
@@ -280,18 +334,23 @@ submit_action() {
     adb shell input tap "$bx" "$by"
     sleep 2
     verify_xml=$(dump_ui "submitted-${index}-attempt-${attempt}")
+
+    if is_known_system_overlay "$verify_xml"; then
+      dismiss_system_overlays
+      sleep 1
+      verify_xml=$(dump_ui "submitted-${index}-attempt-${attempt}-recovered")
+    fi
+
     if ui_is_busy "$verify_xml"; then
       accepted=1
       break
     fi
     stale=$(input_value "$verify_xml" || true)
-    if [[ -z "${stale//[[:space:]]/}" ]]; then
-      # Fast completion can clear the field before we observe the transient busy state.
+    if [[ -z "${stale//[[:space:]]/}" ]] && is_app_resumed; then
       accepted=1
       break
     fi
 
-    # If the first tap missed, the layout may have shifted again. Refresh the bounds once.
     submit_bounds=$(node_bounds "$verify_xml" submit || true)
     if [[ -n "$submit_bounds" ]]; then
       read -r bx by < <(center_from_bounds "$submit_bounds")
@@ -299,7 +358,7 @@ submit_action() {
   done
 
   if [[ "$accepted" -ne 1 ]]; then
-    harness_error="Submit tap for probe action $index was not accepted after IME-resize coordinate refresh"
+    harness_error="Submit tap for probe action $index was not accepted after IME/system-UI recovery"
     return 1
   fi
 
@@ -325,9 +384,12 @@ capture_final_evidence() {
   adb shell dumpsys activity activities > "$OUT/activity.txt" 2>/dev/null || true
 }
 
-# Suppress first-run system UI that otherwise sits above the WebView in fresh CI emulators.
+# Suppress emulator-only system UI that is unrelated to the app under test.
 adb shell settings put secure immersive_mode_confirmations confirmed >/dev/null 2>&1 || true
 adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1 || true
+# API 35's bundled LatinIME can request contacts after several focus cycles and steal the foreground.
+# Grant it in the disposable CI emulator; the game APK itself receives no extra permission.
+adb shell pm grant com.android.inputmethod.latin android.permission.READ_CONTACTS >/dev/null 2>&1 || true
 
 adb install -r "$APK"
 adb logcat -c
@@ -368,7 +430,6 @@ for turn in $(seq 0 "$MAX_TURNS"); do
   if ! submit_action "$action" "$xml" "$turn"; then
     break
   fi
-
 done
 
 capture_final_evidence
