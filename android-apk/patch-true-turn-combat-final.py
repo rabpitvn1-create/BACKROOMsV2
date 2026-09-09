@@ -749,7 +749,7 @@ new_tests = r'''
           break
         }
       }
-      assertTrue(observedDamage, "Expected an Entity response to damage $targetId")
+      assertTrue("Expected an Entity response to damage $targetId", observedDamage)
     }
   }
 
@@ -773,7 +773,7 @@ new_tests = r'''
     val state = CombatRuntime.start(initial, "diep_minh")
     val kai = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
     for (legacyAssist in listOf("Lucia \"Lục\"", "ARGUS", "Syvial", "Rift Sever", "Crimson Guillotine")) {
-      assertFalse(kai.reply.contains(legacyAssist), "Kai subturn must not execute $legacyAssist")
+      assertFalse("Kai subturn must not execute $legacyAssist", kai.reply.contains(legacyAssist))
     }
 
     val irisTurn = state.copy(metadata = state.metadata + ("combat.autoCursor" to "6"))
