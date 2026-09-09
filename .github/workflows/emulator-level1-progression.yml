@@ -1,0 +1,81 @@
+name: Emulator Level 1 Progression
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'android-apk/**'
+      - '.github/scripts/emu-level1-progression.sh'
+      - '.github/workflows/build-backroom-apk.yml'
+      - '.github/workflows/emulator-level1-progression.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  level1-progression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve matching APK build
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 60); do
+            json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/build-backroom-apk.yml/runs?per_page=30")
+            run_id=$(jq -r --arg sha "$HEAD_SHA" '.workflow_runs[] | select(.head_sha==$sha and .status=="completed" and .conclusion=="success") | .id' <<<"$json" | head -1)
+            if [[ -n "$run_id" ]]; then
+              echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Waiting for successful APK build for $HEAD_SHA ($attempt/60)"
+            sleep 15
+          done
+          echo "No successful APK build found for $HEAD_SHA" >&2
+          exit 1
+
+      - name: Download APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.build.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p apk-artifact
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --dir apk-artifact
+          find apk-artifact -type f -name '*.apk' -print
+          APK=$(find apk-artifact -type f -name '*.apk' | head -1)
+          test -n "$APK"
+          cp "$APK" Backroom-under-test.apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run real APK progression probe
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MAX_TURNS: '36'
+          WAIT_SECONDS: '22'
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: bash .github/scripts/emu-level1-progression.sh Backroom-under-test.apk
+
+      - name: Upload progression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-level1-progression-${{ github.run_id }}
+          path: emu-level1-results/
+          if-no-files-found: warn
