@@ -110,7 +110,7 @@ hit_style = r'''<style id="combatHitVfxStyle">
 '''
 
 hit_script = r'''<script>
-/* COMBAT_HIT_VFX_V1 */
+/* COMBAT_HIT_VFX_V1 / COMBAT_HIT_POST_RENDER_V2 */
 (function(){
   if(window.__combatHitVfxV1)return;window.__combatHitVfxV1=true;
 
@@ -195,13 +195,18 @@ hit_script = r'''<script>
     node.style.top=(Number.isFinite(y)?y:box.clientHeight*.42)+'px';
     box.appendChild(node);window.setTimeout(function(){if(node.parentNode)node.remove();},850);return node;
   }
+  function mountCombatHit(ghost,amount){
+    var box=document.getElementById('snapshot');if(!box){if(ghost&&ghost.remove)ghost.remove();return;}
+    if(ghost){box.appendChild(ghost);void ghost.offsetWidth;ghost.classList.add('combat-hit-impact');window.setTimeout(function(){if(ghost.parentNode)ghost.remove();},360);}
+    damageNumber(box,ghost,amount);
+  }
   window.playCombatHitFromTransition=function(before,after,actorId,ghost){
     actorId=String(actorId||(before&&before.actorId)||'');
     var amount=window.combatHitDamageFor(before,after,actorId);
     if(amount<=0){if(ghost&&ghost.remove)ghost.remove();return false;}
-    var box=document.getElementById('snapshot');if(!box){if(ghost&&ghost.remove)ghost.remove();return false;}
-    if(ghost){box.appendChild(ghost);void ghost.offsetWidth;ghost.classList.add('combat-hit-impact');window.setTimeout(function(){if(ghost.parentNode)ghost.remove();},360);}
-    damageNumber(box,ghost,amount);return true;
+    var mount=function(){mountCombatHit(ghost,amount);};
+    if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(mount);else window.setTimeout(mount,0);
+    return true;
   };
 })();
 </script>
@@ -219,10 +224,13 @@ html = replace_once(html, turn_wrapper_old, turn_wrapper_new, "true-turn hit VFX
 
 for marker in (
     "COMBAT_HIT_VFX_V1",
+    "COMBAT_HIT_POST_RENDER_V2",
     "window.captureCombatHitState=function()",
     "window.captureCombatHitGhost=function(actorId)",
     "window.combatHitDamageFor=function(before,after,actorId)",
     "window.playCombatHitFromTransition=function(before,after,actorId,ghost)",
+    "function mountCombatHit(ghost,amount)",
+    "window.requestAnimationFrame(mount)",
     "combat-hit-impact",
     "combat-hit-number",
     "var hitBefore=(inFlight&&typeof window.captureCombatHitState==='function')",
@@ -235,4 +243,4 @@ if hit_script.count("combat-bar") or hit_style.count("combat-bar"):
     raise RuntimeError("Combat hit VFX must not create a second HP bar")
 
 INDEX.write_text(html, encoding="utf-8")
-print("True-turn Lucia compatibility applied; Combat Hit VFX V1 installed with target flash, pixel recoil and floating damage.")
+print("True-turn Lucia compatibility applied; Combat Hit VFX V1 installed with target flash, pixel recoil and floating damage after native Snapshot redraw.")
