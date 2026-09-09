@@ -67,6 +67,20 @@ assert.ok(actorSwapScript, "Combat actor transition script must be packaged");
 assert.ok(!actorSwapScript.includes("var oldRender=window.render"), "legacy render overlay owner must be removed");
 assert.ok(!actorSwapScript.includes("var oldTurn=window.backroomTurn"), "legacy turn overlay owner must be removed");
 
+requireText("COMBAT_HIT_VFX_V1", "classic RPG hit feedback is packaged");
+requireText("window.captureCombatHitState=function()", "hit VFX snapshots authoritative HP before/after each true-turn subturn");
+requireText("window.captureCombatHitGhost=function(actorId)", "hit VFX freezes the correct target sprite before actor swapping");
+requireText("window.combatHitDamageFor=function(before,after,actorId)", "hit VFX damage derives from state deltas");
+requireText("window.playCombatHitFromTransition=function(before,after,actorId,ghost)", "true-turn transition drives hit presentation");
+requireText("combat-hit-impact", "target receives flash and pixel recoil");
+requireText("combat-hit-number", "floating RPG damage number is packaged");
+requireText("Math.max(0,Math.round(oldHp-newHp))", "damage presentation uses authoritative HP delta");
+requireText("var hitBefore=(inFlight&&typeof window.captureCombatHitState==='function')", "hit snapshot is limited to authoritative autoplay submissions");
+const hitVfxScript = html.match(/\/\* COMBAT_HIT_VFX_V1 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
+assert.ok(hitVfxScript, "Combat Hit VFX script must be packaged");
+assert.ok(!hitVfxScript.includes("combat-bar"), "hit VFX must not create a duplicate HP bar");
+new Function(hitVfxScript);
+
 requireText("ANDROID_SWIPE_GESTURE_V2");
 requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
 requireText("#managementPage{overflow-y:auto", "Management vertical scrolling remains enabled");
