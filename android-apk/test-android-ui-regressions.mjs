@@ -86,7 +86,25 @@ requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
 requireText("#managementPage{overflow-y:auto", "Management vertical scrolling remains enabled");
 requireText("--android-ime-bottom:0px", "IME inset has a deterministic CSS fallback");
 requireText("height:calc(100dvh - var(--android-ime-bottom));min-height:0", "keyboard inset shrinks the fixed app shell");
+requireText("window.syncAndroidImeViewport=schedule", "native IME inset changes can resync the WebView shell");
+requireText("function effectiveIme(nativeValue,inner,visual,baseline)", "stale native IME inset is rejected after viewport recovery");
+requireText("function chooseUsableHeight(inner,visual,ime,baseline)", "usable height can recover from a stale layout viewport");
+requireText("[60,220,500,900]", "IME close animation gets a delayed restoration pass");
 assert.ok(!canonicalStyle.includes(".shell{width:100%;height:100dvh;min-height:100dvh"), "full-height shell must not trap the composer behind the keyboard");
+
+const effectiveImeSource = html.match(/function effectiveIme\(nativeValue,inner,visual,baseline\)\{[^}]+\}/)?.[0];
+assert.ok(effectiveImeSource, "effective IME resolver must be packaged");
+const effectiveIme = new Function(`${effectiveImeSource}; return effectiveIme;`)();
+assert.equal(effectiveIme(320, 800, 800, 800), 0, "stale native IME inset must clear after both viewports recover");
+assert.equal(effectiveIme(320, 480, 480, 800), 320, "live IME inset must remain active while the viewport is still reduced");
+
+const usableHeightSource = html.match(/function chooseUsableHeight\(inner,visual,ime,baseline\)\{[^}]+\}/)?.[0];
+assert.ok(usableHeightSource, "usable height resolver must be packaged");
+const chooseUsableHeight = new Function(`${usableHeightSource}; return chooseUsableHeight;`)();
+assert.equal(chooseUsableHeight(480, 800, 0, 800), 800, "dismissed keyboard must restore full height even if layout viewport is stale");
+assert.equal(chooseUsableHeight(800, 480, 320, 800), 480, "open keyboard must still constrain the shell to the visible viewport");
+assert.equal(chooseUsableHeight(480, 480, 320, 800), 480, "adjustResize must not double-shrink an already reduced viewport");
+
 requireText("if(axis==='x'&&e.cancelable)e.preventDefault()", "preventDefault is horizontal-only");
 requireText("'pointermove'", "pointer move path");
 requireText("'touchmove'", "touch fallback move path");
