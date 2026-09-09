@@ -46,32 +46,24 @@ def schedule_after_healthbar() -> bool:
 if not schedule_after_healthbar():
     text = MAIN.read_text(encoding="utf-8")
 
-    # Jeff and Jane are Entity choices, not extra encounter dice. One successful Entity roll may
-    # produce exactly one canonical roaming key, so concurrent independent rolls can never overwrite
-    # one another or create hidden second encounters.
+    # Jeff and Jane are normal choices in the one shared Entity roll. Retired
+    # jeffEncounter/janeEncounter channels are no longer accepted as migration input:
+    # if an earlier patch resurrects them, fail immediately and fix that producer.
+    for legacy_marker in (
+        'rolls.put("jeffEncounter"',
+        'rolls.put("janeEncounter"',
+        'rollSuccess(rolls, "jeffEncounter")',
+        'rollSuccess(rolls, "janeEncounter")',
+        'thresholdRoll("jeffEncounter"',
+        'thresholdRoll("janeEncounter"',
+    ):
+        if legacy_marker in text:
+            raise RuntimeError("Legacy independent killer encounter channel reintroduced before final Entity authority: " + legacy_marker)
+
     old_pool = '      String[] roamingPool = {"hound","clump","duller","deathmoth","hostile_faceling","false_puddle","paintings","smiler","skin-stealer","predatory_window","biological_pipeline","wretch","cable_mimic","the_beast_of_level_5","hotel_corpse_lure","slenderman"};\n'
     new_pool = '      String[] roamingPool = {"hound","clump","duller","deathmoth","hostile_faceling","false_puddle","paintings","smiler","skin-stealer","predatory_window","biological_pipeline","wretch","cable_mimic","the_beast_of_level_5","hotel_corpse_lure","jeff_the_killer","jane_the_killer","slenderman"};\n'
     if new_pool not in text:
         text = replace_once(text, old_pool, new_pool, "shared Entity roaming pool")
-
-    for label in ("jeffEncounter", "janeEncounter"):
-        lines = text.splitlines(keepends=True)
-        matches = [line for line in lines if f'rolls.put("{label}"' in line]
-        if len(matches) != 1:
-            raise RuntimeError(f"{label} roll removal: expected exactly 1 line, found {len(matches)}")
-        text = "".join(line for line in lines if f'rolls.put("{label}"' not in line)
-
-    # Any remaining authorization that used the old unique roll now derives from the single selected
-    # roamingEntityKey. Existing flags remain readable for save compatibility, but cannot create a new
-    # Jeff/Jane encounter without the shared Entity roll selecting that key.
-    text = text.replace(
-        'rollSuccess(rolls, "jeffEncounter")',
-        '(rollSuccess(rolls, "entityEncounter") && "jeff_the_killer".equals(rolls.optString("roamingEntityKey", "")))'
-    )
-    text = text.replace(
-        'rollSuccess(rolls, "janeEncounter")',
-        '(rollSuccess(rolls, "entityEncounter") && "jane_the_killer".equals(rolls.optString("roamingEntityKey", "")))'
-    )
 
     # The final overlay bridge must never overwrite the selected normal Entity with a second unique roll.
     # Preserve Pressure Combat startup so the selected key immediately owns an authoritative combat session.
@@ -103,7 +95,7 @@ if not schedule_after_healthbar():
     if combat_visual not in text:
         raise RuntimeError("CombatRuntime visual authority missing after visual-state sync")
 
-    # Rewrite temporary Step-1 prompt language so the GM cannot reason about removed rolls.
+    # Rewrite the temporary local-overlay wording to the current single-pool authority.
     text = text.replace(
         'Jeff the Killer và Jane the Killer tạm giữ roll độc lập riêng ở bước hiện tại nhưng dùng key jeff_the_killer và jane_the_killer.',
         'Jeff the Killer và Jane the Killer nằm trong cùng LOCAL ROAMING POOL và chỉ xuất hiện khi roamingEntityKey chọn đúng canonical key jeff_the_killer hoặc jane_the_killer.'
@@ -113,41 +105,24 @@ if not schedule_after_healthbar():
         'SEARCH không được khởi tạo encounter Entity mới và entityEncounter phải ineligible;'
     )
 
-    lines = []
-    for line in text.splitlines(keepends=True):
-        if '"JEFF THE KILLER HARD LOCK:' in line:
-            lines.append('            "JEFF THE KILLER HARD LOCK: Jeff là roaming Entity trong pool chung. Không dùng roll riêng cho Jeff; chỉ khi entityEncounter success=true và roamingEntityKey=jeff_the_killer mới được khởi tạo encounter Jeff mới. Jeff chỉ săn con người, không phải đồng minh hay NPC trung lập. " +\n')
-        elif '"ROAMING KILLER HARD LOCK:' in line:
-            lines.append('      "ROAMING KILLER HARD LOCK: Jeff the Killer và Jane the Killer dùng cùng entityEncounter và cùng roamingEntityKey với mọi Entity khác. Mỗi entityEncounter thành công chỉ chọn đúng một canonical Entity key; không có roll Jeff/Jane độc lập và không được tạo encounter thứ hai trong cùng lượt. " +\n')
-        else:
-            lines.append(line)
-    text = "".join(lines)
-
-    # The old snapshot condition becomes redundant after unique-roll replacement; normalize it to one
-    # source of truth so later patches cannot mistake Jeff/Jane for separate encounter channels.
-    old_snapshot = '    else if (kind.equals("entity_encounter")) allowed = rollSuccess(rolls, "entityEncounter") || (rollSuccess(rolls, "entityEncounter") && "jeff_the_killer".equals(rolls.optString("roamingEntityKey", ""))) || (rollSuccess(rolls, "entityEncounter") && "jane_the_killer".equals(rolls.optString("roamingEntityKey", "")));\n'
-    new_snapshot = '    else if (kind.equals("entity_encounter")) allowed = rollSuccess(rolls, "entityEncounter");\n'
-    if old_snapshot in text:
-        text = text.replace(old_snapshot, new_snapshot, 1)
-
     if "jeffEncounter" in text or "janeEncounter" in text:
         raise RuntimeError("Independent Jeff/Jane encounter channel remains in final MainActivity")
+
     for marker in (
         '"hotel_corpse_lure","jeff_the_killer","jane_the_killer","slenderman"',
         'rolls.put("roamingEntityKey"',
         'String entityKey = rolls.optString("roamingEntityKey", "").trim();',
         'requireGameCore().startCombatState(candidateState.toString(), canonicalKey);',
         combat_visual,
-        'ROAMING KILLER HARD LOCK: Jeff the Killer và Jane the Killer dùng cùng entityEncounter',
+        'Jeff the Killer và Jane the Killer nằm trong cùng LOCAL ROAMING POOL',
     ):
         if marker not in text:
             raise RuntimeError("Unified Entity pool contract missing: " + marker)
 
     MAIN.write_text(text, encoding="utf-8")
 
-    # Visual-state-sync V3 already performs targeted persistent cleanup inside processCombat after
-    # all HP/regen transformations. Reuse that established implementation rather than rewriting the
-    # same method a second time and fighting the patch chain over anchors.
+    # Visual-state-sync V3 performs targeted persistent cleanup inside processCombat after all HP/regen
+    # transformations. Reuse it rather than creating a second cleanup authority.
     facade = FACADE.read_text(encoding="utf-8")
     for marker in (
         'private fun normalizeVisualPresence(state: GameState): GameState',
@@ -160,4 +135,4 @@ if not schedule_after_healthbar():
         if marker not in facade:
             raise RuntimeError("Visual-state persistent combat cleanup contract missing: " + marker)
 
-    print("Unified Entity spawn pool installed after final visual/status patches: Jeff/Jane share entityEncounter + roamingEntityKey; existing CombatRuntime cleanup remains authoritative.")
+    print("Unified Entity spawn pool installed: Jeff/Jane share entityEncounter + roamingEntityKey; no independent killer encounter channel remains.")
