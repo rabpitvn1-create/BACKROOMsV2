@@ -68,17 +68,21 @@ assert.ok(!actorSwapScript.includes("var oldRender=window.render"), "legacy rend
 assert.ok(!actorSwapScript.includes("var oldTurn=window.backroomTurn"), "legacy turn overlay owner must be removed");
 
 requireText("COMBAT_HIT_VFX_V1", "classic RPG hit feedback is packaged");
+requireText("COMBAT_HIT_POST_RENDER_V2", "hit VFX survives the native Snapshot redraw that runs after the true-turn callback");
 requireText("window.captureCombatHitState=function()", "hit VFX snapshots authoritative HP before/after each true-turn subturn");
 requireText("window.captureCombatHitGhost=function(actorId)", "hit VFX freezes the correct target sprite before actor swapping");
 requireText("window.combatHitDamageFor=function(before,after,actorId)", "hit VFX damage derives from state deltas");
 requireText("window.playCombatHitFromTransition=function(before,after,actorId,ghost)", "true-turn transition drives hit presentation");
+requireText("function mountCombatHit(ghost,amount)", "hit presentation is mounted in a dedicated post-render step");
+requireText("window.requestAnimationFrame(mount)", "hit presentation waits until synchronous native Snapshot redraws finish");
 requireText("combat-hit-impact", "target receives flash and pixel recoil");
 requireText("combat-hit-number", "floating RPG damage number is packaged");
 requireText("Math.max(0,Math.round(oldHp-newHp))", "damage presentation uses authoritative HP delta");
 requireText("var hitBefore=(inFlight&&typeof window.captureCombatHitState==='function')", "hit snapshot is limited to authoritative autoplay submissions");
-const hitVfxScript = html.match(/<script>\s*\/\* COMBAT_HIT_VFX_V1 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
+const hitVfxScript = html.match(/<script>\s*\/\* COMBAT_HIT_VFX_V1 \/ COMBAT_HIT_POST_RENDER_V2 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
 assert.ok(hitVfxScript, "Combat Hit VFX script must be packaged");
 assert.ok(!hitVfxScript.includes("combat-bar"), "hit VFX must not create a duplicate HP bar");
+assert.ok(hitVfxScript.indexOf("window.requestAnimationFrame(mount)") > hitVfxScript.indexOf("var amount=window.combatHitDamageFor"), "hit VFX must defer mounting until after damage is resolved");
 new Function(hitVfxScript);
 
 requireText("ANDROID_SWIPE_GESTURE_V2");
