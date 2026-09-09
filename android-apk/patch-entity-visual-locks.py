@@ -78,6 +78,8 @@ for item in items:
         )
     if len(visual) < 90 or len(visual) > 700:
         raise RuntimeError(f"Entity visual-lock description length out of range for {key}: {len(visual)}")
+    if re.search(r"\b(?:sprite|asset|sha256|png)\b", visual, flags=re.I):
+        raise RuntimeError("Entity Visual Lock must be narration-only and cannot leak implementation metadata: " + key)
     asset_records.append({
         "id": visual_id(key),
         "domain": "ENTITY",
@@ -127,16 +129,39 @@ engine_helpers = r'''  private fun visualRecordId(rawKey: String): String {
   }
 
   @JvmStatic
+  fun visualForEntity(context: Context, rawKey: String): String {
+    val id = visualRecordId(rawKey)
+    if (id.isBlank()) return ""
+    return database(context.applicationContext).records[id]?.text.orEmpty()
+  }
+
+  @JvmStatic
   fun firstAppearanceVisual(context: Context, rollsJson: String): String {
     val rolls = runCatching { JSONObject(rollsJson) }.getOrElse { return "" }
     val key = firstAppearanceEntityKey(rolls)
     if (key.isBlank()) return ""
-    return database(context.applicationContext).records[visualRecordId(key)]?.text.orEmpty()
+    return visualForEntity(context, key)
   }
 
 '''
 if "fun firstAppearanceVisual(context: Context, rollsJson: String): String" not in engine:
     engine = replace_once(engine, builder_anchor, engine_helpers + builder_anchor, "Entity visual engine helpers")
+elif "fun visualForEntity(context: Context, rawKey: String): String" not in engine:
+    first_visual_anchor = "  @JvmStatic\n  fun firstAppearanceVisual(context: Context, rollsJson: String): String {\n"
+    visual_lookup = r'''  @JvmStatic
+  fun visualForEntity(context: Context, rawKey: String): String {
+    val id = visualRecordId(rawKey)
+    if (id.isBlank()) return ""
+    return database(context.applicationContext).records[id]?.text.orEmpty()
+  }
+
+'''
+    engine = replace_once(engine, first_visual_anchor, visual_lookup + first_visual_anchor, "Entity visual direct lookup")
+    engine = engine.replace(
+        '    return database(context.applicationContext).records[visualRecordId(key)]?.text.orEmpty()\n',
+        '    return visualForEntity(context, key)\n',
+        1,
+    )
 
 build_old = "      addSceneAffordances()\n      addStateDrivenRecords()\n      expandReferences()\n"
 build_new = "      addSceneAffordances()\n      addStateDrivenRecords()\n      addCurrentEntityVisual()\n      expandReferences()\n"
@@ -167,6 +192,7 @@ if "private fun addCurrentEntityVisual()" not in engine:
     engine = replace_once(engine, state_anchor, state_helper + state_anchor, "Entity visual state routing helper")
 
 for marker in (
+    "fun visualForEntity(context: Context, rawKey: String): String",
     "fun firstAppearanceVisual(context: Context, rollsJson: String): String",
     "private fun addCurrentEntityVisual()",
     'add(id, "active/new Entity PNG visual lock: $key")',
@@ -261,9 +287,68 @@ java_helper = r'''  private String enforceEntityFirstAppearanceVisual(JSONObject
     return visual + "\n\n" + reply;
   }
 
+  private JSONObject enforceCombatEntityVisualTransition(String beforeStateJson, JSONObject combatResult) throws Exception {
+    if (combatResult == null || !combatResult.optBoolean("handled", false)) return combatResult;
+    JSONObject before = new JSONObject(beforeStateJson);
+    JSONObject beforeCombat = before.optJSONObject("combat");
+    String beforeKey = beforeCombat != null && beforeCombat.optBoolean("active", false)
+      ? beforeCombat.optString("entityKey", "").trim() : "";
+    JSONObject resultState = combatResult.optJSONObject("state");
+    JSONObject afterCombat = resultState != null ? resultState.optJSONObject("combat") : null;
+    if (afterCombat == null || !afterCombat.optBoolean("active", false)) return combatResult;
+    String afterKey = afterCombat.optString("entityKey", "").trim();
+    if (afterKey.isEmpty() || afterKey.equals(beforeKey)) return combatResult;
+
+    String visual = com.rabpit.backroom.core.knowledge.KnowledgeContextEngine.visualForEntity(
+      MainActivity.this, afterKey).trim();
+    if (visual.isEmpty()) return combatResult;
+    String reply = combatResult.optString("reply", "");
+    if (reply.contains(visual)) return combatResult;
+    String enriched = reply.isEmpty() ? visual : reply + "\n\n" + visual;
+    combatResult.put("reply", enriched);
+
+    JSONArray log = resultState.optJSONArray("log");
+    if (log != null && log.length() > 0) {
+      JSONObject last = log.optJSONObject(log.length() - 1);
+      if (last != null && "gm".equals(last.optString("role", ""))) last.put("text", enriched);
+    }
+    return combatResult;
+  }
+
 '''
 if "private String enforceEntityFirstAppearanceVisual(JSONObject rolls, String reply)" not in main:
     main = replace_once(main, helper_anchor, java_helper + helper_anchor, "Entity visual reply helper")
+elif "private JSONObject enforceCombatEntityVisualTransition(String beforeStateJson, JSONObject combatResult)" not in main:
+    combat_helper = r'''  private JSONObject enforceCombatEntityVisualTransition(String beforeStateJson, JSONObject combatResult) throws Exception {
+    if (combatResult == null || !combatResult.optBoolean("handled", false)) return combatResult;
+    JSONObject before = new JSONObject(beforeStateJson);
+    JSONObject beforeCombat = before.optJSONObject("combat");
+    String beforeKey = beforeCombat != null && beforeCombat.optBoolean("active", false)
+      ? beforeCombat.optString("entityKey", "").trim() : "";
+    JSONObject resultState = combatResult.optJSONObject("state");
+    JSONObject afterCombat = resultState != null ? resultState.optJSONObject("combat") : null;
+    if (afterCombat == null || !afterCombat.optBoolean("active", false)) return combatResult;
+    String afterKey = afterCombat.optString("entityKey", "").trim();
+    if (afterKey.isEmpty() || afterKey.equals(beforeKey)) return combatResult;
+
+    String visual = com.rabpit.backroom.core.knowledge.KnowledgeContextEngine.visualForEntity(
+      MainActivity.this, afterKey).trim();
+    if (visual.isEmpty()) return combatResult;
+    String reply = combatResult.optString("reply", "");
+    if (reply.contains(visual)) return combatResult;
+    String enriched = reply.isEmpty() ? visual : reply + "\n\n" + visual;
+    combatResult.put("reply", enriched);
+
+    JSONArray log = resultState.optJSONArray("log");
+    if (log != null && log.length() > 0) {
+      JSONObject last = log.optJSONObject(log.length() - 1);
+      if (last != null && "gm".equals(last.optString("role", ""))) last.put("text", enriched);
+    }
+    return combatResult;
+  }
+
+'''
+    main = replace_once(main, helper_anchor, combat_helper + helper_anchor, "Queued Entity visual transition helper")
 
 first_old = '          if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");\n'
 first_new = first_old + (
@@ -279,10 +364,16 @@ repair_new = repair_old + (
 )
 main = replace_once(main, repair_old, repair_new, "Entity visual repair enforcement")
 
+combat_old = '          JSONObject combatResult = new JSONObject(requireGameCore().processCombat(stateJson, actionKind, action));\n'
+combat_new = combat_old + '          combatResult = enforceCombatEntityVisualTransition(stateJson, combatResult);\n'
+main = replace_once(main, combat_old, combat_new, "Queued Entity combat visual enforcement")
+
 for marker in (
     "ENTITY VISUAL NARRATION HARD LOCK:",
     "enforceEntityFirstAppearanceVisual(rolls, reply)",
     "KnowledgeContextEngine.firstAppearanceVisual",
+    "enforceCombatEntityVisualTransition(stateJson, combatResult)",
+    "KnowledgeContextEngine.visualForEntity",
 ):
     if marker not in main:
         raise RuntimeError("Entity visual GM narration contract missing: " + marker)
@@ -296,5 +387,5 @@ if hash_by_key["the_beast_of_level_5"] != hash_by_key["hotel_corpse_lure"]:
 
 print(
     "Entity PNG Visual Locks installed: 19/19 canonical Entity sprites hash-locked, "
-    "state/roll routed into KNOWLEDGE_PACKET, and first appearance is deterministically narrated."
+    "state/roll routed into KNOWLEDGE_PACKET, first appearance narrated, queued Entity transitions narrated."
 )
