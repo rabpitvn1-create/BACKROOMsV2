@@ -48,7 +48,22 @@ for line in main.splitlines(keepends=True):
             lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 2% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
     else:
         lines.append(line)
-MAIN.write_text(''.join(lines), encoding="utf-8")
+main = ''.join(lines)
+
+# Retired encounter-rate patches used to inject an extra Jeff 8% die and mutate
+# level thresholds by +8 percentage points. They must never survive the final
+# authority layer or silently regain control if the patch order changes.
+for forbidden in (
+    'thresholdRoll("jeffEncounter"',
+    '"JEFF THE KILLER HARD LOCK:',
+    'int[] entityThresholds =',
+    '8.0000%',
+    '+8 percentage',
+):
+    if forbidden in main:
+        raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
+
+MAIN.write_text(main, encoding="utf-8")
 
 facade = FACADE.read_text(encoding="utf-8")
 facade = once(facade, '  fun startCombatState(legacyStateJson: String, entityKey: String): String {', '''  fun startEntityEncounters(legacyStateJson: String, keysJson: String): String {
