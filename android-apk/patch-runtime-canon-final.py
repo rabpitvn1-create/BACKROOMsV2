@@ -127,4 +127,11 @@ if not narrative_sru.is_file():
     raise RuntimeError("Narrative/SRU final patch missing: " + narrative_sru.name)
 runpy.run_path(str(narrative_sru), run_name="__main__")
 
-print("Final runtime canon verified: Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, narrative clarity guard.")
+# The exact packaged Entity PNGs are the final authority for narratable appearance.
+# Install after all writer/context rebuilds so later historical canon cannot displace them.
+entity_visual_locks = ROOT / "patch-entity-visual-locks.py"
+if not entity_visual_locks.is_file():
+    raise RuntimeError("Entity PNG Visual Lock patch missing: " + entity_visual_locks.name)
+runpy.run_path(str(entity_visual_locks), run_name="__main__")
+
+print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, narrative clarity guard.")
