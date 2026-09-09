@@ -2,6 +2,12 @@ name: Audit Legacy Patches
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/storytelling-swipe-font-v3
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/audit-legacy-patches.yml'
   pull_request:
     branches:
       - main
