@@ -84,6 +84,40 @@ assert.ok(hitVfxScript, "Combat Hit VFX script must be packaged");
 assert.ok(!hitVfxScript.includes("combat-bar"), "hit VFX must not create a duplicate HP bar");
 assert.ok(hitVfxScript.indexOf("window.requestAnimationFrame(mount)") > hitVfxScript.indexOf("var amount=window.combatHitDamageFor"), "hit VFX must defer mounting until after damage is resolved");
 new Function(hitVfxScript);
+const hitWindow = {};
+new Function("window", "state", hitVfxScript)(hitWindow, {});
+const hitBefore = {
+  playerHp: 100,
+  entityHp: 500,
+  active: true,
+  party: {
+    lucia: { hp: 90 },
+    syvial: { hp: 80 },
+    iris: { hp: 70 },
+    "party-four": { hp: 60 },
+  },
+};
+const hitAfter = {
+  playerHp: 93,
+  entityHp: 488,
+  active: true,
+  party: {
+    lucia: { hp: 82 },
+    syvial: { hp: 71 },
+    iris: { hp: 60 },
+    "party-four": { hp: 49 },
+  },
+};
+for (const [actorId, expected] of [
+  ["entity:kai", 7],
+  ["entity:lucia", 8],
+  ["entity:syvial", 9],
+  ["entity:iris", 10],
+  ["entity:party-four", 11],
+]) {
+  assert.equal(hitWindow.combatHitDamageFor(hitBefore, hitAfter, actorId), expected, `${actorId} must read the matching Party HP delta`);
+}
+assert.equal(hitWindow.combatHitDamageFor(hitBefore, hitAfter, "iris"), 12, "member attacks must read Entity HP delta");
 
 requireText("ANDROID_SWIPE_GESTURE_V2");
 requireText("touch-action:pan-y", "vertical native scrolling remains enabled");
