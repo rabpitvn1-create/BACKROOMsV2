@@ -26,12 +26,11 @@ GRADLE.write_text(gradle, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Runtime provider. Haiku owns the first writer attempt; Gemini is the fallback
-# when Haiku is unavailable, fails transport/protocol handling, returns no text,
-# or returns malformed JSON. Auditor routing remains independent: Gemini first,
-# Haiku fallback. The base URL may be either an OpenAI-style base (/v1), a full
-# /chat/completions endpoint, or an Anthropic /messages endpoint. No API token is
-# ever written to logs or exception messages.
+# Runtime provider. Haiku owns the first writer and auditor attempt; Gemini is
+# the fallback when Haiku is unavailable, fails transport/protocol handling,
+# returns no text, or returns malformed JSON. The base URL may be either an
+# OpenAI-style base (/v1), a full /chat/completions endpoint, or an Anthropic
+# /messages endpoint. No API token is ever written to logs or exception messages.
 # ---------------------------------------------------------------------------
 text = MAIN.read_text(encoding="utf-8")
 
@@ -193,18 +192,27 @@ helpers = r'''  private boolean haikuConfigured() {
   }
 
   private String auditText(String prompt, int excludedGeminiWorker) throws Exception {
-    Exception geminiError;
+    Exception haikuError = null;
+    if (haikuConfigured()) {
+      try {
+        String haikuAuditResult = haikuText(prompt, 650, 0.1);
+        // Auditor responses are JSON too. Reject malformed Haiku output here so
+        // Gemini can recover this audit instead of failing after auditText returns.
+        parseModelJson(haikuAuditResult);
+        return haikuAuditResult;
+      } catch (Exception error) {
+        haikuError = error;
+      }
+    }
+
     try {
       return geminiAuditText(prompt, excludedGeminiWorker);
-    } catch (Exception error) {
-      geminiError = error;
-    }
-    if (!haikuConfigured()) throw geminiError;
-    try {
-      return haikuText(prompt, 650, 0.1);
-    } catch (Exception haikuError) {
-      if (networkFailure(geminiError) && networkFailure(haikuError)) throw new Exception(networkFailureMessage());
-      throw haikuError;
+    } catch (Exception geminiError) {
+      if (haikuError != null && networkFailure(haikuError) && networkFailure(geminiError)) {
+        throw new Exception(networkFailureMessage());
+      }
+      if (haikuError == null && networkFailure(geminiError)) throw new Exception(networkFailureMessage());
+      throw geminiError;
     }
   }
 
@@ -264,6 +272,7 @@ for required in (
     "private String auditText(String prompt, int excludedGeminiWorker)",
     'emit("backroomProvider", "Haiku")',
     "parseModelJson(haikuResult);",
+    "parseModelJson(haikuAuditResult);",
     "parseModelJson(auditText(prompt, excludedWorker))",
     'connection.setRequestProperty("Authorization", "Bearer " + BuildConfig.HAIKU_API)',
     'connection.setRequestProperty("x-api-key", BuildConfig.HAIKU_API)',
@@ -280,5 +289,15 @@ if generate_body.find('emit("backroomProvider", "Haiku")') < 0 or generate_body.
 if generate_body.find('emit("backroomProvider", "Haiku")') > generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")'):
     raise RuntimeError("Writer provider order regressed: Haiku must run before Gemini")
 
+audit_start = text.find("  private String auditText(String prompt, int excludedGeminiWorker) throws Exception {")
+audit_end = text.find("\n  private String generateText(String prompt) throws Exception {", audit_start)
+if audit_start < 0 or audit_end < 0:
+    raise RuntimeError("Haiku auditText boundaries missing")
+audit_body = text[audit_start:audit_end]
+if audit_body.find("haikuText(prompt, 650, 0.1)") < 0 or audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)") < 0:
+    raise RuntimeError("Haiku/Gemini auditor provider markers missing")
+if audit_body.find("haikuText(prompt, 650, 0.1)") > audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)"):
+    raise RuntimeError("Auditor provider order regressed: Haiku must run before Gemini")
+
 MAIN.write_text(text, encoding="utf-8")
-print("Haiku provider integrated: Haiku-first writer with JSON validation and Gemini fallback; Gemini-first auditor with Haiku fallback; OpenAI + Anthropic request compatibility.")
+print("Haiku provider integrated: Haiku-first writer and auditor with JSON validation and Gemini fallback; OpenAI + Anthropic request compatibility.")
