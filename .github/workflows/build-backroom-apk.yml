@@ -54,15 +54,8 @@ jobs:
           test -s android-apk/patch-runtime-canon-final.py
           test -s android-apk/patch-level-transition-final.py
           test -s android-apk/patch-haiku-provider-final.py
+          test -s android-apk/patch-pressure-combat.py
           test -s android-apk/patch-party-turn-combat-final.py
-          test ! -e android-apk/patch-pressure-combat.py
-          test ! -e android-apk/patch-entity-encounter-plus-8pct.py
-          test ! -e android-apk/patch-diep-minh-boss.py
-          test ! -e android-apk/patch-diep-minh-boss-finalize.py
-          test ! -e android-apk/patch-navigation-icons.py
-          test ! -e android-apk/patch-survival-hud-chat-ux.py
-          test ! -e android-apk/patch-three-action-core.py
-          test ! -e android-apk/patch-three-action-bridge.py
           test ! -e android-apk/patch-game-master-storytelling-frame-final.py
           test ! -e android-apk/patch-combat-typography-final.py
           test ! -e android-apk/patch-mobile-swipe-ui.py
