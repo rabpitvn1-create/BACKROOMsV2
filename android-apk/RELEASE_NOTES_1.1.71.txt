@@ -1,0 +1,8 @@
+Backroom 1.1.71 Debug
+
+- Khóa hình Entity theo các PNG đã đóng gói trong APK và đưa Entity Visual Locks vào final canon pass; khóa này chỉ chi phối mô tả thị giác, không thay đổi gameplay, combat stats, encounter rate hay world canon.
+- Cho narration theo kịp các chuyển đổi hình Entity đã xếp hàng để mô tả không lệch khỏi sprite hiện hành.
+- Củng cố Storytelling thành một luồng trình bày thống nhất, đồng thời ổn định hành vi swipe trên Android.
+- Khôi phục xử lý bàn phím/IME bằng adjustResize và --android-ime-bottom để khung gameplay/chat co đúng chiều cao khi bàn phím mở.
+- Giữ Haiku là provider ưu tiên và duy trì chuỗi fallback hiện hành khi Haiku không xử lý được lượt.
+- Ổn định true-turn combat theo party slot, đồng bộ hit VFX theo actor thực sự nhận đòn và bổ sung regression coverage cho UI/combat liên quan.
