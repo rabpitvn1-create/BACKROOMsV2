@@ -26,10 +26,12 @@ GRADLE.write_text(gradle, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Runtime provider. Gemini remains primary. Haiku is the independent fallback
-# for writer and auditor text calls. The base URL may be either an OpenAI-style
-# base (/v1), a full /chat/completions endpoint, or an Anthropic /messages
-# endpoint. No API token is ever written to logs or exception messages.
+# Runtime provider. Haiku owns the first writer attempt; Gemini is the fallback
+# when Haiku is unavailable, fails transport/protocol handling, returns no text,
+# or returns malformed JSON. Auditor routing remains independent: Gemini first,
+# Haiku fallback. The base URL may be either an OpenAI-style base (/v1), a full
+# /chat/completions endpoint, or an Anthropic /messages endpoint. No API token is
+# ever written to logs or exception messages.
 # ---------------------------------------------------------------------------
 text = MAIN.read_text(encoding="utf-8")
 
@@ -212,30 +214,33 @@ if 'private boolean haikuConfigured()' not in text:
     text = text.replace(generate_anchor, helpers + generate_anchor, 1)
 
 new_generate = r'''  private String generateText(String prompt) throws Exception {
-    emit("backroomProvider", "Gemini 3.6 Flash");
-    Exception geminiError;
-    try {
-      String geminiResult = geminiText(prompt);
-      emit("backroomProvider", geminiModelLabel(lastGeminiModel) + " K" + (lastGeminiWorker + 1));
-      return geminiResult;
-    } catch (Exception error) {
-      geminiError = error;
-    }
-
+    Exception haikuError = null;
     if (haikuConfigured()) {
       emit("backroomProvider", "Haiku");
       try {
         String haikuResult = haikuText(prompt, 1800, 0.6);
+        // The writer contract is JSON. Treat malformed Haiku output as a failed first attempt
+        // so Gemini can recover the turn instead of surfacing a parse error to the player.
+        parseModelJson(haikuResult);
         emit("backroomProvider", "Haiku");
         return haikuResult;
-      } catch (Exception haikuError) {
-        if (networkFailure(geminiError) && networkFailure(haikuError)) throw new Exception(networkFailureMessage());
-        throw haikuError;
+      } catch (Exception error) {
+        haikuError = error;
       }
     }
 
-    if (networkFailure(geminiError)) throw new Exception(networkFailureMessage());
-    throw geminiError;
+    emit("backroomProvider", "Gemini 3.6 Flash");
+    try {
+      String geminiResult = geminiText(prompt);
+      emit("backroomProvider", geminiModelLabel(lastGeminiModel) + " K" + (lastGeminiWorker + 1));
+      return geminiResult;
+    } catch (Exception geminiError) {
+      if (haikuError != null && networkFailure(haikuError) && networkFailure(geminiError)) {
+        throw new Exception(networkFailureMessage());
+      }
+      if (haikuError == null && networkFailure(geminiError)) throw new Exception(networkFailureMessage());
+      throw geminiError;
+    }
   }
 '''
 generate_start = text.find(generate_anchor)
@@ -258,6 +263,7 @@ for required in (
     "private String haikuText(String prompt, int maxOutputTokens, double temperature)",
     "private String auditText(String prompt, int excludedGeminiWorker)",
     'emit("backroomProvider", "Haiku")',
+    "parseModelJson(haikuResult);",
     "parseModelJson(auditText(prompt, excludedWorker))",
     'connection.setRequestProperty("Authorization", "Bearer " + BuildConfig.HAIKU_API)',
     'connection.setRequestProperty("x-api-key", BuildConfig.HAIKU_API)',
@@ -268,5 +274,11 @@ for required in (
     if required not in text:
         raise RuntimeError("Haiku runtime marker missing: " + required)
 
+generate_body = text[text.find(generate_anchor):text.find("\n  private JSONObject parseModelJson", text.find(generate_anchor))]
+if generate_body.find('emit("backroomProvider", "Haiku")') < 0 or generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")') < 0:
+    raise RuntimeError("Haiku/Gemini writer provider markers missing")
+if generate_body.find('emit("backroomProvider", "Haiku")') > generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")'):
+    raise RuntimeError("Writer provider order regressed: Haiku must run before Gemini")
+
 MAIN.write_text(text, encoding="utf-8")
-print("Haiku provider integrated: configurable API/base/model, HTTPS-only, Gemini writer/auditor fallback, OpenAI + Anthropic request compatibility.")
+print("Haiku provider integrated: Haiku-first writer with JSON validation and Gemini fallback; Gemini-first auditor with Haiku fallback; OpenAI + Anthropic request compatibility.")
