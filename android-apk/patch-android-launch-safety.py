@@ -2,6 +2,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
+INDEX = ROOT / "app/src/main/assets/index.html"
 text = MAIN.read_text(encoding="utf-8")
 
 
@@ -196,5 +197,113 @@ exec(compile(header_patch.read_text(encoding="utf-8"), str(header_patch), "exec"
     "__name__": "__main__",
     "__file__": str(header_patch),
 })
+
+# ---------------------------------------------------------------------------
+# ANDROID_IME_VISUAL_VIEWPORT_V2
+#
+# Android 15/16 edge-to-edge plus WebView has two independent keyboard signals:
+# native WindowInsets.Type.ime() and the WebView visual viewport. Some devices
+# update only the visual viewport while the layout viewport (and 100dvh) stays
+# full-height. In that case the existing native CSS variable remains zero and
+# the composer is visually trapped behind the IME.
+#
+# Keep all three signals (layout viewport, visual viewport, native IME inset)
+# and derive one absolute usable height from the last keyboard-free baseline.
+# This deliberately subtracts native IME from the baseline, never from an
+# already-resized viewport, so adjustResize + IME insets cannot double-shrink.
+# ---------------------------------------------------------------------------
+html = INDEX.read_text(encoding="utf-8")
+viewport_old = '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+viewport_new = '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">'
+if "interactive-widget=resizes-content" not in html:
+    if viewport_old not in html:
+        raise RuntimeError("IME viewport meta anchor missing")
+    html = html.replace(viewport_old, viewport_new, 1)
+
+ime_style = r'''<style id="androidImeViewportFix">
+/* ANDROID_IME_VISUAL_VIEWPORT_V2 */
+:root{--android-usable-height:100dvh}
+.shell{height:var(--android-usable-height)!important;min-height:0!important;max-height:var(--android-usable-height)!important}
+</style>
+'''
+if 'id="androidImeViewportFix"' not in html:
+    if "</head>" not in html:
+        raise RuntimeError("IME CSS head anchor missing")
+    html = html.replace("</head>", ime_style + "</head>", 1)
+
+ime_script = r'''<script id="androidImeViewportFixScript">
+/* ANDROID_IME_VISUAL_VIEWPORT_V2 */
+(function(){
+  if(window.__androidImeViewportV2)return;window.__androidImeViewportV2=true;
+  var root=document.documentElement;
+  var fullHeight=0;
+  var timers=[];
+  function nativeIme(){
+    var value=parseFloat(getComputedStyle(root).getPropertyValue('--android-ime-bottom'));
+    return Number.isFinite(value)?Math.max(0,value):0;
+  }
+  function viewportHeight(){
+    var inner=Number(window.innerHeight)||Number(root.clientHeight)||0;
+    var vv=window.visualViewport;
+    var visual=vv&&Number(vv.height)>0?Number(vv.height):inner;
+    var ime=nativeIme();
+
+    // Refresh the keyboard-free baseline. Large changes while the IME is closed
+    // are treated as rotation/multi-window changes rather than preserving stale size.
+    if(ime<1&&Math.abs(inner-visual)<48){
+      if(fullHeight>0&&Math.abs(inner-fullHeight)>Math.max(160,fullHeight*.25))fullHeight=Math.max(inner,visual);
+      else fullHeight=Math.max(fullHeight,inner,visual);
+    }
+    if(fullHeight<=0)fullHeight=Math.max(inner,visual,320);
+
+    var usable=Math.min(inner>0?inner:Infinity,visual>0?visual:Infinity);
+    if(ime>0&&fullHeight>ime+120)usable=Math.min(usable,fullHeight-ime);
+    if(!Number.isFinite(usable)||usable<=0)usable=Math.max(inner,visual,fullHeight,320);
+    return {usable:usable,ime:ime,inner:inner,visual:visual};
+  }
+  function sync(){
+    var m=viewportHeight();
+    root.style.setProperty('--android-usable-height',m.usable.toFixed(2)+'px');
+    root.classList.toggle('android-ime-active',m.ime>40||(fullHeight-m.usable)>48);
+  }
+  function schedule(){
+    sync();
+    timers.forEach(clearTimeout);timers.length=0;
+    [60,220,500].forEach(function(delay){timers.push(setTimeout(sync,delay));});
+  }
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('orientationchange',function(){fullHeight=0;setTimeout(schedule,160);},{passive:true});
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',schedule,{passive:true});
+    window.visualViewport.addEventListener('scroll',schedule,{passive:true});
+  }
+  document.addEventListener('focusin',function(event){
+    var target=event.target;
+    if(target&&target.matches&&target.matches('textarea,input,[contenteditable="true"]'))schedule();
+  });
+  document.addEventListener('focusout',schedule);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)schedule();});
+  requestAnimationFrame(schedule);
+})();
+</script>
+'''
+if 'id="androidImeViewportFixScript"' not in html:
+    if "</body>" not in html:
+        raise RuntimeError("IME script body anchor missing")
+    html = html.replace("</body>", ime_script + "</body>", 1)
+
+for marker in (
+    "ANDROID_IME_VISUAL_VIEWPORT_V2",
+    "interactive-widget=resizes-content",
+    "--android-usable-height",
+    "window.visualViewport",
+    "fullHeight-ime",
+    ".shell{height:var(--android-usable-height)!important",
+):
+    if marker not in html:
+        raise RuntimeError("IME viewport contract missing: " + marker)
+
+INDEX.write_text(html, encoding="utf-8")
+print("Android IME viewport V2 applied: composer follows the actual visible WebView height with native-inset fallback and no double shrink.")
 
 # Release-branch CI trigger marker.
