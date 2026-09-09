@@ -87,23 +87,21 @@ requireText("#managementPage{overflow-y:auto", "Management vertical scrolling re
 requireText("--android-ime-bottom:0px", "IME inset has a deterministic CSS fallback");
 requireText("height:calc(100dvh - var(--android-ime-bottom));min-height:0", "keyboard inset shrinks the fixed app shell");
 requireText("window.syncAndroidImeViewport=schedule", "native IME inset changes can resync the WebView shell");
-requireText("function effectiveIme(nativeValue,inner,visual,baseline)", "stale native IME inset is rejected after viewport recovery");
-requireText("function chooseUsableHeight(inner,visual,ime,baseline)", "usable height can recover from a stale layout viewport");
+requireText("function chooseUsableHeight(inner,visual,ime,baseline)", "usable height handles both overlay and resize IME modes");
+requireText("if(ime>0&&baseline>ime+120)", "live native IME inset always constrains the shell");
+requireText("if(ime<1&&baseline>0)return baseline", "IME dismissal immediately restores the keyboard-free baseline");
 requireText("[60,220,500,900]", "IME close animation gets a delayed restoration pass");
+assert.ok(!html.includes("function effectiveIme(nativeValue,inner,visual,baseline)"), "legacy stale-native-inset heuristic must not survive");
 assert.ok(!canonicalStyle.includes(".shell{width:100%;height:100dvh;min-height:100dvh"), "full-height shell must not trap the composer behind the keyboard");
 
-const effectiveImeSource = html.match(/function effectiveIme\(nativeValue,inner,visual,baseline\)\{[^}]+\}/)?.[0];
-assert.ok(effectiveImeSource, "effective IME resolver must be packaged");
-const effectiveIme = new Function(`${effectiveImeSource}; return effectiveIme;`)();
-assert.equal(effectiveIme(320, 800, 800, 800), 0, "stale native IME inset must clear after both viewports recover");
-assert.equal(effectiveIme(320, 480, 480, 800), 320, "live IME inset must remain active while the viewport is still reduced");
-
-const usableHeightSource = html.match(/function chooseUsableHeight\(inner,visual,ime,baseline\)\{[^}]+\}/)?.[0];
+const usableHeightSource = html.match(/function chooseUsableHeight\(inner,visual,ime,baseline\)\{[\s\S]*?\n  \}/)?.[0];
 assert.ok(usableHeightSource, "usable height resolver must be packaged");
 const chooseUsableHeight = new Function(`${usableHeightSource}; return chooseUsableHeight;`)();
-assert.equal(chooseUsableHeight(480, 800, 0, 800), 800, "dismissed keyboard must restore full height even if layout viewport is stale");
-assert.equal(chooseUsableHeight(800, 480, 320, 800), 480, "open keyboard must still constrain the shell to the visible viewport");
+assert.equal(chooseUsableHeight(800, 800, 320, 800), 480, "overlay keyboard must honor native IME inset even when both WebView viewports stay full");
+assert.equal(chooseUsableHeight(800, 480, 320, 800), 480, "visualViewport keyboard mode must constrain the shell to the visible viewport");
 assert.equal(chooseUsableHeight(480, 480, 320, 800), 480, "adjustResize must not double-shrink an already reduced viewport");
+assert.equal(chooseUsableHeight(480, 800, 0, 800), 800, "dismissed keyboard must restore full height when only visualViewport has recovered");
+assert.equal(chooseUsableHeight(480, 480, 0, 800), 800, "dismissed keyboard must restore the baseline even before stale WebView viewport metrics recover");
 
 requireText("if(axis==='x'&&e.cancelable)e.preventDefault()", "preventDefault is horizontal-only");
 requireText("'pointermove'", "pointer move path");
