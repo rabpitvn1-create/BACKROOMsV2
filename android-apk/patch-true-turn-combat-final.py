@@ -204,19 +204,22 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
 '''
     companion_scope_new = ''
     companion_scope_count = combat.count(companion_scope_old)
-    if companion_scope_count != 1:
+    if companion_scope_count != 2:
         raise RuntimeError(
-            "true-turn companion presence scope: expected exactly 1 anchor, "
+            "true-turn companion presence scope: expected inserted and legacy anchors, "
             f"found {companion_scope_count}"
         )
-    combat = combat.replace(companion_scope_old, companion_scope_new, 1)
+    companion_scope_prefix, companion_scope_separator, companion_scope_suffix = combat.rpartition(companion_scope_old)
+    if not companion_scope_separator:
+        raise RuntimeError("true-turn legacy companion presence scope missing")
+    combat = companion_scope_prefix + companion_scope_new + companion_scope_suffix
 
     companion_marker = '    // COMPANION_SKILLS_R01: Iris, Syvial and An Nhien wrap the finalized combat response.\n'
     combat = replace_once(combat, companion_marker, '    }\n\n' + companion_marker, "close Kai-only mechanics before companion actors")
     combat = replace_once(
         combat,
-        companion_marker + '    if (irisActive && c.entityHp > 0) {\n',
-        companion_marker + '    if ((!splitAuto || autoActor == IRIS_ID) && irisActive && c.entityHp > 0) {\n',
+        companion_marker + '\n    if (irisActive && c.entityHp > 0) {\n',
+        companion_marker + '\n    if ((!splitAuto || autoActor == IRIS_ID) && irisActive && c.entityHp > 0) {\n',
         "Iris authoritative actor gate",
     )
     syvial_main_anchor = '''    }
