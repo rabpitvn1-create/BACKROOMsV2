@@ -77,11 +77,15 @@ requireText("function mountCombatHit(ghost,amount)", "hit presentation is mounte
 requireText("window.requestAnimationFrame(mount)", "hit presentation waits until synchronous native Snapshot redraws finish");
 requireText("combat-hit-impact", "target receives flash and pixel recoil");
 requireText("combat-hit-number", "floating RPG damage number is packaged");
+requireText("var avatar=String(m.avatar||m.avatarRef||'').trim()", "Party projection preserves each member's canonical avatar");
+requireText("targetMember?String(targetMember.overlayUri||''):''", "Entity response uses the encoded target member's avatar fallback");
+requireText("member.overlayUri=uri||String(member.overlayUri||'')", "packaged combat overlays take precedence over canonical avatars");
 requireText("Math.max(0,Math.round(oldHp-newHp))", "damage presentation uses authoritative HP delta");
 requireText("var hitBefore=(inFlight&&typeof window.captureCombatHitState==='function')", "hit snapshot is limited to authoritative autoplay submissions");
 const hitVfxScript = html.match(/<script>\s*\/\* COMBAT_HIT_VFX_V1 \/ COMBAT_HIT_POST_RENDER_V2 \*\/([\s\S]*?)<\/script>/)?.[1] ?? "";
 assert.ok(hitVfxScript, "Combat Hit VFX script must be packaged");
 assert.ok(!hitVfxScript.includes("combat-bar"), "hit VFX must not create a duplicate HP bar");
+assert.ok(!hitVfxScript.includes("kai_entity_overlay.png"), "generic hit VFX must not substitute Kai's sprite");
 assert.ok(hitVfxScript.indexOf("window.requestAnimationFrame(mount)") > hitVfxScript.indexOf("var amount=window.combatHitDamageFor"), "hit VFX must defer mounting until after damage is resolved");
 new Function(hitVfxScript);
 const hitWindow = {};

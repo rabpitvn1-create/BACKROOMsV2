@@ -17,6 +17,73 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 
+def kotlin_if_block_before(source: str, condition_fragment: str, marker: str) -> str:
+    marker_index = source.find(marker)
+    if marker_index < 0:
+        raise RuntimeError(f"{marker}: counter marker missing")
+    start = source.rfind("if (", 0, marker_index)
+    while start >= 0:
+        line_end = source.find("\n", start)
+        if condition_fragment in source[start:line_end]:
+            break
+        start = source.rfind("if (", 0, start)
+    if start < 0:
+        raise RuntimeError(f"{marker}: owner condition missing")
+    line_start = source.rfind("\n", 0, start) + 1
+    brace = source.find("{", start, source.find("\n", start))
+    if brace < 0:
+        raise RuntimeError(f"{marker}: opening brace missing")
+    depth = 0
+    in_string = False
+    escaped = False
+    for index in range(brace, len(source)):
+        char = source[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return source[line_start:index + 1]
+    raise RuntimeError(f"{marker}: closing brace missing")
+
+
+def gate_kotlin_if(block: str, gate: str) -> str:
+    condition_start = block.find("if (") + len("if (")
+    depth = 1
+    in_string = False
+    escaped = False
+    for index in range(condition_start, len(block)):
+        char = block[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                condition = block[condition_start:index]
+                return block[:condition_start] + f"{gate} && ({condition})" + block[index:]
+    raise RuntimeError("counter condition closing parenthesis missing")
+
+
 # ---------------------------------------------------------------------------
 # TRUE TURN COMBAT V2
 #
@@ -63,13 +130,19 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     constants_new = constants_anchor + '''  // TRUE_TURN_COMBAT_V2
   private const val AUTO_CURSOR_KEY = "combat.autoCursor"
   private const val AUTO_STUN_KEY = "combat.autoStunActions"
+  private const val AUTO_ACCURACY_PENALTY_KEY = "combat.autoAccuracyPenalty"
 '''
     combat = replace_once(combat, constants_anchor, constants_new, "true-turn combat constants")
 
     resolve_anchor = '  fun resolve(state: GameState, actionKind: String, action: String): Resolution {\n'
     helpers = r'''  private fun autoCombatantIds(state: GameState): List<String> = state.party.memberIds
     .distinct()
-    .mapNotNull { memberId -> activePartyCharacter(state, memberId)?.id }
+    .mapNotNull { memberId -> activePartyCharacter(state, memberId) }
+    .filter { member ->
+      !member.metadata["nonCombat"].equals("true", true) &&
+        !member.metadata["canUseWeapons"].equals("false", true)
+    }
+    .map { member -> member.id }
 
   private fun autoTurnOrder(state: GameState): List<String> = autoCombatantIds(state).flatMap { memberId ->
     listOf(memberId, "entity:$memberId")
@@ -86,6 +159,10 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     metadata[AUTO_CURSOR_KEY] = cursor.coerceAtLeast(0).toString()
     return state.copy(metadata = metadata)
   }
+
+  private fun withoutAutoRoundState(state: GameState): GameState = state.copy(
+    metadata = state.metadata - AUTO_ACCURACY_PENALTY_KEY
+  )
 
   private fun nextAutoCursor(state: GameState, previousOrder: List<String>, previousCursor: Int): Int {
     val nextOrder = autoTurnOrder(state)
@@ -235,10 +312,28 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
       val syvialMaxHp = CharacterStatEngine.effective(resolvedState, SYVIAL_ID).maxHp
 '''
     combat = replace_once(combat, syvial_main_anchor, syvial_main_new, "Syvial authoritative actor gate")
-    combat = replace_once(combat, '    if (anNhienActive && c.entityHp > 0) {\n', '    if ((!splitAuto || autoActor == AN_NHIEN_ID) && anNhienActive && c.entityHp > 0) {\n', "An Nhien authoritative actor gate")
+    combat = replace_once(
+        combat,
+        '    if (anNhienActive && c.entityHp > 0) {\n',
+        '    val accuracyPenaltyBeforeRoundSupport = companionEnemyAccuracyPenalty\n'
+        '    if ((!splitAuto || autoActor == KAI_ID) && anNhienActive && c.entityHp > 0) {\n',
+        "An Nhien round-scoped support gate",
+    )
 
     generic_attack_anchor = '    if (syvialDisorientTurns > 0) companionEnemyAccuracyPenalty += 25\n\n'
-    generic_attack = generic_attack_anchor + r'''    if (splitAuto && autoMemberEntityHpBefore >= 0 && c.entityHp == autoMemberEntityHpBefore && c.entityHp > 0) {
+    generic_attack = r'''    val newlyResolvedRoundSupportPenalty =
+      max(0, companionEnemyAccuracyPenalty - accuracyPenaltyBeforeRoundSupport)
+    val persistedRoundSupportPenalty =
+      state.metadata[AUTO_ACCURACY_PENALTY_KEY]?.toIntOrNull()?.coerceAtLeast(0) ?: 0
+    if (splitAuto && autoActor == KAI_ID) {
+      resolvedState = withCombatCounter(resolvedState, AUTO_ACCURACY_PENALTY_KEY, newlyResolvedRoundSupportPenalty)
+    } else if (splitAuto && autoActor.startsWith("entity:")) {
+      companionEnemyAccuracyPenalty += persistedRoundSupportPenalty
+    }
+
+''' + generic_attack_anchor + r'''    val trueTurnEnemyAccuracyPenalty = companionEnemyAccuracyPenalty
+
+    if (splitAuto && autoMemberEntityHpBefore >= 0 && c.entityHp == autoMemberEntityHpBefore && c.entityHp > 0) {
       val member = activePartyCharacter(resolvedState, autoActor)
       if (member != null) {
         val rangeBonus = when (c.range) { RangeBand.CLOSE -> 18; RangeBand.NEAR -> 10; RangeBand.FAR -> -5 }
@@ -286,6 +381,18 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     response_start = combat.index(response_marker, resolve_start, resolve_end)
     quick_start = combat.index('    if (quickStepTurns > 0) {\n', response_start, resolve_end)
     existing_response = combat[response_start + len(response_marker):quick_start]
+    if "companionEnemyAccuracyPenalty" not in existing_response:
+        raise RuntimeError("legacy Entity response accuracy penalty anchor missing")
+    existing_response = existing_response.replace(
+        "companionEnemyAccuracyPenalty",
+        "trueTurnEnemyAccuracyPenalty",
+    )
+    iris_counter = kotlin_if_block_before(existing_response, "irisActive", "Dead Angle")
+    syvial_counter = kotlin_if_block_before(existing_response, "syvialActive", "Counterphase")
+    existing_response = existing_response.replace(iris_counter, gate_kotlin_if(iris_counter, "!splitAuto"), 1)
+    existing_response = existing_response.replace(syvial_counter, gate_kotlin_if(syvial_counter, "!splitAuto"), 1)
+    iris_owner_counter = gate_kotlin_if(iris_counter, "targetId == IRIS_ID")
+    syvial_owner_counter = gate_kotlin_if(syvial_counter, "targetId == SYVIAL_ID")
     lucia_response = r'''    if (splitAuto && autoActor.startsWith("entity:") && autoActor != "entity:$KAI_ID") {
       val targetId = autoActorMemberId(autoActor)
       val target = resolvedState.characters[targetId]
@@ -301,7 +408,7 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         val incomingRoll = roll(c.copy(eventCounter = c.eventCounter + 157), 100)
         val defense = when (c.cover) { Cover.HARD -> 22; Cover.PARTIAL -> 10; Cover.EXPOSED -> 0 } +
           CombatStatMath.agilityDefense(effective.agi) * 4 + max(0, c.momentum) * 2
-        val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7).coerceIn(8, 88)
+        val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7 - trueTurnEnemyAccuracyPenalty).coerceIn(8, 88)
         if (incomingRoll < enemyChance) {
           val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
           val damage = if (c.entityKey == DIEP_MINH_KEY) {
@@ -319,11 +426,12 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
             "${c.entityName} phản công $targetName: -$damage HP ($after/$targetMaxHp)."
           }
         } else {
+__OWNER_COUNTERS__
           log += "$targetName tránh được lượt phản công của ${c.entityName}."
         }
       }
     } else {
-'''
+'''.replace("__OWNER_COUNTERS__", iris_owner_counter + "\n" + syvial_owner_counter)
     wrapped_response = response_marker + lucia_response + existing_response + '    }\n\n'
     combat = combat[:response_start] + wrapped_response + combat[quick_start:]
 
@@ -342,7 +450,10 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
     final_old = '''    val next = encode(resolvedState, c)
     return Resolution(next, true, log.joinToString(" "))
 '''
-    final_new = '''    if (splitAuto) resolvedState = withAutoCursor(resolvedState, 0)
+    final_new = '''    if (splitAuto) {
+      resolvedState = withAutoCursor(resolvedState, 0)
+      resolvedState = withoutAutoRoundState(resolvedState)
+    }
     val next = encode(resolvedState, c)
     return Resolution(next, true, log.joinToString(" "), roundCompleted = true)
 '''
@@ -369,6 +480,8 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         "TRUE_TURN_COMBAT_V2",
         'val roundCompleted: Boolean = true',
         'AUTO_CURSOR_KEY = "combat.autoCursor"',
+        'AUTO_ACCURACY_PENALTY_KEY = "combat.autoAccuracyPenalty"',
+        '!member.metadata["nonCombat"].equals("true", true)',
         'autoCombatantIds(state).flatMap',
         'actionKind.equals("AUTO_COMBAT_STEP", true)',
         'autoActor == "lucia"',
@@ -380,6 +493,9 @@ if "TRUE_TURN_COMBAT_V2" not in combat:
         'autoCursor < autoOrder.lastIndex',
         'file:///android_asset/syvial_entity_overlay.png',
         'CharacterStatEngine.setCurrentHp(resolvedState, targetId',
+        '- trueTurnEnemyAccuracyPenalty',
+        'targetId == IRIS_ID',
+        'targetId == SYVIAL_ID',
         'roundCompleted = false',
         'put("autoMode", "TRUE_TURN_V2")',
         'put("autoOrder", JSONArray(order))',
@@ -478,7 +594,7 @@ new_script = r'''<script>
   function partyMembers(c){
     var raw=(state&&state.partyDetails&&Array.isArray(state.partyDetails.members))?state.partyDetails.members:[];
     var out=[],seen={};
-    raw.forEach(function(m){var id=canonicalId(m&&m.id||m&&m.name);if(!id||seen[id])return;seen[id]=true;out.push({id:id,name:String(m.name||id),type:'party',currentHp:Number(m.currentHp),maxHp:Number(m.maxHp)});});
+    raw.forEach(function(m){var id=canonicalId(m&&m.id||m&&m.name);if(!id||seen[id])return;seen[id]=true;var avatar=String(m.avatar||m.avatarRef||'').trim();out.push({id:id,name:String(m.name||id),type:'party',currentHp:Number(m.currentHp),maxHp:Number(m.maxHp),avatar:avatar,overlayUri:avatar});});
     if(!seen.kai)out.unshift({id:'kai',name:'Kai Akechi',type:'party',currentHp:Number(c&&c.playerHp),maxHp:Number(c&&c.playerMaxHp)});
     out.sort(function(a,b){if(a.id==='kai')return -1;if(b.id==='kai')return 1;if(a.id==='lucia')return -1;if(b.id==='lucia')return 1;return 0;});
     return out.slice(0,4);
@@ -486,10 +602,11 @@ new_script = r'''<script>
   function orderIds(c){return Array.isArray(c&&c.autoOrder)&&c.autoOrder.length?c.autoOrder.map(String):['kai','entity:kai'];}
   function actorForId(c,id){
     id=String(id||'kai');
-    if(id.indexOf('entity:')===0){var target=id.slice(7),targetMember=partyMembers(c).find(function(x){return x.id===target;}),targetName=targetMember?targetMember.name:target;return {id:id,name:String(c.entityName||c.entityKey||'Entity')+' → '+targetName,type:'entity',overlayUri:''};}
+    if(id.indexOf('entity:')===0){var target=id.slice(7),targetMember=partyMembers(c).find(function(x){return x.id===target;}),targetName=targetMember?targetMember.name:target;return {id:id,name:String(c.entityName||c.entityKey||'Entity')+' → '+targetName,type:'entity',overlayUri:targetMember?String(targetMember.overlayUri||''):''};}
     var member=partyMembers(c).find(function(x){return x.id===id;});
     var uri=id==='kai'?'file:///android_asset/kai_entity_overlay.png':id==='lucia'?'file:///android_asset/lucia_entity_overlay.png':id==='syvial'?'file:///android_asset/syvial_entity_overlay.png':'';
-    return member||{id:id,name:id,type:'party',overlayUri:uri};
+    if(member){member.overlayUri=uri||String(member.overlayUri||'');return member;}
+    return {id:id,name:id,type:'party',overlayUri:uri};
   }
   function currentFromCore(c){
     var id=String(c.activeActorId||orderIds(c)[Number(c.autoCursor)||0]||'kai');
@@ -553,6 +670,8 @@ for marker in (
     "c.activeActorId",
     "queueSubmit(inFlight||busy?250:STEP_MS)",
     "function syncTurnHeader(c)",
+    "targetMember?String(targetMember.overlayUri||''):''",
+    "member.overlayUri=uri||String(member.overlayUri||'')",
 ):
     if marker not in html:
         raise RuntimeError("True-turn WebView marker missing: " + marker)
@@ -787,6 +906,101 @@ if "trueTurnAutoCombatCommitsKaiEntityLuciaEntityAsIndependentSubturns" not in t
     if close < 0:
         raise RuntimeError("CombatRuntimeTest closing brace missing")
     test = test[:close] + new_tests + test[close:]
+
+remaining_regressions = r'''
+  @Test fun trueTurnAutoCombatExcludesNonCombatPartyMembers() {
+    val initial = AnNhienCanon.ensure(GameState.initial()).copy(
+      party = PartyState(memberIds = listOf(KAI_ID, AN_NHIEN_ID))
+    )
+    val state = CombatRuntime.start(initial, "diep_minh")
+    val order = CombatRuntime.toJson(state)!!.getJSONArray("autoOrder")
+    assertEquals(listOf("kai", "entity:kai"), (0 until order.length()).map { order.getString(it) })
+    assertFalse((0 until order.length()).map { order.getString(it) }.any { it.contains(AN_NHIEN_ID) })
+  }
+
+  @Test fun trueTurnAutoCombatNeverRunsAnNhienWeaponFallback() {
+    val initial = AnNhienCanon.ensure(GameState.initial()).copy(
+      party = PartyState(memberIds = listOf(KAI_ID, AN_NHIEN_ID))
+    )
+    var state = CombatRuntime.start(initial, "diep_minh")
+    repeat(2) {
+      val resolution = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
+      assertFalse(resolution.reply.contains("An Nhiên tấn công"))
+      state = resolution.state
+    }
+    assertEquals("kai", CombatRuntime.toJson(state)!!.getString("activeActorId"))
+  }
+
+  @Test fun trueTurnCounterMissesBelongOnlyToEncodedTarget() {
+    val initial = SpecialFollowersCanon.ensure(LuciaCanon.ensure(GameState.initial())).copy(
+      party = PartyState(memberIds = listOf(KAI_ID, LUCIA_ID, SYVIAL_ID, IRIS_ID))
+    )
+    val base = CombatRuntime.start(initial, "slenderman")
+
+    fun findProc(cursor: Int, marker: String): CombatRuntime.Resolution? {
+      for (counter in 1..2048) {
+        val candidate = base.copy(metadata = base.metadata + mapOf(
+          "combat.autoCursor" to cursor.toString(),
+          "combat.eventCounter" to counter.toString()
+        ))
+        val result = CombatRuntime.resolve(candidate, "AUTO_COMBAT_STEP", "auto")
+        if (result.reply.contains(marker)) return result
+      }
+      return null
+    }
+
+    val iris = findProc(7, "Dead Angle")
+    assertNotNull("entity:iris miss must be able to proc Dead Angle", iris)
+    assertFalse(iris!!.reply.contains("Counterphase"))
+
+    val syvial = findProc(5, "Counterphase")
+    assertNotNull("entity:syvial miss must be able to proc Counterphase", syvial)
+    assertFalse(syvial!!.reply.contains("Dead Angle"))
+
+    for (counter in 1..512) {
+      val kaiTurn = base.copy(metadata = base.metadata + mapOf(
+        "combat.autoCursor" to "1",
+        "combat.eventCounter" to counter.toString()
+      ))
+      val kai = CombatRuntime.resolve(kaiTurn, "AUTO_COMBAT_STEP", "auto")
+      assertFalse(kai.reply.contains("Dead Angle"))
+      assertFalse(kai.reply.contains("Counterphase"))
+    }
+  }
+
+  @Test fun trueTurnEntityResponseHonorsPersistedAccuracyPenalty() {
+    val initial = SpecialFollowersCanon.ensure(LuciaCanon.ensure(GameState.initial())).copy(
+      party = PartyState(memberIds = listOf(KAI_ID, LUCIA_ID, SYVIAL_ID, IRIS_ID))
+    )
+    val base = CombatRuntime.start(initial, "slenderman")
+    var observed = false
+    for (counter in 1..2048) {
+      val common = base.metadata + mapOf(
+        "combat.autoCursor" to "3",
+        "combat.eventCounter" to counter.toString()
+      )
+      val without = CombatRuntime.resolve(base.copy(metadata = common), "AUTO_COMBAT_STEP", "auto")
+      val withPenalty = CombatRuntime.resolve(
+        base.copy(metadata = common + ("combat.autoAccuracyPenalty" to "80")),
+        "AUTO_COMBAT_STEP",
+        "auto"
+      )
+      val beforeHp = base.characters.getValue(LUCIA_ID).vitalState.currentHp
+      val withoutHp = without.state.characters.getValue(LUCIA_ID).vitalState.currentHp
+      val withHp = withPenalty.state.characters.getValue(LUCIA_ID).vitalState.currentHp
+      if (withoutHp < beforeHp && withHp == beforeHp) {
+        observed = true
+        break
+      }
+    }
+    assertTrue("persisted companion penalty must change the Entity subturn hit outcome", observed)
+  }
+'''
+if "trueTurnAutoCombatExcludesNonCombatPartyMembers" not in test:
+    close = test.rfind("}\n")
+    if close < 0:
+        raise RuntimeError("CombatRuntimeTest closing brace missing for remaining regressions")
+    test = test[:close] + remaining_regressions + test[close:]
 for marker in (
     "trueTurnAutoCombatCommitsKaiEntityLuciaEntityAsIndependentSubturns",
     "trueTurnAutoCombatWithoutLuciaCompletesAfterEntityTargetsKai",
@@ -799,6 +1013,10 @@ for marker in (
     "trueTurnEntityResponseDamagesOnlyItsEncodedPartyMember",
     "trueTurnAutoCursorSurvivesSaveLoadBeforeFourthMemberResponse",
     "trueTurnKaiSubturnDoesNotRunLegacyCompanionAssists",
+    "trueTurnAutoCombatExcludesNonCombatPartyMembers",
+    "trueTurnAutoCombatNeverRunsAnNhienWeaponFallback",
+    "trueTurnCounterMissesBelongOnlyToEncodedTarget",
+    "trueTurnEntityResponseHonorsPersistedAccuracyPenalty",
     'CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")',
     'assertEquals("entity:lucia", CombatRuntime.toJson(lucia.state)!!.getString("activeActorId"))',
     'assertEquals("file:///android_asset/kai_entity_overlay.png", CombatRuntime.toJson(kai.state)!!.getString("activeActorOverlayUri"))',
