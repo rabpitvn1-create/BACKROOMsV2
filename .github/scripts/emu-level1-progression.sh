@@ -6,7 +6,7 @@ COMPONENT="$PACKAGE/.MainActivity"
 APK="${1:-Backroom-1.1.71.apk}"
 MAX_TURNS="${MAX_TURNS:-36}"
 POLL_SECONDS="${POLL_SECONDS:-2}"
-TURN_TIMEOUT_SECONDS="${TURN_TIMEOUT_SECONDS:-90}"
+TURN_TIMEOUT_SECONDS="${TURN_TIMEOUT_SECONDS:-120}"
 OUT="${EMU_OUT:-emu-level1-results}"
 mkdir -p "$OUT"
 
@@ -17,12 +17,12 @@ harness_error=""
 
 center_from_bounds() {
   python3 - "$1" <<'PY'
-import re,sys
-m=re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]',sys.argv[1])
+import re, sys
+m = re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', sys.argv[1])
 if not m:
     raise SystemExit(2)
-x1,y1,x2,y2=map(int,m.groups())
-print((x1+x2)//2,(y1+y2)//2)
+x1, y1, x2, y2 = map(int, m.groups())
+print((x1 + x2) // 2, (y1 + y2) // 2)
 PY
 }
 
@@ -32,17 +32,18 @@ node_bounds() {
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
+    value = (value or '').replace('đ', 'd').replace('Đ', 'D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
 
 root = ET.parse(sys.argv[1]).getroot()
 kind = sys.argv[2]
-for n in root.iter('node'):
-    text = norm(n.attrib.get('text'))
-    desc = norm(n.attrib.get('content-desc'))
-    rid = n.attrib.get('resource-id') or ''
-    cls = n.attrib.get('class') or ''
+for node in root.iter('node'):
+    text = norm(node.attrib.get('text'))
+    desc = norm(node.attrib.get('content-desc'))
+    rid = node.attrib.get('resource-id') or ''
+    cls = node.attrib.get('class') or ''
+    enabled = node.attrib.get('enabled', 'true') == 'true'
     match = False
     if kind == 'gotit':
         match = rid == 'android:id/ok' or text == 'got it' or desc == 'got it'
@@ -50,29 +51,34 @@ for n in root.iter('node'):
         match = text == 'wait' or desc == 'wait'
     elif kind == 'deny_permission':
         match = text in ("don't allow", 'dont allow', 'deny') or desc in ("don't allow", 'dont allow', 'deny')
-    elif kind == 'submit':
-        match = rid.endswith(':id/submit') or (cls.endswith('Button') and (text == 'thuc hien' or desc == 'thuc hien'))
-    elif kind == 'input':
-        match = cls.endswith('EditText')
+    elif kind == 'explore':
+        match = enabled and cls.endswith('Button') and (text == 'kham pha' or desc == 'kham pha')
     if match:
-        bounds = n.attrib.get('bounds') or ''
-        if bounds:
+        bounds = node.attrib.get('bounds') or ''
+        if bounds and bounds != '[0,0][0,0]':
             print(bounds)
             break
 PY
 }
 
-input_value() {
+explore_state() {
   local xml="$1"
   python3 - "$xml" <<'PY'
-import sys, xml.etree.ElementTree as ET
+import sys, unicodedata, xml.etree.ElementTree as ET
 
-root=ET.parse(sys.argv[1]).getroot()
-for n in root.iter('node'):
-    cls=n.attrib.get('class') or ''
-    if cls.endswith('EditText'):
-        print(n.attrib.get('text') or '')
-        break
+def norm(value):
+    value = (value or '').replace('đ', 'd').replace('Đ', 'D')
+    value = unicodedata.normalize('NFKD', value)
+    return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
+
+root = ET.parse(sys.argv[1]).getroot()
+for node in root.iter('node'):
+    if not (node.attrib.get('class') or '').endswith('Button'):
+        continue
+    if norm((node.attrib.get('text') or '') + ' ' + (node.attrib.get('content-desc') or '')) == 'kham pha':
+        print('enabled' if node.attrib.get('enabled', 'true') == 'true' else 'disabled')
+        raise SystemExit(0)
+print('missing')
 PY
 }
 
@@ -82,21 +88,44 @@ ui_is_busy() {
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
+    value = (value or '').replace('đ', 'd').replace('Đ', 'D').replace('’', "'")
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold()
 
-root=ET.parse(sys.argv[1]).getroot()
-texts=[]
-for n in root.iter('node'):
-    texts.append(norm((n.attrib.get('text') or '')+' '+(n.attrib.get('content-desc') or '')))
-joined='\n'.join(texts)
+root = ET.parse(sys.argv[1]).getroot()
+joined = '\n'.join(
+    norm((node.attrib.get('text') or '') + ' ' + (node.attrib.get('content-desc') or ''))
+    for node in root.iter('node')
+)
 busy = (
     'dang xu ly luot' in joined
     or 'dang tim kiem khu vuc hien tai' in joined
     or 'dang kham pha khu vuc chua khao sat' in joined
+    or 'combat auto' in joined
 )
 raise SystemExit(0 if busy else 1)
+PY
+}
+
+ui_turn() {
+  local xml="$1"
+  python3 - "$xml" <<'PY'
+import re, sys, unicodedata, xml.etree.ElementTree as ET
+
+def norm(value):
+    value = (value or '').replace('đ', 'd').replace('Đ', 'D')
+    value = unicodedata.normalize('NFKD', value)
+    return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
+
+root = ET.parse(sys.argv[1]).getroot()
+values = []
+for node in root.iter('node'):
+    text = norm(node.attrib.get('text') or '')
+    match = re.match(r'^turn\s+(\d+)\s+(?:da|đã)\b', text)
+    if match:
+        values.append(int(match.group(1)))
+if values:
+    print(max(values))
 PY
 }
 
@@ -106,24 +135,26 @@ authoritative_level() {
 import re, sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
-    value = (value or '').replace('đ','d').replace('Đ','D').replace('’', "'")
+    value = (value or '').replace('đ', 'd').replace('Đ', 'D')
     value = unicodedata.normalize('NFKD', value)
     return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
 
-root=ET.parse(sys.argv[1]).getroot()
-texts=[(n.attrib.get('text') or '').strip() for n in root.iter('node')]
-for i,text in enumerate(texts):
+root = ET.parse(sys.argv[1]).getroot()
+texts = [(node.attrib.get('text') or '').strip() for node in root.iter('node')]
+for index, text in enumerate(texts):
     if norm(text) == 'vi tri':
-        for candidate in texts[i+1:i+5]:
-            m=re.match(r'^level\s*([0-6])\s*/', candidate, re.I)
-            if m:
-                print(m.group(1)); raise SystemExit(0)
+        for candidate in texts[index + 1:index + 5]:
+            match = re.match(r'^level\s*([0-6])\s*/', candidate, re.I)
+            if match:
+                print(match.group(1))
+                raise SystemExit(0)
 for text in texts:
     if len(text) > 180:
         continue
-    m=re.match(r'^level\s*([0-6])\s*/', text, re.I)
-    if m:
-        print(m.group(1)); raise SystemExit(0)
+    match = re.match(r'^level\s*([0-6])\s*/', text, re.I)
+    if match:
+        print(match.group(1))
+        raise SystemExit(0)
 raise SystemExit(1)
 PY
 }
@@ -179,7 +210,7 @@ dismiss_system_overlays() {
     if is_keyboard_permission_prompt "$xml"; then
       bounds=$(node_bounds "$xml" deny_permission || true)
       if [[ -n "$bounds" ]]; then
-        echo "Dismissing emulator AOSP-keyboard contacts permission with Don't allow"
+        echo "Dismissing emulator keyboard permission prompt"
         tap_bounds "$bounds"
         acted=1
         sleep 1
@@ -201,7 +232,8 @@ dismiss_system_overlays() {
 }
 
 is_app_resumed() {
-  adb shell dumpsys activity activities 2>/dev/null | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
+  adb shell dumpsys activity activities 2>/dev/null \
+    | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
 }
 
 top_resumed_activity() {
@@ -210,15 +242,12 @@ top_resumed_activity() {
     | head -1
 }
 
-wait_until_not_busy() {
-  local label="$1" deadline attempt tmp non_app_attempts top
+wait_until_explore_ready() {
+  local label="$1" deadline tmp non_app_attempts=0 top state
   deadline=$((SECONDS + TURN_TIMEOUT_SECONDS))
-  attempt=0
-  non_app_attempts=0
-  tmp="/tmp/backroom-ready-${label}.xml"
+  tmp="/tmp/backroom-${label}.xml"
 
   while (( SECONDS < deadline )); do
-    attempt=$((attempt + 1))
     dump_ui_to "$tmp" || { sleep "$POLL_SECONDS"; continue; }
 
     if is_known_system_overlay "$tmp"; then
@@ -231,7 +260,7 @@ wait_until_not_busy() {
       non_app_attempts=$((non_app_attempts + 1))
       if (( non_app_attempts >= 5 )); then
         top=$(top_resumed_activity || true)
-        harness_error="MainActivity did not resume after system-UI recovery while waiting for $label${top:+ (top=$top)}"
+        harness_error="MainActivity did not resume while waiting for $label${top:+ (top=$top)}"
         return 1
       fi
       sleep "$POLL_SECONDS"
@@ -239,121 +268,77 @@ wait_until_not_busy() {
     fi
     non_app_attempts=0
 
-    if ! ui_is_busy "$tmp"; then
+    if ui_is_busy "$tmp"; then
+      sleep "$POLL_SECONDS"
+      continue
+    fi
+
+    state=$(explore_state "$tmp" || true)
+    if [[ "$state" == "enabled" ]]; then
       cp "$tmp" "$OUT/${label}.xml"
       return 0
     fi
+
+    # The final APK disables the three primary actions while true-turn auto combat is active.
+    # Give that runtime time to finish instead of treating a disabled Explore button as a harness error.
+    if [[ "$state" == "disabled" ]] && grep -Eqi 'COMBAT|ROUND|Entity' "$tmp"; then
+      sleep "$POLL_SECONDS"
+      continue
+    fi
+
     sleep "$POLL_SECONDS"
   done
 
   [[ -s "$tmp" ]] && cp "$tmp" "$OUT/${label}-timeout.xml" || true
-  harness_error="Timed out after ${TURN_TIMEOUT_SECONDS}s waiting for gameplay to finish ($label)"
+  harness_error="Timed out after ${TURN_TIMEOUT_SECONDS}s waiting for the real Khám phá action ($label)"
   return 1
 }
 
-submit_action() {
-  local action="$1" xml="$2" index="$3"
-  local submit_bounds input_bounds bx by ix iy size width height typed_xml verify_xml stale accepted attempt
-
-  if ui_is_busy "$xml"; then
-    harness_error="Attempted to type probe action $index while the previous gameplay turn was still busy"
+submit_explore() {
+  local xml="$1" index="$2" before_turn bounds verify after_turn accepted=0 attempt
+  before_turn=$(ui_turn "$xml" || true)
+  bounds=$(node_bounds "$xml" explore || true)
+  if [[ -z "$bounds" ]]; then
+    harness_error="Enabled Khám phá button was not exposed before probe action $index"
     return 1
   fi
 
-  stale=$(input_value "$xml" || true)
-  if [[ -n "${stale//[[:space:]]/}" ]]; then
-    harness_error="Action input was not empty before probe action $index; refusing to concatenate commands"
-    return 1
-  fi
-
-  input_bounds=$(node_bounds "$xml" input || true)
-  if [[ -n "$input_bounds" ]]; then
-    read -r ix iy < <(center_from_bounds "$input_bounds")
-  else
-    if ! is_app_resumed; then
-      harness_error="MainActivity is no longer resumed before action input"
-      return 1
-    fi
-    size=$(adb shell wm size | tr -d '\r' | sed -n 's/.*Physical size: \([0-9][0-9]*\)x\([0-9][0-9]*\).*/\1 \2/p' | tail -1)
-    read -r width height <<<"${size:-1080 2400}"
-    ix=$((width / 2))
-    iy=$((height * 817 / 1000))
-    echo "Action input not exposed by accessibility; using fixed Pixel 6 input coordinate $ix,$iy"
-  fi
-
-  adb shell input tap "$ix" "$iy"
-  sleep 1
-  dismiss_system_overlays
-  if ! is_app_resumed; then
-    sleep 1
-    dismiss_system_overlays
-  fi
-  if ! is_app_resumed; then
-    harness_error="MainActivity did not resume after focusing action input $index"
-    return 1
-  fi
-
-  adb shell input keyevent KEYCODE_MOVE_END || true
-  adb shell input text "${action// /%s}"
-  sleep 1
-
-  typed_xml=$(dump_ui "typed-${index}")
-  if is_known_system_overlay "$typed_xml"; then
-    dismiss_system_overlays
-    sleep 1
-    typed_xml=$(dump_ui "typed-${index}-recovered")
-  fi
-  stale=$(input_value "$typed_xml" || true)
-  if [[ -z "${stale//[[:space:]]/}" ]]; then
-    harness_error="Probe action $index was not present in the input after keyboard/system-UI handling"
-    return 1
-  fi
-
-  submit_bounds=$(node_bounds "$typed_xml" submit || true)
-  if [[ -n "$submit_bounds" ]]; then
-    read -r bx by < <(center_from_bounds "$submit_bounds")
-  else
-    size=$(adb shell wm size | tr -d '\r' | sed -n 's/.*Physical size: \([0-9][0-9]*\)x\([0-9][0-9]*\).*/\1 \2/p' | tail -1)
-    read -r width height <<<"${size:-1080 2400}"
-    bx=$((width / 2))
-    by=$((height * 530 / 1000))
-    echo "Submit button not exposed after IME resize; using Pixel 6 keyboard-open execute coordinate $bx,$by"
-  fi
-
-  accepted=0
   for attempt in 1 2; do
-    adb shell input tap "$bx" "$by"
+    tap_bounds "$bounds"
     sleep 2
-    verify_xml=$(dump_ui "submitted-${index}-attempt-${attempt}")
+    verify=$(dump_ui "submitted-${index}-attempt-${attempt}")
 
-    if is_known_system_overlay "$verify_xml"; then
+    if is_known_system_overlay "$verify"; then
       dismiss_system_overlays
       sleep 1
-      verify_xml=$(dump_ui "submitted-${index}-attempt-${attempt}-recovered")
+      verify=$(dump_ui "submitted-${index}-attempt-${attempt}-recovered")
     fi
 
-    if ui_is_busy "$verify_xml"; then
+    after_turn=$(ui_turn "$verify" || true)
+    if ui_is_busy "$verify"; then
       accepted=1
       break
     fi
-    stale=$(input_value "$verify_xml" || true)
-    if [[ -z "${stale//[[:space:]]/}" ]] && is_app_resumed; then
+    if [[ -n "$before_turn" && -n "$after_turn" && "$after_turn" -gt "$before_turn" ]]; then
+      accepted=1
+      break
+    fi
+    if [[ "$(explore_state "$verify" || true)" == "disabled" ]]; then
       accepted=1
       break
     fi
 
-    submit_bounds=$(node_bounds "$verify_xml" submit || true)
-    if [[ -n "$submit_bounds" ]]; then
-      read -r bx by < <(center_from_bounds "$submit_bounds")
-    fi
+    bounds=$(node_bounds "$verify" explore || true)
+    [[ -n "$bounds" ]] || break
   done
 
   if [[ "$accepted" -ne 1 ]]; then
-    harness_error="Submit tap for probe action $index was not accepted after IME/system-UI recovery"
+    harness_error="Khám phá tap for probe action $index was not accepted"
     return 1
   fi
 
   submitted_turns=$((submitted_turns + 1))
+  echo "probe_action=$index kind=EXPLORE label=Khám phá" | tee -a "$OUT/actions.log"
 }
 
 observe_level() {
@@ -375,12 +360,9 @@ capture_final_evidence() {
   adb shell dumpsys activity activities > "$OUT/activity.txt" 2>/dev/null || true
 }
 
-# Suppress emulator-only system UI that is unrelated to the app under test.
+# Keep disposable emulator system UI from interfering with the app-under-test.
 adb shell settings put secure immersive_mode_confirmations confirmed >/dev/null 2>&1 || true
 adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1 || true
-# API 35's bundled LatinIME can request contacts after several focus cycles and steal the foreground.
-# Grant it in the disposable CI emulator; the game APK itself receives no extra permission.
-adb shell pm grant com.android.inputmethod.latin android.permission.READ_CONTACTS >/dev/null 2>&1 || true
 
 adb install -r "$APK"
 adb logcat -c
@@ -397,13 +379,14 @@ fi
 for turn in $(seq 0 "$MAX_TURNS"); do
   [[ -z "$harness_error" ]] || break
 
-  if ! wait_until_not_busy "turn-${turn}"; then
+  if ! wait_until_explore_ready "turn-${turn}"; then
     break
   fi
   xml="$OUT/turn-${turn}.xml"
   observe_level "$xml"
+
   if [[ "$passed" -eq 1 ]]; then
-    echo "PASS: authoritative state observed Level 1 and then Level 2 after $submitted_turns submitted probe turns" | tee "$OUT/result.txt"
+    echo "PASS: authoritative state observed Level 1 and then Level 2 after $submitted_turns real Explore actions" | tee "$OUT/result.txt"
     break
   fi
 
@@ -411,14 +394,7 @@ for turn in $(seq 0 "$MAX_TURNS"); do
     break
   fi
 
-  case $((turn % 4)) in
-    0) action="Explore carefully forward while conserving resources and avoiding unnecessary danger" ;;
-    1) action="Observe the surroundings and choose the safest route that appears to make progress" ;;
-    2) action="Continue cautiously toward any environmental transition while staying alert for threats" ;;
-    3) action="Move onward using cover and avoid combat unless it is necessary to survive" ;;
-  esac
-  echo "turn=$turn action=$action" | tee -a "$OUT/actions.log"
-  if ! submit_action "$action" "$xml" "$turn"; then
+  if ! submit_explore "$xml" "$turn"; then
     break
   fi
 done
@@ -435,14 +411,14 @@ if [[ -n "$harness_error" ]]; then
 fi
 
 if [[ "$submitted_turns" -eq 0 ]]; then
-  echo "HARNESS FAIL: no gameplay action was actually accepted" | tee "$OUT/result.txt"
+  echo "HARNESS FAIL: no real Khám phá action was accepted" | tee "$OUT/result.txt"
   exit 2
 fi
 
 if [[ "$seen_level1" -ne 1 ]]; then
-  echo "FAIL: authoritative state never reached Level 1 within $submitted_turns accepted probe turns" | tee "$OUT/result.txt"
+  echo "GAMEPLAY FAIL: authoritative state never reached Level 1 within $submitted_turns accepted Khám phá actions" | tee "$OUT/result.txt"
   exit 1
 fi
 
-echo "FAIL: authoritative state reached Level 1 but did not reach Level 2 within $submitted_turns accepted probe turns" | tee "$OUT/result.txt"
+echo "GAMEPLAY FAIL: authoritative state reached Level 1 but did not reach Level 2 within $submitted_turns accepted Khám phá actions" | tee "$OUT/result.txt"
 exit 1

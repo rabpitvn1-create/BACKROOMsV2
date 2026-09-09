@@ -64,12 +64,15 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           MAX_TURNS: '36'
-          WAIT_SECONDS: '22'
+          POLL_SECONDS: '2'
+          TURN_TIMEOUT_SECONDS: '120'
         with:
           api-level: 35
           arch: x86_64
           profile: pixel_6
           disable-animations: true
+          disable-spellchecker: true
+          enable-hw-keyboard: true
           script: bash .github/scripts/emu-level1-progression.sh Backroom-under-test.apk
 
       - name: Upload progression evidence

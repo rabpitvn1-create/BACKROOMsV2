@@ -2,4 +2,4 @@
 
 This marker keeps the existing APK build workflow in the same PR as the emulator progression check. The emulator workflow downloads the successful APK artifact built for the exact PR head SHA and then exercises that APK on Android.
 
-Revision: uses strict WebView control selectors so narrative text such as “Bạn sẽ làm gì tiếp theo?” or prose containing “thực hiện” cannot be mistaken for the actual EditText or Execute button. Emulator system-UI recovery remains enabled.
+Revision: drives the real `Khám phá` WebView action directly instead of typing synthetic long commands into the composer. This removes IME/text-injection flakiness, waits through true-turn auto combat, and leaves a red result only for a real gameplay/progression failure or a clearly classified harness failure.
