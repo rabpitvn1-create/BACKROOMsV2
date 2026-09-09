@@ -605,3 +605,63 @@ if "combat-bar" in html[html.index("/* COMBAT_HIT_VFX_V1 / COMBAT_HIT_POST_RENDE
 INDEX.write_text(html, encoding="utf-8")
 
 print("True-turn audit fixes V4 applied: lethal counters terminate immediately, An Nhien penalty is one-shot, round counting follows the first live Party attacker, and reciprocal Entity hit VFX is authoritative-delta driven.")
+
+# Lucia has a dedicated early Party->Entity boundary before the common Party
+# boundary above. Persist the same once-per-cycle marker there as well so a
+# valid no-Kai/reordered Party beginning with Lucia cannot increment twice.
+combat = COMBAT.read_text(encoding="utf-8")
+lucia_round_boundary_old = '''      }
+      val stagedState = encode(resolvedState, c)
+      val staged = withAutoCursor(stagedState, nextAutoCursor(stagedState, autoOrder, autoCursor))
+      return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
+    }
+
+    // Companion mechanics are resolved only by their own authoritative actor.
+'''
+lucia_round_boundary_new = '''      }
+      if (autoRoundStartsNow) resolvedState = withCombatCounter(resolvedState, AUTO_ROUND_COUNTED_KEY, 1)
+      val stagedState = encode(resolvedState, c)
+      val staged = withAutoCursor(stagedState, nextAutoCursor(stagedState, autoOrder, autoCursor))
+      return Resolution(staged, true, log.joinToString(" "), roundCompleted = false)
+    }
+
+    // Companion mechanics are resolved only by their own authoritative actor.
+'''
+combat = replace_once(combat, lucia_round_boundary_old, lucia_round_boundary_new, "persist cycle marker on Lucia early boundary")
+COMBAT.write_text(combat, encoding="utf-8")
+
+test = TEST.read_text(encoding="utf-8")
+lucia_first_test = r'''
+  @Test fun trueTurnNoKaiLuciaFirstCountsExactlyOncePerCycle() {
+    val initial = SpecialFollowersCanon.ensure(LuciaCanon.ensure(GameState.initial())).copy(
+      party = PartyState(leaderId = LUCIA_ID, memberIds = listOf(LUCIA_ID, SYVIAL_ID))
+    )
+    val state = CombatRuntime.start(initial, "diep_minh")
+    val order = CombatRuntime.toJson(state)!!.getJSONArray("autoOrder")
+    assertEquals(listOf("lucia", "entity:lucia", "syvial", "entity:syvial"), (0 until order.length()).map { order.getString(it) })
+
+    val lucia = CombatRuntime.resolve(state, "AUTO_COMBAT_STEP", "auto")
+    assertEquals(1, CombatRuntime.active(lucia.state)!!.eventCounter)
+    assertEquals("1", lucia.state.metadata["combat.autoRoundCounted"])
+
+    val loaded = GameStateCodec.decode(GameStateCodec.encode(lucia.state))
+    val entityLucia = CombatRuntime.resolve(loaded, "AUTO_COMBAT_STEP", "auto")
+    assertEquals(1, CombatRuntime.active(entityLucia.state)!!.eventCounter)
+    val syvial = CombatRuntime.resolve(entityLucia.state, "AUTO_COMBAT_STEP", "auto")
+    assertEquals(1, CombatRuntime.active(syvial.state)!!.eventCounter)
+    val entitySyvial = CombatRuntime.resolve(syvial.state, "AUTO_COMBAT_STEP", "auto")
+    assertTrue(entitySyvial.roundCompleted)
+    assertEquals(1, CombatRuntime.active(entitySyvial.state)!!.eventCounter)
+    assertFalse(entitySyvial.state.metadata.containsKey("combat.autoRoundCounted"))
+  }
+'''
+if "trueTurnNoKaiLuciaFirstCountsExactlyOncePerCycle" not in test:
+    close = test.rfind("}\n")
+    if close < 0:
+        raise RuntimeError("CombatRuntimeTest closing brace missing for Lucia-first cycle regression")
+    test = test[:close] + lucia_first_test + test[close:]
+if "trueTurnNoKaiLuciaFirstCountsExactlyOncePerCycle" not in test:
+    raise RuntimeError("Lucia-first no-Kai round counter regression missing")
+TEST.write_text(test, encoding="utf-8")
+
+print("True-turn Lucia-first cycle marker applied for reordered/no-Kai Party save-load safety.")
