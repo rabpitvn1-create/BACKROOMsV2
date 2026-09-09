@@ -81,7 +81,7 @@ miss_script = r'''<script>
     var box=document.getElementById('snapshot');
     var x=ghost?Number(ghost.dataset.hitX):NaN,y=ghost?Number(ghost.dataset.hitY):NaN;
     if(!Number.isFinite(x))x=box?box.clientWidth*.5:0;
-    if(!Number.isFinite(y))y=box?box.clientHeight*(kind==='party'?.42:.34):0;
+    if(!Number.isFinite(y))y=box?box.clientHeight*(kind==='party'?0.42:0.34):0;
     return {x:x,y:y};
   }
   function mountCombatMiss(point){
