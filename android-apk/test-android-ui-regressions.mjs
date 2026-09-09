@@ -162,4 +162,69 @@ assert.equal(swipe(1, 60, 3), 0, "right swipe must change Management to Gameplay
 assert.equal(swipe(0, 10, 1), 0, "sub-threshold movement must not change page");
 assert.equal(swipe(0, -60, 90), 0, "vertical intent must not change page");
 
+requireText("window.combatHitDeltasFor=function(before,after,actorId)", "hit VFX derives all target deltas from one authoritative transition");
+requireText("window.playCombatHitsFromTransition=function(before,after,actorId,ghosts)", "hit VFX can present reciprocal damage in the same transition");
+assert.equal(typeof hitWindow.combatHitDeltasFor, "function", "damage-delta helper must compile and export");
+
+const reciprocalBefore = {
+  playerHp: 100,
+  entityHp: 500,
+  active: true,
+  party: { iris: { hp: 70 }, syvial: { hp: 80 }, lucia: { hp: 90 } },
+};
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(
+    reciprocalBefore,
+    { ...reciprocalBefore, entityHp: 488, party: { iris: { hp: 70 }, syvial: { hp: 80 }, lucia: { hp: 90 } } },
+    "entity:iris",
+  ),
+  [{ kind: "entity", targetId: "entity", damage: 12 }],
+  "entity:iris counter damage must flash/recoil the Entity when Iris HP is unchanged",
+);
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(
+    reciprocalBefore,
+    { ...reciprocalBefore, entityHp: 491, party: { iris: { hp: 70 }, syvial: { hp: 80 }, lucia: { hp: 90 } } },
+    "entity:syvial",
+  ),
+  [{ kind: "entity", targetId: "entity", damage: 9 }],
+  "entity:syvial Counterphase damage must target the Entity presentation",
+);
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(
+    reciprocalBefore,
+    { ...reciprocalBefore, party: { iris: { hp: 70 }, syvial: { hp: 71 }, lucia: { hp: 90 } } },
+    "entity:syvial",
+  ),
+  [{ kind: "party", targetId: "syvial", damage: 9 }],
+  "ordinary Entity damage must still target the encoded Party member",
+);
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(
+    reciprocalBefore,
+    { ...reciprocalBefore, entityHp: 488 },
+    "iris",
+  ),
+  [{ kind: "entity", targetId: "entity", damage: 12 }],
+  "ordinary Party damage must still target the Entity",
+);
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(
+    reciprocalBefore,
+    { ...reciprocalBefore, entityHp: 488, party: { iris: { hp: 70 }, syvial: { hp: 71 }, lucia: { hp: 90 } } },
+    "entity:syvial",
+  ),
+  [
+    { kind: "party", targetId: "syvial", damage: 9 },
+    { kind: "entity", targetId: "entity", damage: 12 },
+  ],
+  "one authoritative transition may present both Party and Entity damage",
+);
+assert.deepEqual(
+  hitWindow.combatHitDeltasFor(reciprocalBefore, reciprocalBefore, "entity:iris"),
+  [],
+  "a true miss with unchanged HP must not emit hit VFX",
+);
+assert.ok(!hitVfxScript.includes("combat-bar"), "reciprocal hit VFX must not create Combat HP bars");
+
 console.log(`Android UI regression contracts passed for ${input}`);
