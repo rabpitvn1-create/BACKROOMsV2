@@ -48,7 +48,22 @@ for line in main.splitlines(keepends=True):
             lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 2% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
     else:
         lines.append(line)
-MAIN.write_text(''.join(lines), encoding="utf-8")
+main = ''.join(lines)
+
+# Retired encounter-rate patches used to inject an extra Jeff 8% die and mutate
+# level thresholds by +8 percentage points. They must never survive the final
+# authority layer or silently regain control if the patch order changes.
+for forbidden in (
+    'thresholdRoll("jeffEncounter"',
+    '"JEFF THE KILLER HARD LOCK:',
+    'int[] entityThresholds =',
+    '8.0000%',
+    '+8 percentage',
+):
+    if forbidden in main:
+        raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
+
+MAIN.write_text(main, encoding="utf-8")
 
 facade = FACADE.read_text(encoding="utf-8")
 facade = once(facade, '  fun startCombatState(legacyStateJson: String, entityKey: String): String {', '''  fun startEntityEncounters(legacyStateJson: String, keysJson: String): String {
@@ -85,19 +100,3 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity policy applied: independent 2% dice including boss; queued encounters; guaranteed catalog kill drops.")
-
-# Temporary diagnostics for generated WebView output; remove after CI root-cause isolation.
-_index = (ROOT / "app/src/main/assets/index.html").read_text(encoding="utf-8")
-for _marker in (
-    "PRESSURE_COMBAT_HUD_V1", "ANDROID_EDGE_UI_V1", "ANDROID_SWIPE_UI_V1",
-    "ANDROID_THREE_ACTIONS_V1", "ANDROID_GAMEPLAY_PRESENTATION_V2",
-    "font-family:var(--gameplay-font)", "header.textContent='Storytelling'",
-    "font-family:'BackroomPlay'",
-):
-    print("UI_DIAG present", _marker, _marker in _index)
-for _marker in (
-    "GAME_MASTER_STORYTELLING_FRAME_V1", "GAME_MASTER_PLAY_FONT_V1",
-    "COMBAT_TYPOGRAPHY_V1", "TRUE_TURN_COMBAT_UI_V2",
-    "autoPartyCombatStyle", "pressureCombatStyle",
-):
-    print("UI_DIAG absent", _marker, _marker not in _index)

@@ -47,8 +47,9 @@ if "beginAction(stateJson, actionKind, action)" not in main:
 
 # Entity encounter generation is authoritative to the typed ActionRuntime kind, not to words found
 # in the Vietnamese/freeform action label. EXPLORE is the only action that may start a NEW Entity
-# encounter. SEARCH/EXECUTE can still resolve an Entity that is already present in state, but they
-# never roll a new normal Entity, Jeff, or Jane encounter.
+# encounter. SEARCH/EXECUTE can still resolve an Entity already present in state, but never roll a
+# new encounter. Jeff/Jane are ordinary entries in the shared roamingEntityKey pool and therefore
+# must not have private encounter channels here.
 old_roll_signature = "  private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {\n"
 new_roll_signature = "  private JSONObject makeGameplayRolls(JSONObject state, String actionKind, String action, boolean meta) throws Exception {\n"
 if new_roll_signature not in main:
@@ -64,15 +65,16 @@ normal_new = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter",
 if normal_new not in main:
     main = replace_once(main, normal_old, normal_new, "normal Entity EXPLORE gate")
 
-jeff_old = '    rolls.put("jeffEncounter", thresholdRoll("jeffEncounter", 10000, 800, physical && entityAllowed && !flagSpawned(state, "jeff"), " JEFF THE KILLER roaming unique"));\n'
-jeff_new = '    rolls.put("jeffEncounter", thresholdRoll("jeffEncounter", 10000, 800, exploreAction && entityAllowed && !flagSpawned(state, "jeff"), " JEFF THE KILLER roaming unique"));\n'
-if jeff_new not in main:
-    main = replace_once(main, jeff_old, jeff_new, "Jeff EXPLORE gate")
-
-jane_old = '    rolls.put("janeEncounter", thresholdRoll("janeEncounter", 10000, 800, physical && entityAllowed && !flagSpawned(state, "jane"), " JANE THE KILLER roaming unique"));\n'
-jane_new = '    rolls.put("janeEncounter", thresholdRoll("janeEncounter", 10000, 800, exploreAction && entityAllowed && !flagSpawned(state, "jane"), " JANE THE KILLER roaming unique"));\n'
-if jane_new not in main:
-    main = replace_once(main, jane_old, jane_new, "Jane EXPLORE gate")
+# Independent killer rolls are retired. If another earlier patch brings them back, stop here rather
+# than adapting them to EXPLORE and silently preserving obsolete encounter behavior.
+for legacy_marker in (
+    'rolls.put("jeffEncounter"',
+    'rolls.put("janeEncounter"',
+    'thresholdRoll("jeffEncounter"',
+    'thresholdRoll("janeEncounter"',
+):
+    if legacy_marker in main:
+        raise RuntimeError("Retired independent killer encounter channel reintroduced before typed action bridge: " + legacy_marker)
 
 roll_call_old = "          JSONObject rolls = makeGameplayRolls(before, action, meta);\n"
 roll_call_new = "          JSONObject rolls = makeGameplayRolls(before, actionKind, action, meta);\n"
@@ -91,7 +93,7 @@ if "String actionRuntimeContext =" not in main:
     directive = f'''    String actionRuntimeContext = {core_call}.currentActionContext();
     String actionKindForPrompt = new JSONObject(actionRuntimeContext).optString("kind", "EXECUTE");
     String actionDirective = "ACTION TYPE = " + actionKindForPrompt + ". " +
-      ("SEARCH".equals(actionKindForPrompt) ? "SEARCH HARD LOCK: khảo sát có hệ thống location hiện tại, không tự chuyển sang location mới; SEARCH không được khởi tạo encounter Entity mới và entityEncounter/jeffEncounter/janeEncounter phải ineligible; vẫn có thể gặp Survivor, tìm resource/clue/hazard/exit evidence nhưng không đảm bảo có kết quả hay loot. " :
+      ("SEARCH".equals(actionKindForPrompt) ? "SEARCH HARD LOCK: khảo sát có hệ thống location hiện tại, không tự chuyển sang location mới; SEARCH không được khởi tạo encounter Entity mới và entityEncounter phải ineligible; vẫn có thể gặp Survivor, tìm resource/clue/hazard/exit evidence nhưng không đảm bảo có kết quả hay loot. " :
        "EXPLORE".equals(actionKindForPrompt) ? "EXPLORE HARD LOCK: chủ động mở rộng known space và có thể đổi location; đây là action duy nhất được phép kích hoạt roll encounter Entity mới; có thể gặp Entity hoặc Survivor, resource/hazard/exit opportunity nhưng không đảm bảo Exit; nếu có lựa chọn định hướng quan trọng thì trả quyền quyết định cho người chơi. " :
        "EXECUTE HARD LOCK: đây là freeform intent của người chơi; phân giải đúng hành động đã nhập, không tự đổi mục tiêu và không khởi tạo encounter Entity mới. ");
 '''
@@ -133,8 +135,6 @@ for marker in (
     'boolean exploreAction = "EXPLORE".equals(actionKindNormalized);',
     'makeGameplayRolls(before, actionKind, action, meta)',
     'thresholdRoll("entityEncounter", 10000, entityThresholds[level], exploreAction && entityAllowed',
-    'thresholdRoll("jeffEncounter", 10000, 800, exploreAction && entityAllowed',
-    'thresholdRoll("janeEncounter", 10000, 800, exploreAction && entityAllowed',
     'SEARCH không được khởi tạo encounter Entity mới',
     'đây là action duy nhất được phép kích hoạt roll encounter Entity mới',
     'String actionRuntimeContext =',
@@ -149,11 +149,11 @@ for marker in (
 for forbidden in (
     'makeGameplayRolls(before, action, meta)',
     'thresholdRoll("entityEncounter", 10000, entityThresholds[level], physical && entityAllowed',
-    'thresholdRoll("jeffEncounter", 10000, 800, physical && entityAllowed',
-    'thresholdRoll("janeEncounter", 10000, 800, physical && entityAllowed',
+    'jeffEncounter',
+    'janeEncounter',
 ):
     if forbidden in main:
-        raise RuntimeError("EXPLORE-only Entity trigger contract violated: " + forbidden)
+        raise RuntimeError("EXPLORE-only shared Entity trigger contract violated: " + forbidden)
 
 MAIN.write_text(main, encoding="utf-8")
-print("Step 2 typed Android action bridge applied: new Entity encounters are EXPLORE-only.")
+print("Step 2 typed Android action bridge applied: new shared Entity encounters are EXPLORE-only; no private Jeff/Jane rolls remain.")

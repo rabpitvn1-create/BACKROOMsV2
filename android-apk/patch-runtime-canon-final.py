@@ -4,6 +4,7 @@ import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
+INDEX = ROOT / "app/src/main/assets/index.html"
 ENTITY_ASSETS = ROOT / "app/src/main/assets/entity"
 
 # PR3 used to mix display-layout hotfixes with gameplay/canon finalization. The
@@ -119,6 +120,25 @@ if not sru_canon.is_file():
     raise RuntimeError("SRU canon patch missing: " + sru_canon.name)
 runpy.run_path(str(sru_canon), run_name="__main__")
 
+# The prologue is a static HTML string, so writer/auditor canon guards never touch it.
+# Normalize that retired organization label at the same final SRU authority layer.
+prologue_html = INDEX.read_text(encoding="utf-8")
+stale_prologue = "Kênh nội bộ Black Blood im lặng."
+current_prologue = "Kênh nội bộ SRU (Special Respond Unit) im lặng."
+if stale_prologue in prologue_html:
+    count = prologue_html.count(stale_prologue)
+    if count != 1:
+        raise RuntimeError(
+            "SRU prologue migration expected exactly one stale Black Blood channel, found "
+            + str(count)
+        )
+    prologue_html = prologue_html.replace(stale_prologue, current_prologue, 1)
+elif current_prologue not in prologue_html:
+    raise RuntimeError("SRU prologue communication marker missing")
+if stale_prologue in prologue_html:
+    raise RuntimeError("Retired Black Blood prologue channel survived SRU finalization")
+INDEX.write_text(prologue_html, encoding="utf-8")
+
 # Conditional-audit historically rebuilds writerPrompt after the original prose contract.
 # Re-assert narrative clarity and current SRU identity only after all historical runtime
 # transformations have settled, then reuse the existing hard-issue repair transaction.
@@ -134,4 +154,4 @@ if not entity_visual_locks.is_file():
     raise RuntimeError("Entity PNG Visual Lock patch missing: " + entity_visual_locks.name)
 runpy.run_path(str(entity_visual_locks), run_name="__main__")
 
-print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, narrative clarity guard.")
+print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, SRU prologue, narrative clarity guard.")

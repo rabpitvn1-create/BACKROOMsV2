@@ -164,6 +164,7 @@ geometry_methods = r'''
     int safeRight = 0;
     int safeBottom = 0;
     int safeLeft = 0;
+    int imeBottom = 0;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
       DisplayCutout cutout = insets.getDisplayCutout();
       if (cutout != null) {
@@ -178,12 +179,18 @@ geometry_methods = r'''
       // Bottom gesture space protects the action row. Side gestures deliberately do not
       // widen every content column on portrait phones.
       safeBottom = Math.max(safeBottom, gestures.bottom);
+      imeBottom = insets.getInsets(WindowInsets.Type.ime()).bottom;
+    } else {
+      // On API 24-29 the legacy system-window bottom grows when the IME opens.
+      // Subtract the stable navigation inset so only the keyboard occlusion shrinks the shell.
+      imeBottom = Math.max(0, insets.getSystemWindowInsetBottom() - insets.getStableInsetBottom());
     }
 
     float top = displayCssPx(safeTop);
     float right = displayCssPx(safeRight);
     float bottom = displayCssPx(safeBottom);
     float left = displayCssPx(safeLeft);
+    float ime = displayCssPx(imeBottom);
     float tl = 0f;
     float tr = 0f;
     float br = 0f;
@@ -212,13 +219,14 @@ geometry_methods = r'''
             + "s.setProperty('--android-safe-right','%.2fpx');"
             + "s.setProperty('--android-safe-bottom','%.2fpx');"
             + "s.setProperty('--android-safe-left','%.2fpx');"
+            + "s.setProperty('--android-ime-bottom','%.2fpx');"
             + "s.setProperty('--android-radius-tl','%.2fpx');"
             + "s.setProperty('--android-radius-tr','%.2fpx');"
             + "s.setProperty('--android-radius-br','%.2fpx');"
             + "s.setProperty('--android-radius-bl','%.2fpx');"
             + "document.documentElement.classList.add('android-geometry-ready');"
             + "})();",
-        top, right, bottom, left, tl, tr, br, bl);
+        top, right, bottom, left, ime, tl, tr, br, bl);
     webView.post(() -> webView.evaluateJavascript(script, null));
   }
 
@@ -253,6 +261,9 @@ for token in (
     "ANDROID_DISPLAY_GEOMETRY_V1",
     "getRoundedCorner(position)",
     "--android-radius-tl",
+    "--android-ime-bottom",
+    "WindowInsets.Type.ime()",
+    "getSystemWindowInsetBottom() - insets.getStableInsetBottom()",
     "webView.setOnApplyWindowInsetsListener",
     "getWindow().setDecorFitsSystemWindows(false)",
     "ANDROID_UI_KAI_SHIFT_RIGHT",
@@ -342,13 +353,14 @@ canonical_css = r'''
 /* ANDROID_EDGE_UI_V1 */
 :root{
   --android-safe-top:0px;--android-safe-right:0px;--android-safe-bottom:0px;--android-safe-left:0px;
+  --android-ime-bottom:0px;
   --android-radius-tl:0px;--android-radius-tr:0px;--android-radius-br:0px;--android-radius-bl:0px;
   --ui-edge:8px;--ui-gap:7px;--panel-radius:12px;--control-radius:11px;
 }
 html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#080a0c}
 body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-right-radius:var(--android-radius-tr);border-bottom-right-radius:var(--android-radius-br);border-bottom-left-radius:var(--android-radius-bl);overflow:hidden}
-.shell{width:100%;height:100dvh;min-height:100dvh;padding:0;overflow:hidden;background:#080a0c}
-.page-track{display:flex;width:100%;height:100%;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.2,.72,.2,1);will-change:transform;touch-action:pan-y}
+.shell{width:100%;height:calc(100dvh - var(--android-ime-bottom));min-height:0;padding:0;overflow:hidden;background:#080a0c}
+.page-track{display:flex;width:100%;height:100%;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.2,.72,.2,1);will-change:transform;touch-action:pan-y;overscroll-behavior-x:contain}
 .page-track.show-management{transform:translate3d(-100%,0,0)}
 .app-page{flex:0 0 100%;width:100%;min-width:0;height:100%;overflow-x:hidden;background:#080a0c}
 #gameplayPage{overflow:hidden}
@@ -357,14 +369,15 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 .topbar>div:first-child{min-width:0;overflow:hidden}.eyebrow{font-size:8px;line-height:1;letter-spacing:.12em}.topbar h1{margin:2px 0 0;font-size:14px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.turn{font-size:9px;line-height:1;white-space:nowrap}.turn strong{font-size:16px}
 .snapshot{position:relative;flex:0 0 clamp(148px,24dvh,250px);width:auto;height:auto;margin:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) 0 calc(var(--android-safe-left) + var(--ui-edge));border:1px solid #2b3339;border-radius:var(--panel-radius);overflow:hidden;background:#080a0c}
 .snapshot img{width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center}
-.log{flex:1 1 auto;height:auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));display:grid;align-content:start;gap:var(--ui-gap)}
-.message{width:100%;border:1px solid #283137;border-left:3px solid #454e56;border-radius:var(--panel-radius);padding:9px 10px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message.gm{border-left-color:#71808a;background:#171e23}.role{margin-bottom:4px}.text{line-height:1.45}
+.log{flex:1 1 auto;height:auto;min-height:0;overflow:hidden;padding:var(--ui-gap) calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));display:flex;flex-direction:column;gap:var(--ui-gap);background:transparent}
+.message{position:relative;z-index:1;width:100%;border:1px solid #283137;border-left:3px solid #454e56;border-radius:var(--panel-radius);padding:9px 10px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message.gm{border-left-color:#71808a;background:#171e23}.role{margin-bottom:4px}.text{line-height:1.45}
 .composer{flex:0 0 auto;display:grid;gap:var(--ui-gap);padding:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge))}
 .composer textarea{width:100%;min-height:54px;max-height:92px;resize:none;padding:9px 10px;border:1px solid #303a42;border-radius:var(--control-radius);background:#090c0f;color:#fff;outline:none}.composer textarea:focus{border-color:#65727c}
 .primary-action-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ui-gap);width:100%}
 .primary-action{min-width:0;min-height:44px;border-radius:var(--control-radius);display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 5px;white-space:nowrap;font-size:11px}.primary-action.execute-action{font-weight:800;border-color:#56616a;background:#20272d}.primary-action .action-sprite{width:21px;height:21px;flex:0 0 21px;display:block;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges}
 .status{flex:0 0 auto;min-height:20px;padding:4px calc(var(--android-safe-right) + var(--ui-edge)) calc(var(--android-safe-bottom) + 5px) calc(var(--android-safe-left) + var(--ui-edge));font-size:10px;line-height:1.25;border-top:1px solid #252b31}
 /* ANDROID_GAMEPLAY_PRESENTATION_V2: one presentation/typography authority. */
+/* STORYTELLING_CHRONOLOGICAL_FRAME_V5: one fixed frame with a scrolling, labelled transcript. */
 :root{
   --gameplay-font:'Roboto',system-ui,sans-serif;
   --semantic-item:#36f0c3;
@@ -379,61 +392,36 @@ body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-
 }
 @font-face{font-family:'BackroomPlay';src:url('fonts/Play-Bold.ttf') format('truetype');font-style:normal;font-weight:700;font-display:swap}
 .snapshot .snapshot-character{right:8px!important}
-.log{padding-top:calc(var(--ui-gap,10px) + 8px)!important}
-.message.storytelling,.message.combat{width:calc(100% - 10px);margin-left:auto;margin-right:auto}
-.message.storytelling{
-  border:1px solid #3b444d;
-  border-left:3px solid #71808a;
-  background:#171e23;
-  box-shadow:none;
-  padding:0;
-  overflow:hidden;
-  font-family:var(--gameplay-font);
-  font-weight:800;
-}
-.storytelling-header{
-  padding:8px 10px 7px;
-  color:#c9d2da;
-  border-bottom:1px solid #2b3137;
-  font-family:var(--gameplay-font);
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.12em;
-}
-.storytelling-body{padding:10px}
-.storytelling-segment{white-space:pre-wrap;line-height:1.55;font-family:var(--gameplay-font);font-weight:800}
-.storytelling-segment+.storytelling-segment{margin-top:14px}
-.message.combat,.message.combat .role,.message.combat .text{
-  font-family:var(--gameplay-font);
-  font-weight:800;
-}
-#combatHud{
-  display:none;
-  margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));
-  border:1px solid #444b52;
-  border-radius:var(--panel-radius);
-  background:#0b0e10;
-  padding:10px;
-  font-family:var(--gameplay-font);
-  font-weight:800;
-}
+.storytelling-panel{flex:1 1 auto;min-height:0;border:1px solid #3b444d;border-left:3px solid #71808a;border-radius:var(--panel-radius);background:#171e23;box-shadow:none;overflow:hidden;display:flex;flex-direction:column}
+.storytelling-panel[hidden]{display:none!important}
+.storytelling-header{padding:8px 10px 7px;color:#c9d2da;border-bottom:1px solid #2b3137;background:#171e23;font-family:var(--gameplay-font);font-size:10px;font-weight:700;letter-spacing:.12em}
+.storytelling-body{flex:1 1 auto;min-height:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:10px;display:grid;align-content:start;gap:14px;contain:paint}
+.message.storytelling-entry{display:block;width:100%;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0;font-family:var(--gameplay-font);font-weight:400;color:#eef1f3;line-height:1.55;overflow-wrap:anywhere}
+.message.storytelling-entry>.role{display:inline;margin:0;color:#aeb8c1;font-family:var(--gameplay-font);font-size:.72em;font-weight:700;letter-spacing:.1em;white-space:nowrap}
+.message.storytelling-entry>.role::before{content:'\2022\00a0'}
+.message.storytelling-entry>.role::after{content:':\00a0'}
+.message.storytelling-entry>.text{display:inline;font-family:var(--gameplay-font);font-weight:400;white-space:pre-wrap}
+.message.storytelling-entry.player>.role{color:#d5dbe0}.message.storytelling-entry.combat>.role{color:#f0c979}
+.message.player,.message.player .text,.status{font-family:var(--gameplay-font);font-weight:400}
+.message.combat,.message.combat .role,.message.combat .text{font-family:var(--gameplay-font);font-weight:400}
+#combatHud{display:none;margin:0 calc(var(--android-safe-right) + var(--ui-edge)) var(--ui-gap) calc(var(--android-safe-left) + var(--ui-edge));border:1px solid #444b52;border-radius:var(--panel-radius);background:#0b0e10;padding:10px;font-family:var(--gameplay-font);font-weight:400}
 #combatHud.active{display:block}
-.combat-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.08em;margin-bottom:7px}
-.combat-row{display:grid;grid-template-columns:70px 1fr 62px;align-items:center;gap:7px;margin:5px 0;font-size:11px;font-weight:800}
+.combat-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:400;letter-spacing:.08em;margin-bottom:7px}
+.combat-row{display:grid;grid-template-columns:70px 1fr 62px;align-items:center;gap:7px;margin:5px 0;font-size:11px;font-weight:400}
 .combat-bar{height:12px;background:#252b30;border:1px solid #343c43;overflow:hidden}
 .combat-fill{height:100%;background:linear-gradient(90deg,#757f88,#d8dee3);transition:width .18s ease}
 .combat-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.combat-meta span{border:1px solid #343c43;padding:3px 5px;font-size:10px;color:#c8d0d6;font-weight:800}
-.combat-telegraph{margin-top:7px;font-size:11px;color:#f0c979;font-weight:800}
-.combat-popup-button{appearance:none;border:1px solid #69747d;background:#20282e;color:#f1f4f6;border-radius:6px;padding:4px 8px;font:800 10px/1 var(--gameplay-font);letter-spacing:.08em;cursor:pointer}
+.combat-meta span{border:1px solid #343c43;padding:3px 5px;font-size:10px;color:#c8d0d6;font-weight:400}
+.combat-telegraph{margin-top:7px;font-size:11px;color:#f0c979;font-weight:400}
+.combat-popup-button{appearance:none;border:1px solid #69747d;background:#20282e;color:#f1f4f6;border-radius:6px;padding:4px 8px;font:400 10px/1 var(--gameplay-font);letter-spacing:.08em;cursor:pointer}
 .combat-popup-button:active{transform:translateY(1px)}
 #combatPopup[hidden]{display:none!important}
-#combatPopup{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--gameplay-font);font-weight:800}
+#combatPopup{position:fixed;inset:0;z-index:12000;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:16px;font-family:var(--gameplay-font);font-weight:400}
 .combat-popup-sheet{width:min(520px,100%);max-height:min(82vh,720px);overflow:auto;background:#0b0e10;border:1px solid #4b555e;border-radius:12px;box-shadow:0 20px 55px rgba(0,0,0,.55);padding:14px;color:#edf1f4}
-.combat-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.combat-popup-head h2{font-size:16px;font-weight:800;letter-spacing:.12em;margin:0}.combat-popup-auto{font-size:10px;font-weight:800;border:1px solid #4b555e;border-radius:999px;padding:3px 7px;color:#c9d2d9}.combat-popup-close{border:0;background:transparent;color:#e8edf0;font-size:24px;font-weight:800;line-height:1;cursor:pointer;padding:2px 6px}
-.combat-popup-target,.combat-popup-current{border:1px solid #343c43;background:#11161a;border-radius:8px;padding:9px;margin-top:10px;font-weight:800}.combat-popup-target{display:flex;justify-content:space-between;gap:10px;font-size:12px}.combat-popup-current{font-size:12px;letter-spacing:.04em}
-.combat-popup-order{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:thin}.combat-turn-chip{flex:0 0 auto;border:1px solid #343c43;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:800;white-space:nowrap;color:#c7d0d6}.combat-turn-chip.current{border-color:#e2e8ec;color:#fff;background:#283139}
-.combat-popup-party{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.combat-popup-slot{min-width:0;border:1px solid #343c43;border-radius:8px;padding:8px;background:#101519;text-align:center}.combat-popup-slot.current{border-color:#e2e8ec;background:#252d33}.combat-popup-slot.empty{opacity:.45}.combat-popup-slot strong{display:block;font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.combat-popup-slot span{display:block;font-size:9px;font-weight:800;color:#9da8b0;margin-top:3px}
+.combat-popup-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.combat-popup-head h2{font-size:16px;font-weight:400;letter-spacing:.12em;margin:0}.combat-popup-auto{font-size:10px;font-weight:400;border:1px solid #4b555e;border-radius:999px;padding:3px 7px;color:#c9d2d9}.combat-popup-close{border:0;background:transparent;color:#e8edf0;font-size:24px;font-weight:400;line-height:1;cursor:pointer;padding:2px 6px}
+.combat-popup-target,.combat-popup-current{border:1px solid #343c43;background:#11161a;border-radius:8px;padding:9px;margin-top:10px;font-weight:400}.combat-popup-target{display:flex;justify-content:space-between;gap:10px;font-size:12px}.combat-popup-current{font-size:12px;letter-spacing:.04em}
+.combat-popup-order{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:thin}.combat-turn-chip{flex:0 0 auto;border:1px solid #343c43;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:400;white-space:nowrap;color:#c7d0d6}.combat-turn-chip.current{border-color:#e2e8ec;color:#fff;background:#283139}
+.combat-popup-party{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.combat-popup-slot{min-width:0;border:1px solid #343c43;border-radius:8px;padding:8px;background:#101519;text-align:center}.combat-popup-slot.current{border-color:#e2e8ec;background:#252d33}.combat-popup-slot.empty{opacity:.45}.combat-popup-slot strong{display:block;font-size:11px;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.combat-popup-slot span{display:block;font-size:9px;font-weight:400;color:#9da8b0;margin-top:3px}
 .gameplay-semantic{font-family:'BackroomPlay',var(--gameplay-font);font-weight:700;letter-spacing:.025em}
 .gameplay-sem-name{color:var(--semantic-name)}
 .gameplay-sem-entity{color:var(--semantic-entity)}
@@ -465,6 +453,7 @@ if "ANDROID_EDGE_UI_V1" not in html:
 swipe_script = r'''
 <script id="androidSwipeUi">
 /* ANDROID_SWIPE_UI_V1 */
+/* ANDROID_SWIPE_GESTURE_V2: pointer-first horizontal gesture with touch fallback. */
 (function(){
   if(window.__androidSwipeUi)return;window.__androidSwipeUi=true;
   const shell=document.querySelector('.shell'),game=document.querySelector('.game'),side=document.querySelector('.side');
@@ -474,11 +463,27 @@ swipe_script = r'''
   const management=document.createElement('section');management.className='app-page';management.id='managementPage';management.setAttribute('aria-label','Character and management');
   gameplay.appendChild(game);management.appendChild(side);track.appendChild(gameplay);track.appendChild(management);shell.appendChild(track);
   const indicator=document.createElement('div');indicator.className='page-indicator';indicator.setAttribute('aria-hidden','true');indicator.innerHTML='<i class="page-dot active"></i><i class="page-dot"></i>';document.body.appendChild(indicator);
-  const dots=indicator.querySelectorAll('.page-dot');let page=0,startX=0,startY=0,tracking=false;
+  const dots=indicator.querySelectorAll('.page-dot');let page=0;
   function setPage(next){page=next>0?1:0;track.classList.toggle('show-management',page===1);dots.forEach((dot,i)=>dot.classList.toggle('active',i===page));if(page===1){const view=document.getElementById('characterInventoryView');if(view&&view.hidden){const first=document.querySelector('#party .party-member[data-character]');if(first)first.click();}}}
   function interactive(target){return !!(target&&target.closest&&target.closest('textarea,input,select,button,a,.equipment-detail-modal'))}
-  shell.addEventListener('touchstart',function(e){if(e.touches.length!==1||interactive(e.target)){tracking=false;return}const t=e.touches[0];startX=t.clientX;startY=t.clientY;tracking=true},{passive:true});
-  shell.addEventListener('touchend',function(e){if(!tracking||!e.changedTouches.length)return;tracking=false;const t=e.changedTouches[0],dx=t.clientX-startX,dy=t.clientY-startY;if(Math.abs(dx)<56||Math.abs(dx)<=Math.abs(dy)*1.2)return;if(dx<0&&page===0)setPage(1);else if(dx>0&&page===1)setPage(0)},{passive:true});
+  function finishSwipe(dx,dy){if(Math.abs(dx)<42||Math.abs(dx)<=Math.abs(dy)*1.05)return;if(dx<0&&page===0)setPage(1);else if(dx>0&&page===1)setPage(0)}
+  function installPointerSwipe(){
+    let pointerId=null,startX=0,startY=0,lastX=0,lastY=0,axis='';
+    function reset(){pointerId=null;axis='';}
+    track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';});
+    track.addEventListener('pointermove',function(e){if(pointerId!==e.pointerId)return;lastX=e.clientX;lastY=e.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
+    track.addEventListener('pointerup',function(e){if(pointerId!==e.pointerId)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();});
+    track.addEventListener('pointercancel',reset);
+  }
+  function installTouchSwipe(){
+    let tracking=false,startX=0,startY=0,lastX=0,lastY=0,axis='';
+    function reset(){tracking=false;axis='';}
+    track.addEventListener('touchstart',function(e){if(e.touches.length!==1||interactive(e.target)){reset();return}const t=e.touches[0];startX=lastX=t.clientX;startY=lastY=t.clientY;axis='';tracking=true},{passive:true});
+    track.addEventListener('touchmove',function(e){if(!tracking||e.touches.length!==1)return;const t=e.touches[0];lastX=t.clientX;lastY=t.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
+    track.addEventListener('touchend',function(e){if(!tracking||!e.changedTouches.length){reset();return}const t=e.changedTouches[0],dx=t.clientX-startX,dy=t.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();},{passive:true});
+    track.addEventListener('touchcancel',reset,{passive:true});
+  }
+  if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe();
   const detailBack=document.getElementById('characterInventoryBack');if(detailBack)detailBack.textContent='Thu gọn thông tin';
   setPage(0);
 })();
@@ -535,25 +540,31 @@ presentation_script_template = r'''<script id="androidGameplayPresentation">
     if(!root)return;var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],node;while((node=walker.nextNode()))nodes.push(node);nodes.forEach(decorateTextNode);
   }
   function roleOf(message){var role=message&&message.querySelector('.role');return role?String(role.textContent||'').trim().toUpperCase():'';}
-  function isWarning(message){return !!(message&&message.classList.contains('warning'));}
+  function storytellingLayout(log){
+    var panel=log.querySelector(':scope > .storytelling-panel');
+    if(panel)return {panel:panel,body:panel.querySelector('.storytelling-body')};
+    panel=document.createElement('section');panel.className='storytelling-panel';panel.dataset.storytelling='1';
+    var header=document.createElement('div');header.className='storytelling-header';header.textContent='Storytelling';
+    var body=document.createElement('div');body.className='storytelling-body';
+    panel.appendChild(header);panel.appendChild(body);log.appendChild(panel);
+    return {panel:panel,body:body};
+  }
+  function markTranscriptEntry(message){
+    message.classList.add('storytelling-entry');message.dataset.storytellingEntry='1';
+    decorateRoot(message.querySelector('.text')||message);
+  }
   function normalizeLog(){
     var log=document.getElementById('log');if(!log||normalizing)return;normalizing=true;
     try{
-      var children=Array.prototype.slice.call(log.children),i=0;
-      while(i<children.length){
-        var message=children[i],role=roleOf(message);
-        if(role==='COMBAT'){message.classList.add('combat');decorateRoot(message.querySelector('.text')||message);i++;continue;}
-        if(role!=='GAME MASTER'||isWarning(message)){i++;continue;}
-        var group=[];
-        while(i<children.length&&roleOf(children[i])==='GAME MASTER'&&!isWarning(children[i])){group.push(children[i]);i++;}
-        if(!group.length)continue;
-        var article=document.createElement('article');article.className='message storytelling';article.dataset.storytelling='1';
-        var header=document.createElement('div');header.className='storytelling-header';header.textContent='Storytelling';
-        var body=document.createElement('div');body.className='storytelling-body';
-        group.forEach(function(old){var segment=document.createElement('div');segment.className='storytelling-segment';var text=old.querySelector('.text');if(text){while(text.firstChild)segment.appendChild(text.firstChild);}body.appendChild(segment);});
-        article.appendChild(header);article.appendChild(body);log.insertBefore(article,group[0]);group.forEach(function(old){old.remove();});decorateRoot(body);
-      }
-      log.querySelectorAll('.message.combat .text,.storytelling-body').forEach(decorateRoot);
+      var children=Array.prototype.slice.call(log.children),layout=storytellingLayout(log),moved=false;
+      children.forEach(function(message){
+        if(!message.classList||!message.classList.contains('message'))return;
+        var role=roleOf(message);
+        if(role==='COMBAT'){message.classList.add('combat');decorateRoot(message.querySelector('.text')||message);}
+        markTranscriptEntry(message);layout.body.appendChild(message);moved=true;
+      });
+      layout.panel.hidden=!layout.body.querySelector('.message.storytelling-entry');
+      if(moved)layout.body.scrollTop=layout.body.scrollHeight;
     }finally{normalizing=false;}
   }
   function decorateGameplay(){
@@ -583,6 +594,8 @@ for forbidden in (
     "PR3_HEADER_SAFE_INSET",
     "STEP2_THREE_ACTIONS",
     "<svg class=\"action-icon",
+    "STORYTELLING_SINGLE_FRAME_V3",
+    "storytelling-surface",
 ):
     if forbidden in html:
         raise RuntimeError("Legacy UI layer survived canonicalization: " + forbidden)
@@ -590,16 +603,25 @@ for forbidden in (
 for token in (
     "ANDROID_EDGE_UI_V1",
     "ANDROID_SWIPE_UI_V1",
+    "ANDROID_SWIPE_GESTURE_V2",
     "ANDROID_THREE_ACTIONS_V1",
     "ANDROID_GAMEPLAY_PRESENTATION_V2",
     "ANDROID_GAMEPLAY_PRESENTATION_SCRIPT_V2",
+    "STORYTELLING_CHRONOLOGICAL_FRAME_V5",
     "header.textContent='Storytelling'",
+    "function finishSwipe(dx,dy)",
+    "function storytellingLayout(log)",
+    "function markTranscriptEntry(message)",
+    "layout.body.appendChild(message)",
+    "storytelling-entry",
     'id="searchActionButton"',
     'id="submit"',
     'id="exploreActionButton"',
     'grid-template-columns:repeat(3,minmax(0,1fr))',
     "--android-radius-tl",
     "--android-safe-bottom",
+    "--android-ime-bottom",
+    "height:calc(100dvh - var(--android-ime-bottom))",
     "data:image/webp;base64,",
     'Android.submitAction(JSON.stringify(state),"EXECUTE",a)',
     'submitMacroAction("SEARCH","Tìm kiếm")',
@@ -609,5 +631,10 @@ for token in (
     if token not in html:
         raise RuntimeError("Canonical Android UI contract missing: " + token)
 
+if "while(i<children.length&&roleOf(children[i])==='GAME MASTER'" in html:
+    raise RuntimeError("Legacy consecutive-only Storytelling grouping survived single-frame normalization")
+if "external-transcript" in html or "surface.appendChild(message)" in html:
+    raise RuntimeError("A second transcript surface must not compete with the fixed Storytelling frame")
+
 INDEX.write_text(html, encoding="utf-8")
-print("Canonical Android edge-to-edge UI installed: native geometry, equal action controls, clean aligned panels, two-page swipe.")
+print("Canonical Android edge-to-edge UI installed: native geometry, equal action controls, one chronological Storytelling frame, normal Roboto gameplay text, and robust two-page swipe.")

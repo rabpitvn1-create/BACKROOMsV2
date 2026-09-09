@@ -1,0 +1,37 @@
+name: Audit Legacy Patches
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fix/storytelling-swipe-font-v3
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/audit-legacy-patches.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/audit-legacy-patches.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit patch reachability and legacy risk markers
+        run: python android-apk/audit-legacy-patches.py
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-patch-audit
+          path: android-apk/legacy_patch_audit.json
+          if-no-files-found: error
+          retention-days: 14

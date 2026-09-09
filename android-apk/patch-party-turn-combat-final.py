@@ -70,6 +70,11 @@ script = r'''<script>
     var blank=box&&box.querySelector('.combat-actor-empty-slot');
     return !!blank&&(!img||img.style.visibility==='hidden'||img.hidden);
   }
+  function actorVisualMatches(box,img,p){
+    var overlayUri=String(p.overlayUri||'').trim(),hasOverlay=p.hasOverlay===true&&overlayUri!=='';
+    if(hasOverlay)return !!img&&img.style.visibility!=='hidden'&&!img.hidden&&imageSrc(img)===overlayUri;
+    var blank=box&&box.querySelector('.combat-actor-empty-slot');return !!blank&&(!img||img.style.visibility==='hidden'||img.hidden);
+  }
   function removeEmpty(box){var old=box&&box.querySelector('.combat-actor-empty-slot');if(old)old.remove();if(box)box.classList.remove('combat-actor-empty');}
   function emptySlot(box){
     removeEmpty(box);
@@ -90,14 +95,20 @@ script = r'''<script>
       if(img){img.classList.remove('combat-actor-swap-out','combat-actor-swap-in');img.style.visibility='hidden';img.dataset.combatActorId=String(p.actorId||'');img.dataset.combatActorSlot=String(p.slot==null?'':p.slot);}
       var blank=emptySlot(box);void blank.offsetWidth;blank.classList.add('combat-actor-swap-in');
     }
-    box.dataset.combatActorId=String(p.actorId||'');box.dataset.combatActorSlot=String(p.slot==null?'':p.slot);
+    box.dataset.combatActorId=String(p.actorId||'');box.dataset.combatActorSlot=String(p.slot==null?'':p.slot);delete box.dataset.combatPendingActorId;
   }
   window.backroomCombatActorSwap=function(raw){
     var p=payloadObject(raw),box=snapshotBox();if(!box)return false;
     var actorId=String(p.actorId||'').trim();if(!actorId)return false;
     var currentId=String(box.dataset.combatActorId||'');
     var img=characterImage(box);
+    if(String(box.dataset.combatPendingActorId||'')===actorId&&!p.force)return true;
     if(currentId===actorId&&!p.force&&actorDomMatches(box,img,p))return true;
+    if(!p.force&&actorVisualMatches(box,img,p)){
+      box.dataset.combatActorId=actorId;box.dataset.combatActorSlot=String(p.slot==null?'':p.slot);
+      if(img){img.dataset.combatActorId=actorId;img.dataset.combatActorSlot=String(p.slot==null?'':p.slot);}return true;
+    }
+    box.dataset.combatPendingActorId=actorId;
     var myToken=++token;
     if(reducedMotion()||!img||img.style.visibility==='hidden'){
       finishIncoming(box,img,p,myToken);return true;
@@ -115,8 +126,8 @@ script = r'''<script>
     return {actorId:actorId,slot:slot,name:String(c.activeActorName||actorId),overlayUri:uri,hasOverlay:!!uri};
   };
   function syncCombatActor(){var p=window.backroomCombatActorForState();if(p)window.backroomCombatActorSwap(p);}
-  var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){var r=oldRender.apply(this,arguments);syncCombatActor();return r;};}
-  var oldTurn=window.backroomTurn;if(typeof oldTurn==='function'){window.backroomTurn=function(json){var r=oldTurn.call(this,json);syncCombatActor();return r;};}
+  // Native Snapshot callbacks may redraw Kai, so they can request a re-sync.
+  // TRUE_TURN_AUTOPLAY is the only JavaScript owner of render/backroomTurn sequencing.
   window.syncCombatActorTransition=syncCombatActor;
 })();
 </script>
@@ -136,11 +147,15 @@ for marker in (
     "combat-actor-empty-slot",
     "img=characterImage(box)||img",
     "function actorDomMatches(box,img,p)",
+    "function actorVisualMatches(box,img,p)",
+    "combatPendingActorId",
     "currentId===actorId&&!p.force&&actorDomMatches(box,img,p)",
     "c.activeActorId||c.actorId",
 ):
     if marker not in html:
         raise RuntimeError("Combat actor transition marker missing: " + marker)
+if "var oldRender=window.render" in script or "var oldTurn=window.backroomTurn" in script:
+    raise RuntimeError("Legacy combat actor render/turn wrappers must not compete with TRUE_TURN_AUTOPLAY")
 
 INDEX.write_text(html, encoding="utf-8")
 MAIN.write_text(main, encoding="utf-8")
