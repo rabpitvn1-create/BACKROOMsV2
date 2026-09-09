@@ -40,7 +40,7 @@
       "width": 1024,
       "height": 1536,
       "sha256": "463045c1a5946a03a776688cc15291d8d56f8b2698170873198b6af8d3a0c0ed",
-      "visual": "Hostile Faceling mang vóc một người trưởng thành, mặc áo dài tay đen, quần xám nâu và giày tối màu. Điểm bất thường nằm ở khuôn mặt màu da hoàn toàn trơn, không có mắt, mũi hay miệng; trong sprite, một cánh tay của nó đang giơ cao."
+      "visual": "Hostile Faceling mang vóc một người trưởng thành, mặc áo dài tay đen, quần xám nâu và giày tối màu. Điểm bất thường nằm ở khuôn mặt màu da hoàn toàn trơn, không có mắt, mũi hay miệng."
     },
     {
       "key": "false_puddle",
@@ -64,7 +64,7 @@
       "width": 1254,
       "height": 1254,
       "sha256": "9cd8eccba8d8524466cedeed932470f97da794ab8612c0337c6e751f6ac1c18b",
-      "visual": "Smiler trong sprite là một humanoid đen cao và gầy, tay dài gần chạm đất, bàn tay lớn với các ngón nhọn, chân khuỵu. Trên cái đầu tối chỉ nổi bật hai mắt trắng phát sáng và một nụ cười trắng cực rộng đầy răng, tương phản mạnh với toàn thân đen."
+      "visual": "Smiler là một humanoid đen cao và gầy, tay dài gần chạm đất, bàn tay lớn với các ngón nhọn, chân khuỵu. Trên cái đầu tối chỉ nổi bật hai mắt trắng phát sáng và một nụ cười trắng cực rộng đầy răng, tương phản mạnh với toàn thân đen."
     },
     {
       "key": "skin-stealer",
@@ -88,7 +88,7 @@
       "width": 1086,
       "height": 1448,
       "sha256": "0474fa10a7ff4f06089df8c5b937576278a11951ae73f24cd2c1afd5cb78f413",
-      "visual": "Biological Pipeline có hình một humanoid rất cao và mảnh, toàn thân đen bóng như được ghép từ ống, dây và khớp cơ khí-hữu cơ. Đầu là một khối bầu dục trơn không thấy mặt; quanh cổ, vai và lồng ngực có nhiều vòng ống, tay chân dài kết thúc bằng các ngón mảnh."
+      "visual": "Biological Pipeline có hình một humanoid rất cao và mảnh, toàn thân đen bóng với cấu trúc giống ống, dây và nhiều khớp nối. Đầu là một khối bầu dục trơn không thấy mặt; quanh cổ, vai và lồng ngực có nhiều vòng ống, tay chân dài kết thúc bằng các ngón mảnh."
     },
     {
       "key": "wretch",
@@ -96,7 +96,7 @@
       "width": 1024,
       "height": 1536,
       "sha256": "6716b4bee87b5dcc80f1f4fa25ab37baecb44165aa84e632c98dc2f13b82449a",
-      "visual": "Wretch là một humanoid gầy trơ, đỏ-nâu như bị lột da hoặc bỏng sâu, để lộ sườn, gân và các bó cơ. Đầu tối đỏ bóng, tay chân dài khẳng khiu, bàn chân như vuốt; trong sprite nó cầm một cán dài cong gắn lưỡi móc/rìu méo ở đầu."
+      "visual": "Wretch là một humanoid gầy trơ với bề mặt đỏ-nâu, để lộ sườn, gân và các bó cơ. Đầu tối đỏ bóng, tay chân dài khẳng khiu, bàn chân như vuốt; một tay cầm cán dài cong gắn lưỡi móc/rìu méo ở đầu."
     },
     {
       "key": "cable_mimic",
@@ -120,7 +120,7 @@
       "width": 1122,
       "height": 1402,
       "sha256": "2286b0b113b5ab7131402c093d3cadae048ad5c34595cdd1096ff8fc1872ae04",
-      "visual": "Hotel Corpse Lure trong asset hiện dùng đúng cùng một sprite với The Beast of Level 5: thân người cao mặc suit xám nâu và giày đen, đầu là khối tối màu có phần đỉnh nhô dài cùng nhiều xúc tu rủ xuống; một tay cầm con dao dài sáng kim loại."
+      "visual": "Hotel Corpse Lure mang thân hình người cao trong bộ suit xám nâu, áo sơ mi sáng và giày đen. Thay cho đầu người là một khối sinh vật tối màu có phần đỉnh nhô dài và nhiều xúc tu dày rủ xuống quanh cổ-ngực; một tay cầm con dao dài sáng kim loại."
     },
     {
       "key": "jeff_the_killer",
