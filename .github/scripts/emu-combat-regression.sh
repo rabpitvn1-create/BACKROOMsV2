@@ -112,11 +112,16 @@ ui_turn() {
 import re,sys,unicodedata,xml.etree.ElementTree as ET
 
 def norm(v):
- v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D')); return ''.join(c for c in v if not unicodedata.combining(c)).casefold().strip()
+    v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D'))
+    return ''.join(c for c in v if not unicodedata.combining(c)).casefold().strip()
+texts=[norm(n.attrib.get('text') or '') for n in ET.parse(sys.argv[1]).getroot().iter('node')]
 vals=[]
-for n in ET.parse(sys.argv[1]).getroot().iter('node'):
- m=re.match(r'^turn\s+(\d+)\s+da\b',norm(n.attrib.get('text') or ''))
- if m: vals.append(int(m.group(1)))
+for i,text in enumerate(texts):
+    for pattern in (r'^turn\s+(\d+)\s+da\b', r'\bsnapshot\s+turn\s+(\d+)\b', r'^turn\s+(\d+)\b'):
+        m=re.search(pattern,text)
+        if m: vals.append(int(m.group(1)))
+    if text=='turn' and i+1 < len(texts) and re.fullmatch(r'\d+',texts[i+1]):
+        vals.append(int(texts[i+1]))
 if vals: print(max(vals))
 PY
 }
@@ -177,14 +182,16 @@ wait_explore_or_combat() {
     if [[ "$state" == "enabled" ]]; then echo "$xml"; return 0; fi
     sleep "$POLL_SECONDS"
   done
-  harness_error="Timed out waiting for Explore/combat at $label"; return 2
+  return 2
 }
 
 submit_explore() {
   local xml="$1" idx="$2" b before deadline now state
   before=$(ui_turn "$xml" || true); b=$(node_bounds "$xml" explore || true)
-  if [[ -z "$b" ]]; then harness_error="No enabled Khám phá button at explore $idx"; return 2; fi
-  tap_bounds "$b"; echo "EXPLORE $idx before_turn=${before:-unknown}" | tee -a "$OUT/actions.log"
+  if [[ -z "$b" ]]; then return 2; fi
+  tap_bounds "$b"
+  echo "EXPLORE $idx before_turn=${before:-unknown}" >> "$OUT/actions.log"
+  echo "EXPLORE $idx before_turn=${before:-unknown}" >&2
   deadline=$((SECONDS+TURN_TIMEOUT_SECONDS))
   while (( SECONDS < deadline )); do
     sleep "$POLL_SECONDS"; xml=$(dump_ui "after-explore-${idx}")
@@ -194,7 +201,7 @@ submit_explore() {
     now=$(ui_turn "$xml" || true); state=$(explore_state "$xml" || true)
     if [[ -n "$before" && -n "$now" && "$now" -gt "$before" && "$state" == "enabled" ]]; then echo "$xml"; return 0; fi
   done
-  harness_error="Explore $idx did not settle or enter combat"; return 2
+  return 2
 }
 
 open_combat_popup() {
@@ -234,7 +241,6 @@ observe_combat() {
       echo "$SECONDS|$actor" | tee -a "$OUT/actors.log"
       last_actor="$actor"
     fi
-    # Keep popup open if a render callback closed/recreated accessibility nodes.
     if [[ -z "$actor" ]]; then open_combat_popup "$xml" || true; fi
     sleep "$POLL_SECONDS"
   done
@@ -259,7 +265,6 @@ party=('kai','lucia','lục','syvial','iris','an nhiên')
 entity=[x for x in rows if not any(p in x.casefold() for p in party)]
 if not entity:
     raise SystemExit('Entity actor turn was never observed')
-# If Lucia appears in the popup sequence, ensure an Entity presentation step separates Kai and Lucia.
 for i,x in enumerate(rows):
     if 'kai' in x.casefold():
         tail=rows[i+1:]
@@ -292,13 +297,13 @@ for idx in $(seq 0 "$MAX_EXPLORES"); do
   xml=$(wait_explore_or_combat "ready-${idx}"); rc=$?
   set -e
   if [[ "$rc" -eq 10 ]]; then combat_xml="$xml"; break; fi
-  if [[ "$rc" -ne 0 ]]; then break; fi
+  if [[ "$rc" -ne 0 ]]; then harness_error="Timed out waiting for Explore/combat at ready-${idx}"; break; fi
   [[ "$idx" -eq "$MAX_EXPLORES" ]] && break
   set +e
   next=$(submit_explore "$xml" "$idx"); rc=$?
   set -e
   if [[ "$rc" -eq 10 ]]; then combat_xml="$next"; break; fi
-  if [[ "$rc" -ne 0 ]]; then break; fi
+  if [[ "$rc" -ne 0 ]]; then harness_error="Explore $idx did not settle or enter combat"; break; fi
 done
 
 if [[ -z "$harness_error" && -n "$combat_xml" ]]; then
