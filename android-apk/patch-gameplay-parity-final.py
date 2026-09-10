@@ -61,6 +61,7 @@ replacement = r'''  private JSONObject thresholdRoll(String label, int max, int 
 
     String actionKindNormalized = actionKind == null ? "" : actionKind.trim().toUpperCase(java.util.Locale.ROOT);
     boolean exploreAction = "EXPLORE".equals(actionKindNormalized);
+    rolls.put("actionKind", actionKindNormalized);
 
     int level = Math.max(0, Math.min(6, currentLevel(state)));
     int[] hazardThresholds = {400, 700, 1000, 1200, 300, 1000, 1200};
@@ -117,6 +118,7 @@ for marker in [
     'private boolean exitProbeEligibleAndroid(boolean exploreAction, boolean exitIntent, boolean physical, boolean search)',
     'boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);',
     'getIntent().getBooleanExtra("emuLevel1Progression", false)',
+    'rolls.put("actionKind", actionKindNormalized);',
 ]:
     if marker not in text:
         raise RuntimeError(f"Android gameplay parity marker missing: {marker}")
