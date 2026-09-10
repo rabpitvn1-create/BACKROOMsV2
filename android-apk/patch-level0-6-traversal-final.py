@@ -239,10 +239,18 @@ new_location = '''  private String canonicalTransitionLocationAndroid(int level)
 '''
 main = replace_once(main, old_location, new_location, "Level 0-6 canonical transition locations")
 
-old_cap = "    if (oldLevel < 0 || oldLevel >= 2) return;"
-if main.count(old_cap) != 2:
-    raise RuntimeError(f"Level transition cap: expected 2 old Level-2 caps, found {main.count(old_cap)}")
-main = main.replace(old_cap, "    if (oldLevel < 0 || oldLevel >= 6) return;")
+main = replace_once(
+    main,
+    "    if (oldLevel < 0 || oldLevel >= 2) return;",
+    "    if (oldLevel < 0 || oldLevel >= 6) return;",
+    "Level transition normalize cap",
+)
+main = replace_once(
+    main,
+    "    if (oldLevel < 0 || oldLevel >= 2) return false;",
+    "    if (oldLevel < 0 || oldLevel >= 6) return false;",
+    "Level transition engine-owned cap",
+)
 main = replace_once(
     main,
     "      beforeLevel < 2 && claimed == beforeLevel + 1;",
@@ -359,8 +367,12 @@ for required in (
     if required not in main:
         raise RuntimeError("Level 0-6 traversal final marker missing: " + required)
 
-if 'if (oldLevel < 0 || oldLevel >= 2) return;' in main:
-    raise RuntimeError("Level transition runtime is still capped at Level 2")
+for stale_cap in (
+    'if (oldLevel < 0 || oldLevel >= 2) return;',
+    'if (oldLevel < 0 || oldLevel >= 2) return false;',
+):
+    if stale_cap in main:
+        raise RuntimeError("Level transition runtime is still capped at Level 2: " + stale_cap)
 
 MAIN.write_text(main, encoding="utf-8")
 print("Level 0-6 traversal final applied: real EXPLORE can progress through every parent Level, the debug emulator walks all catalog sublevels without state seeding, and catalog difficulty follows authoritative location state.")
