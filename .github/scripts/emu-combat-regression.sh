@@ -4,28 +4,26 @@ set -euo pipefail
 PACKAGE="com.rabpit.backroom"
 COMPONENT="$PACKAGE/.MainActivity"
 APK="${1:-Backroom-1.1.71.apk}"
-MAX_EXPLORES="${MAX_EXPLORES:-16}"
 POLL_SECONDS="${POLL_SECONDS:-1}"
-TURN_TIMEOUT_SECONDS="${TURN_TIMEOUT_SECONDS:-120}"
+START_TIMEOUT_SECONDS="${START_TIMEOUT_SECONDS:-45}"
 COMBAT_TIMEOUT_SECONDS="${COMBAT_TIMEOUT_SECONDS:-180}"
 OUT="${EMU_OUT:-emu-combat-results}"
 mkdir -p "$OUT"
 : > "$OUT/actors.log"
-: > "$OUT/actions.log"
 
 harness_error=""
-combat_seen=0
-combat_resolved=0
-combat_turn_advanced=0
 combat_start_turn=""
+combat_final_turn=""
+combat_resolved=0
 
 center_from_bounds() {
   python3 - "$1" <<'PY'
 import re, sys
 m = re.fullmatch(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', sys.argv[1])
-if not m: raise SystemExit(2)
-x1,y1,x2,y2=map(int,m.groups())
-print((x1+x2)//2,(y1+y2)//2)
+if not m:
+    raise SystemExit(2)
+x1,y1,x2,y2 = map(int, m.groups())
+print((x1+x2)//2, (y1+y2)//2)
 PY
 }
 
@@ -52,10 +50,13 @@ def norm(v):
     v=(v or '').replace('đ','d').replace('Đ','D').replace('’',"'")
     v=unicodedata.normalize('NFKD',v)
     return ''.join(c for c in v if not unicodedata.combining(c)).casefold().strip()
+
 root=ET.parse(sys.argv[1]).getroot(); kind=sys.argv[2]; nodes=list(root.iter('node'))
 joined='\n'.join(norm((n.attrib.get('text') or '')+' '+(n.attrib.get('content-desc') or '')) for n in nodes)
 for n in nodes:
-    text=norm(n.attrib.get('text')); desc=norm(n.attrib.get('content-desc')); rid=n.attrib.get('resource-id') or ''; cls=n.attrib.get('class') or ''; enabled=n.attrib.get('enabled','true')=='true'; match=False
+    text=norm(n.attrib.get('text')); desc=norm(n.attrib.get('content-desc'))
+    rid=n.attrib.get('resource-id') or ''; cls=n.attrib.get('class') or ''
+    enabled=n.attrib.get('enabled','true')=='true'; match=False
     if kind=='gotit': match=rid=='android:id/ok' or text=='got it' or desc=='got it'
     elif kind=='wait': match=('responding' in joined) and (text=='wait' or desc=='wait')
     elif kind=='deny': match=text in ("don't allow",'dont allow','deny') or desc in ("don't allow",'dont allow','deny')
@@ -63,7 +64,9 @@ for n in nodes:
     elif kind=='combat_button': match=enabled and cls.endswith('Button') and (text=='combat' or desc=='combat')
     if match:
         b=n.attrib.get('bounds') or ''
-        if b and b!='[0,0][0,0]': print(b); break
+        if b and b!='[0,0][0,0]':
+            print(b)
+            break
 PY
 }
 
@@ -74,7 +77,8 @@ tap_bounds() {
 }
 
 is_app_resumed() {
-  adb shell dumpsys activity activities 2>/dev/null | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
+  adb shell dumpsys activity activities 2>/dev/null \
+    | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
 }
 
 is_known_system_overlay() {
@@ -86,8 +90,10 @@ def norm(v):
     v=(v or '').replace('đ','d').replace('Đ','D').replace('’',"'")
     v=unicodedata.normalize('NFKD',v)
     return ''.join(c for c in v if not unicodedata.combining(c)).casefold()
-try: root=ET.parse(sys.argv[1]).getroot()
-except Exception: raise SystemExit(1)
+try:
+    root=ET.parse(sys.argv[1]).getroot()
+except Exception:
+    raise SystemExit(1)
 joined='\n'.join(norm((n.attrib.get('text') or '')+' '+(n.attrib.get('content-desc') or '')) for n in root.iter('node'))
 raise SystemExit(0 if ('viewing full screen' in joined or 'responding' in joined or 'access your contacts' in joined) else 1)
 PY
@@ -96,12 +102,17 @@ PY
 dismiss_system_overlays() {
   local i xml b acted
   for i in $(seq 1 10); do
-    xml=$(dump_ui "system-${i}"); [[ -s "$xml" ]] || { sleep 1; continue; }; acted=0
-    b=$(node_bounds "$xml" gotit || true); if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
+    xml=$(dump_ui "system-${i}")
+    [[ -s "$xml" ]] || { sleep 1; continue; }
+    acted=0
+    b=$(node_bounds "$xml" gotit || true)
+    if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
     if grep -Fq 'package="com.android.permissioncontroller"' "$xml" && grep -Eqi 'contacts|access your contacts' "$xml"; then
-      b=$(node_bounds "$xml" deny || true); if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
+      b=$(node_bounds "$xml" deny || true)
+      if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
     fi
-    b=$(node_bounds "$xml" wait || true); if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
+    b=$(node_bounds "$xml" wait || true)
+    if [[ -n "$b" ]]; then tap_bounds "$b"; acted=1; sleep 1; fi
     [[ "$acted" -eq 1 ]] || break
   done
 }
@@ -132,8 +143,10 @@ combat_present() {
 import sys,unicodedata,xml.etree.ElementTree as ET
 
 def norm(v):
- v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D')); return ''.join(c for c in v if not unicodedata.combining(c)).casefold()
-root=ET.parse(sys.argv[1]).getroot(); joined='\n'.join(norm((n.attrib.get('text') or '')+' '+(n.attrib.get('content-desc') or '')) for n in root.iter('node'))
+    v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D'))
+    return ''.join(c for c in v if not unicodedata.combining(c)).casefold()
+root=ET.parse(sys.argv[1]).getroot()
+joined='\n'.join(norm((n.attrib.get('text') or '')+' '+(n.attrib.get('content-desc') or '')) for n in root.iter('node'))
 raise SystemExit(0 if 'pressure combat' in joined else 1)
 PY
 }
@@ -144,11 +157,13 @@ explore_state() {
 import sys,unicodedata,xml.etree.ElementTree as ET
 
 def norm(v):
- v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D')); return ''.join(c for c in v if not unicodedata.combining(c)).casefold().strip()
+    v=unicodedata.normalize('NFKD',(v or '').replace('đ','d').replace('Đ','D'))
+    return ''.join(c for c in v if not unicodedata.combining(c)).casefold().strip()
 for n in ET.parse(sys.argv[1]).getroot().iter('node'):
- if not (n.attrib.get('class') or '').endswith('Button'): continue
- if norm(n.attrib.get('text'))=='kham pha' or norm(n.attrib.get('content-desc'))=='kham pha':
-  print('enabled' if n.attrib.get('enabled','true')=='true' else 'disabled'); raise SystemExit(0)
+    if not (n.attrib.get('class') or '').endswith('Button'): continue
+    if norm(n.attrib.get('text'))=='kham pha' or norm(n.attrib.get('content-desc'))=='kham pha':
+        print('enabled' if n.attrib.get('enabled','true')=='true' else 'disabled')
+        raise SystemExit(0)
 print('missing')
 PY
 }
@@ -158,10 +173,23 @@ popup_actor() {
   python3 - "$xml" <<'PY'
 import re,sys,xml.etree.ElementTree as ET
 for n in ET.parse(sys.argv[1]).getroot().iter('node'):
- t=(n.attrib.get('text') or '').strip()
- m=re.match(r'^TURN:\s*(.*?)\s*[•·]\s*ROUND\s+(\d+)',t,re.I)
- if m:
-  print(m.group(1).strip()+'|'+m.group(2)); break
+    t=(n.attrib.get('text') or '').strip()
+    m=re.match(r'^TURN:\s*(.*?)\s*[•·]\s*ROUND\s+(\d+)',t,re.I)
+    if m:
+        print(m.group(1).strip()+'|'+m.group(2))
+        break
+PY
+}
+
+visible_error() {
+  local xml="$1"
+  python3 - "$xml" <<'PY'
+import sys,xml.etree.ElementTree as ET
+for n in ET.parse(sys.argv[1]).getroot().iter('node'):
+    t=(n.attrib.get('text') or '').strip()
+    if t.lower().startswith(('lỗi ','loi ','error ')):
+        print(t.replace('\n',' ')[:500])
+        break
 PY
 }
 
@@ -169,50 +197,100 @@ capture() {
   adb exec-out screencap -p > "$OUT/$1.png" || true
 }
 
-wait_explore_or_combat() {
-  local label="$1" deadline xml state
-  deadline=$((SECONDS+TURN_TIMEOUT_SECONDS))
+seed_core_combat() {
+  local seed_xml="$OUT/seeded-core.xml"
+  python3 - "$seed_xml" <<'PY'
+import json, sys, xml.etree.ElementTree as ET
+state={
+  'saveVersion':3,
+  'metadata':{
+    'combat.entityKey':'hound',
+    'combat.playerHp':'300',
+    'combat.playerMaxHp':'300'
+  }
+}
+root=ET.Element('map')
+node=ET.SubElement(root,'string',{'name':'game_state'})
+node.text=json.dumps(state,separators=(',',':'))
+ET.ElementTree(root).write(sys.argv[1],encoding='utf-8',xml_declaration=True)
+PY
+
+  if ! adb shell run-as "$PACKAGE" id > "$OUT/run-as.txt" 2>&1; then
+    harness_error="Debug APK does not allow run-as; cannot seed deterministic combat state"
+    return 2
+  fi
+  adb push "$seed_xml" /data/local/tmp/backroom_game_state_core.xml >/dev/null
+  adb shell run-as "$PACKAGE" mkdir -p shared_prefs
+  adb shell run-as "$PACKAGE" cp /data/local/tmp/backroom_game_state_core.xml shared_prefs/backroom_game_state_core.xml
+  adb shell run-as "$PACKAGE" chmod 660 shared_prefs/backroom_game_state_core.xml || true
+  if ! adb exec-out run-as "$PACKAGE" cat shared_prefs/backroom_game_state_core.xml > "$OUT/prefs-seeded.xml"; then
+    harness_error="Could not verify seeded Game State Core preferences"
+    return 2
+  fi
+  grep -Fq 'combat.entityKey' "$OUT/prefs-seeded.xml" || {
+    harness_error="Seeded Game State Core preferences lost combat metadata"
+    return 2
+  }
+}
+
+wait_for_explore_ready() {
+  local deadline xml state
+  deadline=$((SECONDS+START_TIMEOUT_SECONDS))
   while (( SECONDS < deadline )); do
-    xml=$(dump_ui "$label")
+    xml=$(dump_ui "ready")
     [[ -s "$xml" ]] || { sleep "$POLL_SECONDS"; continue; }
     if is_known_system_overlay "$xml"; then dismiss_system_overlays; sleep 1; continue; fi
     if ! is_app_resumed; then sleep "$POLL_SECONDS"; continue; fi
-    if combat_present "$xml"; then echo "$xml"; return 10; fi
     state=$(explore_state "$xml" || true)
-    if [[ "$state" == "enabled" ]]; then echo "$xml"; return 0; fi
+    if [[ "$state" == "enabled" ]]; then
+      echo "$xml"
+      return 0
+    fi
     sleep "$POLL_SECONDS"
   done
   return 2
 }
 
-submit_explore() {
-  local xml="$1" idx="$2" b before deadline now state
-  before=$(ui_turn "$xml" || true); b=$(node_bounds "$xml" explore || true)
-  if [[ -z "$b" ]]; then return 2; fi
+trigger_seeded_combat() {
+  local xml="$1" b deadline current err
+  b=$(node_bounds "$xml" explore || true)
+  if [[ -z "$b" ]]; then
+    harness_error="No enabled Khám phá button available to enter the seeded core combat path"
+    return 2
+  fi
+  echo "trigger=EXPLORE seeded_core_entity=hound" | tee "$OUT/trigger.log"
   tap_bounds "$b"
-  echo "EXPLORE $idx before_turn=${before:-unknown}" >> "$OUT/actions.log"
-  echo "EXPLORE $idx before_turn=${before:-unknown}" >&2
-  deadline=$((SECONDS+TURN_TIMEOUT_SECONDS))
+  deadline=$((SECONDS+START_TIMEOUT_SECONDS))
   while (( SECONDS < deadline )); do
-    sleep "$POLL_SECONDS"; xml=$(dump_ui "after-explore-${idx}")
-    [[ -s "$xml" ]] || continue
-    if is_known_system_overlay "$xml"; then dismiss_system_overlays; continue; fi
-    if combat_present "$xml"; then echo "$xml"; return 10; fi
-    now=$(ui_turn "$xml" || true); state=$(explore_state "$xml" || true)
-    if [[ -n "$before" && -n "$now" && "$now" -gt "$before" && "$state" == "enabled" ]]; then echo "$xml"; return 0; fi
+    sleep "$POLL_SECONDS"
+    current=$(dump_ui "combat-entry")
+    [[ -s "$current" ]] || continue
+    if is_known_system_overlay "$current"; then dismiss_system_overlays; continue; fi
+    if combat_present "$current"; then
+      echo "$current"
+      return 0
+    fi
+    err=$(visible_error "$current" || true)
+    if [[ -n "$err" && "$(explore_state "$current" || true)" == "enabled" ]]; then
+      harness_error="Seeded combat was not intercepted before provider path: $err"
+      return 2
+    fi
   done
+  harness_error="Seeded Game State Core combat never became visible in the WebView"
   return 2
 }
 
 open_combat_popup() {
   local xml="$1" b
   b=$(node_bounds "$xml" combat_button || true)
-  if [[ -n "$b" ]]; then tap_bounds "$b"; sleep 1; fi
+  if [[ -n "$b" ]]; then
+    tap_bounds "$b"
+    sleep 1
+  fi
 }
 
 observe_combat() {
   local first_xml="$1" deadline xml state turn actor last_actor="" samples=0
-  combat_seen=1
   combat_start_turn=$(ui_turn "$first_xml" || true)
   echo "combat_start_turn=${combat_start_turn:-unknown}" | tee "$OUT/combat.log"
   capture combat-start
@@ -220,21 +298,31 @@ observe_combat() {
   deadline=$((SECONDS+COMBAT_TIMEOUT_SECONDS))
 
   while (( SECONDS < deadline )); do
-    xml=$(dump_ui "combat-${samples}"); samples=$((samples+1))
+    xml=$(dump_ui "combat-${samples}")
+    samples=$((samples+1))
     [[ -s "$xml" ]] || { sleep "$POLL_SECONDS"; continue; }
     if is_known_system_overlay "$xml"; then dismiss_system_overlays; sleep 1; continue; fi
-    if ! is_app_resumed; then harness_error="MainActivity left foreground during combat"; return 2; fi
+    if ! is_app_resumed; then
+      harness_error="MainActivity left foreground during combat"
+      return 2
+    fi
 
     if ! combat_present "$xml"; then
-      state=$(explore_state "$xml" || true); turn=$(ui_turn "$xml" || true)
+      state=$(explore_state "$xml" || true)
+      turn=$(ui_turn "$xml" || true)
       if [[ "$state" == "enabled" ]]; then
-        if [[ -n "$combat_start_turn" && -n "$turn" && "$turn" -gt "$combat_start_turn" ]]; then combat_turn_advanced=1; fi
-        combat_resolved=1; capture combat-end; return 0
+        combat_final_turn="$turn"
+        combat_resolved=1
+        capture combat-end
+        return 0
       fi
     fi
 
     state=$(explore_state "$xml" || true)
-    if [[ "$state" == "enabled" ]]; then harness_error="Khám phá became enabled while combat HUD was active"; return 2; fi
+    if [[ "$state" == "enabled" ]]; then
+      harness_error="Khám phá became enabled while Pressure Combat was active"
+      return 2
+    fi
 
     actor=$(popup_actor "$xml" || true)
     if [[ -n "$actor" && "$actor" != "$last_actor" ]]; then
@@ -244,7 +332,9 @@ observe_combat() {
     if [[ -z "$actor" ]]; then open_combat_popup "$xml" || true; fi
     sleep "$POLL_SECONDS"
   done
-  harness_error="Combat remained active for more than ${COMBAT_TIMEOUT_SECONDS}s"; return 2
+
+  harness_error="Combat remained active for more than ${COMBAT_TIMEOUT_SECONDS}s"
+  return 2
 }
 
 validate_actor_sequence() {
@@ -255,56 +345,57 @@ for line in open(sys.argv[1],encoding='utf-8'):
     parts=line.strip().split('|',2)
     if len(parts)<3: continue
     name=parts[1].strip()
-    if not rows or rows[-1]!=name: rows.append(name)
+    if not rows or rows[-1]!=name:
+        rows.append(name)
 print('actors='+' -> '.join(rows))
 if not rows:
     raise SystemExit('No COMBAT popup actor turn was observable')
 if not any('kai' in x.casefold() for x in rows):
     raise SystemExit('Kai actor turn was never observed')
-party=('kai','lucia','lục','syvial','iris','an nhiên')
-entity=[x for x in rows if not any(p in x.casefold() for p in party)]
+entity=[x for x in rows if 'kai' not in x.casefold()]
 if not entity:
     raise SystemExit('Entity actor turn was never observed')
-for i,x in enumerate(rows):
-    if 'kai' in x.casefold():
-        tail=rows[i+1:]
-        for j,y in enumerate(tail):
-            if 'lucia' in y.casefold() or 'lục' in y.casefold():
-                if not any(z in entity for z in tail[:j]):
-                    raise SystemExit('Lucia followed Kai without an Entity presentation step')
-                raise SystemExit(0)
-raise SystemExit(0)
+if len(rows) < 2:
+    raise SystemExit('Actor rotation did not advance')
 PY
 }
 
 adb shell settings put secure immersive_mode_confirmations confirmed >/dev/null 2>&1 || true
 adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1 || true
 adb install -r "$APK"
-adb logcat -c
+adb shell pm clear "$PACKAGE" >/dev/null
 adb shell am force-stop "$PACKAGE"
-echo "mode=production-combat-rng-real-webview" | tee "$OUT/fixture.log"
-adb shell am start -W -n "$COMPONENT" | tee "$OUT/am-start.txt"
-sleep 5
-dismiss_system_overlays
-sleep 2
+echo "mode=seeded-core-combat-real-main-apk" | tee "$OUT/fixture.log"
+seed_core_combat || true
 
-if ! is_app_resumed; then harness_error="MainActivity did not remain resumed after launch"; fi
+if [[ -z "$harness_error" ]]; then
+  adb logcat -c
+  adb shell am start -W -n "$COMPONENT" | tee "$OUT/am-start.txt"
+  sleep 5
+  dismiss_system_overlays
+  sleep 2
+fi
+
+if [[ -z "$harness_error" && ! $(is_app_resumed; echo $?) -eq 0 ]]; then
+  harness_error="MainActivity did not remain resumed after launch"
+fi
 
 combat_xml=""
-for idx in $(seq 0 "$MAX_EXPLORES"); do
-  [[ -z "$harness_error" ]] || break
+if [[ -z "$harness_error" ]]; then
   set +e
-  xml=$(wait_explore_or_combat "ready-${idx}"); rc=$?
+  ready_xml=$(wait_for_explore_ready); rc=$?
   set -e
-  if [[ "$rc" -eq 10 ]]; then combat_xml="$xml"; break; fi
-  if [[ "$rc" -ne 0 ]]; then harness_error="Timed out waiting for Explore/combat at ready-${idx}"; break; fi
-  [[ "$idx" -eq "$MAX_EXPLORES" ]] && break
-  set +e
-  next=$(submit_explore "$xml" "$idx"); rc=$?
-  set -e
-  if [[ "$rc" -eq 10 ]]; then combat_xml="$next"; break; fi
-  if [[ "$rc" -ne 0 ]]; then harness_error="Explore $idx did not settle or enter combat"; break; fi
-done
+  if [[ "$rc" -ne 0 ]]; then
+    harness_error="Timed out waiting for initial Khám phá control"
+  else
+    set +e
+    combat_xml=$(trigger_seeded_combat "$ready_xml"); rc=$?
+    set -e
+    if [[ "$rc" -ne 0 && -z "$harness_error" ]]; then
+      harness_error="Could not enter seeded combat"
+    fi
+  fi
+fi
 
 if [[ -z "$harness_error" && -n "$combat_xml" ]]; then
   observe_combat "$combat_xml" || true
@@ -313,18 +404,19 @@ fi
 capture final
 adb logcat -d > "$OUT/logcat.txt" || true
 adb shell dumpsys activity activities > "$OUT/activity.txt" 2>/dev/null || true
+adb exec-out run-as "$PACKAGE" cat shared_prefs/backroom_game_state_core.xml > "$OUT/prefs-final.xml" 2>/dev/null || true
 
 if [[ -n "$harness_error" ]]; then
-  echo "HARNESS/COMBAT FAIL: $harness_error" | tee "$OUT/result.txt"; exit 2
-fi
-if [[ "$combat_seen" -ne 1 ]]; then
-  echo "GAMEPLAY FAIL: no Entity combat started within $MAX_EXPLORES real Khám phá attempts" | tee "$OUT/result.txt"; exit 1
+  echo "HARNESS/COMBAT FAIL: $harness_error" | tee "$OUT/result.txt"
+  exit 2
 fi
 if [[ "$combat_resolved" -ne 1 ]]; then
-  echo "GAMEPLAY FAIL: combat started but did not return to normal gameplay" | tee "$OUT/result.txt"; exit 1
+  echo "GAMEPLAY FAIL: seeded authoritative combat never returned to normal gameplay" | tee "$OUT/result.txt"
+  exit 1
 fi
-if [[ "$combat_turn_advanced" -ne 1 ]]; then
-  echo "GAMEPLAY FAIL: combat resolved without observable authoritative turn advance" | tee "$OUT/result.txt"; exit 1
+if [[ -z "$combat_start_turn" || -z "$combat_final_turn" || "$combat_final_turn" -le "$combat_start_turn" ]]; then
+  echo "GAMEPLAY FAIL: combat resolved without observable authoritative turn advance (${combat_start_turn:-?} -> ${combat_final_turn:-?})" | tee "$OUT/result.txt"
+  exit 1
 fi
 validate_actor_sequence | tee "$OUT/actor-validation.txt"
-echo "PASS: real emulator observed Entity combat, locked Explore during combat, AUTO combat turn progression, actor rotation, and return to gameplay" | tee "$OUT/result.txt"
+echo "PASS: real main APK resolved seeded authoritative combat, locked Explore, advanced turns, rotated Kai/Entity presentation, and returned to gameplay" | tee "$OUT/result.txt"
