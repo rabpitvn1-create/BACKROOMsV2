@@ -137,11 +137,12 @@ helper = r'''  private boolean transitionReadyAndroid(JSONObject state) {
 
     if (!readyBefore) {
       // The first successful probe discovers/locks the route. It is not an instruction to teleport Kai.
-      // Drop eager set_level proposals so malformed or over-eager writer output cannot fail the discovery turn.
+      // Drop eager transition ops so the discovery turn cannot partially move location ahead of Level state.
       for (int i = 0; i < Math.min(24, proposed.length()); i++) {
         JSONObject op = proposed.optJSONObject(i);
         if (op == null) continue;
-        if ("set_level".equals(lower(op.optString("type", "")).trim())) continue;
+        String type = lower(op.optString("type", "")).trim();
+        if (type.equals("set_level") || type.equals("set_location")) continue;
         normalized.put(op);
       }
       generated.put("ops", normalized);
@@ -149,8 +150,8 @@ helper = r'''  private boolean transitionReadyAndroid(JSONObject state) {
     }
 
     // A ready route plus a fresh EXPLORE is the player's explicit choice to continue through that route.
-    // Preserve unrelated ops, replace any model-authored transition pair, then append one canonical pair.
-    for (int i = 0; i < Math.min(24, proposed.length()); i++) {
+    // Preserve at most 22 unrelated ops so the canonical transition pair is always inside the reducer's 24-op cap.
+    for (int i = 0; i < Math.min(22, proposed.length()); i++) {
       JSONObject op = proposed.optJSONObject(i);
       if (op == null) continue;
       String type = lower(op.optString("type", "")).trim();
@@ -165,6 +166,17 @@ helper = r'''  private boolean transitionReadyAndroid(JSONObject state) {
       .put("type", "set_location")
       .put("value", canonicalTransitionLocationAndroid(nextLevel)));
     generated.put("ops", normalized);
+  }
+
+  private boolean engineOwnedReadyExploreTransitionAndroid(JSONObject before, JSONObject candidate, JSONObject rolls) {
+    if (before == null || candidate == null || rolls == null) return false;
+    if (!"EXPLORE".equalsIgnoreCase(rolls.optString("actionKind", ""))) return false;
+    if (!transitionReadyAndroid(before) || !progressionReady(before)) return false;
+    int oldLevel = currentLevel(before);
+    if (oldLevel < 0 || oldLevel >= 2) return false;
+    int nextLevel = oldLevel + 1;
+    return currentLevel(candidate) == nextLevel &&
+      canonicalTransitionLocationAndroid(nextLevel).equals(candidate.optString("location", ""));
   }
 
   private void lockSuccessfulExitReadyAndroid(JSONObject before, JSONObject candidate, JSONObject rolls) throws Exception {
@@ -221,7 +233,10 @@ helper = r'''  private boolean transitionReadyAndroid(JSONObject state) {
         .put("reason", "A successful Level transition must update both authoritative Level and location in the same turn."));
     }
 
-    int claimed = explicitLevelClaimAndroid(generated.optString("reply", ""));
+    // Authoritative state wins once Android consumed a previously locked route. Mentioning the source Level while
+    // narrating the boundary crossing is not a mismatch and must not veto the transition.
+    int claimed = engineOwnedReadyExploreTransitionAndroid(before, candidate, rolls)
+      ? actual : explicitLevelClaimAndroid(generated.optString("reply", ""));
     boolean discoveryMention = typedExplore && successfulExitProbe && !readyBefore && actual == beforeLevel &&
       beforeLevel < 2 && claimed == beforeLevel + 1;
     if (claimed >= 0 && claimed != actual && !discoveryMention) {
@@ -266,6 +281,27 @@ if main.count("normalizeReadyExploreTransitionOpsAndroid(before, generated, roll
         raise RuntimeError(f"Repair transition op normalization: expected 1 anchor, found {count}")
     main = main.replace(repair_candidate, repair_candidate_replacement, 1)
 
+# A canonical ready-route transition is already authorized by Android state + a fresh typed EXPLORE. Do not send
+# that deterministic state change back through subjective model auditors, which can reinterpret player agency and
+# veto valid progression. Deterministic reducer/rejected-op/level-location checks still run below.
+initial_risk = '          int risk = meta ? 0 : validatedTurnRisk(before, candidateState, generated);\n'
+initial_risk_replacement = '''          int risk = (meta || engineOwnedReadyExploreTransitionAndroid(before, candidateState, rolls))
+            ? 0 : validatedTurnRisk(before, candidateState, generated);
+'''
+count = main.count(initial_risk)
+if count != 1:
+    raise RuntimeError(f"Engine-owned transition initial audit bypass: expected 1 anchor, found {count}")
+main = main.replace(initial_risk, initial_risk_replacement, 1)
+
+repair_risk = '            risk = validatedTurnRisk(before, candidateState, generated);\n'
+repair_risk_replacement = '''            risk = engineOwnedReadyExploreTransitionAndroid(before, candidateState, rolls)
+              ? 0 : validatedTurnRisk(before, candidateState, generated);
+'''
+count = main.count(repair_risk)
+if count != 1:
+    raise RuntimeError(f"Engine-owned transition repair audit bypass: expected 1 anchor, found {count}")
+main = main.replace(repair_risk, repair_risk_replacement, 1)
+
 initial_audit = "          if (!meta) appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
 initial_replacement = "          if (!meta) lockSuccessfulExitReadyAndroid(before, candidateState, rolls);\n" + initial_audit + "\n          if (!meta) appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
 if "lockSuccessfulExitReadyAndroid(before, candidateState, rolls);" not in main:
@@ -307,6 +343,7 @@ for marker in (
     "lockSuccessfulExitReadyAndroid",
     "transitionReadyAndroid",
     "normalizeReadyExploreTransitionOpsAndroid",
+    "engineOwnedReadyExploreTransitionAndroid",
     "canonicalTransitionLocationAndroid",
     "transition_ready_not_consumed",
     "level_transition_location_omitted",
@@ -325,4 +362,4 @@ for marker in (
         raise RuntimeError("Level transition regression marker missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
-print("Level transition final guard verified: exit success locks readiness, a later EXPLORE consumes Level 0→1→2 with an Android-owned state pair, readiness resets per Level, and failures expose exact hard issues in debug CI.")
+print("Level transition final guard verified: exit success locks readiness, a later EXPLORE consumes Level 0→1→2 with an Android-owned state pair, subjective auditors cannot veto that authoritative transition, readiness resets per Level, and failures expose exact hard issues in debug CI.")
