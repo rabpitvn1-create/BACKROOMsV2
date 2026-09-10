@@ -168,15 +168,42 @@ print('missing')
 PY
 }
 
-popup_actor() {
+popup_actors() {
   local xml="$1"
   python3 - "$xml" <<'PY'
 import re,sys,xml.etree.ElementTree as ET
-for n in ET.parse(sys.argv[1]).getroot().iter('node'):
-    t=(n.attrib.get('text') or '').strip()
-    m=re.match(r'^TURN:\s*(.*?)\s*[•·]\s*ROUND\s+(\d+)',t,re.I)
-    if m:
-        print(m.group(1).strip()+'|'+m.group(2))
+root=ET.parse(sys.argv[1]).getroot()
+dialogs=[n for n in root.iter('node') if (n.attrib.get('class') or '')=='android.app.Dialog']
+for dialog in dialogs:
+    texts=[(n.attrib.get('text') or '').strip() for n in dialog.iter('node')]
+    texts=[t for t in texts if t]
+    if not any(t.casefold()=='combat' for t in texts):
+        continue
+    round_no='?'
+    current=''
+    for t in texts:
+        m=re.fullmatch(r'ROUND\s+(\d+)',t,re.I)
+        if m:
+            round_no=m.group(1)
+        m=re.match(r'^CURRENT TURN:\s*(.+)$',t,re.I)
+        if m:
+            current=m.group(1).strip()
+    actors=[]
+    for t in texts:
+        if '→' not in t:
+            continue
+        left,_=map(str.strip,t.split('→',1))
+        # Chromium accessibility may concatenate the current actor label directly
+        # in front of the previous attacker, e.g. "Kai AkechiHound → Kai Akechi".
+        if current and left.startswith(current) and len(left)>len(current):
+            left=left[len(current):].strip()
+        if left and left not in actors:
+            actors.append(left)
+    if current and current not in actors:
+        actors.append(current)
+    for actor in actors:
+        print(actor+'|'+round_no)
+    if actors:
         break
 PY
 }
@@ -289,6 +316,7 @@ open_combat_popup() {
 
 observe_combat() {
   local first_xml="$1" deadline xml state turn actor last_actor="" samples=0
+  local -a observed=()
   combat_start_turn=$(ui_turn "$first_xml" || true)
   echo "combat_start_turn=${combat_start_turn:-unknown}" | tee "$OUT/combat.log"
   capture combat-start
@@ -322,12 +350,17 @@ observe_combat() {
       return 2
     fi
 
-    actor=$(popup_actor "$xml" || true)
-    if [[ -n "$actor" && "$actor" != "$last_actor" ]]; then
-      echo "$SECONDS|$actor" | tee -a "$OUT/actors.log"
-      last_actor="$actor"
+    mapfile -t observed < <(popup_actors "$xml" || true)
+    if [[ "${#observed[@]}" -gt 0 ]]; then
+      for actor in "${observed[@]}"; do
+        if [[ -n "$actor" && "$actor" != "$last_actor" ]]; then
+          echo "$SECONDS|$actor" | tee -a "$OUT/actors.log"
+          last_actor="$actor"
+        fi
+      done
+    else
+      open_combat_popup "$xml" || true
     fi
-    if [[ -z "$actor" ]]; then open_combat_popup "$xml" || true; fi
     sleep "$POLL_SECONDS"
   done
 
