@@ -19,7 +19,11 @@ instruction = (
     '      "LEVEL TRANSITION STATE LOCK: Khi phản hồi xác nhận đã hoàn tất sang Level khác, ops bắt buộc phải có '
     'set_level cho Level mới và set_location cho vị trí mới trong cùng lượt. Không được mô tả đã ở Level mới nhưng '
     'chỉ đổi văn xuôi hoặc chỉ đổi một trong hai state operation. Nếu mới chỉ thấy dấu hiệu chuyển vùng thì mô tả là '
-    'chuyển tiếp, chưa khẳng định đã sang Level mới. " +'
+    'chuyển tiếp, chưa khẳng định đã sang Level mới. EXIT PROBE RESOLUTION: khi ACTION TYPE = EXPLORE, '
+    'GAMEPLAY_ROLLS.exitProbe.success=true và progression đã đủ minimumTurns, hành động Khám phá hiện tại phải '
+    'hoàn tất chuyển vùng theo đúng canon bằng set_level + set_location trong cùng lượt; mô tả sự đổi môi trường '
+    'liên tục, không teleport và không yêu cầu người chơi nhập lại một hành động thoát khác chỉ để tiêu thụ roll đã '
+    'thành công. " +'
 )
 if "LEVEL TRANSITION STATE LOCK" not in "\n".join(lines):
     lines.insert(schema_index, instruction)
@@ -50,6 +54,7 @@ for marker in (
     'boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);',
     'getIntent().getBooleanExtra("emuLevel1Progression", false)',
     'thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible',
+    'rolls.put("actionKind", actionKindNormalized);',
 ):
     if marker not in main:
         raise RuntimeError("Upstream exitProbe contract missing: " + marker)
@@ -73,9 +78,9 @@ if "boolean lockedReady = exploration != null" not in main:
         raise RuntimeError(f"Locked-ready transition semantics: expected 1 anchor, found {count}")
     main = main.replace(old_transition, new_transition, 1)
 
-# Deterministic guard for the exact failure mode: a reply explicitly claims another Level while the validated
-# candidate still points to the old Level. This becomes a hard audit issue, forcing the existing one-repair path;
-# if repair still disagrees, the turn is rejected rather than persisting split-brain narrative/state.
+# Deterministic guard for progression outcomes and narrative/state split-brain. A successful typed EXPLORE
+# exitProbe after the six-turn gate is not optional flavor: it is the authoritative transition outcome for
+# that macro action. If the writer omits the level/location ops, force the existing one-repair path.
 helper_anchor = "  private JSONArray rejectedOperationIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {\n"
 helper = r'''  private int explicitLevelClaimAndroid(String text) {
     if (text == null) return -1;
@@ -92,12 +97,30 @@ helper = r'''  private int explicitLevelClaimAndroid(String text) {
     return -1;
   }
 
-  private JSONArray levelNarrativeStateIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {
+  private JSONArray levelNarrativeStateIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated, JSONObject rolls) throws Exception {
     JSONArray issues = new JSONArray();
-    int claimed = explicitLevelClaimAndroid(generated.optString("reply", ""));
-    if (claimed < 0) return issues;
+    int beforeLevel = currentLevel(before);
     int actual = currentLevel(candidate);
-    if (claimed != actual) {
+    boolean typedExplore = "EXPLORE".equalsIgnoreCase(rolls.optString("actionKind", ""));
+    boolean successfulExitProbe = rollSuccess(rolls, "exitProbe") || rollSuccess(rolls, "levelExit");
+    if (typedExplore && successfulExitProbe && progressionReady(before)) {
+      if (actual == beforeLevel) {
+        issues.put(new JSONObject()
+          .put("rule", "exit_probe_transition_omitted")
+          .put("severity", "hard")
+          .put("claim", "successful EXPLORE exitProbe")
+          .put("reason", "Android locked a successful typed EXPLORE exitProbe after the progression gate. Resolve that macro action by emitting matching set_level and set_location ops for the canon-valid destination; do not discard or reroll the successful outcome."));
+      } else if (candidate.optString("location", "").trim().equals(before.optString("location", "").trim())) {
+        issues.put(new JSONObject()
+          .put("rule", "level_transition_location_omitted")
+          .put("severity", "hard")
+          .put("claim", "set_level without new location")
+          .put("reason", "A successful Level transition must update both authoritative Level and location in the same turn."));
+      }
+    }
+
+    int claimed = explicitLevelClaimAndroid(generated.optString("reply", ""));
+    if (claimed >= 0 && claimed != actual) {
       issues.put(new JSONObject()
         .put("rule", "level_narrative_state_mismatch")
         .put("severity", "hard")
@@ -115,16 +138,16 @@ if "levelNarrativeStateIssuesAndroid" not in main:
     main = main.replace(helper_anchor, helper + helper_anchor, 1)
 
 initial_audit = "          if (!meta) appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-initial_replacement = initial_audit + "\n          if (!meta) appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated));"
-if "appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated));" not in main:
+initial_replacement = initial_audit + "\n          if (!meta) appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
+if "appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));" not in main:
     count = main.count(initial_audit)
     if count != 1:
         raise RuntimeError(f"Level transition initial audit anchor: expected 1, found {count}")
     main = main.replace(initial_audit, initial_replacement, 1)
 
 repair_audit = "            appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-repair_replacement = repair_audit + "\n            appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated));"
-if main.count("appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated));") < 2:
+repair_replacement = repair_audit + "\n            appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
+if main.count("appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));") < 2:
     count = main.count(repair_audit)
     if count != 1:
         raise RuntimeError(f"Level transition repair audit anchor: expected 1, found {count}")
@@ -132,16 +155,20 @@ if main.count("appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before,
 
 for marker in (
     "LEVEL TRANSITION STATE LOCK",
+    "EXIT PROBE RESOLUTION",
     "levelNarrativeStateIssuesAndroid",
+    "exit_probe_transition_omitted",
+    "level_transition_location_omitted",
     "level_narrative_state_mismatch",
     "bãi đỗ xe",
     "set_level",
     "set_location",
     "sceneKey:visualSceneKey()",
     "boolean lockedReady = exploration != null",
+    'rolls.optString("actionKind", "")',
 ):
     if marker not in main:
         raise RuntimeError("Level transition regression marker missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
-print("Level transition final guard verified: typed EXPLORE exit probes, locked-ready canon, Vietnamese location recognition and narrative/state synchronization.")
+print("Level transition final guard verified: typed EXPLORE exit probes, mandatory successful-probe resolution, locked-ready canon, Vietnamese location recognition and narrative/state synchronization.")
