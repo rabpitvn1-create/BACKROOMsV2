@@ -19,8 +19,13 @@ end = main.index('    int luciaScoutBonus =', start)
 pool = re.search(r'String\[\] roamingPool = (\{[^\n]+\});', main[start:end]).group(1)
 pool = pool[:-1] + ',"diep_minh"}'
 main = main[:start] + '''    String[] entityPool = POOL;
+    // The dedicated progression fixture verifies Level state flow, not combat RNG. Keep the
+    // production Entity policy unchanged, but suppress unrelated random encounters only for the
+    // explicit debug Activity extra used by the real-emulator progression workflow.
+    boolean emuProgressionFixture = BuildConfig.DEBUG &&
+      getIntent().getBooleanExtra("emuLevel1Progression", false);
     JSONObject entityChecks = com.rabpit.backroom.core.EntityEncounterPolicy.roll(
-      entityPool, entityEncounterAction && entityAllowed, GAME_RNG);
+      entityPool, entityEncounterAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
     java.util.Iterator<String> entityCheckKeys = entityChecks.keys();
     while (entityCheckKeys.hasNext()) {
       String key = entityCheckKeys.next();
@@ -63,6 +68,14 @@ for forbidden in (
     if forbidden in main:
         raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
 
+for required in (
+    'boolean emuProgressionFixture = BuildConfig.DEBUG',
+    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
+    'entityEncounterAction && entityAllowed && !emuProgressionFixture',
+):
+    if required not in main:
+        raise RuntimeError("Progression emulator Entity isolation missing: " + required)
+
 MAIN.write_text(main, encoding="utf-8")
 
 facade = FACADE.read_text(encoding="utf-8")
@@ -99,4 +112,4 @@ facade = facade[:start] + combat + facade[end:]
 facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
-print("Entity policy applied: independent 2% dice including boss; queued encounters; guaranteed catalog kill drops.")
+print("Entity policy applied: production keeps independent 2% dice; progression emulator fixture suppresses unrelated Entity combat; queued encounters and guaranteed catalog kill drops remain intact.")

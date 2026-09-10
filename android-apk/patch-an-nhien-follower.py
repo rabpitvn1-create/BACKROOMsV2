@@ -314,11 +314,21 @@ main = replace_once(
 main = replace_once(
     main,
     '''    int exitThreshold = exitThresholdAndroid(state);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search), " discovery clue");
+    if (BuildConfig.DEBUG && getIntent().getBooleanExtra("emuLevel1Progression", false)
+        && exploreAction && levelTurns(state) >= 6) {
+      exitThreshold = 10000;
+    }
+    boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);
+    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible, " discovery clue");
 ''',
     '''    int exitThreshold = exitThresholdAndroid(state);
+    if (BuildConfig.DEBUG && getIntent().getBooleanExtra("emuLevel1Progression", false)
+        && exploreAction && levelTurns(state) >= 6) {
+      exitThreshold = 10000;
+    }
     if (anNhienFollowing) exitThreshold = Math.min(10000, exitThreshold + 200);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search), anNhienFollowing ? " discovery clue +2% An Nhiên" : " discovery clue");
+    boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);
+    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible, anNhienFollowing ? " discovery clue +2% An Nhiên" : " discovery clue");
 ''',
     "An Nhien exit bonus"
 )
