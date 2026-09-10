@@ -113,3 +113,8 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity policy applied: production keeps independent 2% dice; progression emulator fixture suppresses unrelated Entity combat; queued encounters and guaranteed catalog kill drops remain intact.")
+
+# This runs last in the Android patch chain so the Level 0-6 traversal guard can
+# extend the settled transition/provider/entity runtime without reviving legacy paths.
+import runpy
+runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
