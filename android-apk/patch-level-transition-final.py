@@ -19,11 +19,12 @@ instruction = (
     '      "LEVEL TRANSITION STATE LOCK: Khi phản hồi xác nhận đã hoàn tất sang Level khác, ops bắt buộc phải có '
     'set_level cho Level mới và set_location cho vị trí mới trong cùng lượt. Không được mô tả đã ở Level mới nhưng '
     'chỉ đổi văn xuôi hoặc chỉ đổi một trong hai state operation. Nếu mới chỉ thấy dấu hiệu chuyển vùng thì mô tả là '
-    'chuyển tiếp, chưa khẳng định đã sang Level mới. EXIT PROBE RESOLUTION: khi ACTION TYPE = EXPLORE, '
-    'GAMEPLAY_ROLLS.exitProbe.success=true và progression đã đủ minimumTurns, hành động Khám phá hiện tại phải '
-    'hoàn tất chuyển vùng theo đúng canon bằng set_level + set_location trong cùng lượt; mô tả sự đổi môi trường '
-    'liên tục, không teleport và không yêu cầu người chơi nhập lại một hành động thoát khác chỉ để tiêu thụ roll đã '
-    'thành công. " +'
+    'chuyển tiếp, chưa khẳng định đã sang Level mới. EXIT PROBE RESOLUTION: một typed EXPLORE có '
+    'GAMEPLAY_ROLLS.exitProbe.success=true sau minimumTurns xác nhận đã tìm được cơ hội chuyển vùng; Android sẽ khóa '
+    'exploration.transitionReady nếu lượt đó chưa chuyển Level. Không bắt buộc teleport hay tự quyết thay Kai trong '
+    'chính lượt phát hiện. Nếu exploration.transitionReady/exitReady đã có từ trước và người chơi lại chọn EXPLORE, '
+    'lượt EXPLORE hiện tại là quyết định tiếp tục theo tuyến đã tìm được: hãy hoàn tất chuyển vùng canon bằng '
+    'set_level + set_location, mô tả sự đổi môi trường liên tục và không yêu cầu thêm một lệnh thoát bằng chữ. " +'
 )
 if "LEVEL TRANSITION STATE LOCK" not in "\n".join(lines):
     lines.insert(schema_index, instruction)
@@ -78,11 +79,56 @@ if "boolean lockedReady = exploration != null" not in main:
         raise RuntimeError(f"Locked-ready transition semantics: expected 1 anchor, found {count}")
     main = main.replace(old_transition, new_transition, 1)
 
-# Deterministic guard for progression outcomes and narrative/state split-brain. A successful typed EXPLORE
-# exitProbe after the six-turn gate is not optional flavor: it is the authoritative transition outcome for
-# that macro action. If the writer omits the level/location ops, force the existing one-repair path.
+# A transition-ready route belongs to the Level where it was discovered. Clear it when Level changes so a
+# successful Level 0 exit cannot make Level 1 immediately transition-ready. Keep the six-turn gate per Level.
+old_progress_record = '    exploration.put("levelTurns", oldLevel == newLevel ? levelTurns(state) + 1 : 0);\n    exploration.put("minimumTurns", 6);\n'
+new_progress_record = '''    if (oldLevel == newLevel) {
+      exploration.put("levelTurns", levelTurns(state) + 1);
+    } else {
+      exploration.put("levelTurns", 0);
+      exploration.remove("transitionReady");
+      exploration.remove("exitReady");
+      exploration.remove("confirmedExit");
+      exploration.remove("exitCandidate");
+      exploration.remove("exitProgress");
+    }
+    exploration.put("minimumTurns", 6);
+'''
+if 'exploration.remove("transitionReady")' not in main:
+    count = main.count(old_progress_record)
+    if count != 1:
+        raise RuntimeError(f"Level readiness reset: expected 1 anchor, found {count}")
+    main = main.replace(old_progress_record, new_progress_record, 1)
+
+# A successful exit probe discovers a real transition opportunity; it does not need the model to invent a
+# flag operation. Android locks transitionReady on the validated candidate if the same action did not already
+# transition. On a later EXPLORE, that pre-existing ready state plus the player's new action is the explicit
+# signal to consume the route and complete set_level + set_location.
 helper_anchor = "  private JSONArray rejectedOperationIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {\n"
-helper = r'''  private int explicitLevelClaimAndroid(String text) {
+helper = r'''  private boolean transitionReadyAndroid(JSONObject state) {
+    JSONObject flags = state.optJSONObject("flags");
+    JSONObject exploration = flags != null ? flags.optJSONObject("exploration") : null;
+    return exploration != null &&
+      (exploration.optBoolean("transitionReady", false) || exploration.optBoolean("exitReady", false));
+  }
+
+  private void lockSuccessfulExitReadyAndroid(JSONObject before, JSONObject candidate, JSONObject rolls) throws Exception {
+    if (before == null || candidate == null || rolls == null) return;
+    boolean typedExplore = "EXPLORE".equalsIgnoreCase(rolls.optString("actionKind", ""));
+    boolean successfulExitProbe = rollSuccess(rolls, "exitProbe") || rollSuccess(rolls, "levelExit");
+    if (!typedExplore || !successfulExitProbe || !progressionReady(before)) return;
+    if (currentLevel(candidate) != currentLevel(before)) return;
+
+    JSONObject flags = candidate.optJSONObject("flags");
+    if (flags == null) flags = new JSONObject();
+    JSONObject exploration = flags.optJSONObject("exploration");
+    if (exploration == null) exploration = new JSONObject();
+    exploration.put("transitionReady", true);
+    flags.put("exploration", exploration);
+    candidate.put("flags", flags);
+  }
+
+  private int explicitLevelClaimAndroid(String text) {
     if (text == null) return -1;
     String value = lower(text);
     java.util.regex.Matcher numeric = java.util.regex.Pattern.compile("level\\s*([0-6])", java.util.regex.Pattern.CASE_INSENSITIVE).matcher(value);
@@ -102,21 +148,21 @@ helper = r'''  private int explicitLevelClaimAndroid(String text) {
     int beforeLevel = currentLevel(before);
     int actual = currentLevel(candidate);
     boolean typedExplore = "EXPLORE".equalsIgnoreCase(rolls.optString("actionKind", ""));
-    boolean successfulExitProbe = rollSuccess(rolls, "exitProbe") || rollSuccess(rolls, "levelExit");
-    if (typedExplore && successfulExitProbe && progressionReady(before)) {
-      if (actual == beforeLevel) {
-        issues.put(new JSONObject()
-          .put("rule", "exit_probe_transition_omitted")
-          .put("severity", "hard")
-          .put("claim", "successful EXPLORE exitProbe")
-          .put("reason", "Android locked a successful typed EXPLORE exitProbe after the progression gate. Resolve that macro action by emitting matching set_level and set_location ops for the canon-valid destination; do not discard or reroll the successful outcome."));
-      } else if (candidate.optString("location", "").trim().equals(before.optString("location", "").trim())) {
-        issues.put(new JSONObject()
-          .put("rule", "level_transition_location_omitted")
-          .put("severity", "hard")
-          .put("claim", "set_level without new location")
-          .put("reason", "A successful Level transition must update both authoritative Level and location in the same turn."));
-      }
+    boolean readyBefore = transitionReadyAndroid(before);
+
+    if (typedExplore && readyBefore && progressionReady(before) && actual == beforeLevel) {
+      issues.put(new JSONObject()
+        .put("rule", "transition_ready_not_consumed")
+        .put("severity", "hard")
+        .put("claim", "EXPLORE while transitionReady")
+        .put("reason", "The previous successful exit probe already locked a canon-valid transition route. The player chose EXPLORE again, so resolve this new action by emitting matching set_level and set_location ops for that route; do not reroll or require exit keywords."));
+    }
+    if (actual != beforeLevel && candidate.optString("location", "").trim().equals(before.optString("location", "").trim())) {
+      issues.put(new JSONObject()
+        .put("rule", "level_transition_location_omitted")
+        .put("severity", "hard")
+        .put("claim", "set_level without new location")
+        .put("reason", "A successful Level transition must update both authoritative Level and location in the same turn."));
     }
 
     int claimed = explicitLevelClaimAndroid(generated.optString("reply", ""));
@@ -138,16 +184,16 @@ if "levelNarrativeStateIssuesAndroid" not in main:
     main = main.replace(helper_anchor, helper + helper_anchor, 1)
 
 initial_audit = "          if (!meta) appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-initial_replacement = initial_audit + "\n          if (!meta) appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
-if "appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));" not in main:
+initial_replacement = "          if (!meta) lockSuccessfulExitReadyAndroid(before, candidateState, rolls);\n" + initial_audit + "\n          if (!meta) appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
+if "lockSuccessfulExitReadyAndroid(before, candidateState, rolls);" not in main:
     count = main.count(initial_audit)
     if count != 1:
         raise RuntimeError(f"Level transition initial audit anchor: expected 1, found {count}")
     main = main.replace(initial_audit, initial_replacement, 1)
 
 repair_audit = "            appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-repair_replacement = repair_audit + "\n            appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
-if main.count("appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));") < 2:
+repair_replacement = "            lockSuccessfulExitReadyAndroid(before, candidateState, rolls);\n" + repair_audit + "\n            appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before, candidateState, generated, rolls));"
+if main.count("lockSuccessfulExitReadyAndroid(before, candidateState, rolls);") < 2:
     count = main.count(repair_audit)
     if count != 1:
         raise RuntimeError(f"Level transition repair audit anchor: expected 1, found {count}")
@@ -156,8 +202,9 @@ if main.count("appendIssues(hardIssues, levelNarrativeStateIssuesAndroid(before,
 for marker in (
     "LEVEL TRANSITION STATE LOCK",
     "EXIT PROBE RESOLUTION",
-    "levelNarrativeStateIssuesAndroid",
-    "exit_probe_transition_omitted",
+    "lockSuccessfulExitReadyAndroid",
+    "transitionReadyAndroid",
+    "transition_ready_not_consumed",
     "level_transition_location_omitted",
     "level_narrative_state_mismatch",
     "bãi đỗ xe",
@@ -166,9 +213,10 @@ for marker in (
     "sceneKey:visualSceneKey()",
     "boolean lockedReady = exploration != null",
     'rolls.optString("actionKind", "")',
+    'exploration.remove("transitionReady")',
 ):
     if marker not in main:
         raise RuntimeError("Level transition regression marker missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
-print("Level transition final guard verified: typed EXPLORE exit probes, mandatory successful-probe resolution, locked-ready canon, Vietnamese location recognition and narrative/state synchronization.")
+print("Level transition final guard verified: successful EXPLORE exit probes lock readiness, later EXPLORE consumes the route, readiness resets per Level, and narrative/state stay synchronized.")
