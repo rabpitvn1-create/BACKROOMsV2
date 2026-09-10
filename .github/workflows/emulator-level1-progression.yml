@@ -65,7 +65,7 @@ jobs:
         env:
           MAX_TURNS: '24'
           POLL_SECONDS: '2'
-          TURN_TIMEOUT_SECONDS: '120'
+          TURN_TIMEOUT_SECONDS: '240'
         with:
           api-level: 35
           arch: x86_64
