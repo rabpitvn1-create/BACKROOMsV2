@@ -168,7 +168,8 @@ dump_ui_to() {
 }
 
 dump_ui() {
-  local name="$1" path="$OUT/${name}.xml"
+  local name="$1"
+  local path="$OUT/${name}.xml"
   dump_ui_to "$path" || true
   printf '%s\n' "$path"
 }
