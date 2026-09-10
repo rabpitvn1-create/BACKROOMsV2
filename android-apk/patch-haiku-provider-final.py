@@ -26,17 +26,25 @@ GRADLE.write_text(gradle, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Runtime provider. Haiku owns the first writer and auditor attempt; Gemini is
-# the fallback when Haiku is unavailable, fails transport/protocol handling,
-# returns no text, or returns malformed JSON. The base URL may be either an
-# OpenAI-style base (/v1), a full /chat/completions endpoint, or an Anthropic
-# /messages endpoint. No API token is ever written to logs or exception messages.
+# Runtime provider. Gemini owns writer and auditor attempts across the complete
+# model/key matrix. Haiku is attempted only after every eligible Gemini lane has
+# failed, including malformed JSON. The base URL may be either an OpenAI-style
+# base (/v1), a full /chat/completions endpoint, or an Anthropic /messages
+# endpoint. No API token is ever written to logs or exception messages.
 # ---------------------------------------------------------------------------
 text = MAIN.read_text(encoding="utf-8")
 
 generate_anchor = '  private String generateText(String prompt) throws Exception {\n'
 if generate_anchor not in text:
     raise RuntimeError("generateText anchor missing before Haiku integration")
+
+# Every Gemini writer/auditor lane is expected to return the project's JSON
+# contract. Validate inside the matrix attempt so malformed output fails that
+# lane and the remaining Gemini models/keys are tried before Haiku is eligible.
+matrix_old = '''            String result = geminiMatrixRequest(prompt, modelIndex, keyIndex, maxOutputTokens, deadlineMs);\n            noteGeminiMatrixSuccess(modelIndex, keyIndex, System.currentTimeMillis() - started);\n'''
+matrix_new = '''            String result = geminiMatrixRequest(prompt, modelIndex, keyIndex, maxOutputTokens, deadlineMs);\n            parseModelJson(result);\n            noteGeminiMatrixSuccess(modelIndex, keyIndex, System.currentTimeMillis() - started);\n'''
+if matrix_new not in text:
+    text = replace_once(text, matrix_old, matrix_new, "Gemini matrix JSON validation")
 
 helpers = r'''  private boolean haikuConfigured() {
     return BuildConfig.HAIKU_API != null && !BuildConfig.HAIKU_API.trim().isEmpty() &&
@@ -192,28 +200,30 @@ helpers = r'''  private boolean haikuConfigured() {
   }
 
   private String auditText(String prompt, int excludedGeminiWorker) throws Exception {
-    Exception haikuError = null;
+    Exception geminiError;
+    try {
+      String geminiAuditResult = geminiAuditText(prompt, excludedGeminiWorker);
+      parseModelJson(geminiAuditResult);
+      return geminiAuditResult;
+    } catch (Exception error) {
+      geminiError = error;
+    }
+
     if (haikuConfigured()) {
       try {
         String haikuAuditResult = haikuText(prompt, 650, 0.1);
-        // Auditor responses are JSON too. Reject malformed Haiku output here so
-        // Gemini can recover this audit instead of failing after auditText returns.
         parseModelJson(haikuAuditResult);
         return haikuAuditResult;
-      } catch (Exception error) {
-        haikuError = error;
+      } catch (Exception haikuError) {
+        if (networkFailure(geminiError) && networkFailure(haikuError)) {
+          throw new Exception(networkFailureMessage());
+        }
+        throw haikuError;
       }
     }
 
-    try {
-      return geminiAuditText(prompt, excludedGeminiWorker);
-    } catch (Exception geminiError) {
-      if (haikuError != null && networkFailure(haikuError) && networkFailure(geminiError)) {
-        throw new Exception(networkFailureMessage());
-      }
-      if (haikuError == null && networkFailure(geminiError)) throw new Exception(networkFailureMessage());
-      throw geminiError;
-    }
+    if (networkFailure(geminiError)) throw new Exception(networkFailureMessage());
+    throw geminiError;
   }
 
 '''
@@ -222,33 +232,34 @@ if 'private boolean haikuConfigured()' not in text:
     text = text.replace(generate_anchor, helpers + generate_anchor, 1)
 
 new_generate = r'''  private String generateText(String prompt) throws Exception {
-    Exception haikuError = null;
-    if (haikuConfigured()) {
-      emit("backroomProvider", "Haiku");
-      try {
-        String haikuResult = haikuText(prompt, 1800, 0.6);
-        // The writer contract is JSON. Treat malformed Haiku output as a failed first attempt
-        // so Gemini can recover the turn instead of surfacing a parse error to the player.
-        parseModelJson(haikuResult);
-        emit("backroomProvider", "Haiku");
-        return haikuResult;
-      } catch (Exception error) {
-        haikuError = error;
-      }
-    }
-
+    Exception geminiError;
     emit("backroomProvider", "Gemini 3.6 Flash");
     try {
       String geminiResult = geminiText(prompt);
+      parseModelJson(geminiResult);
       emit("backroomProvider", geminiModelLabel(lastGeminiModel) + " K" + (lastGeminiWorker + 1));
       return geminiResult;
-    } catch (Exception geminiError) {
-      if (haikuError != null && networkFailure(haikuError) && networkFailure(geminiError)) {
-        throw new Exception(networkFailureMessage());
-      }
-      if (haikuError == null && networkFailure(geminiError)) throw new Exception(networkFailureMessage());
-      throw geminiError;
+    } catch (Exception error) {
+      geminiError = error;
     }
+
+    if (haikuConfigured()) {
+      emit("backroomProvider", "Haiku fallback");
+      try {
+        String haikuResult = haikuText(prompt, 1800, 0.6);
+        parseModelJson(haikuResult);
+        emit("backroomProvider", "Haiku fallback");
+        return haikuResult;
+      } catch (Exception haikuError) {
+        if (networkFailure(geminiError) && networkFailure(haikuError)) {
+          throw new Exception(networkFailureMessage());
+        }
+        throw haikuError;
+      }
+    }
+
+    if (networkFailure(geminiError)) throw new Exception(networkFailureMessage());
+    throw geminiError;
   }
 '''
 generate_start = text.find(generate_anchor)
@@ -270,8 +281,10 @@ for required in (
     "BuildConfig.HAIKU_MODEL",
     "private String haikuText(String prompt, int maxOutputTokens, double temperature)",
     "private String auditText(String prompt, int excludedGeminiWorker)",
-    'emit("backroomProvider", "Haiku")',
+    'emit("backroomProvider", "Haiku fallback")',
+    "parseModelJson(geminiResult);",
     "parseModelJson(haikuResult);",
+    "parseModelJson(geminiAuditResult);",
     "parseModelJson(haikuAuditResult);",
     "parseModelJson(auditText(prompt, excludedWorker))",
     'connection.setRequestProperty("Authorization", "Bearer " + BuildConfig.HAIKU_API)',
@@ -279,25 +292,26 @@ for required in (
     'connection.setRequestProperty("anthropic-version", "2023-06-01")',
     'haikuEndpoint("/chat/completions")',
     'haikuEndpoint("/messages")',
+    "parseModelJson(result);",
 ):
     if required not in text:
-        raise RuntimeError("Haiku runtime marker missing: " + required)
+        raise RuntimeError("Gemini-primary/Haiku-fallback runtime marker missing: " + required)
 
 generate_body = text[text.find(generate_anchor):text.find("\n  private JSONObject parseModelJson", text.find(generate_anchor))]
-if generate_body.find('emit("backroomProvider", "Haiku")') < 0 or generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")') < 0:
-    raise RuntimeError("Haiku/Gemini writer provider markers missing")
-if generate_body.find('emit("backroomProvider", "Haiku")') > generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")'):
-    raise RuntimeError("Writer provider order regressed: Haiku must run before Gemini")
+if generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")') < 0 or generate_body.find('emit("backroomProvider", "Haiku fallback")') < 0:
+    raise RuntimeError("Gemini/Haiku writer provider markers missing")
+if generate_body.find('emit("backroomProvider", "Gemini 3.6 Flash")') > generate_body.find('emit("backroomProvider", "Haiku fallback")'):
+    raise RuntimeError("Writer provider order regressed: Gemini must run before Haiku fallback")
 
 audit_start = text.find("  private String auditText(String prompt, int excludedGeminiWorker) throws Exception {")
 audit_end = text.find("\n  private String generateText(String prompt) throws Exception {", audit_start)
 if audit_start < 0 or audit_end < 0:
     raise RuntimeError("Haiku auditText boundaries missing")
 audit_body = text[audit_start:audit_end]
-if audit_body.find("haikuText(prompt, 650, 0.1)") < 0 or audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)") < 0:
-    raise RuntimeError("Haiku/Gemini auditor provider markers missing")
-if audit_body.find("haikuText(prompt, 650, 0.1)") > audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)"):
-    raise RuntimeError("Auditor provider order regressed: Haiku must run before Gemini")
+if audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)") < 0 or audit_body.find("haikuText(prompt, 650, 0.1)") < 0:
+    raise RuntimeError("Gemini/Haiku auditor provider markers missing")
+if audit_body.find("geminiAuditText(prompt, excludedGeminiWorker)") > audit_body.find("haikuText(prompt, 650, 0.1)"):
+    raise RuntimeError("Auditor provider order regressed: Gemini must run before Haiku fallback")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Haiku provider integrated: Haiku-first writer and auditor with JSON validation and Gemini fallback; OpenAI + Anthropic request compatibility.")
+print("Provider order applied: complete Gemini model/key matrix first for writer and auditor; Haiku only after all Gemini lanes fail, with JSON validation on every lane.")
