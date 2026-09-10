@@ -56,12 +56,17 @@ for required in (
 MAIN.write_text(main, encoding="utf-8")
 print("Local Level Snapshot fallback installed; Level 0 cycles through four packaged snapshots by turn.")
 
-# Research-only CI probe. It discovers candidate image URLs from the exact Fandom
-# Level/sublevel source pages but never changes runtime snapshot selection. Failures here
-# are warnings so a temporary source-site outage cannot break the APK build.
+# Research-only CI probes. They enumerate candidates from the exact Fandom source pages
+# and recover article-embedded images whose MediaWiki imageinfo records are unavailable.
+# Neither probe changes runtime snapshot selection, and source-site outages stay non-fatal.
 if os.environ.get("GITHUB_ACTIONS") == "true":
-    harvester = ROOT / "harvest-wiki-snapshot-candidates.py"
-    if harvester.is_file():
-        result = subprocess.run([sys.executable, str(harvester)], cwd=ROOT, check=False)
+    for research_script in (
+        "harvest-wiki-snapshot-candidates.py",
+        "resolve-fandom-embedded-snapshot-images.py",
+    ):
+        script = ROOT / research_script
+        if not script.is_file():
+            continue
+        result = subprocess.run([sys.executable, str(script)], cwd=ROOT, check=False)
         if result.returncode != 0:
-            print(f"Wiki snapshot candidate harvest warning: exit={result.returncode}")
+            print(f"Wiki snapshot research warning: script={research_script} exit={result.returncode}")
