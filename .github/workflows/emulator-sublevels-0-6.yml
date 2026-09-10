@@ -71,16 +71,7 @@ jobs:
           disable-spellchecker: true
           enable-hw-keyboard: true
           script: |
-            python3 - <<'PY'
-            from pathlib import Path
-            path = Path('.github/scripts/emu-sublevels-0-6.sh')
-            text = path.read_text(encoding='utf-8')
-            old = '  local label="$1" raw="$OUT/core-${label}.xml"'
-            new = '  local label="$1"\n  local raw="$OUT/core-${label}.xml"'
-            if text.count(old) != 1:
-                raise SystemExit('read_core_state local declaration anchor changed')
-            path.write_text(text.replace(old, new, 1), encoding='utf-8')
-            PY
+            sed -i 's@  local label="$1" raw="$OUT/core-${label}.xml"@  local label="$1"\n  local raw="$OUT/core-${label}.xml"@' .github/scripts/emu-sublevels-0-6.sh
             bash -c 'adb(){ command adb "$@" </dev/null; }; export -f adb; adb shell pm disable-user --user 0 com.android.launcher3 >/dev/null 2>&1 || true; bash .github/scripts/emu-sublevels-0-6.sh Backroom-under-test.apk'
 
       - name: Upload sublevel evidence
