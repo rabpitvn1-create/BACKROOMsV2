@@ -10,6 +10,7 @@ import org.junit.Test
 class SublevelCatalogTest {
   private fun catalog(): JSONObject {
     val candidates = listOf(
+      File("src/main/assets/knowledge/sublevels_0_6_source.json"),
       File("app/src/main/assets/knowledge/sublevels_0_6_source.json"),
       File("android-apk/app/src/main/assets/knowledge/sublevels_0_6_source.json")
     )
