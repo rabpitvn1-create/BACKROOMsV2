@@ -70,7 +70,7 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           enable-hw-keyboard: true
-          script: bash .github/scripts/emu-sublevels-0-6.sh Backroom-under-test.apk
+          script: bash -c 'adb(){ command adb "$@" </dev/null; }; export -f adb; bash .github/scripts/emu-sublevels-0-6.sh Backroom-under-test.apk'
 
       - name: Upload sublevel evidence
         if: always()
