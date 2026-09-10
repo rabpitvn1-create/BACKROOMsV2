@@ -43,28 +43,16 @@ if count != 1:
     raise RuntimeError(f"Level transition location recognizer: expected 1 anchor, found {count}")
 main = main.replace(old_names, new_names, 1)
 
-# Typed EXPLORE is a first-class gameplay action. Its macro label is only "Khám phá", so relying on
-# freeform exit keywords makes exitProbe permanently ineligible for the actual Explore button. Preserve
-# the production threshold; only the explicit debug-emulator intent makes the already-eligible probe
-# deterministic after the six-turn minimum so CI verifies transition mechanics instead of RNG luck.
-old_exit_probe = '''    int exitThreshold = exitThresholdAndroid(state);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search), " discovery clue");
-'''
-new_exit_probe = '''    int exitThreshold = exitThresholdAndroid(state);
-    boolean typedExploreExitProbe = "EXPLORE".equals(actionKindNormalized);
-    if (BuildConfig.DEBUG && getIntent().getBooleanExtra("emuLevel1Progression", false)
-        && typedExploreExitProbe && levelTurns(state) >= 6) {
-      exitThreshold = 10000;
-    }
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold,
-      (typedExploreExitProbe || exitIntent) && (typedExploreExitProbe || physical || search),
-      " discovery clue");
-'''
-if "boolean typedExploreExitProbe" not in main:
-    count = main.count(old_exit_probe)
-    if count != 1:
-        raise RuntimeError(f"Typed EXPLORE exit probe: expected 1 anchor, found {count}")
-    main = main.replace(old_exit_probe, new_exit_probe, 1)
+# Gameplay parity owns exitProbe eligibility and its production probability. This final patch only
+# verifies that the typed-action contract survived later bonus/finalizer patches before synchronizing
+# transition state and narrative.
+for marker in (
+    'boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);',
+    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
+    'thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible',
+):
+    if marker not in main:
+        raise RuntimeError("Upstream exitProbe contract missing: " + marker)
 
 # Drive canon allows a transition when exitProbe succeeds OR the state has already locked
 # transitionReady/exitReady. The older reducer required a second confirmedExit/random roll even for a locked
@@ -150,15 +138,10 @@ for marker in (
     "set_level",
     "set_location",
     "sceneKey:visualSceneKey()",
-    'boolean typedExploreExitProbe = "EXPLORE".equals(actionKindNormalized);',
-    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
     "boolean lockedReady = exploration != null",
 ):
     if marker not in main:
         raise RuntimeError("Level transition regression marker missing: " + marker)
-
-if 'exitIntent && (physical || search)' in main:
-    raise RuntimeError("Legacy text-only exitProbe eligibility survived typed EXPLORE finalization")
 
 MAIN.write_text(main, encoding="utf-8")
 print("Level transition final guard verified: typed EXPLORE exit probes, locked-ready canon, Vietnamese location recognition and narrative/state synchronization.")

@@ -47,9 +47,20 @@ replacement = r'''  private JSONObject thresholdRoll(String label, int max, int 
     return continuity.isEmpty() || containsAny(continuity, "SEPARATED", "LOST", "UNKNOWN");
   }
 
+  private boolean exitProbeEligibleAndroid(boolean exploreAction, boolean exitIntent, boolean physical, boolean search) {
+    return exploreAction || (exitIntent && (physical || search));
+  }
+
   private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {
+    return makeGameplayRolls(state, "EXECUTE", action, meta);
+  }
+
+  private JSONObject makeGameplayRolls(JSONObject state, String actionKind, String action, boolean meta) throws Exception {
     JSONObject rolls = new JSONObject().put("turn", state.optInt("turn", 1)).put("meta", meta);
     if (meta) return rolls;
+
+    String actionKindNormalized = actionKind == null ? "" : actionKind.trim().toUpperCase(java.util.Locale.ROOT);
+    boolean exploreAction = "EXPLORE".equals(actionKindNormalized);
 
     int level = Math.max(0, Math.min(6, currentLevel(state)));
     int[] hazardThresholds = {400, 700, 1000, 1200, 300, 1000, 1200};
@@ -80,7 +91,12 @@ replacement = r'''  private JSONObject thresholdRoll(String label, int max, int 
     rolls.put("almondWater", thresholdRoll("almondWater", 10000, waterThresholds[level], search && water, ""));
 
     int exitThreshold = exitThresholdAndroid(state);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search), " discovery clue");
+    if (BuildConfig.DEBUG && getIntent().getBooleanExtra("emuLevel1Progression", false)
+        && exploreAction && levelTurns(state) >= 6) {
+      exitThreshold = 10000;
+    }
+    boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);
+    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible, " discovery clue");
     rolls.put("exitProbe", exitProbe);
     // Compatibility alias for the older Android reducer. Both keys point to the exact same locked result; no reroll occurs.
     rolls.put("levelExit", new JSONObject(exitProbe.toString()).put("label", "levelExit"));
@@ -98,6 +114,9 @@ for marker in [
     'rolls.put("hazard"',
     'rolls.put("exitProbe", exitProbe)',
     'rolls.put("levelExit", new JSONObject(exitProbe.toString())',
+    'private boolean exitProbeEligibleAndroid(boolean exploreAction, boolean exitIntent, boolean physical, boolean search)',
+    'boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);',
+    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
 ]:
     if marker not in text:
         raise RuntimeError(f"Android gameplay parity marker missing: {marker}")
