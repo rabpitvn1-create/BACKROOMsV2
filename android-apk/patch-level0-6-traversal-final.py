@@ -214,10 +214,10 @@ PARENT_DIFFICULTY_CASES
 
 '''
 helper = helper.replace("IDS_CASES", "\n".join(ids_cases))
-helper = helper.replace("LOCATION_CASES", "\n".join(location_cases))
 helper = helper.replace("PARENT_LOCATION_CASES", "\n".join(parent_location_cases))
-helper = helper.replace("DIFFICULTY_CASES", "\n".join(difficulty_cases))
+helper = helper.replace("LOCATION_CASES", "\n".join(location_cases))
 helper = helper.replace("PARENT_DIFFICULTY_CASES", "\n".join(parent_difficulty_cases))
+helper = helper.replace("DIFFICULTY_CASES", "\n".join(difficulty_cases))
 
 main = MAIN.read_text(encoding="utf-8")
 
