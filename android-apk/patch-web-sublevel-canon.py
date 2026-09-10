@@ -90,7 +90,7 @@ def difficulty_text(rating, difficulty_source, wiki_class, rationale):
         provenance = f"Wiki {wiki_class}"
     return (
         f" Gameplay difficulty is {rating}/5 ({provenance}). {rationale} "
-        "Wiki entity-count/resident-entity wording never gates runtime encounters: Project override allows the canonical roaming pool on every Level 0-6 and every listed sublevel, including Levels 0, 4 and 6."
+        "Wiki entity-count/resident-entity wording never gates runtime encounters: Project override allows the canonical roaming pool on every Level 0-6 and every listed sublevel, including Levels 0, 4 and 6; there is no Level 0/4/6 exception."
     )
 
 
