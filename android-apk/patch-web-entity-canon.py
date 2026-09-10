@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILES = sorted((ROOT / "app/src/main/assets/knowledge").glob("entity_web_canon*.json"))
@@ -70,3 +71,11 @@ for entity_id, visual_chars, total_chars, data_file_name in added:
     print(f"WEB_ENTITY_CANON_V1 {entity_id}: visual={visual_chars}, total={total_chars}, source={data_file_name}")
 
 print(f"Web Entity canon merged as supplemental reference only: {len(added)} record(s) from {len(DATA_FILES)} batch file(s); project WORLD_CANON/hard-lock remains authoritative on conflict.")
+
+# Keep Fandom-derived Level 0-6 sublevels in the same late web-reference layer so
+# project WORLD_CANON remains the higher authority and historical knowledge writers
+# cannot overwrite the source catalog or runtime retrieval hooks.
+sublevel_patch = ROOT / "patch-web-sublevel-canon.py"
+if not sublevel_patch.is_file():
+    raise RuntimeError("Web Sublevel canon patch missing: " + sublevel_patch.name)
+runpy.run_path(str(sublevel_patch), run_name="__main__")
