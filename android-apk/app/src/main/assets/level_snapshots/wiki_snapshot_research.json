@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "status": "RESEARCH_IN_PROGRESS",
+  "policy": {
+    "allowedSourcePages": [
+      "backrooms.fandom.com",
+      "backrooms-wiki.wikidot.com",
+      "liminal-archives.wikidot.com"
+    ],
+    "imagesPerTarget": {"min": 1, "max": 10},
+    "requireExactTarget": true,
+    "rejectLogoWatermarkMarkerOverlay": true,
+    "rejectDuplicateImages": true,
+    "runtimeIntegration": false
+  },
+  "targets": {
+    "LEVEL.0": {
+      "designation": "Level 0",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-0",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wikidot.com/local--files/level-0/OGLevel0.jpg",
+          "caption": "The first known photo of Level 0 and the Backrooms",
+          "visualReview": "PASS"
+        },
+        {
+          "assetUrl": "https://backrooms-wiki.wikidot.com/local--files/level-0/3",
+          "caption": "Pillar Variation",
+          "visualReview": "PASS"
+        },
+        {
+          "assetUrl": "https://backrooms-wiki.wikidot.com/local--files/level-0/5",
+          "caption": "Blackout Zone",
+          "visualReview": "PASS"
+        }
+      ]
+    },
+    "LEVEL.1": {
+      "designation": "Level 1",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-1",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-1/artistlivesinme.jpg",
+          "caption": "Aquila Sector: an empty concrete parking lot with puddles",
+          "visualReview": "PASS_NATIVE_ENVIRONMENT_MARKING_ONLY"
+        }
+      ]
+    },
+    "LEVEL.2": {
+      "designation": "Level 2",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-2",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-2/2piping.jpg",
+          "caption": "A thin Level 2 corridor made narrower by industrial piping",
+          "visualReview": "PASS"
+        },
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent.jpg",
+          "caption": "A disorganised row of fluorescent lights in Level 2",
+          "visualReview": "PASS"
+        },
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent2.jpg",
+          "caption": "Level 2 fluorescent-light variation",
+          "visualReview": "PASS"
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-2/2first.jpg",
+          "reason": "VISIBLE_SIGN_MARKER"
+        }
+      ]
+    },
+    "LEVEL.3": {
+      "designation": "Level 3",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-3",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Dark",
+          "caption": "One of the darker hallways in Level 3",
+          "visualReview": "PASS"
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "assetUrl": "https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3FirstPhoto",
+          "reason": "VISIBLE_OUT_OF_BOUNDS_SIGN"
+        }
+      ]
+    },
+    "LEVEL.4": {
+      "designation": "Level 4",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-4",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-4/Level-4-new",
+          "caption": "A photograph of some of the windows within Level 4",
+          "visualReview": "PASS"
+        }
+      ]
+    },
+    "LEVEL.5": {
+      "designation": "Level 5",
+      "sourcePage": "https://backrooms-wiki.wikidot.com/level-5",
+      "verifiedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-1-cc.png",
+          "caption": "A photo of the Main Hall",
+          "visualReview": "PASS"
+        },
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-2-cc.jpg",
+          "caption": "A photo of the Boiler Room",
+          "visualReview": "PASS"
+        }
+      ],
+      "rejectedCandidates": [
+        {
+          "assetUrl": "https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-3-cc.jpg",
+          "reason": "VISIBLE_GRAFFITI_MARKINGS"
+        }
+      ]
+    },
+    "LEVEL.6": {
+      "designation": "Level 6",
+      "sourcePage": "https://backrooms.fandom.com/wiki/Level_6",
+      "verifiedCandidates": [],
+      "note": "Must use the current Fandom outdoor dark-tundra Level 6; the Wikidot indoor Level 6 is incompatible with project canon and is intentionally excluded."
+    }
+  }
+}
