@@ -63,7 +63,7 @@ jobs:
       - name: Run real APK progression probe
         uses: reactivecircus/android-emulator-runner@v2
         env:
-          MAX_TURNS: '36'
+          MAX_TURNS: '24'
           POLL_SECONDS: '2'
           TURN_TIMEOUT_SECONDS: '120'
         with:
