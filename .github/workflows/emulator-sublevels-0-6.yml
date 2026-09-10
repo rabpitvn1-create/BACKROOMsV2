@@ -72,31 +72,7 @@ jobs:
           enable-hw-keyboard: true
           script: |
             sed -i 's@  local label="$1" raw="$OUT/core-${label}.xml"@  local label="$1"\n  local raw="$OUT/core-${label}.xml"@' .github/scripts/emu-sublevels-0-6.sh
-            python3 - <<'PY'
-            from pathlib import Path
-            import re
-            path = Path('.github/scripts/emu-sublevels-0-6.sh')
-            text = path.read_text(encoding='utf-8')
-            pattern = r'submit_explore\(\) \{\n.*?\n\}\n\nread_core_state\(\) \{'
-            replacement = '''submit_explore() {
-              local index="$1" xml bounds
-              xml="$OUT/ui/ready-${index}.xml"
-              dump_ui_to "$xml" || return 1
-              bounds=$(node_bounds "$xml" explore || true)
-              [[ -n "$bounds" ]] || return 1
-              # One physical tap equals one gameplay EXPLORE action. Retrying after a fixed
-              # delay can submit a second turn when a fast turn has already re-enabled the button.
-              tap_bounds "$bounds"
-              echo "action=$index kind=EXPLORE label=Khám phá" | tee -a "$OUT/actions.log"
-              return 0
-            }
-
-            read_core_state() {'''
-            text, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
-            if count != 1:
-                raise SystemExit(f'submit_explore patch expected 1 match, found {count}')
-            path.write_text(text, encoding='utf-8')
-            PY
+            python3 -c 'from pathlib import Path; import re; p=Path(".github/scripts/emu-sublevels-0-6.sh"); t=p.read_text(encoding="utf-8"); pat=r"submit_explore\(\) \{\n.*?\n\}\n\nread_core_state\(\) \{"; repl="submit_explore() {\n  local index=\"$1\" xml bounds\n  xml=\"$OUT/ui/ready-${index}.xml\"\n  dump_ui_to \"$xml\" || return 1\n  bounds=$(node_bounds \"$xml\" explore || true)\n  [[ -n \"$bounds\" ]] || return 1\n  # One physical tap equals one gameplay EXPLORE action. Retrying after a fixed delay can submit a second turn when a fast turn has already re-enabled the button.\n  tap_bounds \"$bounds\"\n  echo \"action=$index kind=EXPLORE label=Khám phá\" | tee -a \"$OUT/actions.log\"\n  return 0\n}\n\nread_core_state() {"; t,n=re.subn(pat,repl,t,count=1,flags=re.S); assert n==1, f"submit_explore patch expected 1 match, found {n}"; p.write_text(t,encoding="utf-8")'
             bash -c 'adb(){ command adb "$@" </dev/null; }; export -f adb; adb shell pm disable-user --user 0 com.android.launcher3 >/dev/null 2>&1 || true; bash .github/scripts/emu-sublevels-0-6.sh Backroom-under-test.apk'
 
       - name: Upload sublevel evidence
