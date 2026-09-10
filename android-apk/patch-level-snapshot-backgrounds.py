@@ -79,7 +79,7 @@ for target_id in sorted(expected_targets):
         if not parsed.path.startswith("/backrooms/images/"):
             raise RuntimeError(f"Wiki snapshot asset path invalid: {target_id} {url}")
         normalized_path = urllib.parse.unquote(parsed.path)
-        normalized_path = re.sub(r"/revision/latest(?:/scale-to-width-down/\\d+)?$", "", normalized_path)
+        normalized_path = re.sub(r"/revision/latest(?:/scale-to-width-down/[0-9]+)?$", "", normalized_path)
         duplicate_key = parsed.netloc.lower() + normalized_path
         previous = seen_assets.get(duplicate_key)
         if previous is not None:
