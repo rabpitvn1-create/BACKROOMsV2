@@ -115,6 +115,8 @@ old = "if(r){var bg=document.createElement('img');bg.className='snapshot-bg';bg.
 # Wiki snapshots are the normal scene background. The old packaged parent images remain
 # as network-failure fallback for parent Levels only. Deferred sublevels intentionally do
 # not borrow a parent image because that would mislabel the scene as the wrong sublevel.
+# Keep the Kai source/alt/append sequence and the immediate `if(!r)` intact because the
+# later MadGod and progression patches deliberately compose on those stable anchors.
 new = (
     "var refs={0:'file:///android_asset/level_snapshots/level_0.webp',1:'file:///android_asset/level_snapshots/level_1.webp',2:'file:///android_asset/level_snapshots/level_2.webp',3:'file:///android_asset/level_snapshots/level_3.webp',4:'file:///android_asset/level_snapshots/level_4.webp',5:'file:///android_asset/level_snapshots/level_5.webp',6:'file:///android_asset/level_snapshots/level_6.webp'};"
     "refs[0]='file:///android_asset/level_snapshots/backrooms_level0_01_open_room_16bit.webp';"
@@ -127,9 +129,8 @@ new = (
     "var parentFallback=lv===0?level0Refs[(turn-1)%level0Refs.length]:(refs[lv]||refs[0]);"
     "var src=r?r.dataUri:(pool.length?pool[start]:(sid?'':parentFallback));box.classList.toggle('has-wiki-snapshot',!!src);"
     "var bg=document.createElement('img');bg.className='snapshot-bg';bg.src=src||parentFallback;bg.alt=r?'Snapshot Turn '+turn:(sid?target+' Snapshot Turn '+turn:'Level '+lv+' Wiki Snapshot Turn '+turn);if(!src)bg.style.display='none';box.appendChild(bg);"
-    "var kai=document.createElement('img');kai.className='snapshot-character';kai.src='file:///android_asset/kai_snapshot_overlay.webp';kai.alt='Kai Akechi';if(!src)kai.style.display='none';box.appendChild(kai);"
-    "if(!r&&pool.length){var tried=0;bg.onerror=function(){tried++;if(tried<pool.length){this.src=pool[(start+tried)%pool.length];return;}this.onerror=null;if(!sid){this.src=parentFallback;}else{this.style.display='none';kai.style.display='none';box.classList.remove('has-wiki-snapshot');}};}else if(!r&&!sid){bg.onerror=function(){this.onerror=null;this.src=refs[0];};}"
-    "appendEquipmentBadge(box);if(!r){"
+    "var kai=document.createElement('img');kai.className='snapshot-character';if(!src)kai.style.display='none';kai.src='file:///android_asset/kai_snapshot_overlay.webp';kai.alt='Kai Akechi';box.appendChild(kai);"
+    "if(!r){if(pool.length){var tried=0;bg.onerror=function(){tried++;if(tried<pool.length){this.src=pool[(start+tried)%pool.length];return;}this.onerror=null;if(!sid){this.src=parentFallback;}else{this.style.display='none';kai.style.display='none';box.classList.remove('has-wiki-snapshot');}};}else if(!sid){bg.onerror=function(){this.onerror=null;this.src=refs[0];};}"
 )
 
 count = main.count(old)
@@ -153,6 +154,7 @@ for required in (
     "var start=pool.length?(turn-1)%pool.length:0",
     "box.classList.toggle('has-wiki-snapshot',!!src)",
     "if(!src)kai.style.display='none'",
+    "kai.src='file:///android_asset/kai_snapshot_overlay.webp';kai.alt='Kai Akechi';box.appendChild(kai);if(!r)",
 ):
     if required not in main:
         raise RuntimeError("Wiki snapshot runtime contract missing: " + required)
