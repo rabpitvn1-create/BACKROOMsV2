@@ -13,7 +13,11 @@ for required in (DATA, DB, ENGINE, MAIN):
 
 source = json.loads(DATA.read_text(encoding="utf-8"))
 items = source.get("records", [])
+parent_difficulties = source.get("parentDifficulties", [])
 expected_counts = {0: 12, 1: 4, 2: 3, 3: 2, 4: 3, 5: 3, 6: 6}
+allowed_difficulty_sources = {"WIKI_DIRECT", "WIKI_NONSTANDARD_MAPPED", "PROJECT_DESIGNED"}
+if source.get("schemaVersion") != 2:
+    raise RuntimeError("Sublevel source schemaVersion must be 2")
 if len(items) != 33:
     raise RuntimeError(f"Expected 33 current wiki-listed Level 0-6 sublevels, found {len(items)}")
 actual_counts = {level: sum(1 for item in items if item.get("parentLevel") == level) for level in range(7)}
@@ -21,6 +25,37 @@ if actual_counts != expected_counts:
     raise RuntimeError(f"Sublevel parent counts changed: {actual_counts}")
 if any(str(item.get("designation", "")).strip() == "Level 5.3" for item in items):
     raise RuntimeError("Level 5.3 is not in the current Fandom Levels 0-8 list and must not be injected")
+if len(parent_difficulties) != 7 or {item.get("parentLevel") for item in parent_difficulties} != set(range(7)):
+    raise RuntimeError("Exactly one difficulty record is required for each parent Level 0-6")
+
+
+def validate_difficulty(owner, difficulty):
+    if not isinstance(difficulty, dict):
+        raise RuntimeError("Difficulty object missing: " + owner)
+    rating = difficulty.get("rating")
+    difficulty_source = str(difficulty.get("source", "")).strip()
+    wiki_class = str(difficulty.get("wikiClass", "")).strip()
+    rationale = str(difficulty.get("rationale", "")).strip()
+    if not isinstance(rating, int) or not 1 <= rating <= 5:
+        raise RuntimeError(f"Difficulty rating must be integer 1-5: {owner}={rating!r}")
+    if difficulty_source not in allowed_difficulty_sources:
+        raise RuntimeError(f"Unsupported difficulty source: {owner}={difficulty_source!r}")
+    if not wiki_class or not rationale:
+        raise RuntimeError("Difficulty wikiClass/rationale missing: " + owner)
+    if difficulty_source == "WIKI_DIRECT":
+        expected = f"CLASS {rating}"
+        if wiki_class != expected:
+            raise RuntimeError(f"Direct Wiki class/rating mismatch: {owner}: {wiki_class!r} vs {rating}")
+    return rating, difficulty_source, wiki_class, rationale
+
+
+parent_difficulty_by_level = {}
+for item in parent_difficulties:
+    parent = item.get("parentLevel")
+    wiki = str(item.get("wiki", "")).strip()
+    if not wiki.startswith("https://backrooms.fandom.com/wiki/"):
+        raise RuntimeError(f"Parent difficulty Wiki source invalid: Level {parent}")
+    parent_difficulty_by_level[parent] = validate_difficulty(f"Level {parent}", item.get("difficulty"))
 
 knowledge = json.loads(DB.read_text(encoding="utf-8"))
 records = knowledge.get("records", [])
@@ -46,6 +81,33 @@ def aliases(item):
     return list(dict.fromkeys(values))
 
 
+def difficulty_text(rating, difficulty_source, wiki_class, rationale):
+    if difficulty_source == "PROJECT_DESIGNED":
+        provenance = "PROJECT_DESIGNED provisional rating; it is not a Wiki class"
+    elif difficulty_source == "WIKI_NONSTANDARD_MAPPED":
+        provenance = f"Wiki {wiki_class} mapped to the Project 1-5 gameplay scale"
+    else:
+        provenance = f"Wiki {wiki_class}"
+    return (
+        f" Gameplay difficulty is {rating}/5 ({provenance}). {rationale} "
+        "Wiki entity-count/resident-entity wording never gates runtime encounters: Project override allows the canonical roaming pool on every Level 0-6 and every listed sublevel, including Levels 0, 4 and 6."
+    )
+
+
+# Put parent difficulty directly into the parent Level knowledge records so normal
+# current-Level retrieval always carries a difficulty even when no sublevel is active.
+for parent in range(7):
+    parent_id = f"LEVEL.{parent:02d}"
+    if parent_id not in parent_records:
+        raise RuntimeError("Missing parent Level knowledge record: " + parent_id)
+    rating, difficulty_source, wiki_class, rationale = parent_difficulty_by_level[parent]
+    marker = " Gameplay difficulty is "
+    if marker in str(parent_records[parent_id].get("text", "")):
+        raise RuntimeError("Parent difficulty was already injected before final web canon: " + parent_id)
+    parent_records[parent_id]["text"] = str(parent_records[parent_id].get("text", "")).rstrip() + difficulty_text(
+        rating, difficulty_source, wiki_class, rationale
+    )
+
 for item in items:
     record_id = str(item.get("id", "")).strip()
     parent = item.get("parentLevel")
@@ -54,23 +116,26 @@ for item in items:
     wiki = str(item.get("wiki", "")).strip()
     summary = str(item.get("summary", "")).strip()
     status = str(item.get("status", "")).strip()
+    snapshot = item.get("snapshot", None)
     if not record_id.startswith("SUBLEVEL.") or record_id in seen or record_id in known:
         raise RuntimeError("Invalid or duplicate sublevel id: " + record_id)
     if parent not in expected_counts:
         raise RuntimeError("Sublevel parent outside Level 0-6: " + record_id)
     if not designation or not name or not summary:
         raise RuntimeError("Incomplete sublevel source record: " + record_id)
+    if snapshot != "":
+        raise RuntimeError("Current sublevel snapshots must remain explicitly empty: " + record_id)
     if not wiki.startswith("https://backrooms.fandom.com/wiki/"):
         raise RuntimeError("Sublevel source must be Backrooms Fandom wiki: " + record_id)
     parent_id = f"LEVEL.{parent:02d}"
-    if parent_id not in parent_records:
-        raise RuntimeError("Missing parent Level knowledge record: " + parent_id)
+    rating, difficulty_source, wiki_class, rationale = validate_difficulty(record_id, item.get("difficulty"))
 
     text = (
         summary
         + f" Runtime lock: this is a sublevel of Level {parent}; authoritative level.number remains {parent}. "
         + "The external wiki is reference material only: Project WORLD_CANON and live state win every conflict. "
         + "Wiki entrances/exits are possibilities, never guaranteed gameplay transitions."
+        + difficulty_text(rating, difficulty_source, wiki_class, rationale)
     )
     if parent == 6:
         text += (
@@ -104,15 +169,20 @@ for parent, parent_items in by_parent.items():
     parent_id = f"LEVEL.{parent:02d}"
     if catalog_id in known:
         raise RuntimeError("Duplicate sublevel catalog id: " + catalog_id)
-    entries = "; ".join(f'{item["designation"]} — {item["name"]}' for item in parent_items)
+    entries = "; ".join(
+        f'{item["designation"]} — {item["name"]} [{item["difficulty"]["rating"]}/5]'
+        for item in parent_items
+    )
     records.append({
         "id": catalog_id,
         "domain": "SUBLEVEL",
         "kind": "parent-catalog",
         "text": (
             f"Current Backrooms Fandom sublevel references under Level {parent}: {entries}. "
+            "Bracketed values are Project gameplay difficulty ratings with provenance stored on each concrete sublevel record. "
             "These names are possible local subregions, not automatic encounters or guaranteed routes. "
-            f"Entering one keeps authoritative level.number={parent}; Project WORLD_CANON/live state wins conflicts."
+            f"Entering one keeps authoritative level.number={parent}; Project WORLD_CANON/live state wins conflicts. "
+            "All canonical runtime Entities remain roaming-eligible here; there is no Level 0/4/6 exception."
         ),
         "source": {"document": source_list, "anchor": f"Level {parent} sub-level list"},
         "authority": "EXTERNAL_REFERENCE",
@@ -200,11 +270,14 @@ prompt_rule = (
     'Chỉ xác nhận vào sublevel khi cảnh/evidence hiện tại thực sự hỗ trợ; không tự spawn chỉ vì catalog có tên. Khi đã vào, giữ nguyên level.number parent, dùng set_location và '
     'flag_patch{root:exploration,value:{sublevelId:\\\"SUBLEVEL.xx...\\\"}}. Khi quay lại parent thì đặt sublevelId thành chuỗi rỗng. Tuyệt đối không dùng set_level với số thập phân/ký hiệu và '
     'không biến entrance/exit trên wiki thành transition được đảm bảo. Project WORLD_CANON/live state luôn thắng wiki khi xung đột. " +\n'
+    '      "DIFFICULTY + ROAMING LOCK: Gameplay difficulty 1-5 trong KNOWLEDGE_PACKET phải được tôn trọng. WIKI_DIRECT là class Wiki đã xác minh; WIKI_NONSTANDARD_MAPPED giữ raw class Wiki rồi map sang 1-5; PROJECT_DESIGNED là provisional và tuyệt đối không được kể như canon Wiki. Entity roaming độc lập với Wiki entity-count/resident wording: toàn bộ canonical roaming pool có thể xuất hiện ở mọi Level 0-6 và mọi sublevel, không ngoại lệ Level 0, 4 hay 6. " +\n'
 )
 if "SUBLEVEL STATE LOCK:" not in main:
     if main.count(prompt_anchor) != 1:
         raise RuntimeError(f"Sublevel writer prompt anchor expected once, found {main.count(prompt_anchor)}")
     main = main.replace(prompt_anchor, prompt_rule + prompt_anchor, 1)
+elif "DIFFICULTY + ROAMING LOCK:" not in main:
+    raise RuntimeError("Sublevel prompt exists without required difficulty/roaming lock")
 MAIN.write_text(main, encoding="utf-8")
 
 final = json.loads(DB.read_text(encoding="utf-8"))
@@ -220,17 +293,27 @@ for parent in range(7):
     parent_record = next(record for record in final_records if record.get("id") == parent_id)
     if catalog_id not in parent_record.get("references", []):
         raise RuntimeError("Parent Level does not reference its sublevel catalog: " + parent_id)
+    if "Gameplay difficulty is " not in parent_record.get("text", ""):
+        raise RuntimeError("Parent Level difficulty missing from runtime knowledge: " + parent_id)
+
+sublevel_records = [
+    record for record in final_records
+    if record.get("domain") == "SUBLEVEL" and record.get("kind") == "wiki-reference"
+]
+if any("Gameplay difficulty is " not in record.get("text", "") for record in sublevel_records):
+    raise RuntimeError("At least one sublevel runtime record is missing gameplay difficulty")
+if any("there is no Level 0/4/6 exception" not in record.get("text", "") for record in sublevel_records):
+    raise RuntimeError("Global Entity roaming override missing from sublevel runtime records")
 
 level6_records = [
-    record for record in final_records
-    if record.get("domain") == "SUBLEVEL"
-    and record.get("id", "").startswith("SUBLEVEL.06.")
-    and record.get("kind") == "wiki-reference"
+    record for record in sublevel_records
+    if record.get("id", "").startswith("SUBLEVEL.06.")
 ]
 if len(level6_records) != 6 or any("outdoor dark-tundra baseline" not in record.get("text", "") for record in level6_records):
     raise RuntimeError("Level 6 project-baseline lock missing from sublevel references")
 
 print(
-    "WEB_SUBLEVEL_CANON_V1 merged 33 current Level 0-6 Fandom sublevels + 7 parent catalogs; "
-    "integer parent Level authority preserved and runtime sublevel lookup installed."
+    "WEB_SUBLEVEL_CANON_V2 merged 33 current Level 0-6 Fandom sublevels + 7 parent catalogs; "
+    "40 difficulty profiles validated, all sublevel snapshots empty, integer parent Level authority preserved, "
+    "all-Level Entity roaming override and runtime sublevel lookup installed."
 )
