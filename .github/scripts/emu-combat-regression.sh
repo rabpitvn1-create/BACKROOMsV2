@@ -255,10 +255,9 @@ trigger_seeded_combat() {
   local xml="$1" b deadline current err
   b=$(node_bounds "$xml" explore || true)
   if [[ -z "$b" ]]; then
-    harness_error="No enabled Khám phá button available to enter the seeded core combat path"
     return 2
   fi
-  echo "trigger=EXPLORE seeded_core_entity=hound" | tee "$OUT/trigger.log"
+  echo "trigger=EXPLORE seeded_core_entity=hound" | tee "$OUT/trigger.log" >&2
   tap_bounds "$b"
   deadline=$((SECONDS+START_TIMEOUT_SECONDS))
   while (( SECONDS < deadline )); do
@@ -272,11 +271,10 @@ trigger_seeded_combat() {
     fi
     err=$(visible_error "$current" || true)
     if [[ -n "$err" && "$(explore_state "$current" || true)" == "enabled" ]]; then
-      harness_error="Seeded combat was not intercepted before provider path: $err"
+      echo "seeded-combat-entry-error=$err" | tee "$OUT/entry-error.log" >&2
       return 2
     fi
   done
-  harness_error="Seeded Game State Core combat never became visible in the WebView"
   return 2
 }
 
@@ -376,7 +374,7 @@ if [[ -z "$harness_error" ]]; then
   sleep 2
 fi
 
-if [[ -z "$harness_error" && ! $(is_app_resumed; echo $?) -eq 0 ]]; then
+if [[ -z "$harness_error" ]] && ! is_app_resumed; then
   harness_error="MainActivity did not remain resumed after launch"
 fi
 
@@ -391,8 +389,12 @@ if [[ -z "$harness_error" ]]; then
     set +e
     combat_xml=$(trigger_seeded_combat "$ready_xml"); rc=$?
     set -e
-    if [[ "$rc" -ne 0 && -z "$harness_error" ]]; then
-      harness_error="Could not enter seeded combat"
+    if [[ "$rc" -ne 0 ]]; then
+      if [[ -s "$OUT/entry-error.log" ]]; then
+        harness_error="Seeded combat did not intercept the trigger; $(cat "$OUT/entry-error.log")"
+      else
+        harness_error="Seeded Game State Core combat never became visible in the WebView"
+      fi
     fi
   fi
 fi
