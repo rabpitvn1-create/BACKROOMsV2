@@ -1,4 +1,7 @@
 from pathlib import Path
+import os
+import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -52,3 +55,13 @@ for required in (
 
 MAIN.write_text(main, encoding="utf-8")
 print("Local Level Snapshot fallback installed; Level 0 cycles through four packaged snapshots by turn.")
+
+# Research-only CI probe. It discovers candidate image URLs from the exact Fandom
+# Level/sublevel source pages but never changes runtime snapshot selection. Failures here
+# are warnings so a temporary source-site outage cannot break the APK build.
+if os.environ.get("GITHUB_ACTIONS") == "true":
+    harvester = ROOT / "harvest-wiki-snapshot-candidates.py"
+    if harvester.is_file():
+        result = subprocess.run([sys.executable, str(harvester)], cwd=ROOT, check=False)
+        if result.returncode != 0:
+            print(f"Wiki snapshot candidate harvest warning: exit={result.returncode}")
