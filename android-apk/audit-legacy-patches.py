@@ -13,6 +13,7 @@ RETIRED_FILES = (
     "patch-entity-encounter-all-actions.py",
     "patch-gm-freedom-submit-route-final.py",
     "apply-main-campaign-continuation.py",
+    "patch-diep-minh-boss-finalize.py",
 )
 
 
