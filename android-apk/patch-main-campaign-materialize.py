@@ -37,7 +37,14 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
-def install_authored_stage(html: str, path: Path, marker: str, *, skip_legacy_log: bool = False) -> str:
+def install_authored_stage(
+    html: str,
+    path: Path,
+    marker: str,
+    *,
+    skip_legacy_log: bool = False,
+    skip_legacy_threads: bool = False,
+) -> str:
     if marker in html:
         return html
     beat = literal_assignment(path, "beat")
@@ -46,10 +53,21 @@ def install_authored_stage(html: str, path: Path, marker: str, *, skip_legacy_lo
     for old, new in replacements.items():
         if skip_legacy_log and old.startswith('{role:"assistant",content:'):
             continue
+        # Older campaign writers assumed their thread was the final array item (`...}]`).
+        # That is no longer true once persistent reunion/Async threads coexist. Thread objects
+        # are therefore materialized explicitly below without depending on array-tail position.
+        if skip_legacy_threads and old.startswith('{id:"THREAD.MAIN.'):
+            continue
         if new in html:
             continue
         html = replace_once(html, old, new, f"{path.name} state delta")
     return html
+
+
+def ensure_thread(html: str, predecessor: str, thread: str, label: str) -> str:
+    if thread in html:
+        return html
+    return replace_once(html, predecessor, predecessor + "," + thread, label)
 
 
 # The current predecessor recursively materializes the prologue, Level 0 first contact,
@@ -74,6 +92,13 @@ level01_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tấ
 level011_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.11 — Water Damage bằng cách đo độ sâu, dòng chảy, ánh sáng và mốc cục bộ thay vì giả định hình học ổn định. Không tự xác nhận nước uống được, Entity, nguyên nhân biến đổi hay lối ra. currentBeat là STORY.LEVEL0.11.COMPLETE và nextBeat là STORY.LEVEL0.22.ENTRY."}'
 level022_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.22 — Fully Remodeled. Chỉ vật liệu đã kiểm tra và mang theo mới được coi là tài nguyên; hạ tầng hữu dụng không được mặc định là ổn định hay an toàn. currentBeat là STORY.LEVEL0.22.COMPLETE và nextBeat là STORY.LEVEL0.23.ENTRY."}'
 
+async_thread = '{id:"THREAD.ASYNC.EVIDENCE",status:"open",turn:1,fact:"No local Level 0 observation has yet been verified as Async evidence."}'
+epsilon_thread = '{id:"THREAD.MAIN.LEVEL0.EPSILON",status:"resolved",turn:1,fact:"Traverse the multi-level structural anomaly without mistaking environmental change for an exit or Async evidence."}'
+level001_thread = '{id:"THREAD.MAIN.LEVEL0.01",status:"resolved",turn:1,fact:"Test apparent exit cues and unstable routes in Level 0.01 without promoting signage or unknown marks into unsupported conclusions."}'
+level01_thread = '{id:"THREAD.MAIN.LEVEL0.1",status:"resolved",turn:1,fact:"Traverse Deep Emptiness while treating sparse supplies and ambiguous traces as things to verify rather than answers to current needs."}'
+level011_thread = '{id:"THREAD.MAIN.LEVEL0.11",status:"resolved",turn:1,fact:"Traverse Water Damage using local measurements while preserving uncertainty about shifting geometry, water safety, sounds and causes."}'
+level022_thread = '{id:"THREAD.MAIN.LEVEL0.22",status:"resolved",turn:1,fact:"Traverse Fully Remodeled while distinguishing verified portable salvage from infrastructure whose persistence, safety and origin remain unknown."}'
+
 # Epsilon predates the current GM-log transport. Keep its authored prose/state and normalize
 # only the startup/log representation consumed by the APK.
 epsilon_marker = "LEVEL ε / INCESSANT HUM-BUZZ — STRUCTURAL DRIFT"
@@ -94,17 +119,20 @@ if epsilon_marker not in html:
         "Level epsilon current log",
     )
 
-# 0.01 resolves the epsilon traversal thread, while the epsilon authoring predates that record.
-async_thread = '{id:"THREAD.ASYNC.EVIDENCE",status:"open",turn:1,fact:"No local Level 0 observation has yet been verified as Async evidence."}'
-epsilon_thread = '{id:"THREAD.MAIN.LEVEL0.EPSILON",status:"resolved",turn:1,fact:"Traverse the multi-level structural anomaly without mistaking environmental change for an exit or Async evidence."}'
-if epsilon_thread not in html:
-    html = replace_once(html, async_thread, async_thread + ',' + epsilon_thread, "Level epsilon continuity thread")
+# Campaign continuity threads coexist with persistent reunion/Async threads. Insert each next
+# to its campaign predecessor instead of assuming any campaign thread closes the array.
+html = ensure_thread(html, async_thread, epsilon_thread, "Level epsilon continuity thread")
 
-# Later authored stages use a retired assistant/content log anchor. Preserve their prose and
-# state deltas but normalize that one transport concern onto the current role=gm/text log.
 level001_marker = "LEVEL 0.01 / THE EXIT ? — FALSE PROMISE"
 if level001_marker not in html:
-    html = install_authored_stage(html, LEVEL001, level001_marker, skip_legacy_log=True)
+    html = install_authored_stage(
+        html,
+        LEVEL001,
+        level001_marker,
+        skip_legacy_log=True,
+        skip_legacy_threads=True,
+    )
+    html = ensure_thread(html, epsilon_thread, level001_thread, "Level 0.01 continuity thread")
     html = replace_once(
         html,
         epsilon_summary,
@@ -114,7 +142,14 @@ if level001_marker not in html:
 
 level01_marker = "LEVEL 0.1 / DEEP EMPTINESS — BORROWED SHELTER"
 if level01_marker not in html:
-    html = install_authored_stage(html, LEVEL01, level01_marker, skip_legacy_log=True)
+    html = install_authored_stage(
+        html,
+        LEVEL01,
+        level01_marker,
+        skip_legacy_log=True,
+        skip_legacy_threads=True,
+    )
+    html = ensure_thread(html, level001_thread, level01_thread, "Level 0.1 continuity thread")
     html = replace_once(
         html,
         level001_summary,
@@ -124,7 +159,14 @@ if level01_marker not in html:
 
 level011_marker = "LEVEL 0.11 / WATER DAMAGE — MEASURE THE CURRENT"
 if level011_marker not in html:
-    html = install_authored_stage(html, LEVEL011, level011_marker, skip_legacy_log=True)
+    html = install_authored_stage(
+        html,
+        LEVEL011,
+        level011_marker,
+        skip_legacy_log=True,
+        skip_legacy_threads=True,
+    )
+    html = ensure_thread(html, level01_thread, level011_thread, "Level 0.11 continuity thread")
     html = replace_once(
         html,
         level01_summary,
@@ -134,7 +176,14 @@ if level011_marker not in html:
 
 level022_marker = "LEVEL 0.22 / FULLY REMODELED — USEFUL IS NOT SAFE"
 if level022_marker not in html:
-    html = install_authored_stage(html, LEVEL022, level022_marker, skip_legacy_log=True)
+    html = install_authored_stage(
+        html,
+        LEVEL022,
+        level022_marker,
+        skip_legacy_log=True,
+        skip_legacy_threads=True,
+    )
+    html = ensure_thread(html, level011_thread, level022_thread, "Level 0.22 continuity thread")
     html = replace_once(
         html,
         level011_summary,
@@ -148,7 +197,9 @@ for required in (
     'currentBeat:"STORY.LEVEL0.22.COMPLETE"',
     'nextBeat:"STORY.LEVEL0.23.ENTRY"',
     'sublevelId:"SUBLEVEL.00.22"',
+    'THREAD.MAIN.LEVEL0.EPSILON',
     'THREAD.MAIN.LEVEL0.01',
+    'THREAD.MAIN.LEVEL0.1',
     'THREAD.MAIN.LEVEL0.11',
     'THREAD.MAIN.LEVEL0.22',
     'LEVEL ε — INCESSANT HUM-BUZZ',
