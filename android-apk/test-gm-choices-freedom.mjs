@@ -19,9 +19,9 @@ assert.match(runtime, /enum class ActionKind \{ SEARCH, EXECUTE, EXPLORE \}/);
 assert.doesNotMatch(runtime, /FREEDOM/);
 
 // Final interaction authority: only EXPLORE may start a new Entity encounter.
-// SEARCH/EXECUTE remain valid ActionKinds but must not reopen the legacy all-actions gate.
-assert.match(java, /boolean entityEncounterAction = exploreAction;/);
-assert.doesNotMatch(java, /entityEncounterAction = exploreAction \|\|/);
+// SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
+assert.match(java, /EntityEncounterPolicy\.roll\(\s*entityPool,\s*exploreAction && entityAllowed && !emuProgressionFixture,\s*GAME_RNG\)/);
+assert.doesNotMatch(java, /entityEncounterAction/);
 assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/);
 assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
 assert.match(java, /không tự đổi mục tiêu và không khởi tạo encounter Entity mới/);
