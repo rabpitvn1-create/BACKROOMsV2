@@ -21,6 +21,11 @@ assert.doesNotMatch(runtime, /FREEDOM/);
 // The emulator progression probe uses this ASCII phrase through the real composer. Keep it
 // classified as EXPLORE so the probe exercises the same encounter/progression path as a player.
 assert.match(java, /"continue forward"/);
+const classifierStart = java.indexOf('private String classifyFreedomActionKind');
+const exploreReturn = java.indexOf('if (explores) return "EXPLORE";', classifierStart);
+const searchBranch = java.indexOf('boolean searches =', classifierStart);
+assert.ok(classifierStart >= 0 && exploreReturn > classifierStart && searchBranch > exploreReturn,
+  'Freedom traversal must be resolved before SEARCH phrases so movement cannot bypass EXPLORE rules');
 
 // Final interaction authority: only EXPLORE may start a new Entity encounter.
 // SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
