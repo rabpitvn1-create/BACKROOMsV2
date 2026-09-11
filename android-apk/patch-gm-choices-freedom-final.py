@@ -186,6 +186,13 @@ html = INDEX.read_text(encoding="utf-8")
 if "GM_CHOICES_FREEDOM_V1" in html:
     raise RuntimeError("GM choice/Freedom UI already installed")
 
+# The canonical Android UI currently sends typed text as a fixed EXECUTE macro. Route that
+# form through submitFreedom so player-authored text is classified independently, while the
+# curated A/B/C buttons below continue to use submitAction with an explicit ActionKind.
+typed_submit_old = 'Android.submitAction(JSON.stringify(state),"EXECUTE",a)'
+typed_submit_new = 'Android.submitFreedom(JSON.stringify(state),a)'
+html = once(html, typed_submit_old, typed_submit_new, "Freedom typed submit route")
+
 ui = r'''
 <style id="gmChoicesFreedomStyle">
 /* GM_CHOICES_FREEDOM_V1 */
@@ -296,9 +303,12 @@ for required in (
     "window.backroomChoices=function(payload)",
     "button.textContent=choice.id+\". \"+choice.label.toLocaleUpperCase(\"vi-VN\")",
     "window.Android.submitAction(JSON.stringify(state),choice.actionKind,choice.action)",
+    "Android.submitFreedom(JSON.stringify(state),a)",
 ):
     if required not in html:
         raise RuntimeError("GM/Freedom UI contract missing: " + required)
+if typed_submit_old in html:
+    raise RuntimeError("Canonical typed form still bypasses Freedom classification")
 
 INDEX.write_text(html, encoding="utf-8")
-print("GM choices + Freedom input installed without changing World state: Search/Explore hidden, Execute kept, A/B/C dispatch through existing ActionRuntime kinds.")
+print("GM choices + Freedom input installed without changing World state: Search/Explore hidden, typed text uses Freedom, A/B/C use existing ActionRuntime kinds.")
