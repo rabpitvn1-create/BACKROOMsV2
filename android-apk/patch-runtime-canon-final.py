@@ -121,10 +121,12 @@ if not sru_canon.is_file():
 runpy.run_path(str(sru_canon), run_name="__main__")
 
 # The prologue is a static HTML string, so writer/auditor canon guards never touch it.
-# Normalize that retired organization label at the same final SRU authority layer.
+# Migrate the retired organization line when present, but also accept the newer campaign
+# prologue which states the same SRU communication loss in a fuller scene description.
 prologue_html = INDEX.read_text(encoding="utf-8")
 stale_prologue = "Kênh nội bộ Black Blood im lặng."
-current_prologue = "Kênh nội bộ SRU (Special Respond Unit) im lặng."
+legacy_current_prologue = "Kênh nội bộ SRU (Special Respond Unit) im lặng."
+campaign_current_prologue = "Tuyến SRU không về được sở chỉ huy."
 if stale_prologue in prologue_html:
     count = prologue_html.count(stale_prologue)
     if count != 1:
@@ -132,8 +134,8 @@ if stale_prologue in prologue_html:
             "SRU prologue migration expected exactly one stale Black Blood channel, found "
             + str(count)
         )
-    prologue_html = prologue_html.replace(stale_prologue, current_prologue, 1)
-elif current_prologue not in prologue_html:
+    prologue_html = prologue_html.replace(stale_prologue, legacy_current_prologue, 1)
+elif legacy_current_prologue not in prologue_html and campaign_current_prologue not in prologue_html:
     raise RuntimeError("SRU prologue communication marker missing")
 if stale_prologue in prologue_html:
     raise RuntimeError("Retired Black Blood prologue channel survived SRU finalization")
