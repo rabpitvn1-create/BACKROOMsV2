@@ -71,8 +71,129 @@ jobs:
           disable-spellchecker: true
           enable-hw-keyboard: true
           script: |
-            sed -i 's@  local label="$1" raw="$OUT/core-${label}.xml"@  local label="$1"\n  local raw="$OUT/core-${label}.xml"@' .github/scripts/emu-sublevels-0-6.sh
-            python3 -c 'from pathlib import Path; import re; p=Path(".github/scripts/emu-sublevels-0-6.sh"); t=p.read_text(encoding="utf-8"); pat=r"submit_explore\(\) \{\n.*?\n\}\n\nread_core_state\(\) \{"; repl="submit_explore() {\n  local index=\"$1\" xml bounds\n  xml=\"$OUT/ui/ready-${index}.xml\"\n  dump_ui_to \"$xml\" || return 1\n  bounds=$(node_bounds \"$xml\" explore || true)\n  [[ -n \"$bounds\" ]] || return 1\n  # One physical tap equals one gameplay EXPLORE action. Retrying after a fixed delay can submit a second turn when a fast turn has already re-enabled the button.\n  tap_bounds \"$bounds\"\n  echo \"action=$index kind=EXPLORE label=Khám phá\" | tee -a \"$OUT/actions.log\"\n  return 0\n}\n\nread_core_state() {"; t,n=re.subn(pat,repl,t,count=1,flags=re.S); assert n==1, f"submit_explore patch expected 1 match, found {n}"; p.write_text(t,encoding="utf-8")'
+            python3 - <<'PY'
+            from pathlib import Path
+            import re
+
+            p = Path('.github/scripts/emu-sublevels-0-6.sh')
+            t = p.read_text(encoding='utf-8')
+
+            old = """    elif kind == 'explore':
+                    match = enabled and cls.endswith('Button') and (text == 'kham pha' or desc == 'kham pha')
+            """
+            new = """    elif kind == 'input':
+                    match = enabled and cls.endswith('EditText')
+                elif kind == 'submit':
+                    match = enabled and cls.endswith('Button') and (
+                        rid.endswith(':id/submit') or rid == 'submit' or text == 'thuc hien' or desc == 'thuc hien'
+                    )
+            """
+            if t.count(old) != 1:
+                raise SystemExit(f'node_bounds interaction anchor expected 1 match, found {t.count(old)}')
+            t = t.replace(old, new, 1)
+
+            wait_pattern = re.compile(r"wait_until_explore_ready\(\) \{\n.*?\n\}\n\nsubmit_explore\(\) \{", re.S)
+            wait_replacement = r'''wait_until_explore_ready() {
+              local label="$1" deadline tmp bounds non_app=0
+              deadline=$((SECONDS + TURN_TIMEOUT_SECONDS))
+              tmp="/tmp/backroom-${label}.xml"
+              while (( SECONDS < deadline )); do
+                dump_ui_to "$tmp" || { sleep "$POLL_SECONDS"; continue; }
+                if is_known_system_overlay "$tmp"; then
+                  dismiss_system_overlays
+                  sleep 1
+                  continue
+                fi
+                if ! is_app_resumed; then
+                  non_app=$((non_app + 1))
+                  if (( non_app >= 5 )); then
+                    return 1
+                  fi
+                  sleep "$POLL_SECONDS"
+                  continue
+                fi
+                non_app=0
+                if ui_is_busy "$tmp"; then
+                  sleep "$POLL_SECONDS"
+                  continue
+                fi
+                bounds=$(node_bounds "$tmp" input || true)
+                if [[ -n "$bounds" ]]; then
+                  cp "$tmp" "$OUT/ui/${label}.xml"
+                  return 0
+                fi
+                sleep "$POLL_SECONDS"
+              done
+              [[ -s "$tmp" ]] && cp "$tmp" "$OUT/ui/${label}-timeout.xml" || true
+              return 1
+            }
+
+            submit_explore() {'''
+            t, n = wait_pattern.subn(wait_replacement, t, count=1)
+            if n != 1:
+                raise SystemExit(f'Freedom-ready function patch expected 1 match, found {n}')
+
+            submit_pattern = re.compile(r"submit_explore\(\) \{\n.*?\n\}\n\nread_core_state\(\) \{", re.S)
+            submit_replacement = r'''submit_explore() {
+              local index="$1" xml input_bounds typed submit_bounds observed_text
+              xml="$OUT/ui/ready-${index}.xml"
+              dump_ui_to "$xml" || return 1
+              input_bounds=$(node_bounds "$xml" input || true)
+              [[ -n "$input_bounds" ]] || return 1
+
+              tap_bounds "$input_bounds"
+              adb shell 'input keyevent KEYCODE_MOVE_END; for i in $(seq 1 80); do input keyevent KEYCODE_DEL; done; input text continue%sforward' >/dev/null 2>&1 || true
+              sleep 1
+              typed="$OUT/ui/typed-${index}.xml"
+              dump_ui_to "$typed" || return 1
+              observed_text=$(python3 - "$typed" <<'PY2'
+            import sys, xml.etree.ElementTree as ET
+            root=ET.parse(sys.argv[1]).getroot()
+            for node in root.iter('node'):
+                if (node.attrib.get('class') or '').endswith('EditText'):
+                    print(node.attrib.get('text') or '')
+                    break
+            PY2
+              )
+              [[ "${observed_text,,}" == *"continue forward"* ]] || return 1
+
+              submit_bounds=$(node_bounds "$typed" submit || true)
+              if [[ -z "$submit_bounds" ]]; then
+                adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+                sleep 1
+                dump_ui_to "$typed" || return 1
+                submit_bounds=$(node_bounds "$typed" submit || true)
+              fi
+              [[ -n "$submit_bounds" ]] || return 1
+
+              # One physical tap equals one gameplay action. Never retry after a fixed delay: a
+              # fast turn may already have finished and re-enabled the composer.
+              tap_bounds "$submit_bounds"
+              echo "action=$index origin=FREEDOM resolvedKind=EXPLORE input=continue forward" | tee -a "$OUT/actions.log"
+              return 0
+            }
+
+            read_core_state() {'''
+            t, n = submit_pattern.subn(submit_replacement, t, count=1)
+            if n != 1:
+                raise SystemExit(f'Freedom submit patch expected 1 match, found {n}')
+
+            t = t.replace('wait_until_explore_ready "initial" || fail "Khám phá was not ready after fresh Level 0 launch"',
+                          'wait_until_explore_ready "initial" || fail "Freedom input was not ready after fresh Level 0 launch"')
+            t = t.replace('fail "Timed out waiting for Khám phá before action $actions"',
+                          'fail "Timed out waiting for Freedom input before action $actions"')
+            t = t.replace('fail "Real Khám phá tap was not accepted at action $actions"',
+                          'fail "Real Freedom traversal submit was not accepted at action $actions"')
+            t = t.replace('accepted Khám phá actions', 'accepted Freedom traversal actions classified as EXPLORE')
+
+            # Older bash versions can parse the combined local declaration, but split it so the
+            # run-as path is identical across emulator runner images.
+            t = t.replace('  local label="$1" raw="$OUT/core-${label}.xml"',
+                          '  local label="$1"\n  local raw="$OUT/core-${label}.xml"')
+
+            p.write_text(t, encoding='utf-8')
+            PY
+            bash -n .github/scripts/emu-sublevels-0-6.sh
             bash -c 'adb(){ command adb "$@" </dev/null; }; export -f adb; adb shell pm disable-user --user 0 com.android.launcher3 >/dev/null 2>&1 || true; bash .github/scripts/emu-sublevels-0-6.sh Backroom-under-test.apk'
 
       - name: Upload sublevel evidence
