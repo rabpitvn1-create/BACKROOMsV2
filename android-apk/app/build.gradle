@@ -50,7 +50,7 @@ android {
 // already-patched trees converge to the same state.
 def applyMainCampaignContinuation = tasks.register('applyMainCampaignContinuation', Exec) {
   workingDir rootProject.projectDir
-  commandLine 'python3', 'patch-main-campaign-level0-01.py'
+  commandLine 'python3', 'patch-main-campaign-level0-1.py'
 }
 
 tasks.configureEach { task ->
