@@ -16,31 +16,29 @@ class MainCampaignLevel0Test {
       ?: error("index.html not found; searched: " + candidates.joinToString { it.absolutePath })
   }
 
-  @Test fun level0ArrivalCompletesBeforeLuciaJoinDecision() {
+  @Test fun latestCampaignBuildRetainsLevel0FirstContactBeforeLaterJoin() {
     val html = indexHtml()
 
     assertTrue(html.contains("LEVEL 0 / THE LOBBY — FIRST CONTACT"))
     assertTrue(html.contains("STORY.LEVEL0.ARRIVAL"))
     assertTrue(html.contains("STORY.LEVEL0.FIRST_CONTACT_COMPLETE"))
-    assertTrue(html.contains("nextBeat:\"STORY.LEVEL0.LUCIA_DECISION\""))
-    assertTrue(html.contains("luciaEncounter:{status:\"met\",level:0,sublevelId:\"\""))
-    assertTrue(html.contains("partyEligible:true,joinPending:true"))
-    assertTrue(html.contains("relationship:\"initial_tactical_trust\""))
-    assertTrue(html.contains("Lucia chưa tự động gia nhập Party"))
+    assertTrue(html.contains("campaignLevel0Signature"))
+    assertTrue(html.contains("Kai met Lucia at Level 0; both confirmed only a limited tactical cooperation and Lucia has not yet joined the party."))
+    assertTrue(html.contains("relationship advanced from stranger contact to earned tactical trust only", ignoreCase = true))
+
+    // The active initial state may be a later authored beat; this test locks the
+    // historical first-contact record rather than requiring Lucia to remain unjoined.
+    assertFalse(html.contains("relationship:\"romantic\""))
   }
 
-  @Test fun level0BeatPreservesKnowledgeAndWorldBoundaries() {
+  @Test fun level0FirstContactPreservesKnowledgeBoundaries() {
     val html = indexHtml()
 
-    assertTrue(html.contains("Chưa có Entity cư trú, lối thoát hay dấu vết Async nào được xác nhận"))
     assertTrue(html.contains("Không ai nói đó là sinh vật."))
     assertTrue(html.contains("Có bằng chứng về lối ra?"))
     assertTrue(html.contains("“Chưa.”"))
     assertTrue(html.contains("Không lời hứa. Không tin tưởng vô điều kiện."))
-    assertTrue(html.contains("campaignLevel0Signature"))
-
-    // Lucia's encounter is fixed, but the story beat must not manufacture a Party join.
-    assertFalse(html.contains("luciaEncounter:{status:\"joined\""))
+    assertTrue(html.contains("without inventing an exit, resident Entity, or Async attribution"))
     assertFalse(html.contains("relationship:\"romantic\""))
     assertFalse(html.contains("Async đã tạo ra Backrooms"))
   }

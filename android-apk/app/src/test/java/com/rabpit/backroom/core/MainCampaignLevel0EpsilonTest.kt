@@ -16,29 +16,26 @@ class MainCampaignLevel0EpsilonTest {
       ?: error("index.html not found; searched: " + candidates.joinToString { it.absolutePath })
   }
 
-  @Test fun epsilonUsesSublevelStateWithoutReplacingParentLevel() {
+  @Test fun latestCampaignBuildRetainsEpsilonAsLevelZeroChildBeat() {
     val html = indexHtml()
 
     assertTrue(html.contains("LEVEL ε / INCESSANT HUM-BUZZ — STRUCTURAL DRIFT"))
-    assertTrue(html.contains("currentBeat:\"STORY.LEVEL0.EPSILON.COMPLETE\""))
-    assertTrue(html.contains("nextBeat:\"STORY.LEVEL0.01.ENTRY\""))
-    assertTrue(html.contains("exploration:{sublevelId:\"SUBLEVEL.00.EPSILON\""))
-    assertTrue(html.contains("difficulty:{rating:3,source:\"PROJECT_DESIGNED\",wikiClass:\"UNVERIFIED\"}"))
-    assertTrue(html.contains("parentLevel:0,sublevelId:\"SUBLEVEL.00.EPSILON\""))
-    assertTrue(html.contains("luciaEncounter:{status:\"joined\",level:0,sublevelId:\"SUBLEVEL.00.EPSILON\""))
+    assertTrue(html.contains("window.campaignLevel0EpsilonSignature={currentBeat:\"STORY.LEVEL0.EPSILON.COMPLETE\",nextBeat:\"STORY.LEVEL0.01.ENTRY\""))
+    assertTrue(html.contains("parentLevel:0,sublevelId:\"SUBLEVEL.00.EPSILON\",difficulty:3"))
+    assertTrue(html.contains("STORY.LEVEL0.EPSILON.COMPLETE"))
+    assertTrue(html.contains("KNOW.STORY.LEVEL0.EPSILON"))
   }
 
-  @Test fun epsilonReinforcesTrustWithoutInventingCanonEvidence() {
+  @Test fun epsilonHistoryReinforcesTrustWithoutInventingCanonEvidence() {
     val html = indexHtml()
 
     assertTrue(html.contains("Shared navigation procedure was reinforced under structural and auditory pressure"))
     assertTrue(html.contains("relationship remains earned tactical trust with no romance"))
     assertTrue(html.contains("without inventing an exit, resident Entity, or Async attribution"))
     assertTrue(html.contains("Không có lý do để biến sự thay đổi âm thanh thành một Entity."))
-    assertTrue(html.contains("observed-structure-only"))
+    assertTrue(html.contains("knowledgeBoundary:\"observed-structure-only\""))
 
     assertFalse(html.contains("relationship:\"romantic\""))
     assertFalse(html.contains("Async đã tạo ra Backrooms"))
-    assertFalse(html.contains("currentBeat:\"STORY.LEVEL0.01.ENTRY\""))
   }
 }

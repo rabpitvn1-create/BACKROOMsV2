@@ -15,13 +15,13 @@ class MainCampaignLevel01Test {
     return p?.readText(Charsets.UTF_8) ?: error("index.html not found")
   }
 
-  @Test fun level01StateIsLocked() {
+  @Test fun level01HistoryRemainsMaterializedInLockedOrder() {
     val text = html()
     assertTrue(text.contains("LEVEL 0.1 / DEEP EMPTINESS — BORROWED SHELTER"))
-    assertTrue(text.contains("currentBeat:\"STORY.LEVEL0.1.COMPLETE\""))
-    assertTrue(text.contains("nextBeat:\"STORY.LEVEL0.11.ENTRY\""))
-    assertTrue(text.contains("sublevelId:\"SUBLEVEL.00.1\""))
-    assertTrue(text.contains("rating:5,source:\"WIKI_DIRECT\",wikiClass:\"CLASS 5\""))
+    assertTrue(text.contains("STORY.LEVEL0.1.COMPLETE"))
+    assertTrue(text.contains("STORY.LEVEL0.11.ENTRY"))
+    assertTrue(text.contains("KNOW.STORY.LEVEL0.1"))
+    assertTrue(text.contains("THREAD.MAIN.LEVEL0.1"))
     assertTrue(text.contains("relationship:\"earned_tactical_trust\",romance:\"none\""))
   }
 

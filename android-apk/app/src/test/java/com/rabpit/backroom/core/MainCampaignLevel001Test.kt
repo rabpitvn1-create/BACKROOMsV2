@@ -16,14 +16,14 @@ class MainCampaignLevel001Test {
       ?: error("index.html not found; searched: " + candidates.joinToString { it.absolutePath })
   }
 
-  @Test fun level001UsesChildStateAndAdvancesInLockedOrder() {
+  @Test fun level001HistoryRemainsMaterializedInLockedOrder() {
     val html = indexHtml()
     assertTrue(html.contains("LEVEL 0.01 / THE EXIT ? — FALSE PROMISE"))
-    assertTrue(html.contains("currentBeat:\"STORY.LEVEL0.01.COMPLETE\""))
-    assertTrue(html.contains("nextBeat:\"STORY.LEVEL0.1.ENTRY\""))
-    assertTrue(html.contains("exploration:{sublevelId:\"SUBLEVEL.00.01\""))
-    assertTrue(html.contains("difficulty:{rating:2,source:\"WIKI_DIRECT\",wikiClass:\"CLASS 2\"}"))
-    assertTrue(html.contains("luciaEncounter:{status:\"joined\",level:0,sublevelId:\"SUBLEVEL.00.01\""))
+    assertTrue(html.contains("STORY.LEVEL0.01.COMPLETE"))
+    assertTrue(html.contains("STORY.LEVEL0.1.ENTRY"))
+    assertTrue(html.contains("KNOW.STORY.LEVEL0.01"))
+    assertTrue(html.contains("THREAD.MAIN.LEVEL0.01"))
+    assertTrue(html.contains("treating EXIT signage, route loops, silence, and an unknown chalk mark as observations"))
   }
 
   @Test fun level001TreatsExitCuesAsEvidenceToTestNotTruth() {

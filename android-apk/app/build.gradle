@@ -45,12 +45,11 @@ android {
   testOptions { unitTests.returnDefaultValues = true }
 }
 
-// Materialize the campaign chain through the latest authored module before tests/assets
-// are packaged. Each campaign patch invokes its predecessor, so clean checkouts and
-// already-patched trees converge to the same state.
+// Materialize authored campaign data through the schema-safe orchestrator instead of
+// recursively executing historical patches that still contain retired log/thread anchors.
 def applyMainCampaignContinuation = tasks.register('applyMainCampaignContinuation', Exec) {
   workingDir rootProject.projectDir
-  commandLine 'python3', 'patch-main-campaign-level0-41.py'
+  commandLine 'python3', 'patch-main-campaign-materialize-current.py'
 }
 
 tasks.configureEach { task ->
