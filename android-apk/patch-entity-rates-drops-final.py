@@ -118,3 +118,8 @@ print("Entity policy applied: production keeps independent 2% dice; progression 
 # extend the settled transition/provider/entity runtime without reviving legacy paths.
 import runpy
 runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
+
+# The historical encounter layer widens SEARCH/EXECUTE to fresh Entity rolls. The
+# GM interaction contract is stricter: only EXPLORE may start a new encounter.
+# Re-assert that contract after every nested legacy/runtime transformation has settled.
+runpy.run_path(str(ROOT / "patch-gm-action-policy-final.py"), run_name="__main__")
