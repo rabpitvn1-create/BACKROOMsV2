@@ -1,10 +1,9 @@
 """Materialize the authored Level 0 campaign with one consistent startup-state schema.
 
-The older authored beat modules remain the source of their long-form prose and state deltas,
-but epsilon/0.01/0.1 were written against two retired startup shapes (`story:` and
-`{role:"assistant",content:...}`). This orchestrator reads only their literal authored data,
-applies it to the current `storyArc`/`storyContinuity`/`log` schema, and never mutates another
-patch file.
+Older authored beat modules remain the source of their long-form prose and state deltas, but
+some were written against retired startup/log shapes. This orchestrator reads only literal
+authored data, applies it to the current storyArc/storyContinuity/GM-log schema, and never
+mutates another patch file.
 """
 from __future__ import annotations
 
@@ -18,6 +17,8 @@ LUCIA = ROOT / "patch-main-campaign-level0-lucia-decision.py"
 EPSILON = ROOT / "patch-main-campaign-level0-epsilon.py"
 LEVEL001 = ROOT / "patch-main-campaign-level0-01.py"
 LEVEL01 = ROOT / "patch-main-campaign-level0-1.py"
+LEVEL011 = ROOT / "campaign-main-level0-11.py"
+LEVEL022 = ROOT / "campaign-main-level0-22.py"
 
 
 def literal_assignment(path: Path, name: str):
@@ -48,8 +49,8 @@ def install_authored_stage(html: str, path: Path, marker: str, *, skip_legacy_lo
     return html
 
 
-# The current predecessor is already schema-correct and recursively materializes the prologue,
-# Level 0 first contact, and Lucia's mutual join decision.
+# The current predecessor recursively materializes the prologue, Level 0 first contact,
+# and Lucia's mutual join decision.
 subprocess.run(["python3", str(LUCIA)], cwd=ROOT, check=True)
 html = INDEX.read_text(encoding="utf-8")
 
@@ -67,9 +68,11 @@ lucia_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã tự nguyệ
 epsilon_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất beat Level ε trong cùng parent Level 0. Họ chỉ xác nhận structural drift và nhiễu âm thanh quan sát được; không tự suy diễn lối thoát, Entity cư trú hay dấu vết Async. Quan hệ vẫn là earned tactical trust, không romance. Story beat kế tiếp là Level 0.01 — The Exit ?."}'
 level001_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.01 sau khi kiểm chứng các biển EXIT, route loop, vùng im lặng và dấu phấn lạ mà không coi chúng là bằng chứng thoát ra, Entity hay đồng đội mất tích. Story beat kế tiếp là Level 0.1 — Deep Emptiness."}'
 level01_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.1 — Deep Emptiness. Vật tư, âm thanh và dấu vết chưa xác định vẫn giữ trạng thái chưa xác nhận; currentBeat là STORY.LEVEL0.1.COMPLETE và nextBeat là STORY.LEVEL0.11.ENTRY. Người chơi tiếp tục điều khiển Kai từ đây."}'
+level011_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.11 — Water Damage bằng cách đo độ sâu, dòng chảy, ánh sáng và mốc cục bộ thay vì giả định hình học ổn định. Không tự xác nhận nước uống được, Entity, nguyên nhân biến đổi hay lối ra. currentBeat là STORY.LEVEL0.11.COMPLETE và nextBeat là STORY.LEVEL0.22.ENTRY."}'
+level022_summary = '{role:"gm",text:"LƯỢT 1\\n\\nKai và Lucia đã hoàn tất Level 0.22 — Fully Remodeled. Chỉ vật liệu đã kiểm tra và mang theo mới được coi là tài nguyên; hạ tầng hữu dụng không được mặc định là ổn định hay an toàn. currentBeat là STORY.LEVEL0.22.COMPLETE và nextBeat là STORY.LEVEL0.23.ENTRY."}'
 
-# Epsilon: use authored prose/state deltas, then advance the current GM log using the schema
-# actually consumed by the APK. The retired top-level `story:` pointer is deliberately absent.
+# Epsilon predates the current GM-log transport. Keep its authored prose/state and normalize
+# only the startup/log representation consumed by the APK.
 epsilon_marker = "LEVEL ε / INCESSANT HUM-BUZZ — STRUCTURAL DRIFT"
 if epsilon_marker not in html:
     html = install_authored_stage(html, EPSILON, epsilon_marker)
@@ -88,16 +91,14 @@ if epsilon_marker not in html:
         "Level epsilon current log",
     )
 
-# The 0.01 authored delta resolves the epsilon traversal thread, but the epsilon module predates
-# that thread record. Add the predecessor fact here in the current continuity array so 0.01 can
-# advance it without inventing another compatibility schema.
+# 0.01 resolves the epsilon traversal thread, while the epsilon authoring predates that record.
 async_thread = '{id:"THREAD.ASYNC.EVIDENCE",status:"open",turn:1,fact:"No local Level 0 observation has yet been verified as Async evidence."}'
 epsilon_thread = '{id:"THREAD.MAIN.LEVEL0.EPSILON",status:"resolved",turn:1,fact:"Traverse the multi-level structural anomaly without mistaking environmental change for an exit or Async evidence."}'
 if epsilon_thread not in html:
     html = replace_once(html, async_thread, async_thread + ',' + epsilon_thread, "Level epsilon continuity thread")
 
-# 0.01 and 0.1 contained a retired assistant/content log anchor. Their authored state deltas and
-# prose remain authoritative; only that stale transport anchor is skipped and replaced here.
+# Later authored stages use a retired assistant/content log anchor. Preserve their prose and
+# state deltas but normalize that one transport concern onto the current role=gm/text log.
 level001_marker = "LEVEL 0.01 / THE EXIT ? — FALSE PROMISE"
 if level001_marker not in html:
     html = install_authored_stage(html, LEVEL001, level001_marker, skip_legacy_log=True)
@@ -118,16 +119,40 @@ if level01_marker not in html:
         "Level 0.1 current log",
     )
 
+level011_marker = "LEVEL 0.11 / WATER DAMAGE — MEASURE THE CURRENT"
+if level011_marker not in html:
+    html = install_authored_stage(html, LEVEL011, level011_marker, skip_legacy_log=True)
+    html = replace_once(
+        html,
+        level01_summary,
+        '{role:"gm",text:"LEVEL 0.11 — WATER DAMAGE\\n\\n"+level011Story},' + level011_summary,
+        "Level 0.11 current log",
+    )
+
+level022_marker = "LEVEL 0.22 / FULLY REMODELED — USEFUL IS NOT SAFE"
+if level022_marker not in html:
+    html = install_authored_stage(html, LEVEL022, level022_marker, skip_legacy_log=True)
+    html = replace_once(
+        html,
+        level011_summary,
+        '{role:"gm",text:"LEVEL 0.22 — FULLY REMODELED\\n\\n"+level022Story},' + level022_summary,
+        "Level 0.22 current log",
+    )
+
 for required in (
     structured_lucia_signature,
     'window.campaignLevel0EpsilonSignature=',
-    'currentBeat:"STORY.LEVEL0.1.COMPLETE"',
-    'nextBeat:"STORY.LEVEL0.11.ENTRY"',
-    'sublevelId:"SUBLEVEL.00.1"',
+    'currentBeat:"STORY.LEVEL0.22.COMPLETE"',
+    'nextBeat:"STORY.LEVEL0.23.ENTRY"',
+    'sublevelId:"SUBLEVEL.00.22"',
     'THREAD.MAIN.LEVEL0.01',
+    'THREAD.MAIN.LEVEL0.11',
+    'THREAD.MAIN.LEVEL0.22',
     'LEVEL ε — INCESSANT HUM-BUZZ',
     'LEVEL 0.01 — THE EXIT ?',
     'LEVEL 0.1 — DEEP EMPTINESS',
+    'LEVEL 0.11 — WATER DAMAGE',
+    'LEVEL 0.22 — FULLY REMODELED',
 ):
     if required not in html:
         raise RuntimeError("Campaign materialization contract missing: " + required)
@@ -137,9 +162,12 @@ for retired in (
     'story:level0EpsilonStory,',
     '{role:"assistant",content:level0EpsilonStory}',
     '{role:"assistant",content:level001Story}',
+    '{role:"assistant",content:level01Story}',
+    '{role:"assistant",content:level011Story}',
+    '{role:"assistant",content:level022Story}',
 ):
     if retired in html:
         raise RuntimeError("Retired campaign startup schema survived: " + retired)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Main campaign materialized through Level 0.1 using the current storyArc/storyContinuity/GM-log schema.")
+print("Main campaign materialized through Level 0.22 using the current storyArc/storyContinuity/GM-log schema.")
