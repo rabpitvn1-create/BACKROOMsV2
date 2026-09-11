@@ -32,7 +32,8 @@ def literal_assignment(path: Path, name: str):
 def replace_once(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
     if count != 1:
-        raise RuntimeError(f"{label}: expected exactly 1 anchor, found {count}")
+        preview = old.replace("\n", "\\n")[:180]
+        raise RuntimeError(f"{label}: expected exactly 1 anchor, found {count}; anchor={preview!r}")
     return text.replace(old, new, 1)
 
 
@@ -44,6 +45,8 @@ def install_authored_stage(html: str, path: Path, marker: str, *, skip_legacy_lo
     html = replace_once(html, "const initial={", beat, f"{path.name} beat insertion")
     for old, new in replacements.items():
         if skip_legacy_log and old.startswith('{role:"assistant",content:'):
+            continue
+        if new in html:
             continue
         html = replace_once(html, old, new, f"{path.name} state delta")
     return html
