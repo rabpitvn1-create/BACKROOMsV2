@@ -18,6 +18,10 @@ assert.doesNotMatch(java, /ActionKind\.FREEDOM/);
 assert.match(runtime, /enum class ActionKind \{ SEARCH, EXECUTE, EXPLORE \}/);
 assert.doesNotMatch(runtime, /FREEDOM/);
 
+// The emulator progression probe uses this ASCII phrase through the real composer. Keep it
+// classified as EXPLORE so the probe exercises the same encounter/progression path as a player.
+assert.match(java, /"continue forward"/);
+
 // Final interaction authority: only EXPLORE may start a new Entity encounter.
 // SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
 assert.match(java, /EntityEncounterPolicy\.roll\(\s*entityPool,\s*exploreAction && entityAllowed && !emuProgressionFixture,\s*GAME_RNG\)/);
@@ -28,6 +32,8 @@ assert.match(java, /không tự đổi mục tiêu và không khởi tạo encou
 
 assert.match(html, /GM_CHOICES_FREEDOM_V1/);
 assert.match(html, /#searchActionButton,#exploreActionButton\{display:none!important\}/);
+assert.match(html, /if\(search\)search\.remove\(\)/);
+assert.match(html, /if\(explore\)explore\.remove\(\)/);
 assert.match(html, /\.primary-action-row\{grid-template-columns:minmax\(0,1fr\)!important\}/);
 assert.match(html, /window\.backroomChoices=function\(payload\)/);
 assert.match(html, /button\.textContent=choice\.id\+"\. "\+choice\.label\.toLocaleUpperCase\("vi-VN"\)/);
