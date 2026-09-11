@@ -31,8 +31,8 @@ class MainCampaignLevel0LuciaDecisionTest {
     val html = indexHtml()
 
     assertTrue(html.contains("sublevelId:\"\",playerAgency:\"mutual-party-decision\""))
-    assertTrue(html.contains("beat hiện tại không tự chuyển sublevel"))
-    assertTrue(html.contains("Không có lối thoát, Entity cư trú hay dấu vết Async nào được xác nhận từ beat này"))
+    assertTrue(html.contains("THREAD.ASYNC.EVIDENCE"))
+    assertTrue(html.contains("No local Level 0 observation has yet been verified as Async evidence."))
     assertTrue(html.contains("no romantic state is established"))
     assertFalse(html.contains("relationship:\"romantic\""))
     assertFalse(html.contains("Async đã tạo ra Backrooms"))
