@@ -144,8 +144,13 @@ PARENT_DIFFICULTY_CASES
     JSONObject exploration = flags != null ? flags.optJSONObject("exploration") : null;
     String current = exploration == null ? "" : exploration.optString("sublevelId", "").trim();
     int sweptParent = exploration == null ? -1 : exploration.optInt("emuSweptParentLevel", -1);
+    boolean initialized = exploration != null && exploration.optBoolean("emuTraversalInitialized", false);
     String[] ids = emulatorSublevelIdsAndroid(level);
     if (ids.length == 0) return null;
+    // The authored campaign currently starts the WebView in a later Level-0 child while the
+    // authoritative debug core starts at the parent. The first fixture EXPLORE must therefore
+    // establish its own sweep cursor at the first catalog child instead of inheriting story state.
+    if (!initialized) return ids[0];
     if (current.isEmpty()) {
       if (sweptParent == level) return null;
       return ids[0];
@@ -187,7 +192,8 @@ PARENT_DIFFICULTY_CASES
     normalized.put(new JSONObject().put("type", "set_location").put("value", location));
     JSONObject explorationPatch = new JSONObject()
       .put("sublevelId", target)
-      .put("difficulty", canonicalLocationDifficultyAndroid(level, target));
+      .put("difficulty", canonicalLocationDifficultyAndroid(level, target))
+      .put("emuTraversalInitialized", true);
     if (target.isEmpty()) explorationPatch.put("emuSweptParentLevel", level);
     else if (sweptParent >= 0) explorationPatch.put("emuSweptParentLevel", sweptParent);
     normalized.put(new JSONObject()
@@ -354,6 +360,7 @@ if old_diag in main:
 
 for required in (
     "emuLevel06Traversal",
+    "emuTraversalInitialized",
     "normalizeEmulatorSublevelTraversalAndroid",
     "engineOwnedEmulatorSublevelTraversalAndroid",
     "syncCanonicalLocationDifficultyAndroid",
