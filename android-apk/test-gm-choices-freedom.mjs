@@ -35,6 +35,7 @@ assert.match(html, /#searchActionButton,#exploreActionButton\{display:none!impor
 assert.match(html, /if\(search\)search\.remove\(\)/);
 assert.match(html, /if\(explore\)explore\.remove\(\)/);
 assert.match(html, /\.primary-action-row\{grid-template-columns:minmax\(0,1fr\)!important\}/);
+assert.match(html, /#submit\{width:100%\}/);
 assert.match(html, /window\.backroomChoices=function\(payload\)/);
 assert.match(html, /button\.textContent=choice\.id\+"\. "\+choice\.label\.toLocaleUpperCase\("vi-VN"\)/);
 assert.match(html, /window\.Android\.submitAction\(JSON\.stringify\(state\),choice\.actionKind,choice\.action\)/);
