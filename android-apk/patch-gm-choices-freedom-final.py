@@ -47,29 +47,8 @@ new_bridge = '''    @JavascriptInterface public void submitTurn(String stateJson
       submitTurnInternal(stateJson, actionKind, action, "CHOICE");
     }
 
-    private boolean freedomContainsAny(String text, String... needles) {
-      if (text == null) return false;
-      for (String needle : needles) if (needle != null && !needle.isEmpty() && text.contains(needle)) return true;
-      return false;
-    }
-
     private String classifyFreedomActionKind(String action) {
-      String text = action == null ? "" : action.trim().toLowerCase(java.util.Locale.ROOT);
-      // Moving into a new/alternate route keeps the existing EXPLORE encounter/progression semantics.
-      // A plain retreat such as "lùi lại" is intentionally not enough by itself to create a new
-      // EXPLORE roll; the action must also express continued/new traversal.
-      boolean explores = freedomContainsAny(text,
-        "rẽ trái", "rẽ phải", "đi tiếp", "bước vào", "đi vào", "tiến vào", "đi qua hành lang",
-        "theo hành lang", "sang hành lang", "hành lang khác", "lối khác", "đường khác", "tuyến khác",
-        "đổi hành lang", "đổi lối", "đổi đường", "another corridor", "another route", "turn left",
-        "turn right", "move into", "go down the corridor", "continue forward");
-      if (explores) return "EXPLORE";
-
-      boolean searches = freedomContainsAny(text,
-        "tìm kiếm", "kiểm tra", "quan sát", "điều tra", "xem xét", "soi ", "soi kỹ", "lắng nghe",
-        "nghe ngóng", "dò xét", "quét ", "scan", "search", "inspect", "investigate", "observe",
-        "listen", "check");
-      return searches ? "SEARCH" : "EXECUTE";
+      return FreedomActionClassifier.classify(action);
     }
 
     private void submitTurnInternal(String stateJson, String actionKind, String action, String actionOrigin) {
@@ -171,6 +150,7 @@ main = main[:submit_start] + submit + main[submit_end:]
 for required in (
     '@JavascriptInterface public void submitFreedom(String stateJson, String action)',
     'classifyFreedomActionKind(action)',
+    'FreedomActionClassifier.classify(action)',
     'submitTurnInternal(stateJson, actionKind, action, "CHOICE")',
     'String actionOrigin) throws Exception',
     'FREEDOM HARD LOCK:',
@@ -183,6 +163,8 @@ for required in (
         raise RuntimeError("GM/Freedom Java contract missing: " + required)
 if "ActionKind.FREEDOM" in main:
     raise RuntimeError("Freedom must not become an ActionRuntime kind")
+if "freedomContainsAny" in main:
+    raise RuntimeError("Legacy Freedom keyword classifier must stay removed")
 
 MAIN.write_text(main, encoding="utf-8")
 
