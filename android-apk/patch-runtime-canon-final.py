@@ -139,6 +139,14 @@ if stale_prologue in prologue_html:
     raise RuntimeError("Retired Black Blood prologue channel survived SRU finalization")
 INDEX.write_text(prologue_html, encoding="utf-8")
 
+# Install the next deterministic main-campaign prose/state beat after the Prologue.
+# This keeps Level 0 first contact story-owned while leaving Lucia's actual Party join
+# pending, so the narrative does not manufacture consent or bypass runtime authority.
+level0_campaign = ROOT / "patch-main-campaign-level0.py"
+if not level0_campaign.is_file():
+    raise RuntimeError("Main campaign Level 0 patch missing: " + level0_campaign.name)
+runpy.run_path(str(level0_campaign), run_name="__main__")
+
 # Conditional-audit historically rebuilds writerPrompt after the original prose contract.
 # Re-assert narrative clarity and current SRU identity only after all historical runtime
 # transformations have settled, then reuse the existing hard-issue repair transaction.
@@ -154,4 +162,4 @@ if not entity_visual_locks.is_file():
     raise RuntimeError("Entity PNG Visual Lock patch missing: " + entity_visual_locks.name)
 runpy.run_path(str(entity_visual_locks), run_name="__main__")
 
-print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, SRU prologue, narrative clarity guard.")
+print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, SRU prologue, Level 0 campaign beat, narrative clarity guard.")
