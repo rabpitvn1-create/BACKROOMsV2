@@ -1,9 +1,9 @@
 """Materialize the authored Level 0 campaign chain on clean and already-patched trees.
 
 This is build compatibility only. It does not add World simulation or change gameplay rules.
-The epsilon module still expects a structured Lucia-decision signature that predates the
-current string migration marker, so materialize that compatibility marker before running
-the latest authored Level 0.01 module.
+The epsilon module still expects structured Lucia-decision compatibility markers that the
+older predecessor patch did not materialize, so normalize those hand-off anchors before
+running the latest authored Level 0.01 module.
 """
 from pathlib import Path
 import subprocess
@@ -26,7 +26,21 @@ if structured_signature not in html:
             f"Campaign continuation compatibility expected one Lucia decision signature, found {count}"
         )
     html = html.replace(legacy_signature, legacy_signature + "\n" + structured_signature, 1)
-    INDEX.write_text(html, encoding="utf-8")
 
+# The Lucia-decision predecessor advances storyArc/log/Party but historically forgot to
+# advance initial.story from the first-contact prose. Epsilon owns the next transition and
+# explicitly requires story:level0LuciaDecision, as its predecessor contract. Normalize only
+# this stale authored-beat pointer; no gameplay/world state is created here.
+expected_story = 'story:level0LuciaDecision,'
+previous_story = 'story:level0Arrival,'
+if expected_story not in html:
+    count = html.count(previous_story)
+    if count != 1:
+        raise RuntimeError(
+            f"Campaign continuation expected one stale Level 0 story binding, found {count}"
+        )
+    html = html.replace(previous_story, expected_story, 1)
+
+INDEX.write_text(html, encoding="utf-8")
 subprocess.run(["python3", str(LATEST)], cwd=ROOT, check=True)
-print("Main campaign continuation materialized through Level 0.01 with compatible historical signatures.")
+print("Main campaign continuation materialized through Level 0.01 with compatible historical hand-offs.")
