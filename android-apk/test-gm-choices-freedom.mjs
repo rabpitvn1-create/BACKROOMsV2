@@ -4,10 +4,13 @@ import assert from 'node:assert/strict';
 const root = process.argv[2] || 'android-apk';
 const html = fs.readFileSync(`${root}/app/src/main/assets/index.html`, 'utf8');
 const java = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/MainActivity.java`, 'utf8');
+const classifier = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/FreedomActionClassifier.java`, 'utf8');
 const runtime = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/ActionRuntime.kt`, 'utf8');
 
 assert.match(java, /@JavascriptInterface public void submitFreedom\(String stateJson, String action\)/);
 assert.match(java, /classifyFreedomActionKind\(action\)/);
+assert.match(java, /return FreedomActionClassifier\.classify\(action\);/);
+assert.doesNotMatch(java, /freedomContainsAny/);
 assert.match(java, /submitTurnInternal\(stateJson, actionKind, action, "CHOICE"\)/);
 assert.match(java, /FREEDOM HARD LOCK:/);
 assert.match(java, /GM CHOICE CONTRACT:/);
@@ -18,14 +21,18 @@ assert.doesNotMatch(java, /ActionKind\.FREEDOM/);
 assert.match(runtime, /enum class ActionKind \{ SEARCH, EXECUTE, EXPLORE \}/);
 assert.doesNotMatch(runtime, /FREEDOM/);
 
-// The emulator progression probe uses this ASCII phrase through the real composer. Keep it
-// classified as EXPLORE so the probe exercises the same encounter/progression path as a player.
-assert.match(java, /"continue forward"/);
-const classifierStart = java.indexOf('private String classifyFreedomActionKind');
-const exploreReturn = java.indexOf('if (explores) return "EXPLORE";', classifierStart);
-const searchBranch = java.indexOf('boolean searches =', classifierStart);
-assert.ok(classifierStart >= 0 && exploreReturn > classifierStart && searchBranch > exploreReturn,
-  'Freedom traversal must be resolved before SEARCH phrases so movement cannot bypass EXPLORE rules');
+// Freedom classification is frozen in pure Java: trained/hash-based weights plus a small semantic
+// safety guard. It must not gain a LiteRT/network/model-asset dependency or a fourth runtime kind.
+assert.match(classifier, /public final class FreedomActionClassifier/);
+assert.match(classifier, /private static final int N = 4096;/);
+assert.match(classifier, /\{"EXECUTE","EXPLORE","SEARCH"\}/);
+assert.match(classifier, /frozen int4/);
+assert.match(classifier, /feature\.hashCode\(\)/);
+assert.match(classifier, /semanticGuard|String guarded = guard/);
+assert.match(classifier, /continue /);
+assert.match(classifier, /return "EXPLORE"/);
+assert.doesNotMatch(classifier, /LiteRT|TFLite|TensorFlow|\.tflite|GameState\.world|HttpURLConnection|https?:\/\//);
+assert.doesNotMatch(classifier, /ActionKind\.FREEDOM/);
 
 // Final interaction authority: only EXPLORE may start a new Entity encounter.
 // SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
