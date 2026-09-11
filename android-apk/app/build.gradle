@@ -45,12 +45,11 @@ android {
   testOptions { unitTests.returnDefaultValues = true }
 }
 
-// Materialize the authored campaign before tests/assets are packaged. The materializer keeps
-// historical prose/state deltas from the authored beat modules while normalizing their hand-offs
-// onto the current storyArc/storyContinuity/GM-log startup schema.
+// Materialize authored campaign data through the schema-safe orchestrator instead of
+// recursively executing historical patches that still contain retired log/thread anchors.
 def applyMainCampaignContinuation = tasks.register('applyMainCampaignContinuation', Exec) {
   workingDir rootProject.projectDir
-  commandLine 'python3', 'patch-main-campaign-materialize.py'
+  commandLine 'python3', 'patch-main-campaign-materialize-current.py'
 }
 
 tasks.configureEach { task ->

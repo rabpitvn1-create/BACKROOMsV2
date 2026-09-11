@@ -13,15 +13,15 @@ object EntityEncounterPolicy {
     val selected = JSONArray()
     for (key in keys.distinct()) {
       val value = if (eligible) random.nextInt(10000) + 1 else 0
-      val success = eligible && value <= 200
+      val success = eligible && value <= 300
       checks.put(key, JSONObject().put("eligible", eligible).put("sides", 10000)
-        .put("threshold", 200).put("roll", value).put("success", success))
+        .put("threshold", 300).put("roll", value).put("success", success))
       if (success) selected.put(key)
     }
     return JSONObject().put("entityRolls", checks).put("entityEncounterKeys", selected)
       .put("roamingEntityKey", selected.optString(0, ""))
       .put("entityEncounter", JSONObject().put("eligible", eligible)
-        .put("success", selected.length() > 0).put("label", "Independent Entity rolls: 2% each"))
+        .put("success", selected.length() > 0).put("label", "Independent Entity rolls: 3% each"))
   }
 
   fun enqueue(state: GameState, keys: List<String>): GameState {

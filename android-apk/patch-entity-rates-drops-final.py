@@ -46,7 +46,7 @@ main = main[:start] + '''    String[] entityPool = POOL;
     }
 '''.replace("POOL", pool) + main[end:]
 
-# No level-rate array or suffix remains authoritative after independent 2% dice.
+# No level-rate array or suffix remains authoritative after independent 3% dice.
 main = re.sub(r'^    int\[\] entityThresholds = .*\n', '', main, flags=re.M)
 main = re.sub(r'^    String entitySuffix = .*\n', '', main, flags=re.M)
 
@@ -65,7 +65,7 @@ lines = []
 for line in main.splitlines(keepends=True):
     if any(marker in line for marker in ('"JEFF THE KILLER HARD LOCK:', '"ROAMING KILLER HARD LOCK:', '"ENTITY ROAMING HARD LOCK:')):
         if '"ENTITY ROAMING HARD LOCK:' in line:
-            lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 2% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
+            lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 3% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
     else:
         lines.append(line)
 main = ''.join(lines)
@@ -135,7 +135,7 @@ facade = facade[:start] + combat + facade[end:]
 facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
-print("Entity policy applied: every Entity, including Diệp Minh, uses one independent 2% die on EXPLORE only; queued encounters and guaranteed catalog kill drops remain intact.")
+print("Entity policy applied: every Entity, including Diệp Minh, uses one independent 3% die on EXPLORE only; queued encounters and guaranteed catalog kill drops remain intact.")
 
 # This runs last in the Android patch chain so the Level 0-6 traversal guard can
 # extend the settled transition/provider/entity runtime without reviving legacy paths.

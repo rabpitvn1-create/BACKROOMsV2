@@ -323,12 +323,9 @@ index = replace_once(
     'mode:"local APK · canon R06",',
     "initial mode",
 )
-index = replace_once(
-    index,
-    'flags:{communication:{blackBlood:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},',
-    'flags:{communication:{blackBlood:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"},iris:{exists:true,continuity:"SEPARATED",reunionEligible:true},syvial:{exists:true,continuity:"SEPARATED",reunionEligible:true},madGod:{spawned:false,acquired:false}},',
-    "initial continuity flags",
-)
+# Current campaign startup owns the full initial continuity schema. Keep that richer structure
+# intact and only migrate/load missing R06 defaults below; the old compact flags literal no longer
+# exists after the campaign startup was expanded.
 index = replace_once(
     index,
     'let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;',
