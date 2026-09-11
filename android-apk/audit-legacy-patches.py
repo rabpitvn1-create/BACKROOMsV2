@@ -9,6 +9,11 @@ ROOT = Path(__file__).resolve().parent
 WORKFLOW = ROOT.parent / ".github/workflows/build-backroom-apk.yml"
 GRADLE = ROOT / "app/build.gradle"
 PATCH_RE = re.compile(r"patch-[A-Za-z0-9._-]+\.py")
+RETIRED_FILES = (
+    "patch-entity-encounter-all-actions.py",
+    "patch-gm-freedom-submit-route-final.py",
+    "apply-main-campaign-continuation.py",
+)
 
 
 def patch_names(text: str) -> set[str]:
@@ -50,6 +55,7 @@ def active_build_roots() -> set[str]:
     return roots
 
 
+resurrected_retired = sorted(name for name in RETIRED_FILES if (ROOT / name).exists())
 patches = {p.name: p for p in ROOT.glob("patch-*.py") if p.is_file()}
 roots = {name for name in active_build_roots() if name in patches}
 
@@ -98,6 +104,7 @@ report = {
     "reachable_count": len(reachable),
     "unreachable_count": len(unreachable),
     "unreachable": unreachable,
+    "resurrected_retired": resurrected_retired,
     "reachable": sorted(reachable),
     "dependencies": deps,
     "referenced_by": {k: sorted(v) for k, v in referenced_by.items() if v},
@@ -112,7 +119,16 @@ print("UNREACHABLE_PATCHES_BEGIN")
 for name in unreachable:
     print(name)
 print("UNREACHABLE_PATCHES_END")
+print("RESURRECTED_RETIRED_BEGIN")
+for name in resurrected_retired:
+    print(name)
+print("RESURRECTED_RETIRED_END")
 print("RISK_MARKERS_BEGIN")
 for name in sorted(risks):
     print(f"{name}: {','.join(risks[name])}")
 print("RISK_MARKERS_END")
+
+if resurrected_retired:
+    raise RuntimeError("Retired patch/helper files were reintroduced: " + ", ".join(resurrected_retired))
+if unreachable:
+    raise RuntimeError("Unused patch files must be wired into the active build or deleted: " + ", ".join(unreachable))
