@@ -12,8 +12,8 @@ class EntityPolicyTest {
     }
   }
 
-  @Test fun independentDiceKeepEverySuccessAndRespectTwoPercentBoundary() {
-    val dice = Dice(199, 200, 0, 9999)
+  @Test fun independentDiceKeepEverySuccessAndRespectThreePercentBoundary() {
+    val dice = Dice(299, 300, 0, 9999)
     val rolls = EntityEncounterPolicy.roll(arrayOf("hound", "smiler", "diep_minh", "jane_the_killer"), true, dice)
     assertEquals(4, dice.calls)
     assertEquals("[\"hound\",\"diep_minh\"]", rolls.getJSONArray("entityEncounterKeys").toString())
