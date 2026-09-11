@@ -45,6 +45,20 @@ android {
   testOptions { unitTests.returnDefaultValues = true }
 }
 
+// The final runtime-canon layer installs Level 0 first contact before Gradle starts.
+// Apply the next campaign module before tests/assets are packaged so prose and state
+// cannot drift apart in a locally built APK or CI build.
+def applyMainCampaignContinuation = tasks.register('applyMainCampaignContinuation', Exec) {
+  workingDir rootProject.projectDir
+  commandLine 'python3', 'patch-main-campaign-level0-lucia-decision.py'
+}
+
+tasks.configureEach { task ->
+  if (task.name == 'preBuild') {
+    task.dependsOn applyMainCampaignContinuation
+  }
+}
+
 dependencies {
   implementation 'com.google.ai.edge.litert:litert:2.2.0'
   testImplementation 'junit:junit:4.13.2'
