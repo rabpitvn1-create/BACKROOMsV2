@@ -88,6 +88,14 @@ if epsilon_marker not in html:
         "Level epsilon current log",
     )
 
+# The 0.01 authored delta resolves the epsilon traversal thread, but the epsilon module predates
+# that thread record. Add the predecessor fact here in the current continuity array so 0.01 can
+# advance it without inventing another compatibility schema.
+async_thread = '{id:"THREAD.ASYNC.EVIDENCE",status:"open",turn:1,fact:"No local Level 0 observation has yet been verified as Async evidence."}'
+epsilon_thread = '{id:"THREAD.MAIN.LEVEL0.EPSILON",status:"resolved",turn:1,fact:"Traverse the multi-level structural anomaly without mistaking environmental change for an exit or Async evidence."}'
+if epsilon_thread not in html:
+    html = replace_once(html, async_thread, async_thread + ',' + epsilon_thread, "Level epsilon continuity thread")
+
 # 0.01 and 0.1 contained a retired assistant/content log anchor. Their authored state deltas and
 # prose remain authoritative; only that stale transport anchor is skipped and replaced here.
 level001_marker = "LEVEL 0.01 / THE EXIT ? — FALSE PROMISE"
@@ -116,6 +124,7 @@ for required in (
     'currentBeat:"STORY.LEVEL0.1.COMPLETE"',
     'nextBeat:"STORY.LEVEL0.11.ENTRY"',
     'sublevelId:"SUBLEVEL.00.1"',
+    'THREAD.MAIN.LEVEL0.01',
     'LEVEL ε — INCESSANT HUM-BUZZ',
     'LEVEL 0.01 — THE EXIT ?',
     'LEVEL 0.1 — DEEP EMPTINESS',
