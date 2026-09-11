@@ -4,11 +4,10 @@ ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 text = MAIN.read_text(encoding="utf-8")
 
+# Final prompt semantics must agree with the typed runtime: only EXPLORE may start
+# a fresh roaming Entity encounter. SEARCH/EXECUTE can still resolve an encounter
+# that is already active, but they never open a new encounter roll.
 pairs = (
-    (
-        '    boolean entityEncounterAction = exploreAction || "SEARCH".equals(actionKindNormalized) || "EXECUTE".equals(actionKindNormalized);\n',
-        '    boolean entityEncounterAction = exploreAction;\n',
-    ),
     (
         'SEARCH vẫn roll entityEncounter theo tỷ lệ Level và có thể khởi tạo roaming Entity mới;',
         'SEARCH không được khởi tạo encounter Entity mới và entityEncounter phải ineligible;',
@@ -31,10 +30,18 @@ for old, new in pairs:
     elif new not in text:
         raise RuntimeError("typed action policy anchor is missing")
 
-if 'boolean entityEncounterAction = exploreAction;' not in text:
-    raise RuntimeError("typed action encounter gate missing")
-if 'entityEncounterAction = exploreAction ||' in text:
-    raise RuntimeError("widened typed action encounter gate survived")
+for forbidden in (
+    'entityEncounterAction = exploreAction ||',
+    'entityEncounterAction && entityAllowed',
+    'SEARCH vẫn roll entityEncounter theo tỷ lệ Level và có thể khởi tạo roaming Entity mới;',
+    'EXPLORE roll Entity theo cùng cơ chế với SEARCH và EXECUTE;',
+    'EXECUTE vẫn roll Entity và có thể khởi tạo roaming encounter mới.',
+):
+    if forbidden in text:
+        raise RuntimeError("obsolete all-action Entity encounter policy survived: " + forbidden)
+
+if 'exploreAction && entityAllowed' not in text:
+    raise RuntimeError("EXPLORE-only Entity encounter gate missing")
 
 MAIN.write_text(text, encoding="utf-8")
 print("Typed action policy finalized: new encounters are EXPLORE-only.")
