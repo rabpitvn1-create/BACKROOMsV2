@@ -25,7 +25,7 @@ main = main[:start] + '''    String[] entityPool = POOL;
     boolean emuProgressionFixture = BuildConfig.DEBUG &&
       getIntent().getBooleanExtra("emuLevel1Progression", false);
     JSONObject entityChecks = com.rabpit.backroom.core.EntityEncounterPolicy.roll(
-      entityPool, entityEncounterAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
+      entityPool, exploreAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
     java.util.Iterator<String> entityCheckKeys = entityChecks.keys();
     while (entityCheckKeys.hasNext()) {
       String key = entityCheckKeys.next();
@@ -64,6 +64,7 @@ for forbidden in (
     'int[] entityThresholds =',
     '8.0000%',
     '+8 percentage',
+    'entityEncounterAction && entityAllowed',
 ):
     if forbidden in main:
         raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
@@ -71,7 +72,7 @@ for forbidden in (
 for required in (
     'boolean emuProgressionFixture = BuildConfig.DEBUG',
     'getIntent().getBooleanExtra("emuLevel1Progression", false)',
-    'entityEncounterAction && entityAllowed && !emuProgressionFixture',
+    'exploreAction && entityAllowed && !emuProgressionFixture',
 ):
     if required not in main:
         raise RuntimeError("Progression emulator Entity isolation missing: " + required)
@@ -112,14 +113,12 @@ facade = facade[:start] + combat + facade[end:]
 facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
-print("Entity policy applied: production keeps independent 2% dice; progression emulator fixture suppresses unrelated Entity combat; queued encounters and guaranteed catalog kill drops remain intact.")
+print("Entity policy applied: production keeps independent 2% dice on EXPLORE only; progression emulator fixture suppresses unrelated Entity combat; queued encounters and guaranteed catalog kill drops remain intact.")
 
 # This runs last in the Android patch chain so the Level 0-6 traversal guard can
 # extend the settled transition/provider/entity runtime without reviving legacy paths.
 import runpy
 runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
 
-# The historical encounter layer widens SEARCH/EXECUTE to fresh Entity rolls. The
-# GM interaction contract is stricter: only EXPLORE may start a new encounter.
-# Re-assert that contract after every nested legacy/runtime transformation has settled.
+# Re-assert the typed action contract after every nested runtime transformation has settled.
 runpy.run_path(str(ROOT / "patch-gm-action-policy-final.py"), run_name="__main__")
