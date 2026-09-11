@@ -45,12 +45,12 @@ android {
   testOptions { unitTests.returnDefaultValues = true }
 }
 
-// Materialize the campaign chain through the latest authored module before tests/assets
-// are packaged. The epsilon patch invokes the preceding idempotent Lucia-decision patch
-// first, so clean checkouts and already-patched trees converge to the same state.
+// Materialize the authored campaign chain through the latest Level 0.01 module before
+// tests/assets are packaged. The compatibility entry point preserves historical beat
+// signatures while keeping the active initial state on the latest authored beat.
 def applyMainCampaignContinuation = tasks.register('applyMainCampaignContinuation', Exec) {
   workingDir rootProject.projectDir
-  commandLine 'python3', 'patch-main-campaign-level0-epsilon.py'
+  commandLine 'python3', 'apply-main-campaign-continuation.py'
 }
 
 tasks.configureEach { task ->
