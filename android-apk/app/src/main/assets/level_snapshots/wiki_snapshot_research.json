@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "status": "COMPLETE_WITH_USER_DEFERRED_TARGETS",
+  "reviewedAt": "2026-09-11",
+  "policy": {
+    "allowedSourcePages": [
+      "backrooms.fandom.com",
+      "backrooms-wiki.wikidot.com",
+      "liminal-archives.wikidot.com"
+    ],
+    "imagesPerReadyTarget": {"min": 1, "max": 10},
+    "requireExactTarget": true,
+    "rejectLogoWatermarkMarkerOverlay": true,
+    "rejectDuplicateImages": true,
+    "runtimeIntegration": true
+  },
+  "result": {
+    "targetCount": 40,
+    "readyTargetCount": 38,
+    "deferredTargetCount": 2,
+    "snapshotCount": 98,
+    "manifest": "wiki_snapshot_manifest.json"
+  },
+  "deferredTargets": [
+    {
+      "id": "SUBLEVEL.02.2",
+      "designation": "Level 2.2",
+      "name": "The Red Flood",
+      "reason": "USER_APPROVED_DEFERRED_NO_VERIFIED_IMAGE"
+    },
+    {
+      "id": "SUBLEVEL.04.11",
+      "designation": "Level 4.11",
+      "name": "Insubstantial Skywalks",
+      "reason": "USER_APPROVED_DEFERRED_NO_VERIFIED_IMAGE"
+    }
+  ],
+  "reviewNotes": [
+    "Only scene images tied to the exact Level/Sub-level source page were retained.",
+    "Editorial overlays, timestamps, logos, badges, diagrams, page chrome and entity-only/icon images were excluded.",
+    "Intrinsic environmental features that are part of the photographed Level, such as the eye motifs in Level 5.55 or gore in Level 4.4, are not treated as editorial markers.",
+    "Underlying CDN paths are globally unique across the selected pools; resized copies are treated as the same image and cannot be selected twice.",
+    "Umbrallight.png is assigned only to Level 6.99 and is excluded from Level 6.2.",
+    "Parent Level 6 uses the reviewed outdoor dark-tundra image and excludes incompatible indoor Lights Out imagery.",
+    "The candidate harvester and contact-sheet resolver remain maintenance tools but are no longer executed by the APK build."
+  ]
+}

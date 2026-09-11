@@ -1,0 +1,8 @@
+Backroom 1.1.72 Debug
+
+- Bổ sung Snapshot Wiki đã được rà soát cho 38/40 mục Level/Sublevel trong phạm vi Level 0–6, với 98 ảnh hợp lệ và xoay ảnh theo đúng target hiện tại.
+- Giữ SUBLEVEL.02.2 và SUBLEVEL.04.11 ở trạng thái deferred để bổ sung sau; hai khu này không mượn ảnh Level cha nhằm tránh hiển thị sai khu vực.
+- Chặn trùng lặp asset giữa các pool, kể cả các biến thể resize/revision của cùng một ảnh nguồn.
+- Giữ Umbrallight.png riêng cho Level 6.99 và không dùng cho Level 6.2.
+- Giữ Parent Level 6 theo canon tundra tối ngoài trời của dự án, loại ảnh Level 6 trong nhà không tương thích.
+- Củng cố chuỗi patch Snapshot để tương thích với renderer Wiki mới, MadGod overlay và authoritative structured-Level selection.
