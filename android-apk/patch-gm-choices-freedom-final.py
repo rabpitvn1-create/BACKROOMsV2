@@ -86,12 +86,6 @@ if call_count != 2:
     raise RuntimeError(f"writerPrompt origin calls: expected 2, found {call_count}")
 
 writer_pos = main.index(writer_sig_new)
-bridge_pos = main.index("\n  private class GameBridge", writer_pos)
-writer = main[writer_pos:bridge_pos]
-return_tail = writer.rfind('";')
-if return_tail < 0:
-    raise RuntimeError("writerPrompt return tail missing")
-
 choice_helpers = r'''  private JSONArray sanitizeGmChoices(JSONObject generated, boolean meta) throws Exception {
     JSONArray safe = new JSONArray();
     if (meta || generated == null) return safe;
@@ -120,13 +114,20 @@ choice_helpers = r'''  private JSONArray sanitizeGmChoices(JSONObject generated,
 '''
 main = main[:writer_pos] + choice_helpers + main[writer_pos:]
 
-# Recompute the writer segment after helper insertion, then append the final/last prompt contract.
+# Append the origin/choice contract to writerPrompt itself. Do not use the last string literal
+# before GameBridge: later authority patches add helper methods in that region, which previously
+# placed actionOrigin at class scope and broke javac.
 writer_pos = main.index(writer_sig_new)
 bridge_pos = main.index("\n  private class GameBridge", writer_pos)
 writer = main[writer_pos:bridge_pos]
-return_tail = writer.rfind('";')
-if return_tail < 0:
-    raise RuntimeError("writerPrompt return tail missing after helper insertion")
+prompt_marker = '"JSON bắt buộc:'
+if writer.count(prompt_marker) != 1:
+    raise RuntimeError(f"writerPrompt JSON contract anchor: expected 1, found {writer.count(prompt_marker)}")
+prompt_start = writer.index(prompt_marker)
+return_tail = writer.find('";', prompt_start)
+writer_method_end = writer.find("\n  }\n", prompt_start)
+if return_tail < 0 or writer_method_end < 0 or return_tail > writer_method_end:
+    raise RuntimeError("writerPrompt JSON contract terminator escaped writerPrompt scope")
 absolute_tail = writer_pos + return_tail
 
 origin_contract = r''' +
@@ -139,6 +140,15 @@ origin_contract = r''' +
       "Mỗi choice chỉ là một hành động hiển nhiên/ngắn hạn mà Kai có thể cân nhắc từ thông tin đang biết; không được ghi kết quả, phần thưởng, Entity sẽ gặp, xác suất, 'an toàn', 'tốt nhất' hay hậu quả ẩn vào label/action. Các choice có thể đều rủi ro hoặc đều không tối ưu. Không cố bao phủ mọi khả năng: người chơi luôn có thể bỏ toàn bộ choices và tự nhập Freedom action. " +
       "Schema bổ sung bắt buộc: choices:[{id,label,actionKind,action}]."'''
 main = main[:absolute_tail + 1] + origin_contract + main[absolute_tail + 1:]
+
+# Fail during the Python patch step, before javac, if the injected origin contract ever escapes
+# the writerPrompt method again.
+writer_pos = main.index(writer_sig_new)
+writer_method_end = main.index("\n  }\n", writer_pos)
+writer_method = main[writer_pos:writer_method_end]
+for scoped_marker in ("INTERACTION ORIGIN =", "FREEDOM HARD LOCK:", "GM CHOICE CONTRACT:"):
+    if scoped_marker not in writer_method:
+        raise RuntimeError("writerPrompt scoped contract missing: " + scoped_marker)
 
 # Emit sanitized choices as ephemeral UI data after authoritative state commit. They are intentionally
 # not persisted into GameState/world/log, so loading an old save cannot revive a stale decision.
