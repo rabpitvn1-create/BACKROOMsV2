@@ -18,6 +18,14 @@ assert.doesNotMatch(java, /ActionKind\.FREEDOM/);
 assert.match(runtime, /enum class ActionKind \{ SEARCH, EXECUTE, EXPLORE \}/);
 assert.doesNotMatch(runtime, /FREEDOM/);
 
+// Final interaction authority: only EXPLORE may start a new Entity encounter.
+// SEARCH/EXECUTE remain valid ActionKinds but must not reopen the legacy all-actions gate.
+assert.match(java, /boolean entityEncounterAction = exploreAction;/);
+assert.doesNotMatch(java, /entityEncounterAction = exploreAction \|\|/);
+assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/);
+assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
+assert.match(java, /không tự đổi mục tiêu và không khởi tạo encounter Entity mới/);
+
 assert.match(html, /GM_CHOICES_FREEDOM_V1/);
 assert.match(html, /#searchActionButton,#exploreActionButton\{display:none!important\}/);
 assert.match(html, /\.primary-action-row\{grid-template-columns:minmax\(0,1fr\)!important\}/);
