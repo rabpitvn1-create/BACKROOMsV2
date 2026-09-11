@@ -24,6 +24,8 @@ assert.match(html, /\.primary-action-row\{grid-template-columns:minmax\(0,1fr\)!
 assert.match(html, /window\.backroomChoices=function\(payload\)/);
 assert.match(html, /button\.textContent=choice\.id\+"\. "\+choice\.label\.toLocaleUpperCase\("vi-VN"\)/);
 assert.match(html, /window\.Android\.submitAction\(JSON\.stringify\(state\),choice\.actionKind,choice\.action\)/);
+assert.match(html, /Android\.submitFreedom\(JSON\.stringify\(state\),a\)/);
+assert.doesNotMatch(html, /Android\.submitAction\(JSON\.stringify\(state\),"EXECUTE",a\)/);
 assert.match(html, /text-decoration:underline/);
 assert.match(html, /button\.textContent=/);
 assert.doesNotMatch(html, /innerHTML=choice\./);
