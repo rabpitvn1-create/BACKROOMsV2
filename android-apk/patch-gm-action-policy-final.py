@@ -1,6 +1,8 @@
 from pathlib import Path
+import runpy
 
-MAIN = Path(__file__).resolve().parent / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
+ROOT = Path(__file__).resolve().parent
+MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 text = MAIN.read_text(encoding="utf-8")
 
 pairs = (
@@ -37,3 +39,8 @@ if 'entityEncounterAction = exploreAction ||' in text:
 
 MAIN.write_text(text, encoding="utf-8")
 print("Typed action policy finalized: new encounters are EXPLORE-only.")
+
+# The current main campaign chain has historical hand-off anchors that only become visible
+# after the runtime story patch has materialized Level 0. Normalize those authored-story
+# hand-offs now; Gradle can then advance idempotently to the repository's latest Level 0.1 beat.
+runpy.run_path(str(ROOT / "apply-main-campaign-continuation.py"), run_name="__main__")
