@@ -7,6 +7,7 @@ import re
 
 ROOT = Path(__file__).resolve().parent
 WORKFLOW = ROOT.parent / ".github/workflows/build-backroom-apk.yml"
+GRADLE = ROOT / "app/build.gradle"
 PATCH_RE = re.compile(r"patch-[A-Za-z0-9._-]+\.py")
 
 
@@ -39,9 +40,18 @@ def active_workflow_roots(text: str) -> set[str]:
     return roots
 
 
+def active_build_roots() -> set[str]:
+    roots = active_workflow_roots(WORKFLOW.read_text(encoding="utf-8"))
+    # Campaign materialization is invoked from Gradle preBuild rather than the
+    # workflow's Python scripts array. Treat those patch references as first-class
+    # roots so authored campaign modules are not falsely reported as dead code.
+    if GRADLE.is_file():
+        roots.update(patch_names(GRADLE.read_text(encoding="utf-8", errors="replace")))
+    return roots
+
+
 patches = {p.name: p for p in ROOT.glob("patch-*.py") if p.is_file()}
-workflow_text = WORKFLOW.read_text(encoding="utf-8")
-roots = {name for name in active_workflow_roots(workflow_text) if name in patches}
+roots = {name for name in active_build_roots() if name in patches}
 
 deps: dict[str, list[str]] = {}
 for name, path in sorted(patches.items()):
