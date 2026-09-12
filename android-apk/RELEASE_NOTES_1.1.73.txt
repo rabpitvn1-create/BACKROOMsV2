@@ -1,0 +1,7 @@
+Backroom 1.1.73 Debug
+
+- Bổ sung GM choices ngữ cảnh A/B/C theo trạng thái truyện hiện tại, chỉ xuất hiện khi có quyết định thực sự có ý nghĩa.
+- Giữ Freedom input làm đường nhập tự do của người chơi; ẩn các nút TÌM KIẾM/KHÁM PHÁ nhưng vẫn giữ runtime SEARCH/EXECUTE/EXPLORE hiện có.
+- Dùng Freedom action classifier hard-coded để ánh xạ hành động tự do vào SEARCH/EXECUTE/EXPLORE mà không thêm ActionKind thứ tư hoặc phụ thuộc LiteRT cho nhánh này.
+- Giữ encounter mới chỉ được kích hoạt bởi EXPLORE; SEARCH/EXECUTE không tạo roaming Entity mới.
+- Giữ story continuity, combat, inventory, World state và Level progression theo contract hiện tại; dọn các compatibility/legacy patch không còn dùng.
