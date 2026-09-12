@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       target_sha:
-        description: 'App commit SHA whose successful APK artifact should be tested (blank = current SHA)'
+        description: 'App commit SHA whose successful APK artifact should be tested (blank = latest app/build commit)'
         required: false
         default: ''
 
@@ -22,6 +22,8 @@ jobs:
     timeout-minutes: 95
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve APK build under test
         id: build
@@ -32,12 +34,12 @@ jobs:
           set -euo pipefail
           if [[ -n "${INPUT_SHA:-}" ]]; then
             TARGET_SHA="$INPUT_SHA"
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            TARGET_SHA=$(git rev-parse HEAD^)
           else
-            TARGET_SHA="${GITHUB_SHA}"
+            TARGET_SHA=$(git log -n 1 --format=%H -- android-apk .github/workflows/build-backroom-apk.yml)
           fi
+          test -n "$TARGET_SHA"
           echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          echo "Resolving APK artifact for app/build commit $TARGET_SHA"
           for attempt in $(seq 1 60); do
             json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/build-backroom-apk.yml/runs?per_page=50")
             run_id=$(jq -r --arg sha "$TARGET_SHA" '.workflow_runs[] | select(.head_sha==$sha and .status=="completed" and .conclusion=="success") | .id' <<<"$json" | head -1)
@@ -118,7 +120,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p emu-level0-30turn-results
-          echo "soak=${{ steps.soak.outcome }}" | tee emu-level0-30turn-results/workflow-outcome.txt
+          echo "target_sha=${{ steps.build.outputs.target_sha }}" | tee emu-level0-30turn-results/workflow-outcome.txt
+          echo "soak=${{ steps.soak.outcome }}" | tee -a emu-level0-30turn-results/workflow-outcome.txt
           echo "combat=${{ steps.combat.outcome }}" | tee -a emu-level0-30turn-results/workflow-outcome.txt
           if [[ "${{ steps.soak.outcome }}" != "success" || "${{ steps.combat.outcome }}" != "success" ]]; then
             exit 1
