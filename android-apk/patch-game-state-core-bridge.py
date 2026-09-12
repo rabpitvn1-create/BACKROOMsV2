@@ -35,9 +35,6 @@ if close_line not in text:
         raise RuntimeError("Game State Core close anchor not found")
     text = text.replace(anchor, anchor + close_line, 1)
 
-# Save/Load/New Game/Delete must be able to invalidate the authoritative SharedPreferences state.
-# The next gameplay action then migrates from the currently loaded WebView state instead of silently
-# resurrecting an older core save.
 clear_core_bridge = '''    @JavascriptInterface public void clearCoreState() {
       if (gameCore != null) gameCore.clear();
     }
@@ -81,7 +78,6 @@ for required in [core_import.strip(), field.strip(), initialization.strip(), clo
 
 MAIN.write_text(text, encoding="utf-8")
 
-# Do not keep conversational filler such as "được" inside a newly resolved item name.
 intent = INTENT.read_text(encoding="utf-8")
 if "|nhặt|được|lượm|" not in intent:
     anchor = "|nhặt|lượm|"
@@ -91,6 +87,23 @@ if "|nhặt|được|lượm|" not in intent:
 INTENT.write_text(intent, encoding="utf-8")
 
 facade = FACADE.read_text(encoding="utf-8")
+progression_marker = "StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)"
+if progression_marker not in facade:
+    anchor = '''    val before = JSONObject(beforeJson)
+    val candidate = JSONObject(candidateJson)
+    val core = loadOrMigrate(before)
+'''
+    replacement = '''    val before = JSONObject(beforeJson)
+    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)
+    val core = loadOrMigrate(before)
+'''
+    count = facade.count(anchor)
+    if count != 1:
+        raise RuntimeError(f"Story progression Core anchor expected exactly once, found {count}")
+    facade = facade.replace(anchor, replacement, 1)
+if progression_marker not in facade:
+    raise RuntimeError("Story progression Core integration missing after patch")
+
 warning_marker = 'return "[Warning] $message"'
 if warning_marker not in facade:
     start_anchor = "  private fun validationReply(reason: String): String = when (reason) {"
@@ -143,4 +156,4 @@ if warning_log_render not in html:
     html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Final Game State Core bridge applied with reset/load core invalidation, item cleanup, quantity UI and warning feedback.")
+print("Final Game State Core bridge applied with authoritative story progression, reset/load core invalidation, item cleanup, quantity UI and warning feedback.")
