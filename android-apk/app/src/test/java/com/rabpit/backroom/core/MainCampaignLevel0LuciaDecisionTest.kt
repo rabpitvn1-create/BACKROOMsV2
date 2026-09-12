@@ -1,23 +1,12 @@
 package com.rabpit.backroom.core
 
-import java.io.File
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MainCampaignLevel0LuciaDecisionTest {
-  private fun indexHtml(): String {
-    val relative = "src/main/assets/index.html"
-    val roots = generateSequence(File(".").canonicalFile) { it.parentFile }.take(6).toList()
-    val candidates = roots.flatMap { root ->
-      listOf(File(root, relative), File(root, "app/$relative"), File(root, "android-apk/app/$relative"))
-    }.distinctBy { it.absolutePath }
-    return candidates.firstOrNull { it.isFile }?.readText(Charsets.UTF_8)
-      ?: error("index.html not found; searched: " + candidates.joinToString { it.absolutePath })
-  }
-
   @Test fun latestCampaignBuildRetainsMutualLuciaPartyDecision() {
-    val html = indexHtml()
+    val html = materializedCampaignHtml()
 
     assertTrue(html.contains("LEVEL 0 / THE LOBBY — DECISION TO MOVE TOGETHER"))
     assertTrue(html.contains("window.campaignLevel0LuciaDecisionSignature={currentBeat:\"STORY.LEVEL0.LUCIA_DECISION_COMPLETE\",nextBeat:\"STORY.LEVEL0.EPSILON.ENTRY\""))
@@ -28,7 +17,7 @@ class MainCampaignLevel0LuciaDecisionTest {
   }
 
   @Test fun luciaDecisionHistoryDoesNotInventEvidenceOrRomance() {
-    val html = indexHtml()
+    val html = materializedCampaignHtml()
 
     assertTrue(html.contains("sublevelId:\"\",playerAgency:\"mutual-party-decision\""))
     assertTrue(html.contains("THREAD.ASYNC.EVIDENCE"))

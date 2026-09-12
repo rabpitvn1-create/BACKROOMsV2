@@ -1,23 +1,12 @@
 package com.rabpit.backroom.core
 
-import java.io.File
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MainCampaignLevel001Test {
-  private fun indexHtml(): String {
-    val relative = "src/main/assets/index.html"
-    val roots = generateSequence(File(".").canonicalFile) { it.parentFile }.take(6).toList()
-    val candidates = roots.flatMap { root ->
-      listOf(File(root, relative), File(root, "app/$relative"), File(root, "android-apk/app/$relative"))
-    }.distinctBy { it.absolutePath }
-    return candidates.firstOrNull { it.isFile }?.readText(Charsets.UTF_8)
-      ?: error("index.html not found; searched: " + candidates.joinToString { it.absolutePath })
-  }
-
   @Test fun level001HistoryRemainsMaterializedInLockedOrder() {
-    val html = indexHtml()
+    val html = materializedCampaignHtml()
     assertTrue(html.contains("LEVEL 0.01 / THE EXIT ? — FALSE PROMISE"))
     assertTrue(html.contains("STORY.LEVEL0.01.COMPLETE"))
     assertTrue(html.contains("STORY.LEVEL0.1.ENTRY"))
@@ -27,7 +16,7 @@ class MainCampaignLevel001Test {
   }
 
   @Test fun level001TreatsExitCuesAsEvidenceToTestNotTruth() {
-    val html = indexHtml()
+    val html = materializedCampaignHtml()
     assertTrue(html.contains("Biển không phải bằng chứng."))
     assertTrue(html.contains("Một nét phấn không phải bằng chứng rằng một trong hai người đã ở đây."))
     assertTrue(html.contains("treating EXIT signage, route loops, silence, and an unknown chalk mark as observations"))
