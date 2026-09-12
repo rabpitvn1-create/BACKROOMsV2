@@ -1,5 +1,4 @@
 from pathlib import Path
-import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -46,12 +45,3 @@ if 'exploreAction && entityAllowed' not in text:
 
 MAIN.write_text(text, encoding="utf-8")
 print("Typed action policy finalized: new encounters are EXPLORE-only.")
-
-# All level/entity/action authority layers have settled at this point. Install the
-# final low-risk recovery only now so earlier patches can still inspect the original
-# fail-closed canon block, while the shipped runtime does not brick an ordinary
-# Level 0 exploration turn after both writer and repair outputs are rejected.
-safe_fallback = ROOT / "patch-canon-safe-fallback-final.py"
-if not safe_fallback.is_file():
-    raise RuntimeError("Canon safe fallback patch missing: " + safe_fallback.name)
-runpy.run_path(str(safe_fallback), run_name="__main__")
