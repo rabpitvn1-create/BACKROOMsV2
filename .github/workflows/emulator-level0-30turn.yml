@@ -5,6 +5,11 @@ on:
     paths:
       - '.github/scripts/emu-level0-30turn.py'
       - '.github/workflows/emulator-level0-30turn.yml'
+      - 'android-apk/patch-canon-safe-fallback-final.py'
+      - 'android-apk/patch-gm-action-policy-final.py'
+      - 'android-apk/patch-game-state-core-bridge.py'
+      - 'android-apk/app/src/main/java/com/rabpit/backroom/core/StoryProgressionPolicy.kt'
+      - 'android-apk/app/src/test/java/com/rabpit/backroom/core/StoryProgressionPolicyTest.kt'
   workflow_dispatch:
     inputs:
       target_sha:
