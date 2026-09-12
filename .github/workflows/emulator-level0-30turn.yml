@@ -1,0 +1,133 @@
+name: Emulator Level 0 30-turn Soak
+
+on:
+  push:
+    paths:
+      - '.github/scripts/emu-level0-30turn.py'
+      - '.github/workflows/emulator-level0-30turn.yml'
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: 'App commit SHA whose successful APK artifact should be tested (blank = current SHA)'
+        required: false
+        default: ''
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  level0-soak:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve APK build under test
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_SHA: ${{ inputs.target_sha }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${INPUT_SHA:-}" ]]; then
+            TARGET_SHA="$INPUT_SHA"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            TARGET_SHA=$(git rev-parse HEAD^)
+          else
+            TARGET_SHA="${GITHUB_SHA}"
+          fi
+          echo "target_sha=$TARGET_SHA" >> "$GITHUB_OUTPUT"
+          for attempt in $(seq 1 60); do
+            json=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/build-backroom-apk.yml/runs?per_page=50")
+            run_id=$(jq -r --arg sha "$TARGET_SHA" '.workflow_runs[] | select(.head_sha==$sha and .status=="completed" and .conclusion=="success") | .id' <<<"$json" | head -1)
+            if [[ -n "$run_id" ]]; then
+              echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
+              echo "Using APK build run $run_id for $TARGET_SHA"
+              exit 0
+            fi
+            echo "Waiting for successful APK build for $TARGET_SHA ($attempt/60)"
+            sleep 15
+          done
+          echo "No successful APK build found for $TARGET_SHA" >&2
+          exit 1
+
+      - name: Download matching APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ steps.build.outputs.run_id }}
+        run: |
+          set -euo pipefail
+          mkdir -p apk-artifact
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --dir apk-artifact
+          APK=$(find apk-artifact -type f -name '*.apk' | head -1)
+          test -n "$APK"
+          cp "$APK" Backroom-under-test.apk
+          ls -lh Backroom-under-test.apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run 30-turn Level 0 soak and feature probes
+        id: soak
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          TARGET_ACTIONS: '30'
+          TURN_TIMEOUT_SECONDS: '180'
+          START_TIMEOUT_SECONDS: '45'
+          POLL_SECONDS: '1.5'
+          EMU_OUT: emu-level0-30turn-results
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          disable-spellchecker: true
+          enable-hw-keyboard: true
+          script: |
+            python3 -m py_compile .github/scripts/emu-level0-30turn.py
+            python3 .github/scripts/emu-level0-30turn.py Backroom-under-test.apk
+
+      - name: Run deterministic Level 0 combat regression
+        id: combat
+        if: always()
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          EMU_OUT: emu-level0-30turn-results/combat
+          START_TIMEOUT_SECONDS: '45'
+          COMBAT_TIMEOUT_SECONDS: '180'
+          POLL_SECONDS: '1'
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          disable-spellchecker: true
+          enable-hw-keyboard: true
+          script: |
+            bash -n .github/scripts/emu-combat-regression.sh
+            bash .github/scripts/emu-combat-regression.sh Backroom-under-test.apk
+
+      - name: Collect workflow verdict
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p emu-level0-30turn-results
+          echo "soak=${{ steps.soak.outcome }}" | tee emu-level0-30turn-results/workflow-outcome.txt
+          echo "combat=${{ steps.combat.outcome }}" | tee -a emu-level0-30turn-results/workflow-outcome.txt
+          if [[ "${{ steps.soak.outcome }}" != "success" || "${{ steps.combat.outcome }}" != "success" ]]; then
+            exit 1
+          fi
+
+      - name: Upload emulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-level0-30turn-${{ github.run_id }}
+          path: emu-level0-30turn-results/
+          if-no-files-found: warn
