@@ -63,16 +63,18 @@ def obj(v):
  try:return json.loads(v) if isinstance(v,str) else {}
  except:return {}
 def facts(c):
- if not c:return {'beat':'','completed':[],'level':None,'party':[],'lucia':False,'combat':False}
+ if not c:return {'beat':'','completed':[],'level':None,'party':[],'lucia':False,'firstContact':False,'decision':False,'joinAllowed':False,'combat':False}
  w=c.get('world') or {}; f=obj(w.get('flagsJson')); l=obj(w.get('levelJson')); a=f.get('storyArc') if isinstance(f.get('storyArc'),dict) else {}
  party=list((c.get('party') or {}).get('memberIds') or []); pnorm=[norm(str(x)) for x in party]
  enc=f.get('luciaEncounter') if isinstance(f.get('luciaEncounter'),dict) else {}; status=norm(str(enc.get('status') or ''))
  beat=str(a.get('currentBeat') or ''); completed=list(a.get('completed') or [])
- first='STORY.LEVEL0.FIRST_CONTACT_COMPLETE' in completed or 'FIRST_CONTACT' in beat or 'LUCIA_DECISION' in beat
- lucia_party=any(x=='lucia' or 'hua thuy mai' in x for x in pnorm)
+ first='STORY.LEVEL0.FIRST_CONTACT_COMPLETE' in completed
+ decision='STORY.LEVEL0.LUCIA_DECISION_COMPLETE' in completed
+ join_allowed=first and decision and status=='joined' and enc.get('partyEligible') is True and enc.get('joinPending') is False
+ lucia_party=any(x=='lucia' or 'lucia' in x or 'hua thuy mai' in x for x in pnorm)
  lucia_encounter=bool(enc) and (status in {'met','contact','contacted','joined','active'} or bool(enc.get('partyEligible')) or bool(enc.get('joinPending')))
  serialized=json.dumps(c,ensure_ascii=False).casefold().replace(' ','')
- return {'beat':beat,'completed':completed,'level':l.get('number'),'party':party,'lucia':lucia_party or lucia_encounter or first,'combat':'"active":true' in serialized}
+ return {'beat':beat,'completed':completed,'level':l.get('number'),'party':party,'lucia':lucia_party or lucia_encounter or first or decision,'firstContact':first,'decision':decision,'joinAllowed':join_allowed,'combat':'"active":true' in serialized}
 def scan(r):
  b=blob(r); cov['inventory']|='inventory' in b; cov['party']|='party' in b; cov['snapshot']|=any((n.attrib.get('class') or '').endswith('Image') for n in nodes(r)); cov['combat']|='combat' in b
  for x in ['gemini','haiku']:
@@ -81,10 +83,11 @@ def scan(r):
  for n in nodes(r):
   if (n.attrib.get('class') or '').endswith('Button') and re.match(r'^[ABC][\.\)]\s+',n.attrib.get('text') or '',re.I):cov['gm_choices']=True
 def validate(i,r,c,before_f):
- f=facts(c); before_comp=set((before_f or {}).get('completed') or []); comp=set(f['completed']); arr_before='STORY.LEVEL0.ARRIVAL' in before_comp; arr='STORY.LEVEL0.ARRIVAL' in comp; first='STORY.LEVEL0.FIRST_CONTACT_COMPLETE' in comp or 'FIRST_CONTACT' in f['beat']; lucui='lucia' in blob(r) or 'hua thuy mai' in blob(r)
+ f=facts(c); before_comp=set((before_f or {}).get('completed') or []); comp=set(f['completed']); arr_before='STORY.LEVEL0.ARRIVAL' in before_comp; arr='STORY.LEVEL0.ARRIVAL' in comp; first=f['firstContact']; decision=f['decision']; lucui='lucia' in blob(r) or 'hua thuy mai' in blob(r); lucia_party=any(x=='lucia' or 'lucia' in x or 'hua thuy mai' in x for x in [norm(str(v)) for v in f['party']])
  if not arr_before and (lucui or f['lucia'] or first):issue('hard','lucia_before_arrival','Lucia/first-contact xuất hiện trong lượt bắt đầu trước STORY.LEVEL0.ARRIVAL',action=i,beat=f['beat'])
  if first and not arr:issue('hard','first_contact_before_arrival','FIRST_CONTACT xảy ra khi ARRIVAL chưa hoàn tất',action=i)
- if 'lucia' in [norm(str(x)) for x in f['party']] and not first:issue('hard','lucia_party_early','Lucia vào Party trước first-contact',action=i)
+ if decision and not first:issue('hard','lucia_decision_before_first_contact','LUCIA_DECISION_COMPLETE tồn tại khi FIRST_CONTACT_COMPLETE chưa hoàn tất',action=i)
+ if lucia_party and not f['joinAllowed']:issue('hard','lucia_party_early','Lucia vào Party trước decision/join confirmation',action=i,firstContact=first,decision=decision,joinAllowed=f['joinAllowed'])
  if f['level'] is not None and str(f['level']) not in ('0','0.0'):issue('hard','left_level0',f'Đã rời Level 0: {f["level"]}',action=i)
  cov['combat']|=f['combat']
 def keyboard(r):
@@ -114,19 +117,29 @@ def choice(i):
  r,before=wait_ready(f'a{i:02d}-choice'); cs=[n for n in nodes(r) if (n.attrib.get('class') or '').endswith('Button') and n.attrib.get('enabled','true')=='true' and re.match(r'^[ABC][\.\)]\s+',n.attrib.get('text') or '',re.I) and center(n)]
  if not cs:return freedom(i,'continue exploring level zero carefully')
  cov['gm_choices']=True; tap(cs[0]); return wait_advance(i,before)
+def page(to_management):
+ # Canonical Android UI has two horizontal pages: Gameplay -> Management. Save/Load lives
+ # on Management, so navigate there before doing any vertical search. The old harness only
+ # scrolled the Gameplay page and could never prove the controls were broken.
+ if to_management:adb('shell','input','swipe','980','1180','120','1180','300')
+ else:adb('shell','input','swipe','120','1180','980','1180','300')
+ time.sleep(.55)
 def control(label):
- for j in range(5):
+ page(True)
+ for j in range(6):
   r=dump('ctrl-'+norm(label)+str(j)); x=btn(r,label,True)
   if x is not None and center(x) is not None:return x
   adb('shell','input','swipe','540','1950','540','620','250');time.sleep(.35)
  return None
 def save_load(t0):
- x=control('Lưu')
- if x is not None and tap(x):time.sleep(.5);cov['save']='da luu turn' in blob(dump('saved'))
- else:issue('medium','save_button','Không dùng được Lưu')
- x=control('Tải')
- if x is not None and tap(x):time.sleep(.7);r=dump('loaded');cov['load']='da tai save turn' in blob(r); t=turn(r); issue('hard','load_turn',f'Load đổi turn {t0}->{t}') if t0 and t and t!=t0 else None
- else:issue('medium','load_button','Không dùng được Tải')
+ try:
+  x=control('Lưu')
+  if x is not None and tap(x):time.sleep(.5);cov['save']='da luu turn' in blob(dump('saved'))
+  else:issue('medium','save_button','Không dùng được Lưu sau khi đã mở Management page')
+  x=control('Tải')
+  if x is not None and tap(x):time.sleep(.7);r=dump('loaded');cov['load']='da tai save turn' in blob(r); t=turn(r); issue('hard','load_turn',f'Load đổi turn {t0}->{t}') if t0 and t and t!=t0 else None
+  else:issue('medium','load_button','Không dùng được Tải sau khi đã mở Management page')
+ finally:page(False)
 def destructive(label,key):
  x=control(label)
  if x is None or not tap(x):issue('medium',key,'Không dùng được '+label);return
@@ -153,7 +166,7 @@ def main():
   before_f=facts(core())
   ok,r=choice(i) if i%5==0 and cov['gm_choices'] else freedom(i,acts[(i-1)%len(acts)])
   if not ok:break
-  done+=1;c=core();validate(i,r,c,before_f);f=facts(c);trace.append({'action':i,'turn':turn(r),'beat':f['beat'],'completed':f['completed'],'party':f['party'],'level':f['level']});print(f"ACTION {i}/{TARGET}: turn={turn(r)} beat={f['beat']} party={f['party']}",flush=True)
+  done+=1;c=core();validate(i,r,c,before_f);f=facts(c);trace.append({'action':i,'turn':turn(r),'beat':f['beat'],'completed':f['completed'],'party':f['party'],'level':f['level'],'joinAllowed':f['joinAllowed']});print(f"ACTION {i}/{TARGET}: turn={turn(r)} beat={f['beat']} party={f['party']} joinAllowed={f['joinAllowed']}",flush=True)
   if i==8:save_load(turn(r))
   if i in (5,10,15,20,25,30):shot(f'after-{i:02d}')
  f=facts(core())
