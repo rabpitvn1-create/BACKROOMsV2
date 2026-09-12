@@ -9,12 +9,14 @@ import java.util.Locale
  *
  * The GM may narrate the exploration, but it does not own the Prologue -> Arrival transition.
  * That transition is deterministic so a model omission cannot leave the campaign stuck forever,
- * and a model cannot collapse the same turn into Lucia's first contact.
+ * and a model cannot collapse Arrival, Lucia first contact, and Lucia joining into one turn.
  */
 object StoryProgressionPolicy {
   const val PROLOGUE_ENTRY = "STORY.PROLOGUE.ENTRY_COMPLETE"
   const val LEVEL0_ARRIVAL = "STORY.LEVEL0.ARRIVAL"
   const val LEVEL0_FIRST_CONTACT = "STORY.LEVEL0.FIRST_CONTACT_COMPLETE"
+  const val LEVEL0_LUCIA_DECISION_COMPLETE = "STORY.LEVEL0.LUCIA_DECISION_COMPLETE"
+  private const val LEVEL0_LUCIA_DECISION = "STORY.LEVEL0.LUCIA_DECISION"
 
   fun normalizeCandidate(before: JSONObject, rawCandidate: JSONObject, action: String): JSONObject {
     val candidate = JSONObject(rawCandidate.toString())
@@ -24,35 +26,85 @@ object StoryProgressionPolicy {
     val beforeArc = beforeFlags.optJSONObject("storyArc")
     val completedBefore = completed(beforeArc)
     val arrivalBefore = LEVEL0_ARRIVAL in completedBefore
+    val firstContactBefore = LEVEL0_FIRST_CONTACT in completedBefore
     val beatBefore = beforeArc?.optString("currentBeat", "").orEmpty()
     val prologueLocked = !arrivalBefore && (beatBefore == PROLOGUE_ENTRY || PROLOGUE_ENTRY in completedBefore)
 
-    if (prologueLocked) {
-      // Even if a provider proposes Lucia in the same turn, Core refuses to materialize her.
+    if (!arrivalBefore) {
+      // First contact is locked by the state that began the turn. A provider cannot use the
+      // same response to complete Arrival and materialize Lucia.
       removeLuciaFromParty(candidate)
       val flags = ensureFlags(candidate, beforeFlags)
       flags.remove("luciaEncounter")
-      if (isLevel0ExplorationAction(action)) {
-        applyArrival(flags, completedBefore, candidate.optInt("turn", before.optInt("turn", 1) + 1))
-      } else {
-        keepPrologue(flags, completedBefore)
+      if (prologueLocked) {
+        if (isLevel0ExplorationAction(action)) {
+          applyArrival(flags, completedBefore, candidate.optInt("turn", before.optInt("turn", 1) + 1))
+        } else {
+          keepPrologue(flags, completedBefore)
+        }
       }
       return candidate
     }
 
-    if (arrivalBefore) {
-      // Arrival is monotonic. A later provider response may advance the campaign but cannot regress it.
-      val flags = ensureFlags(candidate, beforeFlags)
-      val arc = ensureStoryArc(flags, beforeArc)
-      val candidateCompleted = completed(arc).toMutableSet()
-      candidateCompleted += completedBefore
-      candidateCompleted += LEVEL0_ARRIVAL
-      arc.put("completed", JSONArray(candidateCompleted.toList()))
-      val beat = arc.optString("currentBeat", "")
-      if (beat.isBlank() || beat == PROLOGUE_ENTRY) {
+    val flags = ensureFlags(candidate, beforeFlags)
+    val arc = ensureStoryArc(flags, beforeArc)
+    val candidateCompleted = completed(arc).toMutableSet()
+    candidateCompleted += completedBefore
+    candidateCompleted += LEVEL0_ARRIVAL
+
+    if (!firstContactBefore) {
+      // The first-contact turn may establish Lucia's encounter state, but never Party membership
+      // or the later decision milestone. Meeting Lucia is not the join decision.
+      removeLuciaFromParty(candidate)
+      val validFirstContact = isValidFirstContactCandidate(flags, candidateCompleted)
+      if (validFirstContact) {
+        candidateCompleted += LEVEL0_FIRST_CONTACT
+        candidateCompleted.remove(LEVEL0_LUCIA_DECISION_COMPLETE)
+        arc.put("current", "MAIN.LEVEL0")
+        arc.put("currentBeat", LEVEL0_FIRST_CONTACT)
+        arc.put("nextBeat", LEVEL0_LUCIA_DECISION)
+      } else {
+        candidateCompleted.remove(LEVEL0_FIRST_CONTACT)
+        candidateCompleted.remove(LEVEL0_LUCIA_DECISION_COMPLETE)
+        flags.remove("luciaEncounter")
         arc.put("current", "MAIN.LEVEL0")
         arc.put("currentBeat", LEVEL0_ARRIVAL)
         arc.put("nextBeat", LEVEL0_FIRST_CONTACT)
+      }
+      arc.put("completed", JSONArray(candidateCompleted.toList()))
+      return candidate
+    }
+
+    // First contact was already complete when this turn began. Party membership still requires
+    // the separate, machine-verifiable Lucia decision/join confirmation.
+    candidateCompleted += LEVEL0_FIRST_CONTACT
+    val joinedBefore = isValidLuciaJoinState(before)
+    val candidateJoinAllowed = isValidLuciaJoinState(flags, candidateCompleted)
+    val joinAllowed = joinedBefore || candidateJoinAllowed
+    if (!joinAllowed) {
+      removeLuciaFromParty(candidate)
+      if (LEVEL0_LUCIA_DECISION_COMPLETE !in completedBefore) {
+        candidateCompleted.remove(LEVEL0_LUCIA_DECISION_COMPLETE)
+      }
+    }
+
+    arc.put("completed", JSONArray(candidateCompleted.toList()))
+    val beat = arc.optString("currentBeat", "")
+    when {
+      LEVEL0_LUCIA_DECISION_COMPLETE in completedBefore -> {
+        if (beat.isBlank() || beat == PROLOGUE_ENTRY || beat == LEVEL0_ARRIVAL || beat == LEVEL0_FIRST_CONTACT) {
+          arc.put("current", "MAIN.LEVEL0")
+          arc.put("currentBeat", LEVEL0_LUCIA_DECISION_COMPLETE)
+        }
+      }
+      candidateJoinAllowed -> {
+        arc.put("current", "MAIN.LEVEL0")
+        arc.put("currentBeat", LEVEL0_LUCIA_DECISION_COMPLETE)
+      }
+      beat.isBlank() || beat == PROLOGUE_ENTRY || beat == LEVEL0_ARRIVAL || beat == LEVEL0_LUCIA_DECISION_COMPLETE -> {
+        arc.put("current", "MAIN.LEVEL0")
+        arc.put("currentBeat", LEVEL0_FIRST_CONTACT)
+        arc.put("nextBeat", LEVEL0_LUCIA_DECISION)
       }
     }
 
@@ -140,6 +192,26 @@ object StoryProgressionPolicy {
     val values = arc?.optJSONArray("completed") ?: return out
     for (i in 0 until values.length()) values.optString(i, "").takeIf(String::isNotBlank)?.let(out::add)
     return out
+  }
+
+  private fun isValidFirstContactCandidate(flags: JSONObject, completed: Set<String>): Boolean {
+    if (LEVEL0_FIRST_CONTACT !in completed) return false
+    val encounter = flags.optJSONObject("luciaEncounter") ?: return false
+    val status = encounter.optString("status", "").lowercase(Locale.ROOT)
+    val level = if (encounter.has("level")) encounter.optInt("level", -1) else 0
+    return level == 0 && status in setOf("met", "contact", "contacted", "first_contact", "first-contact")
+  }
+
+  private fun isValidLuciaJoinState(state: JSONObject): Boolean {
+    val flags = state.optJSONObject("flags") ?: return false
+    return isValidLuciaJoinState(flags, completed(flags.optJSONObject("storyArc")))
+  }
+
+  private fun isValidLuciaJoinState(flags: JSONObject, completed: Set<String>): Boolean {
+    if (LEVEL0_FIRST_CONTACT !in completed || LEVEL0_LUCIA_DECISION_COMPLETE !in completed) return false
+    val encounter = flags.optJSONObject("luciaEncounter") ?: return false
+    val status = encounter.optString("status", "").lowercase(Locale.ROOT)
+    return status == "joined" && encounter.optBoolean("partyEligible", false) && !encounter.optBoolean("joinPending", true)
   }
 
   private fun removeLuciaFromParty(candidate: JSONObject) {
