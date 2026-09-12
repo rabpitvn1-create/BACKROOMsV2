@@ -57,7 +57,11 @@ object CanonFallbackPolicy {
   }
 
   private fun hasDangerousRollConsequence(rolls: JSONObject): Boolean {
-    if (listOf("exitProbe", "levelExit", "entityEncounter", "hazard").any { rollSucceeded(rolls, it) }) return true
+    val consequential = listOf(
+      "exitProbe", "levelExit", "entityEncounter", "hazard", "survivor",
+      "irisReunion", "syvialReunion", "loot", "madGodSet", "almondWater"
+    )
+    if (consequential.any { rollSucceeded(rolls, it) }) return true
     if (rolls.optJSONArray("entityEncounterKeys")?.let { it.length() > 0 } == true) return true
     val entityRolls = rolls.optJSONArray("entityRolls") ?: return false
     for (index in 0 until entityRolls.length()) {
@@ -90,8 +94,18 @@ object CanonFallbackPolicy {
     val roots = mutableSetOf<String>()
     beforeFlags.keys().forEachRemaining(roots::add)
     candidateFlags.keys().forEachRemaining(roots::add)
-    return roots.any { it !in harmlessFlagRoots && !jsonEqual(beforeFlags.opt(it), candidateFlags.opt(it)) }
+    return roots.any { root ->
+      when {
+        root == "lastRolls" -> false
+        root == "madGod" && emptyJsonObject(beforeFlags.opt(root)) && emptyJsonObject(candidateFlags.opt(root)) -> false
+        root in harmlessFlagRoots -> false
+        else -> !jsonEqual(beforeFlags.opt(root), candidateFlags.opt(root))
+      }
+    }
   }
+
+  private fun emptyJsonObject(value: Any?): Boolean =
+    value == null || value === JSONObject.NULL || (value is JSONObject && !value.keys().hasNext())
 
   private fun jsonEqual(left: Any?, right: Any?): Boolean {
     if (left === right) return true
