@@ -1,0 +1,6 @@
+Backroom 1.1.74 Debug
+
+- Sửa packaged New Game startup để APK luôn khởi động từ trạng thái Level 0 sạch, không mang authored campaign checkpoint vào phiên chơi mới.
+- Tách validation campaign khỏi Gradle preBuild; CI kiểm tra campaign trước, rồi restore và xác minh startup sạch ngay trước khi build APK.
+- Cập nhật regression fixtures cho campaign materialized để test authored progression mà không ghi đè startup runtime.
+- Dọn các workflow emulator/cleanup legacy không còn dùng và bổ sung workflow dọn các Actions run thất bại.

@@ -44,9 +44,9 @@ jobs:
       - name: Verify release version and provider baseline
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 75' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.73'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.73.txt
+          grep -Fq 'versionCode 76' android-apk/app/build.gradle
+          grep -Fq "versionName '1.1.74'" android-apk/app/build.gradle
+          test -s android-apk/RELEASE_NOTES_1.1.74.txt
           test -s android-apk/sync-kai-sru-assets.py
           test -s android-apk/patch-kai-sru-visuals.py
           test -s android-apk/sync-play-font-assets.py
@@ -192,42 +192,42 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.73.apk
+        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.74.apk
 
       - name: Verify packaged APK
         run: |
           set -euo pipefail
-          test -s Backroom-1.1.73.apk
+          test -s Backroom-1.1.74.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.73.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.73.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='75' versionName='1.1.73'" <<<"$BADGING"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.74.apk
+          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.74.apk)
+          grep -q "package: name='com.rabpit.backroom' versionCode='76' versionName='1.1.74'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          MANIFEST_TREE=$("$BUILD_TOOLS/aapt" dump xmltree Backroom-1.1.73.apk AndroidManifest.xml)
+          MANIFEST_TREE=$("$BUILD_TOOLS/aapt" dump xmltree Backroom-1.1.74.apk AndroidManifest.xml)
           grep -Eq 'windowSoftInputMode.*0x10' <<<"$MANIFEST_TREE"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.73.apk
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/avatars/MadGod.jpg'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/kai_entity_overlay.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/avatars/kai_avatar.png'
-          unzip -l Backroom-1.1.73.apk | grep -q 'assets/fonts/Play-Bold.ttf'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'ANDROID_EDGE_UI_V1'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'ANDROID_SWIPE_UI_V1'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'ANDROID_SWIPE_GESTURE_V2'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'GM_CHOICES_FREEDOM_V1'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q -- '--android-ime-bottom'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0'
-          unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'data:image/webp;base64,'
-          ! unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1'
-          ! unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'COMBAT_TYPOGRAPHY_V1'
-          unzip -p Backroom-1.1.73.apk assets/index.html > packaged-index.html
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.74.apk
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/entity/hound.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/entity/slenderman.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/entity/diep_minh.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/avatars/MadGod.jpg'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/kai_snapshot_overlay.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/avatars/kai_avatar.png'
+          unzip -l Backroom-1.1.74.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'ANDROID_EDGE_UI_V1'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'ANDROID_SWIPE_UI_V1'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'ANDROID_SWIPE_GESTURE_V2'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'GM_CHOICES_FREEDOM_V1'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q -- '--android-ime-bottom'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0'
+          unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'data:image/webp;base64,'
+          ! unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1'
+          ! unzip -p Backroom-1.1.74.apk assets/index.html | grep -q 'COMBAT_TYPOGRAPHY_V1'
+          unzip -p Backroom-1.1.74.apk assets/index.html > packaged-index.html
           python3 - <<'PY'
           from pathlib import Path
 
@@ -264,25 +264,25 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Backroom-1.1.73-debug-apk
-          path: Backroom-1.1.73.apk
+          name: Backroom-1.1.74-debug-apk
+          path: Backroom-1.1.74.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish GitHub Release v1.1.73
+      - name: Publish GitHub Release v1.1.74
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='v1.1.73'
-          TITLE='Backroom 1.1.73 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.73.txt)
+          TAG='v1.1.74'
+          TITLE='Backroom 1.1.74 Debug'
+          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.74.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.73.apk --clobber
+            gh release upload "$TAG" Backroom-1.1.74.apk --clobber
           else
-            gh release create "$TAG" Backroom-1.1.73.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" Backroom-1.1.74.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
           fi
 
       - name: Verify published APK
@@ -291,7 +291,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download v1.1.73 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.73.apk' --output Backroom-1.1.73-verified.apk
-          test -s Backroom-1.1.73-verified.apk
-          cmp Backroom-1.1.73.apk Backroom-1.1.73-verified.apk
-          sha256sum Backroom-1.1.73-verified.apk
+          gh release download v1.1.74 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.74.apk' --output Backroom-1.1.74-verified.apk
+          test -s Backroom-1.1.74-verified.apk
+          cmp Backroom-1.1.74.apk Backroom-1.1.74-verified.apk
+          sha256sum Backroom-1.1.74-verified.apk
