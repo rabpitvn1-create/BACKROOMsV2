@@ -82,7 +82,7 @@ def validate(i,r,c):
  cov['combat']|=f['combat']
 def keyboard(r):
  e=edit(r)
- if not e or not tap(e):issue('medium','keyboard','Không focus được ô nhập');return
+ if e is None or not tap(e):issue('medium','keyboard','Không focus được ô nhập');return
  time.sleep(.5); s=norm(adb('shell','dumpsys','input_method',check=False).stdout); cov['keyboard']='mcurmethodid' in s or 'minputshown=true' in s or 'mshowrequested=true' in s; adb('shell','input','keyevent','4')
 def wait_advance(i,before):
  end=time.time()+TURN_TIMEOUT; last=None
@@ -97,7 +97,7 @@ def wait_advance(i,before):
  issue('hard','turn_timeout',f'Lượt {i} quá {TURN_TIMEOUT}s',action=i);shot(f'a{i:02d}-timeout');return False,last
 def freedom(i,action):
  r,before=wait_ready(f'a{i:02d}-ready'); e=edit(r)
- if not e or not tap(e):issue('hard','editor_missing','Không dùng được Freedom input',action=i);return False,r
+ if e is None or not tap(e):issue('hard','editor_missing','Không dùng được Freedom input',action=i);return False,r
  cov['freedom']=True; safe=re.sub(r'[^A-Za-z0-9 ]+','',action).strip().replace(' ','%s'); adb('shell','input','text',safe); adb('shell','input','keyevent','4'); time.sleep(.25); r=dump(f'a{i:02d}-typed'); x=btn(r,'Thực hiện',True)
  if x is None or not tap(x):issue('hard','execute_disabled','Nút Thực hiện không bật',action=i);return False,r
  return wait_advance(i,before)
@@ -108,21 +108,21 @@ def choice(i):
 def control(label):
  for j in range(5):
   r=dump('ctrl-'+norm(label)+str(j)); x=btn(r,label,True)
-  if x is not None and center(x):return x
+  if x is not None and center(x) is not None:return x
   adb('shell','input','swipe','540','1950','540','620','250');time.sleep(.35)
  return None
 def save_load(t0):
  x=control('Lưu')
- if x and tap(x):time.sleep(.5);cov['save']='da luu turn' in blob(dump('saved'))
+ if x is not None and tap(x):time.sleep(.5);cov['save']='da luu turn' in blob(dump('saved'))
  else:issue('medium','save_button','Không dùng được Lưu')
  x=control('Tải')
- if x and tap(x):time.sleep(.7);r=dump('loaded');cov['load']='da tai save turn' in blob(r); t=turn(r); issue('hard','load_turn',f'Load đổi turn {t0}->{t}') if t0 and t and t!=t0 else None
+ if x is not None and tap(x):time.sleep(.7);r=dump('loaded');cov['load']='da tai save turn' in blob(r); t=turn(r); issue('hard','load_turn',f'Load đổi turn {t0}->{t}') if t0 and t and t!=t0 else None
  else:issue('medium','load_button','Không dùng được Tải')
 def destructive(label,key):
  x=control(label)
- if not x or not tap(x):issue('medium',key,'Không dùng được '+label);return
+ if x is None or not tap(x):issue('medium',key,'Không dùng được '+label);return
  time.sleep(.3);x=control(label)
- if not x or not tap(x):issue('medium',key+'_confirm','Không xác nhận được '+label);return
+ if x is None or not tap(x):issue('medium',key+'_confirm','Không xác nhận được '+label);return
  time.sleep(.8);r=dump('after-'+key); cov[key]=turn(r)==1
  if turn(r)!=1:issue('hard',key+'_turn',label+' không về Turn 1',turn=turn(r))
  if 'lucia' in blob(r):issue('hard',key+'_lucia',label+' làm Lucia rò vào startup')
@@ -137,7 +137,7 @@ def main():
  cov['launch']=True;scan(r)
  if t!=1:issue('hard','startup_turn',f'Startup turn={t}')
  if 'lucia' in blob(r) or 'hua thuy mai' in blob(r):issue('hard','startup_lucia','Lucia xuất hiện ngay Prologue')
- if btn(r,'Tìm kiếm',None) or btn(r,'Khám phá',None):issue('warning','legacy_buttons','Search/Explore legacy vẫn hiện')
+ if btn(r,'Tìm kiếm',None) is not None or btn(r,'Khám phá',None) is not None:issue('warning','legacy_buttons','Search/Explore legacy vẫn hiện')
  keyboard(r)
  acts=['explore level zero slowly and stay in level zero','search current room carefully and stay in level zero','inspect yellow walls lights floor and corners','listen for sounds and verify current route','continue exploring level zero carefully','check equipment and surroundings and stay in level zero']
  for i in range(1,TARGET+1):
