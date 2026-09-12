@@ -9,7 +9,9 @@ byte-for-byte before Gradle continues packaging the APK.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import subprocess
+import sys
 
 ROOT = Path(__file__).resolve().parent
 INDEX = ROOT / "app/src/main/assets/index.html"
@@ -52,6 +54,42 @@ def require_clean_startup(html: str) -> None:
     for marker in forbidden:
         if marker in startup:
             raise RuntimeError("Later campaign checkpoint leaked into New Game startup: " + marker)
+
+
+def restore_clean_startup(html: str) -> str:
+    start = html.find("const initial={")
+    end = html.find("\n\nconst byId=", start)
+    if start < 0 or end < 0:
+        raise RuntimeError("Startup restoration: initial state block not found")
+    startup = html[start:end]
+
+    replacements = (
+        (r'level:\{number:[^,}]+,name:"[^"]*"\}', 'level:{number:0,name:"The Lobby"}'),
+        (r'location:"[^"]*"', 'location:"Level 0 / The Lobby — khu phòng vàng ban đầu"'),
+        (r'party:\[[^\]]*\]', 'party:[]'),
+        (r'exploration:\{sublevelId:"[^"]*"\}', 'exploration:{sublevelId:""}'),
+        (
+            r'storyArc:\{current:"[^"]*",currentBeat:"[^"]*",nextBeat:"[^"]*"',
+            'storyArc:{current:"MAIN.PROLOGUE",currentBeat:"STORY.PROLOGUE.ENTRY_COMPLETE",nextBeat:"STORY.LEVEL0.ARRIVAL"',
+        ),
+    )
+    for pattern, replacement in replacements:
+        startup, count = re.subn(pattern, replacement, startup, count=1)
+        if count != 1:
+            raise RuntimeError("Startup restoration anchor missing: " + pattern)
+
+    restored = html[:start] + startup + html[end:]
+    require_clean_startup(restored)
+    return restored
+
+
+if sys.argv[1:] == ["--restore-startup"]:
+    restored_html = restore_clean_startup(INDEX.read_text(encoding="utf-8"))
+    INDEX.write_text(restored_html, encoding="utf-8")
+    print("New Game startup restored to the Level 0 prologue contract.")
+    raise SystemExit(0)
+if sys.argv[1:]:
+    raise SystemExit("Usage: patch-main-campaign-validate-current.py [--restore-startup]")
 
 
 original_bytes = INDEX.read_bytes()

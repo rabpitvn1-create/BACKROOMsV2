@@ -175,6 +175,9 @@ jobs:
           node android-apk/test-android-ui-regressions.mjs android-apk/app/src/main/assets/index.html
           node android-apk/test-gm-choices-freedom.mjs android-apk
 
+      - name: Restore and verify New Game startup
+        run: python3 android-apk/patch-main-campaign-validate-current.py --restore-startup
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
