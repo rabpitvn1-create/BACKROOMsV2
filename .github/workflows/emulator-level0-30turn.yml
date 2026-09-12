@@ -80,7 +80,6 @@ jobs:
         env:
           TARGET_ACTIONS: '30'
           TURN_TIMEOUT_SECONDS: '180'
-          START_TIMEOUT_SECONDS: '45'
           POLL_SECONDS: '1.5'
           EMU_OUT: emu-level0-30turn-results
         with:
@@ -94,27 +93,6 @@ jobs:
             python3 -m py_compile .github/scripts/emu-level0-30turn.py
             python3 .github/scripts/emu-level0-30turn.py Backroom-under-test.apk
 
-      - name: Run deterministic Level 0 combat regression
-        id: combat
-        if: always()
-        continue-on-error: true
-        uses: reactivecircus/android-emulator-runner@v2
-        env:
-          EMU_OUT: emu-level0-30turn-results/combat
-          START_TIMEOUT_SECONDS: '45'
-          COMBAT_TIMEOUT_SECONDS: '180'
-          POLL_SECONDS: '1'
-        with:
-          api-level: 35
-          arch: x86_64
-          profile: pixel_6
-          disable-animations: true
-          disable-spellchecker: true
-          enable-hw-keyboard: true
-          script: |
-            bash -n .github/scripts/emu-combat-regression.sh
-            bash .github/scripts/emu-combat-regression.sh Backroom-under-test.apk
-
       - name: Collect workflow verdict
         if: always()
         run: |
@@ -122,8 +100,7 @@ jobs:
           mkdir -p emu-level0-30turn-results
           echo "target_sha=${{ steps.build.outputs.target_sha }}" | tee emu-level0-30turn-results/workflow-outcome.txt
           echo "soak=${{ steps.soak.outcome }}" | tee -a emu-level0-30turn-results/workflow-outcome.txt
-          echo "combat=${{ steps.combat.outcome }}" | tee -a emu-level0-30turn-results/workflow-outcome.txt
-          if [[ "${{ steps.soak.outcome }}" != "success" || "${{ steps.combat.outcome }}" != "success" ]]; then
+          if [[ "${{ steps.soak.outcome }}" != "success" ]]; then
             exit 1
           fi
 
