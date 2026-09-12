@@ -5,6 +5,9 @@ const root = process.argv[2] || 'android-apk';
 const workflow = fs.readFileSync('.github/workflows/build-backroom-apk.yml', 'utf8');
 const main = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
 const gmPolicy = fs.readFileSync(path.join(root, 'patch-gm-action-policy-final.py'), 'utf8');
+const chainStart = workflow.indexOf('scripts=(');
+const chainEnd = workflow.indexOf('for script in', chainStart);
+const patchChain = workflow.slice(chainStart, chainEnd);
 
 function requireContract(value, message) {
   if (!value) throw new Error(message);
@@ -19,7 +22,7 @@ const ordered = [
   'patch-low-risk-canon-fallback-final.py',
 ];
 for (let index = 1; index < ordered.length; index += 1) {
-  requireContract(workflow.indexOf(ordered[index - 1]) < workflow.indexOf(ordered[index]), `patch ordering is wrong: ${ordered[index]}`);
+  requireContract(patchChain.indexOf(ordered[index - 1]) < patchChain.indexOf(ordered[index]), `patch ordering is wrong: ${ordered[index]}`);
 }
 requireContract(!gmPolicy.includes('patch-low-risk-canon-fallback-final.py'), 'fallback must not run from nested action-policy patch');
 requireContract(main.includes('CanonFallbackPolicy.isEligible('), 'runtime fallback policy call missing');
