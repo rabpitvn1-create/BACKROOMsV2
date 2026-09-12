@@ -69,8 +69,7 @@ def method_bounds(source: str, method_name: str) -> tuple[int, int]:
 
 # Fresh New Game starts with Kai alone at STORY.PROLOGUE.ENTRY_COMPLETE. The first
 # gameplay turn may explore Level 0 and advance to STORY.LEVEL0.ARRIVAL, but Lucia's
-# first contact belongs to a later turn. This prevents Codex knowledge from being used
-# as permission to materialize a story-owned character during the Prologue.
+# first contact belongs to a later turn. Meeting Lucia and joining Party are separate gates.
 if "LUCIA ENCOUNTER STORY GATE:" not in text:
     start, end = method_bounds(text, "writerPrompt")
     method = text[start:end]
@@ -80,9 +79,13 @@ if "LUCIA ENCOUNTER STORY GATE:" not in text:
     indent = return_match.group(1)
     continuation = indent + "  "
     prefix = (
-        '"LUCIA ENCOUNTER STORY GATE: Nếu state ở đầu lượt còn có storyArc.currentBeat=STORY.PROLOGUE.ENTRY_COMPLETE và chưa hoàn tất STORY.LEVEL0.ARRIVAL, Kai đang một mình khám phá Level 0. Lucia / Hứa Thuý Mai chưa được gặp, chưa được nghe, chưa được nhận diện qua dấu vết và không được thêm vào Party. " +\n'
+        '"LUCIA ENCOUNTER STORY GATE: Sequence bắt buộc và machine-verifiable là STORY.LEVEL0.ARRIVAL -> STORY.LEVEL0.FIRST_CONTACT_COMPLETE -> STORY.LEVEL0.LUCIA_DECISION_COMPLETE kèm luciaEncounter.status=joined, partyEligible=true, joinPending=false -> Party có Lucia. Không được rút gọn các bước này thành một lượt. " +\n'
         + continuation
-        + '"Lượt này có thể cho Kai khám phá đủ để tiến storyArc tới STORY.LEVEL0.ARRIVAL nếu hành động thật sự tạo căn cứ, nhưng tuyệt đối không gặp Lucia trong chính lượt dùng để hoàn tất mốc đó. First contact chỉ được phép ở một lượt SAU khi state đầu lượt đã rời STORY.PROLOGUE.ENTRY_COMPLETE hoặc đã có STORY.LEVEL0.ARRIVAL trong completed. Lucia gặp ở Level 0 không đồng nghĩa tự động gia nhập Party. Không dùng Character Codex hay knowledge hậu trường để spawn cô sớm. " +\n'
+        + '"Nếu state ở ĐẦU lượt chưa hoàn tất STORY.LEVEL0.ARRIVAL, Kai đang một mình ở Level 0: Lucia / Hứa Thuý Mai chưa được gặp, chưa được nghe, chưa được nhận diện qua dấu vết và không được thêm vào Party. Lượt này có thể hoàn tất ARRIVAL nếu hành động đủ căn cứ, nhưng first-contact phải chờ một lượt sau. " +\n'
+        + continuation
+        + '"Nếu state ở ĐẦU lượt đã có ARRIVAL nhưng chưa có FIRST_CONTACT_COMPLETE, lượt này có thể hoàn tất first-contact bằng luciaEncounter.status=met tại Level 0. Trong CHÍNH lượt first-contact phải giữ Lucia ngoài party, không được phát STORY.LEVEL0.LUCIA_DECISION_COMPLETE và không được coi partyEligible là đã join. " +\n'
+        + continuation
+        + '"Lucia chỉ được vào Party ở một lượt SAU khi state đầu lượt đã có FIRST_CONTACT_COMPLETE và lượt decision xác nhận STORY.LEVEL0.LUCIA_DECISION_COMPLETE cùng status=joined, partyEligible=true, joinPending=false. Gặp Lucia không đồng nghĩa Lucia đã join. Không dùng Character Codex hay knowledge hậu trường để spawn hoặc join cô sớm. " +\n'
         + continuation
     )
     method = method[: return_match.end()] + prefix + method[return_match.end():]
@@ -102,12 +105,27 @@ helper = r'''  private boolean storyArcCompletedAndroid(JSONObject state, String
     return false;
   }
 
-  private boolean luciaEncounterLockedAndroid(JSONObject state) {
-    if (state == null || storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL")) return false;
+  private boolean luciaFirstContactLockedAndroid(JSONObject state) {
+    return state == null || !storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL");
+  }
+
+  private boolean luciaJoinConfirmedAndroid(JSONObject state) {
+    if (state == null ||
+        !storyArcCompletedAndroid(state, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
+        !storyArcCompletedAndroid(state, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE")) return false;
     JSONObject flags = state.optJSONObject("flags");
-    JSONObject storyArc = flags == null ? null : flags.optJSONObject("storyArc");
-    String currentBeat = storyArc == null ? "" : storyArc.optString("currentBeat", "");
-    return "STORY.PROLOGUE.ENTRY_COMPLETE".equals(currentBeat);
+    JSONObject encounter = flags == null ? null : flags.optJSONObject("luciaEncounter");
+    if (encounter == null) return false;
+    String status = lower(encounter.optString("status", ""));
+    return "joined".equals(status) && encounter.optBoolean("partyEligible", false) &&
+      !encounter.optBoolean("joinPending", true);
+  }
+
+  private boolean luciaPartyLockedAndroid(JSONObject before, JSONObject candidate) {
+    // FIRST_CONTACT must already have existed when the turn began. This keeps the
+    // first-contact turn itself from also becoming the Party-join turn.
+    if (before == null || !storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE")) return true;
+    return !luciaJoinConfirmedAndroid(before) && !luciaJoinConfirmedAndroid(candidate);
   }
 
   private boolean partyContainsLuciaAndroid(JSONObject state) {
@@ -144,19 +162,27 @@ helper = r'''  private boolean storyArcCompletedAndroid(JSONObject state, String
 
   private JSONArray prematureLuciaEncounterIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {
     JSONArray issues = new JSONArray();
-    if (!luciaEncounterLockedAndroid(before)) return issues;
-
     String reply = lower(generated == null ? "" : generated.optString("reply", ""));
     boolean replyMentionsLucia = containsAny(reply, "lucia", "hứa thuý mai", "hứa thúy mai");
-    boolean candidateIntroducesLucia = partyContainsLuciaAndroid(candidate) || partyContainsLuciaAndroid(generated) ||
-      luciaEncounterStateAndroid(candidate) || luciaEncounterStateAndroid(generated);
-    if (!replyMentionsLucia && !candidateIntroducesLucia) return issues;
+    boolean candidateIntroducesFirstContact = luciaEncounterStateAndroid(candidate) || luciaEncounterStateAndroid(generated);
 
-    issues.put(new JSONObject()
-      .put("rule", "premature_lucia_encounter")
-      .put("severity", "hard")
-      .put("claim", "Lucia first contact before Level 0 exploration is complete")
-      .put("reason", "Kai is still at STORY.PROLOGUE.ENTRY_COMPLETE in the state that began this turn. Rewrite this turn as solo Level 0 exploration only. The turn may advance to STORY.LEVEL0.ARRIVAL when the player's exploration supports it, but Lucia/Hứa Thuý Mai cannot appear, be identified, leave identifiable traces, or join Party until a later turn whose starting state has already cleared that arrival gate."));
+    if (luciaFirstContactLockedAndroid(before) && (replyMentionsLucia || candidateIntroducesFirstContact)) {
+      issues.put(new JSONObject()
+        .put("rule", "premature_lucia_first_contact")
+        .put("severity", "hard")
+        .put("claim", "Lucia first contact before Level 0 Arrival was already complete at turn start")
+        .put("reason", "Lucia first contact is locked until a later turn whose starting state already contains STORY.LEVEL0.ARRIVAL. The turn that completes Arrival remains solo Level 0 exploration."));
+    }
+
+    boolean candidatePartyEarly = partyContainsLuciaAndroid(candidate) && luciaPartyLockedAndroid(before, candidate);
+    boolean generatedPartyEarly = partyContainsLuciaAndroid(generated) && luciaPartyLockedAndroid(before, generated);
+    if (candidatePartyEarly || generatedPartyEarly) {
+      issues.put(new JSONObject()
+        .put("rule", "premature_lucia_party")
+        .put("severity", "hard")
+        .put("claim", "Lucia entered Party before the separate decision/join gate")
+        .put("reason", "Meeting Lucia is not Party membership. FIRST_CONTACT_COMPLETE must already exist at turn start, then a later decision must complete STORY.LEVEL0.LUCIA_DECISION_COMPLETE with luciaEncounter.status=joined, partyEligible=true, and joinPending=false before Party may contain Lucia."));
+    }
     return issues;
   }
 
@@ -189,13 +215,16 @@ if repair_guard not in text:
 
 for marker in (
     "LUCIA ENCOUNTER STORY GATE:",
-    "luciaEncounterLockedAndroid",
-    "prematureLuciaEncounterIssuesAndroid",
-    "premature_lucia_encounter",
+    "luciaFirstContactLockedAndroid",
+    "luciaPartyLockedAndroid",
+    "luciaJoinConfirmedAndroid",
+    "STORY.LEVEL0.LUCIA_DECISION_COMPLETE",
+    "premature_lucia_first_contact",
+    "premature_lucia_party",
     "appendIssues(hardIssues, prematureLuciaEncounterIssuesAndroid(before, candidateState, generated))",
 ):
     if marker not in text:
         raise RuntimeError("Lucia story-gate regression marker missing: " + marker)
 
 MAIN.write_text(text, encoding="utf-8")
-print("Lucia encounter gate applied: Prologue remains solo; first contact requires a later turn after Level 0 arrival/exploration.")
+print("Lucia story gate applied: Arrival, first contact, and Party join are separate machine-verifiable stages.")
