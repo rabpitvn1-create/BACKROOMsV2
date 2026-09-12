@@ -102,10 +102,8 @@ runpy.run_path(str(ROOT / "patch-lucia-normalize-compat.py"), run_name="__main__
 # stats, inventory policy, three-slot loadout, encounter gate, or prompt contract.
 runpy.run_path(str(ROOT / "patch-lucia-follower.py"), run_name="__main__")
 
-# Final Entity action authority runs after Lucia because Lucia still adds an EXPLORE-only follower
-# encounter contract to MainActivity. This keeps roaming Entity generation available to all three
-# primary actions without changing Lucia's own Level 0 follower rules.
-runpy.run_path(str(ROOT / "patch-entity-encounter-all-actions.py"), run_name="__main__")
+# The typed action bridge remains the sole new-Entity action authority: EXPLORE may open
+# roaming encounters, while SEARCH/EXECUTE cannot. Do not widen that gate in this release chain.
 
 # Healing items are installed last so their HP/use and generic-loot contracts see the fully patched
 # runtime and cannot be overwritten by earlier gameplay, follower, equipment, or encounter patches.

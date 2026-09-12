@@ -3,11 +3,12 @@ set -euo pipefail
 
 PACKAGE="com.rabpit.backroom"
 COMPONENT="$PACKAGE/.MainActivity"
-APK="${1:-Backroom-1.1.71.apk}"
+APK="${1:-Backroom-under-test.apk}"
 MAX_TURNS="${MAX_TURNS:-24}"
 POLL_SECONDS="${POLL_SECONDS:-2}"
 TURN_TIMEOUT_SECONDS="${TURN_TIMEOUT_SECONDS:-120}"
 OUT="${EMU_OUT:-emu-level1-results}"
+FREEDOM_TEXT="continue forward"
 mkdir -p "$OUT"
 
 submitted_turns=0
@@ -53,8 +54,12 @@ for node in nodes:
         match = ('responding' in joined) and (text == 'wait' or desc == 'wait')
     elif kind == 'deny_permission':
         match = text in ("don't allow", 'dont allow', 'deny') or desc in ("don't allow", 'dont allow', 'deny')
-    elif kind == 'explore':
-        match = enabled and cls.endswith('Button') and (text == 'kham pha' or desc == 'kham pha')
+    elif kind == 'input':
+        match = enabled and cls.endswith('EditText')
+    elif kind == 'submit':
+        match = enabled and cls.endswith('Button') and (
+            rid.endswith(':id/submit') or rid == 'submit' or text == 'thuc hien' or desc == 'thuc hien'
+        )
     if match:
         bounds = node.attrib.get('bounds') or ''
         if bounds and bounds != '[0,0][0,0]':
@@ -63,26 +68,15 @@ for node in nodes:
 PY
 }
 
-explore_state() {
+input_text() {
   local xml="$1"
   python3 - "$xml" <<'PY'
-import sys, unicodedata, xml.etree.ElementTree as ET
-
-def norm(value):
-    value = (value or '').replace('đ', 'd').replace('Đ', 'D')
-    value = unicodedata.normalize('NFKD', value)
-    return ''.join(ch for ch in value if not unicodedata.combining(ch)).casefold().strip()
-
+import sys, xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 for node in root.iter('node'):
-    if not (node.attrib.get('class') or '').endswith('Button'):
-        continue
-    text = norm(node.attrib.get('text'))
-    desc = norm(node.attrib.get('content-desc'))
-    if text == 'kham pha' or desc == 'kham pha':
-        print('enabled' if node.attrib.get('enabled', 'true') == 'true' else 'disabled')
-        raise SystemExit(0)
-print('missing')
+    if (node.attrib.get('class') or '').endswith('EditText'):
+        print(node.attrib.get('text') or '')
+        break
 PY
 }
 
@@ -102,6 +96,7 @@ busy = any(token in joined for token in (
     'dang xu ly luot',
     'dang tim kiem khu vuc hien tai',
     'dang kham pha khu vuc chua khao sat',
+    'dang xu ly lua chon',
     'combat auto',
 ))
 raise SystemExit(0 if busy else 1)
@@ -188,7 +183,7 @@ is_keyboard_permission_prompt() {
 
 is_known_system_overlay() {
   local xml="$1"
-  python3 - "$xml" <<'PY2'
+  python3 - "$xml" <<'PY'
 import sys, unicodedata, xml.etree.ElementTree as ET
 
 def norm(value):
@@ -203,7 +198,7 @@ except Exception:
 joined = '\n'.join(norm((n.attrib.get('text') or '') + ' ' + (n.attrib.get('content-desc') or '')) for n in root.iter('node'))
 known = 'viewing full screen' in joined or 'responding' in joined or 'access your contacts' in joined
 raise SystemExit(0 if known else 1)
-PY2
+PY
 }
 
 dismiss_system_overlays() {
@@ -248,8 +243,8 @@ is_app_resumed() {
     | grep -E -q "(mResumedActivity|topResumedActivity).*${PACKAGE}/.MainActivity"
 }
 
-wait_until_explore_ready() {
-  local label="$1" deadline tmp state non_app=0
+wait_until_freedom_ready() {
+  local label="$1" deadline tmp bounds non_app=0
   deadline=$((SECONDS + TURN_TIMEOUT_SECONDS))
   tmp="/tmp/backroom-${label}.xml"
 
@@ -276,57 +271,71 @@ wait_until_explore_ready() {
       continue
     fi
 
-    state=$(explore_state "$tmp" || true)
-    if [[ "$state" == "enabled" ]]; then
+    bounds=$(node_bounds "$tmp" input || true)
+    if [[ -n "$bounds" ]]; then
       cp "$tmp" "$OUT/${label}.xml"
       return 0
-    fi
-
-    # True-turn combat owns gameplay until its automatic cycle completes.
-    if [[ "$state" == "disabled" ]]; then
-      sleep "$POLL_SECONDS"
-      continue
     fi
     sleep "$POLL_SECONDS"
   done
 
   [[ -s "$tmp" ]] && cp "$tmp" "$OUT/${label}-timeout.xml" || true
-  harness_error="Timed out after ${TURN_TIMEOUT_SECONDS}s waiting for Khám phá ($label)"
+  harness_error="Timed out after ${TURN_TIMEOUT_SECONDS}s waiting for Freedom input ($label)"
   return 1
 }
 
 submit_explore() {
-  local xml="$1" index="$2" before_turn bounds verify after_turn state attempt
+  local xml="$1" index="$2" before_turn input_bounds typed submit_bounds verify after_turn observed_text attempt
   before_turn=$(ui_turn "$xml" || true)
-  bounds=$(node_bounds "$xml" explore || true)
-  if [[ -z "$bounds" ]]; then
-    harness_error="Enabled Khám phá button was not exposed before action $index"
+  input_bounds=$(node_bounds "$xml" input || true)
+  if [[ -z "$input_bounds" ]]; then
+    harness_error="Freedom input was not exposed before action $index"
     return 1
   fi
 
-  for attempt in 1 2; do
-    tap_bounds "$bounds"
-    sleep 2
-    verify=$(dump_ui "submitted-${index}-attempt-${attempt}")
+  tap_bounds "$input_bounds"
+  adb shell 'input keyevent KEYCODE_MOVE_END; for i in $(seq 1 80); do input keyevent KEYCODE_DEL; done; input text continue%sforward' >/dev/null 2>&1 || true
+  sleep 1
+  typed=$(dump_ui "typed-${index}")
+  observed_text=$(input_text "$typed" || true)
+  if [[ "${observed_text,,}" != *"continue forward"* ]]; then
+    harness_error="Freedom text was not entered before action $index (observed: ${observed_text:-<empty>})"
+    return 1
+  fi
+
+  submit_bounds=$(node_bounds "$typed" submit || true)
+  if [[ -z "$submit_bounds" ]]; then
+    # On emulators that show a software IME, close it only when it actually occludes the submit control.
+    adb shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+    sleep 1
+    typed=$(dump_ui "typed-${index}-ime-closed")
+    submit_bounds=$(node_bounds "$typed" submit || true)
+  fi
+  if [[ -z "$submit_bounds" ]]; then
+    harness_error="Enabled Thực hiện button was not exposed after Freedom input for action $index"
+    return 1
+  fi
+
+  # Exactly one physical submit tap per gameplay action. Never retry the tap: a fast turn may
+  # finish and re-enable the composer before the harness samples the UI again.
+  tap_bounds "$submit_bounds"
+  for attempt in $(seq 1 8); do
+    sleep 1
+    verify=$(dump_ui "submitted-${index}-observe-${attempt}")
     if is_known_system_overlay "$verify"; then
       dismiss_system_overlays
-      sleep 1
-      verify=$(dump_ui "submitted-${index}-attempt-${attempt}-recovered")
+      continue
     fi
     after_turn=$(ui_turn "$verify" || true)
-    state=$(explore_state "$verify" || true)
     if ui_is_busy "$verify" \
-      || [[ "$state" == "disabled" ]] \
       || { [[ -n "$before_turn" && -n "$after_turn" ]] && (( after_turn > before_turn )); }; then
       submitted_turns=$((submitted_turns + 1))
-      echo "probe_action=$index kind=EXPLORE label=Khám phá" | tee -a "$OUT/actions.log"
+      echo "probe_action=$index origin=FREEDOM resolvedKind=EXPLORE input=$FREEDOM_TEXT" | tee -a "$OUT/actions.log"
       return 0
     fi
-    bounds=$(node_bounds "$verify" explore || true)
-    [[ -n "$bounds" ]] || break
   done
 
-  harness_error="Khám phá tap for action $index was not accepted"
+  harness_error="Freedom submit for action $index was not accepted"
   return 1
 }
 
@@ -352,7 +361,7 @@ adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1 || true
 adb install -r "$APK"
 adb logcat -c
 adb shell am force-stop "$PACKAGE"
-echo "mode=debug-emulator-deterministic-exit-after-six-turns" | tee "$OUT/fixture.log"
+echo "mode=debug-emulator-deterministic-exit-after-six-turns; input=Freedom->EXPLORE" | tee "$OUT/fixture.log"
 adb shell am start -W -n "$COMPONENT" --ez emuLevel1Progression true | tee "$OUT/am-start.txt"
 sleep 5
 dismiss_system_overlays
@@ -364,12 +373,12 @@ fi
 
 for turn in $(seq 0 "$MAX_TURNS"); do
   [[ -z "$harness_error" ]] || break
-  wait_until_explore_ready "turn-${turn}" || break
+  wait_until_freedom_ready "turn-${turn}" || break
   xml="$OUT/turn-${turn}.xml"
   observe_level "$xml"
 
   if [[ "$passed" -eq 1 ]]; then
-    echo "PASS: authoritative state observed Level 1 then Level 2 after $submitted_turns real Khám phá actions" | tee "$OUT/result.txt"
+    echo "PASS: authoritative state observed Level 1 then Level 2 after $submitted_turns real Freedom traversal actions classified as EXPLORE" | tee "$OUT/result.txt"
     break
   fi
   [[ "$turn" -eq "$MAX_TURNS" ]] && break
@@ -386,12 +395,12 @@ if [[ -n "$harness_error" ]]; then
   exit 2
 fi
 if [[ "$submitted_turns" -eq 0 ]]; then
-  echo "HARNESS FAIL: no real Khám phá action was accepted" | tee "$OUT/result.txt"
+  echo "HARNESS FAIL: no real Freedom traversal action was accepted" | tee "$OUT/result.txt"
   exit 2
 fi
 if [[ "$seen_level1" -ne 1 ]]; then
-  echo "GAMEPLAY FAIL: deterministic debug exit probes were available after the six-turn minimum, but authoritative state never reached Level 1 within $submitted_turns Khám phá actions" | tee "$OUT/result.txt"
+  echo "GAMEPLAY FAIL: deterministic debug exit probes were available after the six-turn minimum, but authoritative state never reached Level 1 within $submitted_turns Freedom EXPLORE actions" | tee "$OUT/result.txt"
   exit 1
 fi
-echo "GAMEPLAY FAIL: authoritative state reached Level 1 but did not reach Level 2 within $submitted_turns Khám phá actions" | tee "$OUT/result.txt"
+echo "GAMEPLAY FAIL: authoritative state reached Level 1 but did not reach Level 2 within $submitted_turns Freedom EXPLORE actions" | tee "$OUT/result.txt"
 exit 1

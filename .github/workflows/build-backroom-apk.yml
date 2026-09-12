@@ -56,6 +56,8 @@ jobs:
           test -s android-apk/patch-haiku-provider-final.py
           test -s android-apk/patch-pressure-combat.py
           test -s android-apk/patch-party-turn-combat-final.py
+          test -s android-apk/patch-gm-choices-freedom-final.py
+          test -s android-apk/test-gm-choices-freedom.mjs
           test ! -e android-apk/patch-game-master-storytelling-frame-final.py
           test ! -e android-apk/patch-combat-typography-final.py
           test ! -e android-apk/patch-mobile-swipe-ui.py
@@ -105,7 +107,7 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
@@ -154,6 +156,9 @@ jobs:
           grep -q "font-family:var(--gameplay-font)" android-apk/app/src/main/assets/index.html
           grep -q "header.textContent='Storytelling'" android-apk/app/src/main/assets/index.html
           grep -q "font-family:'BackroomPlay'" android-apk/app/src/main/assets/index.html
+          grep -q 'GM_CHOICES_FREEDOM_V1' android-apk/app/src/main/assets/index.html
+          grep -q '@JavascriptInterface public void submitFreedom' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -q 'sanitizeGmChoices' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1' android-apk/app/src/main/assets/index.html
           ! grep -q 'GAME_MASTER_PLAY_FONT_V1' android-apk/app/src/main/assets/index.html
           ! grep -q 'COMBAT_TYPOGRAPHY_V1' android-apk/app/src/main/assets/index.html
@@ -165,6 +170,7 @@ jobs:
           ! grep -q 'STEP2_THREE_ACTIONS' android-apk/app/src/main/assets/index.html
           ! grep -q '<svg class="action-icon' android-apk/app/src/main/assets/index.html
           node android-apk/test-android-ui-regressions.mjs android-apk/app/src/main/assets/index.html
+          node android-apk/test-gm-choices-freedom.mjs android-apk
 
       - uses: actions/setup-java@v5
         with:
@@ -209,6 +215,7 @@ jobs:
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2'
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5'
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -q 'ANDROID_SWIPE_GESTURE_V2'
+          unzip -p Backroom-1.1.72.apk assets/index.html | grep -q 'GM_CHOICES_FREEDOM_V1'
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -q -- '--android-ime-bottom'
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0'
           unzip -p Backroom-1.1.72.apk assets/index.html | grep -q 'data:image/webp;base64,'

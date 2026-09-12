@@ -19,6 +19,8 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 # CombatRuntime: Diệp Minh is a unique boss. This patch deliberately runs after
 # Entity durability and Kai's Guilty Crown Override so its exact HP/regen and
 # special attacks are the final authority without disturbing older mechanics.
+# Encounter generation is intentionally NOT owned here; the final Entity policy
+# includes diep_minh in the same independent 2% dice contract as every Entity.
 # ---------------------------------------------------------------------------
 combat = COMBAT.read_text(encoding="utf-8")
 
@@ -168,16 +170,10 @@ COMBAT.write_text(combat, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# Android encounter/overlay: independent 3% boss roll, deliberately excluded
-# from the shared roaming pool. If both rolls succeed, the boss roll wins so
-# only one authoritative CombatRuntime encounter starts in that turn.
+# Android overlay/canonical key only. Encounter probability and queue ownership
+# live in EntityEncounterPolicy + patch-entity-rates-drops-final.py.
 # ---------------------------------------------------------------------------
 main = MAIN.read_text(encoding="utf-8")
-
-normal_roll = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter", 10000, entityThresholds[level], entityEncounterAction && entityAllowed, entitySuffix);\n'
-boss_roll = '    JSONObject diepMinhRoll = thresholdRoll("diepMinhEncounter", 10000, 300, entityEncounterAction && entityAllowed, " unique boss 3%");\n    rolls.put("diepMinhEncounter", diepMinhRoll);\n'
-if 'rolls.put("diepMinhEncounter", diepMinhRoll);' not in main:
-    main = replace_once(main, normal_roll, boss_roll + normal_roll, "Diệp Minh independent 3% roll")
 
 normalized_old = '      case "jeff_the_killer": case "jane_the_killer": case "slenderman":\n        return key;\n'
 normalized_new = '      case "jeff_the_killer": case "jane_the_killer": case "slenderman": case "diep_minh":\n        return key;\n'
@@ -191,57 +187,19 @@ keys_old = "'jeff_the_killer','jane_the_killer','slenderman'];"
 keys_new = "'jeff_the_killer','jane_the_killer','slenderman','diep_minh'];"
 main = replace_once(main, keys_old, keys_new, "Diệp Minh overlay JS key")
 
-helper_start = main.find('  private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls) throws Exception {')
-helper_end = main.find('\n  private JSONObject resolveEntityOverlay(String rawEntityKey) throws Exception {', helper_start)
-if helper_start < 0 or helper_end < 0:
-    raise RuntimeError("Final forceEntityEncounterFlag boundary missing")
-helper = r'''  private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls) throws Exception {
-    if (candidateState == null || rolls == null) return;
-    String entityKey;
-    JSONObject boss = rolls.optJSONObject("diepMinhEncounter");
-    if (boss != null && boss.optBoolean("success", false)) {
-      entityKey = "diep_minh";
-    } else {
-      JSONObject normal = rolls.optJSONObject("entityEncounter");
-      if (normal == null || !normal.optBoolean("success", false)) return;
-      entityKey = rolls.optString("roamingEntityKey", "").trim();
-      if (entityKey.isEmpty()) return;
-    }
-    JSONObject flags = candidateState.optJSONObject("flags");
-    if (flags == null) {
-      flags = new JSONObject();
-      candidateState.put("flags", flags);
-    }
-    String canonicalKey = normalizedEntityKey(entityKey);
-    flags.put("entityEncounterKey", canonicalKey);
-    requireGameCore().startCombatState(candidateState.toString(), canonicalKey);
-  }
-'''
-main = main[:helper_start] + helper + main[helper_end:]
-
-prompt_anchor = 'ROAMING KILLER HARD LOCK: Jeff the Killer và Jane the Killer dùng cùng entityEncounter'
-if 'DIỆP MINH BOSS HARD LOCK:' not in main:
-    line_start = main.rfind('\n', 0, main.find(prompt_anchor)) + 1
-    if line_start <= 0:
-        raise RuntimeError("Entity roaming prompt insertion anchor missing")
-    boss_prompt = '      "DIỆP MINH BOSS HARD LOCK: Diệp Minh dùng roll độc lập diepMinhEncounter đúng 3% trên mỗi action gameplay hợp lệ. Boss không nằm trong roamingEntityKey pool chung. Khi boss roll success, encounter Diệp Minh ưu tiên và chỉ một CombatRuntime encounter được khởi tạo. " +\n'
-    main = main[:line_start] + boss_prompt + main[line_start:]
-
-pool_lines = [line for line in main.splitlines() if 'String[] roamingPool =' in line]
-if len(pool_lines) != 1:
-    raise RuntimeError(f"Expected exactly one final roaming pool, found {len(pool_lines)}")
-if 'diep_minh' in pool_lines[0]:
-    raise RuntimeError("Diệp Minh must remain outside the shared roaming pool")
+for forbidden in (
+    'thresholdRoll("diepMinhEncounter"',
+    'unique boss 3%',
+    'independent 3% encounter for diep_minh',
+    'DIỆP MINH BOSS HARD LOCK:',
+):
+    if forbidden in main:
+        raise RuntimeError("Retired Diệp Minh encounter channel survived before final Entity policy: " + forbidden)
 
 for marker in (
-    'thresholdRoll("diepMinhEncounter", 10000, 300, entityEncounterAction && entityAllowed',
-    'rolls.put("diepMinhEncounter", diepMinhRoll)',
     'case "diep_minh":',
     'case "diep_minh": name = "Diệp Minh"; break;',
     "'slenderman','diep_minh']",
-    'JSONObject boss = rolls.optJSONObject("diepMinhEncounter")',
-    'entityKey = "diep_minh";',
-    'DIỆP MINH BOSS HARD LOCK:',
     'file:///android_asset/entity/',
 ):
     if marker not in main:
@@ -317,4 +275,4 @@ if not asset.is_file() or asset.stat().st_size <= 0:
 if asset.read_bytes()[:8] != b"\x89PNG\r\n\x1a\n":
     raise RuntimeError("Diệp Minh asset is not a PNG")
 
-print("Diệp Minh boss installed: 2999 HP, 10% Max-HP attack, +30 HP/turn, Devils And Gold every 5 turns for 5% party Max HP, independent 3% encounter roll.")
+print("Diệp Minh boss installed: 2999 HP, 10% Max-HP attack, +30 HP/turn, Devils And Gold every 5 turns for 5% party Max HP; encounter generation remains under the shared 2% Entity policy.")

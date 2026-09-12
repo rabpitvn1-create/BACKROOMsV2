@@ -1,4 +1,4 @@
-"""Apply the Entity dice/reward contract after all legacy runtime generators."""
+"""Apply the final independent Entity dice/reward contract after legacy runtime generators."""
 from pathlib import Path
 import re
 
@@ -14,10 +14,23 @@ def once(source, old, new):
 
 
 main = MAIN.read_text(encoding="utf-8")
-start = main.index('    JSONObject diepMinhRoll = thresholdRoll(')
+
+# The settled pre-final runtime still has the old one-roll + roaming-pick block.
+# Replace that whole block directly; Diệp Minh no longer owns a private encounter
+# channel, so this finalizer must not depend on (or recreate) diepMinhEncounter.
+start_marker = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter"'
+if main.count(start_marker) != 1:
+    raise RuntimeError(f"Settled Entity roll anchor count != 1: {main.count(start_marker)}")
+start = main.index(start_marker)
 end = main.index('    int luciaScoutBonus =', start)
-pool = re.search(r'String\[\] roamingPool = (\{[^\n]+\});', main[start:end]).group(1)
-pool = pool[:-1] + ',"diep_minh"}'
+legacy_block = main[start:end]
+pool_match = re.search(r'String\[\] roamingPool = (\{[^\n]+\});', legacy_block)
+if pool_match is None:
+    raise RuntimeError("Settled shared roaming pool missing before final Entity policy")
+pool = pool_match.group(1)
+if '"diep_minh"' not in pool:
+    pool = pool[:-1] + ',"diep_minh"}'
+
 main = main[:start] + '''    String[] entityPool = POOL;
     // The dedicated progression fixture verifies Level state flow, not combat RNG. Keep the
     // production Entity policy unchanged, but suppress unrelated random encounters only for the
@@ -25,17 +38,18 @@ main = main[:start] + '''    String[] entityPool = POOL;
     boolean emuProgressionFixture = BuildConfig.DEBUG &&
       getIntent().getBooleanExtra("emuLevel1Progression", false);
     JSONObject entityChecks = com.rabpit.backroom.core.EntityEncounterPolicy.roll(
-      entityPool, entityEncounterAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
+      entityPool, exploreAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
     java.util.Iterator<String> entityCheckKeys = entityChecks.keys();
     while (entityCheckKeys.hasNext()) {
       String key = entityCheckKeys.next();
       rolls.put(key, entityChecks.get(key));
     }
-    // Compatibility alias; this is the same independent 2% die, never another roll.
-    rolls.put("diepMinhEncounter", entityChecks.getJSONObject("entityRolls").getJSONObject("diep_minh"));
 '''.replace("POOL", pool) + main[end:]
+
+# No level-rate array or suffix remains authoritative after independent 3% dice.
 main = re.sub(r'^    int\[\] entityThresholds = .*\n', '', main, flags=re.M)
 main = re.sub(r'^    String entitySuffix = .*\n', '', main, flags=re.M)
+
 start = main.index('  private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls) throws Exception {')
 end = main.index('\n  private JSONObject resolveEntityOverlay(', start)
 main = main[:start] + '''  private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls) throws Exception {
@@ -45,36 +59,45 @@ main = main[:start] + '''  private void forceEntityEncounterFlag(JSONObject cand
     requireGameCore().startEntityEncounters(candidateState.toString(), keys.toString());
   }
 ''' + main[end:]
+
 # Remove obsolete single-roll / boss-priority prose from the generated GM prompt.
 lines = []
 for line in main.splitlines(keepends=True):
     if any(marker in line for marker in ('"JEFF THE KILLER HARD LOCK:', '"ROAMING KILLER HARD LOCK:', '"ENTITY ROAMING HARD LOCK:')):
         if '"ENTITY ROAMING HARD LOCK:' in line:
-            lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 2% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
+            lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 3% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
     else:
         lines.append(line)
 main = ''.join(lines)
 
-# Retired encounter-rate patches used to inject an extra Jeff 8% die and mutate
-# level thresholds by +8 percentage points. They must never survive the final
-# authority layer or silently regain control if the patch order changes.
+# Retired encounter-rate paths must never survive the final authority layer or
+# silently regain control if patch order changes.
 for forbidden in (
     'thresholdRoll("jeffEncounter"',
     '"JEFF THE KILLER HARD LOCK:',
     'int[] entityThresholds =',
     '8.0000%',
     '+8 percentage',
+    'entityEncounterAction && entityAllowed',
+    'diepMinhEncounter',
+    'JSONObject normalEntityRoll = thresholdRoll("entityEncounter"',
+    'rolls.put("roamingEntityKey"',
 ):
     if forbidden in main:
         raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
 
 for required in (
+    'String[] entityPool = {',
+    '"diep_minh"',
+    'EntityEncounterPolicy.roll(',
     'boolean emuProgressionFixture = BuildConfig.DEBUG',
     'getIntent().getBooleanExtra("emuLevel1Progression", false)',
-    'entityEncounterAction && entityAllowed && !emuProgressionFixture',
+    'exploreAction && entityAllowed && !emuProgressionFixture',
+    'rolls.optJSONArray("entityEncounterKeys")',
+    'startEntityEncounters(candidateState.toString(), keys.toString())',
 ):
     if required not in main:
-        raise RuntimeError("Progression emulator Entity isolation missing: " + required)
+        raise RuntimeError("Final independent Entity policy missing: " + required)
 
 MAIN.write_text(main, encoding="utf-8")
 
@@ -112,9 +135,12 @@ facade = facade[:start] + combat + facade[end:]
 facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
-print("Entity policy applied: production keeps independent 2% dice; progression emulator fixture suppresses unrelated Entity combat; queued encounters and guaranteed catalog kill drops remain intact.")
+print("Entity policy applied: every Entity, including Diệp Minh, uses one independent 3% die on EXPLORE only; queued encounters and guaranteed catalog kill drops remain intact.")
 
 # This runs last in the Android patch chain so the Level 0-6 traversal guard can
 # extend the settled transition/provider/entity runtime without reviving legacy paths.
 import runpy
 runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
+
+# Re-assert the typed action contract after every nested runtime transformation has settled.
+runpy.run_path(str(ROOT / "patch-gm-action-policy-final.py"), run_name="__main__")
