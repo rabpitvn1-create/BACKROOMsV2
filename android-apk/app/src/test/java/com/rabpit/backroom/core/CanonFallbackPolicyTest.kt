@@ -27,6 +27,13 @@ class CanonFallbackPolicyTest {
     if (key != null) put(key, JSONObject().put("eligible", true).put("success", true))
   }
 
+  private fun reducerCandidate(before: JSONObject, dice: JSONObject = rolls()): JSONObject =
+    JSONObject(before.toString()).also { candidate ->
+      candidate.getJSONObject("flags")
+        .put("lastRolls", JSONObject(dice.toString()))
+        .put("madGod", JSONObject())
+    }
+
   private fun eligible(
     before: JSONObject = state(),
     candidate: JSONObject = JSONObject(before.toString()),
@@ -37,6 +44,35 @@ class CanonFallbackPolicyTest {
 
   @Test fun harmlessLevel0ExplorationMayRecoverAfterRepairStillFails() {
     assertTrue(eligible(output = generated(JSONObject().put("type", "set_location").put("value", "hành lang kế tiếp"))))
+  }
+
+  @Test fun reducerBookkeepingDoesNotBlockSafeFallback() {
+    val before = state()
+    val dice = rolls()
+    val candidate = reducerCandidate(before, dice)
+    assertTrue(
+      eligible(
+        before = before,
+        candidate = candidate,
+        output = generated(JSONObject().put("type", "set_location").put("value", "hành lang kế tiếp")),
+        dice = dice,
+      )
+    )
+  }
+
+  @Test fun realMadGodStateChangeStillFailsClosed() {
+    val before = state()
+    val candidate = reducerCandidate(before)
+    candidate.getJSONObject("flags").getJSONObject("madGod").put("spawned", true)
+    assertFalse(eligible(before = before, candidate = candidate))
+  }
+
+  @Test fun consequentialDiscoveryRollsStillFailClosed() {
+    for (key in listOf("survivor", "irisReunion", "syvialReunion", "loot", "madGodSet", "almondWater")) {
+      val before = state()
+      val dice = rolls(key)
+      assertFalse("successful roll $key must fail closed", eligible(before = before, candidate = reducerCandidate(before, dice), dice = dice))
+    }
   }
 
   @Test fun combatRelatedIssueFailsClosed() {
