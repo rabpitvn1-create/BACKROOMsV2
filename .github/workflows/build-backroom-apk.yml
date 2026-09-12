@@ -38,6 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate authored campaign and New Game startup
+        run: python3 android-apk/patch-main-campaign-validate-current.py
+
       - name: Verify release version and provider baseline
         run: |
           set -euo pipefail
@@ -222,6 +225,37 @@ jobs:
           ! unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1'
           ! unzip -p Backroom-1.1.73.apk assets/index.html | grep -q 'COMBAT_TYPOGRAPHY_V1'
           unzip -p Backroom-1.1.73.apk assets/index.html > packaged-index.html
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html = Path("packaged-index.html").read_text(encoding="utf-8")
+          start = html.find("const initial={")
+          end = html.find("\n\nconst byId=", start)
+          if start < 0 or end < 0:
+              raise SystemExit("Packaged New Game startup block not found")
+          startup = html[start:end]
+
+          for marker in (
+              'level:{number:0,name:"The Lobby"}',
+              'location:"Level 0 / The Lobby — khu phòng vàng ban đầu"',
+              'party:[]',
+              'exploration:{sublevelId:""}',
+              'currentBeat:"STORY.PROLOGUE.ENTRY_COMPLETE"',
+              'nextBeat:"STORY.LEVEL0.ARRIVAL"',
+          ):
+              if marker not in startup:
+                  raise SystemExit("Packaged New Game startup contract missing: " + marker)
+
+          for marker in (
+              'SUBLEVEL.00.41',
+              'currentBeat:"STORY.LEVEL0.41.COMPLETE"',
+              'nextBeat:"STORY.LEVEL0.5.ENTRY"',
+              'party:[{id:"lucia"',
+              'Kai và Lucia đã hoàn tất Level 0.41',
+          ):
+              if marker in startup:
+                  raise SystemExit("Campaign checkpoint leaked into packaged New Game startup: " + marker)
+          PY
           node android-apk/test-android-ui-regressions.mjs packaged-index.html
 
       - name: Upload APK artifact

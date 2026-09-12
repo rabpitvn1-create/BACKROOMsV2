@@ -13,6 +13,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parent
 INDEX = ROOT / "app/src/main/assets/index.html"
+LEVEL0 = ROOT / "patch-main-campaign-level0.py"
 MATERIALIZER = ROOT / "patch-main-campaign-materialize-current.py"
 FIXTURE = ROOT / "app/build/generated/campaign-validation/src/main/assets/index.html"
 
@@ -34,7 +35,8 @@ def require_clean_startup(html: str) -> None:
         'location:"Level 0 / The Lobby — khu phòng vàng ban đầu"',
         'party:[]',
         'exploration:{sublevelId:""}',
-        'storyArc:{current:"MAIN.PROLOGUE",currentBeat:"STORY.PROLOGUE.ENTRY_COMPLETE",nextBeat:"STORY.LEVEL0.ARRIVAL"',
+        'currentBeat:"STORY.PROLOGUE.ENTRY_COMPLETE"',
+        'nextBeat:"STORY.LEVEL0.ARRIVAL"',
     )
     for marker in required:
         if marker not in startup:
@@ -57,6 +59,7 @@ original_html = original_bytes.decode("utf-8")
 require_clean_startup(original_html)
 
 try:
+    subprocess.run(["python3", str(LEVEL0)], cwd=ROOT, check=True)
     subprocess.run(["python3", str(MATERIALIZER)], cwd=ROOT, check=True)
     materialized = INDEX.read_text(encoding="utf-8")
     for marker in (

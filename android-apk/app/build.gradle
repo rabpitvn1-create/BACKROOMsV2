@@ -45,20 +45,6 @@ android {
   testOptions { unitTests.returnDefaultValues = true }
 }
 
-// Exercise the authored campaign materializer as a validation step only. The validator
-// restores index.html before preBuild continues so a release never ships a later checkpoint
-// (for example Level 0.41) as the player's startup state.
-def validateMainCampaignContinuation = tasks.register('validateMainCampaignContinuation', Exec) {
-  workingDir rootProject.projectDir
-  commandLine 'python3', 'patch-main-campaign-validate-current.py'
-}
-
-tasks.configureEach { task ->
-  if (task.name == 'preBuild') {
-    task.dependsOn validateMainCampaignContinuation
-  }
-}
-
 dependencies {
   implementation 'com.google.ai.edge.litert:litert:2.2.0'
   testImplementation 'junit:junit:4.13.2'
