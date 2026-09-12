@@ -141,13 +141,14 @@ if stale_prologue in prologue_html:
     raise RuntimeError("Retired Black Blood prologue channel survived SRU finalization")
 INDEX.write_text(prologue_html, encoding="utf-8")
 
-# Install the next deterministic main-campaign prose/state beat after the Prologue.
-# This keeps Level 0 first contact story-owned while leaving Lucia's actual Party join
-# pending, so the narrative does not manufacture consent or bypass runtime authority.
+# Authored campaign materialization is validation-fixture-only. Do NOT install
+# patch-main-campaign-level0.py into the production runtime here: that patch advances the
+# startup state/log through Lucia's first contact and therefore collapses Prologue ->
+# Level 0 exploration -> first contact into the initial screen. CI materializes the authored
+# campaign separately through patch-main-campaign-validate-current.py.
 level0_campaign = ROOT / "patch-main-campaign-level0.py"
 if not level0_campaign.is_file():
     raise RuntimeError("Main campaign Level 0 patch missing: " + level0_campaign.name)
-runpy.run_path(str(level0_campaign), run_name="__main__")
 
 # Conditional-audit historically rebuilds writerPrompt after the original prose contract.
 # Re-assert narrative clarity and current SRU identity only after all historical runtime
@@ -157,6 +158,13 @@ if not narrative_sru.is_file():
     raise RuntimeError("Narrative/SRU final patch missing: " + narrative_sru.name)
 runpy.run_path(str(narrative_sru), run_name="__main__")
 
+# Story-owned Lucia first contact is gated by the state that BEGINS the turn. A fresh
+# Prologue turn may explore/complete Level 0 arrival, but cannot also meet Lucia.
+lucia_story_gate = ROOT / "patch-lucia-story-gate-final.py"
+if not lucia_story_gate.is_file():
+    raise RuntimeError("Lucia story gate patch missing: " + lucia_story_gate.name)
+runpy.run_path(str(lucia_story_gate), run_name="__main__")
+
 # The exact packaged Entity PNGs are the final authority for narratable appearance.
 # Install after all writer/context rebuilds so later historical canon cannot displace them.
 entity_visual_locks = ROOT / "patch-entity-visual-locks.py"
@@ -164,4 +172,4 @@ if not entity_visual_locks.is_file():
     raise RuntimeError("Entity PNG Visual Lock patch missing: " + entity_visual_locks.name)
 runpy.run_path(str(entity_visual_locks), run_name="__main__")
 
-print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, SRU prologue, Level 0 campaign beat, narrative clarity guard.")
+print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, clean Prologue startup, Lucia post-exploration story gate, narrative clarity guard.")

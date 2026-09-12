@@ -39,12 +39,21 @@ def require_clean_startup(html: str) -> None:
         'exploration:{sublevelId:""}',
         'currentBeat:"STORY.PROLOGUE.ENTRY_COMPLETE"',
         'nextBeat:"STORY.LEVEL0.ARRIVAL"',
+        '{role:"gm",text:"MỞ ĐẦU\\n\\n"+prologue}',
+        'Kai đang ở một mình tại Level 0.',
     )
     for marker in required:
         if marker not in startup:
             raise RuntimeError("New Game startup contract missing: " + marker)
 
+    # Lucia is a story-owned fixed encounter reached only after Kai has begun exploring
+    # Level 0. Any Lucia/first-contact data inside const initial means an authored campaign
+    # fixture leaked back into the packaged New Game state.
     forbidden = (
+        'Lucia',
+        'luciaEncounter:',
+        'STORY.LEVEL0.FIRST_CONTACT_COMPLETE',
+        '+level0Arrival',
         'SUBLEVEL.00.41',
         'currentBeat:"STORY.LEVEL0.41.COMPLETE"',
         'nextBeat:"STORY.LEVEL0.5.ENTRY"',
@@ -79,6 +88,8 @@ def restore_clean_startup(html: str) -> str:
             raise RuntimeError("Startup restoration anchor missing: " + pattern)
 
     restored = html[:start] + startup + html[end:]
+    # This intentionally fails rather than silently accepting a partial restore. In
+    # particular, campaign prose/continuity containing Lucia must never survive here.
     require_clean_startup(restored)
     return restored
 
@@ -86,7 +97,7 @@ def restore_clean_startup(html: str) -> str:
 if sys.argv[1:] == ["--restore-startup"]:
     restored_html = restore_clean_startup(INDEX.read_text(encoding="utf-8"))
     INDEX.write_text(restored_html, encoding="utf-8")
-    print("New Game startup restored to the Level 0 prologue contract.")
+    print("New Game startup verified at the solo Level 0 prologue contract.")
     raise SystemExit(0)
 if sys.argv[1:]:
     raise SystemExit("Usage: patch-main-campaign-validate-current.py [--restore-startup]")
