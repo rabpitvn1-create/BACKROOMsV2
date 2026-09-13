@@ -80,6 +80,7 @@ print(
 # overwritten by a later legacy patch.
 for finalizer in (
     "patch-runtime-debug-export-final.py",
+    "patch-runtime-debug-session-init-final.py",
     "patch-runtime-debug-provider-trace-final.py",
     "patch-runtime-debug-turn-trace-adaptive-final.py",
     "patch-runtime-debug-fallback-compat-final.py",
