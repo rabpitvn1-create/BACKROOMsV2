@@ -1,0 +1,8 @@
+Backroom 1.1.75 Debug
+
+- Sửa canon fallback cho lượt khám phá Level 0 an toàn: `flags.lastRolls` và `madGod:{}` do reducer tạo không còn bị nhận nhầm là gameplay mutation, trong khi các thay đổi có hậu quả thật vẫn fail-closed.
+- Hoàn thiện chuỗi Lucia ở Level 0 bằng transport `lucia_story` được kiểm tra máy: Arrival → first contact → decision/join, không cho Lucia vào Party ngay ở lượt first contact.
+- Đồng bộ Lucia với Game State Core: đăng ký character sau first contact hợp lệ, chỉ bật join eligibility sau decision/join hợp lệ, đồng thời tạo inventory/equipment container cần thiết cho PartyEngine.
+- Bổ sung regression Kotlin và generated-Java cho canon fallback, Lucia story gate và Party join; emulator soak Level 0 vẫn là workflow chạy thủ công.
+- Cập nhật workflow dọn Actions thất bại theo đúng cửa sổ thời gian yêu cầu.
+- Phiên bản Android: versionCode 77 / versionName 1.1.75.
