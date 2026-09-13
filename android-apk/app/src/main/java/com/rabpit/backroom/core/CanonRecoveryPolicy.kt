@@ -2,6 +2,7 @@ package com.rabpit.backroom.core
 
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
 
 object CanonRecoveryPolicy {
   @JvmStatic
@@ -14,13 +15,15 @@ object CanonRecoveryPolicy {
     meta: Boolean,
     repaired: Boolean,
   ): Boolean {
-    if (CanonFallbackPolicy.isEligible(before, candidate, generated, rolls, action, meta, repaired)) return true
     if (meta || !repaired) return false
+    val normalizedAction = action.lowercase(Locale.ROOT)
+    if (normalizedAction.contains("tấn công") || normalizedAction.contains("attack") || normalizedAction.contains("combat")) return false
     if (before.optJSONObject("combat")?.optBoolean("active", false) == true) return false
     if (candidate.optJSONObject("combat")?.optBoolean("active", false) == true) return false
     if (hasEncounter(before) || hasEncounter(candidate)) return false
     if (transitionReady(before) || transitionReady(candidate)) return false
     if (containsSuccess(rolls)) return false
+    generated.optJSONArray("ops")
     return scrub(before).similar(scrub(candidate))
   }
 
