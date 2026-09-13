@@ -23,20 +23,18 @@ object CanonFallbackPolicy {
     meta: Boolean,
     repaired: Boolean,
   ): Boolean {
-    if (meta || !repaired || currentLevel(before) != 0) return false
-    if (!StoryProgressionPolicy.isLevel0ExplorationAction(action) || hasCombatIntent(action)) return false
+    if (meta || !repaired) return false
+    if (hasCombatIntent(action)) return false
     if (combatActive(before) || combatActive(candidate) || entityPresent(before)) return false
     if (transitionReady(before) || transitionReady(candidate)) return false
     if (hasDangerousRollConsequence(rolls)) return false
 
-    // The fallback discards the repaired model output, all proposed ops, and the candidate state.
-    // Therefore rejected model operations are not themselves a reason to fail closed. Only state
-    // changes that actually survived the reducer may block the fallback.
+    // Recovery discards the repaired reply/ops and restores the pre-turn state. Rejected model
+    // proposals therefore cannot make this branch unsafe by themselves. Only consequences that
+    // actually survived the reducer, locked dice, encounter/combat state, or an exit gate block it.
     if (dangerousStateChanged(before, candidate)) return false
     return true
   }
-
-  private fun currentLevel(state: JSONObject): Int = state.optJSONObject("level")?.optInt("number", 0) ?: 0
 
   private fun combatActive(state: JSONObject): Boolean =
     state.optJSONObject("combat")?.optBoolean("active", false) == true
