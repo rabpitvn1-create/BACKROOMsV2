@@ -13,6 +13,7 @@ object CanonFallbackPolicy {
   )
 
   @JvmStatic
+  @Suppress("UNUSED_PARAMETER")
   fun isEligible(
     before: JSONObject,
     candidate: JSONObject,
@@ -31,7 +32,6 @@ object CanonFallbackPolicy {
     // The fallback discards the repaired model output, all proposed ops, and the candidate state.
     // Therefore rejected model operations are not themselves a reason to fail closed. Only state
     // changes that actually survived the reducer may block the fallback.
-    generated.optJSONArray("ops")
     if (dangerousStateChanged(before, candidate)) return false
     return true
   }
