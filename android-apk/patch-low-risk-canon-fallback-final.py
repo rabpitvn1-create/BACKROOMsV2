@@ -48,8 +48,6 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
 submit = submit.replace(failure, replacement, 1)
 text = text[:submit_start] + submit + text[submit_end:]
 
-# patch-lucia-story-gate-final.py injects these operation examples into Java string
-# literals. Preserve Java-level escaping after Python evaluates the generator string.
 lucia_prompt_tokens = {
     'lucia_story{stage:"first_contact"}': 'lucia_story{stage:\\"first_contact\\"}',
     'lucia_story{stage:"join"}': 'lucia_story{stage:\\"join\\"}',
@@ -77,13 +75,13 @@ print(
     "exploration can recover after writer and repair canon failures; Lucia prompt Java escaping verified."
 )
 
-# This script is already the terminal authority in build-backroom-apk.yml. Keep the debug/export
-# stack immediately after it so later legacy/UI patches cannot overwrite the visible export button
-# or remove diagnostics. Each finalizer fails loudly if its expected settled-runtime anchor moves.
+# The workflow already executes this file as its terminal runtime authority. Delegate the debug
+# finalizers here so they always run after canon/story/combat/UI have settled and cannot be
+# overwritten by a later legacy patch.
 for finalizer in (
     "patch-runtime-debug-export-final.py",
     "patch-runtime-debug-provider-trace-final.py",
-    "patch-runtime-debug-turn-trace-final.py",
+    "patch-runtime-debug-turn-trace-v2-final.py",
     "patch-runtime-debug-fallback-compat-final.py",
     "patch-runtime-debug-core-trace-final.py",
     "patch-runtime-debug-ui-events-final.py",
