@@ -46,6 +46,31 @@ class CanonFallbackPolicyTest {
     assertTrue(eligible(output = generated(JSONObject().put("type", "set_location").put("value", "hành lang kế tiếp"))))
   }
 
+  @Test fun harmlessTurnOutsideLevel0MayRecoverAfterRepairStillFails() {
+    val before = state()
+    before.put("level", JSONObject().put("number", 2).put("name", "Pipe Dreams"))
+    val candidate = reducerCandidate(before)
+    assertTrue(
+      eligible(
+        before = before,
+        candidate = candidate,
+        action = "Tiếp tục quan sát khu vực trước mặt",
+      )
+    )
+  }
+
+  @Test fun harmlessNonExplorationActionMayRecoverAfterRepairStillFails() {
+    val before = state()
+    val candidate = reducerCandidate(before)
+    assertTrue(
+      eligible(
+        before = before,
+        candidate = candidate,
+        action = "Đứng yên và chờ vài giây",
+      )
+    )
+  }
+
   @Test fun reducerBookkeepingDoesNotBlockSafeFallback() {
     val before = state()
     val dice = rolls()
