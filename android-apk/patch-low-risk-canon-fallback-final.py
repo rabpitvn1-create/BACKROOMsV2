@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -75,3 +76,16 @@ print(
     "Low-risk canon fallback applied after the settled runtime: only harmless Level 0 "
     "exploration can recover after writer and repair canon failures; Lucia prompt Java escaping verified."
 )
+
+# This script is already the terminal authority in build-backroom-apk.yml. Keep the debug/export
+# stack immediately after it so later legacy/UI patches cannot overwrite the visible export button
+# or remove diagnostics. Each finalizer fails loudly if its expected settled-runtime anchor moves.
+for finalizer in (
+    "patch-runtime-debug-export-final.py",
+    "patch-runtime-debug-provider-trace-final.py",
+    "patch-runtime-debug-turn-trace-final.py",
+    "patch-runtime-debug-fallback-compat-final.py",
+    "patch-runtime-debug-core-trace-final.py",
+    "patch-runtime-debug-ui-events-final.py",
+):
+    runpy.run_path(str(ROOT / finalizer), run_name="__main__")
