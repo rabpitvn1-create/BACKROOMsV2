@@ -81,7 +81,7 @@ print(
 for finalizer in (
     "patch-runtime-debug-export-final.py",
     "patch-runtime-debug-provider-trace-final.py",
-    "patch-runtime-debug-turn-trace-v2-final.py",
+    "patch-runtime-debug-turn-trace-adaptive-final.py",
     "patch-runtime-debug-fallback-compat-final.py",
     "patch-runtime-debug-core-trace-final.py",
     "patch-runtime-debug-ui-events-final.py",
