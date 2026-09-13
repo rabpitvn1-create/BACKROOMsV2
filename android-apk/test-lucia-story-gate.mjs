@@ -4,6 +4,7 @@ import path from 'node:path';
 const root = process.argv[2] || 'android-apk';
 const workflow = fs.readFileSync('.github/workflows/build-backroom-apk.yml', 'utf8');
 const main = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
+const core = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt'), 'utf8');
 
 function requireContract(value, message) {
   if (!value) throw new Error(message);
@@ -52,7 +53,10 @@ requireContract(
 
 for (const marker of [
   'LUCIA ENCOUNTER STORY GATE:',
+  'LUCIA STATE TRANSPORT:',
   'STORY.LEVEL0.ARRIVAL -> STORY.LEVEL0.FIRST_CONTACT_COMPLETE -> STORY.LEVEL0.LUCIA_DECISION_COMPLETE',
+  'type.equals("lucia_story")',
+  'applyLuciaStoryOperationAndroid',
   'luciaFirstContactLockedAndroid',
   'luciaPartyLockedAndroid',
   'luciaJoinConfirmedAndroid',
@@ -62,11 +66,35 @@ for (const marker of [
   requireContract(main.includes(marker), `generated Lucia story gate marker missing: ${marker}`);
 }
 
+requireContract(
+  main.includes('lucia_story{stage:"first_contact"}') && main.includes('lucia_story{stage:"join"}'),
+  'writer contract must expose the dedicated Lucia state transport stages',
+);
+requireContract(
+  main.includes('không dùng flag_patch để sửa storyArc/luciaEncounter'),
+  'writer contract must forbid generic flag mutation for Lucia progression',
+);
 requireContract(!main.includes('private boolean luciaEncounterLockedAndroid('), 'legacy combined Lucia encounter lock survived generated Java');
 requireContract(
   !main.includes('if (state == null || storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL")) return false;'),
   'ARRIVAL completion must not disable all Lucia locks',
 );
+
+const transport = methodBody(main, 'applyLuciaStoryOperationAndroid');
+for (const marker of [
+  '"first_contact".equals(stage)',
+  'storyArcCompletedAndroid(before, "STORY.LEVEL0.ARRIVAL")',
+  'STORY.LEVEL0.FIRST_CONTACT_COMPLETE',
+  'encounter.put("status", "met")',
+  '"join".equals(stage)',
+  'STORY.LEVEL0.LUCIA_DECISION_COMPLETE',
+  'encounter.put("status", "joined")',
+  'encounter.put("joinPending", false)',
+  '.put("joinConfirmed", true)',
+  '.put("present", true)',
+]) {
+  requireContract(transport.includes(marker), `Lucia runtime transport is incomplete: ${marker}`);
+}
 
 const firstContactLock = methodBody(main, 'luciaFirstContactLockedAndroid');
 requireContract(firstContactLock.includes('!storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL")'), 'first-contact lock must remain closed until Arrival is already complete');
@@ -87,4 +115,15 @@ for (const marker of [
   requireContract(joinConfirmation.includes(marker), `Lucia join confirmation is incomplete: ${marker}`);
 }
 
-console.log('Lucia story gate integration regression checks passed.');
+for (const marker of [
+  'internal fun synchronizeValidatedLuciaCharacter',
+  'StoryProgressionPolicy.LEVEL0_FIRST_CONTACT',
+  'StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE',
+  '"joinEligible" to joined.toString()',
+  'val preparedCore = synchronizeValidatedLuciaCharacter(core, candidate)',
+  'TurnCoordinator.createPending(preparedCore, turnId, action)',
+]) {
+  requireContract(core.includes(marker), `Game State Core Lucia registration contract missing: ${marker}`);
+}
+
+console.log('Lucia story transport and Core Party integration regression checks passed.');
