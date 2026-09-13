@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const root = process.argv[2] || 'android-apk';
 const workflow = fs.readFileSync('.github/workflows/build-backroom-apk.yml', 'utf8');
+const lowRiskPatch = fs.readFileSync(path.join(root, 'patch-low-risk-canon-fallback-final.py'), 'utf8');
 const main = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
 const runtimeLog = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/RuntimeDebugLog.kt'), 'utf8');
 const fallback = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/CanonFallbackPolicy.kt'), 'utf8');
@@ -18,19 +19,20 @@ const chainStart = workflow.indexOf('scripts=(');
 const chainEnd = workflow.indexOf('for script in', chainStart);
 requireContract(chainStart >= 0 && chainEnd > chainStart, 'Android runtime patch chain not found');
 const chain = workflow.slice(chainStart, chainEnd);
-const lowRisk = chain.indexOf('patch-low-risk-canon-fallback-final.py');
+requireContract(chain.includes('patch-low-risk-canon-fallback-final.py'), 'terminal low-risk canon fallback missing from workflow');
+
 const finalPatches = [
   'patch-runtime-debug-export-final.py',
   'patch-runtime-debug-provider-trace-final.py',
   'patch-runtime-debug-turn-trace-final.py',
+  'patch-runtime-debug-fallback-compat-final.py',
   'patch-runtime-debug-core-trace-final.py',
   'patch-runtime-debug-ui-events-final.py',
 ];
-let previous = lowRisk;
-requireContract(lowRisk >= 0, 'low-risk canon fallback missing from chain');
+let previous = -1;
 for (const patch of finalPatches) {
-  const index = chain.indexOf(patch);
-  requireContract(index > previous, `${patch} must run after the previous final debug authority`);
+  const index = lowRiskPatch.indexOf(patch);
+  requireContract(index > previous, `${patch} must be delegated in final debug authority order`);
   previous = index;
 }
 
@@ -61,6 +63,7 @@ for (const marker of [
   'repairParsed',
   'auditAfterRepair',
   'CanonFallbackPolicy.diagnostics(',
+  'CanonFallbackPolicy.isEligible(',
   'canonFallback',
   'CANON FALLBACK REJECTED BECAUSE:',
   'candidateBeforeCore',
