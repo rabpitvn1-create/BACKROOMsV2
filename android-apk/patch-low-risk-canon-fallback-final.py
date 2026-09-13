@@ -47,6 +47,19 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
 submit = submit.replace(failure, replacement, 1)
 text = text[:submit_start] + submit + text[submit_end:]
 
+# patch-lucia-story-gate-final.py injects these operation examples into Java string
+# literals. Preserve Java-level escaping after Python evaluates the generator string.
+lucia_prompt_tokens = {
+    'lucia_story{stage:"first_contact"}': 'lucia_story{stage:\\"first_contact\\"}',
+    'lucia_story{stage:"join"}': 'lucia_story{stage:\\"join\\"}',
+}
+for malformed, escaped in lucia_prompt_tokens.items():
+    text = text.replace(malformed, escaped)
+    if malformed in text:
+        raise RuntimeError("Lucia Java prompt escaping failed for: " + malformed)
+    if escaped not in text:
+        raise RuntimeError("Lucia Java prompt escaped marker missing: " + escaped)
+
 for marker in (
     "CanonFallbackPolicy.isEligible(",
     "candidateState = new JSONObject(before.toString());",
@@ -60,5 +73,5 @@ for marker in (
 MAIN.write_text(text, encoding="utf-8")
 print(
     "Low-risk canon fallback applied after the settled runtime: only harmless Level 0 "
-    "exploration can recover after writer and repair canon failures."
+    "exploration can recover after writer and repair canon failures; Lucia prompt Java escaping verified."
 )
