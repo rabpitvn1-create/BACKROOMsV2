@@ -4,6 +4,35 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 
+internal fun synchronizeValidatedLuciaCharacter(state: GameState, candidate: JSONObject): GameState {
+  val flags = candidate.optJSONObject("flags") ?: return state
+  val storyArc = flags.optJSONObject("storyArc") ?: return state
+  val completed = storyArc.optJSONArray("completed") ?: return state
+  fun hasBeat(beat: String): Boolean = (0 until completed.length()).any { completed.optString(it) == beat }
+
+  val encounter = flags.optJSONObject("luciaEncounter") ?: return state
+  val status = encounter.optString("status", "").trim().lowercase()
+  val firstContact = hasBeat(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT) &&
+    encounter.optInt("level", -1) == 0 && status in setOf("met", "contact", "contacted", "first_contact", "first-contact", "joined")
+  if (!firstContact) return state
+
+  val joined = hasBeat(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE) &&
+    status == "joined" && encounter.optBoolean("partyEligible", false) && !encounter.optBoolean("joinPending", true)
+  val existing = state.characters["lucia"]
+  val lucia = (existing ?: CharacterState("lucia", "Lucia")).copy(
+    presence = CharacterPresence.ACTIVE,
+    metadata = existing?.metadata.orEmpty() + mapOf(
+      "storyManaged" to "lucia",
+      "joinEligible" to joined.toString(),
+    )
+  )
+  return state.copy(
+    characters = state.characters + ("lucia" to lucia),
+    inventories = if ("lucia" in state.inventories) state.inventories else state.inventories + ("lucia" to InventoryState("lucia")),
+    equipment = if ("lucia" in state.equipment) state.equipment else state.equipment + ("lucia" to EquipmentState("lucia")),
+  )
+}
+
 class GameCoreFacade private constructor(
   private val repository: SaveRepository,
   private val logger: GamePipelineLogger,
@@ -82,8 +111,9 @@ class GameCoreFacade private constructor(
     val before = JSONObject(beforeJson)
     val candidate = JSONObject(candidateJson)
     val core = loadOrMigrate(before)
-    val turnId = nextTurnId(before, core)
-    val pending = TurnCoordinator.createPending(core, turnId, action)
+    val preparedCore = synchronizeValidatedLuciaCharacter(core, candidate)
+    val turnId = nextTurnId(before, preparedCore)
+    val pending = TurnCoordinator.createPending(preparedCore, turnId, action)
     if (pending.error != null) return response(false, before, pending.error, "pending_rejected")
     val commands = mutableListOf<GameCommand>()
     val current = pending.state.inventories[KAI_ID]?.items.orEmpty()
