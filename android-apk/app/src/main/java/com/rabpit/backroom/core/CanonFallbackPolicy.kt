@@ -7,15 +7,13 @@ import java.util.Locale
 /** Narrow fail-soft gate for a repaired turn whose final model output still fails canon audit. */
 object CanonFallbackPolicy {
   private val harmlessFlagRoots = setOf("exploration", "communication", "visualAreaKey", "visualEventKey")
-  private val dangerousOperationTypes = setOf(
-    "set_level", "patch_player", "inventory_upsert", "inventory_remove", "party_upsert", "party_remove"
-  )
   private val combatTerms = listOf(
     "tấn công", "đánh", "bắn", "chém", "đâm", "giết", "giao chiến",
     "attack", "fight", "shoot", "slash", "stab", "kill", "combat"
   )
 
   @JvmStatic
+  @Suppress("UNUSED_PARAMETER")
   fun isEligible(
     before: JSONObject,
     candidate: JSONObject,
@@ -29,7 +27,11 @@ object CanonFallbackPolicy {
     if (!StoryProgressionPolicy.isLevel0ExplorationAction(action) || hasCombatIntent(action)) return false
     if (combatActive(before) || combatActive(candidate) || entityPresent(before)) return false
     if (transitionReady(before) || transitionReady(candidate)) return false
-    if (hasDangerousRollConsequence(rolls) || hasDangerousModelOperation(generated.optJSONArray("ops"))) return false
+    if (hasDangerousRollConsequence(rolls)) return false
+
+    // The fallback discards the repaired model output, all proposed ops, and the candidate state.
+    // Therefore rejected model operations are not themselves a reason to fail closed. Only state
+    // changes that actually survived the reducer may block the fallback.
     if (dangerousStateChanged(before, candidate)) return false
     return true
   }
@@ -47,8 +49,10 @@ object CanonFallbackPolicy {
 
   private fun transitionReady(state: JSONObject): Boolean {
     val exploration = state.optJSONObject("flags")?.optJSONObject("exploration") ?: return false
-    return exploration.optBoolean("transitionReady", false) || exploration.optBoolean("exitReady", false) ||
-      exploration.optBoolean("confirmedExit", false)
+    return exploration.optBoolean("transitionReady", false) ||
+      exploration.optBoolean("exitReady", false) ||
+      exploration.optBoolean("confirmedExit", false) ||
+      exploration.optString("confirmedExit", "").isNotBlank()
   }
 
   private fun hasCombatIntent(action: String): Boolean {
@@ -73,22 +77,15 @@ object CanonFallbackPolicy {
   private fun rollSucceeded(rolls: JSONObject, key: String): Boolean =
     rolls.optJSONObject(key)?.optBoolean("success", false) == true
 
-  private fun hasDangerousModelOperation(ops: JSONArray?): Boolean {
-    if (ops == null) return false
-    for (index in 0 until ops.length()) {
-      val op = ops.optJSONObject(index) ?: return true
-      val type = op.optString("type", "").trim().lowercase(Locale.ROOT)
-      if (type in dangerousOperationTypes) return true
-      if (type == "flag_patch" && op.optString("root", "") !in harmlessFlagRoots) return true
-      if (type != "set_location" && type != "flag_patch") return true
-    }
-    return false
-  }
-
   private fun dangerousStateChanged(before: JSONObject, candidate: JSONObject): Boolean {
-    for (key in listOf("level", "player", "party", "inventory", "combat")) {
+    val topLevelKeys = mutableSetOf<String>()
+    before.keys().forEachRemaining(topLevelKeys::add)
+    candidate.keys().forEachRemaining(topLevelKeys::add)
+    for (key in topLevelKeys) {
+      if (key == "flags" || key == "location") continue
       if (!jsonEqual(before.opt(key), candidate.opt(key))) return true
     }
+
     val beforeFlags = before.optJSONObject("flags") ?: JSONObject()
     val candidateFlags = candidate.optJSONObject("flags") ?: JSONObject()
     val roots = mutableSetOf<String>()

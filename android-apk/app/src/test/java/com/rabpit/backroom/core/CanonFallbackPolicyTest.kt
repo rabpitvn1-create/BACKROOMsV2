@@ -60,6 +60,27 @@ class CanonFallbackPolicyTest {
     )
   }
 
+  @Test fun rejectedDangerousModelOperationDoesNotBlockSafeFallbackWhenReducerStateIsUnchanged() {
+    val before = state()
+    val dice = rolls()
+    val candidate = reducerCandidate(before, dice)
+    val rejectedOps = listOf(
+      JSONObject().put("type", "party_upsert").put("member", JSONObject().put("name", "Unknown Survivor")),
+      JSONObject().put("type", "inventory_remove").put("name", "Missing Item"),
+      JSONObject().put("type", "patch_player").put("patch", JSONObject().put("hp", 1)),
+      JSONObject().put("type", "set_level").put("level", JSONObject().put("number", 1)),
+      JSONObject().put("type", "flag_patch").put("root", "storyArc").put("value", JSONObject()),
+      JSONObject().put("type", "totally_unknown_operation"),
+    )
+
+    for (op in rejectedOps) {
+      assertTrue(
+        "rejected operation ${op.optString("type")} must not defeat the no-op fallback",
+        eligible(before = before, candidate = candidate, output = generated(op), dice = dice),
+      )
+    }
+  }
+
   @Test fun realMadGodStateChangeStillFailsClosed() {
     val before = state()
     val candidate = reducerCandidate(before)
@@ -94,15 +115,47 @@ class CanonFallbackPolicyTest {
     assertFalse(eligible(dice = rolls("exitProbe")))
   }
 
-  @Test fun dangerousPartyInventoryPlayerAndStateMutationsFailClosed() {
-    for (type in listOf("party_upsert", "inventory_remove", "patch_player", "set_level")) {
-      assertFalse("operation $type must fail closed", eligible(output = generated(JSONObject().put("type", type))))
-    }
-    assertFalse(eligible(output = generated(JSONObject().put("type", "flag_patch").put("root", "storyArc").put("value", JSONObject()))))
+  @Test fun confirmedExitStringFailsClosed() {
+    val before = state()
+    before.getJSONObject("flags").put(
+      "exploration",
+      JSONObject().put("confirmedExit", "Level 0 exit route A-17"),
+    )
+    assertFalse(eligible(before = before))
+  }
 
-    val changed = state()
-    changed.getJSONObject("player").put("hp", 1)
-    assertFalse(eligible(candidate = changed))
+  @Test fun acceptedPartyInventoryPlayerLevelAndFlagMutationsFailClosed() {
+    val beforeParty = state()
+    val changedParty = reducerCandidate(beforeParty)
+    changedParty.getJSONArray("party").put(JSONObject().put("id", "survivor").put("name", "Survivor"))
+    assertFalse(eligible(before = beforeParty, candidate = changedParty))
+
+    val beforeInventory = state()
+    val changedInventory = reducerCandidate(beforeInventory)
+    changedInventory.getJSONArray("inventory").put(JSONObject().put("name", "Almond Water"))
+    assertFalse(eligible(before = beforeInventory, candidate = changedInventory))
+
+    val beforePlayer = state()
+    val changedPlayer = reducerCandidate(beforePlayer)
+    changedPlayer.getJSONObject("player").put("hp", 1)
+    assertFalse(eligible(before = beforePlayer, candidate = changedPlayer))
+
+    val beforeLevel = state()
+    val changedLevel = reducerCandidate(beforeLevel)
+    changedLevel.put("level", JSONObject().put("number", 1).put("name", "Parking Zone"))
+    changedLevel.put("title", "Level 1 – Parking Zone")
+    assertFalse(eligible(before = beforeLevel, candidate = changedLevel))
+
+    val beforeFlags = state()
+    val changedFlags = reducerCandidate(beforeFlags)
+    changedFlags.getJSONObject("flags").getJSONObject("storyArc").put("currentBeat", "UNTRUSTED")
+    assertFalse(eligible(before = beforeFlags, candidate = changedFlags))
+  }
+
+  @Test fun unknownTopLevelMutationFailsClosed() {
+    val before = state()
+    val candidate = reducerCandidate(before).put("futureAuthoritativeField", JSONObject().put("changed", true))
+    assertFalse(eligible(before = before, candidate = candidate))
   }
 
   @Test fun fallbackCandidateStillAdvancesArrivalDeterministicallyWithoutLucia() {
