@@ -10,10 +10,11 @@ function requireContract(value, message) {
   if (!value) throw new Error(message);
 }
 
-function methodBody(source, name) {
-  const signature = source.indexOf(`private boolean ${name}(`);
-  requireContract(signature >= 0, `generated Java helper missing: ${name}`);
+function methodBodyBySignature(source, signatureText, label) {
+  const signature = source.indexOf(signatureText);
+  requireContract(signature >= 0, `generated Java helper missing: ${label}`);
   const open = source.indexOf('{', signature);
+  requireContract(open >= 0, `generated Java helper has no opening brace: ${label}`);
   let depth = 0;
   let inString = false;
   let escaped = false;
@@ -35,7 +36,11 @@ function methodBody(source, name) {
       if (depth === 0) return source.slice(open + 1, index);
     }
   }
-  throw new Error(`generated Java helper has no closing brace: ${name}`);
+  throw new Error(`generated Java helper has no closing brace: ${label}`);
+}
+
+function methodBody(source, name) {
+  return methodBodyBySignature(source, `private boolean ${name}(`, name);
 }
 
 const chainStart = workflow.indexOf('scripts=(');
@@ -66,14 +71,17 @@ for (const marker of [
   requireContract(main.includes(marker), `generated Lucia story gate marker missing: ${marker}`);
 }
 
-requireContract(
-  main.includes('lucia_story{stage:\\"first_contact\\"}') && main.includes('lucia_story{stage:\\"join\\"}'),
-  'writer contract must expose the dedicated Lucia state transport stages',
-);
-requireContract(
-  main.includes('không dùng flag_patch để sửa storyArc/luciaEncounter'),
-  'writer contract must forbid generic flag mutation for Lucia progression',
-);
+const writerPrompt = methodBodyBySignature(main, 'private String writerPrompt(', 'writerPrompt');
+for (const marker of [
+  'LUCIA STATE TRANSPORT:',
+  'lucia_story{stage:',
+  'first_contact',
+  'join',
+  'không dùng flag_patch để sửa storyArc/luciaEncounter',
+]) {
+  requireContract(writerPrompt.includes(marker), `writer Lucia state transport contract missing: ${marker}`);
+}
+
 requireContract(!main.includes('private boolean luciaEncounterLockedAndroid('), 'legacy combined Lucia encounter lock survived generated Java');
 requireContract(
   !main.includes('if (state == null || storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL")) return false;'),
