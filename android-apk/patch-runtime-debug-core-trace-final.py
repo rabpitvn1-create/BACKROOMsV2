@@ -47,12 +47,11 @@ prepared_new = '''    val preparedCore = synchronizeValidatedLuciaCharacter(core
 '''
 facade = replace_once(facade, prepared_old, prepared_new, "validated candidate pending trace")
 
-commands_old = '''    commands += timeAdvanceCommand(turnId, action)
-
-    val committed = TurnCoordinator.commit(pending.state, commands)
+# Other finalizers may insert authoritative commands immediately before commit. Anchor on the
+# settled commit itself so diagnostics observe the exact command list that is actually committed.
+commit_old = '''    val committed = TurnCoordinator.commit(pending.state, commands)
 '''
-commands_new = '''    commands += timeAdvanceCommand(turnId, action)
-    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommands", JSONArray().apply {
+commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommands", JSONArray().apply {
       commands.forEach { command -> put(JSONObject()
         .put("commandId", command.commandId)
         .put("turnId", command.turnId)
@@ -60,13 +59,12 @@ commands_new = '''    commands += timeAdvanceCommand(turnId, action)
         .put("source", command.source.name)
         .put("type", command::class.java.simpleName)) }
     })
-
     val committed = TurnCoordinator.commit(pending.state, commands)
     RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommitResult", JSONObject()
       .put("error", committed.error ?: "")
       .put("state", JSONObject(GameStateCodec.encode(committed.state))))
 '''
-facade = replace_once(facade, commands_old, commands_new, "validated candidate command trace")
+facade = replace_once(facade, commit_old, commit_new, "validated candidate commit trace")
 
 sync_old = '''    val synchronized = syncLegacy(candidate, committed.state, incrementTurn = false)
     logger.log(PipelineLogEvent("GEMINI_COMMIT", turnId = turnId, source = CommandSource.GEMINI, details = mapOf("commands" to commands.size.toString(), "inventoryLocked" to inventoryLocked.toString())))
@@ -96,4 +94,4 @@ for marker in (
         raise RuntimeError("GameCore debug trace marker missing: " + marker)
 
 FACADE.write_text(facade, encoding="utf-8")
-print("GameCore runtime debug trace installed: raw/normalized story state, pending state, commands, commit result and synchronized final state.")
+print("GameCore runtime debug trace installed: raw/normalized story state, pending state, settled command list, commit result and synchronized final state.")
