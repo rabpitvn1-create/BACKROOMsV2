@@ -67,7 +67,7 @@ for (const marker of [
 }
 
 requireContract(
-  main.includes('lucia_story{stage:"first_contact"}') && main.includes('lucia_story{stage:"join"}'),
+  main.includes('lucia_story{stage:\\"first_contact\\"}') && main.includes('lucia_story{stage:\\"join\\"}'),
   'writer contract must expose the dedicated Lucia state transport stages',
 );
 requireContract(
