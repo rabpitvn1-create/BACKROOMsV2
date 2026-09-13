@@ -18,8 +18,24 @@ object CanonRecoveryPolicy {
     if (meta || !repaired) return false
     if (before.optJSONObject("combat")?.optBoolean("active", false) == true) return false
     if (candidate.optJSONObject("combat")?.optBoolean("active", false) == true) return false
+    if (hasEncounter(before) || hasEncounter(candidate)) return false
+    if (transitionReady(before) || transitionReady(candidate)) return false
     if (containsSuccess(rolls)) return false
     return scrub(before).similar(scrub(candidate))
+  }
+
+  private fun hasEncounter(state: JSONObject): Boolean {
+    val flags = state.optJSONObject("flags") ?: return false
+    return flags.optString("entityEncounterKey", "").isNotBlank() ||
+      flags.optJSONArray("entityEncounterKeys")?.let { it.length() > 0 } == true
+  }
+
+  private fun transitionReady(state: JSONObject): Boolean {
+    val exploration = state.optJSONObject("flags")?.optJSONObject("exploration") ?: return false
+    return exploration.optBoolean("transitionReady", false) ||
+      exploration.optBoolean("exitReady", false) ||
+      exploration.optBoolean("confirmedExit", false) ||
+      exploration.optString("confirmedExit", "").isNotBlank()
   }
 
   private fun containsSuccess(value: Any?): Boolean = when (value) {
