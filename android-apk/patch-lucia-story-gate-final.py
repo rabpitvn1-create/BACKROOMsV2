@@ -81,15 +81,30 @@ if "LUCIA ENCOUNTER STORY GATE:" not in text:
     prefix = (
         '"LUCIA ENCOUNTER STORY GATE: Sequence bắt buộc và machine-verifiable là STORY.LEVEL0.ARRIVAL -> STORY.LEVEL0.FIRST_CONTACT_COMPLETE -> STORY.LEVEL0.LUCIA_DECISION_COMPLETE kèm luciaEncounter.status=joined, partyEligible=true, joinPending=false -> Party có Lucia. Không được rút gọn các bước này thành một lượt. " +\n'
         + continuation
+        + '"LUCIA STATE TRANSPORT: không dùng flag_patch để sửa storyArc/luciaEncounter và không dùng party_upsert để tự thêm Lucia. Chỉ dùng operation lucia_story{stage:\"first_contact\"} để ghi nhận lần gặp đầu; ở lượt decision sau chỉ dùng lucia_story{stage:\"join\"}. Android sẽ tự ghi storyArc/luciaEncounter và stage join sẽ tự tạo Party member Lucia với joinConfirmed/present sau khi gate hợp lệ. " +\n'
+        + continuation
         + '"Nếu state ở ĐẦU lượt chưa hoàn tất STORY.LEVEL0.ARRIVAL, Kai đang một mình ở Level 0: Lucia / Hứa Thuý Mai chưa được gặp, chưa được nghe, chưa được nhận diện qua dấu vết và không được thêm vào Party. Lượt này có thể hoàn tất ARRIVAL nếu hành động đủ căn cứ, nhưng first-contact phải chờ một lượt sau. " +\n'
         + continuation
-        + '"Nếu state ở ĐẦU lượt đã có ARRIVAL nhưng chưa có FIRST_CONTACT_COMPLETE, lượt này có thể hoàn tất first-contact bằng luciaEncounter.status=met tại Level 0. Trong CHÍNH lượt first-contact phải giữ Lucia ngoài party, không được phát STORY.LEVEL0.LUCIA_DECISION_COMPLETE và không được coi partyEligible là đã join. " +\n'
+        + '"Nếu state ở ĐẦU lượt đã có ARRIVAL nhưng chưa có FIRST_CONTACT_COMPLETE, lượt này có thể hoàn tất first-contact bằng lucia_story{stage:\"first_contact\"}. Trong CHÍNH lượt first-contact phải giữ Lucia ngoài party, không được phát STORY.LEVEL0.LUCIA_DECISION_COMPLETE và không được coi partyEligible là đã join. " +\n'
         + continuation
-        + '"Lucia chỉ được vào Party ở một lượt SAU khi state đầu lượt đã có FIRST_CONTACT_COMPLETE và lượt decision xác nhận STORY.LEVEL0.LUCIA_DECISION_COMPLETE cùng status=joined, partyEligible=true, joinPending=false. Gặp Lucia không đồng nghĩa Lucia đã join. Không dùng Character Codex hay knowledge hậu trường để spawn hoặc join cô sớm. " +\n'
+        + '"Lucia chỉ được vào Party ở một lượt SAU khi state đầu lượt đã có FIRST_CONTACT_COMPLETE và lượt decision dùng lucia_story{stage:\"join\"}. Gặp Lucia không đồng nghĩa Lucia đã join. Không dùng Character Codex hay knowledge hậu trường để spawn hoặc join cô sớm. " +\n'
         + continuation
     )
     method = method[: return_match.end()] + prefix + method[return_match.end():]
     text = text[:start] + method + text[end:]
+
+
+transport_anchor = '      if (type.equals("party_upsert")) {\n'
+transport_handler = r'''      if (type.equals("lucia_story")) {
+        applyLuciaStoryOperationAndroid(before, state, lower(op.optString("stage", "")));
+        continue;
+      }
+
+'''
+if 'type.equals("lucia_story")' not in text:
+    if text.count(transport_anchor) != 1:
+        raise RuntimeError("Lucia transport party anchor expected once, found " + str(text.count(transport_anchor)))
+    text = text.replace(transport_anchor, transport_handler + transport_anchor, 1)
 
 
 helper_anchor = "  private JSONArray rejectedOperationIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {\n"
@@ -101,6 +116,79 @@ helper = r'''  private boolean storyArcCompletedAndroid(JSONObject state, String
     if (completed == null) return false;
     for (int i = 0; i < completed.length(); i++) {
       if (beat.equals(completed.optString(i, ""))) return true;
+    }
+    return false;
+  }
+
+  private void addStoryBeatAndroid(JSONObject state, String beat, String currentBeat, String nextBeat) throws Exception {
+    JSONObject flags = state.optJSONObject("flags");
+    if (flags == null) flags = new JSONObject();
+    JSONObject storyArc = flags.optJSONObject("storyArc");
+    if (storyArc == null) storyArc = new JSONObject();
+    JSONArray completed = storyArc.optJSONArray("completed");
+    if (completed == null) completed = new JSONArray();
+    boolean present = false;
+    for (int i = 0; i < completed.length(); i++) if (beat.equals(completed.optString(i, ""))) present = true;
+    if (!present) completed.put(beat);
+    storyArc.put("current", "MAIN.LEVEL0");
+    storyArc.put("currentBeat", currentBeat);
+    storyArc.put("nextBeat", nextBeat);
+    storyArc.put("completed", completed);
+    flags.put("storyArc", storyArc);
+    state.put("flags", flags);
+  }
+
+  private boolean applyLuciaStoryOperationAndroid(JSONObject before, JSONObject state, String stage) throws Exception {
+    if (before == null || state == null || currentLevel(before) != 0) return false;
+    if ("first_contact".equals(stage)) {
+      if (!storyArcCompletedAndroid(before, "STORY.LEVEL0.ARRIVAL") ||
+          storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE")) return false;
+      addStoryBeatAndroid(state, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE", "STORY.LEVEL0.FIRST_CONTACT_COMPLETE", "STORY.LEVEL0.LUCIA_DECISION");
+      JSONObject flags = state.optJSONObject("flags");
+      JSONObject encounter = flags.optJSONObject("luciaEncounter");
+      if (encounter == null) encounter = new JSONObject(); else encounter = new JSONObject(encounter.toString());
+      encounter.put("status", "met");
+      encounter.put("level", 0);
+      encounter.put("partyEligible", true);
+      encounter.put("joinPending", true);
+      encounter.put("knowledge", "human_survivor_confirmed");
+      encounter.put("relationship", "initial_tactical_trust");
+      flags.put("luciaEncounter", encounter);
+      state.put("flags", flags);
+      return true;
+    }
+    if ("join".equals(stage)) {
+      if (!storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
+          storyArcCompletedAndroid(before, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE")) return false;
+      JSONObject beforeFlags = before.optJSONObject("flags");
+      JSONObject beforeEncounter = beforeFlags == null ? null : beforeFlags.optJSONObject("luciaEncounter");
+      String beforeStatus = beforeEncounter == null ? "" : lower(beforeEncounter.optString("status", ""));
+      if (!("met".equals(beforeStatus) || "contact".equals(beforeStatus) || "contacted".equals(beforeStatus) ||
+            "first_contact".equals(beforeStatus) || "first-contact".equals(beforeStatus))) return false;
+      addStoryBeatAndroid(state, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE", "STORY.LEVEL0.LUCIA_DECISION_COMPLETE", "STORY.LEVEL0.EPSILON.ENTRY");
+      JSONObject flags = state.optJSONObject("flags");
+      JSONObject encounter = flags.optJSONObject("luciaEncounter");
+      if (encounter == null) encounter = new JSONObject(); else encounter = new JSONObject(encounter.toString());
+      encounter.put("status", "joined");
+      encounter.put("level", 0);
+      encounter.put("partyEligible", true);
+      encounter.put("joinPending", false);
+      encounter.put("knowledge", "human_survivor_confirmed");
+      encounter.put("relationship", "earned_tactical_trust");
+      encounter.put("romance", "none");
+      flags.put("luciaEncounter", encounter);
+      state.put("flags", flags);
+      if (!partyContainsLuciaAndroid(state)) {
+        JSONArray party = state.optJSONArray("party");
+        if (party == null) party = new JSONArray();
+        party.put(new JSONObject()
+          .put("id", "lucia")
+          .put("name", "Lucia")
+          .put("joinConfirmed", true)
+          .put("present", true));
+        state.put("party", party);
+      }
+      return true;
     }
     return false;
   }
@@ -195,6 +283,28 @@ if "private JSONArray prematureLuciaEncounterIssuesAndroid(" not in text:
         )
     text = text.replace(helper_anchor, helper + helper_anchor, 1)
 
+
+rejected_lucia_anchor = '      } else if (type.equals("flag_patch")) {\n'
+rejected_lucia_branch = r'''      } else if (type.equals("lucia_story")) {
+        String stage = lower(op.optString("stage", ""));
+        if ("first_contact".equals(stage)) {
+          rejected = !storyArcCompletedAndroid(before, "STORY.LEVEL0.ARRIVAL") ||
+            storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
+            !storyArcCompletedAndroid(candidate, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE");
+        } else if ("join".equals(stage)) {
+          rejected = !storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
+            storyArcCompletedAndroid(before, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE") ||
+            !luciaJoinConfirmedAndroid(candidate) || !partyContainsLuciaAndroid(candidate);
+        } else {
+          rejected = true;
+        }
+'''
+if 'else if (type.equals("lucia_story"))' not in text:
+    if text.count(rejected_lucia_anchor) != 1:
+        raise RuntimeError("Lucia rejected-op audit anchor expected once, found " + str(text.count(rejected_lucia_anchor)))
+    text = text.replace(rejected_lucia_anchor, rejected_lucia_branch + rejected_lucia_anchor, 1)
+
+
 initial_anchor = "          if (!meta) appendIssues(hardIssues, retiredOrganizationIssuesAndroid(generated));"
 if initial_anchor not in text:
     initial_anchor = "          if (!meta) appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
@@ -215,6 +325,9 @@ if repair_guard not in text:
 
 for marker in (
     "LUCIA ENCOUNTER STORY GATE:",
+    "LUCIA STATE TRANSPORT:",
+    'type.equals("lucia_story")',
+    "applyLuciaStoryOperationAndroid",
     "luciaFirstContactLockedAndroid",
     "luciaPartyLockedAndroid",
     "luciaJoinConfirmedAndroid",
@@ -227,4 +340,4 @@ for marker in (
         raise RuntimeError("Lucia story-gate regression marker missing: " + marker)
 
 MAIN.write_text(text, encoding="utf-8")
-print("Lucia story gate applied: Arrival, first contact, and Party join are separate machine-verifiable stages.")
+print("Lucia story gate applied: validated lucia_story transport now carries Arrival, first contact, decision and Party join.")

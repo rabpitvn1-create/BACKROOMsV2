@@ -1,5 +1,6 @@
 package com.rabpit.backroom.core
 
+import org.json.JSONObject
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -72,6 +73,54 @@ class GameStateCoreTest {
     assertEquals("party_full", full.validation.reason)
     val noConsent = StateReducer.execute(base(people[0]), PartyCommand("no-consent", "TURN_1", KAI_ID, "p1", CommandSource.LITERT, PartyCommand.Operation.ADD, false, true))
     assertEquals("join_not_confirmed", noConsent.validation.reason)
+  }
+
+  @Test fun validatedLuciaFirstContactRegistersCharacterWithoutJoiningParty() {
+    val candidate = JSONObject(
+      """{
+        "flags":{
+          "storyArc":{"completed":["STORY.LEVEL0.ARRIVAL","STORY.LEVEL0.FIRST_CONTACT_COMPLETE"]},
+          "luciaEncounter":{"status":"met","level":0,"partyEligible":true,"joinPending":true}
+        }
+      }"""
+    )
+    val prepared = synchronizeValidatedLuciaCharacter(base(), candidate)
+    val lucia = prepared.characters["lucia"]
+    assertNotNull(lucia)
+    assertEquals(CharacterPresence.ACTIVE, lucia?.presence)
+    assertEquals("false", lucia?.metadata?.get("joinEligible"))
+    assertTrue("lucia" in prepared.inventories)
+    assertTrue("lucia" in prepared.equipment)
+    assertFalse("lucia" in prepared.party.memberIds)
+  }
+
+  @Test fun validatedLuciaDecisionMakesPartyJoinPassCoreValidation() {
+    val contact = JSONObject(
+      """{
+        "flags":{
+          "storyArc":{"completed":["STORY.LEVEL0.ARRIVAL","STORY.LEVEL0.FIRST_CONTACT_COMPLETE"]},
+          "luciaEncounter":{"status":"met","level":0,"partyEligible":true,"joinPending":true}
+        }
+      }"""
+    )
+    val known = synchronizeValidatedLuciaCharacter(base(), contact)
+    val joined = JSONObject(
+      """{
+        "flags":{
+          "storyArc":{"completed":["STORY.LEVEL0.ARRIVAL","STORY.LEVEL0.FIRST_CONTACT_COMPLETE","STORY.LEVEL0.LUCIA_DECISION_COMPLETE"]},
+          "luciaEncounter":{"status":"joined","level":0,"partyEligible":true,"joinPending":false}
+        }
+      }"""
+    )
+    val prepared = synchronizeValidatedLuciaCharacter(known, joined)
+    val lucia = prepared.characters.getValue("lucia")
+    assertEquals("true", lucia.metadata["joinEligible"])
+    val result = StateReducer.execute(
+      prepared,
+      PartyCommand("lucia-join", "TURN_1", KAI_ID, "lucia", CommandSource.GEMINI, PartyCommand.Operation.ADD, consentConfirmed = true, targetPresent = true)
+    )
+    assertTrue(result.applied)
+    assertTrue("lucia" in result.state.party.memberIds)
   }
 
   @Test fun statusIsStructuredAndRemovable() {
