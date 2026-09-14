@@ -41,12 +41,27 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
             audits = new JSONArray();
             hardIssues = new JSONArray();
             if (BuildConfig.DEBUG) {
-              android.util.Log.w("BackroomCanonFallback", "Recovered low-risk Level 0 exploration turn without model ops.");
+              android.util.Log.w("BackroomCanonFallback", "Recovered harmless repaired turn without model ops.");
             }
 '''
 
 submit = submit.replace(failure, replacement, 1)
 text = text[:submit_start] + submit + text[submit_end:]
+
+# Later authority patches can reconstruct the audit helper from the pre-Haiku form. The final
+# runtime must still route audits through auditText(), because that method owns Gemini-first and
+# Haiku-fallback behavior. Restore the settled provider call here, after those patches have run.
+direct_audit = "parseModelJson(geminiAuditText(prompt, excludedWorker))"
+fallback_audit = "parseModelJson(auditText(prompt, excludedWorker))"
+if fallback_audit not in text:
+    if text.count(direct_audit) != 1:
+        raise RuntimeError(
+            "Low-risk canon fallback: expected one direct Gemini audit call before final provider restore, "
+            f"found {text.count(direct_audit)}"
+        )
+    text = text.replace(direct_audit, fallback_audit, 1)
+if fallback_audit not in text:
+    raise RuntimeError("Low-risk canon fallback: Haiku-capable audit route missing after finalization")
 
 lucia_prompt_tokens = {
     'lucia_story{stage:"first_contact"}': 'lucia_story{stage:\\"first_contact\\"}',
@@ -71,8 +86,9 @@ for marker in (
 
 MAIN.write_text(text, encoding="utf-8")
 print(
-    "Low-risk canon fallback applied after the settled runtime: only harmless Level 0 "
-    "exploration can recover after writer and repair canon failures; Lucia prompt Java escaping verified."
+    "Low-risk canon fallback applied after the settled runtime: harmless repaired turns may recover "
+    "without model ops while combat, encounter, transition, consequential rolls and authoritative "
+    "state changes remain fail-closed; Haiku-capable audit routing and Lucia prompt escaping verified."
 )
 
 # The workflow already executes this file as its terminal runtime authority. Delegate the debug
