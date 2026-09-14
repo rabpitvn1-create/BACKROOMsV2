@@ -1,4 +1,4 @@
-name: Diagnose PR 38
+name: Repair PR 38 CI assertion
 
 on:
   push:
@@ -8,84 +8,34 @@ on:
       - '.github/workflows/diagnose-pr38.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  diagnose:
+  repair:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: fix/canon-fallback-safe-turns
-      - name: Prepare final patched runtime
+          fetch-depth: 1
+      - name: Align settled audit provider assertion and remove probe
+        shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --quiet pillow
-          python android-apk/sync-kai-sru-assets.py
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
-          for script in "${scripts[@]}"; do python3 "android-apk/$script" >/dev/null; done
-      - name: Trace post-patch checks
-        run: |
-          set -euxo pipefail
-          git diff --check
-          ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'BuildConfig.HAIKU_API' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'BuildConfig.HAIKU_BASE_URL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'BuildConfig.HAIKU_MODEL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'private String haikuText' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'parseModelJson(auditText(prompt, excludedWorker))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
-          grep -Fq 'buildConfigField "String", "HAIKU_BASE_URL"' android-apk/app/build.gradle
-          grep -Fq 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
-          grep -q 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'PLAYER ADDRESS HARD LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'normalizePlayerAddress(reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'ANDROID_DISPLAY_GEOMETRY_V1' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'ANDROID_DISPLAY_LAUNCH_SAFE_V2' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'safeApplyAndroidDisplayMode()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'safePushAndroidDisplayGeometry(insets)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'ANDROID_UI_KAI_SHIFT_RIGHT' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'getRoundedCorner(position)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'LEVEL TRANSITION STATE LOCK' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'levelNarrativeStateIssuesAndroid' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'level_narrative_state_mismatch' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'bãi đỗ xe' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'requireGameCore().processCombat(stateJson, actionKind, action)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'fun processCombat(legacyStateJson: String, actionKind: String, action: String)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt
-          grep -q 'PRESSURE_COMBAT_HUD_V1' android-apk/app/src/main/assets/index.html
-          grep -q 'ANDROID_EDGE_UI_V1' android-apk/app/src/main/assets/index.html
-          grep -q 'ANDROID_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
-          grep -q 'ANDROID_THREE_ACTIONS_V1' android-apk/app/src/main/assets/index.html
-          grep -q 'ANDROID_GAMEPLAY_PRESENTATION_V2' android-apk/app/src/main/assets/index.html
-          grep -q 'STORYTELLING_CHRONOLOGICAL_FRAME_V5' android-apk/app/src/main/assets/index.html
-          grep -q 'ANDROID_SWIPE_GESTURE_V2' android-apk/app/src/main/assets/index.html
-          grep -q -- '--android-radius-tl' android-apk/app/src/main/assets/index.html
-          grep -q -- '--android-ime-bottom' android-apk/app/src/main/assets/index.html
-          grep -Fq 'height:calc(100dvh - var(--android-ime-bottom));min-height:0' android-apk/app/src/main/assets/index.html
-          grep -Fq 'WindowInsets.Type.ime()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'android:windowSoftInputMode="adjustResize"' android-apk/app/src/main/AndroidManifest.xml
-          grep -q 'grid-template-columns:repeat(3,minmax(0,1fr))' android-apk/app/src/main/assets/index.html
-          grep -q 'data:image/webp;base64,' android-apk/app/src/main/assets/index.html
-          grep -q "font-family:var(--gameplay-font)" android-apk/app/src/main/assets/index.html
-          grep -q "header.textContent='Storytelling'" android-apk/app/src/main/assets/index.html
-          grep -q "font-family:'BackroomPlay'" android-apk/app/src/main/assets/index.html
-          grep -q 'GM_CHOICES_FREEDOM_V1' android-apk/app/src/main/assets/index.html
-          grep -q '@JavascriptInterface public void submitFreedom' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -q 'sanitizeGmChoices' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          ! grep -q 'GAME_MASTER_STORYTELLING_FRAME_V1' android-apk/app/src/main/assets/index.html
-          ! grep -q 'GAME_MASTER_PLAY_FONT_V1' android-apk/app/src/main/assets/index.html
-          ! grep -q 'COMBAT_TYPOGRAPHY_V1' android-apk/app/src/main/assets/index.html
-          ! grep -q 'TRUE_TURN_COMBAT_UI_V2' android-apk/app/src/main/assets/index.html
-          ! grep -q 'autoPartyCombatStyle' android-apk/app/src/main/assets/index.html
-          ! grep -q 'pressureCombatStyle' android-apk/app/src/main/assets/index.html
-          ! grep -q 'MOBILE_SWIPE_UI_V1' android-apk/app/src/main/assets/index.html
-          ! grep -q 'PR3_HEADER_SAFE_INSET' android-apk/app/src/main/assets/index.html
-          ! grep -q 'STEP2_THREE_ACTIONS' android-apk/app/src/main/assets/index.html
-          ! grep -q '<svg class="action-icon' android-apk/app/src/main/assets/index.html
-          node android-apk/test-android-ui-regressions.mjs android-apk/app/src/main/assets/index.html
-          node android-apk/test-gm-choices-freedom.mjs android-apk
-          node android-apk/test-lucia-story-gate.mjs android-apk
-          node android-apk/test-low-risk-canon-fallback.mjs android-apk
-          python3 android-apk/test-overlay-visible-height-scale.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/build-backroom-apk.yml')
+          text = path.read_text(encoding='utf-8')
+          old = "grep -Fq 'parseModelJson(auditText(prompt, excludedWorker))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java"
+          new = "grep -Fq 'parseModelJson(geminiAuditText(prompt, excludedWorker))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java"
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected exactly one stale audit assertion, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          git rm .github/workflows/diagnose-pr38.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Align audit provider CI assertion'
+          git push origin HEAD:fix/canon-fallback-safe-turns
