@@ -60,7 +60,11 @@ def runtime_regression(module) -> None:
             }
         }
     }
-    patched_index = module.patch_index_runtime("<html><head></head><body></body></html>", metadata)
+    sample_index = """<html><head></head><body><script>
+    gameplay.appendChild(game);management.appendChild(side);track.appendChild(gameplay);track.appendChild(management);shell.appendChild(track);
+    track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';});
+    </script></body></html>"""
+    patched_index = module.patch_index_runtime(sample_index, metadata)
     for marker in (
         "width:auto!important",
         "max-width:none!important",
@@ -68,6 +72,11 @@ def runtime_regression(module) -> None:
         "var canvasHeight=baseline/visible",
         "var bottomOffset=-(1-visibleBottom)*canvasHeight",
         "MutationObserver",
+        "ANDROID_MANAGEMENT_RETURN_V1",
+        "managementReturnButton",
+        "returnButton.addEventListener('click',function(){setPage(0);})",
+        "side.insertBefore(returnButton,side.firstChild)",
+        "track.setPointerCapture(pointerId)",
     ):
         assert marker in patched_index
 
@@ -89,6 +98,8 @@ def metadata_contract_regression(module) -> None:
     assert '"lucia_entity_overlay.png": "female"' in source
     assert '"syvial_entity_overlay.png": "female"' in source
     assert '(assets / "entity").glob("*.png")' in source
+    assert "ANDROID_MANAGEMENT_RETURN_V1" in source
+    assert "managementReturnButton" in source
     json.dumps(module.BASELINES)
 
     entity_paths = sorted((ROOT / "app/src/main/assets/entity").glob("*.png"))
@@ -105,7 +116,7 @@ def main() -> None:
     runtime_regression(module)
     workflow_order_regression()
     metadata_contract_regression(module)
-    print("Overlay visible-height regression checks passed.")
+    print("Overlay visible-height and Management return regression checks passed.")
 
 
 if __name__ == "__main__":
