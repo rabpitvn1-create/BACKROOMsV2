@@ -14,9 +14,9 @@ AVATARS = ASSETS / "avatars"
 
 SOURCES = {
     "snapshot": {
-        "file_id": "1TljsWKD2yzP3T76t8lja3k6pk0-NdpKX",
-        "sha256": "fc0efba2aa370bbee011996095abe456041433639d1d94a034291333a56a932e",
-        "size": (1024, 1536),
+        "file_id": "1IGPrCy1mVjnFeEz7jSFS9RZrlbm-HEnF",
+        "sha256": "b41c5133dac3c21b6623a3c0581f5bda795fc11498959e67466ebe60f6c4e8c7",
+        "size": (1086, 1448),
     },
     "avatar": {
         "file_id": "1BIJS1fd1wWCBJqFzD2_WEGXkE746DQuX",
@@ -24,9 +24,9 @@ SOURCES = {
         "size": (350, 347),
     },
     "entity": {
-        "file_id": "1j4aue5IdmsxrsFdSrj2RGdqfQOldj8YL",
-        "sha256": "5515f6864e389be40a513d5d22ddab8be9625671c6dbe9c43f69460b1422d63e",
-        "size": (1024, 1536),
+        "file_id": "1dBC7cOhwVNHmSZ_fX8Rht89Mfvfdo6R9",
+        "sha256": "92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a",
+        "size": (1448, 1086),
     },
 }
 
