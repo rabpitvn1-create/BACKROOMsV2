@@ -6,7 +6,7 @@ on:
       since:
         description: "Delete failed runs created at or after this ISO-8601 UTC timestamp"
         required: true
-        default: "2026-09-12T11:00:00Z"
+        default: "2026-09-11T00:00:00Z"
         type: string
       until:
         description: "Optional ISO-8601 UTC end timestamp; leave blank to use current time"

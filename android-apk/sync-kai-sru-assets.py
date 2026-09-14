@@ -24,9 +24,9 @@ SOURCES = {
         "size": (350, 347),
     },
     "entity": {
-        "file_id": "1j4aue5IdmsxrsFdSrj2RGdqfQOldj8YL",
-        "sha256": "5515f6864e389be40a513d5d22ddab8be9625671c6dbe9c43f69460b1422d63e",
-        "size": (1024, 1536),
+        "file_id": "1dBC7cOhwVNHmSZ_fX8Rht89Mfvfdo6R9",
+        "sha256": "92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a",
+        "size": (1448, 1086),
     },
 }
 
