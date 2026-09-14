@@ -1,0 +1,9 @@
+Backroom 1.1.77 Debug
+
+- Sửa điều hướng Android WebView giữa Gameplay và Character/Status: swipe được giữ trên shell ổn định, dùng pointer capture và xử lý pointer/touch cancel để tránh mắc kẹt ở trang trạng thái.
+- Giữ source Kai exploration overlay mới trong release build thay vì để bước sync ghi đè bằng asset cũ; xác minh hash và kích thước trước khi đóng gói.
+- Cập nhật Kai Entity encounter overlay sang asset mới đã xác minh, giữ nguyên hệ visible-height scaling theo alpha bounding box.
+- Giữ regression coverage cho swipe Android, Kai asset sync và overlay scale để lỗi cũ không quay lại qua patch chain.
+- Cập nhật workflow dọn failed workflow runs với cửa sổ mặc định từ 11/09/2026 đến thời điểm chạy.
+- Viết lại README theo kiến trúc hiện tại, mô tả rõ Game State Core, Android WebView, AI provider config, LiteRT, patch chain, CI/release và các invariant quan trọng.
+- Phiên bản Android: versionCode 79 / versionName 1.1.77.
