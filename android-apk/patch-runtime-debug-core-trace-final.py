@@ -47,9 +47,10 @@ prepared_new = '''    val preparedCore = synchronizeValidatedLuciaCharacter(core
 '''
 facade = replace_once(facade, prepared_old, prepared_new, "validated candidate pending trace")
 
-# Other finalizers may insert authoritative commands immediately before commit. Anchor on the
-# settled commit itself so diagnostics observe the exact command list that is actually committed.
-commit_old = '''    val committed = TurnCoordinator.commit(pending.state, commands)
+# ActionRuntime finalizers wrap the settled command commit to apply deterministic progression/time
+# semantics before returning the authoritative TurnResult. Trace the exact call used by
+# processValidatedCandidate rather than the pre-ActionRuntime TurnCoordinator call.
+commit_old = '''    val committed = commitActionRuntime(pending.state, commands, action, turnId)
 '''
 commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommands", JSONArray().apply {
       commands.forEach { command -> put(JSONObject()
@@ -59,22 +60,12 @@ commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "g
         .put("source", command.source.name)
         .put("type", command::class.java.simpleName)) }
     })
-    val committed = TurnCoordinator.commit(pending.state, commands)
+    val committed = commitActionRuntime(pending.state, commands, action, turnId)
     RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommitResult", JSONObject()
       .put("error", committed.error ?: "")
       .put("state", JSONObject(GameStateCodec.encode(committed.state))))
 '''
-if facade.count(commit_old) != 1:
-    diagnostic = [
-        f"{index + 1}: {line}"
-        for index, line in enumerate(facade.splitlines())
-        if "TurnCoordinator" in line or "committed" in line or "commands" in line
-    ]
-    raise RuntimeError(
-        "validated candidate commit trace: settled GameCore anchor not found; candidates:\n"
-        + "\n".join(diagnostic[-80:])
-    )
-facade = facade.replace(commit_old, commit_new, 1)
+facade = replace_once(facade, commit_old, commit_new, "validated candidate commit trace")
 
 sync_old = '''    val synchronized = syncLegacy(candidate, committed.state, incrementTurn = false)
     logger.log(PipelineLogEvent("GEMINI_COMMIT", turnId = turnId, source = CommandSource.GEMINI, details = mapOf("commands" to commands.size.toString(), "inventoryLocked" to inventoryLocked.toString())))
@@ -104,4 +95,4 @@ for marker in (
         raise RuntimeError("GameCore debug trace marker missing: " + marker)
 
 FACADE.write_text(facade, encoding="utf-8")
-print("GameCore runtime debug trace installed: raw/normalized story state, pending state, settled command list, commit result and synchronized final state.")
+print("GameCore runtime debug trace installed: raw/normalized story state, pending state, settled ActionRuntime command list, commit result and synchronized final state.")
