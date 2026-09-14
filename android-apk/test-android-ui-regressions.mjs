@@ -150,6 +150,11 @@ requireText("'pointermove'", "pointer move path");
 requireText("'touchmove'", "touch fallback move path");
 requireText("{passive:false}", "non-passive horizontal move listener");
 requireText("textarea,input,select,button,a,.equipment-detail-modal", "interactive controls are excluded");
+requireText("shell.addEventListener('pointerdown'", "swipe owner remains stationary while the page track is transformed");
+requireText("shell.setPointerCapture(pointerId)", "pointer stream remains owned through a horizontal swipe");
+requireText("shell.addEventListener('pointercancel',function(){if(axis==='x')finishSwipe(lastX-startX,lastY-startY)", "cancelled Android pointer streams still complete an owned horizontal swipe");
+requireText("shell.addEventListener('touchstart'", "touch fallback uses the stationary shell");
+assert.ok(!html.includes("track.addEventListener('pointerdown'"), "transformed page track must not own pointer navigation");
 
 const finishSwipe = html.match(/function finishSwipe\(dx,dy\)\{[^}]+\}/)?.[0];
 assert.ok(finishSwipe, "Swipe completion state machine must be packaged");

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -11,6 +12,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent
 PATCH = ROOT / "patch-overlay-visible-height-scale-final.py"
 WORKFLOW = ROOT.parent / ".github/workflows/build-backroom-apk.yml"
+KAI_SYNC = ROOT / "sync-kai-sru-assets.py"
+ANDROID_UI_PATCH = ROOT / "apply-android-ui.py"
 
 
 def load_patch_module():
@@ -99,12 +102,29 @@ def metadata_contract_regression(module) -> None:
         assert metric["baselineVisibleHeightRatio"] == module.BASELINES["entity"]
 
 
+def issue_40_regression() -> None:
+    kai_overlay = ROOT / "app/src/main/assets/kai_snapshot_overlay.png"
+    expected_hash = hashlib.sha256(kai_overlay.read_bytes()).hexdigest()
+    sync_source = KAI_SYNC.read_text(encoding="utf-8")
+    assert '"local_asset": "kai_snapshot_overlay.png"' in sync_source
+    assert f'"sha256": "{expected_hash}"' in sync_source
+    assert '(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)' not in sync_source
+
+    ui_source = ANDROID_UI_PATCH.read_text(encoding="utf-8")
+    assert "shell.addEventListener('pointerdown'" in ui_source
+    assert "shell.setPointerCapture(pointerId)" in ui_source
+    assert "shell.addEventListener('pointercancel',function(){if(axis==='x')finishSwipe(lastX-startX,lastY-startY)" in ui_source
+    assert "shell.addEventListener('touchstart'" in ui_source
+    assert "track.addEventListener('pointerdown'" not in ui_source
+
+
 def main() -> None:
     module = load_patch_module()
     synthetic_alpha_regression(module)
     runtime_regression(module)
     workflow_order_regression()
     metadata_contract_regression(module)
+    issue_40_regression()
     print("Overlay visible-height regression checks passed.")
 
 
