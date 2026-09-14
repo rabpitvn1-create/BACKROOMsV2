@@ -63,8 +63,6 @@ object CanonFallbackPolicy {
     val reason = when {
       meta -> "meta_turn"
       !repaired -> "repair_not_attempted"
-      level != 0 -> "level_not_zero"
-      !explorationAction -> "not_level0_exploration_action"
       combatIntent -> "combat_intent"
       combatBefore -> "combat_active_before"
       combatCandidate -> "combat_active_candidate"

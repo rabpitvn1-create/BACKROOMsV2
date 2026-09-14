@@ -47,11 +47,17 @@ prepared_new = '''    val preparedCore = synchronizeValidatedLuciaCharacter(core
 '''
 facade = replace_once(facade, prepared_old, prepared_new, "validated candidate pending trace")
 
-# Other finalizers may insert authoritative commands immediately before commit. Anchor on the
-# settled commit itself so diagnostics observe the exact command list that is actually committed.
-commit_old = '''    val committed = TurnCoordinator.commit(pending.state, commands)
+# ActionRuntime finalizers wrap the settled command commit to apply deterministic progression/time
+# semantics before returning the authoritative TurnResult. The same commitActionRuntime call exists
+# in another runtime path, so anchor this trace to the validated-candidate time-advance block only.
+commit_old = '''    commands += timeAdvanceCommand(turnId, action)
+
+    val committed = commitActionRuntime(pending.state, commands, action, turnId)
+    if (committed.error != null) {
 '''
-commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommands", JSONArray().apply {
+commit_new = '''    commands += timeAdvanceCommand(turnId, action)
+
+    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommands", JSONArray().apply {
       commands.forEach { command -> put(JSONObject()
         .put("commandId", command.commandId)
         .put("turnId", command.turnId)
@@ -59,10 +65,11 @@ commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "g
         .put("source", command.source.name)
         .put("type", command::class.java.simpleName)) }
     })
-    val committed = TurnCoordinator.commit(pending.state, commands)
+    val committed = commitActionRuntime(pending.state, commands, action, turnId)
     RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "gameCoreCommitResult", JSONObject()
       .put("error", committed.error ?: "")
       .put("state", JSONObject(GameStateCodec.encode(committed.state))))
+    if (committed.error != null) {
 '''
 facade = replace_once(facade, commit_old, commit_new, "validated candidate commit trace")
 
@@ -94,4 +101,4 @@ for marker in (
         raise RuntimeError("GameCore debug trace marker missing: " + marker)
 
 FACADE.write_text(facade, encoding="utf-8")
-print("GameCore runtime debug trace installed: raw/normalized story state, pending state, settled command list, commit result and synchronized final state.")
+print("GameCore runtime debug trace installed: raw/normalized story state, pending state, validated ActionRuntime command list, commit result and synchronized final state.")
