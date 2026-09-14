@@ -64,7 +64,17 @@ commit_new = '''    RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "g
       .put("error", committed.error ?: "")
       .put("state", JSONObject(GameStateCodec.encode(committed.state))))
 '''
-facade = replace_once(facade, commit_old, commit_new, "validated candidate commit trace")
+if facade.count(commit_old) != 1:
+    diagnostic = [
+        f"{index + 1}: {line}"
+        for index, line in enumerate(facade.splitlines())
+        if "TurnCoordinator" in line or "committed" in line or "commands" in line
+    ]
+    raise RuntimeError(
+        "validated candidate commit trace: settled GameCore anchor not found; candidates:\n"
+        + "\n".join(diagnostic[-80:])
+    )
+facade = facade.replace(commit_old, commit_new, 1)
 
 sync_old = '''    val synchronized = syncLegacy(candidate, committed.state, incrementTurn = false)
     logger.log(PipelineLogEvent("GEMINI_COMMIT", turnId = turnId, source = CommandSource.GEMINI, details = mapOf("commands" to commands.size.toString(), "inventoryLocked" to inventoryLocked.toString())))
