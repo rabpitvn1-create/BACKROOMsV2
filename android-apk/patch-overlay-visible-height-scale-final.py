@@ -93,6 +93,45 @@ def patch_main_runtime(source: str) -> str:
     return source
 
 
+def patch_navigation_return(source: str) -> str:
+    if "ANDROID_MANAGEMENT_RETURN_V1" in source:
+        raise RuntimeError("Management return finalizer was applied more than once")
+
+    page_anchor = (
+        "gameplay.appendChild(game);management.appendChild(side);track.appendChild(gameplay);"
+        "track.appendChild(management);shell.appendChild(track);"
+    )
+    page_replacement = page_anchor + """
+  /* ANDROID_MANAGEMENT_RETURN_V1 */
+  const returnButton=document.createElement('button');
+  returnButton.type='button';returnButton.id='managementReturnButton';returnButton.className='management-return-button';
+  returnButton.textContent='← GAME MASTER';returnButton.setAttribute('aria-label','Quay lại Game Master');
+  returnButton.addEventListener('click',function(){setPage(0);});
+  side.insertBefore(returnButton,side.firstChild);
+"""
+    if source.count(page_anchor) != 1:
+        raise RuntimeError(
+            f"Management return page anchor expected once, found {source.count(page_anchor)}"
+        )
+    source = source.replace(page_anchor, page_replacement, 1)
+
+    pointer_anchor = (
+        "track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}"
+        "pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';});"
+    )
+    pointer_replacement = (
+        "track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}"
+        "pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';"
+        "try{track.setPointerCapture(pointerId)}catch(_){};});"
+    )
+    if source.count(pointer_anchor) != 1:
+        raise RuntimeError(
+            f"Management return pointer anchor expected once, found {source.count(pointer_anchor)}"
+        )
+    source = source.replace(pointer_anchor, pointer_replacement, 1)
+    return source
+
+
 def runtime_style() -> str:
     return r'''<style id="overlayVisibleHeightScaleStyle">
 /* OVERLAY_VISIBLE_HEIGHT_SCALE_V1 */
@@ -106,6 +145,25 @@ def runtime_style() -> str:
   object-fit:contain!important;
   clip:auto!important;
   clip-path:none!important;
+}
+/* ANDROID_MANAGEMENT_RETURN_V1 */
+.management-return-button{
+  position:sticky;
+  top:4px;
+  z-index:95;
+  align-self:flex-start;
+  min-height:36px;
+  margin:0 0 var(--ui-gap) 0;
+  padding:8px 12px;
+  border:1px solid #30373e;
+  border-radius:var(--panel-radius);
+  background:#11161a;
+  color:#e7eef2;
+  font-family:var(--gameplay-font);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.08em;
+  touch-action:manipulation;
 }
 </style>
 '''
@@ -162,6 +220,7 @@ def patch_index_runtime(source: str, metadata: dict[str, object]) -> str:
         raise RuntimeError("Visible-height overlay finalizer was applied more than once")
     if "</head>" not in source or "</body>" not in source:
         raise RuntimeError("Overlay runtime insertion anchors are missing")
+    source = patch_navigation_return(source)
     source = source.replace("</head>", runtime_style() + "</head>", 1)
     source = source.replace("</body>", runtime_script(metadata) + "</body>", 1)
     return source
@@ -180,6 +239,10 @@ def main() -> None:
         raise RuntimeError("Entity renderer still clips overlays")
     for marker in (
         "OVERLAY_VISIBLE_HEIGHT_SCALE_V1",
+        "ANDROID_MANAGEMENT_RETURN_V1",
+        "managementReturnButton",
+        "returnButton.addEventListener('click',function(){setPage(0);})",
+        "track.setPointerCapture(pointerId)",
         "width:auto!important",
         "max-width:none!important",
         "height:var(--overlay-canvas-height)!important",
@@ -187,7 +250,7 @@ def main() -> None:
         "MutationObserver",
     ):
         if marker not in index_source:
-            raise RuntimeError("Visible-height overlay runtime marker missing: " + marker)
+            raise RuntimeError("Final Android runtime marker missing: " + marker)
 
     METADATA.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     MAIN.write_text(main_source, encoding="utf-8")
@@ -195,7 +258,8 @@ def main() -> None:
     print(
         "Visible-height overlay scale finalized: "
         f"male={BASELINES['male']:.2f}, female={BASELINES['female']:.2f}, "
-        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}."
+        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}; "
+        "Management return control and pointer capture verified."
     )
 
 
