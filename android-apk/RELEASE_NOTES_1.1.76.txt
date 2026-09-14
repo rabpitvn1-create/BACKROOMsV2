@@ -1,0 +1,7 @@
+Backroom 1.1.76 Debug
+
+- Mở rộng canon fallback an toàn sau repair: lượt vô hại ngoài Level 0 và hành động không phải Explore có thể phục hồi khi không có authoritative mutation, trong khi combat, encounter, transition và consequential roll vẫn fail-closed.
+- Hoàn thiện runtime debug export/tracing cho provider routing, writer/repair, audit, Game State Core, combat và UI bridge; debug JSON được giữ best-effort để không làm hỏng compile/runtime chính.
+- Chuẩn hóa Character/Entity overlay theo chiều cao thị giác với metadata alpha-bound, không thu nhỏ theo chiều ngang; baseline hiện tại male=0.97, female=0.93, entity=0.97.
+- Bổ sung regression cho canon fallback, runtime debug export và visible-height overlay scale; giữ nguyên các kiểm tra Android UI, Lucia story gate và packaged New Game startup.
+- Phiên bản Android: versionCode 78 / versionName 1.1.76.
