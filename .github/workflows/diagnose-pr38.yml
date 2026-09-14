@@ -1,0 +1,98 @@
+name: Diagnose PR 38 post-patch checks
+
+on:
+  push:
+    branches:
+      - fix/canon-fallback-safe-turns
+    paths:
+      - '.github/workflows/diagnose-pr38.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/canon-fallback-safe-turns
+      - name: Prepare settled runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow
+          python android-apk/sync-kai-sru-assets.py
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
+          for script in "${scripts[@]}"; do python3 "android-apk/$script" >/dev/null; done
+      - name: Report every post-patch assertion
+        shell: bash
+        run: |
+          set -uo pipefail
+          fail=0
+          check() { label="$1"; shift; if "$@"; then echo "PASS $label"; else echo "FAIL $label"; fail=1; fi; }
+          present() { label="$1"; needle="$2"; file="$3"; if grep -Fq -- "$needle" "$file"; then echo "PASS $label"; else echo "FAIL $label :: missing $needle"; fail=1; fi; }
+          absent() { label="$1"; needle="$2"; file="$3"; if grep -Fq -- "$needle" "$file"; then echo "FAIL $label :: found $needle"; fail=1; else echo "PASS $label"; fi; }
+          MAIN=android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          CORE=android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt
+          HTML=android-apk/app/src/main/assets/index.html
+          present haiku_api 'BuildConfig.HAIKU_API' "$MAIN"
+          present haiku_base 'BuildConfig.HAIKU_BASE_URL' "$MAIN"
+          present haiku_model 'BuildConfig.HAIKU_MODEL' "$MAIN"
+          present haiku_text 'private String haikuText' "$MAIN"
+          present audit_route 'parseModelJson(auditText(prompt, excludedWorker))' "$MAIN"
+          present kai_entity 'file:///android_asset/kai_entity_overlay.png' "$MAIN"
+          present address_lock 'PLAYER ADDRESS HARD LOCK' "$MAIN"
+          present normalize_address 'normalizePlayerAddress(reply)' "$MAIN"
+          present display_geometry 'ANDROID_DISPLAY_GEOMETRY_V1' "$MAIN"
+          present launch_safe 'ANDROID_DISPLAY_LAUNCH_SAFE_V2' "$MAIN"
+          present cutout 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' "$MAIN"
+          present display_mode 'safeApplyAndroidDisplayMode()' "$MAIN"
+          present geometry_insets 'safePushAndroidDisplayGeometry(insets)' "$MAIN"
+          present kai_shift 'ANDROID_UI_KAI_SHIFT_RIGHT' "$MAIN"
+          present rounded_corner 'getRoundedCorner(position)' "$MAIN"
+          present level_lock 'LEVEL TRANSITION STATE LOCK' "$MAIN"
+          present narrative_guard 'levelNarrativeStateIssuesAndroid' "$MAIN"
+          present narrative_mismatch 'level_narrative_state_mismatch' "$MAIN"
+          present parking 'bãi đỗ xe' "$MAIN"
+          present combat_bridge 'requireGameCore().processCombat(stateJson, actionKind, action)' "$MAIN"
+          present combat_core 'fun processCombat(legacyStateJson: String, actionKind: String, action: String)' "$CORE"
+          present combat_hud 'PRESSURE_COMBAT_HUD_V1' "$HTML"
+          present edge_ui 'ANDROID_EDGE_UI_V1' "$HTML"
+          present swipe_ui 'ANDROID_SWIPE_UI_V1' "$HTML"
+          present three_actions 'ANDROID_THREE_ACTIONS_V1' "$HTML"
+          present gameplay_presentation 'ANDROID_GAMEPLAY_PRESENTATION_V2' "$HTML"
+          present storytelling 'STORYTELLING_CHRONOLOGICAL_FRAME_V5' "$HTML"
+          present swipe_gesture 'ANDROID_SWIPE_GESTURE_V2' "$HTML"
+          present radius '--android-radius-tl' "$HTML"
+          present ime_bottom '--android-ime-bottom' "$HTML"
+          present shell_ime 'height:calc(100dvh - var(--android-ime-bottom));min-height:0' "$HTML"
+          present native_ime 'WindowInsets.Type.ime()' "$MAIN"
+          present adjust_resize 'android:windowSoftInputMode="adjustResize"' android-apk/app/src/main/AndroidManifest.xml
+          present action_grid 'grid-template-columns:repeat(3,minmax(0,1fr))' "$HTML"
+          present snapshot_data 'data:image/webp;base64,' "$HTML"
+          present gameplay_font 'font-family:var(--gameplay-font)' "$HTML"
+          present storytelling_header "header.textContent='Storytelling'" "$HTML"
+          present play_font "font-family:'BackroomPlay'" "$HTML"
+          present gm_choices 'GM_CHOICES_FREEDOM_V1' "$HTML"
+          present submit_freedom '@JavascriptInterface public void submitFreedom' "$MAIN"
+          present sanitize_choices 'sanitizeGmChoices' "$MAIN"
+          absent luna_marker 'LUNA_' "$MAIN"
+          absent luna_fallback 'Luna fallback' "$MAIN"
+          absent old_story_frame 'GAME_MASTER_STORYTELLING_FRAME_V1' "$HTML"
+          absent old_play_font 'GAME_MASTER_PLAY_FONT_V1' "$HTML"
+          absent old_combat_typography 'COMBAT_TYPOGRAPHY_V1' "$HTML"
+          absent true_turn_v2 'TRUE_TURN_COMBAT_UI_V2' "$HTML"
+          absent auto_party_style 'autoPartyCombatStyle' "$HTML"
+          absent pressure_style 'pressureCombatStyle' "$HTML"
+          absent mobile_swipe 'MOBILE_SWIPE_UI_V1' "$HTML"
+          absent pr3_header 'PR3_HEADER_SAFE_INSET' "$HTML"
+          absent step2_actions 'STEP2_THREE_ACTIONS' "$HTML"
+          absent svg_action '<svg class="action-icon' "$HTML"
+          check git_diff_check git diff --check
+          check android_ui node android-apk/test-android-ui-regressions.mjs "$HTML"
+          check gm_choices_test node android-apk/test-gm-choices-freedom.mjs android-apk
+          check lucia_gate_test node android-apk/test-lucia-story-gate.mjs android-apk
+          check canon_fallback_test node android-apk/test-low-risk-canon-fallback.mjs android-apk
+          check overlay_scale_test python3 android-apk/test-overlay-visible-height-scale.py
+          exit "$fail"
