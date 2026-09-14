@@ -128,7 +128,8 @@ jobs:
           grep -Fq 'BuildConfig.HAIKU_BASE_URL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'BuildConfig.HAIKU_MODEL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'private String haikuText' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'parseModelJson(auditText(prompt, excludedWorker))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'String auditRaw = auditText(prompt, excludedWorker);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'JSONObject result = parseModelJson(auditRaw);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
           grep -Fq 'buildConfigField "String", "HAIKU_BASE_URL"' android-apk/app/build.gradle
           grep -Fq 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
