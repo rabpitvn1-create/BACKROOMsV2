@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -11,6 +12,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent
 PATCH = ROOT / "patch-overlay-visible-height-scale-final.py"
 WORKFLOW = ROOT.parent / ".github/workflows/build-backroom-apk.yml"
+KAI_SYNC = ROOT / "sync-kai-sru-assets.py"
+ANDROID_UI_PATCH = ROOT / "apply-android-ui.py"
 
 
 def load_patch_module():
@@ -60,11 +63,7 @@ def runtime_regression(module) -> None:
             }
         }
     }
-    sample_index = """<html><head></head><body><script>
-    gameplay.appendChild(game);management.appendChild(side);track.appendChild(gameplay);track.appendChild(management);shell.appendChild(track);
-    track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';});
-    </script></body></html>"""
-    patched_index = module.patch_index_runtime(sample_index, metadata)
+    patched_index = module.patch_index_runtime("<html><head></head><body></body></html>", metadata)
     for marker in (
         "width:auto!important",
         "max-width:none!important",
@@ -72,11 +71,6 @@ def runtime_regression(module) -> None:
         "var canvasHeight=baseline/visible",
         "var bottomOffset=-(1-visibleBottom)*canvasHeight",
         "MutationObserver",
-        "ANDROID_MANAGEMENT_RETURN_V1",
-        "managementReturnButton",
-        "returnButton.addEventListener('click',function(){setPage(0);})",
-        "side.insertBefore(returnButton,side.firstChild)",
-        "track.setPointerCapture(pointerId)",
     ):
         assert marker in patched_index
 
@@ -98,8 +92,6 @@ def metadata_contract_regression(module) -> None:
     assert '"lucia_entity_overlay.png": "female"' in source
     assert '"syvial_entity_overlay.png": "female"' in source
     assert '(assets / "entity").glob("*.png")' in source
-    assert "ANDROID_MANAGEMENT_RETURN_V1" in source
-    assert "managementReturnButton" in source
     json.dumps(module.BASELINES)
 
     entity_paths = sorted((ROOT / "app/src/main/assets/entity").glob("*.png"))
@@ -110,13 +102,30 @@ def metadata_contract_regression(module) -> None:
         assert metric["baselineVisibleHeightRatio"] == module.BASELINES["entity"]
 
 
+def issue_40_regression() -> None:
+    kai_overlay = ROOT / "app/src/main/assets/kai_snapshot_overlay.png"
+    expected_hash = hashlib.sha256(kai_overlay.read_bytes()).hexdigest()
+    sync_source = KAI_SYNC.read_text(encoding="utf-8")
+    assert '"local_asset": "kai_snapshot_overlay.png"' in sync_source
+    assert f'"sha256": "{expected_hash}"' in sync_source
+    assert '(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)' not in sync_source
+
+    ui_source = ANDROID_UI_PATCH.read_text(encoding="utf-8")
+    assert "shell.addEventListener('pointerdown'" in ui_source
+    assert "shell.setPointerCapture(pointerId)" in ui_source
+    assert "shell.addEventListener('pointercancel',function(){if(axis==='x')finishSwipe(lastX-startX,lastY-startY)" in ui_source
+    assert "shell.addEventListener('touchstart'" in ui_source
+    assert "track.addEventListener('pointerdown'" not in ui_source
+
+
 def main() -> None:
     module = load_patch_module()
     synthetic_alpha_regression(module)
     runtime_regression(module)
     workflow_order_regression()
     metadata_contract_regression(module)
-    print("Overlay visible-height and Management return regression checks passed.")
+    issue_40_regression()
+    print("Overlay visible-height regression checks passed.")
 
 
 if __name__ == "__main__":

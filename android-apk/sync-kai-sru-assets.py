@@ -14,7 +14,7 @@ AVATARS = ASSETS / "avatars"
 
 SOURCES = {
     "snapshot": {
-        "file_id": "1IGPrCy1mVjnFeEz7jSFS9RZrlbm-HEnF",
+        "local_asset": "kai_snapshot_overlay.png",
         "sha256": "b41c5133dac3c21b6623a3c0581f5bda795fc11498959e67466ebe60f6c4e8c7",
         "size": (1086, 1448),
     },
@@ -46,7 +46,14 @@ def download_drive_file(file_id: str) -> bytes:
 
 def verified_source(label: str) -> bytes:
     spec = SOURCES[label]
-    data = download_drive_file(spec["file_id"])
+    local_asset = spec.get("local_asset")
+    if local_asset:
+        source_path = ASSETS / local_asset
+        if not source_path.is_file():
+            raise RuntimeError(f"Kai {label} committed source is missing: {source_path}")
+        data = source_path.read_bytes()
+    else:
+        data = download_drive_file(spec["file_id"])
     digest = hashlib.sha256(data).hexdigest()
     if digest != spec["sha256"]:
         raise RuntimeError(
@@ -69,7 +76,6 @@ snapshot = verified_source("snapshot")
 snapshot_image = validate_image(snapshot, "snapshot", "PNG", SOURCES["snapshot"]["size"])
 if "A" not in snapshot_image.getbands():
     raise RuntimeError("Kai snapshot overlay must preserve an alpha channel")
-(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)
 
 entity = verified_source("entity")
 entity_image = validate_image(entity, "entity", "PNG", SOURCES["entity"]["size"])

@@ -359,7 +359,7 @@ canonical_css = r'''
 }
 html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none;background:#080a0c}
 body{max-width:100vw;border-top-left-radius:var(--android-radius-tl);border-top-right-radius:var(--android-radius-tr);border-bottom-right-radius:var(--android-radius-br);border-bottom-left-radius:var(--android-radius-bl);overflow:hidden}
-.shell{width:100%;height:calc(100dvh - var(--android-ime-bottom));min-height:0;padding:0;overflow:hidden;background:#080a0c}
+.shell{width:100%;height:calc(100dvh - var(--android-ime-bottom));min-height:0;padding:0;overflow:hidden;background:#080a0c;touch-action:pan-y;overscroll-behavior-x:contain}
 .page-track{display:flex;width:100%;height:100%;transform:translate3d(0,0,0);transition:transform .24s cubic-bezier(.2,.72,.2,1);will-change:transform;touch-action:pan-y;overscroll-behavior-x:contain}
 .page-track.show-management{transform:translate3d(-100%,0,0)}
 .app-page{flex:0 0 100%;width:100%;min-width:0;height:100%;overflow-x:hidden;background:#080a0c}
@@ -469,19 +469,20 @@ swipe_script = r'''
   function finishSwipe(dx,dy){if(Math.abs(dx)<42||Math.abs(dx)<=Math.abs(dy)*1.05)return;if(dx<0&&page===0)setPage(1);else if(dx>0&&page===1)setPage(0)}
   function installPointerSwipe(){
     let pointerId=null,startX=0,startY=0,lastX=0,lastY=0,axis='';
-    function reset(){pointerId=null;axis='';}
-    track.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';});
-    track.addEventListener('pointermove',function(e){if(pointerId!==e.pointerId)return;lastX=e.clientX;lastY=e.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
-    track.addEventListener('pointerup',function(e){if(pointerId!==e.pointerId)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();});
-    track.addEventListener('pointercancel',reset);
+    function reset(){if(pointerId!==null&&shell.hasPointerCapture&&shell.hasPointerCapture(pointerId)){try{shell.releasePointerCapture(pointerId)}catch(ignore){}}pointerId=null;axis='';}
+    function complete(){if(pointerId===null)return;const dx=lastX-startX,dy=lastY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();}
+    shell.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'||interactive(e.target)){reset();return}pointerId=e.pointerId;startX=lastX=e.clientX;startY=lastY=e.clientY;axis='';if(shell.setPointerCapture){try{shell.setPointerCapture(pointerId)}catch(ignore){}}});
+    shell.addEventListener('pointermove',function(e){if(pointerId!==e.pointerId)return;lastX=e.clientX;lastY=e.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
+    shell.addEventListener('pointerup',function(e){if(pointerId!==e.pointerId)return;lastX=e.clientX;lastY=e.clientY;complete();});
+    shell.addEventListener('pointercancel',function(){if(axis==='x')finishSwipe(lastX-startX,lastY-startY);reset();});
   }
   function installTouchSwipe(){
     let tracking=false,startX=0,startY=0,lastX=0,lastY=0,axis='';
     function reset(){tracking=false;axis='';}
-    track.addEventListener('touchstart',function(e){if(e.touches.length!==1||interactive(e.target)){reset();return}const t=e.touches[0];startX=lastX=t.clientX;startY=lastY=t.clientY;axis='';tracking=true},{passive:true});
-    track.addEventListener('touchmove',function(e){if(!tracking||e.touches.length!==1)return;const t=e.touches[0];lastX=t.clientX;lastY=t.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
-    track.addEventListener('touchend',function(e){if(!tracking||!e.changedTouches.length){reset();return}const t=e.changedTouches[0],dx=t.clientX-startX,dy=t.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();},{passive:true});
-    track.addEventListener('touchcancel',reset,{passive:true});
+    shell.addEventListener('touchstart',function(e){if(e.touches.length!==1||interactive(e.target)){reset();return}const t=e.touches[0];startX=lastX=t.clientX;startY=lastY=t.clientY;axis='';tracking=true},{passive:true});
+    shell.addEventListener('touchmove',function(e){if(!tracking||e.touches.length!==1)return;const t=e.touches[0];lastX=t.clientX;lastY=t.clientY;const dx=lastX-startX,dy=lastY-startY;if(!axis&&(Math.abs(dx)>8||Math.abs(dy)>8))axis=Math.abs(dx)>Math.abs(dy)*1.05?'x':'y';if(axis==='x'&&e.cancelable)e.preventDefault();},{passive:false});
+    shell.addEventListener('touchend',function(e){if(!tracking||!e.changedTouches.length){reset();return}const t=e.changedTouches[0],dx=t.clientX-startX,dy=t.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();},{passive:true});
+    shell.addEventListener('touchcancel',function(){if(tracking&&axis==='x')finishSwipe(lastX-startX,lastY-startY);reset();},{passive:true});
   }
   if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe();
   const detailBack=document.getElementById('characterInventoryBack');if(detailBack)detailBack.textContent='Thu gọn thông tin';
