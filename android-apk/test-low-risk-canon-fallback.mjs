@@ -33,3 +33,4 @@ requireContract(main.includes('canon_safe_fallback'), 'fallback snapshot marker 
 requireContract(main.includes('throw new Exception("Lượt chơi không vượt qua kiểm tra canon; state không được thay đổi.")'), 'fail-closed branch missing');
 
 console.log('Low-risk canon fallback integration regression checks passed.');
+await import('./test-runtime-debug-export.mjs');
