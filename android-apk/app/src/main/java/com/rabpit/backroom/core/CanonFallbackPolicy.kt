@@ -13,7 +13,6 @@ object CanonFallbackPolicy {
   )
 
   @JvmStatic
-  @Suppress("UNUSED_PARAMETER")
   fun isEligible(
     before: JSONObject,
     candidate: JSONObject,
@@ -22,19 +21,85 @@ object CanonFallbackPolicy {
     action: String,
     meta: Boolean,
     repaired: Boolean,
-  ): Boolean {
-    if (meta || !repaired) return false
-    if (hasCombatIntent(action)) return false
-    if (combatActive(before) || combatActive(candidate) || entityPresent(before)) return false
-    if (transitionReady(before) || transitionReady(candidate)) return false
-    if (hasDangerousRollConsequence(rolls)) return false
+  ): Boolean = diagnostics(before, candidate, generated, rolls, action, meta, repaired).optBoolean("eligible", false)
 
-    // Recovery discards the repaired reply/ops and restores the pre-turn state. Rejected model
-    // proposals therefore cannot make this branch unsafe by themselves. Only consequences that
-    // actually survived the reducer, locked dice, encounter/combat state, or an exit gate block it.
-    if (dangerousStateChanged(before, candidate)) return false
-    return true
+  /**
+   * Explains every gate used by [isEligible]. This method is observational only: it does not
+   * mutate state, consume RNG, or loosen the fail-closed behavior.
+   */
+  @JvmStatic
+  fun diagnostics(
+    before: JSONObject,
+    candidate: JSONObject,
+    generated: JSONObject,
+    rolls: JSONObject,
+    action: String,
+    meta: Boolean,
+    repaired: Boolean,
+  ): JSONObject {
+    val level = currentLevel(before)
+    val explorationAction = StoryProgressionPolicy.isLevel0ExplorationAction(action)
+    val combatIntent = hasCombatIntent(action)
+    val combatBefore = combatActive(before)
+    val combatCandidate = combatActive(candidate)
+    val entityBefore = entityPresent(before)
+    val entityCandidate = entityPresent(candidate)
+    val transitionBefore = transitionReady(before)
+    val transitionCandidate = transitionReady(candidate)
+    val dangerousRoll = hasDangerousRollConsequence(rolls)
+    val changedTopLevel = changedTopLevelKeys(before, candidate)
+    val changedFlagRoots = changedFlagRoots(before, candidate)
+    val dangerousChangedTopLevel = changedTopLevel.filter { it != "location" && it != "flags" }
+    val dangerousChangedFlags = changedFlagRoots.filter { root ->
+      when {
+        root == "lastRolls" -> false
+        root == "madGod" && emptyJsonObject(before.optJSONObject("flags")?.opt(root)) && emptyJsonObject(candidate.optJSONObject("flags")?.opt(root)) -> false
+        root in harmlessFlagRoots -> false
+        else -> true
+      }
+    }
+    val dangerousState = dangerousChangedTopLevel.isNotEmpty() || dangerousChangedFlags.isNotEmpty()
+
+    val reason = when {
+      meta -> "meta_turn"
+      !repaired -> "repair_not_attempted"
+      combatIntent -> "combat_intent"
+      combatBefore -> "combat_active_before"
+      combatCandidate -> "combat_active_candidate"
+      entityBefore -> "entity_present_before"
+      transitionBefore -> "transition_ready_before"
+      transitionCandidate -> "transition_ready_candidate"
+      dangerousRoll -> "consequential_roll"
+      dangerousState -> "accepted_authoritative_state_change"
+      else -> "eligible"
+    }
+    val eligible = reason == "eligible"
+
+    return JSONObject()
+      .put("eligible", eligible)
+      .put("reason", reason)
+      .put("meta", meta)
+      .put("repaired", repaired)
+      .put("currentLevel", level)
+      .put("levelZero", level == 0)
+      .put("level0ExplorationAction", explorationAction)
+      .put("combatIntent", combatIntent)
+      .put("combatActiveBefore", combatBefore)
+      .put("combatActiveCandidate", combatCandidate)
+      .put("entityPresentBefore", entityBefore)
+      .put("entityPresentCandidate", entityCandidate)
+      .put("transitionReadyBefore", transitionBefore)
+      .put("transitionReadyCandidate", transitionCandidate)
+      .put("dangerousRollConsequence", dangerousRoll)
+      .put("dangerousStateChanged", dangerousState)
+      .put("changedTopLevelKeys", JSONArray(changedTopLevel.sorted()))
+      .put("changedFlagRoots", JSONArray(changedFlagRoots.sorted()))
+      .put("dangerousChangedTopLevelKeys", JSONArray(dangerousChangedTopLevel.sorted()))
+      .put("dangerousChangedFlagRoots", JSONArray(dangerousChangedFlags.sorted()))
+      .put("proposedOpsCount", generated.optJSONArray("ops")?.length() ?: 0)
   }
+
+  private fun currentLevel(state: JSONObject): Int = state.optJSONObject("level")?.optInt("number", 0) ?: 0
 
   private fun combatActive(state: JSONObject): Boolean =
     state.optJSONObject("combat")?.optBoolean("active", false) == true
@@ -75,28 +140,20 @@ object CanonFallbackPolicy {
   private fun rollSucceeded(rolls: JSONObject, key: String): Boolean =
     rolls.optJSONObject(key)?.optBoolean("success", false) == true
 
-  private fun dangerousStateChanged(before: JSONObject, candidate: JSONObject): Boolean {
-    val topLevelKeys = mutableSetOf<String>()
-    before.keys().forEachRemaining(topLevelKeys::add)
-    candidate.keys().forEachRemaining(topLevelKeys::add)
-    for (key in topLevelKeys) {
-      if (key == "flags" || key == "location") continue
-      if (!jsonEqual(before.opt(key), candidate.opt(key))) return true
-    }
+  private fun changedTopLevelKeys(before: JSONObject, candidate: JSONObject): Set<String> {
+    val keys = linkedSetOf<String>()
+    before.keys().forEachRemaining(keys::add)
+    candidate.keys().forEachRemaining(keys::add)
+    return keys.filterTo(linkedSetOf()) { !jsonEqual(before.opt(it), candidate.opt(it)) }
+  }
 
+  private fun changedFlagRoots(before: JSONObject, candidate: JSONObject): Set<String> {
     val beforeFlags = before.optJSONObject("flags") ?: JSONObject()
     val candidateFlags = candidate.optJSONObject("flags") ?: JSONObject()
-    val roots = mutableSetOf<String>()
+    val roots = linkedSetOf<String>()
     beforeFlags.keys().forEachRemaining(roots::add)
     candidateFlags.keys().forEachRemaining(roots::add)
-    return roots.any { root ->
-      when {
-        root == "lastRolls" -> false
-        root == "madGod" && emptyJsonObject(beforeFlags.opt(root)) && emptyJsonObject(candidateFlags.opt(root)) -> false
-        root in harmlessFlagRoots -> false
-        else -> !jsonEqual(beforeFlags.opt(root), candidateFlags.opt(root))
-      }
-    }
+    return roots.filterTo(linkedSetOf()) { !jsonEqual(beforeFlags.opt(it), candidateFlags.opt(it)) }
   }
 
   private fun emptyJsonObject(value: Any?): Boolean =

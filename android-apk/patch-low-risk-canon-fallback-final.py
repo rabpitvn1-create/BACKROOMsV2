@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -47,8 +48,6 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
 submit = submit.replace(failure, replacement, 1)
 text = text[:submit_start] + submit + text[submit_end:]
 
-# patch-lucia-story-gate-final.py injects these operation examples into Java string
-# literals. Preserve Java-level escaping after Python evaluates the generator string.
 lucia_prompt_tokens = {
     'lucia_story{stage:"first_contact"}': 'lucia_story{stage:\\"first_contact\\"}',
     'lucia_story{stage:"join"}': 'lucia_story{stage:\\"join\\"}',
@@ -75,3 +74,17 @@ print(
     "Low-risk canon fallback applied after the settled runtime: only harmless Level 0 "
     "exploration can recover after writer and repair canon failures; Lucia prompt Java escaping verified."
 )
+
+# The workflow already executes this file as its terminal runtime authority. Delegate the debug
+# finalizers here so they always run after canon/story/combat/UI have settled and cannot be
+# overwritten by a later legacy patch.
+for finalizer in (
+    "patch-runtime-debug-export-final.py",
+    "patch-runtime-debug-session-init-final.py",
+    "patch-runtime-debug-provider-trace-final.py",
+    "patch-runtime-debug-turn-trace-adaptive-final.py",
+    "patch-runtime-debug-fallback-compat-final.py",
+    "patch-runtime-debug-core-trace-final.py",
+    "patch-runtime-debug-ui-events-final.py",
+):
+    runpy.run_path(str(ROOT / finalizer), run_name="__main__")
