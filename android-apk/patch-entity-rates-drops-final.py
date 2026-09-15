@@ -114,6 +114,13 @@ facade = once(facade, '  fun startCombatState(legacyStateJson: String, entityKey
   }
 
   fun startCombatState(legacyStateJson: String, entityKey: String): String {''')
+# Entity reward/queue projection may update the returned Resolution reply/state after
+# CombatTurnAuthority has already made the combat decision. Keep only this adapter value mutable.
+facade = once(
+    facade,
+    '    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n',
+    '    var resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n',
+)
 facade = once(facade, '    var next = resolution.state\n', '''    var next = resolution.state
     if (resolution.entityDestroyed) {
       val reward = EntityDrops.award(next, CombatRuntime.active(current)!!.encounterId)
