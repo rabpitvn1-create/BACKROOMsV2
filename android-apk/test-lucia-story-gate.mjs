@@ -6,6 +6,7 @@ const workflow = fs.readFileSync('.github/workflows/build-backroom-apk.yml', 'ut
 const main = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
 const core = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt'), 'utf8');
 const story = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/StoryProgressionPolicy.kt'), 'utf8');
+const storyFinalizer = fs.readFileSync(path.join(root, 'patch-lucia-story-gate-final.py'), 'utf8');
 
 function requireContract(value, message) {
   if (!value) throw new Error(message);
@@ -85,8 +86,22 @@ const auditPrompt = methodBodyBySignature(main, 'private JSONObject runAudit(', 
 requireContract(auditPrompt.includes('AUTHORITATIVE STORY DIRECTIVE:'), 'auditor does not receive the authoritative story directive');
 requireContract(auditPrompt.includes('Do not report it as a model canon conflict'), 'auditor is not told to distinguish engine story delta from model delta');
 
+// The settled runtime must normalize the generated candidate before its first canon-risk decision.
+// The finalizer source separately asserts the repair-path insertion because later terminal patches may
+// rewrite formatting around that branch while preserving the same call semantics.
 const normalizeCall = 'StoryProgressionPolicy.normalizeCandidate(before, candidateState, action)';
-requireContract(main.split(normalizeCall).length - 1 >= 2, 'story preview must normalize both initial and repaired candidates before canon risk');
+const normalizeIndex = main.indexOf(normalizeCall);
+const riskIndex = main.indexOf('validatedTurnRisk(before, candidateState, generated)');
+requireContract(normalizeIndex >= 0, 'settled runtime missing story preview normalization');
+requireContract(riskIndex >= 0 && normalizeIndex < riskIndex, 'story preview must run before initial canon risk');
+for (const marker of [
+  'first_normalize = (',
+  'repair_normalize = (',
+  '"initial story preview"',
+  '"repair story preview"',
+]) {
+  requireContract(storyFinalizer.includes(marker), `story finalizer repair-path contract missing: ${marker}`);
+}
 
 for (const marker of [
   '@JvmStatic\n  fun directive(',
