@@ -34,11 +34,15 @@ assert.match(classifier, /return "EXPLORE"/);
 assert.doesNotMatch(classifier, /LiteRT|TFLite|TensorFlow|\.tflite|GameState\.world|HttpURLConnection|https?:\/\//);
 assert.doesNotMatch(classifier, /ActionKind\.FREEDOM/);
 
-// Final interaction authority: only EXPLORE may start a new Entity encounter.
-// SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
-// Pool membership and the 3% rule live in Kotlin EntityEncounterPolicy; Java supplies eligibility only.
-assert.match(java, /EntityEncounterPolicy\.roll\(\s*exploreAction && entityAllowed && !emuProgressionFixture,\s*GAME_RNG\)/);
+// Final gameplay RNG authority belongs to Kotlin. MainActivity may pass Android debug-fixture flags
+// and the RNG instance, but must not contain probability tables, an Entity pool or direct Entity rolls.
+assert.match(java, /GameplayRollPolicy\.roll\(/);
+assert.match(java, /state\.toString\(\), actionKind, action, meta, GAME_RNG/);
+assert.match(java, /getIntent\(\)\.getBooleanExtra\("emuLevel1Progression", false\)/);
+assert.match(java, /getIntent\(\)\.getBooleanExtra\("emuLevel06Traversal", false\)/);
+assert.doesNotMatch(java, /EntityEncounterPolicy\.roll\(/);
 assert.doesNotMatch(java, /String\[\]\s+(?:entityPool|roamingPool)\s*=/);
+assert.doesNotMatch(java, /int\[\]\s+(?:hazardThresholds|entityThresholds|lootThresholds|waterThresholds)\s*=/);
 assert.doesNotMatch(java, /entityEncounterAction/);
 assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/);
 assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
