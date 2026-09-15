@@ -87,29 +87,47 @@ class RuntimeDebugLogTest {
     assertEquals("meta_turn", blocked.getString("reason"))
   }
 
-  @Test fun staleEncounterAndTransitionContextDoNotBlockSafeExploreFallback() {
+  @Test fun staleEntityContextWithoutCombatDoesNotBlockSafeFallback() {
     val before = JSONObject("""{
       "turn":7,
       "level":{"number":0,"name":"The Lobby"},
       "player":{"name":"Kai Akechi","hp":100},
       "party":[],
       "inventory":[],
-      "flags":{"entityEncounterKey":"hound","exploration":{"transitionReady":true}}
+      "flags":{"entityEncounterKey":"hound"}
+    }""")
+    val candidate = JSONObject(before.toString())
+    val generated = JSONObject().put("reply", "x").put("ops", org.json.JSONArray())
+    val rolls = JSONObject().put("actionKind", "EXECUTE")
+
+    val diagnostics = CanonFallbackPolicy.diagnostics(
+      before, candidate, generated, rolls,
+      "Đứng yên quan sát", meta = false, repaired = true,
+    )
+    assertTrue(diagnostics.getBoolean("eligible"))
+    assertFalse(diagnostics.getBoolean("dangerousStateChanged"))
+    assertTrue(diagnostics.getBoolean("staleEntityContext"))
+    assertTrue(diagnostics.getBoolean("entityPresentBefore"))
+  }
+
+  @Test fun staleEntityContextDoesNotPermitRealStateMutation() {
+    val before = JSONObject("""{
+      "turn":7,
+      "level":{"number":0,"name":"The Lobby"},
+      "player":{"name":"Kai Akechi","hp":100},
+      "party":[],
+      "inventory":[],
+      "flags":{"entityEncounterKey":"hound"}
     }""")
     val candidate = JSONObject(before.toString())
     candidate.getJSONObject("player").put("hp", 1)
     val generated = JSONObject().put("reply", "x").put("ops", org.json.JSONArray())
-    val rolls = JSONObject().put("actionKind", "EXPLORE")
-
     val diagnostics = CanonFallbackPolicy.diagnostics(
-      before, candidate, generated, rolls,
-      "Quan sát hành lang và tiếp tục khám phá", meta = false, repaired = true,
+      before, candidate, generated, JSONObject().put("actionKind", "EXECUTE"),
+      "Đứng yên quan sát", meta = false, repaired = true,
     )
-    assertTrue(diagnostics.getBoolean("eligible"))
-    assertTrue(diagnostics.getBoolean("dangerousStateChanged"))
-    assertTrue(diagnostics.getBoolean("lowRiskExplorationRecovery"))
-    assertTrue(diagnostics.getBoolean("entityPresentBefore"))
-    assertTrue(diagnostics.getBoolean("transitionReadyBefore"))
+    assertFalse(diagnostics.getBoolean("eligible"))
+    assertEquals("accepted_authoritative_state_change", diagnostics.getString("reason"))
   }
 
   @Test fun consequentialExploreRollStillFailsClosed() {
