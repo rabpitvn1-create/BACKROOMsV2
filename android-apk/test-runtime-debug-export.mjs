@@ -49,6 +49,11 @@ requireContract(main.includes('android.content.Intent.ACTION_CREATE_DOCUMENT'), 
 requireContract(main.includes('application/json'), 'JSON document MIME type missing');
 requireContract(main.includes('Backroom-Debug-'), 'debug export filename prefix missing');
 requireContract(main.includes('RuntimeDebugLog.exportJson(current)'), 'native bridge does not export runtime buffer');
+requireContract(main.includes('runtime-debug-pending.json'), 'debug export must persist payload across document-picker Activity recreation');
+requireContract(main.includes('persistPendingDebugLog(pendingDebugLogJson)'), 'prepared debug payload is not persisted before launching the picker');
+requireContract(main.includes('String exportJson = loadPendingDebugLog();'), 'document result must recover the persisted payload when the Activity instance was recreated');
+requireContract(main.includes('openOutputStream(data.getData(), \"wt\")'), 'debug export must explicitly truncate/write the destination document');
+requireContract(!main.includes('data.getData() == null || pendingDebugLogJson == null'), 'document result must not depend only on the volatile Activity field');
 
 for (const marker of [
   'writerPromptText',

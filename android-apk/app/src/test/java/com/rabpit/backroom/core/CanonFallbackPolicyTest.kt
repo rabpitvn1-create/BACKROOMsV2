@@ -106,6 +106,68 @@ class CanonFallbackPolicyTest {
     }
   }
 
+  @Test fun deterministicArrivalStoryDeltaDoesNotDefeatFallback() {
+    val before = state()
+    val action = "Khám phá căn phòng vàng và kiểm tra hành lang"
+    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(before.toString()), action)
+    val diagnostics = CanonFallbackPolicy.diagnostics(
+      before, candidate, generated(), rolls(), action, meta = false, repaired = true,
+    )
+
+    assertTrue(diagnostics.getBoolean("eligible"))
+    assertFalse(diagnostics.getBoolean("dangerousStateChanged"))
+    val engineRoots = diagnostics.getJSONArray("engineStoryFlagRoots").toString()
+    assertTrue(engineRoots.contains("storyArc"))
+    assertTrue(engineRoots.contains("storyContinuity"))
+  }
+
+  @Test fun providerDeviationFromDeterministicStoryBaselineStillFailsClosed() {
+    val before = state()
+    val action = "Khám phá căn phòng vàng và kiểm tra hành lang"
+    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(before.toString()), action)
+    candidate.getJSONObject("flags").getJSONObject("storyArc").put("currentBeat", "MODEL_FORCED_STORY")
+
+    val diagnostics = CanonFallbackPolicy.diagnostics(
+      before, candidate, generated(), rolls(), action, meta = false, repaired = true,
+    )
+    assertFalse(diagnostics.getBoolean("eligible"))
+    assertEquals("accepted_authoritative_state_change", diagnostics.getString("reason"))
+    assertTrue(diagnostics.getJSONArray("dangerousChangedFlagRoots").toString().contains("storyArc"))
+  }
+
+  @Test fun deterministicLuciaJoinPartyDeltaDoesNotDefeatFallback() {
+    val before = state()
+    val flags = before.getJSONObject("flags")
+    val arc = flags.getJSONObject("storyArc")
+    arc.put("current", "MAIN.LEVEL0")
+    arc.put("currentBeat", StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
+    arc.put("nextBeat", "STORY.LEVEL0.LUCIA_DECISION")
+    arc.put(
+      "completed",
+      JSONArray()
+        .put(StoryProgressionPolicy.PROLOGUE_ENTRY)
+        .put(StoryProgressionPolicy.LEVEL0_ARRIVAL)
+        .put(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT),
+    )
+    flags.put(
+      "luciaEncounter",
+      JSONObject()
+        .put("status", "met")
+        .put("level", 0)
+        .put("partyEligible", true)
+        .put("joinPending", true),
+    )
+    val action = "Kai và Lucia quyết định tiếp tục đi cùng nhau"
+    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(before.toString()), action)
+    val diagnostics = CanonFallbackPolicy.diagnostics(
+      before, candidate, generated(), rolls(), action, meta = false, repaired = true,
+    )
+
+    assertTrue(diagnostics.getBoolean("eligible"))
+    assertTrue(diagnostics.getBoolean("engineStoryPartyDelta"))
+    assertFalse(diagnostics.getBoolean("dangerousStateChanged"))
+  }
+
   @Test fun realMadGodStateChangeStillFailsClosed() {
     val before = state()
     val candidate = reducerCandidate(before)

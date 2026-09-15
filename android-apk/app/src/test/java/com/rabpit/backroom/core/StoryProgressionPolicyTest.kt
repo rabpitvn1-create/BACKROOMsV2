@@ -1,5 +1,6 @@
 package com.rabpit.backroom.core
 
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -38,150 +39,124 @@ class StoryProgressionPolicyTest {
         .put("level", 0)
         .put("partyEligible", true)
         .put("joinPending", true)
+        .put("relationship", "initial_tactical_trust")
     )
     state.put("turn", 3)
   }
 
-  @Test fun meaningfulLevel0ExplorationAdvancesArrivalDeterministically() {
+  @Test fun firstExploreCompletesArrivalOnly() {
     val before = startup()
-    val candidate = JSONObject(before.toString()).put("turn", 2)
+    val raw = JSONObject(before.toString()).put("turn", 2)
+    raw.put("party", JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
+    raw.getJSONObject("flags").put("luciaEncounter", JSONObject().put("status", "joined"))
 
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Khám phá căn phòng vàng và kiểm tra hành lang")
-    val arc = normalized.getJSONObject("flags").getJSONObject("storyArc")
-    val completed = arc.getJSONArray("completed").toString()
-
-    assertEquals("MAIN.LEVEL0", arc.getString("current"))
-    assertEquals(StoryProgressionPolicy.LEVEL0_ARRIVAL, arc.getString("currentBeat"))
-    assertEquals(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT, arc.getString("nextBeat"))
-    assertTrue(completed.contains(StoryProgressionPolicy.LEVEL0_ARRIVAL))
-  }
-
-  @Test fun sameTurnCannotCollapseArrivalIntoLuciaFirstContact() {
-    val before = startup()
-    val candidate = JSONObject(
-      """{
-        "turn":2,
-        "level":{"number":0,"name":"The Lobby"},
-        "party":[{"id":"lucia","name":"Lucia"}],
-        "flags":{
-          "storyArc":{"current":"MAIN.LEVEL0","currentBeat":"STORY.LEVEL0.FIRST_CONTACT_COMPLETE","nextBeat":"STORY.LEVEL0.LUCIA_DECISION","completed":["STORY.PROLOGUE.ENTRY_COMPLETE","STORY.LEVEL0.ARRIVAL","STORY.LEVEL0.FIRST_CONTACT_COMPLETE"]},
-          "luciaEncounter":{"status":"met","level":0,"partyEligible":true,"joinPending":true}
-        }
-      }"""
-    )
-
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "explore level zero carefully")
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Khám phá căn phòng vàng và kiểm tra hành lang")
     val flags = normalized.getJSONObject("flags")
     val arc = flags.getJSONObject("storyArc")
 
     assertEquals(StoryProgressionPolicy.LEVEL0_ARRIVAL, arc.getString("currentBeat"))
+    assertEquals(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT, arc.getString("nextBeat"))
     assertFalse(arc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT))
     assertFalse(flags.has("luciaEncounter"))
     assertEquals(0, normalized.getJSONArray("party").length())
+    assertTrue(StoryProgressionPolicy.directive(before, "Khám phá hành lang").startsWith("ARRIVAL_ONLY"))
   }
 
-  @Test fun nonExplorationActionDoesNotConsumeArrivalBeat() {
+  @Test fun nonExploreCannotAdvanceOrInjectStoryState() {
     val before = startup()
-    val candidate = JSONObject(before.toString()).put("turn", 2)
+    val raw = JSONObject(before.toString()).put("turn", 2)
+    val flags = raw.getJSONObject("flags")
+    flags.put("luciaEncounter", JSONObject().put("status", "joined"))
+    flags.getJSONObject("storyArc")
+      .put("currentBeat", StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
+      .getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
 
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Kiểm tra inventory của Kai")
-    val arc = normalized.getJSONObject("flags").getJSONObject("storyArc")
-
-    assertEquals(StoryProgressionPolicy.PROLOGUE_ENTRY, arc.getString("currentBeat"))
-    assertFalse(arc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_ARRIVAL))
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Kiểm tra inventory của Kai")
+    val normalizedFlags = normalized.getJSONObject("flags")
+    assertEquals(StoryProgressionPolicy.PROLOGUE_ENTRY, normalizedFlags.getJSONObject("storyArc").getString("currentBeat"))
+    assertFalse(normalizedFlags.has("luciaEncounter"))
   }
 
-  @Test fun arrivalCompletedCandidatePartyLuciaBeforeFirstContactIsRemoved() {
+  @Test fun explorationAfterArrivalCreatesFirstContactWithoutModelStoryOps() {
     val before = arrivalState()
-    val candidate = JSONObject(before.toString()).put("turn", 3)
-    candidate.put("party", org.json.JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
+    val raw = JSONObject(before.toString()).put("turn", 3)
 
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Tiếp tục khám phá Level 0")
-
-    assertEquals(0, normalized.getJSONArray("party").length())
-    assertEquals(
-      StoryProgressionPolicy.LEVEL0_ARRIVAL,
-      normalized.getJSONObject("flags").getJSONObject("storyArc").getString("currentBeat")
-    )
-  }
-
-  @Test fun arrivalCompletedEncounterWithoutFirstContactCompletionIsRemoved() {
-    val before = arrivalState()
-    val candidate = JSONObject(before.toString()).put("turn", 3)
-    candidate.getJSONObject("flags").put(
-      "luciaEncounter",
-      JSONObject().put("status", "met").put("level", 0).put("partyEligible", true).put("joinPending", true)
-    )
-
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Tiếp tục khám phá Level 0")
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Tiếp tục khám phá Level 0")
     val flags = normalized.getJSONObject("flags")
+    val arc = flags.getJSONObject("storyArc")
+    val encounter = flags.getJSONObject("luciaEncounter")
 
-    assertFalse(flags.has("luciaEncounter"))
-    assertFalse(flags.getJSONObject("storyArc").getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT))
+    assertEquals(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT, arc.getString("currentBeat"))
+    assertTrue(arc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT))
+    assertEquals("met", encounter.getString("status"))
+    assertTrue(encounter.getBoolean("joinPending"))
+    assertEquals(0, normalized.getJSONArray("party").length())
+    assertTrue(StoryProgressionPolicy.directive(before, "Tiếp tục khám phá Level 0").startsWith("LUCIA_FIRST_CONTACT"))
   }
 
-  @Test fun validFirstContactTurnKeepsEncounterButStillRemovesLuciaFromParty() {
+  @Test fun arrivalHoldRejectsProviderInventedFirstContact() {
     val before = arrivalState()
-    val candidate = JSONObject(before.toString()).put("turn", 3)
-    candidate.put("party", org.json.JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
-    val flags = candidate.getJSONObject("flags")
-    val arc = flags.getJSONObject("storyArc")
-    arc.put("currentBeat", StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
-    arc.put("nextBeat", "STORY.LEVEL0.LUCIA_DECISION")
-    arc.getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
-    flags.put(
-      "luciaEncounter",
-      JSONObject().put("status", "met").put("level", 0).put("partyEligible", true).put("joinPending", true)
-    )
+    val raw = JSONObject(before.toString()).put("turn", 3)
+    val flags = raw.getJSONObject("flags")
+    flags.getJSONObject("storyArc").getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
+    flags.put("luciaEncounter", JSONObject().put("status", "met").put("partyEligible", true).put("joinPending", true))
 
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Tiếp tục đi sâu hơn qua Level 0")
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Kiểm tra lại trang bị")
     val normalizedFlags = normalized.getJSONObject("flags")
-    val normalizedArc = normalizedFlags.getJSONObject("storyArc")
+    assertEquals(StoryProgressionPolicy.LEVEL0_ARRIVAL, normalizedFlags.getJSONObject("storyArc").getString("currentBeat"))
+    assertFalse(normalizedFlags.has("luciaEncounter"))
+  }
 
-    assertTrue(normalizedFlags.has("luciaEncounter"))
-    assertTrue(normalizedArc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT))
-    assertFalse(normalizedArc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE))
+  @Test fun firstContactDoesNotJoinWithoutExplicitTogetherDecision() {
+    val before = firstContactState()
+    val raw = JSONObject(before.toString()).put("turn", 4)
+    raw.put("party", JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
+    val flags = raw.getJSONObject("flags")
+    flags.getJSONObject("storyArc").getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
+    flags.put("luciaEncounter", JSONObject().put("status", "joined").put("partyEligible", true).put("joinPending", false))
+
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Quan sát hành lang phía trước")
+    val normalizedFlags = normalized.getJSONObject("flags")
+    assertEquals(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT, normalizedFlags.getJSONObject("storyArc").getString("currentBeat"))
+    assertEquals("met", normalizedFlags.getJSONObject("luciaEncounter").getString("status"))
     assertEquals(0, normalized.getJSONArray("party").length())
   }
 
-  @Test fun laterTurnMayKeepValidatedFirstContactAfterArrivalAlreadyExists() {
-    val before = arrivalState()
-    val candidate = JSONObject(before.toString()).put("turn", 3)
-    val flags = candidate.getJSONObject("flags")
-    val arc = flags.getJSONObject("storyArc")
-    arc.put("currentBeat", StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
-    arc.put("nextBeat", "STORY.LEVEL0.LUCIA_DECISION")
-    arc.getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT)
-    flags.put("luciaEncounter", JSONObject().put("status", "met").put("level", 0).put("partyEligible", true).put("joinPending", true))
-
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Tiếp tục đi sâu hơn qua Level 0")
-    val normalizedFlags = normalized.getJSONObject("flags")
-
-    assertEquals(StoryProgressionPolicy.LEVEL0_FIRST_CONTACT, normalizedFlags.getJSONObject("storyArc").getString("currentBeat"))
-    assertTrue(normalizedFlags.has("luciaEncounter"))
-    assertTrue(normalizedFlags.getJSONObject("storyArc").getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_ARRIVAL))
-  }
-
-  @Test fun luciaMayEnterPartyOnlyAfterDecisionAndJoinConfirmation() {
+  @Test fun explicitTogetherDecisionJoinsLuciaWithoutProviderStateMutation() {
     val before = firstContactState()
-    val candidate = JSONObject(before.toString()).put("turn", 4)
-    candidate.put("party", org.json.JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
-    val flags = candidate.getJSONObject("flags")
+    val raw = JSONObject(before.toString()).put("turn", 4)
+
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Kai và Lucia quyết định tiếp tục đi cùng nhau")
+    val flags = normalized.getJSONObject("flags")
     val arc = flags.getJSONObject("storyArc")
-    arc.put("currentBeat", StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
-    arc.put("nextBeat", "STORY.LEVEL0.EPSILON.ENTRY")
-    arc.getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
-    flags.put(
-      "luciaEncounter",
-      JSONObject().put("status", "joined").put("level", 0).put("partyEligible", true).put("joinPending", false)
-    )
+    val encounter = flags.getJSONObject("luciaEncounter")
 
-    val normalized = StoryProgressionPolicy.normalizeCandidate(before, candidate, "Kai và Lucia quyết định tiếp tục đi cùng nhau")
-    val normalizedFlags = normalized.getJSONObject("flags")
-
+    assertEquals(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE, arc.getString("currentBeat"))
+    assertTrue(arc.getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE))
+    assertEquals("joined", encounter.getString("status"))
+    assertFalse(encounter.getBoolean("joinPending"))
+    assertEquals("mutual-party-decision", encounter.getString("playerAgency"))
     assertEquals(1, normalized.getJSONArray("party").length())
     assertEquals("lucia", normalized.getJSONArray("party").getJSONObject(0).getString("id"))
-    assertTrue(normalizedFlags.getJSONObject("storyArc").getJSONArray("completed").toString().contains(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE))
-    assertEquals("joined", normalizedFlags.getJSONObject("luciaEncounter").getString("status"))
+    assertTrue(StoryProgressionPolicy.directive(before, "Kai và Lucia đi cùng nhau").startsWith("LUCIA_JOIN_DECISION"))
+  }
+
+  @Test fun completedDecisionPreservesLaterStoryBeatAndLuciaParty() {
+    val before = firstContactState()
+    val beforeFlags = before.getJSONObject("flags")
+    val arc = beforeFlags.getJSONObject("storyArc")
+    arc.getJSONArray("completed").put(StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE)
+    arc.put("currentBeat", "STORY.LEVEL0.EPSILON.ENTRY")
+    arc.put("nextBeat", "STORY.LEVEL0.EPSILON.COMPLETE")
+    beforeFlags.put("luciaEncounter", JSONObject().put("status", "joined").put("partyEligible", true).put("joinPending", false))
+    before.put("party", JSONArray().put(JSONObject().put("id", "lucia").put("name", "Lucia")))
+
+    val raw = JSONObject(before.toString()).put("turn", 5)
+    raw.getJSONObject("flags").getJSONObject("storyArc").put("currentBeat", "MODEL_TRIED_TO_REWRITE_STORY")
+    raw.put("party", JSONArray())
+
+    val normalized = StoryProgressionPolicy.normalizeCandidate(before, raw, "Tiếp tục hành trình")
+    assertEquals("STORY.LEVEL0.EPSILON.ENTRY", normalized.getJSONObject("flags").getJSONObject("storyArc").getString("currentBeat"))
+    assertEquals(1, normalized.getJSONArray("party").length())
   }
 }

@@ -117,12 +117,49 @@ helpers = r'''  private void initializeRuntimeDebugLog() {
     catch (Exception ignored) {}
   }
 
+  private java.io.File pendingDebugLogFile() {
+    return new java.io.File(getCacheDir(), "runtime-debug-pending.json");
+  }
+
+  private void persistPendingDebugLog(String json) throws Exception {
+    java.io.File file = pendingDebugLogFile();
+    try (java.io.FileOutputStream output = new java.io.FileOutputStream(file, false)) {
+      output.write((json == null ? "" : json).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+      output.flush();
+      output.getFD().sync();
+    }
+  }
+
+  private String loadPendingDebugLog() throws Exception {
+    if (pendingDebugLogJson != null && !pendingDebugLogJson.isEmpty()) return pendingDebugLogJson;
+    java.io.File file = pendingDebugLogFile();
+    if (!file.isFile() || file.length() <= 0) throw new Exception("Không tìm thấy payload log debug đang chờ.");
+    try (java.io.FileInputStream input = new java.io.FileInputStream(file);
+         java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream()) {
+      byte[] chunk = new byte[8192];
+      int read;
+      while ((read = input.read(chunk)) >= 0) { if (read > 0) buffer.write(chunk, 0, read); }
+      String json = new String(buffer.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+      if (json.trim().isEmpty()) throw new Exception("Payload log debug đang chờ bị rỗng.");
+      return json;
+    }
+  }
+
+  private void clearPendingDebugLog() {
+    pendingDebugLogJson = null;
+    try {
+      java.io.File file = pendingDebugLogFile();
+      if (file.isFile() && !file.delete()) file.deleteOnExit();
+    } catch (Exception ignored) {}
+  }
+
   private void startDebugLogExport(String stateJson) {
     try {
       JSONObject current = debugPayload(stateJson);
       int turn = current.optInt("turn", 0);
       debugEvent("ui_bridge", "export_log_requested", turn, new JSONObject().put("state", current));
       pendingDebugLogJson = com.rabpit.backroom.core.RuntimeDebugLog.exportJson(current);
+      persistPendingDebugLog(pendingDebugLogJson);
       String stamp = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss", java.util.Locale.US).format(new java.util.Date());
       android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_CREATE_DOCUMENT);
       intent.addCategory(android.content.Intent.CATEGORY_OPENABLE);
@@ -130,7 +167,7 @@ helpers = r'''  private void initializeRuntimeDebugLog() {
       intent.putExtra(android.content.Intent.EXTRA_TITLE, "Backroom-Debug-" + stamp + ".json");
       startActivityForResult(intent, DEBUG_LOG_EXPORT_REQUEST);
     } catch (Exception error) {
-      pendingDebugLogJson = null;
+      clearPendingDebugLog();
       emit("backroomError", "Không thể chuẩn bị log debug: " + (error.getMessage() == null ? "unknown" : error.getMessage()));
     }
   }
@@ -138,22 +175,25 @@ helpers = r'''  private void initializeRuntimeDebugLog() {
   @Override protected void onActivityResult(int requestCode, int resultCode, android.content.Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     if (requestCode != DEBUG_LOG_EXPORT_REQUEST) return;
-    if (resultCode != RESULT_OK || data == null || data.getData() == null || pendingDebugLogJson == null) {
+    if (resultCode != RESULT_OK || data == null || data.getData() == null) {
       debugEvent("ui_bridge", "export_log_cancelled", 0, new JSONObject());
-      pendingDebugLogJson = null;
+      clearPendingDebugLog();
       return;
     }
-    try (OutputStream output = getContentResolver().openOutputStream(data.getData())) {
-      if (output == null) throw new Exception("Không mở được file đích.");
-      output.write(pendingDebugLogJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-      output.flush();
-      debugEvent("ui_bridge", "export_log_completed", 0, new JSONObject().put("bytes", pendingDebugLogJson.length()));
+    try {
+      String exportJson = loadPendingDebugLog();
+      try (OutputStream output = getContentResolver().openOutputStream(data.getData(), "wt")) {
+        if (output == null) throw new Exception("Không mở được file đích.");
+        output.write(exportJson.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        output.flush();
+      }
+      debugEvent("ui_bridge", "export_log_completed", 0, new JSONObject().put("bytes", exportJson.getBytes(java.nio.charset.StandardCharsets.UTF_8).length));
       emit("backroomDebugExport", "Log debug đã được lưu.");
     } catch (Exception error) {
       debugEvent("ui_bridge", "export_log_failed", 0, new JSONObject().put("message", error.getMessage() == null ? "" : error.getMessage()));
       emit("backroomError", "Xuất log thất bại: " + (error.getMessage() == null ? "unknown" : error.getMessage()));
     } finally {
-      pendingDebugLogJson = null;
+      clearPendingDebugLog();
     }
   }
 

@@ -7,6 +7,7 @@ import java.util.Locale
 /** Narrow fail-soft gate for a repaired turn whose final model output still fails canon audit. */
 object CanonFallbackPolicy {
   private val harmlessFlagRoots = setOf("exploration", "communication", "visualAreaKey", "visualEventKey")
+  private val engineStoryFlagRoots = setOf("storyArc", "storyContinuity", "luciaEncounter")
   private val combatTerms = listOf(
     "tấn công", "đánh", "bắn", "chém", "đâm", "giết", "giao chiến",
     "attack", "fight", "shoot", "slash", "stab", "kill", "combat"
@@ -25,7 +26,8 @@ object CanonFallbackPolicy {
 
   /**
    * Explains every gate used by [isEligible]. This method is observational only: it does not
-   * mutate state, consume RNG, or loosen the fail-closed behavior.
+   * mutate persisted state or consume RNG. Engine-owned story changes are ignored only when they
+   * exactly equal StoryProgressionPolicy's deterministic baseline for this before-state/action.
    */
   @JvmStatic
   fun diagnostics(
@@ -47,18 +49,41 @@ object CanonFallbackPolicy {
     val transitionBefore = transitionReady(before)
     val transitionCandidate = transitionReady(candidate)
     val dangerousRoll = hasDangerousRollConsequence(rolls)
+
+    val storyBaseline = StoryProgressionPolicy.normalizeCandidate(
+      before,
+      JSONObject(before.toString()),
+      action,
+    )
+    val baselineFlags = storyBaseline.optJSONObject("flags") ?: JSONObject()
+    val candidateFlags = candidate.optJSONObject("flags") ?: JSONObject()
+
     val changedTopLevel = changedTopLevelKeys(before, candidate)
     val changedFlagRoots = changedFlagRoots(before, candidate)
-    val dangerousChangedTopLevel = changedTopLevel.filter { it != "location" && it != "flags" }
+    val engineStoryPartyDelta =
+      "party" in changedTopLevel && jsonEqual(candidate.opt("party"), storyBaseline.opt("party"))
+    val engineStoryFlagDeltas = changedFlagRoots.filterTo(linkedSetOf()) { root ->
+      root in engineStoryFlagRoots && jsonEqual(candidateFlags.opt(root), baselineFlags.opt(root))
+    }
+
+    val dangerousChangedTopLevel = changedTopLevel.filter { key ->
+      when {
+        key == "location" || key == "flags" -> false
+        key == "party" && engineStoryPartyDelta -> false
+        else -> true
+      }
+    }
     val dangerousChangedFlags = changedFlagRoots.filter { root ->
       when {
         root == "lastRolls" -> false
-        root == "madGod" && emptyJsonObject(before.optJSONObject("flags")?.opt(root)) && emptyJsonObject(candidate.optJSONObject("flags")?.opt(root)) -> false
+        root == "madGod" && emptyJsonObject(before.optJSONObject("flags")?.opt(root)) && emptyJsonObject(candidateFlags.opt(root)) -> false
         root in harmlessFlagRoots -> false
+        root in engineStoryFlagDeltas -> false
         else -> true
       }
     }
     val dangerousState = dangerousChangedTopLevel.isNotEmpty() || dangerousChangedFlags.isNotEmpty()
+    val staleEntityContext = entityBefore && entityCandidate && !combatBefore && !combatCandidate
 
     val reason = when {
       meta -> "meta_turn"
@@ -66,11 +91,11 @@ object CanonFallbackPolicy {
       combatIntent -> "combat_intent"
       combatBefore -> "combat_active_before"
       combatCandidate -> "combat_active_candidate"
-      entityBefore -> "entity_present_before"
       transitionBefore -> "transition_ready_before"
       transitionCandidate -> "transition_ready_candidate"
       dangerousRoll -> "consequential_roll"
       dangerousState -> "accepted_authoritative_state_change"
+      entityCandidate && !staleEntityContext -> "entity_present_candidate"
       else -> "eligible"
     }
     val eligible = reason == "eligible"
@@ -88,10 +113,14 @@ object CanonFallbackPolicy {
       .put("combatActiveCandidate", combatCandidate)
       .put("entityPresentBefore", entityBefore)
       .put("entityPresentCandidate", entityCandidate)
+      .put("staleEntityContext", staleEntityContext)
       .put("transitionReadyBefore", transitionBefore)
       .put("transitionReadyCandidate", transitionCandidate)
       .put("dangerousRollConsequence", dangerousRoll)
       .put("dangerousStateChanged", dangerousState)
+      .put("engineStoryPartyDelta", engineStoryPartyDelta)
+      .put("engineStoryFlagRoots", JSONArray(engineStoryFlagDeltas.sorted()))
+      .put("storyDirective", StoryProgressionPolicy.directive(before, action))
       .put("changedTopLevelKeys", JSONArray(changedTopLevel.sorted()))
       .put("changedFlagRoots", JSONArray(changedFlagRoots.sorted()))
       .put("dangerousChangedTopLevelKeys", JSONArray(dangerousChangedTopLevel.sorted()))

@@ -453,7 +453,7 @@ if "ANDROID_EDGE_UI_V1" not in html:
 swipe_script = r'''
 <script id="androidSwipeUi">
 /* ANDROID_SWIPE_UI_V1 */
-/* ANDROID_SWIPE_GESTURE_V2: pointer-first horizontal gesture with touch fallback. */
+/* ANDROID_SWIPE_GESTURE_V2 / ANDROID_SWIPE_TOUCH_FIRST_V1: touch hardware uses Touch Events; Pointer Events remain the non-touch fallback. */
 (function(){
   if(window.__androidSwipeUi)return;window.__androidSwipeUi=true;
   const shell=document.querySelector('.shell'),game=document.querySelector('.game'),side=document.querySelector('.side');
@@ -484,7 +484,8 @@ swipe_script = r'''
     shell.addEventListener('touchend',function(e){if(!tracking||!e.changedTouches.length){reset();return}const t=e.changedTouches[0],dx=t.clientX-startX,dy=t.clientY-startY;if(axis==='x'||!axis)finishSwipe(dx,dy);reset();},{passive:true});
     shell.addEventListener('touchcancel',function(){if(tracking&&axis==='x')finishSwipe(lastX-startX,lastY-startY);reset();},{passive:true});
   }
-  if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe();
+  const touchCapable=('ontouchstart' in window)||Number(navigator.maxTouchPoints||0)>0;
+  if(touchCapable)installTouchSwipe();else if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe();
   const detailBack=document.getElementById('characterInventoryBack');if(detailBack)detailBack.textContent='Thu gọn thông tin';
   setPage(0);
 })();
