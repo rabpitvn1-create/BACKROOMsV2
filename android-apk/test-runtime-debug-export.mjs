@@ -81,14 +81,15 @@ for (const marker of [
 ]) requireContract(main.includes(marker), `generated runtime trace marker missing: ${marker}`);
 
 for (const marker of [
-  'candidateBeforeStoryNormalization',
-  'candidateNormalized',
+  'candidateAfterStoryNormalization',
   'storyProgression',
   'gameCorePending',
   'gameCoreCommands',
   'gameCoreCommitResult',
   'coreCommittedState',
 ]) requireContract(facade.includes(marker), `GameCore trace marker missing: ${marker}`);
+requireContract(!facade.includes('candidateBeforeStoryNormalization'), 'legacy pre-story-normalization trace marker must not return');
+requireContract(!facade.includes('candidateNormalized'), 'legacy duplicate-normalization trace marker must not return');
 
 for (const marker of [
   'fun diagnostics(',
