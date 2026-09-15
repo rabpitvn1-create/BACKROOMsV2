@@ -28,4 +28,24 @@ class CombatTurnAuthorityTest {
     assertTrue(result.handled)
     assertEquals("COMBAT_TURN_1", result.state.characters.getValue(KAI_ID).vitalState.lastRegenCompletedTurnId)
   }
+
+  @Test fun intermediateAutoSubturnDoesNotCompleteTheRound() {
+    val pending = GameState.initial().copy(metadata = mapOf("combat.autoCursor" to "1"))
+    val resolution = CombatRuntime.Resolution(pending, handled = true)
+    assertFalse(CombatTurnAuthority.completesRound("AUTO_COMBAT_STEP", resolution))
+  }
+
+  @Test fun zeroAutoCursorAndTerminalResultsCompleteTheRound() {
+    val completed = GameState.initial().copy(metadata = mapOf("combat.autoCursor" to "0"))
+    assertTrue(CombatTurnAuthority.completesRound(
+      "AUTO_COMBAT_STEP",
+      CombatRuntime.Resolution(completed, handled = true)
+    ))
+
+    val pending = completed.copy(metadata = mapOf("combat.autoCursor" to "3"))
+    assertTrue(CombatTurnAuthority.completesRound(
+      "AUTO_COMBAT_STEP",
+      CombatRuntime.Resolution(pending, handled = true, entityDestroyed = true)
+    ))
+  }
 }
