@@ -59,8 +59,10 @@ if local_pass not in text:
     position = text.index(try_anchor, submit) + len(try_anchor)
     text = text[:position] + local_pass + text[position:]
 
-gemini_commit = '''          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
-            before.toString(), candidateState.toString(), rolls.toString(), action));
+gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
+          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
+            before.toString(), candidateState.toString(), rolls.toString(),
+            coreOps == null ? "[]" : coreOps.toString(), action));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
           }
@@ -73,7 +75,7 @@ if "gameCore.processValidatedCandidate(" not in text:
         raise RuntimeError("validated Gemini candidate anchor not found")
     text = text.replace(anchor, gemini_commit + anchor, 1)
 
-for required in [core_import.strip(), field.strip(), initialization.strip(), close_line.strip(), "@JavascriptInterface public void clearCoreState()", "gameCore.clear();", "gameCore.processRule(stateJson, action)", "candidateState.toString(), rolls.toString(), action"]:
+for required in [core_import.strip(), field.strip(), initialization.strip(), close_line.strip(), "@JavascriptInterface public void clearCoreState()", "gameCore.clear();", "gameCore.processRule(stateJson, action)", "JSONArray coreOps = generated.optJSONArray(\"ops\")", "coreOps == null ? \"[]\" : coreOps.toString(), action"]:
     if required not in text:
         raise RuntimeError(f"Game State Core integration missing: {required}")
 
