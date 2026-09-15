@@ -221,16 +221,26 @@ fallback_new = '''            JSONObject fallbackDiagnostics = com.rabpit.backro
 '''
 submit = replace_once(submit, fallback_old, fallback_new, "fallback trace")
 
-core_old = '''          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(before.toString(), candidateState.toString(), action));
+core_old = '''          forceEntityEncounterFlag(candidateState, rolls);
+          JSONArray coreOps = generated.optJSONArray("ops");
+          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
+            before.toString(), candidateState.toString(), rolls.toString(),
+            coreOps == null ? "[]" : coreOps.toString(), action));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
           }
           candidateState = coreCommit.getJSONObject("state");
 
 '''
-core_new = '''          com.rabpit.backroom.core.RuntimeDebugLog.recordTurnStage(debugTurn, "candidateBeforeCore", candidateState);
-          debugEvent("game_core", "validated_candidate_request", debugTurn, new JSONObject().put("before", before).put("candidate", candidateState).put("action", action));
-          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(before.toString(), candidateState.toString(), action));
+core_new = '''          forceEntityEncounterFlag(candidateState, rolls);
+          JSONArray coreOps = generated.optJSONArray("ops");
+          com.rabpit.backroom.core.RuntimeDebugLog.recordTurnStage(debugTurn, "candidateBeforeCore", candidateState);
+          debugEvent("game_core", "validated_candidate_request", debugTurn, new JSONObject()
+            .put("before", before).put("candidate", candidateState).put("rolls", rolls)
+            .put("operations", coreOps == null ? new JSONArray() : coreOps).put("action", action));
+          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
+            before.toString(), candidateState.toString(), rolls.toString(),
+            coreOps == null ? "[]" : coreOps.toString(), action));
           debugEvent("game_core", "validated_candidate_result", debugTurn, coreCommit);
           com.rabpit.backroom.core.RuntimeDebugLog.recordTurnStage(debugTurn, "gameCoreValidatedCandidate", coreCommit);
           if (!coreCommit.optBoolean("handled", false)) {
@@ -258,7 +268,7 @@ submit = replace_once(submit, error_old, '''          String debugError = e.getM
 ''', "error trace")
 
 text = text[:submit_start] + submit + text[submit_end:]
-for marker in ("writerPromptText", "repairPromptText", "operationsInitial", "auditAfterRepair", "CanonFallbackPolicy.diagnostics(", "candidateBeforeCore", "finalCommittedState", "debugProcessCombat"):
+for marker in ("writerPromptText", "repairPromptText", "operationsInitial", "auditAfterRepair", "CanonFallbackPolicy.diagnostics(", "candidateBeforeCore", 'put("operations", coreOps == null ? new JSONArray() : coreOps)', "finalCommittedState", "debugProcessCombat"):
     if marker not in text: raise RuntimeError("turn trace marker missing: " + marker)
 MAIN.write_text(text, encoding="utf-8")
-print("Settled submitTurnInternal debug trace installed: input/rolls/writer/reducer/audit/repair/fallback/Core/final/combat.")
+print("Settled submitTurnInternal debug trace installed: input/rolls/writer/reducer/audit/repair/fallback/roll-aware Core/final/combat.")

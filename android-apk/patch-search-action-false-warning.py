@@ -57,52 +57,27 @@ if pickup_line not in text:
     text = text.replace(party_anchor, pickup_line + party_anchor, 1)
 FACADE.write_text(text, encoding="utf-8")
 
+# Inventory acquisition gameplay rules moved into Kotlin InventoryAcquisitionPolicy. This
+# historical compatibility layer may validate the bridge shape, but must not recreate loot,
+# Almond Water, MadGod, copy or world_consequence authorization in generated Java.
 java = MAIN.read_text(encoding="utf-8")
-old_world_inventory = r'''        boolean allowedNew = false;
-        JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
-        JSONObject explorationForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("exploration") : null;
-        JSONObject omnivaultForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("omnivault") : null;
-        boolean establishedStructured = false;
-        if (explorationForItem != null) establishedStructured = lower(explorationForItem.toString()).contains(lower(name));
-        if (!establishedStructured && omnivaultForItem != null) establishedStructured = lower(omnivaultForItem.toString()).contains(lower(name));
-        if (!establishedStructured && beforeMadGodForItem != null) establishedStructured = lower(beforeMadGodForItem.toString()).contains(lower(name));
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
-        if (existing >= 0) allowedNew = true;
-        else if (acquisitionIntent(action)) {
-          if (madGod) allowedNew = madGodAlreadySpawned && establishedStructured;
-          else if (almond) allowedNew = establishedStructured || rollSuccess(rolls, "almondWater");
-          else if (containsAny(action, "copy", "sao chép")) allowedNew = establishedStructured;
-          else allowedNew = establishedStructured || rollSuccess(rolls, "loot");
-        }
+kotlin_world_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Java only applies the decision early so
+        // rejected provider ops keep the existing audit/repair behavior before Core commit.
+        boolean allowedNew = com.rabpit.backroom.core.InventoryAcquisitionPolicy.allows(
+          before.toString(), rolls.toString(), action, name, existing >= 0,
+          op.optString("basis", ""));
 '''
-new_world_inventory = r'''        boolean allowedNew = false;
-        JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
-        JSONObject explorationForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("exploration") : null;
-        JSONObject omnivaultForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("omnivault") : null;
-        boolean establishedStructured = false;
-        if (explorationForItem != null) establishedStructured = lower(explorationForItem.toString()).contains(lower(name));
-        if (!establishedStructured && omnivaultForItem != null) establishedStructured = lower(omnivaultForItem.toString()).contains(lower(name));
-        if (!establishedStructured && beforeMadGodForItem != null) establishedStructured = lower(beforeMadGodForItem.toString()).contains(lower(name));
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
-        String acquisitionBasis = lower(op.optString("basis", "")).trim();
-        boolean worldAcquisition = acquisitionBasis.equals("world_consequence");
-        boolean directAcquisition = acquisitionIntent(action);
-        boolean copyIntent = containsAny(action, "copy", "sao chép", "nhân bản", "tạo thêm", "tạo ra thêm", "nhân thêm");
-        boolean almondRoll = rollSuccess(rolls, "almondWater");
-        boolean lootRoll = rollSuccess(rolls, "loot");
-        if (existing >= 0) allowedNew = true;
-        else if (madGod) allowedNew = directAcquisition && madGodAlreadySpawned && establishedStructured;
-        else if (copyIntent) allowedNew = directAcquisition && establishedStructured;
-        else if (almond) allowedNew = (directAcquisition || worldAcquisition) && (establishedStructured || almondRoll);
-        else allowedNew = (directAcquisition || worldAcquisition) && (establishedStructured || lootRoll);
-'''
-if new_world_inventory not in java:
-    count = java.count(old_world_inventory)
-    if count != 1:
-        raise RuntimeError(f"World acquisition reducer expected one legacy match, found {count}")
-    java = java.replace(old_world_inventory, new_world_inventory, 1)
+if kotlin_world_inventory not in java:
+    raise RuntimeError("World acquisition reducer must delegate to Kotlin InventoryAcquisitionPolicy")
+for retired in (
+    "boolean establishedStructured =",
+    "boolean worldAcquisition =",
+    "boolean directAcquisition =",
+    "boolean almondRoll =",
+    "boolean lootRoll =",
+):
+    if retired in java:
+        raise RuntimeError("Retired Java Inventory acquisition authority survived: " + retired)
 MAIN.write_text(java, encoding="utf-8")
 
 builder = KNOWLEDGE_BUILDER.read_text(encoding="utf-8")
@@ -266,12 +241,20 @@ for token in (
     if token not in final_facade:
         raise RuntimeError(f"Search/world-acquisition/Omnivault facade contract missing: {token}")
 for token in (
-    'String acquisitionBasis = lower(op.optString("basis", "")).trim();',
-    'boolean worldAcquisition = acquisitionBasis.equals("world_consequence");',
-    '(directAcquisition || worldAcquisition)',
+    "InventoryAcquisitionPolicy.allows(",
+    'op.optString("basis", "")',
 ):
     if token not in final_java:
-        raise RuntimeError(f"World acquisition reducer contract missing: {token}")
+        raise RuntimeError(f"Kotlin Inventory acquisition bridge contract missing: {token}")
+for retired in (
+    "boolean establishedStructured =",
+    "boolean worldAcquisition =",
+    "boolean directAcquisition =",
+    "boolean almondRoll =",
+    "boolean lootRoll =",
+):
+    if retired in final_java:
+        raise RuntimeError("Retired Java Inventory acquisition authority survived final bridge: " + retired)
 if 'if (name.isBlank()) return context.lastReferencedItemId?.let { knownPair(it, context) }' not in final_intent:
     raise RuntimeError("Omnivault item-reference contract missing")
 for token in (
@@ -286,4 +269,4 @@ if 'basis:\\"world_consequence\\"' not in final_builder:
 if old_inventory_lock in final_facade or old_inventory_assertion in final_facade:
     raise RuntimeError("Legacy inventory false-positive lock survived")
 
-print("World handoffs remain synchronized; Omnivault Scan -> Copy now preserves item references and requested total quantities while keeping the 3-slot/template rules authoritative.")
+print("World handoffs remain synchronized through Kotlin InventoryAcquisitionPolicy; Omnivault Scan -> Copy still preserves item references and requested total quantities while keeping the 3-slot/template rules authoritative.")

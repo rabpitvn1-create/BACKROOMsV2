@@ -50,7 +50,10 @@ if "private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject 
 
 call = "          forceEntityEncounterFlag(candidateState, rolls);\n"
 if call not in text:
+    # Prefer the stable pre-commit operation-context declaration used by the roll-aware Core bridge.
+    # Older anchors remain accepted so this visual compatibility patch does not own bridge arity.
     anchors = [
+        '          JSONArray coreOps = generated.optJSONArray("ops");\n',
         "          JSONObject coreCommit = new JSONObject(requireGameCore().processValidatedCandidate(before.toString(), candidateState.toString(), action));\n",
         "          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(before.toString(), candidateState.toString(), action));\n",
     ]

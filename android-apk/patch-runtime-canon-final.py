@@ -54,6 +54,35 @@ runpy.run_path(str(inventory_v4), run_name="__main__")
 runpy.run_path(str(inventory_regression), run_name="__main__")
 runpy.run_path(str(omnivault_current), run_name="__main__")
 
+# Inventory V4 rewrites the candidate-reward projection for catalog normalization. Preserve the
+# Kotlin-owned acquisition gate after that compatibility rewrite. This is bridge wiring only: the
+# gameplay decision itself lives exclusively in InventoryAcquisitionPolicy.
+FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
+facade = FACADE.read_text(encoding="utf-8")
+reward_anchor = '''        val proposedQuantity = json.optInt("quantity", 1).coerceAtLeast(1)
+        if (proposedQuantity <= oldQuantity) continue
+        val metadata = old?.metadata.orEmpty() + jsonObjectStrings(json.optJSONObject("metadata")) + definition.metadata
+'''
+reward_authority = '''        val proposedQuantity = json.optInt("quantity", 1).coerceAtLeast(1)
+        if (proposedQuantity <= oldQuantity) continue
+        val acquisitionBasis = inventoryAcquisitionBasis(operations, name)
+        if (!InventoryAcquisitionPolicy.allows(before, rolls, action, name, old != null, acquisitionBasis)) continue
+        val metadata = old?.metadata.orEmpty() + jsonObjectStrings(json.optJSONObject("metadata")) + definition.metadata
+'''
+if reward_authority not in facade:
+    if facade.count(reward_anchor) != 1:
+        raise RuntimeError(f"Inventory acquisition Core anchor count != 1: {facade.count(reward_anchor)}")
+    facade = facade.replace(reward_anchor, reward_authority, 1)
+for marker in (
+    "val rolls = JSONObject(rollsJson.ifBlank { \"{}\" })",
+    "val operations = JSONArray(operationsJson.ifBlank { \"[]\" })",
+    "val acquisitionBasis = inventoryAcquisitionBasis(operations, name)",
+    "InventoryAcquisitionPolicy.allows(before, rolls, action, name, old != null, acquisitionBasis)",
+):
+    if marker not in facade:
+        raise RuntimeError("Kotlin Inventory acquisition authority missing after V4 finalization: " + marker)
+FACADE.write_text(facade, encoding="utf-8")
+
 # Packaged knowledge is authoritative GM input. Remove retired Omnivault
 # Scan/Copy semantics from both the database and source map after all historical
 # knowledge writers have run.
@@ -172,4 +201,4 @@ if not entity_visual_locks.is_file():
     raise RuntimeError("Entity PNG Visual Lock patch missing: " + entity_visual_locks.name)
 runpy.run_path(str(entity_visual_locks), run_name="__main__")
 
-print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4, current Omnivault knowledge, web Entity supplement, SRU organization canon, clean Prologue startup, Lucia post-exploration story gate, narrative clarity guard.")
+print("Final runtime canon verified: PNG-locked Entity visuals, Inventory V4 with Kotlin acquisition authority, current Omnivault knowledge, web Entity supplement, SRU organization canon, clean Prologue startup, Lucia post-exploration story gate, narrative clarity guard.")

@@ -21,25 +21,13 @@ old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
           if (waterRoll != null && waterRoll.optBoolean("eligible", false) && !waterRoll.optBoolean("success", false) && existing < 0) allowedNew = false;
         }
 '''
-new_inventory = r'''        boolean allowedNew = false;
-        JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
-        JSONObject explorationForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("exploration") : null;
-        JSONObject omnivaultForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("omnivault") : null;
-        boolean establishedStructured = false;
-        if (explorationForItem != null) establishedStructured = lower(explorationForItem.toString()).contains(lower(name));
-        if (!establishedStructured && omnivaultForItem != null) establishedStructured = lower(omnivaultForItem.toString()).contains(lower(name));
-        if (!establishedStructured && beforeMadGodForItem != null) establishedStructured = lower(beforeMadGodForItem.toString()).contains(lower(name));
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
-        if (existing >= 0) allowedNew = true;
-        else if (acquisitionIntent(action)) {
-          if (madGod) allowedNew = madGodAlreadySpawned && establishedStructured;
-          else if (almond) allowedNew = establishedStructured || rollSuccess(rolls, "almondWater");
-          else if (containsAny(action, "copy", "sao chép")) allowedNew = establishedStructured;
-          else allowedNew = establishedStructured || rollSuccess(rolls, "loot");
-        }
+new_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Java only applies the decision early so
+        // rejected provider ops keep the existing audit/repair behavior before Core commit.
+        boolean allowedNew = com.rabpit.backroom.core.InventoryAcquisitionPolicy.allows(
+          before.toString(), rolls.toString(), action, name, existing >= 0,
+          op.optString("basis", ""));
 '''
-replace_once(old_inventory, new_inventory, "structured inventory acquisition")
+replace_once(old_inventory, new_inventory, "Kotlin inventory acquisition authority")
 
 old_player = r'''        JSONObject current = state.optJSONObject("player");
         if (current == null) current = new JSONObject();
@@ -184,13 +172,13 @@ old_call = r'''              JSONObject result = new JSONObject(postJson(
 new_call = old_call.replace("postJson(", "postJsonFast(")
 replace_once(old_call, new_call, "Gemini fast HTTP call")
 
-for required in ["establishedStructured", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
+for required in ["InventoryAcquisitionPolicy.allows", "op.optString(\"basis\", \"\")", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
     if required not in text:
         raise RuntimeError(f"final authority hardening missing marker: {required}")
 
-for retired in ["gm_confirmed_pickup", "confirmedMundanePickup", "mundanePickupName("]:
+for retired in ["establishedStructured", "gm_confirmed_pickup", "confirmedMundanePickup", "mundanePickupName("]:
     if retired in text:
-        raise RuntimeError(f"retired pickup reconciliation marker survived: {retired}")
+        raise RuntimeError(f"retired inventory/authority marker survived: {retired}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Final Android authority hardening applied without retired pickup reconciliation.")
+print("Final Android authority hardening delegates Inventory acquisition eligibility to Kotlin Game Core.")

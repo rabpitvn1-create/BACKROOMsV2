@@ -102,15 +102,32 @@ class GameCoreFacade private constructor(
   fun clear() = repository.clear()
   override fun close() = localModel.close()
 
+  /** Backward-compatible adapter for callers that do not yet carry authoritative roll context. */
+  fun processValidatedCandidate(beforeJson: String, candidateJson: String, action: String): String =
+    processValidatedCandidate(beforeJson, candidateJson, "{}", "[]", action)
+
+  /** Backward-compatible adapter for callers that carry rolls but not provider operation metadata. */
+  fun processValidatedCandidate(beforeJson: String, candidateJson: String, rollsJson: String, action: String): String =
+    processValidatedCandidate(beforeJson, candidateJson, rollsJson, "[]", action)
+
   /**
-   * Commits only the gameplay delta already accepted by the legacy canon/dice validator.
-   * Candidate prose/JSON never becomes storage directly: inventory and party are rebuilt
-   * from commands and then projected back onto the UI state.
+   * Commits only the gameplay delta accepted by Kotlin Game Core policy.
+   * Candidate prose/JSON never becomes storage directly: inventory acquisition is checked against
+   * authoritative rolls plus the accepted operation basis, then inventory and party are rebuilt
+   * from commands and projected back onto the UI state.
    */
-  fun processValidatedCandidate(beforeJson: String, candidateJson: String, action: String): String {
+  fun processValidatedCandidate(
+    beforeJson: String,
+    candidateJson: String,
+    rollsJson: String,
+    operationsJson: String,
+    action: String,
+  ): String {
     val before = JSONObject(beforeJson)
     val candidate = JSONObject(candidateJson)
     val core = loadOrMigrate(before)
+    val rolls = JSONObject(rollsJson.ifBlank { "{}" })
+    val operations = JSONArray(operationsJson.ifBlank { "[]" })
     val preparedCore = synchronizeValidatedLuciaCharacter(core, candidate)
     val turnId = nextTurnId(before, preparedCore)
     val pending = TurnCoordinator.createPending(preparedCore, turnId, action)
@@ -130,11 +147,18 @@ class GameCoreFacade private constructor(
         val name = json.optString("name").trim(); if (name.isEmpty()) continue
         val id = json.optString("id").ifBlank { stableItemId(name) }
         val currentStack = current[id]
+        val proposedQuantity = json.optInt("quantity", 1).coerceAtLeast(1)
+        val acquisitionBasis = inventoryAcquisitionBasis(operations, name)
+        if (proposedQuantity > (currentStack?.quantity ?: 0) &&
+          !InventoryAcquisitionPolicy.allows(before, rolls, action, name, currentStack != null, acquisitionBasis)) {
+          currentStack?.let { desiredById[id] = it }
+          continue
+        }
         val metadata = currentStack?.metadata.orEmpty() + jsonObjectStrings(json.optJSONObject("metadata"))
         desiredById[id] = ItemStack(
           id,
           name,
-          json.optInt("quantity", 1).coerceAtLeast(1),
+          proposedQuantity,
           json.optString("state").takeIf(String::isNotBlank) ?: currentStack?.condition,
           metadata,
           currentStack?.archetypeId ?: id,
@@ -234,6 +258,20 @@ class GameCoreFacade private constructor(
 
   private fun stableItemId(name: String): String = name.lowercase()
     .replace(Regex("[^\\p{L}\\p{N}]+"), "-").trim('-').ifBlank { "item-${name.hashCode().toUInt()}" }
+
+  private fun inventoryAcquisitionBasis(operations: JSONArray, itemName: String): String {
+    val needle = itemName.trim()
+    if (needle.isEmpty()) return ""
+    for (index in 0 until operations.length()) {
+      val operation = operations.optJSONObject(index) ?: continue
+      if (!operation.optString("type").equals("inventory_upsert", ignoreCase = true)) continue
+      val item = operation.optJSONObject("item") ?: continue
+      if (item.optString("name").trim().equals(needle, ignoreCase = true)) {
+        return operation.optString("basis", "").trim()
+      }
+    }
+    return ""
+  }
 
   private fun jsonObjectStrings(json: JSONObject?): Map<String, String> {
     if (json == null) return emptyMap()
