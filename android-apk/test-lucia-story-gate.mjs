@@ -119,8 +119,8 @@ requireContract(!story.includes('isValidFirstContactCandidate'), 'provider-autho
 requireContract(!story.includes('candidateJoinAllowed'), 'provider-authored Lucia join gate survived StoryProgressionPolicy');
 
 // GameCore consumes the already-normalized candidate at the canonical MainActivity boundary and
-// synchronizes Lucia into structured character/party storage. It must not contain a second Lucia
-// operation language/state machine of its own.
+// synchronizes Lucia into structured character/party storage. It must not normalize the story a
+// second time or contain another Lucia operation language/state machine of its own.
 for (const marker of [
   'internal fun synchronizeValidatedLuciaCharacter',
   'StoryProgressionPolicy.LEVEL0_FIRST_CONTACT',
@@ -130,6 +130,7 @@ for (const marker of [
 ]) {
   requireContract(core.includes(marker), `Game State Core story commit contract missing: ${marker}`);
 }
+requireContract(!core.includes('StoryProgressionPolicy.normalizeCandidate('), 'Game State Core must not normalize an already-normalized story candidate again');
 requireContract(!core.includes('lucia_story'), 'Game State Core must not reintroduce provider-owned Lucia story operations');
 
 console.log('Single StoryProgressionPolicy authority and Lucia Party integration regression checks passed.');
