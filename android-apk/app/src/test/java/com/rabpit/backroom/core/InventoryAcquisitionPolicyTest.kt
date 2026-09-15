@@ -25,6 +25,19 @@ class InventoryAcquisitionPolicyTest {
     assertTrue(InventoryAcquisitionPolicy.allows(established, rolls(), "nhận Bandage", "Bandage", alreadyOwned = false))
   }
 
+  @Test fun worldConsequencePreservesSettledLootAndAlmondRewardPath() {
+    assertFalse(InventoryAcquisitionPolicy.allows(before(), rolls(loot = true), "quan sát hộp", "Bandage", alreadyOwned = false))
+    assertTrue(InventoryAcquisitionPolicy.allows(
+      before(), rolls(loot = true), "quan sát hộp", "Bandage", alreadyOwned = false, basis = "world_consequence"
+    ))
+    assertTrue(InventoryAcquisitionPolicy.allows(
+      before(), rolls(almond = true), "quan sát vòi nước", "Almond Water", alreadyOwned = false, basis = "WORLD_CONSEQUENCE"
+    ))
+    assertFalse(InventoryAcquisitionPolicy.allows(
+      before(), rolls(), "quan sát hộp", "Bandage", alreadyOwned = false, basis = "world_consequence"
+    ))
+  }
+
   @Test fun almondWaterUsesItsDedicatedRollOrEstablishedState() {
     assertFalse(InventoryAcquisitionPolicy.allows(before(), rolls(), "lấy Almond Water", "Almond Water", alreadyOwned = false))
     assertTrue(InventoryAcquisitionPolicy.allows(before(), rolls(almond = true), "lấy Almond Water", "Almond Water", alreadyOwned = false))
@@ -37,6 +50,9 @@ class InventoryAcquisitionPolicyTest {
     assertFalse(InventoryAcquisitionPolicy.allows(before(), rolls(loot = true), "copy Bandage", "Bandage", alreadyOwned = false))
     val established = before("""{"omnivault":{"observed":"Bandage"}}""")
     assertTrue(InventoryAcquisitionPolicy.allows(established, rolls(), "copy Bandage", "Bandage", alreadyOwned = false))
+    assertFalse(InventoryAcquisitionPolicy.allows(
+      before(), rolls(loot = true), "nhân bản Bandage", "Bandage", alreadyOwned = false, basis = "world_consequence"
+    ))
   }
 
   @Test fun madGodRequiresSpawnedStructuredStateEvenWhenLootSucceeds() {
@@ -48,5 +64,8 @@ class InventoryAcquisitionPolicyTest {
 
     val authorized = before("""{"madGod":{"spawned":true,"reward":"MadGod Armor"}}""")
     assertTrue(InventoryAcquisitionPolicy.allows(authorized, rolls(), "nhận MadGod Armor", "MadGod Armor", alreadyOwned = false))
+    assertFalse(InventoryAcquisitionPolicy.allows(
+      authorized, rolls(loot = true), "quan sát MadGod Armor", "MadGod Armor", alreadyOwned = false, basis = "world_consequence"
+    ))
   }
 }
