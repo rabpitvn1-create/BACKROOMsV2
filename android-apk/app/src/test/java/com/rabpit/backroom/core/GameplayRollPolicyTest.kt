@@ -75,6 +75,20 @@ class GameplayRollPolicyTest {
     assertEquals(3 + EntityEncounterPolicy.authorizedKeys().size, random.bounds.size)
   }
 
+  @Test fun entityDisableFlagPreventsTheEntireIndependentBatchFromConsumingRng() {
+    val random = RecordingRandom()
+    val state = JSONObject("""{"level":{"number":1},"flags":{"entityEncountersAllowed":false}}""")
+    val rolls = GameplayRollPolicy.roll(state, "EXPLORE", "đi tiếp", false, random)
+
+    assertEquals(0, rolls.getJSONArray("entityEncounterKeys").length())
+    assertFalse(rolls.getJSONObject("entityEncounter").getBoolean("success"))
+    EntityEncounterPolicy.authorizedKeys().forEach { key ->
+      assertFalse(rolls.getJSONObject("entityRolls").getJSONObject(key).getBoolean("eligible"))
+    }
+    // survivor + hazard + exitProbe. Disabled Entity checks consume no draws.
+    assertEquals(listOf(10_000, 10_000, 10_000), random.bounds)
+  }
+
   @Test fun progressionFixturesSuppressCombatRngAndGuaranteeReadyParentExit() {
     val random = RecordingRandom()
     val state = JSONObject("""
