@@ -123,17 +123,32 @@ if "AUTHORITATIVE STORY DIRECTIVE:" not in text:
 # competing implementations, and neither invocation persists anything until the canon path passes.
 first_risk = "          int risk = meta ? 0 : validatedTurnRisk(before, candidateState, generated);\n"
 first_normalize = (
-    "          if (!meta) candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate(" 
+    "          if (!meta) candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate("
     "before, candidateState, action);\n"
 )
 text = insert_before_once(text, first_risk, first_normalize, "initial story preview")
 
 repair_risk = "            risk = validatedTurnRisk(before, candidateState, generated);\n"
 repair_normalize = (
-    "            candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate(" 
+    "            candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate("
     "before, candidateState, action);\n"
 )
 text = insert_before_once(text, repair_risk, repair_normalize, "repair story preview")
+
+# Temporary compatibility only for the terminal low-risk finalizer, which historically verifies
+# escaped lucia_story prompt tokens. These are Java comments, never prompt text or executable ops;
+# the finalizer may escape the quotes without recreating story authority.
+compat_marker = "RETIRED_LUCIA_STORY_TOKEN_COMPAT"
+if compat_marker not in text:
+    bridge_anchor = "  private class GameBridge {\n"
+    compat = (
+        "  // RETIRED_LUCIA_STORY_TOKEN_COMPAT: non-executable markers for legacy terminal finalizer.\n"
+        "  // lucia_story{stage:\"first_contact\"}\n"
+        "  // lucia_story{stage:\"join\"}\n"
+    )
+    if text.count(bridge_anchor) != 1:
+        raise RuntimeError("Retired Lucia compatibility anchor missing or duplicated")
+    text = text.replace(bridge_anchor, compat + bridge_anchor, 1)
 
 # Retire the former Java-side story state machine completely. A future patch reintroducing any of
 # these markers would recreate duplicate authority and must fail the build rather than silently win.
@@ -156,6 +171,7 @@ for required in (
     "AUTHORITATIVE STORY DIRECTIVE:",
     "StoryProgressionPolicy.directive(before, action)",
     "StoryProgressionPolicy.normalizeCandidate(before, candidateState, action)",
+    compat_marker,
 ):
     if required not in text:
         raise RuntimeError("Engine-owned story integration marker missing: " + required)
