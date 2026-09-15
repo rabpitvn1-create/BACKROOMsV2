@@ -6,6 +6,7 @@ const html = fs.readFileSync(`${root}/app/src/main/assets/index.html`, 'utf8');
 const java = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/MainActivity.java`, 'utf8');
 const classifier = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/FreedomActionClassifier.java`, 'utf8');
 const runtime = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/ActionRuntime.kt`, 'utf8');
+const partyPolicy = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/PartyCandidatePolicy.kt`, 'utf8');
 
 assert.match(java, /@JavascriptInterface public void submitFreedom\(String stateJson, String action\)/);
 assert.match(java, /classifyFreedomActionKind\(action\)/);
@@ -47,6 +48,18 @@ assert.doesNotMatch(java, /entityEncounterAction/);
 assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/);
 assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
 assert.match(java, /không tự đổi mục tiêu và không khởi tạo encounter Entity mới/);
+
+// Provider Party admission/removal is bridge-only in Java. The actual eligibility policy lives in
+// Kotlin and is rechecked at GameCore commit before PartyEngine handles consent/presence/capacity.
+assert.match(java, /PartyCandidatePolicy\.allowsProviderAddition\(/);
+assert.match(java, /PartyCandidatePolicy\.allowsRemoval\(action\)/);
+assert.doesNotMatch(java, /characterAddAllowed\(/);
+assert.match(partyPolicy, /object PartyCandidatePolicy/);
+assert.match(partyPolicy, /allowsCoreAddition\(/);
+assert.match(partyPolicy, /anNhienEncounter/);
+assert.match(partyPolicy, /irisReunion/);
+assert.match(partyPolicy, /syvialReunion/);
+assert.match(partyPolicy, /survivor/);
 
 assert.match(html, /GM_CHOICES_FREEDOM_V1/);
 assert.match(html, /#searchActionButton,#exploreActionButton\{display:none!important\}/);
