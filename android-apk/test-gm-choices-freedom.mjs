@@ -36,7 +36,9 @@ assert.doesNotMatch(classifier, /ActionKind\.FREEDOM/);
 
 // Final interaction authority: only EXPLORE may start a new Entity encounter.
 // SEARCH/EXECUTE remain valid ActionKinds but must never regain an all-actions gate.
-assert.match(java, /EntityEncounterPolicy\.roll\(\s*entityPool,\s*exploreAction && entityAllowed && !emuProgressionFixture,\s*GAME_RNG\)/);
+// Pool membership and the 3% rule live in Kotlin EntityEncounterPolicy; Java supplies eligibility only.
+assert.match(java, /EntityEncounterPolicy\.roll\(\s*exploreAction && entityAllowed && !emuProgressionFixture,\s*GAME_RNG\)/);
+assert.doesNotMatch(java, /String\[\]\s+(?:entityPool|roamingPool)\s*=/);
 assert.doesNotMatch(java, /entityEncounterAction/);
 assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/);
 assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
