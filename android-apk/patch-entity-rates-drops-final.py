@@ -1,4 +1,4 @@
-"""Wire Android to the Kotlin-owned Entity encounter/reward contract after legacy generators."""
+"""Wire Android to Kotlin-owned gameplay/Entity encounter and reward contracts."""
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -139,10 +139,56 @@ facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
 FACADE.write_text(facade, encoding="utf-8")
 print("Entity bridge applied: Kotlin Game Core owns the shared Entity pool, independent encounter dice, queue order and catalog kill drops.")
 
-# This runs last in the Android patch chain so the Level 0-6 traversal guard can
-# extend the settled transition/provider/entity runtime without reviving legacy paths.
+# These legacy transforms still need the settled Java method shape while they install their
+# transition/debug adapters. Run them first; only after they finish do we collapse the final
+# Android roll method to a pure Kotlin Game Core bridge.
 import runpy
 runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
-
-# Re-assert the typed action contract after every nested runtime transformation has settled.
 runpy.run_path(str(ROOT / "patch-gm-action-policy-final.py"), run_name="__main__")
+
+# Kotlin GameplayRollPolicy now owns every final probability/eligibility decision, including
+# EntityEncounterPolicy delegation. Java keeps only Android debug-extra plumbing and the RNG object.
+main = MAIN.read_text(encoding="utf-8")
+roll_start_marker = '  private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {'
+roll_end_marker = '  private boolean rollSuccess(JSONObject rolls, String key) {'
+if main.count(roll_start_marker) != 1 or main.count(roll_end_marker) != 1:
+    raise RuntimeError("Final gameplay-roll bridge anchors are not unique")
+roll_start = main.index(roll_start_marker)
+roll_end = main.index(roll_end_marker, roll_start)
+roll_bridge = '''  private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {
+    return makeGameplayRolls(state, "EXECUTE", action, meta);
+  }
+
+  private JSONObject makeGameplayRolls(JSONObject state, String actionKind, String action, boolean meta) throws Exception {
+    boolean emuLevel1Progression = BuildConfig.DEBUG &&
+      getIntent().getBooleanExtra("emuLevel1Progression", false);
+    boolean emuLevel06Traversal = BuildConfig.DEBUG &&
+      getIntent().getBooleanExtra("emuLevel06Traversal", false);
+    return com.rabpit.backroom.core.GameplayRollPolicy.roll(
+      state.toString(), actionKind, action, meta, GAME_RNG,
+      emuLevel1Progression, emuLevel06Traversal);
+  }
+
+'''
+main = main[:roll_start] + roll_bridge + main[roll_end:]
+
+for forbidden in (
+    'int[] hazardThresholds =',
+    'int[] lootThresholds =',
+    'int[] waterThresholds =',
+    'rolls.put("survivor", thresholdRoll(',
+    'rolls.put("hazard", thresholdRoll(',
+    'EntityEncounterPolicy.roll(',
+):
+    if forbidden in main[roll_start:main.index(roll_end_marker, roll_start)]:
+        raise RuntimeError("Java gameplay-roll authority survived final bridge: " + forbidden)
+for required in (
+    'GameplayRollPolicy.roll(',
+    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
+    'getIntent().getBooleanExtra("emuLevel06Traversal", false)',
+    'state.toString(), actionKind, action, meta, GAME_RNG',
+):
+    if required not in main[roll_start:main.index(roll_end_marker, roll_start)]:
+        raise RuntimeError("Kotlin gameplay-roll bridge missing: " + required)
+MAIN.write_text(main, encoding="utf-8")
+print("Gameplay roll bridge applied: final Android runtime delegates roll authority to Kotlin GameplayRollPolicy.")
