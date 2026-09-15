@@ -18,12 +18,14 @@ object InventoryAcquisitionPolicy {
     action: String,
     itemName: String,
     alreadyOwned: Boolean,
+    basis: String,
   ): Boolean = allows(
     JSONObject(beforeJson),
     JSONObject(rollsJson.ifBlank { "{}" }),
     action,
     itemName,
     alreadyOwned,
+    basis,
   )
 
   internal fun allows(
@@ -32,21 +34,26 @@ object InventoryAcquisitionPolicy {
     action: String,
     itemName: String,
     alreadyOwned: Boolean,
+    basis: String = "",
   ): Boolean {
     if (alreadyOwned) return true
     val name = itemName.trim()
-    if (name.isEmpty() || !acquisitionIntent(action)) return false
+    if (name.isEmpty()) return false
 
+    val directAcquisition = acquisitionIntent(action)
+    val worldAcquisition = basis.trim().equals("world_consequence", ignoreCase = true)
     val established = establishedStructured(before, name)
     val normalizedName = name.lowercase(Locale.ROOT)
     val isMadGod = normalizedName.contains("madgod")
     val isAlmondWater = normalizedName.contains("almond water")
 
     return when {
-      isMadGod -> madGodAlreadySpawned(before) && established
-      isAlmondWater -> established || rollSuccess(rolls, "almondWater")
-      copyIntent(action) -> established
-      else -> established || rollSuccess(rolls, "loot")
+      isMadGod -> directAcquisition && madGodAlreadySpawned(before) && established
+      copyIntent(action) -> directAcquisition && established
+      isAlmondWater -> (directAcquisition || worldAcquisition) &&
+        (established || rollSuccess(rolls, "almondWater"))
+      else -> (directAcquisition || worldAcquisition) &&
+        (established || rollSuccess(rolls, "loot"))
     }
   }
 
@@ -60,7 +67,7 @@ object InventoryAcquisitionPolicy {
 
   private fun copyIntent(action: String): Boolean {
     val text = action.lowercase(Locale.ROOT)
-    return text.contains("copy") || text.contains("sao chép")
+    return listOf("copy", "sao chép", "nhân bản", "tạo thêm", "tạo ra thêm", "nhân thêm").any(text::contains)
   }
 
   private fun establishedStructured(before: JSONObject, itemName: String): Boolean {
