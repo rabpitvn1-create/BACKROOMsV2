@@ -118,9 +118,9 @@ if "AUTHORITATIVE STORY DIRECTIVE:" not in text:
     method = method[: prompt_match.end()] + prefix + method[prompt_match.end():]
     text = text[:start] + method + text[end:]
 
-# Preview the exact pure StoryProgressionPolicy result before risk scoring/auditing. GameCore runs
-# the same normalizer again immediately before commit. This is one authority invoked twice, not two
-# competing implementations, and neither invocation persists anything until the canon path passes.
+# Preview the exact pure StoryProgressionPolicy result before risk scoring/auditing. The normalized
+# candidate is the one handed to GameCore for commit. The terminal safe fallback independently
+# reconstructs the same deterministic baseline from before+action if model output is discarded.
 first_risk = "          int risk = meta ? 0 : validatedTurnRisk(before, candidateState, generated);\n"
 first_normalize = (
     "          if (!meta) candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate("
@@ -134,21 +134,6 @@ repair_normalize = (
     "before, candidateState, action);\n"
 )
 text = insert_before_once(text, repair_risk, repair_normalize, "repair story preview")
-
-# Temporary compatibility only for the terminal low-risk finalizer, which historically verifies
-# escaped lucia_story prompt tokens. These are Java comments, never prompt text or executable ops;
-# the finalizer may escape the quotes without recreating story authority.
-compat_marker = "RETIRED_LUCIA_STORY_TOKEN_COMPAT"
-if compat_marker not in text:
-    bridge_anchor = "  private class GameBridge {\n"
-    compat = (
-        "  // RETIRED_LUCIA_STORY_TOKEN_COMPAT: non-executable markers for legacy terminal finalizer.\n"
-        "  // lucia_story{stage:\"first_contact\"}\n"
-        "  // lucia_story{stage:\"join\"}\n"
-    )
-    if text.count(bridge_anchor) != 1:
-        raise RuntimeError("Retired Lucia compatibility anchor missing or duplicated")
-    text = text.replace(bridge_anchor, compat + bridge_anchor, 1)
 
 # Retire the former Java-side story state machine completely. A future patch reintroducing any of
 # these markers would recreate duplicate authority and must fail the build rather than silently win.
@@ -171,7 +156,6 @@ for required in (
     "AUTHORITATIVE STORY DIRECTIVE:",
     "StoryProgressionPolicy.directive(before, action)",
     "StoryProgressionPolicy.normalizeCandidate(before, candidateState, action)",
-    compat_marker,
 ):
     if required not in text:
         raise RuntimeError("Engine-owned story integration marker missing: " + required)
