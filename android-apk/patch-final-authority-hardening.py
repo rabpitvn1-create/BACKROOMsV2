@@ -24,7 +24,8 @@ old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
 new_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Java only applies the decision early so
         // rejected provider ops keep the existing audit/repair behavior before Core commit.
         boolean allowedNew = com.rabpit.backroom.core.InventoryAcquisitionPolicy.allows(
-          before.toString(), rolls.toString(), action, name, existing >= 0);
+          before.toString(), rolls.toString(), action, name, existing >= 0,
+          op.optString("basis", ""));
 '''
 replace_once(old_inventory, new_inventory, "Kotlin inventory acquisition authority")
 
@@ -171,7 +172,7 @@ old_call = r'''              JSONObject result = new JSONObject(postJson(
 new_call = old_call.replace("postJson(", "postJsonFast(")
 replace_once(old_call, new_call, "Gemini fast HTTP call")
 
-for required in ["InventoryAcquisitionPolicy.allows", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
+for required in ["InventoryAcquisitionPolicy.allows", "op.optString(\"basis\", \"\")", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
     if required not in text:
         raise RuntimeError(f"final authority hardening missing marker: {required}")
 
