@@ -2,6 +2,7 @@ from pathlib import Path
 import runpy
 
 ROOT = Path(__file__).resolve().parent
+COMBAT_TURN_AUTHORITY = ROOT / "app/src/main/java/com/rabpit/backroom/core/CombatTurnAuthority.kt"
 
 # Step 1: Character stat/vital schema.
 runpy.run_path(str(ROOT / "patch-character-stat-schema.py"), run_name="__main__")
@@ -9,7 +10,33 @@ runpy.run_path(str(ROOT / "patch-character-stat-schema.py"), run_name="__main__"
 # Steps 2-10: Equipment definitions, slot semantics, normalized item stats, effective-stat resolver,
 # HP-preserving equip/unequip, completed-turn regeneration, shared Item Detail UI, persistence,
 # Pressure Combat integration, and regression tests.
-runpy.run_path(str(ROOT / "patch-character-status-equipment-system.py"), run_name="__main__")
+#
+# CombatTurnAuthority now owns combat time + completed-turn regeneration in source Kotlin. The
+# historical status patch still carries the retired facade injection, so strip only that block at
+# execution time while preserving its generic TurnCoordinator regeneration and equipment work.
+status_patch = ROOT / "patch-character-status-equipment-system.py"
+status_source = status_patch.read_text(encoding="utf-8")
+legacy_combat_start = "# Combat actions are completed gameplay turns too. Regen token derives from the UI turn so save/load cannot reapply it.\n"
+legacy_combat_end = "# Gemini candidate inventory can never silently delete equipment definitions. Equipment remains one owned Item.\n"
+legacy_start = status_source.find(legacy_combat_start)
+legacy_end = status_source.find(legacy_combat_end, legacy_start)
+if legacy_start < 0 or legacy_end < 0:
+    raise RuntimeError("Legacy combat regeneration block missing from character status patch")
+authority = COMBAT_TURN_AUTHORITY.read_text(encoding="utf-8")
+for marker in (
+    "object CombatTurnAuthority",
+    "CharacterStatEngine.applyCompletedTurnRegen(next, completedTurnRegenToken(state))",
+    'return "COMBAT_TURN_$turnNumber"',
+):
+    if marker not in authority:
+        raise RuntimeError("Kotlin combat regeneration authority missing: " + marker)
+status_source = (
+    status_source[:legacy_start]
+    + "# Combat completed-turn regeneration is source-owned by CombatTurnAuthority.\n"
+    + 'facade = FACADE.read_text(encoding="utf-8")\n\n'
+    + status_source[legacy_end:]
+)
+exec(compile(status_source, str(status_patch), "exec"), {"__name__": "__main__", "__file__": str(status_patch)})
 
 # Hard cleanup after the large status patch: no retired combat HP metadata reference may survive.
 runpy.run_path(str(ROOT / "patch-combat-hp-metadata-cleanup.py"), run_name="__main__")
