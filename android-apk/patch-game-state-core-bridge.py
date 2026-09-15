@@ -87,22 +87,12 @@ if "|nhặt|được|lượm|" not in intent:
 INTENT.write_text(intent, encoding="utf-8")
 
 facade = FACADE.read_text(encoding="utf-8")
-progression_marker = "StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)"
-if progression_marker not in facade:
-    anchor = '''    val before = JSONObject(beforeJson)
-    val candidate = JSONObject(candidateJson)
-    val core = loadOrMigrate(before)
-'''
-    replacement = '''    val before = JSONObject(beforeJson)
-    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)
-    val core = loadOrMigrate(before)
-'''
-    count = facade.count(anchor)
-    if count != 1:
-        raise RuntimeError(f"Story progression Core anchor expected exactly once, found {count}")
-    facade = facade.replace(anchor, replacement, 1)
-if progression_marker not in facade:
-    raise RuntimeError("Story progression Core integration missing after patch")
+# StoryProgressionPolicy is already invoked at the final MainActivity canon boundary by
+# patch-lucia-story-gate-final.py before audit and before the candidate reaches GameCore.
+# Do not rewrite GameCoreFacade to normalize the same candidate a second time: that creates
+# a duplicate active path and makes build-time Python own Kotlin source semantics again.
+if "StoryProgressionPolicy.normalizeCandidate(" in facade:
+    raise RuntimeError("Duplicate StoryProgressionPolicy normalization survived inside GameCoreFacade")
 
 warning_marker = 'return "[Warning] $message"'
 if warning_marker not in facade:
@@ -156,4 +146,4 @@ if warning_log_render not in html:
     html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Final Game State Core bridge applied with authoritative story progression, reset/load core invalidation, item cleanup, quantity UI and warning feedback.")
+print("Final Game State Core bridge applied without duplicate StoryProgressionPolicy source rewrite; reset/load core invalidation, item cleanup, quantity UI and warning feedback preserved.")
