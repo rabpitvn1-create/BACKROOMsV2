@@ -453,7 +453,7 @@ if "ANDROID_EDGE_UI_V1" not in html:
 swipe_script = r'''
 <script id="androidSwipeUi">
 /* ANDROID_SWIPE_UI_V1 */
-/* ANDROID_SWIPE_GESTURE_V3: touch hardware uses Touch Events; Pointer Events remain the non-touch fallback. */
+/* ANDROID_SWIPE_GESTURE_V2 / ANDROID_SWIPE_TOUCH_FIRST_V1: touch hardware uses Touch Events; Pointer Events remain the non-touch fallback. */
 (function(){
   if(window.__androidSwipeUi)return;window.__androidSwipeUi=true;
   const shell=document.querySelector('.shell'),game=document.querySelector('.game'),side=document.querySelector('.side');
