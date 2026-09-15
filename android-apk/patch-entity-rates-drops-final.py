@@ -1,6 +1,5 @@
-"""Apply the final independent Entity dice/reward contract after legacy runtime generators."""
+"""Wire Android to the Kotlin-owned Entity encounter/reward contract after legacy generators."""
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -15,40 +14,39 @@ def once(source, old, new):
 
 main = MAIN.read_text(encoding="utf-8")
 
-# The settled pre-final runtime still has the old one-roll + roaming-pick block.
-# Replace that whole block directly; Diệp Minh no longer owns a private encounter
-# channel, so this finalizer must not depend on (or recreate) diepMinhEncounter.
+# The settled pre-final runtime still contains legacy Java-side pool/rate selection.
+# Replace the whole block with a bridge call. Pool membership and the independent
+# encounter probability are authoritative in EntityEncounterPolicy.
 start_marker = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter"'
 if main.count(start_marker) != 1:
     raise RuntimeError(f"Settled Entity roll anchor count != 1: {main.count(start_marker)}")
 start = main.index(start_marker)
 end = main.index('    int luciaScoutBonus =', start)
-legacy_block = main[start:end]
-pool_match = re.search(r'String\[\] roamingPool = (\{[^\n]+\});', legacy_block)
-if pool_match is None:
-    raise RuntimeError("Settled shared roaming pool missing before final Entity policy")
-pool = pool_match.group(1)
-if '"diep_minh"' not in pool:
-    pool = pool[:-1] + ',"diep_minh"}'
-
-main = main[:start] + '''    String[] entityPool = POOL;
-    // The dedicated progression fixture verifies Level state flow, not combat RNG. Keep the
+main = main[:start] + '''    // The dedicated progression fixture verifies Level state flow, not combat RNG. Keep the
     // production Entity policy unchanged, but suppress unrelated random encounters only for the
     // explicit debug Activity extra used by the real-emulator progression workflow.
     boolean emuProgressionFixture = BuildConfig.DEBUG &&
       getIntent().getBooleanExtra("emuLevel1Progression", false);
     JSONObject entityChecks = com.rabpit.backroom.core.EntityEncounterPolicy.roll(
-      entityPool, exploreAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
+      exploreAction && entityAllowed && !emuProgressionFixture, GAME_RNG);
     java.util.Iterator<String> entityCheckKeys = entityChecks.keys();
     while (entityCheckKeys.hasNext()) {
       String key = entityCheckKeys.next();
       rolls.put(key, entityChecks.get(key));
     }
-'''.replace("POOL", pool) + main[end:]
+''' + main[end:]
 
-# No level-rate array or suffix remains authoritative after independent 3% dice.
-main = re.sub(r'^    int\[\] entityThresholds = .*\n', '', main, flags=re.M)
-main = re.sub(r'^    String entitySuffix = .*\n', '', main, flags=re.M)
+# No level-rate array or suffix remains authoritative after Game Core rolls.
+for legacy_rate_line in (
+    '    int[] entityThresholds =',
+    '    String entitySuffix =',
+):
+    lines = []
+    for line in main.splitlines(keepends=True):
+      if line.startswith(legacy_rate_line):
+        continue
+      lines.append(line)
+    main = ''.join(lines)
 
 start = main.index('  private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls) throws Exception {')
 end = main.index('\n  private JSONObject resolveEntityOverlay(', start)
@@ -60,18 +58,18 @@ main = main[:start] + '''  private void forceEntityEncounterFlag(JSONObject cand
   }
 ''' + main[end:]
 
-# Remove obsolete single-roll / boss-priority prose from the generated GM prompt.
+# Remove obsolete single-roll / boss-priority prose. The writer only receives the
+# already-authoritative Game Core result and must not reconstruct encounter policy.
 lines = []
 for line in main.splitlines(keepends=True):
     if any(marker in line for marker in ('"JEFF THE KILLER HARD LOCK:', '"ROAMING KILLER HARD LOCK:', '"ENTITY ROAMING HARD LOCK:')):
         if '"ENTITY ROAMING HARD LOCK:' in line:
-            lines.append('      "ENTITY ROAMING HARD LOCK: mỗi Entity kể cả Jeff, Jane và Diệp Minh roll độc lập 3% trong entityRolls. entityEncounter chỉ tổng hợp kết quả, không phải roll chung. entityEncounterKeys giữ tất cả Entity roll trúng; combat xử lý lần lượt theo danh sách. Không thêm Entity ngoài danh sách. Mỗi Entity bị tiêu diệt được SYSTEM cấp đúng một item ngẫu nhiên; không tự cấp thêm item từ kill trong ops. " +\n')
+            lines.append('      "ENTITY GAME CORE LOCK: entityRolls và entityEncounterKeys là kết quả authoritative từ Kotlin Game Core. Không tự thêm, bỏ, ưu tiên hay reroll Entity; combat xử lý đúng danh sách đã được Core trả về. Khi Entity bị tiêu diệt, SYSTEM/Core quyết định reward; không tự cấp item kill trong ops. " +\n')
     else:
         lines.append(line)
 main = ''.join(lines)
 
-# Retired encounter-rate paths must never survive the final authority layer or
-# silently regain control if patch order changes.
+# Retired Java-side encounter authority must never survive the final layer.
 for forbidden in (
     'thresholdRoll("jeffEncounter"',
     '"JEFF THE KILLER HARD LOCK:',
@@ -82,25 +80,29 @@ for forbidden in (
     'diepMinhEncounter',
     'JSONObject normalEntityRoll = thresholdRoll("entityEncounter"',
     'rolls.put("roamingEntityKey"',
+    'String[] entityPool =',
+    'String[] roamingPool =',
 ):
     if forbidden in main:
-        raise RuntimeError("Retired Entity encounter logic survived final canon: " + forbidden)
+        raise RuntimeError("Retired Java Entity encounter authority survived final canon: " + forbidden)
 
 for required in (
-    'String[] entityPool = {',
-    '"diep_minh"',
     'EntityEncounterPolicy.roll(',
     'boolean emuProgressionFixture = BuildConfig.DEBUG',
     'getIntent().getBooleanExtra("emuLevel1Progression", false)',
     'exploreAction && entityAllowed && !emuProgressionFixture',
     'rolls.optJSONArray("entityEncounterKeys")',
     'startEntityEncounters(candidateState.toString(), keys.toString())',
+    'ENTITY GAME CORE LOCK:',
 ):
     if required not in main:
-        raise RuntimeError("Final independent Entity policy missing: " + required)
+        raise RuntimeError("Final Kotlin-owned Entity bridge missing: " + required)
 
 MAIN.write_text(main, encoding="utf-8")
 
+# Temporary compatibility wiring. Gameplay behavior is implemented by Kotlin
+# EntityEncounterPolicy / CombatRuntime / EntityDrops; this patch only connects the
+# legacy Activity pipeline to those Core entry points until MainActivity is thinned.
 facade = FACADE.read_text(encoding="utf-8")
 facade = once(facade, '  fun startCombatState(legacyStateJson: String, entityKey: String): String {', '''  fun startEntityEncounters(legacyStateJson: String, keysJson: String): String {
     val legacy = JSONObject(legacyStateJson)
@@ -135,7 +137,7 @@ facade = facade[:start] + combat + facade[end:]
 facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
               '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
 FACADE.write_text(facade, encoding="utf-8")
-print("Entity policy applied: every Entity, including Diệp Minh, uses one independent 3% die on EXPLORE only; queued encounters and guaranteed catalog kill drops remain intact.")
+print("Entity bridge applied: Kotlin Game Core owns the shared Entity pool, independent encounter dice, queue order and catalog kill drops.")
 
 # This runs last in the Android patch chain so the Level 0-6 traversal guard can
 # extend the settled transition/provider/entity runtime without reviving legacy paths.
