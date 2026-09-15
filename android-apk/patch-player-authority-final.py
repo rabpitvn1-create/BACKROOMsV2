@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -96,3 +97,8 @@ for marker in (
 FACADE.write_text(facade, encoding="utf-8")
 
 print("Player authority final applied: Kotlin sanitizes provider player deltas in preview and Core commit.")
+
+flag_authority = ROOT / "patch-flag-authority-final.py"
+if not flag_authority.is_file():
+    raise RuntimeError("Flag authority finalizer missing: " + flag_authority.name)
+runpy.run_path(str(flag_authority), run_name="__main__")
