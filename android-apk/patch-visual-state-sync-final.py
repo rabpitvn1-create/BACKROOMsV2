@@ -140,9 +140,9 @@ new_load = '''  private fun normalizeVisualPresence(state: GameState): GameState
 if new_load not in facade:
     facade = replace_once(facade, old_load, new_load, "persistent stale Entity visual migration")
 
-# Patch processCombat within its own method boundary. Later runtime patches legitimately add HP/state
-# synchronization between TimeEngine and repository.save(), so matching the whole historical method
-# tail is intentionally avoided.
+# Patch processCombat within its own method boundary. Combat rules/time/regen already live behind
+# CombatTurnAuthority; this compatibility patch may only capture the active Entity key for visual
+# cleanup and persist the resulting flags. It must never restore direct CombatRuntime resolution.
 method_start = facade.find("  fun processCombat(legacyStateJson: String, actionKind: String, action: String): String {\n")
 if method_start < 0:
     raise RuntimeError("processCombat method missing for targeted Entity cleanup")
@@ -153,10 +153,15 @@ if method_end < 0:
     raise RuntimeError("processCombat method end missing for targeted Entity cleanup")
 method = facade[method_start:method_end]
 
-resolution_anchor = "    var resolution = CombatRuntime.resolve(current, actionKind, action)\n"
-resolution_with_key = "    val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()\n    var resolution = CombatRuntime.resolve(current, actionKind, action)\n"
+resolution_anchor = "    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n"
+resolution_with_key = "    val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()\n    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n"
 if resolution_with_key not in method:
     method = replace_once(method, resolution_anchor, resolution_with_key, "capture resolved Entity identity")
+
+next_anchor = "    val next = resolution.state\n"
+next_mutable = "    var next = resolution.state\n"
+if next_mutable not in method:
+    method = replace_once(method, next_anchor, next_mutable, "mutable visual cleanup state")
 
 persistent_cleanup = '''    if (resolution.entityDestroyed || resolution.escaped) {
       val flags = next.world["flagsJson"]?.let { JSONObject(it) }
@@ -176,6 +181,14 @@ if persistent_cleanup not in method:
         raise RuntimeError(f"processCombat repository.save anchor expected 1, found {method.count(save_anchor)}")
     method = method.replace(save_anchor, persistent_cleanup + save_anchor, 1)
 
+for forbidden in (
+    "CombatRuntime.resolve(current, actionKind, action)",
+    "TimeEngine.execute(next, TimeAdvanceCommand(",
+    'reason = "combat_action"',
+):
+    if forbidden in method:
+        raise RuntimeError("Visual compatibility patch restored retired combat authority: " + forbidden)
+
 facade = facade[:method_start] + method + facade[method_end:]
 
 for marker in (
@@ -183,6 +196,7 @@ for marker in (
     'if (CombatRuntime.active(state) != null) return state',
     'if (!existed || normalized != loaded) repository.save(normalized)',
     'val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()',
+    'val resolution = CombatTurnAuthority.resolve(current, actionKind, action)',
     'when (resolvedEntityKey)',
     '"jeff_the_killer" -> flags.optJSONObject("jeff")?.put("present", false)',
     '"jane_the_killer" -> flags.optJSONObject("jane")?.put("present", false)',
