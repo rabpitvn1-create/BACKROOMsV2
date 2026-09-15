@@ -65,7 +65,7 @@ reward_anchor = '''        val proposedQuantity = json.optInt("quantity", 1).coe
 '''
 reward_authority = '''        val proposedQuantity = json.optInt("quantity", 1).coerceAtLeast(1)
         if (proposedQuantity <= oldQuantity) continue
-        if (!InventoryAcquisitionPolicy.allows(before, rolls, action, definition.displayName, old != null)) continue
+        if (!InventoryAcquisitionPolicy.allows(before, rolls, action, name, old != null)) continue
         val metadata = old?.metadata.orEmpty() + jsonObjectStrings(json.optJSONObject("metadata")) + definition.metadata
 '''
 if reward_authority not in facade:
@@ -74,7 +74,7 @@ if reward_authority not in facade:
     facade = facade.replace(reward_anchor, reward_authority, 1)
 for marker in (
     "val rolls = JSONObject(rollsJson.ifBlank { \"{}\" })",
-    "InventoryAcquisitionPolicy.allows(before, rolls, action, definition.displayName, old != null)",
+    "InventoryAcquisitionPolicy.allows(before, rolls, action, name, old != null)",
 ):
     if marker not in facade:
         raise RuntimeError("Kotlin Inventory acquisition authority missing after V4 finalization: " + marker)
