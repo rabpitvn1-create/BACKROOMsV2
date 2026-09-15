@@ -14,6 +14,8 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 
 
 # ---- Game State Core facade -------------------------------------------------
+# Legacy JSON adaptation remains here temporarily, but authoritative combat
+# resolution + combat time advancement now live in source Kotlin.
 facade = FACADE.read_text(encoding="utf-8")
 combat_methods = '''
   fun startCombatState(legacyStateJson: String, entityKey: String): String {
@@ -29,18 +31,9 @@ combat_methods = '''
     val current = loadOrMigrate(legacy)
     if (CombatRuntime.active(current) == null) return response(false, legacy, null, "combat_inactive")
 
-    var resolution = CombatRuntime.resolve(current, actionKind, action)
+    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)
     if (!resolution.handled) return response(false, legacy, null, "combat_inactive")
-    var next = resolution.state
-    val time = TimeEngine.execute(next, TimeAdvanceCommand(
-      commandId = "COMBAT:${next.turn.currentTurnId}:${System.nanoTime()}",
-      turnId = null,
-      actorId = KAI_ID,
-      source = CommandSource.SYSTEM,
-      minutes = 1,
-      reason = "combat_action"
-    ))
-    if (time.applied) next = time.state
+    val next = resolution.state
     repository.save(next)
 
     val output = syncLegacy(legacy, next, incrementTurn = true)
@@ -69,12 +62,19 @@ if combat_projection not in facade:
 for marker in (
     "fun startCombatState(legacyStateJson: String, entityKey: String)",
     "fun processCombat(legacyStateJson: String, actionKind: String, action: String)",
-    "CombatRuntime.resolve(current, actionKind, action)",
+    "CombatTurnAuthority.resolve(current, actionKind, action)",
     'flags.put("entityEncounterKey", "")',
     'output.put("combat", it)',
 ):
     if marker not in facade:
         raise RuntimeError("Pressure combat facade contract missing: " + marker)
+for forbidden in (
+    "CombatRuntime.resolve(current, actionKind, action)",
+    "TimeEngine.execute(next, TimeAdvanceCommand(",
+    'reason = "combat_action"',
+):
+    if forbidden in facade:
+        raise RuntimeError("Legacy Python-owned combat orchestration is still active: " + forbidden)
 FACADE.write_text(facade, encoding="utf-8")
 
 # ---- Android pipeline -------------------------------------------------------
