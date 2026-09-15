@@ -1,14 +1,14 @@
 from pathlib import Path
 import re
 
+
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
-text = MAIN.read_text(encoding="utf-8")
 
 
 def method_bounds(source: str, method_name: str) -> tuple[int, int]:
     signature = re.search(
-        rf"(?m)^\s*private\s+String\s+{re.escape(method_name)}\s*\(",
+        rf"(?m)^\s*private\s+[^\n]+\s+{re.escape(method_name)}\s*\(",
         source,
     )
     if not signature:
@@ -67,277 +67,98 @@ def method_bounds(source: str, method_name: str) -> tuple[int, int]:
     raise RuntimeError(f"Closing brace not found for method: {method_name}")
 
 
-# Fresh New Game starts with Kai alone at STORY.PROLOGUE.ENTRY_COMPLETE. The first
-# gameplay turn may explore Level 0 and advance to STORY.LEVEL0.ARRIVAL, but Lucia's
-# first contact belongs to a later turn. Meeting Lucia and joining Party are separate gates.
-if "LUCIA ENCOUNTER STORY GATE:" not in text:
+def insert_before_once(source: str, anchor: str, insertion: str, label: str) -> str:
+    if insertion.strip() in source:
+        return source
+    count = source.count(anchor)
+    if count != 1:
+        raise RuntimeError(f"{label}: expected exactly 1 anchor, found {count}")
+    return source.replace(anchor, insertion + anchor, 1)
+
+
+text = MAIN.read_text(encoding="utf-8")
+
+# The model no longer transports story state. It receives one engine-owned directive and may
+# narrate that event, while StoryProgressionPolicy alone owns storyArc, storyContinuity,
+# luciaEncounter, and Lucia's Party milestone.
+if "STORY ENGINE AUTHORITY:" not in text:
     start, end = method_bounds(text, "writerPrompt")
     method = text[start:end]
     return_match = re.search(r"(?m)^([ \t]*)return\s+", method)
     if not return_match:
-        raise RuntimeError("writerPrompt return expression not found for Lucia story gate")
+        raise RuntimeError("writerPrompt return expression not found for story authority")
     indent = return_match.group(1)
     continuation = indent + "  "
     prefix = (
-        '"LUCIA ENCOUNTER STORY GATE: Sequence bắt buộc và machine-verifiable là STORY.LEVEL0.ARRIVAL -> STORY.LEVEL0.FIRST_CONTACT_COMPLETE -> STORY.LEVEL0.LUCIA_DECISION_COMPLETE kèm luciaEncounter.status=joined, partyEligible=true, joinPending=false -> Party có Lucia. Không được rút gọn các bước này thành một lượt. " +\n'
+        '"STORY ENGINE AUTHORITY: storyArc, storyContinuity, luciaEncounter và Lucia Party milestone chỉ do Android StoryProgressionPolicy quyết định. '
+        'Không dùng flag_patch hoặc party_upsert để điều khiển các state này và không phát operation lucia_story. Hãy kể đúng directive hiện tại, không tự nhảy sang beat sau. " +\n'
         + continuation
-        + '"LUCIA STATE TRANSPORT: không dùng flag_patch để sửa storyArc/luciaEncounter và không dùng party_upsert để tự thêm Lucia. Chỉ dùng operation lucia_story{stage:\"first_contact\"} để ghi nhận lần gặp đầu; ở lượt decision sau chỉ dùng lucia_story{stage:\"join\"}. Android sẽ tự ghi storyArc/luciaEncounter và stage join sẽ tự tạo Party member Lucia với joinConfirmed/present sau khi gate hợp lệ. " +\n'
-        + continuation
-        + '"Nếu state ở ĐẦU lượt chưa hoàn tất STORY.LEVEL0.ARRIVAL, Kai đang một mình ở Level 0: Lucia / Hứa Thuý Mai chưa được gặp, chưa được nghe, chưa được nhận diện qua dấu vết và không được thêm vào Party. Lượt này có thể hoàn tất ARRIVAL nếu hành động đủ căn cứ, nhưng first-contact phải chờ một lượt sau. " +\n'
-        + continuation
-        + '"Nếu state ở ĐẦU lượt đã có ARRIVAL nhưng chưa có FIRST_CONTACT_COMPLETE, lượt này có thể hoàn tất first-contact bằng lucia_story{stage:\"first_contact\"}. Trong CHÍNH lượt first-contact phải giữ Lucia ngoài party, không được phát STORY.LEVEL0.LUCIA_DECISION_COMPLETE và không được coi partyEligible là đã join. " +\n'
-        + continuation
-        + '"Lucia chỉ được vào Party ở một lượt SAU khi state đầu lượt đã có FIRST_CONTACT_COMPLETE và lượt decision dùng lucia_story{stage:\"join\"}. Gặp Lucia không đồng nghĩa Lucia đã join. Không dùng Character Codex hay knowledge hậu trường để spawn hoặc join cô sớm. " +\n'
+        + '"STORY ENGINE DIRECTIVE: " + com.rabpit.backroom.core.StoryProgressionPolicy.directive(before, action) + "\\n\\n" +\n'
         + continuation
     )
     method = method[: return_match.end()] + prefix + method[return_match.end():]
     text = text[:start] + method + text[end:]
 
+# Auditors see the exact same deterministic story directive as the writer. They must not flag a
+# narration merely because the authoritative story transition is absent from the state that began
+# the turn; the preview candidate is normalized before risk/local canon checks below.
+if "AUTHORITATIVE STORY DIRECTIVE:" not in text:
+    start, end = method_bounds(text, "runAudit")
+    method = text[start:end]
+    prompt_match = re.search(r"(?m)^([ \t]*)String prompt = ", method)
+    if not prompt_match:
+        raise RuntimeError("runAudit prompt assignment not found for story directive")
+    continuation = prompt_match.group(1) + "  "
+    prefix = (
+        '"AUTHORITATIVE STORY DIRECTIVE: " + com.rabpit.backroom.core.StoryProgressionPolicy.directive(before, action) + "\\n" +\n'
+        + continuation
+        + '"Story state produced by that directive is engine-owned. Do not report it as a model canon conflict when narration matches the directive.\\n\\n" +\n'
+        + continuation
+    )
+    method = method[: prompt_match.end()] + prefix + method[prompt_match.end():]
+    text = text[:start] + method + text[end:]
 
-transport_anchor = '      if (type.equals("party_upsert")) {\n'
-transport_handler = r'''      if (type.equals("lucia_story")) {
-        applyLuciaStoryOperationAndroid(before, state, lower(op.optString("stage", "")));
-        continue;
-      }
+# Preview the exact pure StoryProgressionPolicy result before risk scoring/auditing. GameCore runs
+# the same normalizer again immediately before commit. This is one authority invoked twice, not two
+# competing implementations, and neither invocation persists anything until the canon path passes.
+first_risk = "          int risk = meta ? 0 : validatedTurnRisk(before, candidateState, generated);\n"
+first_normalize = (
+    "          if (!meta) candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate(" 
+    "before, candidateState, action);\n"
+)
+text = insert_before_once(text, first_risk, first_normalize, "initial story preview")
 
-'''
-if 'type.equals("lucia_story")' not in text:
-    if text.count(transport_anchor) != 1:
-        raise RuntimeError("Lucia transport party anchor expected once, found " + str(text.count(transport_anchor)))
-    text = text.replace(transport_anchor, transport_handler + transport_anchor, 1)
+repair_risk = "            risk = validatedTurnRisk(before, candidateState, generated);\n"
+repair_normalize = (
+    "            candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate(" 
+    "before, candidateState, action);\n"
+)
+text = insert_before_once(text, repair_risk, repair_normalize, "repair story preview")
 
-
-helper_anchor = "  private JSONArray rejectedOperationIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {\n"
-helper = r'''  private boolean storyArcCompletedAndroid(JSONObject state, String beat) {
-    if (state == null || beat == null || beat.isEmpty()) return false;
-    JSONObject flags = state.optJSONObject("flags");
-    JSONObject storyArc = flags == null ? null : flags.optJSONObject("storyArc");
-    JSONArray completed = storyArc == null ? null : storyArc.optJSONArray("completed");
-    if (completed == null) return false;
-    for (int i = 0; i < completed.length(); i++) {
-      if (beat.equals(completed.optString(i, ""))) return true;
-    }
-    return false;
-  }
-
-  private void addStoryBeatAndroid(JSONObject state, String beat, String currentBeat, String nextBeat) throws Exception {
-    JSONObject flags = state.optJSONObject("flags");
-    if (flags == null) flags = new JSONObject();
-    JSONObject storyArc = flags.optJSONObject("storyArc");
-    if (storyArc == null) storyArc = new JSONObject();
-    JSONArray completed = storyArc.optJSONArray("completed");
-    if (completed == null) completed = new JSONArray();
-    boolean present = false;
-    for (int i = 0; i < completed.length(); i++) if (beat.equals(completed.optString(i, ""))) present = true;
-    if (!present) completed.put(beat);
-    storyArc.put("current", "MAIN.LEVEL0");
-    storyArc.put("currentBeat", currentBeat);
-    storyArc.put("nextBeat", nextBeat);
-    storyArc.put("completed", completed);
-    flags.put("storyArc", storyArc);
-    state.put("flags", flags);
-  }
-
-  private boolean applyLuciaStoryOperationAndroid(JSONObject before, JSONObject state, String stage) throws Exception {
-    if (before == null || state == null || currentLevel(before) != 0) return false;
-    if ("first_contact".equals(stage)) {
-      if (!storyArcCompletedAndroid(before, "STORY.LEVEL0.ARRIVAL") ||
-          storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE")) return false;
-      addStoryBeatAndroid(state, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE", "STORY.LEVEL0.FIRST_CONTACT_COMPLETE", "STORY.LEVEL0.LUCIA_DECISION");
-      JSONObject flags = state.optJSONObject("flags");
-      JSONObject encounter = flags.optJSONObject("luciaEncounter");
-      if (encounter == null) encounter = new JSONObject(); else encounter = new JSONObject(encounter.toString());
-      encounter.put("status", "met");
-      encounter.put("level", 0);
-      encounter.put("partyEligible", true);
-      encounter.put("joinPending", true);
-      encounter.put("knowledge", "human_survivor_confirmed");
-      encounter.put("relationship", "initial_tactical_trust");
-      flags.put("luciaEncounter", encounter);
-      state.put("flags", flags);
-      return true;
-    }
-    if ("join".equals(stage)) {
-      if (!storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
-          storyArcCompletedAndroid(before, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE")) return false;
-      JSONObject beforeFlags = before.optJSONObject("flags");
-      JSONObject beforeEncounter = beforeFlags == null ? null : beforeFlags.optJSONObject("luciaEncounter");
-      String beforeStatus = beforeEncounter == null ? "" : lower(beforeEncounter.optString("status", ""));
-      if (!("met".equals(beforeStatus) || "contact".equals(beforeStatus) || "contacted".equals(beforeStatus) ||
-            "first_contact".equals(beforeStatus) || "first-contact".equals(beforeStatus))) return false;
-      addStoryBeatAndroid(state, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE", "STORY.LEVEL0.LUCIA_DECISION_COMPLETE", "STORY.LEVEL0.EPSILON.ENTRY");
-      JSONObject flags = state.optJSONObject("flags");
-      JSONObject encounter = flags.optJSONObject("luciaEncounter");
-      if (encounter == null) encounter = new JSONObject(); else encounter = new JSONObject(encounter.toString());
-      encounter.put("status", "joined");
-      encounter.put("level", 0);
-      encounter.put("partyEligible", true);
-      encounter.put("joinPending", false);
-      encounter.put("knowledge", "human_survivor_confirmed");
-      encounter.put("relationship", "earned_tactical_trust");
-      encounter.put("romance", "none");
-      flags.put("luciaEncounter", encounter);
-      state.put("flags", flags);
-      if (!partyContainsLuciaAndroid(state)) {
-        JSONArray party = state.optJSONArray("party");
-        if (party == null) party = new JSONArray();
-        party.put(new JSONObject()
-          .put("id", "lucia")
-          .put("name", "Lucia")
-          .put("joinConfirmed", true)
-          .put("present", true));
-        state.put("party", party);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private boolean luciaFirstContactLockedAndroid(JSONObject state) {
-    return state == null || !storyArcCompletedAndroid(state, "STORY.LEVEL0.ARRIVAL");
-  }
-
-  private boolean luciaJoinConfirmedAndroid(JSONObject state) {
-    if (state == null ||
-        !storyArcCompletedAndroid(state, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
-        !storyArcCompletedAndroid(state, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE")) return false;
-    JSONObject flags = state.optJSONObject("flags");
-    JSONObject encounter = flags == null ? null : flags.optJSONObject("luciaEncounter");
-    if (encounter == null) return false;
-    String status = lower(encounter.optString("status", ""));
-    return "joined".equals(status) && encounter.optBoolean("partyEligible", false) &&
-      !encounter.optBoolean("joinPending", true);
-  }
-
-  private boolean luciaPartyLockedAndroid(JSONObject before, JSONObject candidate) {
-    // FIRST_CONTACT must already have existed when the turn began. This keeps the
-    // first-contact turn itself from also becoming the Party-join turn.
-    if (before == null || !storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE")) return true;
-    return !luciaJoinConfirmedAndroid(before) && !luciaJoinConfirmedAndroid(candidate);
-  }
-
-  private boolean partyContainsLuciaAndroid(JSONObject state) {
-    if (state == null) return false;
-    JSONArray party = state.optJSONArray("party");
-    if (party == null) return false;
-    for (int i = 0; i < party.length(); i++) {
-      Object raw = party.opt(i);
-      if (raw instanceof JSONObject) {
-        JSONObject member = (JSONObject) raw;
-        String id = lower(member.optString("id", ""));
-        String name = lower(member.optString("name", ""));
-        if ("lucia".equals(id) || containsAny(name, "lucia", "hứa thuý mai", "hứa thúy mai")) return true;
-      } else if (raw != null && containsAny(lower(String.valueOf(raw)), "lucia", "hứa thuý mai", "hứa thúy mai")) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean luciaEncounterStateAndroid(JSONObject state) {
-    if (state == null) return false;
-    JSONObject flags = state.optJSONObject("flags");
-    JSONObject encounter = flags == null ? null : flags.optJSONObject("luciaEncounter");
-    if (encounter != null) {
-      String status = lower(encounter.optString("status", ""));
-      if (containsAny(status, "met", "contact", "joined") || encounter.optBoolean("partyEligible", false)) return true;
-    }
-    JSONObject storyArc = flags == null ? null : flags.optJSONObject("storyArc");
-    String currentBeat = storyArc == null ? "" : storyArc.optString("currentBeat", "");
-    return currentBeat.contains("FIRST_CONTACT") || currentBeat.contains("LUCIA_DECISION") ||
-      storyArcCompletedAndroid(state, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE");
-  }
-
-  private JSONArray prematureLuciaEncounterIssuesAndroid(JSONObject before, JSONObject candidate, JSONObject generated) throws Exception {
-    JSONArray issues = new JSONArray();
-    String reply = lower(generated == null ? "" : generated.optString("reply", ""));
-    boolean replyMentionsLucia = containsAny(reply, "lucia", "hứa thuý mai", "hứa thúy mai");
-    boolean candidateIntroducesFirstContact = luciaEncounterStateAndroid(candidate) || luciaEncounterStateAndroid(generated);
-
-    if (luciaFirstContactLockedAndroid(before) && (replyMentionsLucia || candidateIntroducesFirstContact)) {
-      issues.put(new JSONObject()
-        .put("rule", "premature_lucia_first_contact")
-        .put("severity", "hard")
-        .put("claim", "Lucia first contact before Level 0 Arrival was already complete at turn start")
-        .put("reason", "Lucia first contact is locked until a later turn whose starting state already contains STORY.LEVEL0.ARRIVAL. The turn that completes Arrival remains solo Level 0 exploration."));
-    }
-
-    boolean candidatePartyEarly = partyContainsLuciaAndroid(candidate) && luciaPartyLockedAndroid(before, candidate);
-    boolean generatedPartyEarly = partyContainsLuciaAndroid(generated) && luciaPartyLockedAndroid(before, generated);
-    if (candidatePartyEarly || generatedPartyEarly) {
-      issues.put(new JSONObject()
-        .put("rule", "premature_lucia_party")
-        .put("severity", "hard")
-        .put("claim", "Lucia entered Party before the separate decision/join gate")
-        .put("reason", "Meeting Lucia is not Party membership. FIRST_CONTACT_COMPLETE must already exist at turn start, then a later decision must complete STORY.LEVEL0.LUCIA_DECISION_COMPLETE with luciaEncounter.status=joined, partyEligible=true, and joinPending=false before Party may contain Lucia."));
-    }
-    return issues;
-  }
-
-'''
-if "private JSONArray prematureLuciaEncounterIssuesAndroid(" not in text:
-    if text.count(helper_anchor) != 1:
-        raise RuntimeError(
-            "Lucia story gate requires exactly one rejectedOperationIssuesAndroid anchor, found "
-            + str(text.count(helper_anchor))
-        )
-    text = text.replace(helper_anchor, helper + helper_anchor, 1)
-
-
-rejected_lucia_anchor = '      } else if (type.equals("flag_patch")) {\n'
-rejected_lucia_branch = r'''      } else if (type.equals("lucia_story")) {
-        String stage = lower(op.optString("stage", ""));
-        if ("first_contact".equals(stage)) {
-          rejected = !storyArcCompletedAndroid(before, "STORY.LEVEL0.ARRIVAL") ||
-            storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
-            !storyArcCompletedAndroid(candidate, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE");
-        } else if ("join".equals(stage)) {
-          rejected = !storyArcCompletedAndroid(before, "STORY.LEVEL0.FIRST_CONTACT_COMPLETE") ||
-            storyArcCompletedAndroid(before, "STORY.LEVEL0.LUCIA_DECISION_COMPLETE") ||
-            !luciaJoinConfirmedAndroid(candidate) || !partyContainsLuciaAndroid(candidate);
-        } else {
-          rejected = true;
-        }
-'''
-if 'else if (type.equals("lucia_story"))' not in text:
-    if text.count(rejected_lucia_anchor) != 1:
-        raise RuntimeError("Lucia rejected-op audit anchor expected once, found " + str(text.count(rejected_lucia_anchor)))
-    text = text.replace(rejected_lucia_anchor, rejected_lucia_branch + rejected_lucia_anchor, 1)
-
-
-initial_anchor = "          if (!meta) appendIssues(hardIssues, retiredOrganizationIssuesAndroid(generated));"
-if initial_anchor not in text:
-    initial_anchor = "          if (!meta) appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-initial_guard = "          if (!meta) appendIssues(hardIssues, prematureLuciaEncounterIssuesAndroid(before, candidateState, generated));"
-if initial_guard not in text:
-    if text.count(initial_anchor) != 1:
-        raise RuntimeError("Lucia initial audit anchor expected once, found " + str(text.count(initial_anchor)))
-    text = text.replace(initial_anchor, initial_anchor + "\n" + initial_guard, 1)
-
-repair_anchor = "            appendIssues(hardIssues, retiredOrganizationIssuesAndroid(generated));"
-if repair_anchor not in text:
-    repair_anchor = "            appendIssues(hardIssues, rejectedOperationIssuesAndroid(before, candidateState, generated));"
-repair_guard = "            appendIssues(hardIssues, prematureLuciaEncounterIssuesAndroid(before, candidateState, generated));"
-if repair_guard not in text:
-    if text.count(repair_anchor) != 1:
-        raise RuntimeError("Lucia repair audit anchor expected once, found " + str(text.count(repair_anchor)))
-    text = text.replace(repair_anchor, repair_anchor + "\n" + repair_guard, 1)
-
-for marker in (
-    "LUCIA ENCOUNTER STORY GATE:",
-    "LUCIA STATE TRANSPORT:",
+# Retire the former Java-side story state machine completely. A future patch reintroducing any of
+# these markers would recreate duplicate authority and must fail the build rather than silently win.
+for forbidden in (
     'type.equals("lucia_story")',
     "applyLuciaStoryOperationAndroid",
     "luciaFirstContactLockedAndroid",
     "luciaPartyLockedAndroid",
     "luciaJoinConfirmedAndroid",
-    "STORY.LEVEL0.LUCIA_DECISION_COMPLETE",
     "premature_lucia_first_contact",
     "premature_lucia_party",
-    "appendIssues(hardIssues, prematureLuciaEncounterIssuesAndroid(before, candidateState, generated))",
+    "LUCIA STATE TRANSPORT:",
 ):
-    if marker not in text:
-        raise RuntimeError("Lucia story-gate regression marker missing: " + marker)
+    if forbidden in text:
+        raise RuntimeError("Retired duplicate Lucia story authority survived: " + forbidden)
+
+for required in (
+    "STORY ENGINE AUTHORITY:",
+    "STORY ENGINE DIRECTIVE:",
+    "AUTHORITATIVE STORY DIRECTIVE:",
+    "StoryProgressionPolicy.directive(before, action)",
+    "StoryProgressionPolicy.normalizeCandidate(before, candidateState, action)",
+):
+    if required not in text:
+        raise RuntimeError("Engine-owned story integration marker missing: " + required)
 
 MAIN.write_text(text, encoding="utf-8")
-print("Lucia story gate applied: validated lucia_story transport now carries Arrival, first contact, decision and Party join.")
+print("Lucia story gate consolidated: StoryProgressionPolicy is the single story-state authority before audit and commit.")
