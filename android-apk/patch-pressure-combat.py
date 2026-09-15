@@ -15,7 +15,7 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 
 # ---- Game State Core facade -------------------------------------------------
 # Legacy JSON adaptation remains here temporarily, but authoritative combat
-# resolution + combat time advancement now live in source Kotlin.
+# resolution, round timing and completed-turn regeneration live in source Kotlin.
 facade = FACADE.read_text(encoding="utf-8")
 combat_methods = '''
   fun startCombatState(legacyStateJson: String, entityKey: String): String {
@@ -33,15 +33,22 @@ combat_methods = '''
 
     val resolution = CombatTurnAuthority.resolve(current, actionKind, action)
     if (!resolution.handled) return response(false, legacy, null, "combat_inactive")
-    val next = resolution.state
+    // TRUE_TURN_COMBAT_FACADE_V2: this bridge projects Core state only. Kotlin owns round timing/regen.
+    var next = resolution.state
     repository.save(next)
 
-    val output = syncLegacy(legacy, next, incrementTurn = true)
+    val roundCompleted = CombatTurnAuthority.completesRound(actionKind, resolution)
+    val output = syncLegacy(legacy, next, incrementTurn = roundCompleted)
     if (resolution.entityDestroyed || resolution.escaped) {
       val flags = output.optJSONObject("flags") ?: JSONObject().also { output.put("flags", it) }
       flags.put("entityEncounterKey", "")
     }
-    appendLog(output, action, resolution.reply)
+    if (actionKind.equals("AUTO_COMBAT", true) || actionKind.equals("AUTO_COMBAT_STEP", true)) {
+      val combatLog = output.optJSONArray("log") ?: JSONArray().also { output.put("log", it) }
+      combatLog.put(JSONObject().put("role", "combat").put("text", resolution.reply))
+    } else {
+      appendLog(output, action, resolution.reply)
+    }
     return response(true, output, null, if (resolution.entityDestroyed) "combat_entity_destroyed" else if (resolution.escaped) "combat_escaped" else "combat_resolved", resolution.reply)
   }
 '''
@@ -63,6 +70,10 @@ for marker in (
     "fun startCombatState(legacyStateJson: String, entityKey: String)",
     "fun processCombat(legacyStateJson: String, actionKind: String, action: String)",
     "CombatTurnAuthority.resolve(current, actionKind, action)",
+    "CombatTurnAuthority.completesRound(actionKind, resolution)",
+    "TRUE_TURN_COMBAT_FACADE_V2",
+    'actionKind.equals("AUTO_COMBAT_STEP", true)',
+    'JSONObject().put("role", "combat")',
     'flags.put("entityEncounterKey", "")',
     'output.put("combat", it)',
 ):
@@ -72,6 +83,8 @@ for forbidden in (
     "CombatRuntime.resolve(current, actionKind, action)",
     "TimeEngine.execute(next, TimeAdvanceCommand(",
     'reason = "combat_action"',
+    'reason = "combat_round"',
+    "CharacterStatEngine.applyCompletedTurnRegen(next",
 ):
     if forbidden in facade:
         raise RuntimeError("Legacy Python-owned combat orchestration is still active: " + forbidden)
