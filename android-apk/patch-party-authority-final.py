@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -159,3 +160,8 @@ for marker in (
 FACADE.write_text(facade, encoding="utf-8")
 
 print("Party authority final applied: Kotlin owns provider admission/removal policy and rechecks it at Core commit.")
+
+player_authority = ROOT / "patch-player-authority-final.py"
+if not player_authority.is_file():
+    raise RuntimeError("Player authority finalizer missing: " + player_authority.name)
+runpy.run_path(str(player_authority), run_name="__main__")
