@@ -27,8 +27,22 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
               throw new Exception("Lượt chơi không vượt qua kiểm tra canon; state không được thay đổi.");
             }
 
+            String storyDirective = com.rabpit.backroom.core.StoryProgressionPolicy.directive(before, action);
+            String fallbackReply;
+            if (storyDirective.startsWith("LUCIA_FIRST_CONTACT")) {
+              fallbackReply = "Trong lúc tiếp tục khám phá Level 0, Kai xác nhận một người sống sót có vũ trang ở tuyến phía trước. Sau một cuộc tiếp cận thận trọng, hai bên trao đổi tên: cô gái là Lucia. Cả hai mới chỉ thiết lập mức tin cậy chiến thuật ban đầu; Lucia chưa gia nhập Party.";
+            } else if (storyDirective.startsWith("LUCIA_JOIN_DECISION")) {
+              fallbackReply = "Sau khi đã có thời gian đánh giá lẫn nhau, Kai và Lucia thống nhất tiếp tục di chuyển cùng nhau với ranh giới chiến thuật rõ ràng. Quyết định này xác nhận Lucia gia nhập Party; không có thay đổi quan hệ nào khác được suy diễn.";
+            } else if (storyDirective.startsWith("ARRIVAL_ONLY")) {
+              fallbackReply = "Kai tiếp tục khảo sát Level 0 một cách có hệ thống. Những sai lệch lặp lại của không gian đủ để xác nhận rằng cách định hướng tuyến tính không đáng tin, nhưng lượt này chưa xuất hiện người sống sót hay liên lạc mới.";
+            } else if (storyDirective.startsWith("HOLD_FIRST_CONTACT")) {
+              fallbackReply = "Kai và Lucia duy trì khoảng cách cùng mức hợp tác chiến thuật đã xác nhận, chưa có quyết định mới về việc lập Party. Các dữ kiện chưa chắc chắn vẫn được giữ nguyên.";
+            } else {
+              fallbackReply = "Kai tiếp tục hành động theo hướng đã chọn một cách thận trọng. Lượt này không ghi nhận thay đổi trạng thái mới ngoài những gì engine đã xác nhận; các dữ kiện chưa chắc chắn vẫn được giữ nguyên.";
+            }
+
             generated = new JSONObject()
-              .put("reply", "Kai tiếp tục hành động theo hướng đã chọn một cách thận trọng. Lượt này không ghi nhận thay đổi trạng thái mới ngoài những gì đã được xác nhận trước đó; các dữ kiện chưa chắc chắn vẫn được giữ nguyên.")
+              .put("reply", fallbackReply)
               .put("ops", new JSONArray())
               .put("choices", new JSONArray())
               .put("snapshotEvent", new JSONObject()
@@ -36,12 +50,13 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
                 .put("kind", "")
                 .put("reason", "canon_safe_fallback"));
             reply = generated.optString("reply", "");
-            candidateState = new JSONObject(before.toString());
+            candidateState = com.rabpit.backroom.core.StoryProgressionPolicy.normalizeCandidate(
+              before, new JSONObject(before.toString()), action);
             risk = 0;
             audits = new JSONArray();
             hardIssues = new JSONArray();
             if (BuildConfig.DEBUG) {
-              android.util.Log.w("BackroomCanonFallback", "Recovered harmless repaired turn without model ops.");
+              android.util.Log.w("BackroomCanonFallback", "Recovered harmless repaired turn; deterministic story state preserved.");
             }
 '''
 
@@ -63,20 +78,20 @@ if fallback_audit not in text:
 if fallback_audit not in text:
     raise RuntimeError("Low-risk canon fallback: Haiku-capable audit route missing after finalization")
 
-lucia_prompt_tokens = {
-    'lucia_story{stage:"first_contact"}': 'lucia_story{stage:\\"first_contact\\"}',
-    'lucia_story{stage:"join"}': 'lucia_story{stage:\\"join\\"}',
-}
-for malformed, escaped in lucia_prompt_tokens.items():
-    text = text.replace(malformed, escaped)
-    if malformed in text:
-        raise RuntimeError("Lucia Java prompt escaping failed for: " + malformed)
-    if escaped not in text:
-        raise RuntimeError("Lucia Java prompt escaped marker missing: " + escaped)
+# lucia_story transport is retired. StoryProgressionPolicy owns story state and the final runtime
+# must not require or resurrect the old model operation tokens merely to satisfy a patch marker.
+for retired in (
+    'type.equals("lucia_story")',
+    "applyLuciaStoryOperationAndroid",
+    "LUCIA STATE TRANSPORT:",
+):
+    if retired in text:
+        raise RuntimeError("Retired Lucia story transport survived terminal canon finalization: " + retired)
 
 for marker in (
     "CanonFallbackPolicy.isEligible(",
-    "candidateState = new JSONObject(before.toString());",
+    "StoryProgressionPolicy.directive(before, action)",
+    "StoryProgressionPolicy.normalizeCandidate(",
     'android.util.Log.w("BackroomCanonFallback"',
     'put("reason", "canon_safe_fallback")',
     'put("choices", new JSONArray())',
@@ -87,8 +102,8 @@ for marker in (
 MAIN.write_text(text, encoding="utf-8")
 print(
     "Low-risk canon fallback applied after the settled runtime: harmless repaired turns may recover "
-    "without model ops while combat, encounter, transition, consequential rolls and authoritative "
-    "state changes remain fail-closed; Haiku-capable audit routing and Lucia prompt escaping verified."
+    "without model ops while deterministic StoryProgressionPolicy state is preserved; combat, encounter, "
+    "transition, consequential rolls and non-story authoritative state changes remain fail-closed."
 )
 
 # The workflow already executes this file as its terminal runtime authority. Delegate the debug
