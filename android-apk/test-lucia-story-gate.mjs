@@ -86,9 +86,9 @@ const auditPrompt = methodBodyBySignature(main, 'private JSONObject runAudit(', 
 requireContract(auditPrompt.includes('AUTHORITATIVE STORY DIRECTIVE:'), 'auditor does not receive the authoritative story directive');
 requireContract(auditPrompt.includes('Do not report it as a model canon conflict'), 'auditor is not told to distinguish engine story delta from model delta');
 
-// The settled runtime must normalize the generated candidate before its first canon-risk decision.
-// The finalizer source separately asserts the repair-path insertion because later terminal patches may
-// rewrite formatting around that branch while preserving the same call semantics.
+// MainActivity is the final canon boundary. Its candidate must be normalized before the first risk
+// decision. The finalizer source separately owns the repaired-candidate insertion because terminal
+// debug/canon patches are allowed to rewrite that branch's formatting after the semantic patch ran.
 const normalizeCall = 'StoryProgressionPolicy.normalizeCandidate(before, candidateState, action)';
 const normalizeIndex = main.indexOf(normalizeCall);
 const riskIndex = main.indexOf('validatedTurnRisk(before, candidateState, generated)');
@@ -118,8 +118,10 @@ for (const marker of [
 requireContract(!story.includes('isValidFirstContactCandidate'), 'provider-authored first-contact validation survived StoryProgressionPolicy');
 requireContract(!story.includes('candidateJoinAllowed'), 'provider-authored Lucia join gate survived StoryProgressionPolicy');
 
+// GameCore consumes the already-normalized candidate at the canonical MainActivity boundary and
+// synchronizes Lucia into structured character/party storage. It must not contain a second Lucia
+// operation language/state machine of its own.
 for (const marker of [
-  'StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)',
   'internal fun synchronizeValidatedLuciaCharacter',
   'StoryProgressionPolicy.LEVEL0_FIRST_CONTACT',
   'StoryProgressionPolicy.LEVEL0_LUCIA_DECISION_COMPLETE',
@@ -128,5 +130,6 @@ for (const marker of [
 ]) {
   requireContract(core.includes(marker), `Game State Core story commit contract missing: ${marker}`);
 }
+requireContract(!core.includes('lucia_story'), 'Game State Core must not reintroduce provider-owned Lucia story operations');
 
 console.log('Single StoryProgressionPolicy authority and Lucia Party integration regression checks passed.');
