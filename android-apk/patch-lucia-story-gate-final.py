@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import runpy
 
 
 ROOT = Path(__file__).resolve().parent
@@ -162,3 +163,8 @@ for required in (
 
 MAIN.write_text(text, encoding="utf-8")
 print("Lucia story gate consolidated: StoryProgressionPolicy is the single story-state authority before audit and commit.")
+
+party_authority = ROOT / "patch-party-authority-final.py"
+if not party_authority.is_file():
+    raise RuntimeError("Party authority finalizer missing: " + party_authority.name)
+runpy.run_path(str(party_authority), run_name="__main__")
