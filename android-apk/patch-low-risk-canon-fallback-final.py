@@ -28,7 +28,7 @@ replacement = r'''            boolean safeFallback = com.rabpit.backroom.core.Ca
             }
 
             generated = new JSONObject()
-              .put("reply", "Kai tiếp tục theo hướng đã chọn với nhịp di chuyển thận trọng, kiểm tra các góc và khoảng trống trước khi đi qua. Quãng hành động này không cho thấy dữ kiện mới đủ chắc để kết luận thêm; môi trường trước mắt vẫn chưa xác nhận thêm người, vật thể hay lối chuyển tầng.")
+              .put("reply", "Kai tiếp tục hành động theo hướng đã chọn một cách thận trọng. Lượt này không ghi nhận thay đổi trạng thái mới ngoài những gì đã được xác nhận trước đó; các dữ kiện chưa chắc chắn vẫn được giữ nguyên.")
               .put("ops", new JSONArray())
               .put("choices", new JSONArray())
               .put("snapshotEvent", new JSONObject()

@@ -30,6 +30,9 @@ requireContract(main.includes('candidateState = new JSONObject(before.toString()
 requireContract(main.includes('.put("ops", new JSONArray())'), 'fallback must discard model operations');
 requireContract(main.includes('.put("choices", new JSONArray())'), 'fallback must discard unsafe model choices');
 requireContract(main.includes('canon_safe_fallback'), 'fallback snapshot marker missing');
+requireContract(fallback.includes('lowRiskExplorationRecovery'), 'low-risk EXPLORE recovery gate missing');
+requireContract(!fallback.includes('entityBefore -> \"entity_present_before\"'), 'pre-existing Entity context must not reject a no-op fallback');
+requireContract(!fallback.includes('transitionBefore -> \"transition_ready_before\"'), 'pre-existing transition-ready context must not reject a no-op fallback');
 requireContract(main.includes('throw new Exception("Lượt chơi không vượt qua kiểm tra canon; state không được thay đổi.")'), 'fail-closed branch missing');
 
 console.log('Low-risk canon fallback integration regression checks passed.');

@@ -154,6 +154,9 @@ requireText("shell.addEventListener('pointerdown'", "swipe owner remains station
 requireText("shell.setPointerCapture(pointerId)", "pointer stream remains owned through a horizontal swipe");
 requireText("shell.addEventListener('pointercancel',function(){if(axis==='x')finishSwipe(lastX-startX,lastY-startY)", "cancelled Android pointer streams still complete an owned horizontal swipe");
 requireText("shell.addEventListener('touchstart'", "touch fallback uses the stationary shell");
+requireText("const touchCapable=('ontouchstart' in window)||Number(navigator.maxTouchPoints||0)>0", "Android touch hardware must not be routed through the cancellable PointerEvent path");
+requireText("if(touchCapable)installTouchSwipe();else if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe()", "touch-first gesture selection");
+assert.ok(!html.includes("if('PointerEvent' in window)installPointerSwipe();else installTouchSwipe()"), "pointer-first Android gesture gate must not return");
 assert.ok(!html.includes("track.addEventListener('pointerdown'"), "transformed page track must not own pointer navigation");
 
 const finishSwipe = html.match(/function finishSwipe\(dx,dy\)\{[^}]+\}/)?.[0];

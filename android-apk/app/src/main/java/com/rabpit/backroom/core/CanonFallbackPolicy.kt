@@ -59,6 +59,8 @@ object CanonFallbackPolicy {
       }
     }
     val dangerousState = dangerousChangedTopLevel.isNotEmpty() || dangerousChangedFlags.isNotEmpty()
+    val rollActionKind = rolls.optString("actionKind", "").trim().uppercase(Locale.ROOT)
+    val lowRiskExplorationRecovery = (explorationAction || rollActionKind == "EXPLORE") && !dangerousRoll
 
     val reason = when {
       meta -> "meta_turn"
@@ -66,11 +68,8 @@ object CanonFallbackPolicy {
       combatIntent -> "combat_intent"
       combatBefore -> "combat_active_before"
       combatCandidate -> "combat_active_candidate"
-      entityBefore -> "entity_present_before"
-      transitionBefore -> "transition_ready_before"
-      transitionCandidate -> "transition_ready_candidate"
       dangerousRoll -> "consequential_roll"
-      dangerousState -> "accepted_authoritative_state_change"
+      dangerousState && !lowRiskExplorationRecovery -> "accepted_authoritative_state_change"
       else -> "eligible"
     }
     val eligible = reason == "eligible"
@@ -92,6 +91,7 @@ object CanonFallbackPolicy {
       .put("transitionReadyCandidate", transitionCandidate)
       .put("dangerousRollConsequence", dangerousRoll)
       .put("dangerousStateChanged", dangerousState)
+      .put("lowRiskExplorationRecovery", lowRiskExplorationRecovery)
       .put("changedTopLevelKeys", JSONArray(changedTopLevel.sorted()))
       .put("changedFlagRoots", JSONArray(changedFlagRoots.sorted()))
       .put("dangerousChangedTopLevelKeys", JSONArray(dangerousChangedTopLevel.sorted()))
