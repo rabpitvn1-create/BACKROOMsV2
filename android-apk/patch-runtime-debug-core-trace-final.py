@@ -12,22 +12,26 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 
-normalize_old = '''    val before = JSONObject(beforeJson)
-    val candidate = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(candidateJson), action)
+# StoryProgressionPolicy is authoritative at the canon boundary before this method is called.
+# This debug finalizer must observe the already-normalized candidate, never normalize it again.
+candidate_old = '''    val before = JSONObject(beforeJson)
+    val candidate = JSONObject(candidateJson)
     val core = loadOrMigrate(before)
 '''
-normalize_new = '''    val before = JSONObject(beforeJson)
-    val rawCandidate = JSONObject(candidateJson)
-    RuntimeDebugLog.recordTurnStage(before.optInt("turn", 0), "candidateBeforeStoryNormalization", rawCandidate)
-    val candidate = StoryProgressionPolicy.normalizeCandidate(before, rawCandidate, action)
-    RuntimeDebugLog.recordTurnStage(before.optInt("turn", 0), "candidateNormalized", candidate)
+candidate_new = '''    val before = JSONObject(beforeJson)
+    val candidate = JSONObject(candidateJson)
+    RuntimeDebugLog.recordTurnStage(before.optInt("turn", 0), "candidateAfterStoryNormalization", candidate)
     RuntimeDebugLog.appendTurnStage(before.optInt("turn", 0), "storyProgression", JSONObject()
       .put("storyArcBefore", before.optJSONObject("flags")?.opt("storyArc") ?: JSONObject.NULL)
       .put("storyArcNormalized", candidate.optJSONObject("flags")?.opt("storyArc") ?: JSONObject.NULL)
       .put("luciaEncounter", candidate.optJSONObject("flags")?.opt("luciaEncounter") ?: JSONObject.NULL))
     val core = loadOrMigrate(before)
 '''
-facade = replace_once(facade, normalize_old, normalize_new, "validated candidate story normalization")
+facade = replace_once(facade, candidate_old, candidate_new, "validated candidate post-story trace")
+
+# Guard the ownership boundary explicitly. A debug patch must never restore story mutation here.
+if "StoryProgressionPolicy.normalizeCandidate" in facade:
+    raise RuntimeError("GameCore debug trace must not reintroduce StoryProgressionPolicy normalization")
 
 prepared_old = '''    val preparedCore = synchronizeValidatedLuciaCharacter(core, candidate)
     val turnId = nextTurnId(before, preparedCore)
@@ -88,8 +92,7 @@ sync_new = '''    val synchronized = syncLegacy(candidate, committed.state, incr
 facade = replace_once(facade, sync_old, sync_new, "validated candidate committed trace")
 
 for marker in (
-    '"candidateBeforeStoryNormalization"',
-    '"candidateNormalized"',
+    '"candidateAfterStoryNormalization"',
     '"storyProgression"',
     '"gameCorePending"',
     '"gameCoreCommands"',
@@ -101,4 +104,4 @@ for marker in (
         raise RuntimeError("GameCore debug trace marker missing: " + marker)
 
 FACADE.write_text(facade, encoding="utf-8")
-print("GameCore runtime debug trace installed: raw/normalized story state, pending state, validated ActionRuntime command list, commit result and synchronized final state.")
+print("GameCore runtime debug trace installed: post-story candidate, pending state, validated ActionRuntime command list, commit result and synchronized final state.")
