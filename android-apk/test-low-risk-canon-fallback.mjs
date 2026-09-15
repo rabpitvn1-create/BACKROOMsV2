@@ -4,6 +4,7 @@ import path from 'node:path';
 const root = process.argv[2] || 'android-apk';
 const workflow = fs.readFileSync('.github/workflows/build-backroom-apk.yml', 'utf8');
 const main = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
+const fallback = fs.readFileSync(path.join(root, 'app/src/main/java/com/rabpit/backroom/core/CanonFallbackPolicy.kt'), 'utf8');
 const gmPolicy = fs.readFileSync(path.join(root, 'patch-gm-action-policy-final.py'), 'utf8');
 const chainStart = workflow.indexOf('scripts=(');
 const chainEnd = workflow.indexOf('for script in', chainStart);
@@ -31,8 +32,8 @@ requireContract(main.includes('.put("ops", new JSONArray())'), 'fallback must di
 requireContract(main.includes('.put("choices", new JSONArray())'), 'fallback must discard unsafe model choices');
 requireContract(main.includes('canon_safe_fallback'), 'fallback snapshot marker missing');
 requireContract(fallback.includes('lowRiskExplorationRecovery'), 'low-risk EXPLORE recovery gate missing');
-requireContract(!fallback.includes('entityBefore -> \"entity_present_before\"'), 'pre-existing Entity context must not reject a no-op fallback');
-requireContract(!fallback.includes('transitionBefore -> \"transition_ready_before\"'), 'pre-existing transition-ready context must not reject a no-op fallback');
+requireContract(!fallback.includes('entityBefore -> "entity_present_before"'), 'pre-existing Entity context must not reject a no-op fallback');
+requireContract(!fallback.includes('transitionBefore -> "transition_ready_before"'), 'pre-existing transition-ready context must not reject a no-op fallback');
 requireContract(main.includes('throw new Exception("Lượt chơi không vượt qua kiểm tra canon; state không được thay đổi.")'), 'fail-closed branch missing');
 
 console.log('Low-risk canon fallback integration regression checks passed.');
