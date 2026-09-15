@@ -13,11 +13,11 @@ source = TEMPLATE.read_text(encoding="utf-8")
 # copy of the already-large tracing template.
 if "requireGameCore().processRule(stateJson, action)" in main:
     source = source.replace("gameCore.processRule(stateJson, action)", "requireGameCore().processRule(stateJson, action)")
-if "requireGameCore().processValidatedCandidate(before.toString(), candidateState.toString(), action)" in main:
-    source = source.replace(
-        "gameCore.processValidatedCandidate(before.toString(), candidateState.toString(), action)",
-        "requireGameCore().processValidatedCandidate(before.toString(), candidateState.toString(), action)",
-    )
+# Candidate-commit arity has grown as Kotlin took ownership of rolls and accepted operation basis.
+# Detect the accessor independently of argument shape so debug-only tracing cannot pin the bridge to
+# a retired 3-argument signature.
+if "requireGameCore().processValidatedCandidate(" in main:
+    source = source.replace("gameCore.processValidatedCandidate(", "requireGameCore().processValidatedCandidate(")
 
 # The typed action patches have changed makeGameplayRolls parameters over time. The diagnostic only
 # needs the resulting rolls object, so locate that settled declaration without assuming its args.
@@ -33,4 +33,4 @@ source = source.replace(old_roll_anchor, new_roll_anchor, 1)
 
 namespace = {"__name__": "__main__", "__file__": str(TEMPLATE), "re": re}
 exec(compile(source, str(TEMPLATE), "exec"), namespace, namespace)
-print("Adaptive runtime turn trace matched the settled GameCore accessor and typed roll declaration.")
+print("Adaptive runtime turn trace matched the settled GameCore accessor, roll-aware candidate bridge and typed roll declaration.")
