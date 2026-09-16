@@ -59,7 +59,7 @@ enum class EquipmentSlot(val key: String) {
   }
 }
 
-enum class ItemClassification { CANONICAL, SPECIAL_CHEAT, GENERAL }
+enum class ItemClassification { CANONICAL, GENERAL }
 
 data class EquipmentBonuses(
   val hp: Int = 0,
@@ -440,7 +440,6 @@ object EquipmentEngine {
     val def = EquipmentCatalog.definition(item.itemId) ?: return null
     val equipment = state.equipment[characterId] ?: EquipmentState(characterId)
     if (itemId in equipment.slots.values) return CharacterStatEngine.effective(state, characterId)
-    if (def.classification == ItemClassification.SPECIAL_CHEAT && characterId != KAI_ID) return null
     val next = equipment.slots.toMutableMap()
     def.occupiesSlots.forEach { next[it.key] = itemId }
     return CharacterStatEngine.effective(state.copy(equipment = state.equipment + (characterId to equipment.copy(slots = next))), characterId)
@@ -976,7 +975,7 @@ if 'id="equipmentDetailModal"' not in html:
 
 css_anchor = '</style>'
 css = r'''
-.character-role{margin-top:4px;color:#93a0a8;font-size:11px;letter-spacing:.04em}.character-core-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.character-core-stat{border:1px solid #30383d;background:#0a0d0f;padding:9px}.character-core-stat b{display:block;color:#7e8992;font-size:10px;letter-spacing:.12em}.character-core-stat strong{display:block;margin-top:4px;font-size:17px}.equipment-card,.inventory-item-card{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;border:1px solid #313940;background:#0b0f12;padding:8px;cursor:pointer}.equipment-card:hover,.inventory-item-card:hover{border-color:#52606a}.equipment-card-icon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #39434a;background:#11171b;font-weight:900;font-size:11px}.equipment-card-main{min-width:0}.equipment-card-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.equipment-card-main small{display:block;color:#7f8b93;margin-top:3px}.equipment-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.equipment-badge{border:1px solid #45515a;padding:3px 5px;font-size:8px;letter-spacing:.08em}.equipment-badge.equipped{border-color:#3c8466;color:#8ed3b1}.equipment-badge.cheat{border-color:#8c7042;color:#e4c07e}.equipment-detail-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}.equipment-detail-modal[hidden]{display:none}.equipment-detail-sheet{position:relative;width:min(720px,100%);max-height:88vh;overflow:auto;background:#0b0e11;border:1px solid #3a444b;border-bottom:0;padding:18px}.equipment-detail-close{position:absolute;right:10px;top:10px;width:38px;height:38px}.equipment-detail-header{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;padding-right:42px}.equipment-detail-icon{width:58px;height:58px;border:1px solid #46525a;display:grid;place-items:center;font-weight:900}.equipment-detail-header h2{margin:3px 0}.equipment-detail-meta{color:#89949c;font-size:11px}.equipment-detail-sheet section{border-top:1px solid #2c3338;margin-top:15px;padding-top:13px}.equipment-detail-sheet section h3{font-size:11px;letter-spacing:.14em;margin:0 0 9px}.equipment-detail-row,.ability-row,.restriction-row{border:1px solid #2e373d;padding:8px;margin-top:6px}.equipment-detail-row{display:flex;justify-content:space-between;gap:12px}.ability-row strong{display:block}.ability-row p{margin:5px 0 0;color:#c0c8cd;font-size:12px}.ability-row em{display:block;margin-top:5px;color:#d0af77;font-style:normal;font-size:11px}.restriction-row{color:#c7b38b;font-size:12px}.stat-delta-positive{color:#8fd2ad}.stat-delta-negative{color:#dc9b9b}@media(max-width:520px){.character-core-stats{grid-template-columns:1fr 1fr}.equipment-detail-sheet{padding:14px}.equipment-card,.inventory-item-card{grid-template-columns:34px 1fr}.equipment-badges{grid-column:2;justify-content:flex-start}}
+.character-role{margin-top:4px;color:#93a0a8;font-size:11px;letter-spacing:.04em}.character-core-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.character-core-stat{border:1px solid #30383d;background:#0a0d0f;padding:9px}.character-core-stat b{display:block;color:#7e8992;font-size:10px;letter-spacing:.12em}.character-core-stat strong{display:block;margin-top:4px;font-size:17px}.equipment-card,.inventory-item-card{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;border:1px solid #313940;background:#0b0f12;padding:8px;cursor:pointer}.equipment-card:hover,.inventory-item-card:hover{border-color:#52606a}.equipment-card-icon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #39434a;background:#11171b;font-weight:900;font-size:11px}.equipment-card-main{min-width:0}.equipment-card-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.equipment-card-main small{display:block;color:#7f8b93;margin-top:3px}.equipment-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.equipment-badge{border:1px solid #45515a;padding:3px 5px;font-size:8px;letter-spacing:.08em}.equipment-badge.equipped{border-color:#3c8466;color:#8ed3b1}.equipment-detail-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}.equipment-detail-modal[hidden]{display:none}.equipment-detail-sheet{position:relative;width:min(720px,100%);max-height:88vh;overflow:auto;background:#0b0e11;border:1px solid #3a444b;border-bottom:0;padding:18px}.equipment-detail-close{position:absolute;right:10px;top:10px;width:38px;height:38px}.equipment-detail-header{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;padding-right:42px}.equipment-detail-icon{width:58px;height:58px;border:1px solid #46525a;display:grid;place-items:center;font-weight:900}.equipment-detail-header h2{margin:3px 0}.equipment-detail-meta{color:#89949c;font-size:11px}.equipment-detail-sheet section{border-top:1px solid #2c3338;margin-top:15px;padding-top:13px}.equipment-detail-sheet section h3{font-size:11px;letter-spacing:.14em;margin:0 0 9px}.equipment-detail-row,.ability-row,.restriction-row{border:1px solid #2e373d;padding:8px;margin-top:6px}.equipment-detail-row{display:flex;justify-content:space-between;gap:12px}.ability-row strong{display:block}.ability-row p{margin:5px 0 0;color:#c0c8cd;font-size:12px}.ability-row em{display:block;margin-top:5px;color:#d0af77;font-style:normal;font-size:11px}.restriction-row{color:#c7b38b;font-size:12px}.stat-delta-positive{color:#8fd2ad}.stat-delta-negative{color:#dc9b9b}@media(max-width:520px){.character-core-stats{grid-template-columns:1fr 1fr}.equipment-detail-sheet{padding:14px}.equipment-card,.inventory-item-card{grid-template-columns:34px 1fr}.equipment-badges{grid-column:2;justify-content:flex-start}}
 '''
 if '.equipment-detail-modal{' not in html:
     if css_anchor not in html: raise RuntimeError("HTML style anchor missing")
@@ -1005,7 +1004,7 @@ script = r'''
   function iconFor(item){return String((item&&item.type)||'EQ').split(/[ /_-]+/).filter(Boolean).map(x=>x[0]).join('').slice(0,3).toUpperCase()||'EQ'}
   function itemById(member,id){return (member&&member.inventory||[]).find(x=>String(x.id)===String(id))||(member&&member.equipmentItems||[]).find(x=>String(x.id)===String(id))}
   function card(item,slot){
-    const badges=[];if(item.equipped)badges.push('<span class="equipment-badge equipped">EQUIPPED</span>');if(item.statItem)badges.push('<span class="equipment-badge">STAT ITEM</span>');if(item.classification==='SPECIAL_CHEAT')badges.push('<span class="equipment-badge cheat">SPECIAL / CHEAT</span>');
+    const badges=[];if(item.equipped)badges.push('<span class="equipment-badge equipped">EQUIPPED</span>');if(item.statItem)badges.push('<span class="equipment-badge">STAT ITEM</span>');
     return '<div class="'+(slot?'equipment-card':'inventory-item-card')+'" data-item-id="'+e(item.id)+'"><div class="equipment-card-icon">'+e(iconFor(item))+'</div><div class="equipment-card-main"><strong>'+e(item.name||item.id)+'</strong><small>'+e(slot?String(slot).toUpperCase():(item.rarity||('×'+(item.quantity||1))))+'</small></div><div class="equipment-badges">'+badges.join('')+'</div></div>';
   }
   function render(member){
@@ -1025,9 +1024,9 @@ script = r'''
     const b=item.bonuses||{},w=item.weapon||{},rows=[];if(Number(b.HP))rows.push(['HP',(b.HP>0?'+':'')+b.HP]);if(Number(b.DF))rows.push(['DF',(b.DF>0?'+':'')+b.DF]);if(Number(b.STR))rows.push(['STR',(b.STR>0?'+':'')+b.STR]);if(Number(b.AGI))rows.push(['AGI',(b.AGI>0?'+':'')+b.AGI]);if(Number(b.CRIT))rows.push(['CRIT',(b.CRIT>0?'+':'')+b.CRIT]);if(w.DMG!=null)rows.push(['DMG',w.DMG]);if(w.ammo!=null)rows.push(['Ammo',w.ammo]);if(w.rpm!=null)rows.push(['Full Auto',w.rpm+' RPM']);return rows
   }
   function comparisonRows(c){if(!c)return[];return ['maxHp','STR','DF','AGI','CRIT'].map(k=>{const x=c[k];if(!x)return null;const d=Number(x.delta)||0;return [k==='maxHp'?'MAX HP':k,x.before+' → '+x.after+' ('+(d>=0?'+':'')+d+')',d]}).filter(Boolean)}
-  function openItem(item){if(!item||!modal)return;q('equipmentDetailName').textContent=item.name||item.id;q('equipmentDetailIcon').textContent=iconFor(item);q('equipmentDetailClass').textContent=item.classification==='SPECIAL_CHEAT'?'SPECIAL / CHEAT':(item.type||'ITEM');q('equipmentDetailMeta').textContent=[item.type,item.slot,item.rarity,item.equipped?'EQUIPPED':'UNEQUIPPED'].filter(Boolean).join(' · ');
+  function openItem(item){if(!item||!modal)return;q('equipmentDetailName').textContent=item.name||item.id;q('equipmentDetailIcon').textContent=iconFor(item);q('equipmentDetailClass').textContent=item.type||'ITEM';q('equipmentDetailMeta').textContent=[item.type,item.slot,item.rarity,item.equipped?'EQUIPPED':'UNEQUIPPED'].filter(Boolean).join(' · ');
     const sr=statRows(item);q('equipmentDetailStats').innerHTML=sr.length?sr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong>'+e(r[1])+'</strong></div>').join(''):'<div class="equipment-detail-row"><span>Combat bonus</span><strong>0</strong></div>';
-    const compare=item.comparison||((item.classification==='SPECIAL_CHEAT')?item.baseItemEffect:null),cr=comparisonRows(compare);const cs=q('equipmentDetailComparisonSection');cs.hidden=!cr.length;q('equipmentDetailComparison').innerHTML=cr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong class="'+(r[2]>=0?'stat-delta-positive':'stat-delta-negative')+'">'+e(r[1])+'</strong></div>').join('');
+    const compare=item.comparison,cr=comparisonRows(compare);const cs=q('equipmentDetailComparisonSection');cs.hidden=!cr.length;q('equipmentDetailComparison').innerHTML=cr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong class="'+(r[2]>=0?'stat-delta-positive':'stat-delta-negative')+'">'+e(r[1])+'</strong></div>').join('');
     const abs=item.abilities||[];q('equipmentDetailAbilities').innerHTML=abs.length?abs.map(a=>'<div class="ability-row"><strong>'+e(a.name)+'</strong><p>'+e(a.description)+'</p>'+(a.limit?'<em>'+e(a.limit)+'</em>':'')+'</div>').join(''):'<div class="ability-row"><p>Không có Special Ability được ghi nhận.</p></div>';
     const rr=item.restrictions||[];q('equipmentDetailRestrictions').innerHTML=rr.length?rr.map(x=>'<div class="restriction-row">'+e(x)+'</div>').join(''):'<div class="restriction-row">Không có restriction bổ sung.</div>';modal.hidden=false}
   if(view)view.addEventListener('click',ev=>{const card=ev.target.closest('[data-item-id]');if(!card)return;const member=selected();openItem(itemById(member,card.getAttribute('data-item-id')))});
@@ -1127,10 +1126,6 @@ class CharacterStatusEquipmentSystemTest {
     val d = EquipmentCatalog.definition(SYVIAL_GODKILLER_ID)!!; assertEquals("MECHANICAL GREATSWORD", d.type); assertFalse(d.restrictions.joinToString().lowercase().contains("gunblade allowed"))
   }
 
-    val e = CharacterStatEngine.effective(r.state, KAI_ID); assertEquals(165, e.maxHp); assertEquals(114, e.str); assertEquals(121, e.df); assertEquals(118, e.agi); assertEquals(113, e.crit)
-  }
-
-  }
 
   @Test fun projectionAfterReloadEqualsBasePlusEquippedItems() {
     val s = GameStateCodec.decode(GameStateCodec.encode(state())); val p = CharacterDetailProjector.projectCharacter(s, KAI_ID)!!
@@ -1164,7 +1159,7 @@ class CharacterStatusEquipmentSystemTest {
 combined = SYSTEM.read_text(encoding="utf-8") + DETAIL.read_text(encoding="utf-8") + DETAIL_JSON.read_text(encoding="utf-8") + INDEX.read_text(encoding="utf-8") + ENGINES.read_text(encoding="utf-8") + COMBAT.read_text(encoding="utf-8")
 required = [
   'EquipmentBonuses(hp = 25, str = 8, df = 18, agi = 6)', 'WeaponGameplayStats(32, "∞", 600',
-  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)', 'bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',
+  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)',
   'CharacterStatEngine.applyCompletedTurnRegen', 'CharacterStatEngine.preserveMissingHp', 'EquipmentEngine.equip(state, command)',
   'window.renderCharacterStatusEquipment=render;', 'id="equipmentDetailModal"', 'SPECIAL ABILITIES', 'CANON / RESTRICTIONS',
   'CharacterStatEngine.weaponDamage(state, KAI_ID)', 'CombatStatMath.defenseReduction',
