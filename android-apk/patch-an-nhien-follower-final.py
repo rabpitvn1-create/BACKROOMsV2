@@ -6,7 +6,7 @@ MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 
 # Keep the historical non-gameplay/core materialization and UI work for now, but retire section 7:
 # its Java probability tables, transition gate, Party admission and deterministic state mutation are
-# superseded by GameplayRollPolicy / AnNhienEncounterPolicy / PartyCandidatePolicy in Kotlin.
+# superseded by GameplayRollPolicy / SpecialFollowerEncounterPolicy / PartyCandidatePolicy in Kotlin.
 code = SOURCE.read_text(encoding="utf-8")
 section_start_marker = "# 7) Final Android gameplay integration: deterministic Level 0 encounter, bonuses and exit gate.\n"
 section_end_marker = "# 8) Existing per-character UI: show the actual two FOOD slots instead of generic 9-slot copy.\n"
@@ -75,7 +75,7 @@ def method_bounds(source: str, signature: str) -> tuple[int, int]:
 signature = "  private JSONObject applyModelOperations(JSONObject before, JSONArray ops, JSONObject rolls, String action) throws Exception"
 method_start, method_end = method_bounds(main, signature)
 method = main[method_start:method_end]
-bridge_return = "return new JSONObject(com.rabpit.backroom.core.AnNhienEncounterPolicy.apply(before.toString(), state.toString(), rolls.toString()));"
+bridge_return = "return new JSONObject(com.rabpit.backroom.core.SpecialFollowerEncounterPolicy.apply(before.toString(), state.toString(), rolls.toString()));"
 if bridge_return not in method:
     count = method.count("return state;")
     if count < 1:
@@ -98,8 +98,8 @@ for forbidden in (
 ):
     if forbidden in main:
         raise RuntimeError("Retired Java An Nhien gameplay authority survived: " + forbidden)
-if "AnNhienEncounterPolicy.apply(" not in main:
-    raise RuntimeError("Kotlin An Nhien encounter bridge missing")
+if "SpecialFollowerEncounterPolicy.apply(" not in main:
+    raise RuntimeError("Kotlin special-follower encounter bridge missing")
 
 MAIN.write_text(main, encoding="utf-8")
-print("An Nhiên gameplay authority bridged to Kotlin; historical patch retains only core materialization, prompt and UI compatibility.")
+print("Special follower gameplay authority bridged to Kotlin; historical patch retains only core materialization, prompt and UI compatibility.")
