@@ -29,8 +29,14 @@ for marker in required:
     if marker not in facade:
         raise RuntimeError("Checked-in GameCore runtime debug contract missing: " + marker)
 
-# Keep the trace tied to the same authoritative lifecycle it is meant to observe. These checks catch
-# a stale debug snapshot without granting Python any authority to reconstruct gameplay code.
+# Keep the trace tied to processValidatedCandidate itself. Similar commitActionRuntime calls exist in
+# earlier Core paths, so a whole-file position comparison would mistake those legitimate calls for
+# this method's commit point. Verify monotonically inside this method instead.
+method_start = facade.find("fun processValidatedCandidate(")
+method_end = facade.find("\n  fun startEntityEncounters(", method_start)
+if method_start < 0 or method_end < 0:
+    raise RuntimeError("Checked-in processValidatedCandidate boundary missing")
+method = facade[method_start:method_end]
 ordering = (
     '"candidateAfterStoryNormalization"',
     '"validated_candidate_prepared"',
@@ -41,9 +47,12 @@ ordering = (
     '"coreCommittedState"',
     '"validated_candidate_committed"',
 )
-positions = [facade.find(marker) for marker in ordering]
-if any(position < 0 for position in positions) or positions != sorted(positions):
-    raise RuntimeError("Checked-in GameCore runtime debug trace is stale or out of authoritative commit order")
+cursor = 0
+for marker in ordering:
+    position = method.find(marker, cursor)
+    if position < 0:
+        raise RuntimeError("Checked-in GameCore runtime debug trace is stale or out of authoritative commit order: " + marker)
+    cursor = position + len(marker)
 
 print(
     "GameCore runtime debug trace verified in checked-in Kotlin Core: post-story candidate, pending state, "
