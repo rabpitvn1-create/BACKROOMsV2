@@ -174,6 +174,14 @@ def verify_gameplay_core_not_rewritten() -> None:
         "android-apk/app/src/main/java/com/rabpit/backroom/core",
         "android-apk/app/src/test/java/com/rabpit/backroom/core",
     )
+    name_result = subprocess.run(
+        ["git", "diff", "--name-only", "--", *guarded_paths],
+        cwd=REPO,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
     result = subprocess.run(
         ["git", "diff", "--exit-code", "--", *guarded_paths],
         cwd=REPO,
@@ -183,10 +191,12 @@ def verify_gameplay_core_not_rewritten() -> None:
         check=False,
     )
     if result.returncode != 0:
+        names = name_result.stdout.strip() if name_result.stdout else "(git diff --name-only produced no text)"
         detail = result.stdout[-12000:] if result.stdout else "(git diff produced no text)"
         raise RuntimeError(
             "Runtime patch chain modified checked-in Kotlin Game Core/test authority. "
-            "Materialize the intended source change in Git and make the patch verification-only.\n" + detail
+            "Materialize the intended source change in Git and make the patch verification-only.\n"
+            "Modified guarded paths:\n" + names + "\nDiff tail:\n" + detail
         )
 
 
