@@ -1,1 +1,0 @@
-Materialize the post-patch Kotlin gameplay sources, retire build-time Kotlin gameplay rewrites, remove the temporary source exporter, and enforce a no-rewrite regression gate. Remove this temporary plan file before merge.
