@@ -106,9 +106,10 @@ def issue_40_regression() -> None:
     kai_overlay = ROOT / "app/src/main/assets/kai_snapshot_overlay.png"
     expected_hash = hashlib.sha256(kai_overlay.read_bytes()).hexdigest()
     sync_source = KAI_SYNC.read_text(encoding="utf-8")
-    assert '"local_asset": "kai_snapshot_overlay.png"' in sync_source
+    assert '"file_id": "1Fa02XR57AjMZoCR3XkqsTeU9mbXn45he"' in sync_source
     assert f'"sha256": "{expected_hash}"' in sync_source
-    assert '(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)' not in sync_source
+    assert '"size": (1024, 1536)' in sync_source
+    assert '(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)' in sync_source
 
     ui_source = ANDROID_UI_PATCH.read_text(encoding="utf-8")
     assert "shell.addEventListener('pointerdown'" in ui_source

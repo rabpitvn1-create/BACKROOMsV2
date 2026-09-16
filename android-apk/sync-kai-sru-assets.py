@@ -14,9 +14,9 @@ AVATARS = ASSETS / "avatars"
 
 SOURCES = {
     "snapshot": {
-        "local_asset": "kai_snapshot_overlay.png",
-        "sha256": "b41c5133dac3c21b6623a3c0581f5bda795fc11498959e67466ebe60f6c4e8c7",
-        "size": (1086, 1448),
+        "file_id": "1Fa02XR57AjMZoCR3XkqsTeU9mbXn45he",
+        "sha256": "0d4a612a984e3b864d9220ea65d8032fd37a09160d8600ecd6ee0d4c24056589",
+        "size": (1024, 1536),
     },
     "avatar": {
         "file_id": "1BIJS1fd1wWCBJqFzD2_WEGXkE746DQuX",
@@ -76,6 +76,7 @@ snapshot = verified_source("snapshot")
 snapshot_image = validate_image(snapshot, "snapshot", "PNG", SOURCES["snapshot"]["size"])
 if "A" not in snapshot_image.getbands():
     raise RuntimeError("Kai snapshot overlay must preserve an alpha channel")
+(ASSETS / "kai_snapshot_overlay.png").write_bytes(snapshot)
 
 entity = verified_source("entity")
 entity_image = validate_image(entity, "entity", "PNG", SOURCES["entity"]["size"])
