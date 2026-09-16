@@ -11,6 +11,75 @@ def replace_once(old: str, new: str, label: str):
         raise RuntimeError(f"{label}: expected exactly 1 match, found {count}")
     text = text.replace(old, new, 1)
 
+
+def block_bounds(source: str, anchor: str) -> tuple[int, int]:
+    start = source.find(anchor)
+    if start < 0:
+        raise RuntimeError("block not found: " + anchor)
+    open_brace = source.find("{", start)
+    if open_brace < 0:
+        raise RuntimeError("opening brace missing: " + anchor)
+    depth = 0
+    state = "code"
+    escaped = False
+    i = open_brace
+    while i < len(source):
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < len(source) else ""
+        if state == "string":
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                state = "code"
+        elif state == "char":
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == "'":
+                state = "code"
+        elif state == "line_comment":
+            if ch == "\n":
+                state = "code"
+        elif state == "block_comment":
+            if ch == "*" and nxt == "/":
+                state = "code"
+                i += 1
+        else:
+            if ch == '"':
+                state = "string"
+            elif ch == "'":
+                state = "char"
+            elif ch == "/" and nxt == "/":
+                state = "line_comment"
+                i += 1
+            elif ch == "/" and nxt == "*":
+                state = "block_comment"
+                i += 1
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return start, i + 1
+        i += 1
+    raise RuntimeError("closing brace missing: " + anchor)
+
+
+def remove_method(signature: str) -> None:
+    global text
+    if signature not in text:
+        return
+    start, end = block_bounds(text, signature)
+    while end < len(text) and text[end] in " \t":
+        end += 1
+    if end < len(text) and text[end] == "\n":
+        end += 1
+    text = text[:start] + text[end:]
+
+
 old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
         JSONObject beforeFlagsForItem = before.optJSONObject("flags");
         JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
@@ -41,63 +110,42 @@ old_player = r'''        JSONObject current = state.optJSONObject("player");
 '''
 new_player = r'''        JSONObject current = state.optJSONObject("player");
         if (current == null) current = new JSONObject();
-        boolean worldConsequence = rollSuccess(rolls, "hazard") || rollSuccess(rolls, "entityEncounter");
-        boolean recoveryIntent = containsAny(action, "ăn", "uống", "nghỉ", "ngủ", "băng bó", "chữa", "hồi phục", "eat", "drink", "rest", "sleep", "heal");
-        boolean gearIntent = containsAny(action, "rút", "cất", "trang bị", "mặc", "cởi", "tháo", "đeo", "draw", "equip", "unequip", "wear");
-        if (patch.has("hp") && current.has("hp") && !current.isNull("hp")) {
-          double beforeHp = current.optDouble("hp", Double.NaN);
-          double afterHp = patch.optDouble("hp", Double.NaN);
-          if (!Double.isNaN(beforeHp) && !Double.isNaN(afterHp) && afterHp >= 0 &&
-              ((afterHp < beforeHp && worldConsequence) || (afterHp >= beforeHp && recoveryIntent))) current.put("hp", afterHp);
-        }
-        if (patch.has("condition") && (worldConsequence || recoveryIntent)) current.put("condition", patch.optString("condition", current.optString("condition", "")));
-        if (patch.optJSONObject("needs") != null && recoveryIntent) {
-          JSONObject needs = current.optJSONObject("needs");
-          if (needs == null) needs = new JSONObject();
-          for (String needKey : new String[] {"thirst", "hunger", "fatigue", "sleepDeprivation"}) {
-            if (patch.optJSONObject("needs").has(needKey)) needs.put(needKey, patch.optJSONObject("needs").get(needKey));
-          }
-          current.put("needs", needs);
-        }
         JSONArray ownedGear = state.optJSONArray("inventory");
-        for (String key : new String[] {"weapon", "armor"}) {
-          if (!patch.has(key) || !gearIntent) continue;
-          String proposedGear = patch.optString(key, "").trim();
-          boolean owned = false;
-          if (ownedGear != null) for (int gearIndex = 0; gearIndex < ownedGear.length(); gearIndex++) {
-            String ownedName = itemName(ownedGear.opt(gearIndex));
-            if (!ownedName.isEmpty() && lower(proposedGear).contains(lower(ownedName))) { owned = true; break; }
-          }
-          if (owned) current.put(key, proposedGear);
-        }
+        current = new JSONObject(com.rabpit.backroom.core.PlayerCandidatePolicy.applyPatch(
+          before.toString(), current.toString(), patch.toString(), rolls.toString(), action,
+          ownedGear == null ? "[]" : ownedGear.toString()));
 '''
-replace_once(old_player, new_player, "player authority gate")
+replace_once(old_player, new_player, "Kotlin player candidate bridge")
 
-old_flag = r'''        Object value = op.get("value");
-        Object current = flags.opt(root);
-        if (current instanceof JSONObject && value instanceof JSONObject) {
-'''
-new_flag = r'''        Object value = op.get("value");
-        if (root.equals("exploration") && value instanceof JSONObject) {
-          JSONObject patchValue = new JSONObject(value.toString());
-          JSONObject beforeExploration = before.optJSONObject("flags") != null ? before.optJSONObject("flags").optJSONObject("exploration") : null;
-          String beforeProgress = beforeExploration != null ? beforeExploration.optString("exitProgress", "") : "";
-          String afterProgress = patchValue.optString("exitProgress", beforeProgress);
-          boolean exitMutation = !afterProgress.equals(beforeProgress) || patchValue.has("exitCandidate");
-          if (exitMutation && !rollSuccess(rolls, "levelExit")) continue;
-          if (containsAny(afterProgress, "READY", "GUARANTEED", "CONDITION MET", "TRANSITION AVAILABLE") &&
-              !containsAny(beforeProgress, "NEAR", "ALMOST", "VERY STRONG")) continue;
-          value = patchValue;
-        }
-        if (root.equals("reunionPath") && value instanceof JSONObject) {
-          JSONObject pathPatch = (JSONObject)value;
-          if (pathPatch.has("iris") && containsAny(pathPatch.optString("iris", ""), "CONFIRMED", "DIRECT", "ARRIVED", "CONTACT ESTABLISHED") && !rollSuccess(rolls, "irisReunion")) continue;
-          if (pathPatch.has("syvial") && containsAny(pathPatch.optString("syvial", ""), "CONFIRMED", "DIRECT", "ARRIVED", "CONTACT ESTABLISHED") && !rollSuccess(rolls, "syvialReunion")) continue;
-        }
-        Object current = flags.opt(root);
-        if (current instanceof JSONObject && value instanceof JSONObject) {
-'''
-replace_once(old_flag, new_flag, "flag authority gate")
+legacy_party_add = "else if (characterAddAllowed(before, name, rolls)) party.put(new JSONObject(member.toString()));"
+kotlin_party_add = (
+    "else if (com.rabpit.backroom.core.PartyCandidatePolicy.allowsProviderAddition("
+    "before.toString(), rolls.toString(), name)) party.put(new JSONObject(member.toString()));"
+)
+replace_once(legacy_party_add, kotlin_party_add, "Kotlin Party admission bridge")
+
+legacy_party_remove = (
+    'if (party != null && existing >= 0 && containsAny(action, "rời", "tách", "ở lại", "đuổi", '
+    '"chia nhóm", "mất dấu")) party.remove(existing);'
+)
+kotlin_party_remove = (
+    "if (party != null && existing >= 0 && "
+    "com.rabpit.backroom.core.PartyCandidatePolicy.allowsRemoval(action)) party.remove(existing);"
+)
+replace_once(legacy_party_remove, kotlin_party_remove, "Kotlin Party removal bridge")
+remove_method("  private boolean characterAddAllowed(JSONObject before, String name, JSONObject rolls)")
+
+flag_anchor = '      if (type.equals("flag_patch")) {'
+flag_start, flag_end = block_bounds(text, flag_anchor)
+kotlin_flag_block = '''      if (type.equals("flag_patch")) {
+        JSONObject flags = state.optJSONObject("flags");
+        if (flags == null) flags = new JSONObject();
+        flags = new JSONObject(com.rabpit.backroom.core.FlagCandidatePolicy.applyOperation(
+          before.toString(), flags.toString(), op.toString(), rolls.toString()));
+        state.put("flags", flags);
+      }'''
+text = text[:flag_start] + kotlin_flag_block + text[flag_end:]
+remove_method("  private boolean flagRootAllowed(JSONObject before, String root, JSONObject rolls)")
 
 old_risk_tail = r'''    if (hasParty && containsAny(reply, "yêu", "thích", "ghen", "tin tưởng", "phản bội", "người yêu", "hẹn hò", "quan hệ", "love", "trust", "betray", "relationship")) score += 2;
     return score;
@@ -172,13 +220,34 @@ old_call = r'''              JSONObject result = new JSONObject(postJson(
 new_call = old_call.replace("postJson(", "postJsonFast(")
 replace_once(old_call, new_call, "Gemini fast HTTP call")
 
-for required in ["InventoryAcquisitionPolicy.allows", "op.optString(\"basis\", \"\")", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
+for required in [
+    "InventoryAcquisitionPolicy.allows",
+    "PlayerCandidatePolicy.applyPatch",
+    "PartyCandidatePolicy.allowsProviderAddition",
+    "PartyCandidatePolicy.allowsRemoval(action)",
+    "FlagCandidatePolicy.applyOperation",
+    "JSONArray proposed",
+    "private String postJsonFast(",
+    "setReadTimeout(5000)",
+]:
     if required not in text:
         raise RuntimeError(f"final authority hardening missing marker: {required}")
 
-for retired in ["establishedStructured", "gm_confirmed_pickup", "confirmedMundanePickup", "mundanePickupName("]:
+for retired in [
+    "establishedStructured",
+    "gm_confirmed_pickup",
+    "confirmedMundanePickup",
+    "mundanePickupName(",
+    "characterAddAllowed(",
+    "flagRootAllowed(",
+    "boolean worldConsequence = rollSuccess(rolls",
+    "boolean recoveryIntent = containsAny(action",
+    "boolean gearIntent = containsAny(action",
+    'root.equals("exploration") && value instanceof JSONObject',
+    'root.equals("reunionPath") && value instanceof JSONObject',
+]:
     if retired in text:
-        raise RuntimeError(f"retired inventory/authority marker survived: {retired}")
+        raise RuntimeError(f"retired Java gameplay authority survived: {retired}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Final Android authority hardening delegates Inventory acquisition eligibility to Kotlin Game Core.")
+print("Final Android authority hardening delegates Inventory, Party, Player and Flag eligibility to Kotlin Game Core.")
