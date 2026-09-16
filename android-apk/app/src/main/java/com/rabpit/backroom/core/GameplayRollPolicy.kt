@@ -71,20 +71,18 @@ object GameplayRollPolicy {
       (madGod == null || !madGod.optBoolean("spawned", false)) &&
       (flags == null || flags.optBoolean("madGodDiscoveryAllowed", true))
 
-    // The mandatory An Nhiên check is guaranteed when eligible, so it consumes no RNG and does not
-    // disturb the established draw order of the other gameplay rolls.
+    // Special followers use three independent 0.25% physical-turn checks on Levels 0-6.
     rolls.put("anNhienEncounter", thresholdRoll(
-      "anNhienEncounter", 1, 1,
-      level == AnNhienCanon.HOME_LEVEL && physical && !anNhienEncountered,
-      " mandatory Level 0 follower", random))
+      "anNhienEncounter", 10_000, 25, physical && !anNhienEncountered,
+      " follower encounter", random))
     rolls.put("survivor", thresholdRoll(
-      "survivor", 10_000, 200,
-      survivorAllowed && !(level == AnNhienCanon.HOME_LEVEL && !anNhienEncountered),
-      "", random))
+      "survivor", 10_000, 200, survivorAllowed, "", random))
     rolls.put("irisReunion", thresholdRoll(
-      "irisReunion", 1_000_000, 25, reunionEligible(state, "iris"), "", random))
+      "irisReunion", 10_000, 25, physical && reunionEligible(state, "iris"),
+      " follower encounter", random))
     rolls.put("syvialReunion", thresholdRoll(
-      "syvialReunion", 1_000_000, 25, reunionEligible(state, "syvial"), "", random))
+      "syvialReunion", 10_000, 25, physical && reunionEligible(state, "syvial"),
+      " follower encounter", random))
     rolls.put("hazard", thresholdRoll(
       "hazard", 10_000, HAZARD_THRESHOLDS[level], physical, "", random))
 
