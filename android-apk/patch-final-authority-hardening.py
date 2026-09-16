@@ -117,23 +117,8 @@ new_player = r'''        JSONObject current = state.optJSONObject("player");
 '''
 replace_once(old_player, new_player, "Kotlin player candidate bridge")
 
-legacy_party_add = "else if (characterAddAllowed(before, name, rolls)) party.put(new JSONObject(member.toString()));"
-kotlin_party_add = (
-    "else if (com.rabpit.backroom.core.PartyCandidatePolicy.allowsProviderAddition("
-    "before.toString(), rolls.toString(), name)) party.put(new JSONObject(member.toString()));"
-)
-replace_once(legacy_party_add, kotlin_party_add, "Kotlin Party admission bridge")
-
-legacy_party_remove = (
-    'if (party != null && existing >= 0 && containsAny(action, "rời", "tách", "ở lại", "đuổi", '
-    '"chia nhóm", "mất dấu")) party.remove(existing);'
-)
-kotlin_party_remove = (
-    "if (party != null && existing >= 0 && "
-    "com.rabpit.backroom.core.PartyCandidatePolicy.allowsRemoval(action)) party.remove(existing);"
-)
-replace_once(legacy_party_remove, kotlin_party_remove, "Kotlin Party removal bridge")
-remove_method("  private boolean characterAddAllowed(JSONObject before, String name, JSONObject rolls)")
+# Party remains in its historical shape until the later An Nhien compatibility layer has run.
+# The final story/candidate bridge normalizes Party admission/removal to Kotlin after that layer.
 
 flag_anchor = '      if (type.equals("flag_patch")) {'
 flag_start, flag_end = block_bounds(text, flag_anchor)
@@ -223,8 +208,6 @@ replace_once(old_call, new_call, "Gemini fast HTTP call")
 for required in [
     "InventoryAcquisitionPolicy.allows",
     "PlayerCandidatePolicy.applyPatch",
-    "PartyCandidatePolicy.allowsProviderAddition",
-    "PartyCandidatePolicy.allowsRemoval(action)",
     "FlagCandidatePolicy.applyOperation",
     "JSONArray proposed",
     "private String postJsonFast(",
@@ -238,7 +221,6 @@ for retired in [
     "gm_confirmed_pickup",
     "confirmedMundanePickup",
     "mundanePickupName(",
-    "characterAddAllowed(",
     "flagRootAllowed(",
     "boolean worldConsequence = rollSuccess(rolls",
     "boolean recoveryIntent = containsAny(action",
@@ -250,4 +232,4 @@ for retired in [
         raise RuntimeError(f"retired Java gameplay authority survived: {retired}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Final Android authority hardening delegates Inventory, Party, Player and Flag eligibility to Kotlin Game Core.")
+print("Final Android authority hardening delegates Inventory, Player and Flag eligibility to Kotlin; Party remains compatible until the final bridge layer.")
