@@ -71,33 +71,27 @@ if ".processRule(stateJson, action)" not in text:
     text = text[:position] + rule_bridge + text[position:]
 
 # Candidate state/ops emitted by the writer are advisory until Kotlin validates and commits them.
+# Keep the existing five-argument Core boundary: before, candidate, rolls, accepted ops, action.
 gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
-          String validatedRaw = requireGameCore().processValidatedCandidate(
-            stateJson,
-            actionKind,
-            action,
-            generated.getJSONObject("state").toString(),
-            coreOps == null ? "[]" : coreOps.toString(),
-            rolls == null ? "{}" : rolls.toString()
-          );
-          JSONObject validated = new JSONObject(validatedRaw);
-          if (!validated.optBoolean("handled", false)) {
-            throw new IllegalStateException("Game State Core rejected validated candidate: " + validated.optString("error", validated.optString("reason", "unknown")));
+          JSONObject coreCommit = new JSONObject(requireGameCore().processValidatedCandidate(
+            before.toString(), candidateState.toString(), rolls.toString(),
+            coreOps == null ? "[]" : coreOps.toString(), action));
+          if (!coreCommit.optBoolean("handled", false)) {
+            throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
           }
-          generated.put("state", validated.getJSONObject("state"));
+          candidateState = coreCommit.getJSONObject("state");
+
 '''
 validated_bridge_present = (
     "processValidatedCandidate(" in text
-    and 'coreOps == null ? "[]" : coreOps.toString()' in text
-    and 'rolls == null ? "{}" : rolls.toString()' in text
+    and 'before.toString(), candidateState.toString(), rolls.toString(),' in text
+    and 'coreOps == null ? "[]" : coreOps.toString(), action' in text
 )
 if not validated_bridge_present:
-    anchors = [
-        "          JSONObject candidate = generated.getJSONObject(\"state\");\n",
-        "          JSONObject nextState = generated.getJSONObject(\"state\");\n",
-    ]
-    anchor = next((candidate for candidate in anchors if candidate in text), None)
-    if anchor is None:
+    # This is the stable terminal location used by the historical provider pipeline after
+    # candidate audit/repair. It is intentionally later than provider JSON construction.
+    anchor = "          JSONObject state = candidateState;\n"
+    if anchor not in text:
         raise RuntimeError("validated Gemini candidate anchor not found")
     text = text.replace(anchor, gemini_commit + anchor, 1)
 
@@ -110,8 +104,8 @@ for required in [
     "gameCore.clear();",
     ".processRule(stateJson, action)",
     "JSONArray coreOps = generated.optJSONArray(\"ops\")",
-    'coreOps == null ? "[]" : coreOps.toString()',
-    'rolls == null ? "{}" : rolls.toString()',
+    'before.toString(), candidateState.toString(), rolls.toString(),',
+    'coreOps == null ? "[]" : coreOps.toString(), action',
 ]:
     if required not in text:
         raise RuntimeError(f"Game State Core integration missing: {required}")
