@@ -1,0 +1,75 @@
+name: Issue 43 Patch Diagnostic
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
+      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: android-apk/ml/requirements.txt
+      - name: Train build-equivalent LiteRT model
+        run: |
+          set -euo pipefail
+          python -m pip install --requirement android-apk/ml/requirements.txt
+          python android-apk/ml/build_intent_dataset.py
+          python android-apk/ml/evaluate_seed_classifier.py
+          cd android-apk/ml
+          python train_intent_classifier.py --dataset intent_dataset.csv --labels ../app/src/main/assets/models/backroom_intent_labels.txt --output ../app/src/main/assets/models/backroom_intent.tflite --report intent_model_report.json
+      - name: Sync verified Kai SRU visuals
+        run: |
+          set -euo pipefail
+          python android-apk/sync-kai-sru-assets.py
+          test -s android-apk/app/src/main/assets/kai_snapshot_overlay.png
+          test -s android-apk/app/src/main/assets/kai_entity_overlay.png
+          test -s android-apk/app/src/main/assets/avatars/kai_avatar.png
+      - name: Apply exact build patch chain and assertions
+        id: patches
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
+          : > issue43-patch-chain.log
+          for script in "${scripts[@]}"; do
+            echo "==> $script" | tee -a issue43-patch-chain.log
+            python3 "android-apk/$script" 2>&1 | tee -a issue43-patch-chain.log || exit ${PIPESTATUS[0]}
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/build-backroom-apk.yml').read_text(encoding='utf-8')
+          start = text.index('          git diff --check\n')
+          end = text.index('\n      - name: Restore and verify New Game startup', start)
+          block = text[start:end]
+          lines = []
+          for line in block.splitlines():
+              lines.append(line[10:] if line.startswith('          ') else line)
+          Path('issue43-post-patch-assertions.sh').write_text('set -euo pipefail\n' + '\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+          echo '==> exact post-patch assertions from build-backroom-apk.yml' | tee -a issue43-patch-chain.log
+          bash -x issue43-post-patch-assertions.sh 2>&1 | tee -a issue43-patch-chain.log
+      - name: Upload diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue43-patch-chain-log
+          path: issue43-patch-chain.log
+          retention-days: 1
