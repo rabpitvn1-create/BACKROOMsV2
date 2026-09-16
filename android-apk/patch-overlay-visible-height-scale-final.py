@@ -23,7 +23,6 @@ BASELINES = {
 
 CHARACTER_ASSETS = {
     "kai_snapshot_overlay.png": "male",
-    "Kai_MadGod_snapshot_overlay.png": "male",
     "kai_entity_overlay.png": "male",
     "lucia_entity_overlay.png": "female",
     "syvial_entity_overlay.png": "female",
