@@ -21,12 +21,13 @@ jobs:
           from pathlib import Path
           path = Path('android-apk/patch-character-status-equipment-system.py')
           text = path.read_text(encoding='utf-8')
-          start_marker = "    mg = re.sub(r'const val MULTIPLIER = \\\\d+', 'const val MULTIPLIER = 1', mg)\n"
+          start_marker = "\n    mg = re.sub("
           end_marker = '# --- Rich Character projection, derived from Base + unique equipped Items -----\n'
           start = text.find(start_marker)
           if start < 0:
               print('Dead normalization tail already absent.')
           else:
+              start += 1
               end = text.find(end_marker, start)
               if end < 0:
                   raise SystemExit('Rich Character projection marker missing')
