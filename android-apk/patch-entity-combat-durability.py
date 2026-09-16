@@ -15,11 +15,15 @@ for marker in (
     'private const val ENTITY_HP_BONUS = 30',
     'private const val ENTITY_EVASION_PERCENT = 25',
     'private const val ENTITY_REGEN_PER_TURN = 1',
-    'profile.maxHp + ENTITY_HP_BONUS',
+    'val enhancedEntityMaxHp = if (profile.key == DIEP_MINH_KEY) DIEP_MINH_MAX_HP else profile.maxHp + ENTITY_HP_BONUS',
+    'entityHp = enhancedEntityMaxHp',
+    'entityMaxHp = enhancedEntityMaxHp',
     'val entityEvaded = evasionRoll < ENTITY_EVASION_PERCENT',
-    'c.entityHp + entityRegenPerTurn(profile)',
-    'val canonicalMaxHp = canonicalEntityMaxHp(profile)',
-    'CharacterStatEngine.effective(state, KAI_ID).maxHp',
+    'val entityRegen = if (c.entityKey == DIEP_MINH_KEY) DIEP_MINH_REGEN_PER_TURN else ENTITY_REGEN_PER_TURN',
+    'val entityHpAfterRegen = min(c.entityMaxHp, c.entityHp + entityRegen)',
+    'c = c.copy(entityHp = entityHpAfterRegen, entityCondition = condition(entityHpAfterRegen, c.entityMaxHp))',
+    'val effective = CharacterStatEngine.effective(state, KAI_ID)',
+    'val playerMax = effective.maxHp',
 ):
     if marker not in combat:
         raise RuntimeError("Checked-in Kotlin Entity durability authority missing: " + marker)
