@@ -335,7 +335,9 @@ if 'COMPANION_SKILLS_R01' not in combat:
 # Devils And Gold AoE remains untouched; Stun can still suppress the response before it reaches this block.
 enemy_chance_old = '      val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7 - quickStepEvasion).coerceIn(0, 88)\n'
 enemy_chance_new = '      val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7 - quickStepEvasion - companionEnemyAccuracyPenalty).coerceIn(0, 88)\n'
-combat = replace_once(combat, enemy_chance_old, enemy_chance_new, "companion enemy accuracy penalties")
+true_turn_enemy_chance = '      val enemyChance = (profile.aggression * 8 - defense + max(0, -c.momentum) * 7 - quickStepEvasion - trueTurnEnemyAccuracyPenalty).coerceIn(0, 88)\n'
+if enemy_chance_new not in combat and true_turn_enemy_chance not in combat:
+    raise RuntimeError("Checked-in companion enemy accuracy authority missing")
 
 # Iris Dead Angle and Syvial Counterphase fire only when the finalized ordinary response misses.
 miss_anchor = '''        log += if (quickStepTurns > 0) {
@@ -396,13 +398,14 @@ for marker in (
     'Spatial Dominion tự động kích hoạt',
     'Quăng Đại Cái Gì Đó',
     'Kế Hoạch Không Có Trong Kế Hoạch',
-    '- quickStepEvasion - companionEnemyAccuracyPenalty',
+    'trueTurnEnemyAccuracyPenalty',
     'Dead Angle: Iris phản kích',
     'Counterphase: Syvial',
 ):
     if marker not in combat:
         raise RuntimeError("Companion combat contract missing: " + marker)
-COMBAT.write_text(combat, encoding="utf-8")
+# CombatRuntime is checked-in Kotlin authority. The compatibility chain verifies it above and must
+# not rewrite gameplay source while composing the catalog, projections and UI.
 
 
 # ---------------------------------------------------------------------------
