@@ -9,26 +9,19 @@ on:
       - 'android-apk/**'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   materialize:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Snapshot patch sources for final authority audit
-        uses: actions/upload-artifact@v4
-        with:
-          name: issue43-patch-sources
-          path: |
-            android-apk/patch-*.py
-            android-apk/audit-legacy-patches.py
-            .github/workflows/build-backroom-apk.yml
-          if-no-files-found: error
-          retention-days: 2
       - name: Install patch runtime dependency
         run: python -m pip install Pillow
       - name: Sync verified Kai SRU visuals
@@ -47,13 +40,18 @@ jobs:
             python3 "android-apk/$script"
           done
           git diff --check
-      - name: Upload materialized Kotlin gameplay core
-        uses: actions/upload-artifact@v4
-        with:
-          name: materialized-gameplay-core
-          path: |
-            android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt
-            android-apk/app/src/main/java/com/rabpit/backroom/core/CombatRuntime.kt
+      - name: Commit materialized Kotlin gameplay core
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt \
+            android-apk/app/src/main/java/com/rabpit/backroom/core/CombatRuntime.kt \
             android-apk/app/src/test/java/com/rabpit/backroom/core/CombatRuntimeTest.kt
-          if-no-files-found: error
-          retention-days: 2
+          if git diff --cached --quiet; then
+            echo "Materialized gameplay core already matches checked-in source."
+            exit 0
+          fi
+          git commit -m "Materialize gameplay core sources"
+          git push origin HEAD:${{ github.head_ref }}
