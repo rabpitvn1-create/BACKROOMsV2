@@ -83,11 +83,11 @@ if bridge_return not in method:
     method = method.replace("return state;", bridge_return)
     main = main[:method_start] + method + main[method_end:]
 
+# Prompt wording has been rebuilt several times by later canon patches. Preserve the old wording when
+# it is present, but do not make gameplay correctness depend on a prose anchor.
 prompt_marker = '"GAMEPLAY_ROLLS do Android sinh là bất biến: chỉ outcome success=true mới được xuất hiện. Không reroll, không tự đổi xác suất, không tự tạo encounter/item/reunion/level transition trái roll. " +\n'
 prompt_extra = prompt_marker + '            "AN NHIÊN HARD LOCK: bé gái 7 tuổi, con người, không phải Entity. anNhienEncounter success=true là cuộc gặp bắt buộc ở Level 0 và phải được kể trong lượt đó; sau khi gặp cô bé luôn theo Kai, không chiến đấu, không dùng vũ khí, không tự tách nhóm. Cô chỉ có +10% loot chance và +2% exit chance khi đang theo Kai, đúng như GAMEPLAY_ROLLS. Không tự thêm năng lực hoặc lore. " +\n'
-if "AN NHIÊN HARD LOCK:" not in main:
-    if main.count(prompt_marker) != 1:
-        raise RuntimeError(f"An Nhien prompt bridge anchor count != 1: {main.count(prompt_marker)}")
+if "AN NHIÊN HARD LOCK:" not in main and main.count(prompt_marker) == 1:
     main = main.replace(prompt_marker, prompt_extra, 1)
 
 for forbidden in (
@@ -98,12 +98,8 @@ for forbidden in (
 ):
     if forbidden in main:
         raise RuntimeError("Retired Java An Nhien gameplay authority survived: " + forbidden)
-for required in (
-    "AnNhienEncounterPolicy.apply(",
-    "AN NHIÊN HARD LOCK:",
-):
-    if required not in main:
-        raise RuntimeError("Kotlin An Nhien bridge missing: " + required)
+if "AnNhienEncounterPolicy.apply(" not in main:
+    raise RuntimeError("Kotlin An Nhien encounter bridge missing")
 
 MAIN.write_text(main, encoding="utf-8")
 print("An Nhiên gameplay authority bridged to Kotlin; historical patch retains only core materialization, prompt and UI compatibility.")
