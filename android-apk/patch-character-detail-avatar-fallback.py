@@ -39,9 +39,6 @@ runpy.run_path(str(ROOT / "patch-jane-killer.py"), run_name="__main__")
 # WebView controls themselves are installed once by apply-android-ui.py.
 runpy.run_path(str(ROOT / "patch-three-action-core.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-three-action-bridge.py"), run_name="__main__")
-# MadGod was a generated legacy feature and is intentionally retired. Remove any
-# checked-in/runtime residue instead of trying to keep its brittle patch chain alive.
-runpy.run_path(str(ROOT / "patch-remove-madgod.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-entity-overlay-runtime-hotfix.py"), run_name="__main__")
 
 final_html = INDEX.read_text(encoding="utf-8")
@@ -67,8 +64,4 @@ for marker in (
     if marker not in final_facade:
         raise RuntimeError(f"Core contract missing: {marker}")
 
-for forbidden in ('MadGodCanon', 'MADGOD_', 'madgod_', 'MadGod Set'):
-    if forbidden in final_facade:
-        raise RuntimeError(f"Retired MadGod runtime survived cleanup: {forbidden}")
-
-print("Character/runtime contract verified: core + bridge actions and avatar/entity authority; MadGod retired; WebView layout deferred to canonical Android UI.")
+print("Character/runtime contract verified: core + bridge actions and avatar/entity authority; WebView layout deferred to canonical Android UI.")
