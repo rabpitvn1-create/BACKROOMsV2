@@ -12,36 +12,26 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 
-# VISUAL_STATE_SYNC_FINAL_V3
-# Snapshot state is a projection of authoritative gameplay state. Free-text story fields,
-# stale cache keys and historical Entity flags must never keep an obsolete visual scene alive.
+# VISUAL_STATE_SYNC_FINAL_V4
+# Visual projection remains a build-time UI compatibility concern. Gameplay persistence and combat
+# cleanup are checked-in Kotlin authority and MUST NOT be rewritten by this patch.
 main = MAIN.read_text(encoding="utf-8")
 
-# Cache identity follows both the authoritative Level and the current area/location identity.
-# visualAreaKey is optional, but when present it invalidates an older cached scene even if the
-# human-readable location happens to stay unchanged.
 old_scene_key = "function visualSceneKey(){var l=state&&state.level&&state.level.number;var where=String(state&&state.location||'').trim().toLowerCase();return String(l==null?'?':l)+'|'+where}"
 new_scene_key = "function visualSceneKey(){var l=state&&state.level&&state.level.number;var where=String(state&&state.location||'').trim().toLowerCase();var area=String(state&&state.flags&&state.flags.visualAreaKey||'').trim().toLowerCase();return String(l==null?'?':l)+'|'+where+'|'+area}"
 if new_scene_key not in main:
     main = replace_once(main, old_scene_key, new_scene_key, "area-aware Snapshot scene key")
 
-# Level fallback art must prefer the structured Level selected by the gameplay reducer. Text parsing
-# remains only as an old-save fallback when state.level is missing.
 old_level_picker = "var refs={0:'file:///android_asset/level_snapshots/level_0.webp',1:'file:///android_asset/level_snapshots/level_1.webp',2:'file:///android_asset/level_snapshots/level_2.webp',3:'file:///android_asset/level_snapshots/level_3.webp',4:'file:///android_asset/level_snapshots/level_4.webp',5:'file:///android_asset/level_snapshots/level_5.webp',6:'file:///android_asset/level_snapshots/level_6.webp'};var where=String(state&&state.location||'')+' '+String(state&&state.title||'');var lm=where.match(/Level[^0-9]*([0-6])/i);var lv=lm?Number(lm[1]):0;"
 new_level_picker = "var refs={0:'file:///android_asset/level_snapshots/level_0.webp',1:'file:///android_asset/level_snapshots/level_1.webp',2:'file:///android_asset/level_snapshots/level_2.webp',3:'file:///android_asset/level_snapshots/level_3.webp',4:'file:///android_asset/level_snapshots/level_4.webp',5:'file:///android_asset/level_snapshots/level_5.webp',6:'file:///android_asset/level_snapshots/level_6.webp'};var structuredLevel=state&&state.level&&state.level.number;var where=String(state&&state.location||'')+' '+String(state&&state.title||'');var lm=where.match(/Level[^0-9]*([0-6])/i);var lv=(structuredLevel!==undefined&&structuredLevel!==null&&Number(structuredLevel)>=0&&Number(structuredLevel)<=6)?Number(structuredLevel):(lm?Number(lm[1]):0);"
 if new_level_picker not in main:
     main = replace_once(main, old_level_picker, new_level_picker, "authoritative Snapshot Level picker")
 
-# CombatRuntime is the sole visual-presence authority for Entity pixels. entityEncounterKey remains
-# a compatibility/state field, but it must never resurrect an Entity when no combat session is active.
 old_active_entity = "function activeEntityKey(){var f=state&&state.flags||{};var direct=normalizeEntityKey(f.entityEncounterKey);if(direct)return direct;if(f.jeff&&f.jeff.present===true)return 'jeff_the_killer';if(f.jane&&f.jane.present===true)return 'jane_the_killer';return '';}"
 new_active_entity = "function activeEntityKey(){var c=state&&state.combat;if(!c||c.active!==true)return '';return normalizeEntityKey(c.entityKey);}"
 if new_active_entity not in main:
     main = replace_once(main, old_active_entity, new_active_entity, "authoritative current Entity visual source")
 
-# Reconcile every Level-bearing field before the candidate enters Game State Core. Structured gameplay
-# state wins. A stale location that still names another Level is replaced with a canonical new-Level
-# location, while a legitimate area name without a conflicting Level marker is preserved.
 helper = r'''  private void reconcileVisualWorldState(JSONObject before, JSONObject candidateState, JSONObject rolls) throws Exception {
     int oldLevel = currentLevel(before);
     int structuredLevel = currentLevel(candidateState);
@@ -62,7 +52,6 @@ helper = r'''  private void reconcileVisualWorldState(JSONObject before, JSONObj
     if (levelChange) {
       candidateState.put("level", new JSONObject().put("number", requestedLevel).put("name", levelName(requestedLevel)));
       candidateState.put("title", "Level " + requestedLevel + " – " + levelName(requestedLevel));
-
       String candidateLocation = candidateState.optString("location", "").trim();
       int locationLevel = -1;
       if (!candidateLocation.isEmpty()) {
@@ -96,8 +85,6 @@ for marker in (
     "var structuredLevel=state&&state.level&&state.level.number;",
     "function activeEntityKey(){var c=state&&state.combat;if(!c||c.active!==true)return '';",
     "private void reconcileVisualWorldState(JSONObject before, JSONObject candidateState, JSONObject rolls)",
-    "structuredLevel != oldLevel ? structuredLevel",
-    'candidateState.put("location", "Level " + requestedLevel + " / " + levelName(requestedLevel))',
     "reconcileVisualWorldState(before, candidateState, rolls);",
 ):
     if marker not in main:
@@ -112,89 +99,13 @@ for retired in (
 
 MAIN.write_text(main, encoding="utf-8")
 
+# Kotlin state migration and combat cleanup are already materialized and tested in GameCoreFacade.
+# This patch only verifies those contracts; rewriting them here would restore split gameplay authority.
 facade = FACADE.read_text(encoding="utf-8")
-old_load = '''  private fun loadOrMigrate(legacy: JSONObject): GameState {
-    if (repository.exists()) return repository.load()
-    val migrated = GameStateCodec.decode(legacy)
-    repository.save(migrated)
-    return migrated
-  }
-'''
-new_load = '''  private fun normalizeVisualPresence(state: GameState): GameState {
-    if (CombatRuntime.active(state) != null) return state
-    val rawFlags = state.world["flagsJson"] ?: return state
-    val flags = runCatching { JSONObject(rawFlags) }.getOrNull() ?: return state
-    if (flags.optString("entityEncounterKey", "").isBlank()) return state
-    flags.put("entityEncounterKey", "")
-    return state.copy(world = state.world + ("flagsJson" to flags.toString()))
-  }
-
-  private fun loadOrMigrate(legacy: JSONObject): GameState {
-    val existed = repository.exists()
-    val loaded = if (existed) repository.load() else GameStateCodec.decode(legacy)
-    val normalized = normalizeVisualPresence(loaded)
-    if (!existed || normalized != loaded) repository.save(normalized)
-    return normalized
-  }
-'''
-if new_load not in facade:
-    facade = replace_once(facade, old_load, new_load, "persistent stale Entity visual migration")
-
-# Patch processCombat within its own method boundary. Combat rules/time/regen already live behind
-# CombatTurnAuthority; this compatibility patch may only capture the active Entity key for visual
-# cleanup and persist the resulting flags. It must never restore direct CombatRuntime resolution.
-method_start = facade.find("  fun processCombat(legacyStateJson: String, actionKind: String, action: String): String {\n")
-if method_start < 0:
-    raise RuntimeError("processCombat method missing for targeted Entity cleanup")
-method_end = facade.find("\n  fun ", method_start + 1)
-if method_end < 0:
-    method_end = facade.find("\n  private fun ", method_start + 1)
-if method_end < 0:
-    raise RuntimeError("processCombat method end missing for targeted Entity cleanup")
-method = facade[method_start:method_end]
-
-resolution_anchor = "    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n"
-resolution_with_key = "    val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()\n    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n"
-if resolution_with_key not in method:
-    method = replace_once(method, resolution_anchor, resolution_with_key, "capture resolved Entity identity")
-
-next_anchor = "    val next = resolution.state\n"
-next_mutable = "    var next = resolution.state\n"
-if next_mutable not in method:
-    method = replace_once(method, next_anchor, next_mutable, "mutable visual cleanup state")
-
-persistent_cleanup = '''    if (resolution.entityDestroyed || resolution.escaped) {
-      val flags = next.world["flagsJson"]?.let { JSONObject(it) }
-        ?: legacy.optJSONObject("flags")?.let { JSONObject(it.toString()) }
-        ?: JSONObject()
-      flags.put("entityEncounterKey", "")
-      when (resolvedEntityKey) {
-        "jeff_the_killer" -> flags.optJSONObject("jeff")?.put("present", false)
-        "jane_the_killer" -> flags.optJSONObject("jane")?.put("present", false)
-      }
-      next = next.copy(world = next.world + ("flagsJson" to flags.toString()))
-    }
-'''
-if persistent_cleanup not in method:
-    save_anchor = "    repository.save(next)\n"
-    if method.count(save_anchor) != 1:
-        raise RuntimeError(f"processCombat repository.save anchor expected 1, found {method.count(save_anchor)}")
-    method = method.replace(save_anchor, persistent_cleanup + save_anchor, 1)
-
-for forbidden in (
-    "CombatRuntime.resolve(current, actionKind, action)",
-    "TimeEngine.execute(next, TimeAdvanceCommand(",
-    'reason = "combat_action"',
-):
-    if forbidden in method:
-        raise RuntimeError("Visual compatibility patch restored retired combat authority: " + forbidden)
-
-facade = facade[:method_start] + method + facade[method_end:]
-
 for marker in (
     "private fun normalizeVisualPresence(state: GameState): GameState",
     'if (CombatRuntime.active(state) != null) return state',
-    'if (!existed || normalized != loaded) repository.save(normalized)',
+    'val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))',
     'val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()',
     'val resolution = CombatTurnAuthority.resolve(current, actionKind, action)',
     'when (resolvedEntityKey)',
@@ -203,14 +114,12 @@ for marker in (
     'next = next.copy(world = next.world + ("flagsJson" to flags.toString()))',
 ):
     if marker not in facade:
-        raise RuntimeError("Combat visual cleanup persistence missing: " + marker)
+        raise RuntimeError("Checked-in Kotlin visual cleanup authority missing: " + marker)
+for forbidden in (
+    "CombatRuntime.resolve(current, actionKind, action)",
+    'reason = "combat_action"',
+):
+    if forbidden in facade:
+        raise RuntimeError("Checked-in Kotlin restored retired combat authority: " + forbidden)
 
-unsafe_cleanup = '''      flags.optJSONObject("jeff")?.put("present", false)
-      flags.optJSONObject("jane")?.put("present", false)
-      next = next.copy(world = next.world + ("flagsJson" to flags.toString()))
-'''
-if unsafe_cleanup in facade:
-    raise RuntimeError("Unscoped Jeff/Jane cleanup survived visual-state hardening")
-
-FACADE.write_text(facade, encoding="utf-8")
-print("Visual state sync V3 applied: authoritative Level/area projection, stale-save migration, and method-scoped Entity cleanup.")
+print("Visual state sync V4 applied: UI projection patched; checked-in Kotlin visual/combat authority verified without source rewrite.")
