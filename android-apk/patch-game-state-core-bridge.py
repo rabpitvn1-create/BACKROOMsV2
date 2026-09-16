@@ -44,10 +44,10 @@ clear_method = '''    @JavascriptInterface public void clearCoreState() {
 
 '''
 if "@JavascriptInterface public void clearCoreState()" not in text:
-    anchor = "    @JavascriptInterface public void submit(String actionKind, String action, boolean meta) {\n"
+    anchor = "  private class GameBridge {\n"
     if anchor not in text:
-        raise RuntimeError("clearCoreState bridge anchor not found")
-    text = text.replace(anchor, clear_method + anchor, 1)
+        raise RuntimeError("clearCoreState GameBridge anchor not found")
+    text = text.replace(anchor, anchor + clear_method, 1)
 
 rule_bridge = '''          String coreRaw = gameCore.processRule(stateJson, action);
           JSONObject coreResult = new JSONObject(coreRaw);
