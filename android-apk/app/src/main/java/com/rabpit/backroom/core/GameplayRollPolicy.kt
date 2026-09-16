@@ -5,11 +5,10 @@ import java.util.Random
 import org.json.JSONObject
 
 /**
- * Authoritative gameplay dice for the legacy Android turn bridge.
+ * Authoritative gameplay dice for the Android turn bridge.
  *
  * The provider receives these outcomes as read-only context. It never chooses probabilities,
- * eligibility or rerolls. This policy intentionally mirrors the settled Level 0-6 runtime while
- * Java remains only an Android/WebView adapter.
+ * eligibility or rerolls. Java remains only an Android/WebView adapter.
  */
 object GameplayRollPolicy {
   private val HAZARD_THRESHOLDS = intArrayOf(400, 700, 1000, 1200, 300, 1000, 1200)
@@ -62,6 +61,9 @@ object GameplayRollPolicy {
       "sang level", "hành lang phía sau", "đường ra")
 
     val flags = state.optJSONObject("flags")
+    val anNhienFollowing = anNhienFollowing(state)
+    val anNhienEncountered = anNhienFollowing ||
+      flags?.optJSONObject("anNhien")?.optBoolean("encountered", false) == true
     val survivorAllowed = flags == null || flags.optBoolean("survivorEncountersAllowed", true)
     val entityAllowed = flags == null || flags.optBoolean("entityEncountersAllowed", true)
     val madGod = flags?.optJSONObject("madGod")
@@ -69,9 +71,16 @@ object GameplayRollPolicy {
       (madGod == null || !madGod.optBoolean("spawned", false)) &&
       (flags == null || flags.optBoolean("madGodDiscoveryAllowed", true))
 
-    // Keep the settled draw order stable: generic checks before/after the Entity batch match the
-    // generated runtime that this class replaces.
-    rolls.put("survivor", thresholdRoll("survivor", 10_000, 200, survivorAllowed, "", random))
+    // The mandatory An Nhiên check is guaranteed when eligible, so it consumes no RNG and does not
+    // disturb the established draw order of the other gameplay rolls.
+    rolls.put("anNhienEncounter", thresholdRoll(
+      "anNhienEncounter", 1, 1,
+      level == AnNhienCanon.HOME_LEVEL && physical && !anNhienEncountered,
+      " mandatory Level 0 follower", random))
+    rolls.put("survivor", thresholdRoll(
+      "survivor", 10_000, 200,
+      survivorAllowed && !(level == AnNhienCanon.HOME_LEVEL && !anNhienEncountered),
+      "", random))
     rolls.put("irisReunion", thresholdRoll(
       "irisReunion", 1_000_000, 25, reunionEligible(state, "iris"), "", random))
     rolls.put("syvialReunion", thresholdRoll(
@@ -90,14 +99,18 @@ object GameplayRollPolicy {
       rolls.put(key, entityRolls.get(key))
     }
 
+    val lootThreshold = (LOOT_THRESHOLDS[level] + if (anNhienFollowing) AnNhienCanon.LOOT_BONUS_POINTS else 0)
+      .coerceAtMost(10_000)
     rolls.put("loot", thresholdRoll(
-      "loot", 10_000, LOOT_THRESHOLDS[level], search, "", random))
+      "loot", 10_000, lootThreshold, search,
+      if (anNhienFollowing) " +10% An Nhiên" else "", random))
     rolls.put("madGodSet", thresholdRoll(
       "madGodSet", 10_000, 1, madGodEligible, " UR+ UNIQUE discovery", random))
     rolls.put("almondWater", thresholdRoll(
       "almondWater", 10_000, WATER_THRESHOLDS[level], search && water, "", random))
 
-    var exitThreshold = exitThreshold(state)
+    var exitThreshold = (exitThreshold(state) + if (anNhienFollowing) AnNhienCanon.EXIT_BONUS_POINTS else 0)
+      .coerceAtMost(10_000)
     if (emuLevel06Traversal && currentSublevelId(state).isNotEmpty()) {
       exitThreshold = 0
     } else if ((emuLevel1Progression || emuLevel06Traversal) &&
@@ -106,7 +119,8 @@ object GameplayRollPolicy {
     }
     val exitEligible = exploreAction || (exitIntent && (physical || search))
     val exitProbe = thresholdRoll(
-      "exitProbe", 10_000, exitThreshold, exitEligible, " discovery clue", random)
+      "exitProbe", 10_000, exitThreshold, exitEligible,
+      if (anNhienFollowing) " discovery clue +2% An Nhiên" else " discovery clue", random)
     rolls.put("exitProbe", exitProbe)
     rolls.put("levelExit", JSONObject(exitProbe.toString()).put("label", "levelExit"))
     return rolls
@@ -166,12 +180,17 @@ object GameplayRollPolicy {
     return continuity.isEmpty() || containsAny(continuity, "SEPARATED", "LOST", "UNKNOWN")
   }
 
+  private fun anNhienFollowing(state: JSONObject): Boolean =
+    partyHas(state, AN_NHIEN_ID) || partyHas(state, AnNhienCanon.NAME) || partyHas(state, "an nhien")
+
   private fun partyHas(state: JSONObject, needle: String): Boolean {
     val party = state.optJSONArray("party") ?: return false
     for (index in 0 until party.length()) {
       val item = party.opt(index)
-      val name = if (item is JSONObject) item.optString("name", "") else item?.toString().orEmpty()
-      if (name.contains(needle, ignoreCase = true)) return true
+      val identity = if (item is JSONObject) {
+        "${item.optString("id", "")} ${item.optString("name", "")}" 
+      } else item?.toString().orEmpty()
+      if (identity.contains(needle, ignoreCase = true)) return true
     }
     return false
   }
