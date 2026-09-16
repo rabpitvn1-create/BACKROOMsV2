@@ -36,9 +36,6 @@ class ItemCatalogPr4Test {
       "item:brass-key",
       "resource:reliable-paper",
       "resource:fire-material",
-      "madgod:set",
-      "madgod:armor",
-      "madgod:magnum",
       KAI_WHITE_WRAITH_ID,
       KAI_BLACKBLOOD_ARMOR_ID,
       KAI_OMNIVAULT_RING_ID
@@ -73,7 +70,6 @@ class ItemCatalogPr4Test {
       linkedMapOf(
         "water-bottle" to ItemStack("water-bottle", "Chai nước", 2),
         "ammo-cartridge" to ItemStack("ammo-cartridge", "Viên đạn", 12),
-        "madgod:armor" to ItemStack("madgod:armor", "MadGod Armor"),
         KAI_BLACKBLOOD_ARMOR_ID to ItemStack(KAI_BLACKBLOOD_ARMOR_ID, "Blackblood Armor"),
         "salvage:tripse-alloy" to ItemStack("salvage:tripse-alloy", "Hợp kim Tripse")
       )
