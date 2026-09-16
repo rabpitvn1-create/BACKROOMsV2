@@ -21,13 +21,13 @@ for marker in required:
     if marker not in facade:
         raise RuntimeError("Materialized ActionRuntime core contract missing: " + marker)
 
+# The pre-ActionRuntime processRule path committed directly from the pending state.
+# beginAction itself may legitimately load state and parse ActionKind consecutively now
+# that retired fast paths are gone, so that source shape is not evidence of legacy authority.
 for forbidden in (
     "val committed = TurnCoordinator.commit(pending.state, commands)",
-    "fun beginAction(legacyStateJson: String, kindRaw: String, action: String): String {\n    val legacy = JSONObject(legacyStateJson)\n    val state = loadOrMigrate(legacy)\n    val kind = enumValues<ActionKind>()",
 ):
-    # The second marker is the exact legacy injected body. The current materialized body
-    # may contain unrelated fast paths between load and kind parsing, so it must not match.
     if forbidden in facade:
-        raise RuntimeError("Legacy ActionRuntime source authority survived: " + forbidden[:96])
+        raise RuntimeError("Legacy ActionRuntime source authority survived: " + forbidden)
 
 print("Step 2 core bridge verified against checked-in Kotlin authority; no GameCoreFacade rewrite performed.")
