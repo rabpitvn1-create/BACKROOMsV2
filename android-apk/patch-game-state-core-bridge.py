@@ -49,14 +49,14 @@ if "@JavascriptInterface public void clearCoreState()" not in text:
         raise RuntimeError("clearCoreState GameBridge anchor not found")
     text = text.replace(anchor, anchor + clear_method, 1)
 
-rule_bridge = '''          String coreRaw = gameCore.processRule(stateJson, action);
+rule_bridge = '''          String coreRaw = requireGameCore().processRule(stateJson, action);
           JSONObject coreResult = new JSONObject(coreRaw);
           if (coreResult.optBoolean("handled", false)) {
             emit("backroomTurn", coreResult.getJSONObject("state").toString());
             return;
           }
 '''
-if "gameCore.processRule(stateJson, action)" not in text:
+if ".processRule(stateJson, action)" not in text:
     anchors = [
         "          JSONObject actionStart = new JSONObject(requireGameCore().beginAction(stateJson, actionKind, action));\n",
         "          JSONObject actionStart = new JSONObject(gameCore.beginAction(stateJson, actionKind, action));\n",
@@ -84,7 +84,12 @@ gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
           }
           generated.put("state", validated.getJSONObject("state"));
 '''
-if "coreOps == null ? \"[]\" : coreOps.toString(), action" not in text and "requireGameCore().processValidatedCandidate(" not in text:
+validated_bridge_present = (
+    "processValidatedCandidate(" in text
+    and 'coreOps == null ? "[]" : coreOps.toString()' in text
+    and 'rolls == null ? "{}" : rolls.toString()' in text
+)
+if not validated_bridge_present:
     anchors = [
         "          JSONObject candidate = generated.getJSONObject(\"state\");\n",
         "          JSONObject nextState = generated.getJSONObject(\"state\");\n",
@@ -94,7 +99,18 @@ if "coreOps == null ? \"[]\" : coreOps.toString(), action" not in text and "requ
         raise RuntimeError("validated Gemini candidate anchor not found")
     text = text.replace(anchor, gemini_commit + anchor, 1)
 
-for required in [core_import.strip(), field.strip(), initialization.strip(), close_line.strip(), "@JavascriptInterface public void clearCoreState()", "gameCore.clear();", "gameCore.processRule(stateJson, action)", "JSONArray coreOps = generated.optJSONArray(\"ops\")", "coreOps == null ? \"[]\" : coreOps.toString(), action"]:
+for required in [
+    core_import.strip(),
+    field.strip(),
+    initialization.strip(),
+    close_line.strip(),
+    "@JavascriptInterface public void clearCoreState()",
+    "gameCore.clear();",
+    ".processRule(stateJson, action)",
+    "JSONArray coreOps = generated.optJSONArray(\"ops\")",
+    'coreOps == null ? "[]" : coreOps.toString()',
+    'rolls == null ? "{}" : rolls.toString()',
+]:
     if required not in text:
         raise RuntimeError(f"Game State Core integration missing: {required}")
 
