@@ -43,7 +43,7 @@ if count != 1:
     raise RuntimeError(f"Kai Entity overlay switch anchor: expected exactly 1 match, found {count}")
 text = text.replace(old, new, 1)
 
-# The default Kai overlay may be rewritten by later Snapshot/MadGod composition patches, so
+# The default Kai overlay may be rewritten by later Snapshot composition patches, so
 # validate its packaged asset separately rather than requiring one brittle literal URI here.
 # This finalizer only owns the temporary Entity-encounter swap and restoration of whatever
 # authoritative base overlay is already selected by the existing runtime.
@@ -131,9 +131,8 @@ if "function canonicalFallbackEquipment(member)" not in index:
 
 # The final capacity patch groups multi-slot equipment before this finalizer runs. Patch that
 # authoritative final renderer, not the earlier per-slot renderer. Existing dynamic equipment
-# such as MadGod still renders normally; only legacy items whose display identity is superseded
-# by current canon are replaced with non-clickable canon cards so stale legacy abilities are not
-# exposed under a new name.
+# still renders normally; only legacy items whose display identity is superseded by current canon
+# are replaced with non-clickable canon cards so stale legacy abilities are not exposed under a new name.
 old_grouped_renderer = "    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[];grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item)rendered.push(card(item,slots.join(' / ')))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n"
 new_grouped_renderer = "    if(equipment){const grouped=new Map();Object.keys(eq).sort().forEach(slot=>{const id=String(eq[slot]||'');if(!id)return;const slots=grouped.get(id)||[];slots.push(slot);grouped.set(id,slots)});const rendered=[],represented=new Set();grouped.forEach((slots,id)=>{const item=details.find(x=>String(x.id)===id)||itemById(member,id);if(item&&integratedKaiLegacyItem(member,item))return;const slotLabel=slots.join(' / ');const alias=canonicalDisplayAlias(member,item);if(alias)rendered.push(displayOnlyEquipmentCard(alias,slotLabel));else if(item)rendered.push(card(item,slotLabel));else rendered.push(displayOnlyEquipmentCard(id,slotLabel));slots.forEach(slot=>represented.add(String(slot)))});canonicalFallbackEquipment(member).forEach(x=>{const slot=String(x[0]);if(!represented.has(slot)){rendered.push(displayOnlyEquipmentCard(x[1],slot));represented.add(slot)}});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}\n"
 if new_grouped_renderer not in index:
