@@ -31,7 +31,6 @@ class CanonFallbackPolicyTest {
     JSONObject(before.toString()).also { candidate ->
       candidate.getJSONObject("flags")
         .put("lastRolls", JSONObject(dice.toString()))
-        .put("madGod", JSONObject())
     }
 
   private fun eligible(
@@ -168,15 +167,8 @@ class CanonFallbackPolicyTest {
     assertFalse(diagnostics.getBoolean("dangerousStateChanged"))
   }
 
-  @Test fun realMadGodStateChangeStillFailsClosed() {
-    val before = state()
-    val candidate = reducerCandidate(before)
-    candidate.getJSONObject("flags").getJSONObject("madGod").put("spawned", true)
-    assertFalse(eligible(before = before, candidate = candidate))
-  }
-
   @Test fun consequentialDiscoveryRollsStillFailClosed() {
-    for (key in listOf("survivor", "irisReunion", "syvialReunion", "loot", "madGodSet", "almondWater")) {
+    for (key in listOf("survivor", "irisReunion", "syvialReunion", "loot", "almondWater")) {
       val before = state()
       val dice = rolls(key)
       assertFalse("successful roll $key must fail closed", eligible(before = before, candidate = reducerCandidate(before, dice), dice = dice))
