@@ -12,74 +12,11 @@ def replace_once(old: str, new: str, label: str):
     text = text.replace(old, new, 1)
 
 
-def block_bounds(source: str, anchor: str) -> tuple[int, int]:
-    start = source.find(anchor)
-    if start < 0:
-        raise RuntimeError("block not found: " + anchor)
-    open_brace = source.find("{", start)
-    if open_brace < 0:
-        raise RuntimeError("opening brace missing: " + anchor)
-    depth = 0
-    state = "code"
-    escaped = False
-    i = open_brace
-    while i < len(source):
-        ch = source[i]
-        nxt = source[i + 1] if i + 1 < len(source) else ""
-        if state == "string":
-            if escaped:
-                escaped = False
-            elif ch == "\\":
-                escaped = True
-            elif ch == '"':
-                state = "code"
-        elif state == "char":
-            if escaped:
-                escaped = False
-            elif ch == "\\":
-                escaped = True
-            elif ch == "'":
-                state = "code"
-        elif state == "line_comment":
-            if ch == "\n":
-                state = "code"
-        elif state == "block_comment":
-            if ch == "*" and nxt == "/":
-                state = "code"
-                i += 1
-        else:
-            if ch == '"':
-                state = "string"
-            elif ch == "'":
-                state = "char"
-            elif ch == "/" and nxt == "/":
-                state = "line_comment"
-                i += 1
-            elif ch == "/" and nxt == "*":
-                state = "block_comment"
-                i += 1
-            elif ch == "{":
-                depth += 1
-            elif ch == "}":
-                depth -= 1
-                if depth == 0:
-                    return start, i + 1
-        i += 1
-    raise RuntimeError("closing brace missing: " + anchor)
-
-
-def remove_method(signature: str) -> None:
-    global text
-    if signature not in text:
-        return
-    start, end = block_bounds(text, signature)
-    while end < len(text) and text[end] in " \t":
-        end += 1
-    if end < len(text) and text[end] == "\n":
-        end += 1
-    text = text[:start] + text[end:]
-
-
+# Inventory acquisition has a stable early-preview Kotlin bridge. Party, Player and Flag preview
+# shapes are intentionally left alone here because later historical compatibility patches still
+# match those legacy blocks. The terminal story/candidate bridge normalizes them to Kotlin after
+# those compatibility layers have finished, while checked-in GameCoreFacade rechecks everything
+# again at the trusted commit boundary.
 old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
         JSONObject beforeFlagsForItem = before.optJSONObject("flags");
         JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
@@ -97,40 +34,6 @@ new_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Ja
           op.optString("basis", ""));
 '''
 replace_once(old_inventory, new_inventory, "Kotlin inventory acquisition authority")
-
-old_player = r'''        JSONObject current = state.optJSONObject("player");
-        if (current == null) current = new JSONObject();
-        for (String key : new String[] {"hp", "condition", "weapon", "armor"}) if (patch.has(key)) current.put(key, patch.get(key));
-        if (patch.optJSONObject("needs") != null) {
-          JSONObject needs = current.optJSONObject("needs");
-          if (needs == null) needs = new JSONObject();
-          mergeObject(needs, patch.optJSONObject("needs"));
-          current.put("needs", needs);
-        }
-'''
-new_player = r'''        JSONObject current = state.optJSONObject("player");
-        if (current == null) current = new JSONObject();
-        JSONArray ownedGear = state.optJSONArray("inventory");
-        current = new JSONObject(com.rabpit.backroom.core.PlayerCandidatePolicy.applyPatch(
-          before.toString(), current.toString(), patch.toString(), rolls.toString(), action,
-          ownedGear == null ? "[]" : ownedGear.toString()));
-'''
-replace_once(old_player, new_player, "Kotlin player candidate bridge")
-
-# Party remains in its historical shape until the later An Nhien compatibility layer has run.
-# The final story/candidate bridge normalizes Party admission/removal to Kotlin after that layer.
-
-flag_anchor = '      if (type.equals("flag_patch")) {'
-flag_start, flag_end = block_bounds(text, flag_anchor)
-kotlin_flag_block = '''      if (type.equals("flag_patch")) {
-        JSONObject flags = state.optJSONObject("flags");
-        if (flags == null) flags = new JSONObject();
-        flags = new JSONObject(com.rabpit.backroom.core.FlagCandidatePolicy.applyOperation(
-          before.toString(), flags.toString(), op.toString(), rolls.toString()));
-        state.put("flags", flags);
-      }'''
-text = text[:flag_start] + kotlin_flag_block + text[flag_end:]
-remove_method("  private boolean flagRootAllowed(JSONObject before, String root, JSONObject rolls)")
 
 old_risk_tail = r'''    if (hasParty && containsAny(reply, "yêu", "thích", "ghen", "tin tưởng", "phản bội", "người yêu", "hẹn hò", "quan hệ", "love", "trust", "betray", "relationship")) score += 2;
     return score;
@@ -207,8 +110,7 @@ replace_once(old_call, new_call, "Gemini fast HTTP call")
 
 for required in [
     "InventoryAcquisitionPolicy.allows",
-    "PlayerCandidatePolicy.applyPatch",
-    "FlagCandidatePolicy.applyOperation",
+    "op.optString(\"basis\", \"\")",
     "JSONArray proposed",
     "private String postJsonFast(",
     "setReadTimeout(5000)",
@@ -221,15 +123,9 @@ for retired in [
     "gm_confirmed_pickup",
     "confirmedMundanePickup",
     "mundanePickupName(",
-    "flagRootAllowed(",
-    "boolean worldConsequence = rollSuccess(rolls",
-    "boolean recoveryIntent = containsAny(action",
-    "boolean gearIntent = containsAny(action",
-    'root.equals("exploration") && value instanceof JSONObject',
-    'root.equals("reunionPath") && value instanceof JSONObject',
 ]:
     if retired in text:
-        raise RuntimeError(f"retired Java gameplay authority survived: {retired}")
+        raise RuntimeError(f"retired inventory/authority marker survived: {retired}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Final Android authority hardening delegates Inventory, Player and Flag eligibility to Kotlin; Party remains compatible until the final bridge layer.")
+print("Final Android hardening keeps Inventory acquisition on Kotlin and leaves Party/Player/Flag legacy shapes for terminal bridge normalization.")
