@@ -26,7 +26,7 @@ for forbidden in (
     "fun beginAction(legacyStateJson: String, kindRaw: String, action: String): String {\n    val legacy = JSONObject(legacyStateJson)\n    val state = loadOrMigrate(legacy)\n    val kind = enumValues<ActionKind>()",
 ):
     # The second marker is the exact legacy injected body. The current materialized body
-    # contains the MadGod fast-path between load and kind parsing, so it must not match.
+    # may contain unrelated fast paths between load and kind parsing, so it must not match.
     if forbidden in facade:
         raise RuntimeError("Legacy ActionRuntime source authority survived: " + forbidden[:96])
 
