@@ -21,31 +21,23 @@ jobs:
           from pathlib import Path
           path = Path('android-apk/patch-character-status-equipment-system.py')
           text = path.read_text(encoding='utf-8')
-          old = '''combat = one(combat,
-''' + "'''" + '''      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
-''' + "'''" + ''',
-''' + "'''" + '''      val effective = CharacterStatEngine.effective(state, KAI_ID)
-      val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
-      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
-        when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
-''' + "'''" + ''', "combat normalized defense")
-'''
-          new = '''combat = one(combat,
-''' + "'''" + '''          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
-''' + "'''" + ''',
-''' + "'''" + '''          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)
-          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
-          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
-            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
-''' + "'''" + ''', "combat normalized defense")
-'''
-          if new in text:
-              print('Defense anchor already aligned.')
-          elif old in text:
-              path.write_text(text.replace(old, new, 1), encoding='utf-8')
-              print('Aligned defense anchor with materialized CombatRuntime.')
-          else:
-              raise SystemExit('Expected defense patch block not found')
+          label = '"combat normalized defense")'
+          label_pos = text.index(label)
+          start = text.rfind('combat = one(combat,', 0, label_pos)
+          end = text.index('\n\ncombat = combat.replace', label_pos)
+          replacement = "\n".join([
+              'combat = one(combat,',
+              "'''          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })",
+              "''',",
+              "'''          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)",
+              '          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)',
+              '          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -',
+              '            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)',
+              "''', \"combat normalized defense\")",
+          ])
+          text = text[:start] + replacement + text[end:]
+          path.write_text(text, encoding='utf-8')
+          print('Aligned defense anchor with materialized CombatRuntime.')
           PY
       - name: Verify patch syntax
         run: python3 -m py_compile android-apk/patch-character-status-equipment-system.py
@@ -61,5 +53,3 @@ jobs:
           fi
           git commit -m "Align combat defense status patch"
           git push origin HEAD:refactor/issue-43-final-cleanup
-
-# one-shot trigger
