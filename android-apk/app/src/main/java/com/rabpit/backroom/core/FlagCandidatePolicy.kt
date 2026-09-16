@@ -104,10 +104,6 @@ object FlagCandidatePolicy {
       val flags = before.optJSONObject("flags")
       return rollSuccess(rolls, "survivor") || (flags?.optInt("survivorsConfirmed", 0) ?: 0) > 0
     }
-    if (root == "madGod") {
-      val madGod = before.optJSONObject("flags")?.optJSONObject("madGod")
-      return rollSuccess(rolls, "madGodSet") || madGod?.optBoolean("spawned", false) == true
-    }
     return false
   }
 
