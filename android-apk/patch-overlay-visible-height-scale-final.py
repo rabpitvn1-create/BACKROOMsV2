@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import json
 import re
 from pathlib import Path
@@ -168,14 +167,6 @@ def patch_index_runtime(source: str, metadata: dict[str, object]) -> str:
     return source
 
 
-def dump_generated_source(label: str, path: Path) -> None:
-    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
-    print(f"GENERATED_CORE_BEGIN:{label}")
-    for offset in range(0, len(encoded), 120):
-        print(encoded[offset:offset + 120])
-    print(f"GENERATED_CORE_END:{label}")
-
-
 def main() -> None:
     metadata = collect_metrics()
     main_source = patch_main_runtime(MAIN.read_text(encoding="utf-8"))
@@ -206,10 +197,6 @@ def main() -> None:
         f"male={BASELINES['male']:.2f}, female={BASELINES['female']:.2f}, "
         f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}."
     )
-
-    dump_generated_source("GameCoreFacade.kt", ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt")
-    dump_generated_source("CombatRuntime.kt", ROOT / "app/src/main/java/com/rabpit/backroom/core/CombatRuntime.kt")
-    dump_generated_source("CombatRuntimeTest.kt", ROOT / "app/src/test/java/com/rabpit/backroom/core/CombatRuntimeTest.kt")
 
 
 if __name__ == "__main__":
