@@ -102,19 +102,10 @@ class GameCoreFacade private constructor(
   fun clear() = repository.clear()
   override fun close() = localModel.close()
 
-  /** Backward-compatible adapter for callers that do not yet carry authoritative roll context. */
-  fun processValidatedCandidate(beforeJson: String, candidateJson: String, action: String): String =
-    processValidatedCandidate(beforeJson, candidateJson, "{}", "[]", action)
-
-  /** Backward-compatible adapter for callers that carry rolls but not provider operation metadata. */
-  fun processValidatedCandidate(beforeJson: String, candidateJson: String, rollsJson: String, action: String): String =
-    processValidatedCandidate(beforeJson, candidateJson, rollsJson, "[]", action)
-
   /**
    * Commits only the gameplay delta accepted by Kotlin Game Core policy.
-   * Candidate prose/JSON never becomes storage directly: inventory acquisition is checked against
-   * authoritative rolls plus the accepted operation basis, then inventory and party are rebuilt
-   * from commands and projected back onto the UI state.
+   * Candidate prose/JSON never becomes storage directly: Inventory, Party, Player and provider
+   * flags are all rechecked against authoritative roll/operation context before command commit.
    */
   fun processValidatedCandidate(
     beforeJson: String,
@@ -186,25 +177,47 @@ class GameCoreFacade private constructor(
       if (id.isNotBlank()) desiredParty[id] = member
     }
     val currentFollowers = pending.state.party.memberIds.filter { it != KAI_ID }.toSet()
-    (currentFollowers - desiredParty.keys).sorted().forEachIndexed { index, id ->
-      commands += PartyCommand("$turnId:GEMINI:PARTY_REMOVE:$index", turnId, KAI_ID, id, CommandSource.GEMINI, PartyCommand.Operation.REMOVE)
+    if (PartyCandidatePolicy.allowsRemoval(action)) {
+      (currentFollowers - desiredParty.keys).sorted().forEachIndexed { index, id ->
+        commands += PartyCommand("$turnId:GEMINI:PARTY_REMOVE:$index", turnId, KAI_ID, id, CommandSource.GEMINI, PartyCommand.Operation.REMOVE)
+      }
     }
     (desiredParty.keys - currentFollowers).sorted().forEachIndexed { index, id ->
       val member = desiredParty.getValue(id)
       val known = pending.state.characters[id]
+      val memberName = member.optString("name").ifBlank { known?.name ?: id }
+      val engineAuthorizedJoin = known?.metadata?.get("storyManaged") == "lucia" &&
+        known.metadata["joinEligible"] == "true"
+      if (!PartyCandidatePolicy.allowsCoreAddition(
+          before, rolls, id, memberName, engineAuthorizedJoin
+        )) return@forEachIndexed
       commands += PartyCommand(
         "$turnId:GEMINI:PARTY_ADD:$index", turnId, KAI_ID, id, CommandSource.GEMINI, PartyCommand.Operation.ADD,
         consentConfirmed = member.optBoolean("joinConfirmed", false) && known?.metadata?.get("joinEligible") == "true",
         targetPresent = member.optBoolean("present", false) && known?.presence == CharacterPresence.ACTIVE
       )
     }
+
+    val sanitizedPlayer = PlayerCandidatePolicy.sanitizeCandidate(
+      before = before,
+      candidatePlayer = candidate.optJSONObject("player"),
+      rolls = rolls,
+      action = action,
+      ownedGearNames = desiredById.values.map { it.name }.toSet(),
+    )
+    val sanitizedFlags = FlagCandidatePolicy.sanitizeCandidate(
+      before = before,
+      candidateFlags = candidate.optJSONObject("flags"),
+      operations = operations,
+      rolls = rolls,
+    )
     commands += ValidatedLegacyStateCommand(
       commandId = "$turnId:GEMINI:VALIDATED_STATE", turnId = turnId, source = CommandSource.GEMINI,
       location = candidate.optString("location").takeIf(String::isNotBlank),
       title = candidate.optString("title").takeIf(String::isNotBlank),
       levelJson = candidate.optJSONObject("level")?.toString(),
-      playerJson = candidate.optJSONObject("player")?.toString(),
-      flagsJson = candidate.optJSONObject("flags")?.toString(),
+      playerJson = sanitizedPlayer?.toString(),
+      flagsJson = sanitizedFlags?.toString(),
       validatedByGameEngine = true
     )
     commands += timeAdvanceCommand(turnId, action)
