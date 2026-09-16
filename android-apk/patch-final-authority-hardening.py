@@ -18,10 +18,6 @@ def replace_once(old: str, new: str, label: str):
 # those compatibility layers have finished, while checked-in GameCoreFacade rechecks everything
 # again at the trusted commit boundary.
 old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
-        JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
-        if (madGod && !madGodAlreadySpawned) allowedNew = false;
         if (almond) {
           JSONObject waterRoll = rolls.optJSONObject("almondWater");
           if (waterRoll != null && waterRoll.optBoolean("eligible", false) && !waterRoll.optBoolean("success", false) && existing < 0) allowedNew = false;
