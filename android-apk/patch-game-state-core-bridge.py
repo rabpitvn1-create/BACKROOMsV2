@@ -89,38 +89,15 @@ if "|nhặt|được|lượm|" not in intent:
     intent = intent.replace(anchor, "|nhặt|được|lượm|", 1)
 INTENT.write_text(intent, encoding="utf-8")
 
+# GameCoreFacade is now checked in as the settled post-patch source. This patch may
+# verify the Core contract required by its Java/UI bridge, but it must not rewrite
+# gameplay authority at build time.
 facade = FACADE.read_text(encoding="utf-8")
-# StoryProgressionPolicy is already invoked at the final MainActivity canon boundary by
-# patch-lucia-story-gate-final.py before audit and before the candidate reaches GameCore.
-# Do not rewrite GameCoreFacade to normalize the same candidate a second time: that creates
-# a duplicate active path and makes build-time Python own Kotlin source semantics again.
 if "StoryProgressionPolicy.normalizeCandidate(" in facade:
     raise RuntimeError("Duplicate StoryProgressionPolicy normalization survived inside GameCoreFacade")
-
 warning_marker = 'return "[Warning] $message"'
 if warning_marker not in facade:
-    start_anchor = "  private fun validationReply(reason: String): String = when (reason) {"
-    end_anchor = "\n\n  companion object {"
-    start = facade.find(start_anchor)
-    end = facade.find(end_anchor, start)
-    if start < 0 or end < 0:
-        raise RuntimeError("validationReply anchors not found")
-    warning_reply = '''  private fun validationReply(reason: String): String {
-    val message = when (reason) {
-      "scan_source_missing", "scan_template_missing" -> "There is no object available for scanning or multiplying."
-      "precise_content_amount_forbidden" -> "This action is not available."
-      "item_content_empty" -> "This action is not available."
-      "insufficient_item_quantity", "item_not_owned" -> "This action is not available."
-      "party_full" -> "Party đã đủ tối đa bốn thành viên."
-      "join_not_confirmed" -> "Yêu cầu gia nhập chưa đủ điều kiện hoặc chưa được NPC xác nhận."
-      "living_target_forbidden" -> "Omnivault không thể tác động lên sinh vật sống."
-      "restore_cooldown_active" -> "Vật phẩm này vẫn đang trong cooldown Hoàn Nguyên 24 giờ."
-      else -> "This action is not available."
-    }
-    return "[Warning] $message"
-  }'''
-    facade = facade[:start] + warning_reply + facade[end:]
-FACADE.write_text(facade, encoding="utf-8")
+    raise RuntimeError("Materialized GameCoreFacade warning reply contract is missing")
 
 html = INDEX.read_text(encoding="utf-8")
 old_chips = 'function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}'
@@ -149,4 +126,4 @@ if warning_log_render not in html:
     html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Final Game State Core bridge applied without duplicate StoryProgressionPolicy source rewrite; reset/load core invalidation, item cleanup, quantity UI and warning feedback preserved.")
+print("Game State Core bridge verified against materialized Kotlin authority; Java/UI compatibility patches applied without rewriting GameCoreFacade.")
