@@ -11,6 +11,12 @@ def replace_once(old: str, new: str, label: str):
         raise RuntimeError(f"{label}: expected exactly 1 match, found {count}")
     text = text.replace(old, new, 1)
 
+
+# Inventory acquisition has a stable early-preview Kotlin bridge. Party, Player and Flag preview
+# shapes are intentionally left alone here because later historical compatibility patches still
+# match those legacy blocks. The terminal story/candidate bridge normalizes them to Kotlin after
+# those compatibility layers have finished, while checked-in GameCoreFacade rechecks everything
+# again at the trusted commit boundary.
 old_inventory = r'''        boolean allowedNew = acquisitionIntent(action);
         JSONObject beforeFlagsForItem = before.optJSONObject("flags");
         JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
@@ -28,76 +34,6 @@ new_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Ja
           op.optString("basis", ""));
 '''
 replace_once(old_inventory, new_inventory, "Kotlin inventory acquisition authority")
-
-old_player = r'''        JSONObject current = state.optJSONObject("player");
-        if (current == null) current = new JSONObject();
-        for (String key : new String[] {"hp", "condition", "weapon", "armor"}) if (patch.has(key)) current.put(key, patch.get(key));
-        if (patch.optJSONObject("needs") != null) {
-          JSONObject needs = current.optJSONObject("needs");
-          if (needs == null) needs = new JSONObject();
-          mergeObject(needs, patch.optJSONObject("needs"));
-          current.put("needs", needs);
-        }
-'''
-new_player = r'''        JSONObject current = state.optJSONObject("player");
-        if (current == null) current = new JSONObject();
-        boolean worldConsequence = rollSuccess(rolls, "hazard") || rollSuccess(rolls, "entityEncounter");
-        boolean recoveryIntent = containsAny(action, "ăn", "uống", "nghỉ", "ngủ", "băng bó", "chữa", "hồi phục", "eat", "drink", "rest", "sleep", "heal");
-        boolean gearIntent = containsAny(action, "rút", "cất", "trang bị", "mặc", "cởi", "tháo", "đeo", "draw", "equip", "unequip", "wear");
-        if (patch.has("hp") && current.has("hp") && !current.isNull("hp")) {
-          double beforeHp = current.optDouble("hp", Double.NaN);
-          double afterHp = patch.optDouble("hp", Double.NaN);
-          if (!Double.isNaN(beforeHp) && !Double.isNaN(afterHp) && afterHp >= 0 &&
-              ((afterHp < beforeHp && worldConsequence) || (afterHp >= beforeHp && recoveryIntent))) current.put("hp", afterHp);
-        }
-        if (patch.has("condition") && (worldConsequence || recoveryIntent)) current.put("condition", patch.optString("condition", current.optString("condition", "")));
-        if (patch.optJSONObject("needs") != null && recoveryIntent) {
-          JSONObject needs = current.optJSONObject("needs");
-          if (needs == null) needs = new JSONObject();
-          for (String needKey : new String[] {"thirst", "hunger", "fatigue", "sleepDeprivation"}) {
-            if (patch.optJSONObject("needs").has(needKey)) needs.put(needKey, patch.optJSONObject("needs").get(needKey));
-          }
-          current.put("needs", needs);
-        }
-        JSONArray ownedGear = state.optJSONArray("inventory");
-        for (String key : new String[] {"weapon", "armor"}) {
-          if (!patch.has(key) || !gearIntent) continue;
-          String proposedGear = patch.optString(key, "").trim();
-          boolean owned = false;
-          if (ownedGear != null) for (int gearIndex = 0; gearIndex < ownedGear.length(); gearIndex++) {
-            String ownedName = itemName(ownedGear.opt(gearIndex));
-            if (!ownedName.isEmpty() && lower(proposedGear).contains(lower(ownedName))) { owned = true; break; }
-          }
-          if (owned) current.put(key, proposedGear);
-        }
-'''
-replace_once(old_player, new_player, "player authority gate")
-
-old_flag = r'''        Object value = op.get("value");
-        Object current = flags.opt(root);
-        if (current instanceof JSONObject && value instanceof JSONObject) {
-'''
-new_flag = r'''        Object value = op.get("value");
-        if (root.equals("exploration") && value instanceof JSONObject) {
-          JSONObject patchValue = new JSONObject(value.toString());
-          JSONObject beforeExploration = before.optJSONObject("flags") != null ? before.optJSONObject("flags").optJSONObject("exploration") : null;
-          String beforeProgress = beforeExploration != null ? beforeExploration.optString("exitProgress", "") : "";
-          String afterProgress = patchValue.optString("exitProgress", beforeProgress);
-          boolean exitMutation = !afterProgress.equals(beforeProgress) || patchValue.has("exitCandidate");
-          if (exitMutation && !rollSuccess(rolls, "levelExit")) continue;
-          if (containsAny(afterProgress, "READY", "GUARANTEED", "CONDITION MET", "TRANSITION AVAILABLE") &&
-              !containsAny(beforeProgress, "NEAR", "ALMOST", "VERY STRONG")) continue;
-          value = patchValue;
-        }
-        if (root.equals("reunionPath") && value instanceof JSONObject) {
-          JSONObject pathPatch = (JSONObject)value;
-          if (pathPatch.has("iris") && containsAny(pathPatch.optString("iris", ""), "CONFIRMED", "DIRECT", "ARRIVED", "CONTACT ESTABLISHED") && !rollSuccess(rolls, "irisReunion")) continue;
-          if (pathPatch.has("syvial") && containsAny(pathPatch.optString("syvial", ""), "CONFIRMED", "DIRECT", "ARRIVED", "CONTACT ESTABLISHED") && !rollSuccess(rolls, "syvialReunion")) continue;
-        }
-        Object current = flags.opt(root);
-        if (current instanceof JSONObject && value instanceof JSONObject) {
-'''
-replace_once(old_flag, new_flag, "flag authority gate")
 
 old_risk_tail = r'''    if (hasParty && containsAny(reply, "yêu", "thích", "ghen", "tin tưởng", "phản bội", "người yêu", "hẹn hò", "quan hệ", "love", "trust", "betray", "relationship")) score += 2;
     return score;
@@ -172,13 +108,24 @@ old_call = r'''              JSONObject result = new JSONObject(postJson(
 new_call = old_call.replace("postJson(", "postJsonFast(")
 replace_once(old_call, new_call, "Gemini fast HTTP call")
 
-for required in ["InventoryAcquisitionPolicy.allows", "op.optString(\"basis\", \"\")", "worldConsequence", "exitMutation", "JSONArray proposed", "private String postJsonFast(", "setReadTimeout(5000)"]:
+for required in [
+    "InventoryAcquisitionPolicy.allows",
+    "op.optString(\"basis\", \"\")",
+    "JSONArray proposed",
+    "private String postJsonFast(",
+    "setReadTimeout(5000)",
+]:
     if required not in text:
         raise RuntimeError(f"final authority hardening missing marker: {required}")
 
-for retired in ["establishedStructured", "gm_confirmed_pickup", "confirmedMundanePickup", "mundanePickupName("]:
+for retired in [
+    "establishedStructured",
+    "gm_confirmed_pickup",
+    "confirmedMundanePickup",
+    "mundanePickupName(",
+]:
     if retired in text:
         raise RuntimeError(f"retired inventory/authority marker survived: {retired}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Final Android authority hardening delegates Inventory acquisition eligibility to Kotlin Game Core.")
+print("Final Android hardening keeps Inventory acquisition on Kotlin and leaves Party/Player/Flag legacy shapes for terminal bridge normalization.")

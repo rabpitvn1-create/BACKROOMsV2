@@ -6,6 +6,7 @@ const html = fs.readFileSync(`${root}/app/src/main/assets/index.html`, 'utf8');
 const java = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/MainActivity.java`, 'utf8');
 const classifier = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/FreedomActionClassifier.java`, 'utf8');
 const runtime = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/ActionRuntime.kt`, 'utf8');
+const core = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt`, 'utf8');
 const partyPolicy = fs.readFileSync(`${root}/app/src/main/java/com/rabpit/backroom/core/PartyCandidatePolicy.kt`, 'utf8');
 
 assert.match(java, /@JavascriptInterface public void submitFreedom\(String stateJson, String action\)/);
@@ -49,11 +50,35 @@ assert.match(java, /SEARCH không được khởi tạo encounter Entity mới/)
 assert.match(java, /đây là action duy nhất được phép kích hoạt roll encounter Entity mới/);
 assert.match(java, /không tự đổi mục tiêu và không khởi tạo encounter Entity mới/);
 
-// Provider Party admission/removal is bridge-only in Java. The actual eligibility policy lives in
-// Kotlin and is rechecked at GameCore commit before PartyEngine handles consent/presence/capacity.
+// Provider candidate preview is bridge-only in Java. The actual Party/Player/Flag decisions are
+// materialized in checked-in Kotlin Core and rechecked there before command commit.
 assert.match(java, /PartyCandidatePolicy\.allowsProviderAddition\(/);
 assert.match(java, /PartyCandidatePolicy\.allowsRemoval\(action\)/);
+assert.match(java, /PlayerCandidatePolicy\.applyPatch\(/);
+assert.match(java, /FlagCandidatePolicy\.applyOperation\(/);
 assert.doesNotMatch(java, /characterAddAllowed\(/);
+assert.doesNotMatch(java, /flagRootAllowed\(/);
+assert.doesNotMatch(java, /boolean worldConsequence = rollSuccess\(rolls/);
+assert.doesNotMatch(java, /boolean recoveryIntent = containsAny\(action/);
+assert.doesNotMatch(java, /boolean gearIntent = containsAny\(action/);
+
+assert.match(core, /PartyCandidatePolicy\.allowsCoreAddition\(/);
+assert.match(core, /PartyCandidatePolicy\.allowsRemoval\(action\)/);
+assert.match(core, /PlayerCandidatePolicy\.sanitizeCandidate\(/);
+assert.match(core, /FlagCandidatePolicy\.sanitizeCandidate\(/);
+assert.match(core, /playerJson = sanitizedPlayer\?\.toString\(\)/);
+assert.match(core, /flagsJson = sanitizedFlags\?\.toString\(\)/);
+assert.doesNotMatch(core, /Backward-compatible adapter/);
+assert.doesNotMatch(core, /fun processValidatedCandidate\(beforeJson: String, candidateJson: String, action: String\)/);
+
+for (const retired of [
+  'patch-party-authority-final.py',
+  'patch-player-authority-final.py',
+  'patch-flag-authority-final.py',
+]) {
+  assert.equal(fs.existsSync(`${root}/${retired}`), false, `${retired} must stay retired after Kotlin materialization`);
+}
+
 assert.match(partyPolicy, /object PartyCandidatePolicy/);
 assert.match(partyPolicy, /allowsCoreAddition\(/);
 assert.match(partyPolicy, /anNhienEncounter/);
