@@ -6,7 +6,8 @@ import json
 import re
 
 ROOT = Path(__file__).resolve().parent
-WORKFLOW = ROOT.parent / ".github/workflows/build-backroom-apk.yml"
+REPO_ROOT = ROOT.parent
+WORKFLOW = REPO_ROOT / ".github/workflows/build-backroom-apk.yml"
 GRADLE = ROOT / "app/build.gradle"
 PATCH_RE = re.compile(r"patch-[A-Za-z0-9._-]+\.py")
 RETIRED_FILES = (
@@ -15,6 +16,7 @@ RETIRED_FILES = (
     "apply-main-campaign-continuation.py",
     "patch-diep-minh-boss-finalize.py",
 )
+RETIRED_FEATURE_TERM = ("Mad" + "God").casefold()
 
 
 def patch_names(text: str) -> set[str]:
@@ -56,7 +58,28 @@ def active_build_roots() -> set[str]:
     return roots
 
 
+def retired_feature_references() -> list[str]:
+    hits: list[str] = []
+    for path in REPO_ROOT.rglob("*"):
+        if ".git" in path.parts:
+            continue
+        relative = path.relative_to(REPO_ROOT).as_posix()
+        if RETIRED_FEATURE_TERM in relative.casefold():
+            hits.append(f"PATH {relative}")
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for line_no, line in enumerate(text.splitlines(), 1):
+            if RETIRED_FEATURE_TERM in line.casefold():
+                hits.append(f"TEXT {relative}:{line_no}")
+    return hits
+
+
 resurrected_retired = sorted(name for name in RETIRED_FILES if (ROOT / name).exists())
+retired_feature_hits = retired_feature_references()
 patches = {p.name: p for p in ROOT.glob("patch-*.py") if p.is_file()}
 roots = {name for name in active_build_roots() if name in patches}
 
@@ -106,6 +129,8 @@ report = {
     "unreachable_count": len(unreachable),
     "unreachable": unreachable,
     "resurrected_retired": resurrected_retired,
+    "retired_feature_reference_count": len(retired_feature_hits),
+    "retired_feature_references": retired_feature_hits,
     "reachable": sorted(reachable),
     "dependencies": deps,
     "referenced_by": {k: sorted(v) for k, v in referenced_by.items() if v},
@@ -124,11 +149,17 @@ print("RESURRECTED_RETIRED_BEGIN")
 for name in resurrected_retired:
     print(name)
 print("RESURRECTED_RETIRED_END")
+print("RETIRED_FEATURE_REFERENCES_BEGIN")
+for hit in retired_feature_hits:
+    print(hit)
+print("RETIRED_FEATURE_REFERENCES_END")
 print("RISK_MARKERS_BEGIN")
 for name in sorted(risks):
     print(f"{name}: {','.join(risks[name])}")
 print("RISK_MARKERS_END")
 
+if retired_feature_hits:
+    raise RuntimeError("Retired feature references were reintroduced: " + ", ".join(retired_feature_hits[:20]))
 if resurrected_retired:
     raise RuntimeError("Retired patch/helper files were reintroduced: " + ", ".join(resurrected_retired))
 if unreachable:
