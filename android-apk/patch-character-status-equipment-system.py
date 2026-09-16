@@ -770,20 +770,6 @@ protect_block = '''    current.filterKeys { EquipmentCatalog.definition(it) != n
 facade = one(facade, protect_anchor, protect_block, "protect equipment inventory ownership")
 FACADE.write_text(facade, encoding="utf-8")
 
-    mg = re.sub(r'const val MULTIPLIER = \d+', 'const val MULTIPLIER = 1', mg)
-    mg = mg.replace('const val SCALING_MODE = "BASELINE_ONCE"', 'const val SCALING_MODE = "GAMEPLAY_NORMALIZED"')
-    replacements = {
-      r'const val MAGNUM_DMG = .*': 'const val MAGNUM_DMG = 55',
-      r'const val ARMOR_DF = .*': 'const val ARMOR_DF = 30',
-      r'const val ARMOR_STR = .*': 'const val ARMOR_STR = 15',
-      r'const val ARMOR_AGI = .*': 'const val ARMOR_AGI = 12',
-      r'const val ARMOR_HP = .*': 'const val ARMOR_HP = 50',
-      r'const val ARMOR_ENE = .*': 'const val ARMOR_ENE = 0',
-      r'const val ARMOR_CRIT = .*': 'const val ARMOR_CRIT = 0',
-    }
-    for pattern, repl in replacements.items():
-        mg = re.sub(pattern, repl, mg, count=1)
-
 # --- Rich Character projection, derived from Base + unique equipped Items -----
 DETAIL.write_text(r'''package com.rabpit.backroom.core
 
