@@ -14,58 +14,9 @@ def replace_once(source: str, old: str, new: str, label: str) -> str:
 
 
 # ---- Game State Core facade -------------------------------------------------
-# Legacy JSON adaptation remains here temporarily, but authoritative combat
-# resolution, round timing and completed-turn regeneration live in source Kotlin.
+# Combat orchestration is materialized in checked-in Kotlin. This patch only
+# verifies that bridge contract before adapting Android/UI callers.
 facade = FACADE.read_text(encoding="utf-8")
-combat_methods = '''
-  fun startCombatState(legacyStateJson: String, entityKey: String): String {
-    val legacy = JSONObject(legacyStateJson)
-    val current = loadOrMigrate(legacy)
-    val next = CombatRuntime.start(current, entityKey)
-    repository.save(next)
-    return syncLegacy(legacy, next, incrementTurn = false).toString()
-  }
-
-  fun processCombat(legacyStateJson: String, actionKind: String, action: String): String {
-    val legacy = JSONObject(legacyStateJson)
-    val current = loadOrMigrate(legacy)
-    if (CombatRuntime.active(current) == null) return response(false, legacy, null, "combat_inactive")
-
-    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)
-    if (!resolution.handled) return response(false, legacy, null, "combat_inactive")
-    // TRUE_TURN_COMBAT_FACADE_V2: this bridge projects Core state only. Kotlin owns round timing/regen.
-    var next = resolution.state
-    repository.save(next)
-
-    val roundCompleted = CombatTurnAuthority.completesRound(actionKind, resolution)
-    val output = syncLegacy(legacy, next, incrementTurn = roundCompleted)
-    if (resolution.entityDestroyed || resolution.escaped) {
-      val flags = output.optJSONObject("flags") ?: JSONObject().also { output.put("flags", it) }
-      flags.put("entityEncounterKey", "")
-    }
-    if (actionKind.equals("AUTO_COMBAT", true) || actionKind.equals("AUTO_COMBAT_STEP", true)) {
-      val combatLog = output.optJSONArray("log") ?: JSONArray().also { output.put("log", it) }
-      combatLog.put(JSONObject().put("role", "combat").put("text", resolution.reply))
-    } else {
-      appendLog(output, action, resolution.reply)
-    }
-    return response(true, output, null, if (resolution.entityDestroyed) "combat_entity_destroyed" else if (resolution.escaped) "combat_escaped" else "combat_resolved", resolution.reply)
-  }
-'''
-if "fun processCombat(legacyStateJson: String, actionKind: String, action: String)" not in facade:
-    anchor = "  private fun loadOrMigrate(legacy: JSONObject): GameState {\n"
-    if anchor not in facade:
-        raise RuntimeError("GameCoreFacade loadOrMigrate anchor missing")
-    facade = facade.replace(anchor, combat_methods + "\n" + anchor, 1)
-
-combat_projection = '''    CombatRuntime.toJson(state)?.let { output.put("combat", it) } ?: output.remove("combat")
-'''
-if combat_projection not in facade:
-    anchor = "    return output\n  }\n\n  private fun appendLog"
-    if anchor not in facade:
-        raise RuntimeError("GameCoreFacade syncLegacy return anchor missing")
-    facade = facade.replace(anchor, combat_projection + "    return output\n  }\n\n  private fun appendLog", 1)
-
 for marker in (
     "fun startCombatState(legacyStateJson: String, entityKey: String)",
     "fun processCombat(legacyStateJson: String, actionKind: String, action: String)",
@@ -78,7 +29,7 @@ for marker in (
     'output.put("combat", it)',
 ):
     if marker not in facade:
-        raise RuntimeError("Pressure combat facade contract missing: " + marker)
+        raise RuntimeError("Materialized pressure combat facade contract missing: " + marker)
 for forbidden in (
     "CombatRuntime.resolve(current, actionKind, action)",
     "TimeEngine.execute(next, TimeAdvanceCommand(",
@@ -87,8 +38,7 @@ for forbidden in (
     "CharacterStatEngine.applyCompletedTurnRegen(next",
 ):
     if forbidden in facade:
-        raise RuntimeError("Legacy Python-owned combat orchestration is still active: " + forbidden)
-FACADE.write_text(facade, encoding="utf-8")
+        raise RuntimeError("Legacy combat orchestration survived in checked-in GameCoreFacade: " + forbidden)
 
 # ---- Android pipeline -------------------------------------------------------
 text = MAIN.read_text(encoding="utf-8")
@@ -173,4 +123,4 @@ for marker in ("PRESSURE_COMBAT_HUD_V1", "combat-fill", "state.combat", "TELEGRA
         raise RuntimeError("Pressure combat HUD marker missing: " + marker)
 INDEX.write_text(html, encoding="utf-8")
 
-print("Pressure Combat V1 installed: authoritative HP, healthbars, telegraph, position, momentum, escape and deterministic Entity cleanup.")
+print("Pressure Combat bridge/UI installed; checked-in Kotlin remains the sole combat authority.")
