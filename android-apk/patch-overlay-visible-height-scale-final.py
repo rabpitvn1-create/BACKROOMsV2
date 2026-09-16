@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parent
+REPO = ROOT.parent
 ASSETS = ROOT / "app/src/main/assets"
 INDEX = ASSETS / "index.html"
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -167,6 +169,28 @@ def patch_index_runtime(source: str, metadata: dict[str, object]) -> str:
     return source
 
 
+def verify_gameplay_core_not_rewritten() -> None:
+    """Fail the build if any runtime patch changed checked-in Kotlin gameplay authority."""
+    guarded_paths = (
+        "android-apk/app/src/main/java/com/rabpit/backroom/core",
+        "android-apk/app/src/test/java/com/rabpit/backroom/core",
+    )
+    result = subprocess.run(
+        ["git", "diff", "--exit-code", "--", *guarded_paths],
+        cwd=REPO,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stdout[-12000:] if result.stdout else "(git diff produced no text)"
+        raise RuntimeError(
+            "Runtime patch chain modified checked-in Kotlin Game Core/test authority. "
+            "Materialize the intended source change in Git and make the patch verification-only.\n" + detail
+        )
+
+
 def main() -> None:
     metadata = collect_metrics()
     main_source = patch_main_runtime(MAIN.read_text(encoding="utf-8"))
@@ -192,10 +216,12 @@ def main() -> None:
     METADATA.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     MAIN.write_text(main_source, encoding="utf-8")
     INDEX.write_text(index_source, encoding="utf-8")
+    verify_gameplay_core_not_rewritten()
     print(
         "Visible-height overlay scale finalized: "
         f"male={BASELINES['male']:.2f}, female={BASELINES['female']:.2f}, "
-        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}."
+        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}; "
+        "checked-in Kotlin Game Core remained unchanged."
     )
 
 
