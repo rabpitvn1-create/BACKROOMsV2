@@ -4,7 +4,7 @@ ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
 INDEX = ROOT / "app/src/main/assets/index.html"
-INTENT = ROOT / "app/src/main/java/com/rabpit/backroom/core/IntentInterpreter.kt"
+INTENT = ROOT / "app/src/main/java/com/rabpit/backroom/core/IntentPipeline.kt"
 
 text = MAIN.read_text(encoding="utf-8")
 
