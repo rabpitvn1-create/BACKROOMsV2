@@ -21,6 +21,13 @@ jobs:
           python-version: '3.12'
       - name: Install patch runtime dependency
         run: python -m pip install Pillow
+      - name: Sync verified Kai SRU visuals
+        run: |
+          set -euo pipefail
+          python android-apk/sync-kai-sru-assets.py
+          test -s android-apk/app/src/main/assets/kai_snapshot_overlay.png
+          test -s android-apk/app/src/main/assets/kai_entity_overlay.png
+          test -s android-apk/app/src/main/assets/avatars/kai_avatar.png
       - name: Apply current Android runtime patch chain
         run: |
           set -euo pipefail
