@@ -30,6 +30,38 @@ class GameplayRollPolicyTest {
     assertTrue(random.bounds.isEmpty())
   }
 
+  @Test fun mandatoryAnNhienEncounterIsKotlinOwnedAndConsumesNoRng() {
+    val random = RecordingRandom()
+    val state = JSONObject("""{"level":{"number":0},"flags":{}}""")
+    val rolls = GameplayRollPolicy.roll(state, "EXPLORE", "đi tiếp", false, random)
+
+    val encounter = rolls.getJSONObject("anNhienEncounter")
+    assertTrue(encounter.getBoolean("eligible"))
+    assertTrue(encounter.getBoolean("success"))
+    assertTrue(encounter.getBoolean("guaranteedByState"))
+    assertFalse(rolls.getJSONObject("survivor").getBoolean("eligible"))
+    assertFalse(random.bounds.contains(1))
+  }
+
+  @Test fun followingAnNhienAppliesLootAndExitBonusesWithoutReEncounter() {
+    val random = RecordingRandom()
+    val state = JSONObject("""
+      {
+        "level":{"number":0},
+        "party":[{"id":"an-nhien","name":"An Nhiên"}],
+        "flags":{"anNhien":{"encountered":true}}
+      }
+    """.trimIndent())
+    val rolls = GameplayRollPolicy.roll(state, "EXPLORE", "tìm đường ra và lục khu vực", false, random)
+
+    assertFalse(rolls.getJSONObject("anNhienEncounter").getBoolean("eligible"))
+    assertTrue(rolls.getJSONObject("survivor").getBoolean("eligible"))
+    assertEquals(35 + AnNhienCanon.LOOT_BONUS_POINTS, rolls.getJSONObject("loot").getInt("threshold"))
+    assertEquals(10 + AnNhienCanon.EXIT_BONUS_POINTS, rolls.getJSONObject("exitProbe").getInt("threshold"))
+    assertTrue(rolls.getJSONObject("loot").getString("chance").contains("An Nhiên"))
+    assertTrue(rolls.getJSONObject("exitProbe").getString("chance").contains("An Nhiên"))
+  }
+
   @Test fun genericThresholdsMatchSettledLevelFourRuntime() {
     val random = RecordingRandom()
     val state = JSONObject("""
@@ -115,12 +147,13 @@ class GameplayRollPolicyTest {
     assertEquals(listOf(10_000, 10_000), random.bounds)
   }
 
-  @Test fun level06ChildSublevelDisablesParentExitProbe() {
+  @Test fun level06ChildSublevelDisablesParentExitProbeEvenWithAnNhienBonus() {
     val random = RecordingRandom()
     val state = JSONObject("""
       {
         "level":{"number":0},
-        "flags":{"exploration":{"levelTurns":99,"sublevelId":"0.1"}}
+        "party":[{"id":"an-nhien","name":"An Nhiên"}],
+        "flags":{"anNhien":{"encountered":true},"exploration":{"levelTurns":99,"sublevelId":"0.1"}}
       }
     """.trimIndent())
     val rolls = GameplayRollPolicy.roll(
