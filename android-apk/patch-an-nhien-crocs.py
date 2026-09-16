@@ -1,4 +1,5 @@
 from pathlib import Path
+import runpy
 
 ROOT = Path(__file__).resolve().parent
 CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core"
@@ -24,21 +25,18 @@ elif new_name not in canon:
 canon_path.write_text(canon, encoding="utf-8")
 print("An Nhiên footwear updated to pink Crocs.")
 
-# Materialize special-follower canon/save/test compatibility, but skip its retired Java gameplay
-# section. GameplayRollPolicy and SpecialFollowerEncounterPolicy are checked-in Kotlin authority now.
+# Special follower compatibility still needs its transient Java staging because later Lucia/legacy
+# transforms consume those anchors. Only the prose prompt replacement is retired; the final runtime
+# roll method is collapsed to Kotlin by patch-entity-rates-drops-final.py.
 special = ROOT / "patch-special-followers-025.py"
 code = special.read_text(encoding="utf-8")
-section_start = "# 5) Runtime encounter policy: three independent 0.25% rolls on eligible physical turns in Level 0-6.\n"
-section_end = "# 6) Regression coverage for authoritative follower definitions and the four-member party cap.\n"
-if code.count(section_start) != 1 or code.count(section_end) != 1:
-    raise RuntimeError("Special follower legacy gameplay section anchors are not unique")
-start = code.index(section_start)
-end = code.index(section_end, start)
-validation = '''# 5) Runtime encounter policy is Kotlin-owned.\npolicy = (CORE / "GameplayRollPolicy.kt").read_text(encoding="utf-8")\nprojection = (CORE / "SpecialFollowerEncounterPolicy.kt").read_text(encoding="utf-8")\nfor marker in (\n    '"anNhienEncounter", 10_000, 25',\n    '"irisReunion", 10_000, 25',\n    '"syvialReunion", 10_000, 25',\n):\n    if marker not in policy:\n        raise RuntimeError("Kotlin special follower roll contract missing: " + marker)\nif "object SpecialFollowerEncounterPolicy" not in projection:\n    raise RuntimeError("Kotlin special follower projection policy missing")\n\n'''
-code = code[:start] + validation + code[end:]
+strict_prompt = 'main = replace_once(main, old_prompt, new_prompt, "special follower GM lock")\n'
+if code.count(strict_prompt) != 1:
+    raise RuntimeError("Special follower prompt compatibility anchor is not unique")
+code = code.replace(strict_prompt, 'if old_prompt in main:\n    main = main.replace(old_prompt, new_prompt, 1)\n', 1)
+code = code.replace("    'IRIS / SYVIAL FOLLOWER LOCK:',\n", "", 1)
 exec(compile(code, str(special), "exec"), {"__name__": "__main__", "__file__": str(special)})
 
-import runpy
 # Link the uploaded Iris/Syvial avatars and add instant developer Party shortcuts.
 runpy.run_path(str(ROOT / "patch-special-follower-cheats-avatars.py"), run_name="__main__")
 
