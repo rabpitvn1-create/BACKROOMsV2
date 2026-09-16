@@ -18,26 +18,70 @@ code = code[:start] + section_end_marker + code[end + len(section_end_marker):]
 exec(compile(code, str(SOURCE), "exec"), {"__name__": "__main__", "__file__": str(SOURCE)})
 
 main = MAIN.read_text(encoding="utf-8")
-initial = '''      JSONObject candidateState = meta
-        ? new JSONObject(before.toString())
-        : applyModelOperations(before, generated.optJSONArray("ops"), action, rolls);
-'''
-initial_bridge = initial + '''      if (!meta) candidateState = new JSONObject(com.rabpit.backroom.core.AnNhienEncounterPolicy.apply(
-        before.toString(), candidateState.toString(), rolls.toString()));
-'''
-if "AnNhienEncounterPolicy.apply(" not in main:
-    if main.count(initial) != 1:
-        raise RuntimeError(f"An Nhien initial Kotlin bridge anchor count != 1: {main.count(initial)}")
-    main = main.replace(initial, initial_bridge, 1)
 
-repair = '            candidateState = applyModelOperations(before, repaired.optJSONArray("ops"), action, rolls);\n'
-repair_bridge = repair + '''            candidateState = new JSONObject(com.rabpit.backroom.core.AnNhienEncounterPolicy.apply(
-              before.toString(), candidateState.toString(), rolls.toString()));
-'''
-if repair_bridge not in main:
-    if main.count(repair) != 1:
-        raise RuntimeError(f"An Nhien repair Kotlin bridge anchor count != 1: {main.count(repair)}")
-    main = main.replace(repair, repair_bridge, 1)
+def method_bounds(source: str, signature: str) -> tuple[int, int]:
+    start = source.find(signature)
+    if start < 0:
+        raise RuntimeError("An Nhien bridge method missing: " + signature)
+    open_brace = source.find("{", start)
+    depth = 0
+    state = "code"
+    escaped = False
+    i = open_brace
+    while i < len(source):
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < len(source) else ""
+        if state == "string":
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == '"':
+                state = "code"
+        elif state == "char":
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == "'":
+                state = "code"
+        elif state == "line_comment":
+            if ch == "\n":
+                state = "code"
+        elif state == "block_comment":
+            if ch == "*" and nxt == "/":
+                state = "code"
+                i += 1
+        else:
+            if ch == '"':
+                state = "string"
+            elif ch == "'":
+                state = "char"
+            elif ch == "/" and nxt == "/":
+                state = "line_comment"
+                i += 1
+            elif ch == "/" and nxt == "*":
+                state = "block_comment"
+                i += 1
+            elif ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    return start, i + 1
+        i += 1
+    raise RuntimeError("An Nhien bridge method closing brace missing")
+
+signature = "  private JSONObject applyModelOperations(JSONObject before, JSONArray ops, JSONObject rolls, String action) throws Exception"
+method_start, method_end = method_bounds(main, signature)
+method = main[method_start:method_end]
+bridge_return = "return new JSONObject(com.rabpit.backroom.core.AnNhienEncounterPolicy.apply(before.toString(), state.toString(), rolls.toString()));"
+if bridge_return not in method:
+    count = method.count("return state;")
+    if count < 1:
+        raise RuntimeError("An Nhien applyModelOperations return anchor missing")
+    method = method.replace("return state;", bridge_return)
+    main = main[:method_start] + method + main[method_end:]
 
 prompt_marker = '"GAMEPLAY_ROLLS do Android sinh là bất biến: chỉ outcome success=true mới được xuất hiện. Không reroll, không tự đổi xác suất, không tự tạo encounter/item/reunion/level transition trái roll. " +\n'
 prompt_extra = prompt_marker + '            "AN NHIÊN HARD LOCK: bé gái 7 tuổi, con người, không phải Entity. anNhienEncounter success=true là cuộc gặp bắt buộc ở Level 0 và phải được kể trong lượt đó; sau khi gặp cô bé luôn theo Kai, không chiến đấu, không dùng vũ khí, không tự tách nhóm. Cô chỉ có +10% loot chance và +2% exit chance khi đang theo Kai, đúng như GAMEPLAY_ROLLS. Không tự thêm năng lực hoặc lore. " +\n'
