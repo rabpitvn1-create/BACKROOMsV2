@@ -34,8 +34,8 @@ class GameplayRollPolicyTest {
     assertTrue(encounter.getBoolean("success"))
     assertFalse(encounter.optBoolean("guaranteedByState", false))
     assertFalse(rolls.getJSONObject("survivor").getBoolean("eligible"))
-    // An Nhiên's independent physical-turn roll plus the normal physical hazard roll.
-    assertEquals(listOf(10_000, 10_000), random.bounds)
+    // An Nhiên's independent physical-turn roll, the normal physical hazard roll and exit probe.
+    assertEquals(listOf(10_000, 10_000, 10_000), random.bounds)
   }
 
   @Test fun followingAnNhienAppliesLootAndExitBonusesWithoutReEncounter() {
