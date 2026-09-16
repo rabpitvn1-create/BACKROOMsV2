@@ -1,0 +1,66 @@
+name: Purge retired feature now
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/issue-43-final-cleanup
+          fetch-depth: 0
+
+      - name: Purge retired feature
+        run: python3 .github/scripts/purge-retired-feature.py
+
+      - name: Remove one-shot purge machinery
+        run: |
+          rm -f .github/scripts/purge-retired-feature.py
+          rm -f .github/workflows/purge-retired-feature-now.yml
+
+      - name: Verify zero retired-feature references
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          needle = ("Mad" + "God").casefold()
+          hits = []
+          for path in Path('.').rglob('*'):
+              if '.git' in path.parts:
+                  continue
+              rel = path.as_posix().removeprefix('./')
+              if needle in rel.casefold():
+                  hits.append(f'PATH\t{rel}')
+              if not path.is_file():
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              for line_no, line in enumerate(text.splitlines(), 1):
+                  if needle in line.casefold():
+                      hits.append(f'TEXT\t{rel}:{line_no}\t{line.strip()}')
+          if hits:
+              print('\n'.join(hits[:500]))
+              raise SystemExit(f'remaining retired-feature references: {len(hits)}')
+          print('ZERO_RETIRED_FEATURE_REFERENCES')
+          PY
+
+      - name: Commit purge
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No purge changes to commit."
+            exit 0
+          fi
+          git commit -m "Remove retired feature remnants"
+          git push origin HEAD:refactor/issue-43-final-cleanup
