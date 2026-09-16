@@ -24,6 +24,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: refs/pull/56/merge
+      - name: Inventory retired feature references
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          needle = ("Mad" + "God").casefold()
+          hits = []
+          for path in Path('.').rglob('*'):
+              if '.git' in path.parts:
+                  continue
+              relative = path.as_posix().removeprefix('./')
+              if needle in relative.casefold():
+                  hits.append(f'PATH\t{relative}')
+              if not path.is_file():
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              for line_no, line in enumerate(text.splitlines(), 1):
+                  if needle in line.casefold():
+                      hits.append(f'TEXT\t{relative}:{line_no}\t{line.strip()}')
+          print('\n'.join(hits) if hits else 'NO_RETIRED_FEATURE_REFERENCES')
+          PY
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
