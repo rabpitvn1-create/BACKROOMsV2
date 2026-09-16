@@ -24,11 +24,6 @@ object CanonFallbackPolicy {
     repaired: Boolean,
   ): Boolean = diagnostics(before, candidate, generated, rolls, action, meta, repaired).optBoolean("eligible", false)
 
-  /**
-   * Explains every gate used by [isEligible]. This method is observational only: it does not
-   * mutate persisted state or consume RNG. Engine-owned story changes are ignored only when they
-   * exactly equal StoryProgressionPolicy's deterministic baseline for this before-state/action.
-   */
   @JvmStatic
   fun diagnostics(
     before: JSONObject,
@@ -50,11 +45,7 @@ object CanonFallbackPolicy {
     val transitionCandidate = transitionReady(candidate)
     val dangerousRoll = hasDangerousRollConsequence(rolls)
 
-    val storyBaseline = StoryProgressionPolicy.normalizeCandidate(
-      before,
-      JSONObject(before.toString()),
-      action,
-    )
+    val storyBaseline = StoryProgressionPolicy.normalizeCandidate(before, JSONObject(before.toString()), action)
     val baselineFlags = storyBaseline.optJSONObject("flags") ?: JSONObject()
     val candidateFlags = candidate.optJSONObject("flags") ?: JSONObject()
 
@@ -76,7 +67,6 @@ object CanonFallbackPolicy {
     val dangerousChangedFlags = changedFlagRoots.filter { root ->
       when {
         root == "lastRolls" -> false
-        root == "madGod" && emptyJsonObject(before.optJSONObject("flags")?.opt(root)) && emptyJsonObject(candidateFlags.opt(root)) -> false
         root in harmlessFlagRoots -> false
         root in engineStoryFlagDeltas -> false
         else -> true
@@ -155,7 +145,7 @@ object CanonFallbackPolicy {
   private fun hasDangerousRollConsequence(rolls: JSONObject): Boolean {
     val consequential = listOf(
       "exitProbe", "levelExit", "entityEncounter", "hazard", "survivor",
-      "irisReunion", "syvialReunion", "loot", "madGodSet", "almondWater"
+      "irisReunion", "syvialReunion", "loot", "almondWater"
     )
     if (consequential.any { rollSucceeded(rolls, it) }) return true
     if (rolls.optJSONArray("entityEncounterKeys")?.let { it.length() > 0 } == true) return true
@@ -184,9 +174,6 @@ object CanonFallbackPolicy {
     candidateFlags.keys().forEachRemaining(roots::add)
     return roots.filterTo(linkedSetOf()) { !jsonEqual(beforeFlags.opt(it), candidateFlags.opt(it)) }
   }
-
-  private fun emptyJsonObject(value: Any?): Boolean =
-    value == null || value === JSONObject.NULL || (value is JSONObject && !value.keys().hasNext())
 
   private fun jsonEqual(left: Any?, right: Any?): Boolean {
     if (left === right) return true
