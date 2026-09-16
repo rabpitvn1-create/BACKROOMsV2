@@ -57,16 +57,18 @@ rule_bridge = '''          String coreRaw = requireGameCore().processRule(stateJ
           }
 '''
 if ".processRule(stateJson, action)" not in text:
-    anchors = [
-        "          JSONObject actionStart = new JSONObject(requireGameCore().beginAction(stateJson, actionKind, action));\n",
-        "          JSONObject actionStart = new JSONObject(gameCore.beginAction(stateJson, actionKind, action));\n",
-    ]
-    for anchor in anchors:
-        if anchor in text:
-            text = text.replace(anchor, rule_bridge + anchor, 1)
-            break
-    else:
-        raise RuntimeError("processRule bridge anchor not found")
+    # Historical Android patches may rebuild submitTurn and remove the earlier Core fast pass.
+    # Re-anchor at submitTurn itself instead of depending on a particular beginAction shape.
+    submit_signature = "    @JavascriptInterface public void submitTurn(String stateJson, String action) {\n"
+    submit = text.find(submit_signature)
+    if submit < 0:
+        raise RuntimeError("submitTurn bridge anchor not found")
+    try_anchor = "        try {\n"
+    position = text.find(try_anchor, submit)
+    if position < 0:
+        raise RuntimeError("submitTurn try anchor not found")
+    position += len(try_anchor)
+    text = text[:position] + rule_bridge + text[position:]
 
 # Candidate state/ops emitted by the writer are advisory until Kotlin validates and commits them.
 gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
