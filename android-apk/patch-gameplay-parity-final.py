@@ -1,41 +1,127 @@
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
-POLICY = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameplayRollPolicy.kt"
-SPECIAL_FOLLOWER_PATCH = ROOT / "patch-an-nhien-follower-final.py"
+MAIN = Path(__file__).resolve().parent / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
+text = MAIN.read_text(encoding="utf-8")
 
-# GameplayRollPolicy is the only gameplay-roll authority. This historical slot stays in the
-# chain because later compatibility transforms still consume the pre-Core Java method shape.
-# Materialize the remaining An Nhien core/UI compatibility here while stripping its retired
-# Java gameplay authority, then let the terminal Entity/Core bridge collapse the staging method.
-if not POLICY.is_file():
-    raise RuntimeError("Kotlin GameplayRollPolicy source missing")
-policy = POLICY.read_text(encoding="utf-8")
-for marker in (
-    "object GameplayRollPolicy",
-    "EntityEncounterPolicy.roll(",
-    "emuLevel1Progression",
-    "emuLevel06Traversal",
-    'rolls.put("exitProbe"',
-    'rolls.put("levelExit"',
-):
-    if marker not in policy:
-        raise RuntimeError("Kotlin gameplay-roll authority contract missing: " + marker)
+start = text.index("  private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {\n")
+end = text.index("\n  private boolean rollSuccess(JSONObject rolls, String key) {", start)
 
-main = MAIN.read_text(encoding="utf-8")
-for marker in (
-    "private JSONObject makeGameplayRolls(",
-    "private boolean rollSuccess(JSONObject rolls, String key)",
-):
-    if marker not in main:
-        raise RuntimeError("Historical roll staging shape missing before terminal Core bridge: " + marker)
+replacement = r'''  private JSONObject thresholdRoll(String label, int max, int threshold, boolean eligible, String suffix) throws Exception {
+    JSONObject result = new JSONObject()
+      .put("label", label)
+      .put("dice", threshold >= max ? "none" : "d" + max)
+      .put("max", max)
+      .put("threshold", threshold)
+      .put("eligible", eligible && threshold > 0);
+    double percent = max > 0 ? (threshold * 100.0 / max) : 0.0;
+    result.put("chancePercent", percent).put("chance", String.format(java.util.Locale.ROOT, "%.4f%%%s", percent, suffix == null ? "" : suffix));
+    if (!eligible || threshold <= 0) return result.put("roll", JSONObject.NULL).put("success", false);
+    if (threshold >= max) return result.put("roll", JSONObject.NULL).put("success", true).put("guaranteedByState", true);
+    int roll = GAME_RNG.nextInt(max) + 1;
+    return result.put("roll", roll).put("success", roll <= threshold);
+  }
 
-if not SPECIAL_FOLLOWER_PATCH.is_file():
-    raise RuntimeError("Special follower compatibility patch missing")
-exec(compile(SPECIAL_FOLLOWER_PATCH.read_text(encoding="utf-8"), str(SPECIAL_FOLLOWER_PATCH), "exec"), {
-    "__name__": "__main__",
-    "__file__": str(SPECIAL_FOLLOWER_PATCH),
-})
+  private int exitThresholdAndroid(JSONObject state) {
+    JSONObject flags = state.optJSONObject("flags");
+    if (flags == null) return 10;
+    int explicit = flags.optInt("exitChanceThreshold", -1);
+    if (explicit >= 0 && explicit <= 10000) return explicit;
+    String progress = flags.optString("exitProgress", "");
+    JSONObject exploration = flags.optJSONObject("exploration");
+    if (progress.isEmpty() && exploration != null) progress = exploration.optString("exitProgress", "");
+    String upper = progress.toUpperCase(java.util.Locale.ROOT);
+    if (containsAny(upper, "READY", "GUARANTEED", "CONDITION MET", "TRANSITION AVAILABLE")) return 10000;
+    if (containsAny(upper, "NEAR", "ALMOST", "VERY STRONG")) return 150;
+    if (containsAny(upper, "STRONG", "CORRECT ROUTE")) return 100;
+    if (containsAny(upper, "CLUE", "CANDIDATE", "OPENED", "OBSERVED", "TRACKED")) return 50;
+    return 10;
+  }
 
-print("Gameplay roll parity slot is authority-free: Kotlin GameplayRollPolicy owns probabilities, eligibility and RNG order.")
+  private boolean reunionEligibleAndroid(JSONObject state, String key) {
+    JSONObject flags = state.optJSONObject("flags");
+    JSONObject record = flags != null ? flags.optJSONObject(key) : null;
+    if (record == null || !record.optBoolean("exists", true)) return false;
+    if (partyHas(state, key) || flagSpawned(state, key)) return false;
+    if (record.has("reunionEligible") && !record.optBoolean("reunionEligible", true)) return false;
+    String continuity = record.optString("continuity", "").toUpperCase(java.util.Locale.ROOT);
+    return continuity.isEmpty() || containsAny(continuity, "SEPARATED", "LOST", "UNKNOWN");
+  }
+
+  private boolean exitProbeEligibleAndroid(boolean exploreAction, boolean exitIntent, boolean physical, boolean search) {
+    return exploreAction || (exitIntent && (physical || search));
+  }
+
+  private JSONObject makeGameplayRolls(JSONObject state, String action, boolean meta) throws Exception {
+    return makeGameplayRolls(state, "EXECUTE", action, meta);
+  }
+
+  private JSONObject makeGameplayRolls(JSONObject state, String actionKind, String action, boolean meta) throws Exception {
+    JSONObject rolls = new JSONObject().put("turn", state.optInt("turn", 1)).put("meta", meta);
+    if (meta) return rolls;
+
+    String actionKindNormalized = actionKind == null ? "" : actionKind.trim().toUpperCase(java.util.Locale.ROOT);
+    boolean exploreAction = "EXPLORE".equals(actionKindNormalized);
+    rolls.put("actionKind", actionKindNormalized);
+
+    int level = Math.max(0, Math.min(6, currentLevel(state)));
+    int[] hazardThresholds = {400, 700, 1000, 1200, 300, 1000, 1200};
+    int[] entityThresholds = {5, 200, 350, 350, 10, 400, 5};
+    int[] lootThresholds = {35, 120, 100, 150, 180, 100, 45};
+    int[] waterThresholds = {20, 70, 35, 20, 120, 60, 35};
+
+    String a = lower(action);
+    boolean physical = containsAny(a, "đi", "bước", "chạy", "leo", "mở", "đóng", "chạm", "lục", "tìm", "kiểm tra", "khảo sát", "quét", "scan", "bắn", "phá", "đẩy", "kéo", "tiến", "lùi", "cúi", "nhìn vào", "bò", "nhảy", "đào", "tháo", "đập", "vượt", "đi qua");
+    boolean search = containsAny(a, "tìm", "lục", "khám phá", "khảo sát", "kiểm tra", "quét", "scan", "mở", "tháo", "quan sát kỹ", "rà");
+    boolean water = containsAny(a, "nước", "water", "almond", "uống", "khát", "chai", "vòi", "hồ", "fountain");
+    boolean exitIntent = containsAny(a, "exit", "lối thoát", "thoát", "cửa trắng", "cánh cửa", "ngưỡng", "chuyển level", "sang level", "hành lang phía sau", "đường ra");
+
+    JSONObject flags = state.optJSONObject("flags");
+    boolean survivorAllowed = flags == null || flags.optBoolean("survivorEncountersAllowed", true);
+    boolean entityAllowed = flags == null || flags.optBoolean("entityEncountersAllowed", true);
+    JSONObject madGod = flags != null ? flags.optJSONObject("madGod") : null;
+    boolean madGodEligible = search && (madGod == null || !madGod.optBoolean("spawned", false)) && (flags == null || flags.optBoolean("madGodDiscoveryAllowed", true));
+
+    rolls.put("survivor", thresholdRoll("survivor", 10000, 200, survivorAllowed, ""));
+    rolls.put("irisReunion", thresholdRoll("irisReunion", 1000000, 25, reunionEligibleAndroid(state, "iris"), ""));
+    rolls.put("syvialReunion", thresholdRoll("syvialReunion", 1000000, 25, reunionEligibleAndroid(state, "syvial"), ""));
+    rolls.put("hazard", thresholdRoll("hazard", 10000, hazardThresholds[level], physical, ""));
+    String entitySuffix = level == 0 || level == 4 || level == 6 ? " incursion/roaming only" : "";
+    rolls.put("entityEncounter", thresholdRoll("entityEncounter", 10000, entityThresholds[level], physical && entityAllowed, entitySuffix));
+    rolls.put("loot", thresholdRoll("loot", 10000, lootThresholds[level], search, ""));
+    rolls.put("madGodSet", thresholdRoll("madGodSet", 10000, 1, madGodEligible, " UR+ UNIQUE discovery"));
+    rolls.put("almondWater", thresholdRoll("almondWater", 10000, waterThresholds[level], search && water, ""));
+
+    int exitThreshold = exitThresholdAndroid(state);
+    if (BuildConfig.DEBUG && getIntent().getBooleanExtra("emuLevel1Progression", false)
+        && exploreAction && levelTurns(state) >= 6) {
+      exitThreshold = 10000;
+    }
+    boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);
+    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitProbeEligible, " discovery clue");
+    rolls.put("exitProbe", exitProbe);
+    // Compatibility alias for the older Android reducer. Both keys point to the exact same locked result; no reroll occurs.
+    rolls.put("levelExit", new JSONObject(exitProbe.toString()).put("label", "levelExit"));
+    return rolls;
+  }
+'''
+
+text = text[:start] + replacement + text[end:]
+
+for marker in [
+    'thresholdRoll("survivor", 10000, 200',
+    'thresholdRoll("irisReunion", 1000000, 25',
+    'int[] entityThresholds = {5, 200, 350, 350, 10, 400, 5}',
+    'int[] lootThresholds = {35, 120, 100, 150, 180, 100, 45}',
+    'rolls.put("hazard"',
+    'rolls.put("exitProbe", exitProbe)',
+    'rolls.put("levelExit", new JSONObject(exitProbe.toString())',
+    'private boolean exitProbeEligibleAndroid(boolean exploreAction, boolean exitIntent, boolean physical, boolean search)',
+    'boolean exitProbeEligible = exitProbeEligibleAndroid(exploreAction, exitIntent, physical, search);',
+    'getIntent().getBooleanExtra("emuLevel1Progression", false)',
+    'rolls.put("actionKind", actionKindNormalized);',
+]:
+    if marker not in text:
+        raise RuntimeError(f"Android gameplay parity marker missing: {marker}")
+
+MAIN.write_text(text, encoding="utf-8")
+print("Android gameplay staging materialized for compatibility; final runtime authority is collapsed to Kotlin later in the patch chain.")
