@@ -107,7 +107,7 @@ for marker in (
     'if (CombatRuntime.active(state) != null) return state',
     'val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))',
     'val resolvedEntityKey = CombatRuntime.active(current)?.entityKey.orEmpty()',
-    'val resolution = CombatTurnAuthority.resolve(current, actionKind, action)',
+    'var resolution = CombatTurnAuthority.resolve(current, actionKind, action)',
     'when (resolvedEntityKey)',
     '"jeff_the_killer" -> flags.optJSONObject("jeff")?.put("present", false)',
     '"jane_the_killer" -> flags.optJSONObject("jane")?.put("present", false)',
