@@ -25,8 +25,17 @@ elif new_name not in canon:
 canon_path.write_text(canon, encoding="utf-8")
 print("An Nhiên footwear updated to pink Crocs.")
 
-# Special follower encounter policy and authoritative Iris/Syvial follower definitions.
-runpy.run_path(str(ROOT / "patch-special-followers-025.py"), run_name="__main__")
+# Special follower compatibility still needs its transient Java staging because later Lucia/legacy
+# transforms consume those anchors. Only the prose prompt replacement is retired; the final runtime
+# roll method is collapsed to Kotlin by patch-entity-rates-drops-final.py.
+special = ROOT / "patch-special-followers-025.py"
+code = special.read_text(encoding="utf-8")
+strict_prompt = 'main = replace_once(main, old_prompt, new_prompt, "special follower GM lock")\n'
+if code.count(strict_prompt) != 1:
+    raise RuntimeError("Special follower prompt compatibility anchor is not unique")
+code = code.replace(strict_prompt, 'if old_prompt in main:\n    main = main.replace(old_prompt, new_prompt, 1)\n', 1)
+code = code.replace("    'IRIS / SYVIAL FOLLOWER LOCK:',\n", "", 1)
+exec(compile(code, str(special), "exec"), {"__name__": "__main__", "__file__": str(special)})
 
 # Link the uploaded Iris/Syvial avatars and add instant developer Party shortcuts.
 runpy.run_path(str(ROOT / "patch-special-follower-cheats-avatars.py"), run_name="__main__")

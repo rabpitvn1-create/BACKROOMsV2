@@ -124,4 +124,4 @@ for marker in [
         raise RuntimeError(f"Android gameplay parity marker missing: {marker}")
 
 MAIN.write_text(text, encoding="utf-8")
-print("Android gameplay dice aligned with server canon: Exit probe progression chances halved; follower bonuses unchanged.")
+print("Android gameplay staging materialized for compatibility; final runtime authority is collapsed to Kotlin later in the patch chain.")
