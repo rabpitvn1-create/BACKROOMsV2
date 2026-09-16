@@ -700,12 +700,12 @@ combat = one(combat,
 ''', "combat normalized weapon damage")
 
 combat = one(combat,
-'''      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+'''          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
 ''',
-'''      val effective = CharacterStatEngine.effective(state, KAI_ID)
-      val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
-      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
-        when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
+'''          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)
+          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
+          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
+            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
 ''', "combat normalized defense")
 
 combat = combat.replace('    metadata[PLAYER_HP] = c.playerHp.toString()\n    metadata[PLAYER_MAX_HP] = c.playerMaxHp.toString()\n', '')
