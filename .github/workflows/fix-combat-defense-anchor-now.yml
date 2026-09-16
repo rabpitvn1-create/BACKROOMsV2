@@ -1,0 +1,63 @@
+name: Fix combat defense anchor now
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/issue-43-final-cleanup
+      - name: Align defense patch with materialized CombatRuntime
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('android-apk/patch-character-status-equipment-system.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''combat = one(combat,
+''' + "'''" + '''      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+''' + "'''" + ''',
+''' + "'''" + '''      val effective = CharacterStatEngine.effective(state, KAI_ID)
+      val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
+      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
+        when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
+''' + "'''" + ''', "combat normalized defense")
+'''
+          new = '''combat = one(combat,
+''' + "'''" + '''          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+''' + "'''" + ''',
+''' + "'''" + '''          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)
+          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
+          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
+            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
+''' + "'''" + ''', "combat normalized defense")
+'''
+          if new in text:
+              print('Defense anchor already aligned.')
+          elif old in text:
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+              print('Aligned defense anchor with materialized CombatRuntime.')
+          else:
+              raise SystemExit('Expected defense patch block not found')
+          PY
+      - name: Verify patch syntax
+        run: python3 -m py_compile android-apk/patch-character-status-equipment-system.py
+      - name: Commit fix
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-apk/patch-character-status-equipment-system.py
+          if git diff --cached --quiet; then
+            echo "No combat defense change to commit."
+            exit 0
+          fi
+          git commit -m "Align combat defense status patch"
+          git push origin HEAD:refactor/issue-43-final-cleanup
