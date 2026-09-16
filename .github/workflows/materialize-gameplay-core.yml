@@ -37,14 +37,29 @@ jobs:
           test -s android-apk/app/src/main/assets/kai_entity_overlay.png
           test -s android-apk/app/src/main/assets/avatars/kai_avatar.png
       - name: Apply current Android runtime patch chain
+        id: patch_chain
+        continue-on-error: true
         run: |
           set -euo pipefail
           scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py .issue43-materialize-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
-          for script in "${scripts[@]}"; do
-            echo "==> $script"
-            python3 "android-apk/$script"
-          done
-          git diff --check
+          {
+            for script in "${scripts[@]}"; do
+              echo "==> $script"
+              python3 "android-apk/$script"
+            done
+            git diff --check
+          } 2>&1 | tee issue43-patch-chain.log
+      - name: Upload patch-chain diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue43-patch-chain-log
+          path: issue43-patch-chain.log
+          if-no-files-found: warn
+          retention-days: 1
+      - name: Fail if patch chain failed
+        if: steps.patch_chain.outcome != 'success'
+        run: exit 1
       - name: Commit materialized Kotlin gameplay core
         run: |
           set -euo pipefail
