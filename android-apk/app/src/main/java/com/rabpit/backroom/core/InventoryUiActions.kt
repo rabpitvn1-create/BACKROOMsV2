@@ -31,7 +31,7 @@ object InventoryV4State {
     items.forEach { raw ->
       if (ItemCatalog.isLegacyResidual(raw)) return@forEach
       // ItemCatalog is the sole Inventory whitelist. Anything retired from the catalog, including
-      // old ammo, legacy Kai equipment and MadGod items, is dropped during load normalization.
+      // old ammo and legacy Kai equipment, is dropped during load normalization.
       val definition = ItemCatalog.resolveLegacy(raw) ?: return@forEach
       val item = ItemCatalog.canonicalize(definition, raw)
       val old = result[item.itemId]
