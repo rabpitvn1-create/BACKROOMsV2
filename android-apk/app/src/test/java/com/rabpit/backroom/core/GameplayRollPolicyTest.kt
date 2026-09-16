@@ -25,8 +25,8 @@ class GameplayRollPolicyTest {
 
   @Test fun anNhienEncounterUsesIndependentQuarterPercentRoll() {
     val random = RecordingRandom()
-    val state = JSONObject("""{"level":{"number":0},"flags":{}}""")
-    val rolls = GameplayRollPolicy.roll(state, "EXPLORE", "đi tiếp", false, random)
+    val state = JSONObject("""{"level":{"number":0},"flags":{"survivorEncountersAllowed":false,"entityEncountersAllowed":false}}""")
+    val rolls = GameplayRollPolicy.roll(state, "EXECUTE", "đi tiếp", false, random)
     val encounter = rolls.getJSONObject("anNhienEncounter")
     assertTrue(encounter.getBoolean("eligible"))
     assertEquals(10_000, encounter.getInt("max"))
@@ -34,7 +34,8 @@ class GameplayRollPolicyTest {
     assertTrue(encounter.getBoolean("success"))
     assertFalse(encounter.optBoolean("guaranteedByState", false))
     assertFalse(rolls.getJSONObject("survivor").getBoolean("eligible"))
-    assertEquals(listOf(10_000), random.bounds)
+    // An Nhiên's independent physical-turn roll plus the normal physical hazard roll.
+    assertEquals(listOf(10_000, 10_000), random.bounds)
   }
 
   @Test fun followingAnNhienAppliesLootAndExitBonusesWithoutReEncounter() {
@@ -84,8 +85,8 @@ class GameplayRollPolicyTest {
       assertEquals(300, check.getInt("threshold"))
       assertTrue(check.getBoolean("success"))
     }
-    // Three special followers + survivor + hazard + independent Entity draws + exit probe.
-    assertEquals(6 + EntityEncounterPolicy.authorizedKeys().size, random.bounds.size)
+    // An Nhiên + survivor + hazard, then one independent draw per Entity, then exit probe.
+    assertEquals(4 + EntityEncounterPolicy.authorizedKeys().size, random.bounds.size)
   }
 
   @Test fun entityDisableFlagPreventsTheEntireIndependentBatchFromConsumingRng() {
@@ -97,8 +98,8 @@ class GameplayRollPolicyTest {
     EntityEncounterPolicy.authorizedKeys().forEach { key ->
       assertFalse(rolls.getJSONObject("entityRolls").getJSONObject(key).getBoolean("eligible"))
     }
-    // Three special followers + survivor + hazard + exitProbe. Disabled Entity checks consume no draws.
-    assertEquals(List(6) { 10_000 }, random.bounds)
+    // An Nhiên + survivor + hazard + exitProbe. Disabled Entity checks consume no draws.
+    assertEquals(List(4) { 10_000 }, random.bounds)
   }
 
   @Test fun progressionFixturesSuppressCombatRngAndGuaranteeReadyParentExit() {
@@ -109,7 +110,7 @@ class GameplayRollPolicyTest {
     assertTrue(rolls.getJSONObject("exitProbe").getBoolean("success"))
     assertTrue(rolls.getJSONObject("exitProbe").getBoolean("guaranteedByState"))
     assertTrue(rolls.getJSONObject("levelExit").getBoolean("success"))
-    // Progression fixtures suppress survivor/hazard/Entity RNG, but special-follower discovery remains independent.
+    // Progression fixtures suppress Entity RNG and the guaranteed exit draw; An Nhiên, survivor and hazard remain independent.
     assertEquals(List(3) { 10_000 }, random.bounds)
   }
 
