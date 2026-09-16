@@ -1,0 +1,83 @@
+name: Cleanup retired equipment residue now
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/issue-43-final-cleanup
+      - name: Remove retired equipment semantic residue
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('android-apk/patch-character-status-equipment-system.py')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              ('enum class ItemClassification { CANONICAL, SPECIAL_CHEAT, GENERAL }',
+               'enum class ItemClassification { CANONICAL, GENERAL }'),
+              ('    if (def.classification == ItemClassification.SPECIAL_CHEAT && characterId != KAI_ID) return null\n', ''),
+              ('.equipment-badge.cheat{border-color:#8c7042;color:#e4c07e}', ''),
+              (";if(item.classification==='SPECIAL_CHEAT')badges.push('<span class=\"equipment-badge cheat\">SPECIAL / CHEAT</span>')", ''),
+              ("q('equipmentDetailClass').textContent=item.classification==='SPECIAL_CHEAT'?'SPECIAL / CHEAT':(item.type||'ITEM')",
+               "q('equipmentDetailClass').textContent=item.type||'ITEM'"),
+              ("const compare=item.comparison||((item.classification==='SPECIAL_CHEAT')?item.baseItemEffect:null),cr=comparisonRows(compare);",
+               "const compare=item.comparison,cr=comparisonRows(compare);"),
+              ("  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)', 'bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',\n",
+               "  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)',\n"),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit('Expected residue anchor missing: ' + old[:120])
+              text = text.replace(old, new, 1)
+
+          orphan = '''\n    val e = CharacterStatEngine.effective(r.state, KAI_ID); assertEquals(165, e.maxHp); assertEquals(114, e.str); assertEquals(121, e.df); assertEquals(118, e.agi); assertEquals(113, e.crit)\n  }\n\n  }\n\n  @Test fun projectionAfterReloadEqualsBasePlusEquippedItems() {'''
+          clean = '''\n\n  @Test fun projectionAfterReloadEqualsBasePlusEquippedItems() {'''
+          if orphan not in text:
+              raise SystemExit('Retired generated-test fragment anchor missing')
+          text = text.replace(orphan, clean, 1)
+
+          forbidden = [
+              'SPECIAL_CHEAT',
+              'SPECIAL / CHEAT',
+              'assertEquals(165, e.maxHp)',
+              'assertEquals(114, e.str)',
+              'assertEquals(121, e.df)',
+              'assertEquals(118, e.agi)',
+              'assertEquals(113, e.crit)',
+              'EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',
+          ]
+          leftovers = [token for token in forbidden if token in text]
+          if leftovers:
+              raise SystemExit('Retired equipment residue remains: ' + ', '.join(leftovers))
+
+          path.write_text(text, encoding='utf-8')
+          print('Retired equipment semantic residue removed.')
+          PY
+      - name: Verify patch syntax
+        run: python3 -m py_compile android-apk/patch-character-status-equipment-system.py
+      - name: Remove one-shot workflow
+        run: rm -f .github/workflows/cleanup-retired-equipment-residue-now.yml
+      - name: Commit cleanup
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "No cleanup change to commit."
+            exit 0
+          fi
+          git commit -m "Remove retired equipment residue"
+          git push origin HEAD:refactor/issue-43-final-cleanup
