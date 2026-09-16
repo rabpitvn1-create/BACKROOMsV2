@@ -1,0 +1,49 @@
+name: Fix purge cleanup now
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/issue-43-final-cleanup
+      - name: Remove dead normalization tail
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('android-apk/patch-character-status-equipment-system.py')
+          text = path.read_text(encoding='utf-8')
+          start_marker = "    mg = re.sub(r'const val MULTIPLIER = \\\\d+', 'const val MULTIPLIER = 1', mg)\n"
+          end_marker = '# --- Rich Character projection, derived from Base + unique equipped Items -----\n'
+          start = text.find(start_marker)
+          if start < 0:
+              print('Dead normalization tail already absent.')
+          else:
+              end = text.find(end_marker, start)
+              if end < 0:
+                  raise SystemExit('Rich Character projection marker missing')
+              path.write_text(text[:start] + text[end:], encoding='utf-8')
+              print('Removed dead normalization tail.')
+          PY
+      - name: Verify syntax
+        run: python3 -m py_compile android-apk/patch-character-status-equipment-system.py
+      - name: Commit fix
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android-apk/patch-character-status-equipment-system.py
+          if git diff --cached --quiet; then
+            echo "No cleanup change to commit."
+            exit 0
+          fi
+          git commit -m "Remove dead purge normalization tail"
+          git push origin HEAD:refactor/issue-43-final-cleanup
