@@ -19,6 +19,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Snapshot patch sources for final authority audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue43-patch-sources
+          path: |
+            android-apk/patch-*.py
+            android-apk/audit-legacy-patches.py
+            .github/workflows/build-backroom-apk.yml
+          if-no-files-found: error
+          retention-days: 2
       - name: Install patch runtime dependency
         run: python -m pip install Pillow
       - name: Sync verified Kai SRU visuals
