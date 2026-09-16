@@ -45,7 +45,6 @@ class GameCoreFacade private constructor(
   fun processRule(legacyStateJson: String, action: String): String {
     val legacy = JSONObject(legacyStateJson)
     val state = loadOrMigrate(legacy)
-    if (MadGodCanon.cheat(action)) return applyMadGodCheat(legacy,state)
     if (AnNhienCanon.matchesPartyCheatCode(action)) return applyAnNhienPartyCheat(legacy, state)
     SpecialFollowersCanon.matchesPartyCheatCode(action)?.let { targetId ->
       return applySpecialFollowerPartyCheat(legacy, state, targetId)
@@ -54,40 +53,6 @@ class GameCoreFacade private constructor(
     logger.log(PipelineLogEvent("INPUT", turnId = turnId, details = mapOf("length" to action.length.toString())))
     val pending = TurnCoordinator.createPending(state, turnId, action)
     if (pending.error != null) return response(false, legacy, pending.error, "pending_rejected")
-    if (isMadGodEquipRequest(action)) {
-      val owned = pending.state.inventories[KAI_ID]?.items?.containsKey(MADGOD_SET_ID) == true
-      if (!owned) {
-        val result = syncLegacy(legacy, pending.state, incrementTurn = false)
-        val reply = validationReply("item_not_owned")
-        appendLog(result, action, reply)
-        return response(true, result, "item_not_owned", "validation_rejected", reply)
-      }
-      val command = ItemCommand(
-        commandId = "$turnId:MADGOD:EQUIP",
-        turnId = turnId,
-        actorId = KAI_ID,
-        source = CommandSource.RULE,
-        operation = ItemCommand.Operation.EQUIP,
-        itemId = MADGOD_SET_ID,
-        itemName = MadGodCanon.SET_NAME,
-        quantity = 1,
-        slot = "weapon"
-      )
-      val committed = commitActionRuntime(pending.state, mutableListOf(command), action, turnId)
-      if (committed.error != null) {
-        val rejected = TurnCoordinator.reject(pending.state, committed.error)
-        repository.save(rejected.state)
-        val result = syncLegacy(legacy, rejected.state, incrementTurn = true)
-        val reply = validationReply(committed.error)
-        appendLog(result, action, reply)
-        return response(true, result, committed.error, "validation_rejected", reply)
-      }
-      repository.save(committed.state)
-      val result = syncLegacy(legacy, committed.state, incrementTurn = true)
-      val reply = "MadGod Set đã ghi đè White Wraith Magnum và Blackblood Armor của Kai. Omnivault Ring được giữ nguyên."
-      appendLog(result, action, reply)
-      return response(true, result, null, "madgod_equipped", reply)
-    }
     val context = contextFor(pending.state)
     val ruleResult = rules.interpretSync(action, context)
     val candidates = ruleResult.candidates.map { candidate ->
@@ -229,16 +194,10 @@ class GameCoreFacade private constructor(
     )
   }
 
-  private fun applyMadGodCheat(legacy:JSONObject,state:GameState):String {
-    val x=MadGodCanon.spawn(state); repository.save(x.state); val out=syncLegacy(legacy,x.state,incrementTurn=false);
-    val flags=out.optJSONObject("flags")?:JSONObject().also{out.put("flags",it)}; flags.put("madGod",JSONObject().put("spawned",true).put("spawnSource","cheat").put("scalingMode",MadGodCanon.SCALING_MODE));
-    val msg=if(x.added) "MadGod Set đã xuất hiện trong Inventory. Đây là một set duy nhất: trang bị một lần sẽ kích hoạt đồng thời MadGod Armor và MadGod Magnum, rồi khóa vĩnh viễn." else "MadGod Set đã tồn tại; /madgod không tạo bản sao thứ hai."; appendLog(out,MadGodCanon.CHEAT_CODE,msg); return response(true,out,null,"cheat_committed",msg)
-  }
 
   fun beginAction(legacyStateJson: String, kindRaw: String, action: String): String {
     val legacy = JSONObject(legacyStateJson)
     val state = loadOrMigrate(legacy)
-    if (MadGodCanon.cheat(action)) return actionStartResponse(true,null,null)
     val kind = enumValues<ActionKind>().firstOrNull { it.name == kindRaw.trim().uppercase() }
       ?: return actionStartResponse(false, null, "action_kind_invalid")
     val existing = ActionRuntime.activeSession(state)
@@ -643,12 +602,6 @@ class GameCoreFacade private constructor(
     return GameContext(state, actors, items)
   }
 
-  private fun isMadGodEquipRequest(action: String): Boolean {
-    val text = action.trim()
-    val equip = Regex("(?:^|\\s)(?:trang\\s+bị|equip|đeo|mặc|cầm\\s+làm\\s+vũ\\s+khí)(?:\\s|$)", RegexOption.IGNORE_CASE)
-    val madGod = Regex("(?:mad\\s*god|madgod)(?:\\s+set)?", RegexOption.IGNORE_CASE)
-    return equip.containsMatchIn(text) && madGod.containsMatchIn(text)
-  }
 
   private fun isDirectPlayerPickupAction(action: String): Boolean {
     val text = action.trim()
@@ -707,7 +660,6 @@ class GameCoreFacade private constructor(
       state.time.lastAdvanceReason?.let { put("lastAdvanceReason", it) }
     })
     output.put("partyDetails", CharacterDetailJson.encodeParty(CharacterDetailProjector.projectParty(state)))
-    output.put("equipment",MadGodCanon.legacy(state))
     val kaiInventory = state.inventories[KAI_ID]?.items?.values.orEmpty()
     output.put("inventory", JSONArray().apply { kaiInventory.forEach { stack -> put(JSONObject().apply {
       put("id", stack.itemId); put("name", stack.name); put("quantity", stack.quantity)

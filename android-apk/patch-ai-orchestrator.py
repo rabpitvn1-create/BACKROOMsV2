@@ -42,7 +42,7 @@ helpers = r'''  private String canonSection(String source, String start, String 
   }
 
   private boolean actionItem(String action) {
-    return actionOmnivault(action) || containsAny(action, "nhặt", "lấy", "cầm", "thu hồi", "nhận", "cất", "inventory", "đồ", "vật phẩm", "chai", "nước", "almond", "loot", "crate", "liquid pain", "greek fire", "madgod");
+    return actionOmnivault(action) || containsAny(action, "nhặt", "lấy", "cầm", "thu hồi", "nhận", "cất", "inventory", "đồ", "vật phẩm", "chai", "nước", "almond", "loot", "crate", "liquid pain", "greek fire");
   }
 
   private boolean actionEntity(String action) {
@@ -69,7 +69,7 @@ helpers = r'''  private String canonSection(String source, String start, String 
 
     boolean entity = actionEntity(action) || rollSuccess(rolls, "entityEncounter") ||
       (state.optJSONObject("flags") != null && state.optJSONObject("flags").optInt("entitiesConfirmedLocal", 0) > 0);
-    boolean item = actionItem(action) || rollSuccess(rolls, "loot") || rollSuccess(rolls, "almondWater") || rollSuccess(rolls, "madGodSet");
+    boolean item = actionItem(action) || rollSuccess(rolls, "loot") || rollSuccess(rolls, "almondWater");
     if (entity || item) {
       String resources = canonSection(DRIVE_CANON, "ENTITY VÀ TÀI NGUYÊN", "IRIS / SYVIAL");
       if (!resources.isEmpty()) out.append("\n\n").append(resources);
@@ -165,11 +165,6 @@ helpers = r'''  private String canonSection(String source, String start, String 
       JSONObject flags = before.optJSONObject("flags");
       return rollSuccess(rolls, "survivor") || (flags != null && flags.optInt("survivorsConfirmed", 0) > 0);
     }
-    if (root.equals("madGod")) {
-      JSONObject flags = before.optJSONObject("flags");
-      JSONObject madGod = flags != null ? flags.optJSONObject("madGod") : null;
-      return rollSuccess(rolls, "madGodSet") || (madGod != null && madGod.optBoolean("spawned", false));
-    }
     return false;
   }
 
@@ -225,10 +220,8 @@ helpers = r'''  private String canonSection(String source, String start, String 
         JSONArray inventory = state.optJSONArray("inventory");
         if (inventory == null) inventory = new JSONArray();
         int existing = arrayIndexByName(inventory, name);
-        boolean madGod = lower(name).contains("madgod");
         boolean almond = lower(name).contains("almond water");
         boolean allowedNew = acquisitionIntent(action);
-        if (madGod && !before.optJSONObject("flags").optJSONObject("madGod").optBoolean("spawned", false)) allowedNew = false;
         if (almond) {
           JSONObject waterRoll = rolls.optJSONObject("almondWater");
           if (waterRoll != null && waterRoll.optBoolean("eligible", false) && !waterRoll.optBoolean("success", false) && existing < 0) allowedNew = false;
@@ -292,12 +285,7 @@ helpers = r'''  private String canonSection(String source, String start, String 
     JSONObject flags = state.optJSONObject("flags");
     if (flags == null) flags = new JSONObject();
     JSONObject oldFlags = before.optJSONObject("flags");
-    JSONObject oldMadGod = oldFlags != null ? oldFlags.optJSONObject("madGod") : null;
-    JSONObject madGod = flags.optJSONObject("madGod");
-    if (madGod == null) madGod = oldMadGod == null ? new JSONObject() : new JSONObject(oldMadGod.toString());
-    if (oldMadGod != null && oldMadGod.optBoolean("spawned", false)) madGod.put("spawned", true);
-    else if (rollSuccess(rolls, "madGodSet")) madGod.put("spawned", true).put("discoveryRouteRevealed", true).put("acquired", false);
-    flags.put("madGod", madGod).put("lastRolls", rolls);
+    flags.put("lastRolls", rolls);
     state.put("flags", flags);
     return state;
   }
@@ -341,8 +329,8 @@ new_bridge = r'''  private class GameBridge {
             "\n\nOPERATION TYPES: " +
             "set_location{value}; set_level{level}; patch_player{patch}; inventory_upsert{item,basis}; inventory_remove{name,basis}; " +
             "party_upsert{member}; party_remove{name}; flag_patch{root,value}. " +
-            "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, madGod, omnivault, survivorRegistry, entityRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +
-            "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory. " +
+            "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, omnivault, survivorRegistry, entityRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +
+            "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. " +
             "JSON bắt buộc: {\"reply\":\"phản hồi Game Master bằng tiếng Việt tự nhiên\",\"ops\":[],\"snapshotEvent\":{\"shouldGenerate\":false,\"kind\":\"\",\"reason\":\"\"}}";
 
           JSONObject generated = parseModelJson(generateText(prompt));

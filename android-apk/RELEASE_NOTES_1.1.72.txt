@@ -5,4 +5,3 @@ Backroom 1.1.72 Debug
 - Chặn trùng lặp asset giữa các pool, kể cả các biến thể resize/revision của cùng một ảnh nguồn.
 - Giữ Umbrallight.png riêng cho Level 6.99 và không dùng cho Level 6.2.
 - Giữ Parent Level 6 theo canon tundra tối ngoài trời của dự án, loại ảnh Level 6 trong nhà không tương thích.
-- Củng cố chuỗi patch Snapshot để tương thích với renderer Wiki mới, MadGod overlay và authoritative structured-Level selection.

@@ -83,7 +83,7 @@ for retired in (
         raise RuntimeError("Retired Java Inventory acquisition authority survived: " + retired)
 
 builder = KNOWLEDGE_BUILDER.read_text(encoding="utf-8")
-prompt_anchor = '      "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory. " +\n'
+prompt_anchor = '      "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. " +\n'
 world_prompt_line = r'''      "Khi GAMEPLAY_ROLLS hợp lệ tạo loot/Almond Water và reply xác nhận môi trường hoặc NPC thực sự giao vật đó cho Kai, bắt buộc kèm inventory_upsert với basis:\"world_consequence\" trong cùng response; nếu không có op hợp lệ thì không được kể rằng Kai đã nhận hoặc sở hữu vật. " +
 '''
 if world_prompt_line not in builder:

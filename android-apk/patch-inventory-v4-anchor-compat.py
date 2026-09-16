@@ -140,18 +140,13 @@ if reward_marker not in upsert:
         raise RuntimeError("Inventory V4 compat: structural reward authority anchors missing")
     authority = '''        boolean allowedNew = false;
         JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
         JSONObject explorationForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("exploration") : null;
         JSONObject omnivaultForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("omnivault") : null;
         boolean establishedStructured = false;
         if (explorationForItem != null) establishedStructured = lower(explorationForItem.toString()).contains(lower(name));
         if (!establishedStructured && omnivaultForItem != null) establishedStructured = lower(omnivaultForItem.toString()).contains(lower(name));
-        if (!establishedStructured && beforeMadGodForItem != null) establishedStructured = lower(beforeMadGodForItem.toString()).contains(lower(name));
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
         if (existing >= 0) {
           allowedNew = true;
-        } else if (madGod) {
-          allowedNew = madGodAlreadySpawned && establishedStructured && acquisitionIntent(action);
         } else if (almond) {
           allowedNew = rollSuccess(rolls, "almondWater") || (acquisitionIntent(action) && establishedStructured);
         } else if (containsAny(action, "copy", "sao chép")) {
