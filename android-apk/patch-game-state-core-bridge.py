@@ -153,12 +153,12 @@ if warning_css not in html:
         raise RuntimeError("warning style anchor not found")
     html = html.replace(anchor, warning_css + anchor, 1)
 
-warning_render = 'const isWarning=role==="gm"&&text.startsWith("[Cảnh báo]"); if(isWarning){role="warning";text=text.replace(/^\\[Cảnh báo\\]\\s*/,"")} '
-if warning_render not in html:
-    anchor = 'function msg(role,text){'
-    if anchor not in html:
-        raise RuntimeError("warning render anchor not found")
-    html = html.replace(anchor, anchor + warning_render, 1)
+old_log_render = 'logEl.innerHTML=(state.log||[]).map(x=>"<article class=\'message "+(x.role==="player"?"player":"")+"\'><div class=\'role\'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class=\'text\'>"+esc(x.text)+"</div></article>").join("")'
+warning_log_render = 'logEl.innerHTML=(state.log||[]).map(x=>{const w=x.role!=="player"&&String(x.text||"").trim().startsWith("[Cảnh báo]");return "<article class=\'message "+(x.role==="player"?"player":"")+(w?" warning":"")+"\'><div class=\'role\'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class=\'text\'>"+esc(x.text)+"</div></article>"}).join("")'
+if warning_log_render not in html:
+    if old_log_render not in html:
+        raise RuntimeError("warning log renderer anchor not found")
+    html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
 print("Game State Core bridge applied; checked-in GameCoreFacade authority verified without source rewrite.")
