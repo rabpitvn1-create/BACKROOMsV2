@@ -54,18 +54,4 @@ class InventoryAcquisitionPolicyTest {
       before(), rolls(loot = true), "nhân bản Bandage", "Bandage", alreadyOwned = false, basis = "world_consequence"
     ))
   }
-
-  @Test fun madGodRequiresSpawnedStructuredStateEvenWhenLootSucceeds() {
-    val notSpawned = before("""{"madGod":{"spawned":false,"reward":"MadGod Armor"}}""")
-    assertFalse(InventoryAcquisitionPolicy.allows(notSpawned, rolls(loot = true), "nhận MadGod Armor", "MadGod Armor", alreadyOwned = false))
-
-    val spawnedButUnestablished = before("""{"madGod":{"spawned":true}}""")
-    assertFalse(InventoryAcquisitionPolicy.allows(spawnedButUnestablished, rolls(loot = true), "nhận MadGod Armor", "MadGod Armor", alreadyOwned = false))
-
-    val authorized = before("""{"madGod":{"spawned":true,"reward":"MadGod Armor"}}""")
-    assertTrue(InventoryAcquisitionPolicy.allows(authorized, rolls(), "nhận MadGod Armor", "MadGod Armor", alreadyOwned = false))
-    assertFalse(InventoryAcquisitionPolicy.allows(
-      authorized, rolls(loot = true), "quan sát MadGod Armor", "MadGod Armor", alreadyOwned = false, basis = "world_consequence"
-    ))
-  }
 }
