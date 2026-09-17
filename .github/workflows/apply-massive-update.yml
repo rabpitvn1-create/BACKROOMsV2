@@ -18,11 +18,13 @@ jobs:
         with:
           ref: massive-update
           fetch-depth: 0
-      - name: Harden transformer and apply update
+      - name: Harden transformers and apply update
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+
+          # Keep the permanent Omnivault removal transform marker-based.
           p = Path('android-apk/patch-massive-item-update.py')
           s = p.read_text(encoding='utf-8')
           old = 'command = sub(command, r"\\ndata class OmnivaultCommand\\(.*?\\n\\) : GameCommand\\n", "\\n", "Omnivault command")'
@@ -48,10 +50,61 @@ jobs:
               state = state[:start] + "\\n" + state[end:]'''
           if old_state in s:
               s = s.replace(old_state, new_state, 1)
+
+          # Healing definitions stay usable, but their generated regression must
+          # no longer assert the retired generic-loot roll.
+          marker = '''# Core/runtime must not retain an executable Omnivault system.\n'''
+          cleanup = r'''# Generated healing tests may still carry the pre-update generic-loot assertion.
+          healing_test = TESTS / "HealingItemTest.kt"
+          if healing_test.exists():
+              healing_text = read(healing_test)
+              healing_text = sub(
+                  healing_text,
+                  r"\n\s*@Test fun healingItemsShareTheOrdinaryLootGate\(\) \{.*?\n\s*\}",
+                  "",
+                  "Healing generic-loot regression",
+              )
+              write(healing_test, healing_text)
+
+          # Rewrite the generated healing prompt so it describes effects only;
+          # acquisition remains exclusively controlled by Entity/ItemBox tables.
+          if MAIN.exists():
+              main = read(MAIN)
+              main = sub(
+                  main,
+                  r'\n\s*String healingItemDirective = "HEALING ITEM HARD LOCK:.*?;\n',
+                  '\n    String healingItemDirective = "HEALING ITEM DATA: Băng gạc hồi đúng 10 HP; Thuốc sát trùng hồi đúng 20 HP. Hai Item này không có generic loot roll. Việc cấp Item chỉ do Android Entity drop hoặc ItemBox drop quyết định.";\n',
+                  "Healing prompt authority",
+              )
+              write(MAIN, main)
+
+          '''
+          if cleanup not in s and marker in s:
+              s = s.replace(marker, cleanup + marker, 1)
           p.write_text(s, encoding='utf-8')
+
+          # Character equipment generator historically used STORE/WITHDRAW as
+          # the end marker for EQUIP/UNEQUIP. Those operations no longer exist.
+          g = Path('android-apk/patch-character-status-equipment-system.py')
+          gs = g.read_text(encoding='utf-8')
+          old_block = '''start = engines.find('      ItemCommand.Operation.EQUIP -> {')
+          end = engines.find('      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW', start)
+          if start < 0 or end < 0:
+              raise RuntimeError("InventoryEngine equipment operation block missing")
+          new_ops = '''
+          new_block = '''start = engines.find('      ItemCommand.Operation.EQUIP -> {')
+          end = engines.find('      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW', start)
+          if end < 0 and start >= 0:
+              end = engines.find('    }\\n  }\\n}\\n\\nobject PartyEngine', start)
+          if start < 0 or end < 0:
+              raise RuntimeError("InventoryEngine equipment operation block missing")
+          new_ops = '''
+          if old_block in gs:
+              gs = gs.replace(old_block, new_block, 1)
+          g.write_text(gs, encoding='utf-8')
           PY
           python3 android-apk/patch-massive-item-update.py
-          python3 -m py_compile android-apk/patch-massive-item-update.py android-apk/patch-character-status-equipment-system.py android-apk/patch-kai-resource-policy-final.py
+          python3 -m py_compile android-apk/patch-massive-item-update.py android-apk/patch-character-status-equipment-system.py android-apk/patch-kai-resource-policy-final.py android-apk/patch-search-action-false-warning.py
           git diff --check
       - name: Commit transformed source
         run: |
@@ -63,5 +116,5 @@ jobs:
             echo 'No transformed changes to commit.'
             exit 0
           fi
-          git commit -m 'Harden Omnivault removal transform'
+          git commit -m 'Harden item authority generators'
           git push origin HEAD:massive-update
