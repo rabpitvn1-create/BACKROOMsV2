@@ -24,6 +24,41 @@ data class ItemCommand(
   enum class Operation { PICKUP, DROP, USE, TRANSFER, EQUIP, UNEQUIP }
 }
 
+data class PartyCommand(
+  override val commandId: String,
+  override val turnId: String?,
+  override val actorId: String,
+  override val targetId: String,
+  override val source: CommandSource,
+  val operation: Operation,
+  val consentConfirmed: Boolean = false,
+  val targetPresent: Boolean = false
+) : GameCommand {
+  enum class Operation { ADD, REMOVE, SET_LEADER, FOLLOW, SEPARATE, QUERY }
+}
+
+data class StatusCommand(
+  override val commandId: String,
+  override val turnId: String?,
+  override val actorId: String,
+  override val targetId: String = actorId,
+  override val source: CommandSource,
+  val operation: Operation,
+  val effect: StatusEffect? = null,
+  val statusId: String? = effect?.id
+) : GameCommand {
+  enum class Operation { APPLY, REMOVE, UPDATE, QUERY }
+}
+
+data class TimeAdvanceCommand(
+  override val commandId: String,
+  override val turnId: String?,
+  override val actorId: String,
+  override val targetId: String? = null,
+  override val source: CommandSource,
+  val minutes: Int,
+  val reason: String
+) : GameCommand
 
 data class QueryCommand(
   override val commandId: String,
