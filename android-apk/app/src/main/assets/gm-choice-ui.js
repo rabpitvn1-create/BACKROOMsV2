@@ -49,6 +49,10 @@
 
     try {
       if (state && state.player) addTerm(set, state.player.name);
+      if (state && state.location) {
+        var locationHead = String(state.location).split('—')[0];
+        locationHead.split('/').forEach(function(x){ addTerm(set, x); });
+      }
       if (state && Array.isArray(state.party)) state.party.forEach(function(x){ addTerm(set, typeof x === 'string' ? x : x && (x.name || x.id)); });
       if (state && Array.isArray(state.inventory)) state.inventory.forEach(function(x){ addTerm(set, typeof x === 'string' ? x : x && x.name); });
       if (state && state.combat) {
@@ -95,11 +99,11 @@
     if (cursor < source.length) container.appendChild(document.createTextNode(source.slice(cursor)));
   }
 
-  function lastGmChoiceIndex() {
+  function lastGmIndex() {
     if (!state || !Array.isArray(state.log)) return -1;
     for (var i = state.log.length - 1; i >= 0; i--) {
       var entry = state.log[i];
-      if (entry && entry.role !== 'player' && Array.isArray(entry.choices) && entry.choices.length) return i;
+      if (entry && entry.role !== 'player') return i;
     }
     return -1;
   }
@@ -126,7 +130,7 @@
     window.__combatBusy = true;
     syncComposer();
     if (typeof window.render === 'function') window.render();
-    if (status) status.textContent = 'Đang xử lý Combat Turn ' + ((state.combat && state.combat.round) || 1) + '…';
+    if (status) status.textContent = 'Đang xử lý Lượt chiến đấu ' + ((state.combat && state.combat.round) || 1) + '…';
     Android.submitTurn(JSON.stringify(state), '__combat:' + String(choice.id || '').toUpperCase());
   }
 
@@ -164,7 +168,7 @@
     box.className = 'gm-choices';
     var label = document.createElement('div');
     label.className = 'combat-turn-label';
-    label.textContent = 'COMBAT TURN ' + (combat.round || 1) + ' · ' + (combat.currentActor || 'Nhân vật');
+    label.textContent = 'LƯỢT CHIẾN ĐẤU ' + (combat.round || 1) + ' · ' + (combat.currentActor || 'Nhân vật');
     box.appendChild(label);
     var choices = Array.isArray(combat.choices) ? combat.choices : [];
     choices.forEach(function(choice){
@@ -179,7 +183,7 @@
   function appendExplorerChoices(article, entry, index) {
     if (!entry || !Array.isArray(entry.choices) || !entry.choices.length) return;
     if (state.combat && state.combat.active && Number(state.combat.logIndex) === Number(index)) return;
-    var actionable = index === lastGmChoiceIndex() && !(state.combat && state.combat.active) && !window.__combatBusy;
+    var actionable = index === lastGmIndex() && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
     box.className = 'gm-choices explorer-choices';
     entry.choices.slice(0,3).forEach(function(choice, choiceIndex){
@@ -268,8 +272,8 @@
       if (typeof window.render === 'function') window.render();
       if (status) {
         status.textContent = state.combat && state.combat.active
-          ? 'Combat Turn ' + state.combat.round + ' · ' + state.combat.currentActor
-          : 'Combat kết thúc. Explorer Turn vẫn là ' + state.turn + '.';
+          ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
+          : 'Chiến đấu kết thúc. Explorer Turn vẫn là ' + state.turn + '.';
       }
     } catch (error) {
       window.__combatBusy = false;
