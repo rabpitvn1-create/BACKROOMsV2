@@ -703,7 +703,10 @@ object CombatRuntime {
         val damage = if (c.entityKey == DIEP_MINH_KEY) {
           percentDamage(c.playerMaxHp, DIEP_MINH_ATTACK_PERCENT)
         } else {
-          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)
+          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
+          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
+            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
         }
         val hp = max(0, c.playerHp - damage)
         c = c.copy(playerHp = hp, momentum = max(-3, c.momentum - 1))

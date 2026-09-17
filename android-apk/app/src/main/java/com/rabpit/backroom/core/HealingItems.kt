@@ -3,10 +3,6 @@ package com.rabpit.backroom.core
 const val BANDAGE_ID = "medical:bandage"
 const val ANTISEPTIC_ID = "medical:antiseptic"
 
-/**
- * Canonical healing values recovered from the existing healing-item design.
- * Healing is applied by the authoritative Inventory runtime after a successful USE mutation.
- */
 object HealingItems {
   const val DROP_ROLL_KEY = "loot"
   const val BANDAGE_NAME = "Băng gạc"
@@ -17,10 +13,8 @@ object HealingItems {
   private fun normalizedName(value: String): String = value.trim().lowercase()
 
   fun healAmount(item: ItemStack): Int = when {
-    item.itemId == BANDAGE_ID || item.archetypeId == BANDAGE_ID ||
-      normalizedName(item.name) in setOf("băng gạc", "bang gac", "bandage") -> BANDAGE_HEAL_HP
-    item.itemId == ANTISEPTIC_ID || item.archetypeId == ANTISEPTIC_ID ||
-      normalizedName(item.name) in setOf("thuốc sát trùng", "thuoc sat trung", "antiseptic") -> ANTISEPTIC_HEAL_HP
+    item.itemId == BANDAGE_ID || item.archetypeId == BANDAGE_ID || normalizedName(item.name) in setOf("băng gạc", "bang gac", "bandage") -> BANDAGE_HEAL_HP
+    item.itemId == ANTISEPTIC_ID || item.archetypeId == ANTISEPTIC_ID || normalizedName(item.name) in setOf("thuốc sát trùng", "thuoc sat trung", "antiseptic") -> ANTISEPTIC_HEAL_HP
     else -> 0
   }
 
@@ -36,7 +30,6 @@ object HealingItems {
       archetypeId = id,
       contentState = ContentState.NONE,
       metadata = item.metadata + mapOf(
-        "directUse" to "true",
         "consumable" to "true",
         "consumedOnUse" to "true",
         "healHp" to heal.toString(),

@@ -94,7 +94,7 @@ object KnowledgeContextEngine {
         mutability = json.getString("mutability"),
         priority = json.optInt("priority", 80),
         tags = strings(json.optJSONArray("tags")),
-        references = strings(json.optJSONArray("references")),
+        references = rawStrings(json.optJSONArray("references")),
         affordances = strings(json.optJSONArray("affordances")),
         source = SourceRef(source.getString("document"), source.optString("anchor"))
       )
@@ -109,6 +109,35 @@ object KnowledgeContextEngine {
       return out.mapValues { it.value.toSet() }
     }
     return Database(records.toMap(), index { it.tags }, index { it.affordances })
+  }
+
+  private fun visualRecordId(rawKey: String): String {
+    val key = rawKey.trim().lowercase(Locale.ROOT)
+    if (key.isBlank()) return ""
+    return "ENTITY.VISUAL." + key.replace("-", "_").uppercase(Locale.ROOT)
+  }
+
+  private fun firstAppearanceEntityKey(rolls: JSONObject): String {
+    val encounter = rolls.optJSONObject("entityEncounter")
+    if (encounter == null || !encounter.optBoolean("success", false)) return ""
+    val direct = rolls.optString("roamingEntityKey", "").trim()
+    if (direct.isNotEmpty()) return direct
+    return rolls.optJSONArray("entityEncounterKeys")?.optString(0, "")?.trim().orEmpty()
+  }
+
+  @JvmStatic
+  fun visualForEntity(context: Context, rawKey: String): String {
+    val id = visualRecordId(rawKey)
+    if (id.isBlank()) return ""
+    return database(context.applicationContext).records[id]?.text.orEmpty()
+  }
+
+  @JvmStatic
+  fun firstAppearanceVisual(context: Context, rollsJson: String): String {
+    val rolls = runCatching { JSONObject(rollsJson) }.getOrElse { return "" }
+    val key = firstAppearanceEntityKey(rolls)
+    if (key.isBlank()) return ""
+    return visualForEntity(context, key)
   }
 
   private class Builder(
@@ -134,11 +163,13 @@ object KnowledgeContextEngine {
       resolvePresence()
       addMandatory()
       addCurrentLevel()
+      addCurrentSublevel()
       addPresentRuntimeCards()
       addRelationships()
       addDirectStructuredLookups()
       addSceneAffordances()
       addStateDrivenRecords()
+      addCurrentEntityVisual()
       expandReferences()
 
       val records = budgetedRecords()
@@ -172,13 +203,47 @@ object KnowledgeContextEngine {
         "WRITING.KNOWLEDGE_BOUNDARY",
         "WRITING.COMPETENCE",
         "WRITING.PLAYER_AGENCY",
-        "CHAR.KAI.RUNTIME_CORE"
+        "CHAR.KAI.RUNTIME_CORE",
+        "WORLD.SRU.CORE"
       ).forEach { add(it, "mandatory hard context") }
     }
 
     private fun addCurrentLevel() {
       val number = currentLevel()
       add("LEVEL.%02d".format(Locale.ROOT, number), "current level direct id")
+    }
+
+    private fun addCurrentSublevel() {
+      val parentId = "LEVEL.%02d".format(Locale.ROOT, currentLevel())
+      val sublevels = db.records.values.asSequence()
+        .filter { it.domain == "SUBLEVEL" && it.kind == "wiki-reference" && parentId in it.references }
+        .toList()
+      if (sublevels.isEmpty()) return
+
+      val locked = normalize(
+        state.optJSONObject("flags")
+          ?.optJSONObject("exploration")
+          ?.optString("sublevelId", "")
+          .orEmpty()
+      )
+      if (locked.isNotEmpty()) {
+        val record = sublevels.firstOrNull { normalize(it.id) == locked || locked in it.tags }
+        if (record != null) {
+          add(record.id, "live exploration sublevel lock")
+          return
+        }
+      }
+
+      fun exactTagMention(tag: String): Boolean {
+        if (tag.isBlank()) return false
+        if (!tag.startsWith("level ")) return sceneText.contains(tag)
+        val pattern = Regex("(^|[^\\p{L}\\p{N}.])" + Regex.escape(tag) + "($|[^\\p{L}\\p{N}.])")
+        return pattern.containsMatchIn(sceneText)
+      }
+
+      sublevels.sortedBy { it.id }
+        .firstOrNull { record -> record.tags.sortedByDescending { it.length }.any(::exactTagMention) }
+        ?.let { add(it.id, "explicit sublevel in live scene/state") }
     }
 
     private fun addPresentRuntimeCards() {
@@ -200,6 +265,15 @@ object KnowledgeContextEngine {
 
     private fun addDirectStructuredLookups() {
       val direct = linkedSetOf<String>()
+      // SRU_RUNTIME_CANON_V1
+      if (hasAny(actionText, "sru", "special response unit", "13 numbers", "thirteen numbers", "13 con số", "number ø")) direct += "WORLD.SRU.CORE"
+      if (hasAny(actionText, "number i", "number ix", "number x", "number xiii", "alastor", "vassago")) direct += "WORLD.SRU.NUMBERS"
+      if (hasAny(actionText, "eric ko", "final order", "objective absolute", "method sovereign", "last standing")) direct += "WORLD.SRU.COMMAND"
+      if (hasAny(actionText, "hội đồng bảo an liên không thời gian", "huyết nha", "nhiệm vụ sru")) direct += "WORLD.SRU.MISSIONS"
+      if (hasAny(actionText, "last judgement", "aftermath assessment", "phán xét sru")) direct += "WORLD.SRU.JUDGEMENT"
+      if (hasAny(actionText, "liz", "xiii ½", "xiii 1/2", "zeiss")) direct += "WORLD.SRU.LIZ"
+      if (hasAny(actionText, "command chamber", "number hall", "zero gate", "huấn luyện black vatican")) direct += "WORLD.SRU.BASE_TRAINING"
+      if (hasAny(actionText, "thirteenfold", "full thirteen", "the backrooms")) direct += "STORY.SRU.THIRTEENFOLD"
       if (hasAny(actionText, "argus", "terrain read")) direct += "CHAR.IRIS.ARGUS"
       if (hasAny(actionText, "thousandfold")) direct += "CHAR.IRIS.THOUSANDFOLD"
       if (hasAny(actionText, "ivory", "ebony")) direct += "CHAR.IRIS.IVORY_EBONY"
@@ -215,15 +289,21 @@ object KnowledgeContextEngine {
         direct += "CHAR.KAI.DEVIL_TRIGGER"
         if ("syvial" in presentActors) direct += "CHAR.SYVIAL.DEVIL_TRIGGER"
       }
+      if (hasAny(actionText, "nói", "hỏi", "trả lời", "trò chuyện", "nói chuyện", "dialogue", "talk", "tell")) {
+        direct += "WRITING.DIALOGUE"
+      }
       direct.forEach { add(it, "direct structured lookup") }
 
-      // Exact entity/item terms use tag indexes, not semantic retrieval.
-      tokenizeTags(actionText).forEach { tag ->
-        db.tagIndex[tag].orEmpty().forEach { id ->
-          val r = db.records[id] ?: return@forEach
-          if (r.domain == "ENTITY" || r.domain == "ITEM") add(id, "explicit structured tag: $tag")
+      // Registry-driven exact tags. Adding a new Entity/Item record with tags makes it
+      // discoverable without adding a new prompt branch or hardcoded name here.
+      db.tagIndex.entries.asSequence()
+        .filter { (tag, _) -> tag.length >= 3 && actionText.contains(tag) }
+        .forEach { (tag, ids) ->
+          ids.forEach { id ->
+            val r = db.records[id] ?: return@forEach
+            if (r.domain == "ENTITY" || r.domain == "ITEM") add(id, "explicit structured tag: $tag")
+          }
         }
-      }
     }
 
     private fun addSceneAffordances() {
@@ -243,6 +323,25 @@ object KnowledgeContextEngine {
           if (id.startsWith("CHAR.SYVIAL.") && "syvial" !in presentActors) return@forEach
           add(id, "scene affordance: $affordance")
         }
+      }
+    }
+
+    private fun addCurrentEntityVisual() {
+      val keys = linkedSetOf<String>()
+      val combat = state.optJSONObject("combat")
+      if (combat != null && combat.optBoolean("active", false)) {
+        combat.optString("entityKey", "").trim().takeIf { it.isNotEmpty() }?.let(keys::add)
+      }
+      state.optJSONObject("flags")
+        ?.optString("entityEncounterKey", "")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+        ?.let(keys::add)
+      firstAppearanceEntityKey(rolls).takeIf { it.isNotEmpty() }?.let(keys::add)
+
+      keys.forEach { key ->
+        val id = visualRecordId(key)
+        if (id.isNotEmpty()) add(id, "active/new Entity PNG visual lock: $key")
       }
     }
 
@@ -380,8 +479,7 @@ object KnowledgeContextEngine {
       if (flags == null) return false
       val iris = normalize(flags.optJSONObject("iris")?.optString("continuity", "").orEmpty())
       val syvial = normalize(flags.optJSONObject("syvial")?.optString("continuity", "").orEmpty())
-      return iris.contains("separated") || syvial.contains("separated") ||
-        (presentActors.size == 1 && state.optInt("turn", 1) <= 3)
+      return iris.contains("separated") || syvial.contains("separated")
     }
   }
 
@@ -395,6 +493,16 @@ object KnowledgeContextEngine {
   private fun compactArray(array: JSONArray, limit: Int): JSONArray {
     val out = JSONArray()
     for (i in 0 until minOf(array.length(), limit)) out.put(array.opt(i))
+    return out
+  }
+
+  private fun rawStrings(array: JSONArray?): Set<String> {
+    if (array == null) return emptySet()
+    val out = linkedSetOf<String>()
+    for (i in 0 until array.length()) {
+      val value = array.optString(i, "").trim()
+      if (value.isNotEmpty()) out += value
+    }
     return out
   }
 

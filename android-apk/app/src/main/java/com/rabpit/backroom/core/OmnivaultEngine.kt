@@ -5,6 +5,9 @@ object OmnivaultEngine {
 
   fun execute(state: GameState, command: OmnivaultCommand): ExecutionResult {
     if (command.actorId != KAI_ID) return invalid(state, "omnivault_owner_only")
+    if (command.operation == OmnivaultCommand.Operation.SCAN || command.operation == OmnivaultCommand.Operation.COPY) {
+      return invalid(state, "omnivault_operation_retired")
+    }
     if (command.isLiving) return invalid(state, "living_target_forbidden")
     if (command.quantity <= 0) return invalid(state, "quantity_must_be_positive")
     if (command.operation == OmnivaultCommand.Operation.SCAN && command.isLargeAssembly) return invalid(state, "large_assembly_forbidden")

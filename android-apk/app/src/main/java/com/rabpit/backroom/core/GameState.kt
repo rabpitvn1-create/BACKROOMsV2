@@ -14,12 +14,18 @@ object KaiStartingEquipment {
   val slots: Map<String, String> = linkedMapOf(
     "weapon" to KAI_WHITE_WRAITH_ID,
     "armor" to KAI_BLACKBLOOD_ARMOR_ID,
+    "head" to KAI_DEMON_JAW_MASK_ID,
+    "gauntlets" to KAI_TALON_GAUNTLETS_ID,
+    "greaves" to KAI_PHANTOM_GREAVES_ID,
     "ring" to KAI_OMNIVAULT_RING_ID
   )
 
   fun displayName(itemId: String): String? = when (itemId) {
     KAI_WHITE_WRAITH_ID -> WEAPON_NAME
     KAI_BLACKBLOOD_ARMOR_ID -> ARMOR_NAME
+    KAI_DEMON_JAW_MASK_ID -> "Demon Jaw Mask"
+    KAI_TALON_GAUNTLETS_ID -> "Talon Gauntlets"
+    KAI_PHANTOM_GREAVES_ID -> "Phantom Greaves"
     KAI_OMNIVAULT_RING_ID -> RING_NAME
     else -> null
   }
@@ -29,6 +35,9 @@ object KaiStartingEquipment {
     return when {
       key.contains("w.w magnum") || key.contains("white wraith") || key.contains("wraith magnum") -> "weapon"
       key.contains("blackblood armor") || key.contains("black blood armor") -> "armor"
+      key.contains("demon jaw") -> "head"
+      key.contains("talon gauntlet") -> "gauntlets"
+      key.contains("phantom greave") -> "greaves"
       key.contains("omnivault ring") || key.contains("nhẫn omnivault") || key.contains("nhẫn vạn tàng") || key.contains("van tang") -> "ring"
       else -> null
     }
@@ -96,7 +105,10 @@ data class CharacterState(
   val equipmentId: String = id,
   val statusIds: Set<String> = emptySet(),
   val physiology: PhysiologyState = PhysiologyState(),
-  val metadata: Map<String, String> = emptyMap()
+  val metadata: Map<String, String> = emptyMap(),
+  // Appended to preserve all existing positional CharacterState constructor call sites.
+  val statProfile: CharacterStatProfile = CharacterStatProfiles.forId(id),
+  val vitalState: CharacterVitalState = CharacterStatProfiles.initialVitals(id)
 )
 
 data class PartyState(val leaderId: String = KAI_ID, val memberIds: List<String> = listOf(KAI_ID), val maxMembers: Int = 4)
@@ -146,7 +158,7 @@ data class GameState(
   val metadata: Map<String, String> = emptyMap()
 ) {
   companion object {
-    fun initial(): GameState = GameState(
+    fun initial(): GameState = CharacterEquipmentSystem.seedFresh(GameState(
       characters = mapOf(
         KAI_ID to CharacterState(
           KAI_ID,
@@ -154,10 +166,23 @@ data class GameState(
           avatarRef = "avatars/kai_avatar.png",
           physiology = PhysiologyState.freshRunBaseline(),
           metadata = mapOf("inventoryProfile" to "kai")
-        )
+        ),
+        AN_NHIEN_ID to AnNhienCanon.character(),
+        IRIS_ID to SpecialFollowersCanon.irisCharacter(),
+        SYVIAL_ID to SpecialFollowersCanon.syvialCharacter()
       ),
-      inventories = mapOf(KAI_ID to InventoryState(KAI_ID)),
-      equipment = mapOf(KAI_ID to EquipmentState(KAI_ID, KaiStartingEquipment.slots))
-    )
+      inventories = mapOf(
+        KAI_ID to InventoryState(KAI_ID),
+        AN_NHIEN_ID to AnNhienCanon.inventory(),
+        IRIS_ID to InventoryState(IRIS_ID),
+        SYVIAL_ID to InventoryState(SYVIAL_ID)
+      ),
+      equipment = mapOf(
+        KAI_ID to EquipmentState(KAI_ID, KaiStartingEquipment.slots),
+        AN_NHIEN_ID to AnNhienCanon.equipment(),
+        IRIS_ID to EquipmentState(IRIS_ID, SpecialFollowersCanon.irisEquipmentSlots),
+        SYVIAL_ID to EquipmentState(SYVIAL_ID, SpecialFollowersCanon.syvialEquipmentSlots)
+      )
+    ))
   }
 }

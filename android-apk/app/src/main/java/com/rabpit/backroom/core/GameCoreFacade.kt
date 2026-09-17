@@ -85,7 +85,7 @@ class GameCoreFacade private constructor(
       return response(true, result, "player_pickup_unavailable", "validation_rejected", reply)
     }
 
-    if (isDirectPlayerPickupAction(action) || interpreted.candidates.any { it.intent == GameIntent.PICKUP_ITEM }) {
+    if (isDirectPlayerPickupAction(action)) {
       abortAction("player_pickup_unavailable")
       val current = repository.load()
       val result = syncLegacy(legacy, current, incrementTurn = false)
@@ -321,6 +321,11 @@ class GameCoreFacade private constructor(
     return CharacterDetailJson.encodeParty(CharacterDetailProjector.projectParty(fresh)).toString()
   }
 
+  fun currentPartyDetails(): String {
+    val state = CharacterEquipmentSystem.normalize(repository.load())
+    return CharacterDetailJson.encodeParty(CharacterDetailProjector.projectParty(state)).toString()
+  }
+
   fun currentCoreState(): String = GameStateCodec.encode(repository.load())
   fun clear() = repository.clear()
   fun processInventoryUiAction(
@@ -411,6 +416,8 @@ class GameCoreFacade private constructor(
         )
       }
     }
+
+    current.filterKeys { EquipmentCatalog.definition(it) != null }.forEach { (id, stack) -> desiredById[id] = stack }
 
     (current.keys + desiredById.keys).sorted().forEachIndexed { index, id ->
       val old = current[id]?.quantity ?: 0
