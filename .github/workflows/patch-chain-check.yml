@@ -1,0 +1,37 @@
+name: Patch Chain Check
+
+on:
+  push:
+    branches:
+      - refactor/issue-43-final-cleanup
+    paths:
+      - android-apk/**
+      - .github/workflows/patch-chain-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  patch-chain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/issue-43-final-cleanup
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install patch dependencies
+        run: python -m pip install pillow
+      - name: Sync runtime assets
+        run: python android-apk/sync-kai-sru-assets.py
+      - name: Apply runtime patch chain
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
+          for script in "${scripts[@]}"; do
+            echo "==> $script"
+            python3 "android-apk/$script"
+          done
+          git diff --check
