@@ -41,6 +41,8 @@
   var status = document.getElementById('status');
   var defaultPlaceholder = action ? action.getAttribute('placeholder') : '';
   window.__combatBusy = false;
+  window.__combatAnimationToken = 0;
+  var COMBAT_PHASE_MS = 1000;
 
   var semanticPriority = {generic:0,location:1,item:2,effect:3,skill:4,character:5,entity:6};
   var knownSkills = [
@@ -232,8 +234,11 @@
     box.className = 'gm-choices';
     var label = document.createElement('div');
     label.className = 'combat-turn-label';
+    var visualIndex = Number.isInteger(window.__combatVisualActorIndex) ? window.__combatVisualActorIndex : Number(combat.actorIndex || 0);
+    var visualParticipant = Array.isArray(combat.participants) && combat.participants[visualIndex] ? combat.participants[visualIndex] : null;
+    var visualActor = visualParticipant && (visualParticipant.name || visualParticipant.id) ? (visualParticipant.name || visualParticipant.id) : (combat.currentActor || 'Nhân vật');
     label.appendChild(document.createTextNode('LƯỢT CHIẾN ĐẤU ' + (combat.round || 1) + ' · '));
-    appendRichText(label, combat.currentActor || 'Nhân vật', entry, [{text:combat.currentActor || 'Nhân vật',type:'character'}]);
+    appendRichText(label, visualActor, entry, [{text:visualActor,type:'character'}]);
     box.appendChild(label);
     var choices = Array.isArray(combat.choices) ? combat.choices : [];
     choices.forEach(function(choice){
@@ -336,22 +341,75 @@
     syncComposer();
   };
 
+  function playCombatPhase(events, phase) {
+    var phaseEvents = (Array.isArray(events) ? events : []).filter(function(event){ return event && event.phase === phase; });
+    phaseEvents.forEach(function(event, index){
+      setTimeout(function(){
+        if (typeof window.backroomPlayCombatFeedback === 'function') window.backroomPlayCombatFeedback(event);
+      }, Math.min(index * 150, 450));
+    });
+  }
+
+  function finishCombatAnimation(token) {
+    if (token !== window.__combatAnimationToken) return;
+    window.__combatBusy = false;
+    if (typeof busy !== 'undefined') busy = false;
+    if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
+    if (typeof window.render === 'function') window.render();
+    if (status) {
+      status.textContent = state.combat && state.combat.active
+        ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
+        : 'Chiến đấu kết thúc. Explorer Turn vẫn là ' + state.turn + '.';
+    }
+  }
+
   window.backroomCombatTurn = function(json){
     try {
-      state = JSON.parse(json);
+      var nextState = JSON.parse(json);
+      state = nextState;
       if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
-      if (typeof busy !== 'undefined') busy = false;
-      window.__combatBusy = false;
       if (action) action.value = '';
       try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
-      if (typeof window.render === 'function') window.render();
-      if (status) {
-        status.textContent = state.combat && state.combat.active
-          ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
-          : 'Chiến đấu kết thúc. Explorer Turn vẫn là ' + state.turn + '.';
+
+      var combat = state.combat || {};
+      var events = Array.isArray(combat.feedbackEvents) ? combat.feedbackEvents : [];
+      var hasResolvedActor = Number.isInteger(combat.resolvedActorIndex);
+      if (!hasResolvedActor) {
+        window.__combatBusy = false;
+        if (typeof busy !== 'undefined') busy = false;
+        if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
+        if (typeof window.render === 'function') window.render();
+        syncComposer();
+        return;
       }
+
+      window.__combatBusy = true;
+      if (typeof busy !== 'undefined') busy = true;
+      var token = ++window.__combatAnimationToken;
+      var entityKey = combat.entity && combat.entity.key ? combat.entity.key : '';
+      if (typeof window.backroomSetCombatVisualActor === 'function') {
+        window.backroomSetCombatVisualActor(combat.resolvedActorIndex, entityKey);
+      }
+      if (typeof window.render === 'function') window.render();
+      syncComposer();
+      if (status) status.textContent = 'Đang xử lý lượt của ' + (combat.resolvedActorName || 'nhân vật') + '…';
+
+      playCombatPhase(events, 'actor');
+      var delay = COMBAT_PHASE_MS;
+      if (combat.resolvedEntityTurn === true) {
+        setTimeout(function(){
+          if (token !== window.__combatAnimationToken) return;
+          if (status) status.textContent = 'Entity đang phản hồi…';
+          playCombatPhase(events, 'entity');
+        }, COMBAT_PHASE_MS);
+        delay += COMBAT_PHASE_MS;
+      }
+      setTimeout(function(){ finishCombatAnimation(token); }, delay);
     } catch (error) {
+      ++window.__combatAnimationToken;
       window.__combatBusy = false;
+      if (typeof busy !== 'undefined') busy = false;
+      if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
       if (status) status.textContent = 'Combat state không hợp lệ.';
       syncComposer();
     }
