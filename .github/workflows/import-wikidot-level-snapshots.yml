@@ -1,0 +1,134 @@
+name: Import Wikidot Level Snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/level-0-6-wiki-snapshots
+    paths:
+      - '.github/workflows/import-wikidot-level-snapshots.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-snapshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/level-0-6-wiki-snapshots
+
+      - name: Install image tooling
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y imagemagick
+
+      - name: Download and normalize verified Wikidot images
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='android-apk/app/src/main/assets/level_snapshots/wiki'
+          rm -rf "$ROOT"
+          mkdir -p "$ROOT"
+
+          download() {
+            local level="$1" index="$2" page="$3" url="$4"
+            local dir="$ROOT/level_${level}"
+            local out="$dir/$(printf '%02d' "$index").webp"
+            local tmp
+            mkdir -p "$dir"
+            tmp="$(mktemp)"
+            echo "Downloading Level $level #$index: $url"
+            curl --fail --location --retry 3 --retry-delay 2 \
+              --connect-timeout 20 --max-time 120 \
+              --user-agent 'Mozilla/5.0 (GitHub Actions; BACKROOMsV2 snapshot importer)' \
+              --referer "$page" \
+              "$url" --output "$tmp"
+            local mime
+            mime="$(file --brief --mime-type "$tmp")"
+            case "$mime" in
+              image/jpeg|image/png|image/webp) ;;
+              *) echo "Unexpected MIME type $mime for $url" >&2; exit 1 ;;
+            esac
+            local width height
+            read -r width height < <(identify -format '%w %h' "$tmp")
+            if (( width < 480 || height < 270 )); then
+              echo "Image is too small (${width}x${height}): $url" >&2
+              exit 1
+            fi
+            convert "$tmp" -auto-orient -strip -resize '1600x1600>' -quality 84 "$out"
+            test -s "$out"
+            rm -f "$tmp"
+          }
+
+          P0='https://backrooms-wiki.wikidot.com/level-0'
+          download 0 1 "$P0" 'https://backrooms-wiki.wikidot.com/local--files/level-0/OGLevel0.jpg'
+          download 0 2 "$P0" 'https://backrooms-wiki.wdfiles.com/local--files/level-0/2'
+          download 0 3 "$P0" 'https://backrooms-wiki.wikidot.com/local--files/level-0/3'
+          download 0 4 "$P0" 'https://backrooms-wiki.wikidot.com/local--files/level-0/4'
+          download 0 5 "$P0" 'https://backrooms-wiki.wikidot.com/local--files/level-0/5'
+          download 0 6 "$P0" 'https://backrooms-wiki.wdfiles.com/local--files/level-0/6'
+
+          P1='https://backrooms-wiki.wikidot.com/level-1'
+          download 1 1 "$P1" 'https://backrooms-wiki.wdfiles.com/local--files/level-1/artistdiesinme.jpg'
+          download 1 2 "$P1" 'https://backrooms-sandbox-2.wdfiles.com/local--files/collab%3Alevel-1/int%C3%A9rieur'
+          download 1 3 "$P1" 'https://praetor.wdfiles.com/local--files/level-1/flickering'
+          download 1 4 "$P1" 'https://backrooms-sandbox-2.wdfiles.com/local--files/collab%3Alevel-1/caisse'
+
+          P2='https://backrooms-wiki.wikidot.com/level-2'
+          download 2 1 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2first.jpg'
+          download 2 2 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2piping.jpg'
+          download 2 3 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent.jpg'
+          download 2 4 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent2.jpg'
+          download 2 5 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2door.jpg'
+          download 2 6 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2macchinahome.jpg'
+          download 2 7 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2stragglersbase.jpg'
+          download 2 8 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2trainprogress.jpg'
+          download 2 9 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2track.jpg'
+          download 2 10 "$P2" 'https://backrooms-wiki.wdfiles.com/local--files/level-2/2dark.jpg'
+
+          P3='https://backrooms-wiki.wikidot.com/level-3'
+          download 3 1 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3FirstPhoto'
+          download 3 2 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Thin'
+          download 3 3 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3SecondPhoto'
+          download 3 4 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Dark'
+          download 3 5 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/DarkLevel3'
+          download 3 6 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-5/Level3ElectricalRoom2'
+          download 3 7 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3AssemblyLine'
+          download 3 8 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-5/Level3AssemblyLine2'
+          download 3 9 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3BoilerRoom'
+          download 3 10 "$P3" 'https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Sanctum'
+
+          P4='https://backrooms-wiki.wikidot.com/level-4'
+          download 4 1 "$P4" 'https://backrooms-wiki.wdfiles.com/local--files/level-4/Level-4-new'
+
+          P5='https://backrooms-wiki.wikidot.com/level-5'
+          download 5 1 "$P5" 'https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-1-cc.png'
+          download 5 2 "$P5" 'https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-2-cc.jpg'
+          download 5 3 "$P5" 'https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-3-cc.jpg'
+
+          P6='https://backrooms-wiki.wikidot.com/level-6'
+          download 6 1 "$P6" 'https://backrooms-wiki.wdfiles.com/local--files/level-6/level6map.jpg'
+
+          for level in 0 1 2 3 4 5 6; do
+            count="$(find "$ROOT/level_${level}" -maxdepth 1 -type f -name '*.webp' | wc -l)"
+            if (( count < 1 || count > 10 )); then
+              echo "Invalid Level $level pool size: $count" >&2
+              exit 1
+            fi
+            echo "Level $level: $count image(s)"
+          done
+
+      - name: Commit imported assets
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/assets/level_snapshots/wiki
+          if git diff --cached --quiet; then
+            echo 'No asset changes.'
+            exit 0
+          fi
+          git commit -m 'Import Wikidot level snapshot pool'
+          git push origin HEAD:feature/level-0-6-wiki-snapshots
