@@ -127,6 +127,9 @@ jobs:
           jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
+          node --check android-apk/app/src/main/assets/snapshot-ui.js
+          node --check android-apk/app/src/main/assets/gm-choice-ui.js
+          node --check android-apk/app/src/main/assets/inventory-ui.js
 
       - name: Validate Game Master configuration
         run: |
