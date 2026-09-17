@@ -68,7 +68,7 @@ jobs:
           text = text[:start] + block + text[end:]
 
           marker = 'for path in APK.glob("*.py"):\n'
-          sanitizer = '''for _name in active_clean:\n    _path = APK / _name\n    if not _path.exists():\n        continue\n    _text = _path.read_text(encoding="utf-8")\n    _text = _text.replace(", madGod,", ",")\n    _text = _text.replace(" MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory.", "")\n    _path.write_text(_text, encoding="utf-8")\n\n'''
+          sanitizer = '''for _name in active_clean:\n    _path = APK / _name\n    if not _path.exists():\n        continue\n    _text = _path.read_text(encoding="utf-8")\n    _text = _text.replace(", madGod,", ",")\n    _text = _text.replace(" MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory.", "")\n    _text = _text.replace('            "MadGod Set success chỉ mở đường/vị trí khám phá; acquired mặc định false cho tới khi Kai thực sự tiếp cận và lấy. " +\\n', '')\n    _path.write_text(_text, encoding="utf-8")\n\n'''
           if sanitizer not in text:
               if marker not in text:
                   raise SystemExit('active patch loop marker missing')
