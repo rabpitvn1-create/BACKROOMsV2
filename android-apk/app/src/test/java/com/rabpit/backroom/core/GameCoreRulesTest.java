@@ -47,4 +47,11 @@ public class GameCoreRulesTest {
     assertFalse(GameCoreRules.levelTransitionAllowed(1, 6));
     assertFalse(GameCoreRules.levelTransitionAllowed(-1, 0));
   }
+
+  @Test public void explicitLevelMustMatchLocation() {
+    assertEquals(3, LevelCore.requestedLevel(3, "Level 3 / The Electrical Station", 2));
+    assertEquals(4, LevelCore.requestedLevel(-1, "Level 4 / The Abandoned Office", 3));
+    assertEquals(2, LevelCore.requestedLevel(-1, "Unknown maintenance corridor", 2));
+    assertEquals(-2, LevelCore.requestedLevel(2, "Level 5 / Terror Hotel", 2));
+  }
 }
