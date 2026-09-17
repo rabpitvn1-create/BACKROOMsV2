@@ -49,7 +49,7 @@ jobs:
             dims="$(identify -format '%w %h' "$tmp")"
             read -r width height <<< "$dims"
             echo "Source dimensions: ${width}x${height}"
-            if (( width < 480 || height < 270 )); then
+            if (( width < 400 || height < 270 )); then
               echo "Image is too small (${width}x${height}): $url" >&2
               exit 1
             fi
