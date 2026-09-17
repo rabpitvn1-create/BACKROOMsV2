@@ -143,7 +143,7 @@ Giọng hắn đi qua hai căn phòng, dội lại rất yếu rồi chìm mất
 
 Kai không gọi lần thứ ba. Hắn chuyển sang liên lạc.
 
-Kênh trực tiếp của đội không trả lời. Kênh nội bộ Black Blood im lặng. Kênh chỉ huy, kênh khẩn cấp và các đường truyền dự phòng mã hóa cũng không nhận được bất kỳ tín hiệu hồi đáp nào.
+Kênh trực tiếp của đội không trả lời. Kênh nội bộ SRU im lặng. Kênh chỉ huy, kênh khẩn cấp và các đường truyền dự phòng mã hóa cũng không nhận được bất kỳ tín hiệu hồi đáp nào.
 
 Hắn kiểm tra lại từng kênh một lần nữa, lần này tách riêng lỗi thiết bị khỏi lỗi đường truyền.
 
@@ -159,7 +159,7 @@ Hắn không biết họ đã rơi tới đâu.
 
 Không biết họ có ở cùng nơi này hay không.
 
-Không biết Black Blood còn có thể tìm thấy dấu vết của ba người từ phía bên kia hay không.
+Không biết SRU còn có thể tìm thấy dấu vết của ba người từ phía bên kia hay không.
 
 Không có tọa độ để đối chiếu. Không có tín hiệu định vị. Không có dữ liệu trạng thái từ hai người còn lại. Và trước mắt, không có bất kỳ lời giải thích nào cho căn phòng vàng vô tận đang mở ra quanh hắn.
 
@@ -171,6 +171,15 @@ Không có tiếng gọi đáp lại.
 
 Kai chỉ còn những gì mình đang mang theo, những gì chính mắt hắn có thể kiểm chứng, và một việc phải làm trước tiên: xác định mình đang ở đâu, rồi tìm Iris và Syvial.`;
 
+const CURRENT_CHARACTER_CANON={
+  version:"drive-characters-2026-09-17",
+  instruction:"Current Google Drive character canon. This overrides conflicting legacy character facts in old logs/local mirrors. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN must remain unknown. Lucia is a fixed Level 0 story encounter and must never be auto-spawned just because the model knows her codex.",
+  kai:"Kai Akechi / Twilight is current SRU captain in the anti-anomalous police force, UR+, origin era 2299 but true age unknown. Public SRU record says human; KNOWLEDGE_LOCK: half-human/half-demon son of Sparda and Eve. Sparda Core gives infinite demon power with no intrinsic depletion/cooldown/corruption/berserk and self-repairs all currently equipped items. Current signature weapon is SRU Assault Rifle MK19: physical 5.56x45 NATO, 30-round physical mags, 700-950 rpm, ~500-600 m effective; physical ammo is finite. It also fires Sparda demonic 5.56x45 formed directly from Core, no physical ammo use. SRU-MK20 is current powered armor. Devil Trigger has no intrinsic cap. Guilty Crown Override = exactly 24 MK19 demonic shots while external time is fully stopped. Omnivault now ONLY stores/retrieves inanimate objects and Restores the same existing equipment, with 24h per-item restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed.",
+  iris:"Iris / ARGUS is SRU Scout / Target Eliminator in Kai's team, a real ranged Gunslinger. No surname locked. Half-human/half-demon daughter of Belial and a deceased human mother; mother details, birth era and exact combat tier remain UNKNOWN. Belial Core provides infinite demon power for established functions. ARGUS Terrain Read uses direct observation plus local Recon Frame sensors for terrain/routes/LOS/cover/ambush/traces; no omniscience, wall vision, remote cameras or automatic true-form detection. Thousandfold Cognition is up to 1:1000 information processing, not body speed. Current gear: SRU Recon Frame R03 and Ivory & Ebony, whose bullets form from Iris's demon power. Iris loves Kai; Kai knows but reciprocation is not canonically established. Iris uses anh-em with Kai; Iris and Syvial are trusted friends/teammates with romantic rivalry, not enemies.",
+  syvial:"Syvial is half-human/half-demon daughter of Lucifer, origin era 2299, true age unknown, UR+ and same overall tier as Kai. Current organization: SRU anti-anomalous police; deputy leader of Kai's team. Lucifer Core supplies infinite demon power; Devil Trigger does not remove control or have an invented intrinsic cap/cooldown. GodKiller is a massive purely mechanical greatsword, never a gun/gunblade. Lucifer Armor is mobile black/gunmetal/silver mecha armor with magenta accents; pointed head modules are mechanical, not biological horns; very durable/fast self-repairing but not absolutely indestructible. GodKiller Override / Twenty-Four Severance = exactly 24 cuts while external time is fully stopped. Syvial is intensely yandere toward Kai but lucid and socially/tactically competent; she values Kai's voluntary choice and does not randomly murder, sabotage missions, erase memory or mind-control him.",
+  lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia is a fixed story-owned Level 0 encounter, not random/quest spawn and not part of the initial SRU group (Kai/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Kai remain OPEN."
+};
+
 const initial={
   title:"MAIN_BACKROOMS — Kai Akechi",
   turn:1,
@@ -179,14 +188,15 @@ const initial={
   player:{name:"Kai Akechi",condition:"Ổn định"},
   party:[],
   inventory:[
-    {name:"White Wraith Magnum"},
-    {name:"Blackblood Armor & linked modules"},
+    {name:"SRU Assault Rifle MK19"},
+    {name:"SRU-MK20 Powered Armor"},
     {name:"Omnivault Ring / Nhẫn Vạn Tàng"}
   ],
-  flags:{communication:{blackBlood:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
+  flags:{communication:{sru:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
+  characterCanon:CURRENT_CHARACTER_CANON,
   log:[
     {role:"gm",text:"MỞ ĐẦU\n\n"+prologue},
-    {role:"gm",text:"LƯỢT 1\n\nKhông có liên lạc với Iris, Syvial hay Black Blood. Bạn điều khiển Kai từ đây."}
+    {role:"gm",text:"LƯỢT 1\n\nKhông có liên lạc với Iris, Syvial hay SRU. Bạn điều khiển Kai từ đây."}
   ]
 };
 
@@ -195,25 +205,32 @@ const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),mode
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
+state.characterCanon=CURRENT_CHARACTER_CANON;
 const oldPrologueSignature="Không beacon. Không telemetry.";
-if(state.turn===1&&Array.isArray(state.log)&&state.log[0]){
-  const currentOpening=String(state.log[0].text||"");
-  if(currentOpening.length<1000||currentOpening.includes(oldPrologueSignature)){
+if(state.turn===1){
+  const currentOpening=String(state.log?.[0]?.text||"");
+  const oldInventory=Array.isArray(state.inventory)&&state.inventory.some(x=>String(x?.name||"").includes("White Wraith"));
+  if(oldInventory) state.inventory=JSON.parse(JSON.stringify(initial.inventory));
+  if(state.flags?.communication?.blackBlood!==undefined){
+    delete state.flags.communication.blackBlood;
+    state.flags.communication.sru="OFFLINE";
+  }
+  if(state.log?.[0]&&(currentOpening.length<1000||currentOpening.includes(oldPrologueSignature)||currentOpening.includes("Black Blood"))){
     state.log[0]=initial.log[0];
-    if(state.log[1]&&String(state.log[1].text||"").startsWith("TURN 1")) state.log[1]=initial.log[1];
-    localStorage.setItem("backroom-apk-state",JSON.stringify(state));
+    if(state.log[1]) state.log[1]=initial.log[1];
   }
 }
+localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
 function render(){titleEl.textContent=state.title;turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Kai Akechi";partyEl.innerHTML=chips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");logEl.scrollTop=logEl.scrollHeight;statusEl.textContent="Save được lưu riêng trên thiết bị này."}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
-function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;render()}
+function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Gemini đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
-window.backroomTurn=json=>{state=JSON.parse(json);actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
+window.backroomTurn=json=>{state=JSON.parse(json);state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
 window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi Gemini: "+message};
 render();
 </script>
