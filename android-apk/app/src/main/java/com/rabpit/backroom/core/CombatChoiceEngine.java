@@ -24,6 +24,7 @@ public final class CombatChoiceEngine {
   private static final int GUILTY_CROWN_SHOTS = 24;
   private static final int GUILTY_CROWN_DAMAGE_PER_SHOT = 10;
   private static final int GUILTY_CROWN_TOTAL_DAMAGE = GUILTY_CROWN_SHOTS * GUILTY_CROWN_DAMAGE_PER_SHOT;
+  private static final int MAX_COMBAT_PARTICIPANTS = 4;
 
   private static final class EntityProfile {
     final String key;
@@ -168,6 +169,10 @@ public final class CombatChoiceEngine {
     return "Guilty Crown Override".equals(skillName) ? GUILTY_CROWN_TOTAL_DAMAGE : 0;
   }
 
+  static int maxCombatParticipants() {
+    return MAX_COMBAT_PARTICIPANTS;
+  }
+
   public static JSONObject start(JSONObject state, String entityKey, int gmLogIndex) throws Exception {
     if (state == null) throw new IllegalArgumentException("state is required");
     String normalized = entityKey == null ? "" : entityKey.trim().toLowerCase(Locale.ROOT);
@@ -208,6 +213,8 @@ public final class CombatChoiceEngine {
     if (!isCombatAction(action)) throw new IllegalArgumentException("Đang chiến đấu. Hãy chọn A, B hoặc C.");
 
     JSONObject combat = state.getJSONObject("combat");
+    combat.put("feedbackEvents", new JSONArray());
+    combat.put("resolvedEntityTurn", false);
     JSONArray participants = combat.getJSONArray("participants");
     int actorIndex = combat.optInt("actorIndex", 0);
     if (actorIndex < 0 || actorIndex >= participants.length()) actorIndex = 0;
@@ -218,6 +225,8 @@ public final class CombatChoiceEngine {
       actor = participants.getJSONObject(actorIndex);
     }
 
+    combat.put("resolvedActorIndex", actorIndex);
+    combat.put("resolvedActorName", actor.optString("name", "Nhân vật"));
     JSONObject entity = combat.getJSONObject("entity");
     if (actorIndex == 0 && combat.optInt("round", 1) > 1) {
       tickRoundStartEffects(state, combat, entity);
@@ -244,6 +253,7 @@ public final class CombatChoiceEngine {
       return state;
     }
 
+    combat.put("resolvedEntityTurn", true);
     resolveEntityResponse(state, combat, actor, entity, defending);
     syncParticipants(state, participants);
 
@@ -258,6 +268,7 @@ public final class CombatChoiceEngine {
     }
 
     advanceActor(combat);
+    combat.put("nextActorIndex", combat.optInt("actorIndex", 0));
     prepareCurrentTurn(combat);
     return state;
   }
@@ -270,7 +281,7 @@ public final class CombatChoiceEngine {
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;
-    for (int i = 0; i < party.length(); i++) {
+    for (int i = 0; i < party.length() && output.length() < MAX_COMBAT_PARTICIPANTS; i++) {
       JSONObject member = party.optJSONObject(i);
       if (member == null) continue;
       String name = member.optString("name", member.optString("id", "")).trim();
@@ -335,6 +346,7 @@ public final class CombatChoiceEngine {
     appendBattleLine(state, combat,
       actorName + " tấn công " + entityName + ". " + damageText + " (" + hpText + ")",
       actorName, entityName, damageText, hpText);
+    addFeedback(combat, "actor", "entity", "damage", damageText, true);
   }
 
   private static void resolveSkill(JSONObject state, JSONObject combat, JSONObject actor, JSONObject entity) throws Exception {
@@ -352,6 +364,7 @@ public final class CombatChoiceEngine {
       appendBattleLine(state, combat,
         actorName + " dùng " + skillName + " lên " + entityName + ". Trượt.",
         actorName, skillName, entityName);
+      addFeedback(combat, "actor", "entity", "miss", "MISS", false);
       return;
     }
 
@@ -366,6 +379,7 @@ public final class CombatChoiceEngine {
         actorName + " dùng " + skillName + ": " + GUILTY_CROWN_SHOTS + "/" + GUILTY_CROWN_SHOTS +
           " phát trúng khi ngoại giới dừng thời gian. " + damageText + " (" + hpText + ")",
         actorName, skillName, entityName, damageText, hpText);
+      addFeedback(combat, "actor", "entity", "damage", damageText, true);
       return;
     }
     if (offensive) {
@@ -375,6 +389,7 @@ public final class CombatChoiceEngine {
         appendBattleLine(state, combat,
           actorName + " dùng " + skillName + " lên " + entityName + ". Trượt.",
           actorName, skillName, entityName);
+        addFeedback(combat, "actor", "entity", "miss", "MISS", false);
         return;
       }
       int raw = Math.max(1, actor.optInt("attack", 30) * selected.optInt("damagePercent", 100) / 100);
@@ -386,6 +401,7 @@ public final class CombatChoiceEngine {
       appendBattleLine(state, combat,
         actorName + " dùng " + skillName + " lên " + entityName + ". " + damageText + " (" + hpText + ")",
         actorName, skillName, entityName, damageText, hpText);
+      addFeedback(combat, "actor", "entity", "damage", damageText, true);
     } else {
       appendBattleLine(state, combat,
         actorName + " dùng " + skillName + ".",
@@ -452,6 +468,7 @@ public final class CombatChoiceEngine {
       appendBattleLine(state, combat,
         entityName + " tấn công " + actorName + ". " + actorName + " né thành công.",
         entityName, actorName);
+      addFeedback(combat, "entity", "actor", "miss", "MISS", false);
       if (defending) {
         int normal = maxNormalDamage(actor.optInt("attack", 30), effectiveEntityDefense(entity));
         int damage = counterDamage(normal);
@@ -462,6 +479,7 @@ public final class CombatChoiceEngine {
         appendBattleLine(state, combat,
           actorName + " phản công " + entityName + ". " + damageText + " (" + hpText + ")",
           actorName, entityName, damageText, hpText);
+        addFeedback(combat, "entity", "entity", "damage", damageText, true);
       }
     } else {
       int damage = defending
@@ -474,6 +492,7 @@ public final class CombatChoiceEngine {
       appendBattleLine(state, combat,
         entityName + " tấn công " + actorName + ". " + damageText + " (" + hpText + ")",
         entityName, actorName, damageText, hpText);
+      addFeedback(combat, "entity", "actor", "damage", damageText, true);
       if (hp <= 0) appendBattleLine(state, combat, actorName + " bị hạ.", actorName);
     }
 
@@ -494,6 +513,7 @@ public final class CombatChoiceEngine {
     appendBattleLine(state, combat,
       entityName + " chịu Chảy máu. " + damageText + " (" + hpText + ")",
       entityName, "Chảy máu", damageText, hpText);
+    addFeedback(combat, "actor", "entity", "damage", damageText, true);
   }
 
   private static int effectiveEntityDefense(JSONObject entity) {
@@ -593,6 +613,21 @@ public final class CombatChoiceEngine {
     int value = Math.floorMod(seed * 31 + sequence * 131 + salt.hashCode() * 17, 100);
     combat.put("sequence", sequence + 1);
     return value;
+  }
+
+  private static void addFeedback(JSONObject combat, String phase, String target, String kind,
+                                  String text, boolean flash) throws Exception {
+    JSONArray events = combat.optJSONArray("feedbackEvents");
+    if (events == null) events = new JSONArray();
+    JSONObject event = new JSONObject()
+      .put("phase", phase)
+      .put("target", target)
+      .put("kind", kind)
+      .put("text", text == null ? "" : text)
+      .put("flash", flash)
+      .put("actorIndex", combat.optInt("resolvedActorIndex", combat.optInt("actorIndex", 0)));
+    events.put(event);
+    combat.put("feedbackEvents", events);
   }
 
   private static void appendBattleLine(JSONObject state, JSONObject combat, String text, String... highlights) throws Exception {
