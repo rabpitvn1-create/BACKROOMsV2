@@ -78,7 +78,9 @@ public class MainActivity extends Activity {
     try {
       String snapshotUi = readAssetText("snapshot-ui.js");
       String gmChoiceUi = readAssetText("gm-choice-ui.js");
-      webView.evaluateJavascript(snapshotUi, ignored -> webView.evaluateJavascript(gmChoiceUi, null));
+      String inventoryUi = readAssetText("inventory-ui.js");
+      webView.evaluateJavascript(snapshotUi, ignored ->
+        webView.evaluateJavascript(gmChoiceUi, ignoredChoice -> webView.evaluateJavascript(inventoryUi, null)));
     } catch (Exception e) {
       Log.e(TAG, "Unable to install WebView UI scripts", e);
     }
@@ -287,6 +289,7 @@ public class MainActivity extends Activity {
     return "Create one cinematic 16:9 visual snapshot of the CURRENT END STATE of this Backrooms text game.\n" +
       "Show the present scene only, not a montage. Kai Akechi / Twilight is the main character. " +
       "Do not invent NPCs, monsters, exits, loot, injuries, weapons, text, HUD, blood or props that are not explicitly present in the state. " +
+      "Do not render a loot chest in the base snapshot image; the app draws the chest from a local overlay asset when Core says one is present. " +
       "If party is empty, Kai is alone. Follow the CURRENT LEVEL CANON exactly and do not borrow architecture from another Level. " +
       "Photorealistic cinematic game concept art, grounded anatomy and materials, no written text in the image.\n\n" +
       levelContext + "\n\n" +
@@ -383,14 +386,16 @@ public class MainActivity extends Activity {
           String coreBeforeJson = state.toString();
           String levelContext = gameCore.levelPromptContext(coreBeforeJson);
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
+          String itemContext = gameCore.itemPromptContext(coreBeforeJson);
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
             "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
             "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
+            "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
             "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
-            levelContext + "\n" + entityContext + "\n" +
+            levelContext + "\n" + entityContext + "\n" + itemContext + "\n" +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
             "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{},\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Nhặt Đèn pin\",\"highlights\":[{\"text\":\"Đèn pin\",\"type\":\"item\"}]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
@@ -434,6 +439,32 @@ public class MainActivity extends Activity {
           emit("backroomTurn", state.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể xử lý lượt." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void itemAction(String stateJson, String itemId, String operation,
+                                                String targetId, int quantity) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          if (CombatChoiceEngine.isActive(submitted)) {
+            JSONObject rejected = new JSONObject()
+              .put("handled", false)
+              .put("state", submitted)
+              .put("reason", "combat_locked")
+              .put("error", "Battle đang hoạt động. Chỉ A/B/C được phép thực hiện.");
+            emit("backroomItemAction", rejected.toString());
+            return;
+          }
+          emit("backroomItemAction", gameCore.processItemAction(stateJson, itemId, operation, targetId, quantity));
+        } catch (Exception e) {
+          JSONObject rejected = new JSONObject();
+          try {
+            rejected.put("handled", false).put("state", new JSONObject(stateJson));
+            rejected.put("error", e.getMessage() == null ? "Không thể xử lý vật phẩm." : e.getMessage());
+          } catch (Exception ignored) {}
+          emit("backroomItemAction", rejected.toString());
         }
       });
     }
