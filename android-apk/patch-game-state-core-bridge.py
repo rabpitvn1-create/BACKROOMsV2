@@ -112,13 +112,11 @@ for required in [
 
 MAIN.write_text(text, encoding="utf-8")
 
+# Intent interpretation is checked-in Kotlin gameplay authority. This compatibility patch may
+# verify the settled resolver contract, but must never rewrite IntentPipeline.kt at build time.
 intent = INTENT.read_text(encoding="utf-8")
 if "|nhặt|được|lượm|" not in intent:
-    anchor = "|nhặt|lượm|"
-    if anchor not in intent:
-        raise RuntimeError("Item resolver noise anchor not found")
-    intent = intent.replace(anchor, "|nhặt|được|lượm|", 1)
-INTENT.write_text(intent, encoding="utf-8")
+    raise RuntimeError("Materialized IntentPipeline item resolver noise contract is missing")
 
 # GameCoreFacade is now checked in as the settled post-patch source. This patch may
 # verify the Core contract required by its Java/UI bridge, but it must not rewrite
@@ -161,4 +159,4 @@ if warning_log_render not in html:
     html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Game State Core bridge applied; checked-in GameCoreFacade authority verified without source rewrite.")
+print("Game State Core bridge applied; checked-in Kotlin Game Core and Intent authority verified without source rewrite.")
