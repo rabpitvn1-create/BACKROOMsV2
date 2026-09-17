@@ -84,8 +84,8 @@ root_new = r'''    if (root.equals("jeff")) {
 if root_new not in text:
     text = replace_once(text, root_old, root_new, "Unique hunter final flag-root gate")
 
-roots_old = '      "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, omnivault, survivorRegistry, entityRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +\n'
-roots_new = '      "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, jane, omnivault, survivorRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +\n'
+roots_old = '      "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, survivorRegistry, entityRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +\n'
+roots_new = '      "Chỉ dùng flag root: exploration, communication, iris, syvial, jeff, jane, survivorRegistry, survivorsConfirmed, entitiesConfirmedLocal, visualAreaKey, visualEventKey, entityEncounterKey, reunionPath. " +\n'
 if roots_new not in text:
     text = replace_once(text, roots_old, roots_new, "Jane prompt root")
 
