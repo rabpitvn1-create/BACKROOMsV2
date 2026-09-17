@@ -18,8 +18,8 @@ main = MAIN.read_text(encoding="utf-8")
 codex = CODEX.read_text(encoding="utf-8").strip()
 gun_skills = GUN_SKILLS.read_text(encoding="utf-8").strip()
 
-if "KAI-AKECHI-TWILIGHT-CODEX-20260817-R05" not in codex:
-    raise RuntimeError("Kai Codex: wrong or missing R05 source marker")
+if "KAI-AKECHI-TWILIGHT-CODEX-20260916-R12" not in codex:
+    raise RuntimeError("Kai Codex: wrong or missing R12 source marker")
 if len(codex) < 5000:
     raise RuntimeError(f"Kai Codex unexpectedly short: {len(codex)} chars")
 for marker in (
@@ -49,4 +49,4 @@ state_with_canon = (
 main = replace_once(main, state_anchor, state_with_canon, "Kai canon prompt injection")
 
 MAIN.write_text(main, encoding="utf-8")
-print(f"Injected Kai R05 operational codex plus automatic gun-skill addendum into APK Game Master prompt ({len(combined_codex)} chars).")
+print(f"Injected Kai R12 operational codex plus current automatic gun-skill addendum into APK Game Master prompt ({len(combined_codex)} chars).")

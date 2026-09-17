@@ -71,12 +71,23 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-massive-item-update.py patch-kai-encounter-overlay.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-current-character-codex.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-massive-item-update.py patch-kai-encounter-overlay.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
           done
           git diff --check
+
+          # Character Codex sync: current Drive source refs must reach the generated
+          # Game Master runtime and retired Kai legacy equipment must stay absent.
+          grep -Fq 'KAI-AKECHI-TWILIGHT-CODEX-20260916-R12' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'IRIS-BELIAL-SRU-CODEX-20260906-R07' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'SYVIAL-LUCIFER-CODEX-20260906-R05' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'HUA-THUY-MAI-LUCIA-LUC-CODEX-R03' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'presentCharacter(state, "lucia")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'KAI-AKECHI-TWILIGHT-CODEX-20260817-R05' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'White Wraith' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'Blackblood Armor' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
 
           # Omnivault is fully retired from executable runtime, active knowledge,
           # benchmark routing and LiteRT output classes.

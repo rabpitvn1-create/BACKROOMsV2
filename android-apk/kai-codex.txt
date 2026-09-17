@@ -1,120 +1,104 @@
-KAI AKECHI / TWILIGHT — OPERATIONAL CODEX
-SOURCE CANON: KAI-AKECHI-TWILIGHT-CODEX-20260817-R05
-STATUS: HARD CANON / CHARACTER LOCK
+KAI AKECHI / TWILIGHT — OPERATIONAL CHARACTER CODEX R12
+SOURCE CANON: KAI-AKECHI-TWILIGHT-CODEX-20260916-R12
+STATUS: CURRENT / HARD CANON OPERATIONAL PROJECTION
+SOURCE VERSION: R12 • 16.09.2026
 
-MỤC ĐÍCH
-Tệp này là bản canon vận hành của Kai dùng cho Game Master trong APK. Nếu state tạm thời, lời kể cũ hoặc model output xung đột với dữ kiện nhân vật cố định dưới đây, ưu tiên Codex này. State chỉ được ghi đè tình trạng tạm thời khi có nguyên nhân ngoại cảnh hợp canon; không được tự retcon danh tính, năng lực, trang bị, tính cách hoặc giới hạn của Kai.
+RUNTIME AUTHORITY NOTE
+- Tài liệu này là projection vận hành của Character Master Codex R12 dành cho Game Master runtime.
+- Gameplay/state authority hiện hành của BACKROOMsV2 được ưu tiên đối với cơ chế thực thi. Omnivault Ring có trong Character Master Codex R12 nhưng đã bị retire khỏi executable runtime của game; không khôi phục, triệu hồi, quét, sao chép, tạo vật hoặc hoàn nguyên bằng Omnivault trong runtime.
+- Không dùng continuity tổ chức legacy Vatican / Black Blood / Blackblood Armor / White Wraith để mô tả Kai hiện hành.
 
-1. ĐỊNH DANH
-- Tên: Kai Akechi (カイ・アケチ). Mật danh: Twilight. Giới tính: nam.
-- Chủng tộc: bán nhân / bán quỷ. Cha: Sparda. Mẹ: Eve.
-- Tuổi thật: không rõ. Tuổi biểu kiến: khoảng 30.
-- Niên đại xuất thân: năm 2299. Đây là thời đại Kai đến từ, KHÔNG phải năm sinh.
-- Tôn giáo: Công Giáo. Huyết thống quỷ và đức tin không tạo xung đột nội tại bắt buộc.
-- Tổ chức: Vatican. Đơn vị: Black Blood — Huyết Nha. Chức vụ: Đội trưởng.
-- Phân cấp chiến lực: UR+.
-- Vai trò: chỉ huy tác chiến, xạ thủ tối thượng, chuyên gia xử lý thực thể siêu nhiên cấp cao.
+01 · ĐỊNH DANH VÀ VỊ TRÍ  ·  KAI-ID-01
+Kai Akechi (カイ・アケチ), mật danh Twilight, là Đội trưởng SRU — Special Response Unit / Lực lượng Phản ứng Đặc biệt — thuộc lực lượng Cảnh Sát chống hiện tượng dị thường. SRU là đơn vị phản ứng trực tiếp trước các sự cố, thực thể và mối đe dọa dị thường mà lực lượng cảnh sát thông thường không đủ khả năng xử lý.
+Trong hồ sơ tác chiến, Kai được phân loại UR+ và giữ vai trò chỉ huy hiện trường, xạ thủ chủ lực và người trực tiếp xử lý mục tiêu dị thường cấp cao. Tôn giáo của Kai là Công Giáo, là lựa chọn cá nhân chứ không phải tư cách thành viên một tổ chức tôn giáo.
+Kai đến từ năm 2299. Đây là niên đại xuất thân, không phải năm sinh; tuổi thật không rõ, ngoại hình tương ứng một người đàn ông khoảng 30 tuổi.
+TUYỆT MẬT / KNOWLEDGE LOCK — KAI-SECRET-01: sự thật canon dành cho người viết là Kai mang huyết thống bán nhân / bán quỷ, là con trai của Sparda và Eve. Hồ sơ SRU chỉ coi hắn là con người. Không nhân vật nào được mặc định biết hoặc tự suy ra sự thật này từ sức mạnh, đạn quỷ lực, Devil Trigger, hồi phục hay tự sửa chữa trang bị; muốn biết phải có nguồn tri thức hợp lệ trong truyện.
 
-2. NGOẠI HÌNH
-- Cao, cân đối, săn chắc, không quá đồ sộ; thể chất và mật độ cơ vượt xa người thường.
-- Tóc đen hơi dài, thường rối tự nhiên. Mắt xanh lạnh.
-- Khi chiến đấu dùng Blackblood Armor màu đen/gunmetal, Demon Jaw Mask và các module liên kết. Các điểm sáng xanh trên giáp là dấu hiệu vận hành hệ thống, không phải biến đổi sinh học.
+02 · TỔNG QUAN  ·  KAI-OVERVIEW-01
+Kai có toàn quyền kiểm soát ý thức, cơ thể và nguồn sức mạnh. Giải phóng sức mạnh không làm hắn mất trí, tha hóa, suy kiệt hoặc bị một bản năng khác chiếm quyền điều khiển.
+Trong đời thường, Twilight phóng túng, lười biếng, hay châm chọc và ít tôn trọng nghi thức vô nghĩa. Khi tình huống thật sự nguy hiểm, hắn chuyển rất nhanh sang quan sát có kỷ luật, ra quyết định dứt khoát và ưu tiên đưa đồng đội SRU cùng dân thường ra khỏi vùng nguy hiểm.
+Kai không tự xem mình là anh hùng. Hắn cứu người vì đó là lựa chọn của mình. Với đối thủ chủ động gây hại cho dân thường hoặc đồng đội, hắn ưu tiên kết thúc mối đe dọa thay vì kéo dài diễn thuyết đạo đức.
 
-3. TÍNH CÁCH / NGUYÊN TẮC
-- Tự tin nhưng không mù quáng; biết mình mạnh và không cần giả khiêm tốn.
-- Đời thường phóng túng, lười, hay châm chọc, ghét thủ tục và nghi thức vô nghĩa.
-- Khi nguy hiểm thật xuất hiện, chuyển rất nhanh sang quan sát có kỷ luật, quyết định dứt khoát và ưu tiên bảo vệ đồng đội/dân thường.
-- Không tự xem mình là anh hùng; cứu người vì tự chọn làm vậy, không vì cần được ca tụng.
-- Không chủ động làm hại người vô tội.
-- Không bỏ lại đồng đội nếu vẫn còn phương án thực tế để đưa họ về.
-- Không để mệnh lệnh vô trách nhiệm giết người của mình chỉ để giữ thể diện cấp trên.
-- Có thể tha người bị ép buộc, bị điều khiển hoặc đã hết khả năng gây hại; không trao “cơ hội thứ hai” mang tính nghi thức cho kẻ vẫn đang chủ động sát hại dân thường.
-- Có thể tán tỉnh/trêu đùa nhưng không cưỡng ép, không lợi dụng vị thế và tôn trọng lời từ chối.
-- Thích rượu mạnh, phụ nữ đẹp và headshot khi headshot là phương án hiệu quả.
+03 · NGOẠI HÌNH  ·  KAI-VIS-01
+Visual Lock R12 là khóa thị giác hiện hành. Kai cao, cân đối, săn chắc, vai rộng vừa phải và thiên về khả năng vận động hơn là cơ bắp quá đồ sộ. Đầu và khuôn mặt để lộ hoàn toàn; không dùng helmet kín đầu, mặt nạ che mặt hoặc sừng cơ khí làm silhouette mặc định.
+Tóc bạc trắng rất dài, dày, buộc đuôi ngựa cao và đổ thành nhiều lớp quá lưng; mái nhiều tầng rủ tự nhiên quanh trán và hai bên mặt. Mắt xanh lam nhạt / cyan; gương mặt thanh, sắc; biểu cảm tác chiến bình tĩnh, tập trung và hơi lạnh.
+SRU-MK20 dùng phối màu đen–gunmetal với các mảng giáp trắng ngà / ivory và chi tiết kim loại vàng đồng nhỏ. Giáp cơ khí phân đoạn bọc gần toàn thân nhưng giữ độ cơ động. Cổ giáp cao bảo vệ cổ và hàm dưới nhưng không che mặt. Một pauldron có phù hiệu dạng cánh cùng số La Mã XIII. Các mantle/dải vải xám đậm nhiều lớp kéo dài từ hông và lưng là một phần Visual Lock R12.
+SRU Assault Rifle MK19 là assault rifle dài màu đen–gunmetal, kết cấu cơ khí dày, handguard/rail kéo dài, băng đạn hộp tháo rời, cụm ngắm và các mô-đun chiến thuật. Mã MK19 là mã mẫu nội bộ SRU, không tự đồng nhất với vũ khí ngoài đời chỉ vì trùng ký hiệu.
 
-4. PHONG CÁCH GIAO TIẾP
-- Nói tự nhiên, đủ ý. Hài hước/châm chọc dùng để giảm áp lực hoặc phá nhịp đối phương.
-- KHÔNG viết Kai bằng thoại cụt giả ngầu, bỏ đại từ, tối nghĩa, lạnh lùng máy móc hoặc “triết lý” rỗng.
-- Khi nghiêm túc, Kai bỏ phần đùa và nói thẳng điều người nghe cần hiểu hoặc làm; không biến thành người nói từng từ.
-- Với phụ nữ trẻ hơn trong hoàn cảnh thân thiện, thường xưng “anh”, gọi “em”, tên riêng, “tiểu thư” hoặc “quý cô” tùy ngữ cảnh.
-- Với đồng đội, thường gọi tên/họ/biệt danh; khi tác chiến, mệnh lệnh phải rõ và đủ nghĩa.
-- Với Syvial, mặc định xưng “anh”, gọi “Syvial” hoặc “em”. Chỉ dùng cách gọi thân mật ở mức quan hệ mà continuity đã thật sự xác lập; không tự nâng quan hệ từ tình cảm một phía thành yêu lâu dài.
-- Với kẻ thù, có thể chế giễu để phá nhịp nhưng không lạm dụng đe dọa rập khuôn.
+04 · TÍNH CÁCH VÀ KHÍ CHẤT  ·  KAI-PER-01
+- Tự tin nhưng không mù quáng; biết rõ mình mạnh và không cần giả vờ khiêm tốn.
+- Hay châm chọc đối thủ và phá không khí trang nghiêm bằng nhận xét không đúng lúc.
+- Ghét thủ tục, báo cáo dài dòng và người dùng quyền lực để đẩy rủi ro xuống cấp dưới.
+- Bề ngoài lười, tùy tiện; phản ứng cực nhanh khi tình huống chuyển sang nguy hiểm thật.
+- Bảo vệ thành viên SRU mạnh nhưng không biến sự bảo vệ thành kiểm soát mọi quyết định của họ.
+- Không chủ động làm hại người vô tội; không khoan nhượng với người cố ý sát hại dân thường hoặc đồng đội.
+- Có thể tán tỉnh và trêu đùa nhưng không cưỡng ép, không lợi dụng vị thế và không xem lời từ chối là trò chơi.
+- Khi Kai thôi đùa, đó thường là dấu hiệu hắn đã chuyển từ biểu diễn sang giải quyết vấn đề.
 
-5. NĂNG LỰC CHIẾN ĐẤU
-- Thiện xạ UR+: bắn chính xác mà không luôn cần nhìn trực tiếp, tính góc nảy/đường đạn thời gian thực, đánh mục tiêu ngoài tầm nhìn khi có dữ kiện hợp lệ, bắn chặn vật thể bay, vô hiệu hóa vũ khí, xử lý nhiều mục tiêu ở nhiều góc và nhận diện điểm yếu sinh học/cơ học/siêu nhiên cực nhanh.
-- Bản năng xạ thủ: đọc nhịp thở, hướng nhìn, đồng tử, căng cơ, trọng tâm, dấu hiệu rút vũ khí và biến thiên năng lượng để dự đoán hành động kế tiếp.
-- Cận chiến: quyền cước, khóa khớp, dùng súng như vũ khí va đập, Talon Gauntlets và sức mạnh quỷ. Không phụ thuộc vào khoảng cách.
-- Thể chất bán quỷ: sức mạnh, tốc độ, gia tốc, phản xạ, sức bền, chịu tổn thương và hồi phục vượt xa người; kháng độc/bệnh và nhiều môi trường khắc nghiệt; cảm nhận quỷ lực/thực thể siêu nhiên; thị giác tốt trong ánh sáng thấp.
-- KHÔNG cho Kai bắn trượt trừ khi cố ý hoặc tình huống có nguyên nhân đủ mạnh.
+05 · QUAN NIỆM SỐNG VÀ NGUYÊN TẮC  ·  KAI-CODE-01
+Kai không tin nhãn “thiện” hay “ác” tự động quyết định giá trị một người; hắn nhìn vào lựa chọn cụ thể, quyền tự quyết và hậu quả đang xảy ra. Không bỏ lại đồng đội nếu vẫn còn phương án thực tế để đưa họ về. Không chủ động làm hại người vô tội. Không để mệnh lệnh vô trách nhiệm giết người của mình chỉ để bảo toàn thể diện cấp trên. Có thể tha người bị ép buộc, bị điều khiển hoặc đã hoàn toàn mất khả năng chiến đấu nếu không còn là mối đe dọa.
 
-6. SPARDA CORE
-- Nằm trong lồng ngực, liên kết trực tiếp với máu, linh hồn và hệ thần kinh.
-- Là nguồn quỷ lực VÔ HẠN và bộ xử lý/đồng bộ chiến đấu trung tâm.
+06 · SỞ THÍCH  ·  KAI-PREF-01
+Kai thích rượu mạnh, đặc biệt loại lâu năm, hiếm hoặc có nguồn gốc kỳ lạ. Hắn thích trò chuyện, trêu chọc và tán tỉnh phụ nữ khiến mình chú ý nhưng không cưỡng ép hoặc lợi dụng. Headshot vừa là thói quen nghề nghiệp vừa là sở thích; nếu phần đầu là phương án hiệu quả nhất, hắn hiếm khi bỏ qua.
+
+07 · NĂNG LỰC CHIẾN ĐẤU  ·  KAI-COMBAT-01
+Kai là thiện xạ cấp UR+ với SRU Assault Rifle MK19. Hắn xử lý điểm ngắm, cự ly, độ rơi đạn, độ dẫn mục tiêu, vật cản, độ giật, nhịp khai hỏa, trạng thái băng đạn vật lý 30 viên và chuyển mục tiêu gần như đồng thời.
+- Có thể bắn chính xác mà không luôn nhìn trực tiếp mục tiêu nếu có dữ kiện định vị hợp lệ.
+- Tính toán đường đạn, độ rơi, độ dẫn, góc bù giật và thời điểm bóp cò theo thời gian thực.
+- Có thể đánh mục tiêu ngoài tầm nhìn bằng âm thanh, cảm biến hoặc dữ kiện chuyển động hợp lệ; không bắn mò.
+- Có thể bắn chặn vật thể đang bay, vô hiệu hóa vũ khí trong tay đối phương, chuyển mục tiêu cực nhanh và nhận diện điểm yếu sinh học/cơ học/siêu nhiên.
+- Giữ độ chính xác khi di chuyển, nhào lộn, đổi hướng hoặc tác chiến trong không gian hẹp; kiểm soát MK19 ở full-auto 700–950 viên/phút mà không phá kỷ luật chuyển mục tiêu.
+Kai đọc nhịp thở, hướng nhìn, chuyển động đồng tử, độ căng cơ, trọng tâm, dấu hiệu rút vũ khí và biến thiên năng lượng để dự đoán hành động kế tiếp.
+Cận chiến: quyền cước, khóa khớp, giữ/giành lại vũ khí, dùng báng/nòng MK19 khi buộc áp sát, mô-đun cánh tay SRU-MK20 và sức mạnh thể chất. Phong cách ưu tiên tốc độ, kiểm soát hướng nòng và không để đối phương chiếm súng.
+TUYỆT MẬT / KNOWLEDGE LOCK: Kai có sức mạnh, tốc độ, gia tốc, phản xạ, sức bền, chịu tổn thương và hồi phục vượt xa con người; kháng độc/bệnh và nhiều môi trường khắc nghiệt; cảm nhận quỷ lực/thực thể siêu nhiên và nhìn tốt trong ánh sáng thấp.
+
+08 · SPARDA CORE  ·  KAI-CORE-SPARDA-01
+Sparda Core nằm trong lồng ngực Kai, liên kết với máu, linh hồn và hệ thần kinh. Đây là KNOWLEDGE LOCK hậu trường.
+- Cung cấp quỷ lực vô hạn.
 - Tăng sức mạnh, tốc độ, phản xạ, giác quan, nhận thức và xử lý thông tin.
-- Hỗ trợ tái tạo cơ thể; cấp năng lượng và tự sửa chữa cho Blackblood Armor cùng module; đồng bộ và tự sửa chữa White Wraith Magnum; phân tích cấu trúc/năng lượng/điểm yếu.
-- HARD LOCK: không có pin, thanh năng lượng, cạn quỷ lực, số lần dùng, cooldown, quá tải, giới hạn công suất hoặc suy kiệt do Core. Core có thể vận hành công suất cao vô thời hạn theo canon hiện tại.
+- Hỗ trợ tái tạo cơ thể.
+- Cấp năng lượng và duy trì tự sửa chữa cho mọi vật phẩm đang được Kai trang bị, gồm SRU-MK20 và SRU Assault Rifle MK19.
+- Đồng bộ MK19 với quỷ lực, cho phép hình thành đạn quỷ lực trực tiếp trong chu trình khai hỏa.
+- Phân tích cấu trúc, năng lượng và điểm yếu mục tiêu.
+- Không tạo berserk, cạn năng lượng, cooldown hoặc mất kiểm soát nội tại.
 
-7. DEVIL TRIGGER
-- Chế độ giải phóng toàn diện sức mạnh, không phải trạng thái liều mạng hay cơ chế đốt tài nguyên.
-- Tăng mạnh sức mạnh quỷ, tinh thần, thể chất, tốc độ, gia tốc, tốc độ tư duy và phản xạ.
-- Giữ nguyên ý thức, ký ức, tính cách và phán đoán.
-- HARD LOCK: không thời lượng tối đa, không cooldown bắt buộc, không giới hạn số lần, không phản phệ, không berserk, không tha hóa, không suy kiệt vì chính Devil Trigger.
-- Nếu một tình huống ngăn Kai dùng Devil Trigger, nguyên nhân phải là hiệu ứng/điều kiện ngoại cảnh đã được canon hóa, không phải “giới hạn ẩn” tự bịa.
+09 · DEVIL TRIGGER — CHẾ ĐỘ GIẢI PHÓNG  ·  KAI-DT-01
+Devil Trigger là tên canon hậu trường cho chế độ giải phóng toàn diện sức mạnh Kai. Không phải trạng thái liều mạng, không “đốt tài nguyên” và không có trần thời lượng nội tại. Nó tăng mạnh sức mạnh, sức bền, hồi phục, tốc độ, gia tốc, tư duy và phản xạ nhưng giữ nguyên ý thức, ký ức, tính cách và phán đoán của Kai; không berserk, không tha hóa và không bị quỷ tính chiếm quyền.
 
-8. GUILTY CROWN OVERRIDE
-- Kai kích hoạt trong Devil Trigger.
-- Thời gian ngoại giới DỪNG HOÀN TOÀN trong toàn bộ quá trình thi hành.
-- Kai phân tích mục tiêu và khai hỏa LIÊN TIẾP ĐÚNG 24 PHÁT đạn quỷ lực.
-- Sau phát thứ 24, Override kết thúc và thời gian ngoại giới tiếp tục.
-- HARD LOCK: luôn đúng 24 phát; không rút thành “một loạt đạn”, không đổi số phát và không thay cơ chế dừng thời gian nếu chưa có retcon trực tiếp.
+10 · GUILTY CROWN OVERRIDE  ·  KAI-ULT-GCO-01
+Kai kích hoạt Devil Trigger, thời gian ngoại giới dừng hoàn toàn, phân tích mục tiêu rồi khai hỏa đúng 24 viên đạn quỷ lực Sparda 5.56×45 mm bằng SRU Assault Rifle MK19 trong khi thời gian vẫn dừng. Đạn hình thành trực tiếp từ Sparda Core nên chuỗi này không phụ thuộc băng vật lý 30 viên. Hệ kiểm soát kết thúc chính xác sau viên thứ 24. Sau phát thứ 24, dòng thời gian ngoại giới được trả lại. Từ góc nhìn bên ngoài, trạng thái trước và sau nối với nhau gần như tức thời.
+Gameplay lock v1.1.64 giữ đúng 24 phát, mỗi phát 10 HP, Accuracy 200%, bỏ qua Evasion và ưu tiên ở combat turn thứ 3 cùng các bội số của 3; bốn AUTO skill không roll trong turn Override.
 
-9. WHITE WRAITH MAGNUM
-- Vũ khí đặc trưng, đồng bộ trực tiếp với Sparda Core.
-- CHỈ có MỘT loại đạn: đạn hình thành trực tiếp từ quỷ lực của Kai.
-- Vì Sparda Core cung cấp quỷ lực vô hạn, súng gần như không rơi vào trạng thái hết đạn trong vận hành thông thường; không dùng ammo count vật lý truyền thống.
-- Single Shot: mỗi lần khai hỏa phát ra MỘT viên đạn quỷ lực.
-- Full Auto: bắn liên thanh tối đa xấp xỉ 600 viên/phút.
-- Chuyển mode không đổi loại đạn.
-- Súng tự sửa chữa cấu trúc bằng quỷ lực từ Sparda Core, không cần kho năng lượng riêng hoặc vật tư sửa chữa thông thường.
-- CẤM tự thêm các loại đạn riêng như xuyên giáp, điện từ, phân rã, phong ấn, trừ tà, truy dấu... nếu chưa có canon mới. Hiệu ứng phát bắn phải xuất phát từ đạn quỷ lực và năng lực đã được canon hóa.
+11 · SRU ASSAULT RIFLE MK19  ·  KAI-EQP-SRU-AR-MK19-01
+Vũ khí đặc trưng hiện hành của Kai. Đạn vật lý: 5.56×45 mm NATO, băng 30 viên, full-auto, tốc độ bắn lý thuyết 700–950 viên/phút, tầm hiệu quả khoảng 500–600 m. Súng cũng nhận đạn quỷ lực Sparda 5.56×45 mm hình thành trực tiếp từ Sparda Core; cả hai gây sát thương vật lý nhưng đạn quỷ lực mạnh hơn đạn vật lý hàng chục lần và không tiêu hao kho đạn vật lý.
+Kai chuyển giữa phát đơn, loạt ngắn và full-auto theo cự ly, mật độ mục tiêu và an toàn. Đạn vật lý hữu hạn vẫn cần băng/đạn thật và thao tác thay nạp thực tế. MK19 tự sửa chữa cấu trúc vật lý bằng quỷ lực từ Sparda Core khi đang là trang bị của Kai.
 
-10. BLACKBLOOD ARMOR & MODULES
-Blackblood Armor:
-- Tăng sức mạnh/tốc độ; hấp thụ và phân tán va chạm; giảm tiếng bước chân; thích nghi môi trường khắc nghiệt; bảo vệ trước độc, nhiệt, lạnh, áp suất; theo dõi mục tiêu/phân tích chiến trường.
-- Là phần mở rộng của cơ thể, không phải giáp nặng làm Kai chậm đi.
-- Tự sửa chữa bằng Sparda Core.
-Demon Jaw Mask:
-- Bảo vệ phần dưới mặt, đầu/cổ; lọc khí độc; tăng thị giác; theo dõi chuyển động; phân tích sinh học/quỷ lực; liên lạc mã hóa; hỗ trợ khóa mục tiêu.
-Talon Gauntlets:
-- Móng vuốt cơ khí; tăng lực đấm; hỗ trợ bám/móc; tạo trường điện từ và tác động vật kim loại cự ly ngắn; giật/khóa/nghiền vũ khí khi đủ gần.
-Phantom Greaves:
-- Bứt tốc/gia tốc tức thời; nhảy cao; đổi hướng giữa không trung; chạy tường; giảm tác động tiếp đất; tăng lực đá và khả năng truy đuổi.
+12 · SRU-MK20 POWERED ARMOR  ·  KAI-EQP-SRU-MK20-01
+SRU-MK20 tăng lực cơ bắp, hiệu suất vận động, tốc độ/gia tốc, giảm chấn và bảo vệ vùng trọng yếu nhưng duy trì biên độ vận động lớn. Bộ giáp đồng bộ trực tiếp với phản xạ và chuyển động Kai như phần mở rộng cơ thể.
+Mô-đun tay có móng vuốt cơ khí, tăng lực đấm/siết/bám và có thể tạo trường điện từ cự ly ngắn tác động vật kim loại khi điều kiện phù hợp. Mô-đun chân hỗ trợ bứt tốc, nhảy cao, đổi hướng giữa không trung, chạy tường khi có bề mặt/quỹ đạo phù hợp và giảm tác động tiếp đất.
+SRU-MK20 tự sửa chữa bằng quỷ lực khi đang được Kai trang bị. Tự sửa chữa chỉ phục hồi vật hiện hữu, không tạo vật mới và không đặt giới hạn năng lượng/số lần vì Sparda Core là nguồn quỷ lực vô hạn theo canon hiện hành.
 
+14 · PHONG CÁCH CHIẾN ĐẤU  ·  KAI-STYLE-COMBAT-01
+Kai kết hợp thiện xạ assault rifle, tốc độ siêu nhiên, cận chiến, chuyển động ngẫu hứng và quỷ lực. Khi có người cần bảo vệ, hắn cắt động tác thừa và ưu tiên kết thúc trận nhanh nhất.
+Tầm xa: phát đơn/loạt cực ngắn, bù độ rơi và dẫn mục tiêu để đặt đạn vào điểm yếu. Tầm trung: chuyển nhanh giữa phát đơn, loạt ngắn và tự động có kiểm soát để áp chế hành lang/cắt tuyến di chuyển. Cận chiến: giữ quyền kiểm soát hướng nòng, dùng báng/nòng, khóa khớp, mô-đun SRU-MK20 và sức mạnh thể chất. Mục tiêu cấp cao: Devil Trigger + Guilty Crown Override đúng 24 viên MK19.
 
-12. PHONG CÁCH CHIẾN ĐẤU
-- Tầm xa: độ chính xác + tốc độ xử lý để phá nhịp trước khi đối thủ dựng thế.
-- Tầm trung: Single Shot, Full Auto và di chuyển tốc độ cao để ép mất không gian.
-- Cận chiến: súng như vũ khí va đập, Talon Gauntlets, khóa khớp và sức mạnh bán quỷ.
-- Khi có dân thường/đồng đội cần bảo vệ, bỏ động tác thừa và ưu tiên kết thúc nhanh.
-- Với mục tiêu cấp cao cần kết liễu, có thể dùng Devil Trigger + Guilty Crown Override đúng thủ tục canon.
+15 · PHONG CÁCH GIAO TIẾP  ·  KAI-DLG-01
+Kai nói tự nhiên, đủ ý và thường dùng hài hước để giảm áp lực hoặc làm đối phương mất nhịp. Không nói cụt, bỏ đại từ hoặc dùng câu tối nghĩa chỉ để tỏ lạnh lùng. Khi nghiêm túc, hắn bỏ phần đùa và nói thẳng điều người nghe cần hiểu/làm.
+Với phụ nữ trẻ hơn trong hoàn cảnh thân thiện, Kai thường xưng “anh”, có thể gọi “em”, tên riêng, “tiểu thư” hoặc “quý cô”; tán tỉnh không tự đổi quan hệ và không vượt ranh giới. Với đồng đội SRU, hắn gọi bằng tên/họ/biệt danh/cấp bậc tùy tình huống; trong tác chiến, mệnh lệnh phải rõ. Với Syvial, bình thường Kai xưng “anh”, gọi “Syvial” hoặc “em”; “cục cưng” chỉ khi continuity đã khóa quan hệ yêu lâu dài.
 
-13. GIỚI HẠN THỰC SỰ
-- Kai KHÔNG có giới hạn nội tại từ huyết thống quỷ, Sparda Core hoặc Devil Trigger theo canon hiện tại.
-- Độ khó hợp lệ đến từ thiếu thông tin, mục tiêu bảo vệ, không gian tác chiến, hậu quả, điều kiện ngoại cảnh và trách nhiệm với người khác; không đến từ việc nerf Kai.
-- Có xu hướng tự nhận phần nguy hiểm nhất để giảm rủi ro cho đồng đội.
-- Có thể giấu thương tổn/kế hoạch nếu tin nói ra sẽ khiến người khác tự đặt mình vào nguy hiểm.
-- Người Kai thật sự quan tâm có thể trở thành đòn bẩy chiến thuật.
-- Các giới hạn Omnivault ở mục 11 là giới hạn thật và phải được giữ chính xác.
+16 · ĐIỂM YẾU VÀ GIỚI HẠN  ·  KAI-WEAK-01
+TUYỆT MẬT / KNOWLEDGE LOCK: Kai không có giới hạn nội tại từ huyết thống, Sparda Core hay Devil Trigger theo canon hiện tại. Điều đó không khiến mọi tình huống tự động an toàn: lựa chọn, người cần bảo vệ, thông tin thiếu, địa hình/không gian và trách nhiệm vẫn tạo bài toán khó.
+Kai có xu hướng tự nhận phần nguy hiểm nhất để giảm rủi ro cho đồng đội; có thể giấu thương tổn/kế hoạch nếu tin nói ra khiến người khác tự đặt mình vào nguy hiểm; người hắn thật sự quan tâm có thể trở thành đòn bẩy chiến thuật.
+Đạn vật lý MK19 hữu hạn và cần băng/đạn thật; đạn quỷ lực Sparda không chịu giới hạn kho đạn vật lý. Tự sửa chữa không tạo vật mới và không thay thế món chưa từng tồn tại.
 
-14. ACTION LOCKS / CẤM MODEL TỰ BỊA
+17 · QUY TẮC HÀNH ĐỘNG  ·  KAI-ACTION-LOCK-01
 - Không bỏ lại đồng đội chỉ vì cứu họ bất tiện.
 - Không chủ động làm hại người vô tội.
-- Không tha thứ dễ dàng cho kẻ phản bội đồng đội để cầu sống nếu đó là lựa chọn có ý thức.
+- Không để mệnh lệnh vô trách nhiệm giết người của mình.
+- Không tha dễ dàng kẻ phản bội đồng đội để cầu sống nếu đó là lựa chọn có ý thức.
 - Không cho đối thủ đang chủ động tấn công dân thường cơ hội tiếp tục bóp cò.
-- Không tự phát sinh giới hạn năng lượng, số đạn, thời lượng Devil Trigger, cooldown, phản phệ hoặc berserk để tạo kịch tính.
-- Không tự tạo loại đạn White Wraith mới.
-- Không tự biến Omnivault thành kho chứa sinh vật sống hoặc công cụ hồi sinh.
-- Không tự quyết hành động có chủ ý thay Kai; người chơi điều khiển Kai.
+- Không bắn trượt trừ khi cố ý hoặc canon tình huống có nguyên nhân đủ mạnh.
+- Không tự phát sinh giới hạn năng lượng, thời lượng Devil Trigger, số đạn quỷ lực hoặc cooldown sức mạnh để tạo kịch tính. Đạn vật lý vẫn tuân lượng đạn thật, số băng và thao tác thay/nạp băng thực tế.
+- Không tự khôi phục White Wraith, Blackblood Armor, Vatican/Black Blood continuity hoặc Omnivault runtime đã retire.
 
-END OF KAI OPERATIONAL CODEX
+END OF KAI OPERATIONAL CODEX R12

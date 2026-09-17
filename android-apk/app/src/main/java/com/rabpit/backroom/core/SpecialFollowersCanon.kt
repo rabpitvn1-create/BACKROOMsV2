@@ -5,6 +5,7 @@ const val SYVIAL_ID = "syvial"
 
 const val IRIS_IVORY_ID = "iris:ivory"
 const val IRIS_EBONY_ID = "iris:ebony"
+// Stable persisted item ID retained for save compatibility; display canon is SRU Recon Frame R03.
 const val IRIS_RECON_FRAME_ID = "iris:blackblood-recon-frame-r03"
 const val SYVIAL_GODKILLER_ID = "syvial:godkiller"
 const val SYVIAL_LUCIFER_ARMOR_ID = "syvial:lucifer-armor"
@@ -45,8 +46,8 @@ object SpecialFollowersCanon {
         "role" to "Scout / Target Eliminator",
         "combatStyle" to "Gunslinger",
         "signatureWeapons" to "Ivory & Ebony",
-        "armor" to "Blackblood Recon Frame R03",
-        "canonRef" to "IRIS-BELIAL-BLACKBLOOD-CODEX-20260817-R05",
+        "armor" to "SRU Recon Frame R03",
+        "canonRef" to "IRIS-BELIAL-SRU-CODEX-20260906-R07",
         "inventoryProfile" to "special_companion"
       )
     )
@@ -74,7 +75,7 @@ object SpecialFollowersCanon {
         "role" to "High-level supernatural swordswoman",
         "signatureWeapon" to "GodKiller",
         "armor" to "Lucifer Armor",
-        "canonRef" to "SYVIAL-LUCIFER-CODEX-20260816-R03",
+        "canonRef" to "SYVIAL-LUCIFER-CODEX-20260906-R05",
         "inventoryProfile" to "special_companion"
       )
     )
