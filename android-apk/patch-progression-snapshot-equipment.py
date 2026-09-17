@@ -126,4 +126,48 @@ for script in ("patch-pressure-combat.py", "patch-unified-entity-spawn-pool.py",
         raise RuntimeError(f"Required runtime patch missing: {script}")
     exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), {"__name__": "__main__", "__file__": str(path)})
 
-print("Scene-keyed Snapshot cache, progression, combat and healthbar chain installed.")
+# Cleanup removed two retired systems, but Iris and Syvial remain supported canonical followers.
+# Keep their registry/loadouts authoritative at the central normalization boundary so New Game,
+# save/load migration, inventory capacity and generated regression tests all see the same state.
+equipment_system_path = ROOT / "app/src/main/java/com/rabpit/backroom/core/CharacterEquipmentSystem.kt"
+equipment_system = equipment_system_path.read_text(encoding="utf-8")
+old_normalization = '''  fun seedFresh(state: GameState): GameState = normalizeInternal(state, true)
+
+  fun normalize(state: GameState): GameState = normalizeInternal(state, state.metadata["characterEquipmentSchemaVersion"] != SCHEMA_VERSION)
+'''
+new_normalization = '''  fun seedFresh(state: GameState): GameState = normalizeInternal(SpecialFollowersCanon.ensure(state), true)
+
+  fun normalize(state: GameState): GameState {
+    val ensured = SpecialFollowersCanon.ensure(state)
+    return normalizeInternal(ensured, ensured.metadata["characterEquipmentSchemaVersion"] != SCHEMA_VERSION)
+  }
+'''
+if new_normalization not in equipment_system:
+    if equipment_system.count(old_normalization) != 1:
+        raise RuntimeError("Supported follower normalization anchor missing")
+    equipment_system = equipment_system.replace(old_normalization, new_normalization, 1)
+equipment_system_path.write_text(equipment_system, encoding="utf-8")
+
+# Final CI guard: nested patch scripts must not recreate retired runtime code, tests or assets.
+retired_tokens = ("madgod", "an_nhien", "annhien", "an nhien", "an-nhien", "an nhiên")
+app_src = ROOT / "app/src"
+for path in app_src.rglob("*"):
+    if not path.is_file():
+        continue
+    rel = str(path.relative_to(app_src)).lower()
+    if any(token in rel for token in retired_tokens):
+        raise RuntimeError(f"Retired runtime path recreated: {rel}")
+    if path.suffix.lower() not in {".kt", ".java", ".html", ".json", ".txt", ".xml"}:
+        continue
+    text = path.read_text(encoding="utf-8", errors="ignore").lower()
+    if any(token in text for token in retired_tokens):
+        raise RuntimeError(f"Retired runtime content recreated in: {rel}")
+
+for marker in (
+    "normalizeInternal(SpecialFollowersCanon.ensure(state), true)",
+    "val ensured = SpecialFollowersCanon.ensure(state)",
+):
+    if marker not in equipment_system:
+        raise RuntimeError("Supported follower registry repair missing: " + marker)
+
+print("Scene-keyed Snapshot cache, progression, combat and healthbar chain installed; Iris/Syvial registry normalized and retired runtime content blocked.")
