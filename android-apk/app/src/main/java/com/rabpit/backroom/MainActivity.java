@@ -337,15 +337,16 @@ public class MainActivity extends Activity {
             emit("backroomTurn", localResult.getJSONObject("state").toString());
             return;
           }
-          JSONObject state = new JSONObject(stateJson);
-          String levelContext = gameCore.levelPromptContext(stateJson);
+          JSONObject state = localResult.optJSONObject("state");
+          if (state == null) state = new JSONObject(stateJson);
+          String levelContext = gameCore.levelPromptContext(state.toString());
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một lượt và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
             "ENTITY OVERLAY STATE CONTRACT: flags.entityEncounterKey bắt buộc có ở mọi lượt AI. Nếu một Entity đang trực tiếp hiện diện hoặc đối đầu, đặt canonical key local tương ứng; nếu không còn Entity trực tiếp hiện diện thì đặt chuỗi rỗng. Canonical keys: hound, clump, duller, deathmoth, hostile_faceling, false_puddle, paintings, smiler, skin-stealer, predatory_window, biological_pipeline, wretch, cable_mimic, the_beast_of_level_5, hotel_corpse_lure, jeff_the_killer, jane_the_killer, slenderman, diep_minh. Không dùng đường dẫn, URL hoặc alias khác. " +
             "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
             levelContext + "\n" +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
-            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":0,\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
+            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
