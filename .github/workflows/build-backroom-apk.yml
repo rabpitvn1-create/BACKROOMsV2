@@ -7,6 +7,7 @@ on:
       - main
       - 'release/**'
       - 'feature/**'
+      - 'fix/**'
     paths:
       - 'android-apk/**'
       - '.github/workflows/build-backroom-apk.yml'
@@ -101,6 +102,11 @@ jobs:
           grep -Fq 'entityPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'levelSnapshotDescriptor' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'currentLevel' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
+          grep -Fq 'Level "+level+" : ' android-apk/app/src/main/assets/index.html
+          grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
+          grep -Fq 'width:58%;height:100%' android-apk/app/src/main/assets/snapshot-ui.js
           jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
