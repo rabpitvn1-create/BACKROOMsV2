@@ -3,6 +3,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SOURCE = ROOT / "patch-an-nhien-follower.py"
 CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core"
+TESTS = ROOT / "app/src/test/java/com/rabpit/backroom/core"
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 
 # An Nhiên gameplay authority is now materialized in checked-in Kotlin. This historical
@@ -15,13 +16,20 @@ core_markers = {
         "AN_NHIEN_ID to AnNhienCanon.equipment()",
     ),
     "GameStateCodec.kt": ("AnNhienCanon.ensure(decoded)",),
+    "AnNhienCanon.kt": (
+        "const val SURVIVAL_MULTIPLIER = 0.70",
+        "fun survivalMultiplierFor(character: CharacterState): Double",
+        '"survivalMultiplier" to SURVIVAL_MULTIPLIER.toString()',
+    ),
     "InventoryPolicy.kt": (
         "val AN_NHIEN = InventoryProfile",
         "if (characterId == AN_NHIEN_ID) return AN_NHIEN",
         "an_nhien_food_only",
     ),
-    "PhysiologyStatusPolicy.kt": ("survivalMultiplier: Double = 1.0",),
-    "CharacterDetailProjection.kt": ("AnNhienCanon.survivalMultiplierFor(character)",),
+    "PhysiologyStatusPolicy.kt": (
+        "survivalMultiplier: Double = 1.0",
+        "scaled(REST_CRITICAL_MINUTES, survivalMultiplier)",
+    ),
     "Engines.kt": (
         "an_nhien_equipment_locked",
         "an_nhien_follower_locked",
@@ -34,6 +42,18 @@ for filename, markers in core_markers.items():
     for marker in markers:
         if marker not in text:
             raise RuntimeError(f"Checked-in An Nhiên Kotlin authority missing in {filename}: {marker}")
+
+# The settled regression tests exercise the multiplier at the policy boundary. Character detail
+# projection intentionally uses the generic persisted physiology view; do not resurrect the old
+# build-time projection rewrite merely to satisfy a historical literal anchor.
+an_test = (TESTS / "AnNhienFollowerTest.kt").read_text(encoding="utf-8")
+for marker in (
+    "survivalCapacityIsThirtyPercentLowerThroughExistingPhysiologyPolicy",
+    "PhysiologyStatusPolicy.awakeBand(awakeMinutes, AnNhienCanon.SURVIVAL_MULTIPLIER)",
+    "PhysiologyStatusPolicy.restPercent(awakeMinutes, AnNhienCanon.SURVIVAL_MULTIPLIER)",
+):
+    if marker not in an_test:
+        raise RuntimeError("Checked-in An Nhiên survival regression missing: " + marker)
 
 source = SOURCE.read_text(encoding="utf-8")
 java_section = "# 7) Final Android gameplay integration: deterministic Level 0 encounter, bonuses and exit gate."
