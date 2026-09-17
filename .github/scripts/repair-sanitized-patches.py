@@ -19,6 +19,12 @@ stats = stats.replace('    "PROTECTED FOLLOWER / NON-COMBAT",\n', '')
 compile(stats, str(stats_path), "exec")
 stats_path.write_text(stats, encoding="utf-8")
 
+status_path = ROOT / "android-apk/patch-character-status-equipment-system.py"
+status = status_path.read_text(encoding="utf-8")
+status = status.replace("  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)', 'bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',\n", "  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)',\n")
+compile(status, str(status_path), "exec")
+status_path.write_text(status, encoding="utf-8")
+
 # The historical special-follower patch mixed a retired follower with the still-live Iris/Syvial
 # canon. Materialize only the shared live canon directly so the equipment/status pipeline remains
 # self-contained after the mixed legacy patch is deleted.
