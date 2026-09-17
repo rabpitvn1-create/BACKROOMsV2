@@ -18,93 +18,100 @@ jobs:
         with:
           ref: massive-update
           fetch-depth: 0
-      - name: Harden transformers and apply update
+      - name: Purge retired Omnivault knowledge and intent data
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
+          import json, re
 
-          # Keep the permanent Omnivault removal transform marker-based.
-          p = Path('android-apk/patch-massive-item-update.py')
-          s = p.read_text(encoding='utf-8')
-          old = 'command = sub(command, r"\\ndata class OmnivaultCommand\\(.*?\\n\\) : GameCommand\\n", "\\n", "Omnivault command")'
-          new = '''start = command.find("\\ndata class OmnivaultCommand(")
-          if start >= 0:
-              end = command.find("\\ndata class PartyCommand(", start)
-              if end < 0:
-                  raise RuntimeError("PartyCommand anchor missing after OmnivaultCommand")
-              command = command[:start] + "\\n" + command[end:]'''
-          if old in s:
-              s = s.replace(old, new, 1)
-          old_state = '''state = sub(
-              state,
-              r"\\ndata class ScanSlot\\(.*?\\n\\}\\n\\ndata class OmnivaultState\\(.*?\\n\\}\\n",
-              "\\n",
-              "Omnivault state model",
-          )'''
-          new_state = '''start = state.find("\\ndata class ScanSlot(")
-          if start >= 0:
-              end = state.find("\\ndata class PendingTurn(", start)
-              if end < 0:
-                  raise RuntimeError("PendingTurn anchor missing after retired Omnivault state")
-              state = state[:start] + "\\n" + state[end:]'''
-          if old_state in s:
-              s = s.replace(old_state, new_state, 1)
+          root = Path('android-apk')
 
-          # Healing definitions stay usable, but their generated regression must
-          # no longer assert the retired generic-loot roll.
-          marker = '''# Core/runtime must not retain an executable Omnivault system.\n'''
-          cleanup = r'''# Generated healing tests may still carry the pre-update generic-loot assertion.
-          healing_test = TESTS / "HealingItemTest.kt"
-          if healing_test.exists():
-              healing_text = read(healing_test)
-              healing_text = sub(
-                  healing_text,
-                  r"\n\s*@Test fun healingItemsShareTheOrdinaryLootGate\(\) \{.*?\n\s*\}",
-                  "",
-                  "Healing generic-loot regression",
-              )
-              write(healing_test, healing_text)
+          # Remove the active knowledge record. Historical Drive source documents
+          # are not modified; the packaged runtime database is authoritative here.
+          db_path = root / 'app/src/main/assets/knowledge/knowledge_db.json'
+          db = json.loads(db_path.read_text(encoding='utf-8'))
+          before = len(db['records'])
+          db['records'] = [r for r in db['records'] if r.get('id') != 'CHAR.KAI.OMNIVAULT']
+          if len(db['records']) == before:
+              print('Omnivault knowledge record already absent.')
+          db_path.write_text(json.dumps(db, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-          # Rewrite the generated healing prompt so it describes effects only;
-          # acquisition remains exclusively controlled by Entity/ItemBox tables.
-          if MAIN.exists():
-              main = read(MAIN)
-              main = sub(
-                  main,
-                  r'\n\s*String healingItemDirective = "HEALING ITEM HARD LOCK:.*?;\n',
-                  '\n    String healingItemDirective = "HEALING ITEM DATA: Băng gạc hồi đúng 10 HP; Thuốc sát trùng hồi đúng 20 HP. Hai Item này không có generic loot roll. Việc cấp Item chỉ do Android Entity drop hoặc ItemBox drop quyết định.";\n',
-                  "Healing prompt authority",
-              )
-              write(MAIN, main)
+          # Remove source-map row for the retired runtime record.
+          source_map = root / 'KNOWLEDGE_SOURCE_MAP.md'
+          sm = source_map.read_text(encoding='utf-8')
+          sm = '\n'.join(line for line in sm.splitlines() if '`CHAR.KAI.OMNIVAULT`' not in line) + '\n'
+          source_map.write_text(sm, encoding='utf-8')
 
-          '''
-          if cleanup not in s and marker in s:
-              s = s.replace(marker, cleanup + marker, 1)
-          p.write_text(s, encoding='utf-8')
+          # Runtime structured lookup must not request a removed record.
+          engine_path = root / 'app/src/main/java/com/rabpit/backroom/core/knowledge/KnowledgeContextEngine.kt'
+          engine = engine_path.read_text(encoding='utf-8')
+          engine = '\n'.join(line for line in engine.splitlines() if 'CHAR.KAI.OMNIVAULT' not in line) + '\n'
+          engine_path.write_text(engine, encoding='utf-8')
 
-          # Character equipment generator historically used STORE/WITHDRAW as
-          # the end marker for EQUIP/UNEQUIP. Those operations no longer exist.
-          g = Path('android-apk/patch-character-status-equipment-system.py')
-          gs = g.read_text(encoding='utf-8')
-          old_block = '''start = engines.find('      ItemCommand.Operation.EQUIP -> {')
-          end = engines.find('      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW', start)
-          if start < 0 or end < 0:
-              raise RuntimeError("InventoryEngine equipment operation block missing")
-          new_ops = '''
-          new_block = '''start = engines.find('      ItemCommand.Operation.EQUIP -> {')
-          end = engines.find('      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW', start)
-          if end < 0 and start >= 0:
-              end = engines.find('    }\\n  }\\n}\\n\\nobject PartyEngine', start)
-          if start < 0 or end < 0:
-              raise RuntimeError("InventoryEngine equipment operation block missing")
-          new_ops = '''
-          if old_block in gs:
-              gs = gs.replace(old_block, new_block, 1)
-          g.write_text(gs, encoding='utf-8')
+          # Writer/auditor prompt may no longer expose an Omnivault flag or an
+          # inventory-upsert operation. Inventory increases are Android-only.
+          builder_path = root / 'patch-knowledge-context-builder.py'
+          builder = builder_path.read_text(encoding='utf-8')
+          builder = builder.replace(
+              '"party_upsert{member}; party_remove{name}; flag_patch{root,value}. " +',
+              '"party_upsert{member}; party_remove{name}; flag_patch{root,value}. " +'
+          )
+          builder = builder.replace('inventory_upsert{item,basis}; inventory_remove{name,basis}; ', 'inventory_remove{name,basis}; ')
+          builder = builder.replace('iris, syvial, jeff, omnivault, survivorRegistry', 'iris, syvial, jeff, survivorRegistry')
+          builder = builder.replace(
+              '"Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. " +',
+              '"Inventory không được tăng từ model output. Item mới chỉ do Android cấp từ Entity drop hoặc ItemBox drop; model chỉ có thể đề xuất mất/tiêu thụ vật đã sở hữu. " +'
+          )
+          builder_path.write_text(builder, encoding='utf-8')
+
+          # Remove Omnivault-specific benchmark retrieval and corpus case.
+          bench_path = root / 'benchmark-knowledge-context.py'
+          bench = bench_path.read_text(encoding='utf-8')
+          bench = bench.replace('"omnivault", ', '')
+          bench = bench.replace('"omnivault": "CHAR.KAI.OMNIVAULT", "nhẫn vạn tàng": "CHAR.KAI.OMNIVAULT",\n', '')
+          bench = bench.replace('        "CHAR.KAI.OMNIVAULT": ["omnivault ring / nhẫn vạn tàng"],\n', '')
+          bench = bench.replace(
+              '        section(KAI_CANON, "10. BLACKBLOOD ARMOR & MODULES", "11. OMNIVAULT RING / NHẪN VẠN TÀNG"),',
+              '        section(KAI_CANON, "10. BLACKBLOOD ARMOR & MODULES", "12. PHONG CÁCH CHIẾN ĐẤU"),'
+          )
+          bench = re.sub(
+              r'\n    if any\(k in action for k in \["omnivault", "item", "inventory", "scan", "hoàn nguyên", "restore"\]\):\n        out\.append\(section\(KAI_CANON, "11\. OMNIVAULT RING / NHẪN VẠN TÀNG", "12\. PHONG CÁCH CHIẾN ĐẤU"\)\)',
+              '', bench
+          )
+          bench = re.sub(
+              r'\n    \{\n        "name": "omnivault_scan".*?\n    \},',
+              '', bench, flags=re.S
+          )
+          bench_path.write_text(bench, encoding='utf-8')
+
+          # Remove retired LiteRT classes. Negative prose examples may remain as
+          # NO_ACTION, but the model can no longer emit an Omnivault intent.
+          labels_path = root / 'app/src/main/assets/models/backroom_intent_labels.txt'
+          labels = [line for line in labels_path.read_text(encoding='utf-8').splitlines() if not line.startswith('OMNIVAULT_')]
+          labels_path.write_text('\n'.join(labels) + '\n', encoding='utf-8')
+
+          dataset_builder = root / 'ml/build_intent_dataset.py'
+          ml = dataset_builder.read_text(encoding='utf-8')
+          ml = re.sub(r'^\s*"OMNIVAULT_[A-Z_]+": \[.*\],\n', '', ml, flags=re.M)
+          dataset_builder.write_text(ml, encoding='utf-8')
+
+          # The current checked-in CSV is regenerated by CI, but keep the branch
+          # internally consistent for local use as well.
+          dataset = root / 'ml/intent_dataset.csv'
+          rows = dataset.read_text(encoding='utf-8').splitlines()
+          rows = [row for row in rows if ',OMNIVAULT_' not in row]
+          dataset.write_text('\n'.join(rows) + '\n', encoding='utf-8')
+
+          active_files = [db_path, source_map, engine_path, builder_path, bench_path, labels_path, dataset_builder, dataset]
+          for path in active_files:
+              low = path.read_text(encoding='utf-8').lower()
+              if 'char.kai.omnivault' in low or 'omnivault_store' in low or 'omnivault_withdraw' in low or 'omnivault_scan' in low or 'omnivault_copy' in low or 'omnivault_restore' in low:
+                  raise RuntimeError(f'Retired Omnivault reference survived in {path}')
           PY
+
           python3 android-apk/patch-massive-item-update.py
-          python3 -m py_compile android-apk/patch-massive-item-update.py android-apk/patch-character-status-equipment-system.py android-apk/patch-kai-resource-policy-final.py android-apk/patch-search-action-false-warning.py
+          python3 -m py_compile android-apk/patch-massive-item-update.py android-apk/patch-character-status-equipment-system.py android-apk/patch-kai-resource-policy-final.py android-apk/patch-search-action-false-warning.py android-apk/benchmark-knowledge-context.py android-apk/ml/build_intent_dataset.py
           git diff --check
       - name: Commit transformed source
         run: |
@@ -116,5 +123,5 @@ jobs:
             echo 'No transformed changes to commit.'
             exit 0
           fi
-          git commit -m 'Harden item authority generators'
+          git commit -m 'Purge Omnivault knowledge and intent data'
           git push origin HEAD:massive-update
