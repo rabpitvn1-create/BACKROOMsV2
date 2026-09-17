@@ -1,118 +1,92 @@
-name: Build Backroom APK
+name: Restore Kai and Entity overlay runtime
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - 'release/**'
-    paths:
-      - 'android-apk/**'
-      - '.github/workflows/build-backroom-apk.yml'
+      - 'release/level-0-6-wiki-snapshots'
 
 permissions:
   contents: write
 
-concurrency:
-  group: build-backroom-apk-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  build-apk:
+  restore-overlay:
     runs-on: ubuntu-latest
-    env:
-      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
-      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
-      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
-      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Verify Java-only baseline
+      - name: Restore overlay runtime directly in Java source
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 68' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.66'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.66.txt
-          test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
-          test -z "$(find android-apk -type f -name '*.py' -print -quit)"
-          test ! -d android-apk/ml
-          test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
-          ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
+          python3 - <<'PY'
+          from pathlib import Path
 
-      - name: Validate Game Master configuration
-        run: |
-          set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
-            test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
-          done
+          path = Path('android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java')
+          text = path.read_text(encoding='utf-8')
 
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
+          if 'function activeEntityKey()' not in text:
+              old_css = ".message.pending .text{color:#aeb7be}';\" +"
+              new_css = ".message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-character{position:absolute;right:-2%;bottom:-8%;width:62%;height:118%;object-fit:contain;object-position:right bottom;z-index:2;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{position:absolute;left:0;bottom:0;width:auto;max-width:55%;height:97%;object-fit:contain;object-position:left bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}';\" +"
+              if old_css not in text:
+                  raise SystemExit('CSS marker not found')
+              text = text.replace(old_css, new_css, 1)
 
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
+              old_render = "      \"function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>GEMINI SNAPSHOT</b><small>Chưa có ảnh của turn hiện tại.</small>';box.appendChild(p);}}\" +"
+              new_render = """      \"function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}\" +
+      \"var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];\" +
+      \"function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}\" +
+      \"function activeEntityKey(){try{var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||c.entityKey||c.enemyKey||c.entity||c.enemy||'');if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}\" +
+      \"function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey());}catch(e){return false;}}\" +
+      \"function appendSnapshotOverlay(box){var key=activeEntityKey(),img;if(key){img=document.createElement('img');img.className='snapshot-entity';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);return;}if(shouldShowKaiOverlay()){img=document.createElement('img');img.className='snapshot-character';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';box.appendChild(img);}}\" +
+      \"function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>GEMINI SNAPSHOT</b><small>Chưa có ảnh của turn hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}\" +"""
+              if old_render not in text:
+                  raise SystemExit('renderSnapshot marker not found')
+              text = text.replace(old_render, new_render, 1)
 
-      - name: Run Java tests and build debug APK
-        working-directory: android-apk
-        run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
+          if 'ENTITY OVERLAY STATE CONTRACT:' not in text:
+              marker = '            "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +\n'
+              rule = '            "ENTITY OVERLAY STATE CONTRACT: flags.entityEncounterKey bắt buộc có ở mọi lượt AI. Nếu một Entity đang trực tiếp hiện diện hoặc đối đầu, đặt canonical key local tương ứng; nếu không còn Entity trực tiếp hiện diện thì đặt chuỗi rỗng. Canonical keys: hound, clump, duller, deathmoth, hostile_faceling, false_puddle, paintings, smiler, skin-stealer, predatory_window, biological_pipeline, wretch, cable_mimic, the_beast_of_level_5, hotel_corpse_lure, jeff_the_killer, jane_the_killer, slenderman, diep_minh. Không dùng đường dẫn, URL hoặc alias khác. " +\n'
+              if marker not in text:
+                  raise SystemExit('prompt marker not found')
+              text = text.replace(marker, marker + rule, 1)
 
-      - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.66.apk
+          if 'generatedFlags = generated.optJSONObject("flags")' not in text:
+              marker = '          if (!location.isEmpty()) state.put("location", location);\n'
+              block = '''          JSONObject generatedFlags = generated.optJSONObject("flags");
+          if (generatedFlags != null) {
+            JSONObject flags = state.optJSONObject("flags");
+            if (flags == null) flags = new JSONObject();
+            mergeObject(flags, generatedFlags);
+            if (!generatedFlags.has("entityEncounterKey")) flags.put("entityEncounterKey", "");
+            state.put("flags", flags);
+          }
+'''
+              if marker not in text:
+                  raise SystemExit('state merge marker not found')
+              text = text.replace(marker, marker + block, 1)
 
-      - name: Verify packaged APK
-        run: |
-          set -euo pipefail
-          test -s Backroom-1.1.66.apk
-          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.66.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.66.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='68' versionName='1.1.66'" <<<"$BADGING"
-          grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_entity_overlay.png'
+          required = [
+              'function activeEntityKey()',
+              'function shouldShowKaiOverlay()',
+              "file:///android_asset/kai_snapshot_overlay.png",
+              "file:///android_asset/entity/",
+              'ENTITY OVERLAY STATE CONTRACT:',
+              'generatedFlags = generated.optJSONObject("flags")',
+              "className='snapshot-entity'",
+              "className='snapshot-character'",
+          ]
+          missing = [m for m in required if m not in text]
+          if missing:
+              raise SystemExit('Missing overlay runtime markers: ' + ', '.join(missing))
 
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Backroom-1.1.66-debug-apk
-          path: Backroom-1.1.66.apk
-          if-no-files-found: error
-          retention-days: 14
+          path.write_text(text, encoding='utf-8')
+          PY
 
-      - name: Publish GitHub Release v1.1.66
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          TAG='v1.1.66'
-          TITLE='Backroom 1.1.66 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.66.txt)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.66.apk --clobber
-          else
-            gh release create "$TAG" Backroom-1.1.66.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          if git diff --cached --quiet; then
+            echo 'Overlay runtime already restored.'
+            exit 0
           fi
-
-      - name: Verify published APK
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          gh release download v1.1.66 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.66.apk' --output Backroom-1.1.66-verified.apk
-          test -s Backroom-1.1.66-verified.apk
-          cmp Backroom-1.1.66.apk Backroom-1.1.66-verified.apk
-          sha256sum Backroom-1.1.66-verified.apk
+          git commit -m 'Restore Kai and Entity snapshot overlays'
+          git push origin HEAD:${GITHUB_REF_NAME}
