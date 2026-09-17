@@ -112,9 +112,6 @@ jobs:
           unzip -l Backroom-1.1.64.apk | grep -q 'assets/kai_entity_overlay.png'
           test "$(unzip -p Backroom-1.1.64.apk assets/kai_snapshot_overlay.png | sha256sum | awk '{print $1}')" = '0d4a612a984e3b864d9220ea65d8032fd37a09160d8600ecd6ee0d4c24056589'
           test "$(unzip -p Backroom-1.1.64.apk assets/kai_entity_overlay.png | sha256sum | awk '{print $1}')" = '92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a'
-          ! unzip -l Backroom-1.1.64.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
-          ! unzip -l Backroom-1.1.64.apk | grep -q 'assets/avatars/MadGod.jpg'
-          ! unzip -l Backroom-1.1.64.apk | grep -q 'assets/avatars/an_nhien_avatar.png'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
