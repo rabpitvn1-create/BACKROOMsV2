@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Repair one-shot script delimiter
+      - name: Repair one-shot script delimiters
         shell: bash
         run: |
           set -euo pipefail
@@ -31,20 +31,32 @@ jobs:
           from pathlib import Path
           p = Path('.github/scripts/purge-retired-systems.py')
           text = p.read_text(encoding='utf-8')
-          marker = '# Progression/Snapshot patch keeps its level/cache/combat/healthbar duties only.'
-          start = text.index(marker)
-          end = text.index('# Build packaging must not require removed assets.', start)
-          block = text[start:end]
-          opener = "write(rel, dedent('''\\\n"
-          closer = "'''))\n\n"
-          if opener not in block or closer not in block:
-              raise SystemExit('progression rewrite delimiters not found')
-          block = block.replace(opener, 'write(rel, dedent("""\\\n', 1)
-          pos = block.rfind(closer)
-          if pos < 0:
-              raise SystemExit('progression rewrite closing delimiter not found')
-          block = block[:pos] + '"""))\n\n' + block[pos + len(closer):]
-          text = text[:start] + block + text[end:]
+
+          def switch_block(text, marker, end_marker):
+              start = text.index(marker)
+              end = text.index(end_marker, start)
+              block = text[start:end]
+              opener = "write(rel, dedent('''\\\n"
+              closer = "'''))\n\n"
+              if opener not in block or closer not in block:
+                  raise SystemExit(f'delimiters not found for {marker}')
+              block = block.replace(opener, 'write(rel, dedent("""\\\n', 1)
+              pos = block.rfind(closer)
+              if pos < 0:
+                  raise SystemExit(f'closing delimiter not found for {marker}')
+              block = block[:pos] + '"""))\n\n' + block[pos + len(closer):]
+              return text[:start] + block + text[end:]
+
+          text = switch_block(
+              text,
+              '# State-op hardening now carries only the unrelated conservative deletion rule.',
+              '# Audit patches: remove the retired high-risk root and prompt clause only.',
+          )
+          text = switch_block(
+              text,
+              '# Progression/Snapshot patch keeps its level/cache/combat/healthbar duties only.',
+              '# Build packaging must not require removed assets.',
+          )
           p.write_text(text, encoding='utf-8')
           PY
           python3 -m py_compile .github/scripts/purge-retired-systems.py
