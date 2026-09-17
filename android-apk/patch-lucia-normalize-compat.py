@@ -4,6 +4,7 @@ ROOT = Path(__file__).resolve().parent
 CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core"
 SYSTEM = CORE / "CharacterEquipmentSystem.kt"
 POLICY = CORE / "InventoryPolicy.kt"
+MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 
 text = SYSTEM.read_text(encoding="utf-8")
 marker = "    val input = LuciaCanon.ensure(source)\n"
@@ -35,4 +36,38 @@ if '    if (characterId == LUCIA_ID) return LUCIA\n' not in policy:
         raise RuntimeError("Lucia inventory routing anchor missing")
     policy = policy.replace(route, route + '    if (characterId == LUCIA_ID) return LUCIA\n', 1)
 POLICY.write_text(policy, encoding="utf-8")
-print("Lucia compatibility applied to final equipment normalizer and inventory policy stack.")
+
+# The Iris/Syvial deterministic commit is installed earlier in the patch chain.
+# Keep lastRolls directly adjacent to the final flags commit because the Lucia
+# layer deliberately uses that stable three-line tail as its insertion contract.
+main = MAIN.read_text(encoding="utf-8")
+misordered = '''    flags.put("lastRolls", rolls);
+    if (rollSuccess(rolls, "irisReunion")) {
+'''
+ordered = '''    if (rollSuccess(rolls, "irisReunion")) {
+'''
+if misordered in main:
+    main = main.replace(misordered, ordered, 1)
+    tail = '''    state.put("flags", flags);
+    return state;
+  }
+'''
+    stable_tail = '''    flags.put("lastRolls", rolls);
+    state.put("flags", flags);
+    return state;
+  }
+'''
+    if main.count(tail) != 1:
+        raise RuntimeError(f"Lucia encounter tail relocation: expected exactly 1 tail, found {main.count(tail)}")
+    main = main.replace(tail, stable_tail, 1)
+
+stable_tail = '''    flags.put("lastRolls", rolls);
+    state.put("flags", flags);
+    return state;
+  }
+'''
+if stable_tail not in main:
+    raise RuntimeError("Lucia deterministic encounter insertion tail missing after follower restore")
+MAIN.write_text(main, encoding="utf-8")
+
+print("Lucia compatibility applied to final equipment normalizer, inventory policy and encounter insertion tail.")
