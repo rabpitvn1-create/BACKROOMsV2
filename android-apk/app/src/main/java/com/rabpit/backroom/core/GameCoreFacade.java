@@ -55,7 +55,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
       if (GameCoreRules.isDirectPlayerPickupAction(text)) {
         JSONObject result = deepCopy(legacy);
-        String reply = "[Warning] This action is not available.";
+        String reply = "Không thể nhặt vật phẩm tự do. Loot chỉ nhận từ Entity hoặc Rương.";
         appendLog(result, text, reply);
         persist(result);
         debug("Rejected direct player pickup");
