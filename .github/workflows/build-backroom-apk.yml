@@ -42,7 +42,7 @@ jobs:
           if git diff --cached --quiet; then
             echo 'Level runtime already connected.'
           else
-            git commit -m 'Connect levels to runtime'
+            git commit -m 'Finalize level runtime connection'
             git push origin HEAD:${GITHUB_REF_NAME}
           fi
 
@@ -62,6 +62,14 @@ jobs:
           grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
+          grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'levelPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'levelSnapshotDescriptor' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'currentLevel' android-apk/app/src/main/assets/index.html
 
       - name: Validate Game Master configuration
         run: |
@@ -102,6 +110,10 @@ jobs:
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_snapshot_overlay.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/knowledge/knowledge_db.json'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/manifest.json'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/level_0/01.webp'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
