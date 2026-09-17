@@ -4,34 +4,20 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
       - 'release/**'
     paths:
-      - 'android-apk/**'
       - '.github/workflows/build-backroom-apk.yml'
 
 permissions:
   contents: write
 
-concurrency:
-  group: build-backroom-apk-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
-  build-apk:
+  import-snapshots:
     runs-on: ubuntu-latest
-    env:
-      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
-      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
-      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
-      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Import Wikidot Level 0-6 snapshot pool
-        if: startsWith(github.ref, 'refs/heads/release/level-0-6-wiki-snapshots')
         shell: bash
         run: |
           set -euo pipefail
@@ -46,7 +32,7 @@ jobs:
             local level="$1" index="$2" page="$3" url="$4"
             local dir="$ROOT/level_${level}"
             local out="$dir/$(printf '%02d' "$index").webp"
-            local tmp
+            local tmp mime dims width height
             mkdir -p "$dir"
             tmp="$(mktemp)"
             echo "Downloading Level $level #$index: $url"
@@ -55,14 +41,14 @@ jobs:
               --user-agent 'Mozilla/5.0 (GitHub Actions; BACKROOMsV2 snapshot importer)' \
               --referer "$page" \
               "$url" --output "$tmp"
-            local mime
             mime="$(file --brief --mime-type "$tmp")"
             case "$mime" in
               image/jpeg|image/png|image/webp) ;;
               *) echo "Unexpected MIME type $mime for $url" >&2; exit 1 ;;
             esac
-            local width height
-            read -r width height < <(identify -format '%w %h' "$tmp")
+            dims="$(identify -format '%w %h' "$tmp")"
+            read -r width height <<< "$dims"
+            echo "Source dimensions: ${width}x${height}"
             if (( width < 480 || height < 270 )); then
               echo "Image is too small (${width}x${height}): $url" >&2
               exit 1
@@ -133,94 +119,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$ROOT"
-          if ! git diff --cached --quiet; then
-            git commit -m 'Import Wikidot level snapshot pool'
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
-      - name: Verify Java-only baseline
-        run: |
-          set -euo pipefail
-          grep -Fq 'versionCode 68' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.66'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.66.txt
-          test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
-          test -z "$(find android-apk -type f -name '*.py' -print -quit)"
-          test ! -d android-apk/ml
-          test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
-          ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
-
-      - name: Validate Game Master configuration
-        run: |
-          set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
-            test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
-          done
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.10.2'
-
-      - name: Run Java tests and build debug APK
-        working-directory: android-apk
-        run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
-
-      - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.66.apk
-
-      - name: Verify packaged APK
-        run: |
-          set -euo pipefail
-          test -s Backroom-1.1.66.apk
-          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.66.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.66.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='68' versionName='1.1.66'" <<<"$BADGING"
-          grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_entity_overlay.png'
-
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Backroom-1.1.66-debug-apk
-          path: Backroom-1.1.66.apk
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Publish GitHub Release v1.1.66
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          TAG='v1.1.66'
-          TITLE='Backroom 1.1.66 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.66.txt)
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.66.apk --clobber
-          else
-            gh release create "$TAG" Backroom-1.1.66.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
-          fi
-
-      - name: Verify published APK
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          gh release download v1.1.66 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.66.apk' --output Backroom-1.1.66-verified.apk
-          test -s Backroom-1.1.66-verified.apk
-          cmp Backroom-1.1.66.apk Backroom-1.1.66-verified.apk
-          sha256sum Backroom-1.1.66-verified.apk
+          git commit -m 'Import Wikidot level snapshot pool'
+          git push origin HEAD:${GITHUB_REF_NAME}
