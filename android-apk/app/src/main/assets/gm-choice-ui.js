@@ -214,7 +214,8 @@
     box.className = 'gm-choices';
     var label = document.createElement('div');
     label.className = 'combat-turn-label';
-    label.textContent = 'LƯỢT CHIẾN ĐẤU ' + (combat.round || 1) + ' · ' + (combat.currentActor || 'Nhân vật');
+    label.appendChild(document.createTextNode('LƯỢT CHIẾN ĐẤU ' + (combat.round || 1) + ' · '));
+    appendRichText(label, combat.currentActor || 'Nhân vật', entry, [{text:combat.currentActor || 'Nhân vật',type:'character'}]);
     box.appendChild(label);
     var choices = Array.isArray(combat.choices) ? combat.choices : [];
     choices.forEach(function(choice){
