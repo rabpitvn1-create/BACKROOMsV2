@@ -28,19 +28,22 @@ jobs:
         run: |
           set -euo pipefail
           python3 .github/scripts/sanitize-shared-patches.py
+          python3 .github/scripts/sanitize-active-residue.py
           python3 - <<'PY'
           from pathlib import Path
           p = Path('.github/scripts/purge-retired-systems.py')
           text = p.read_text(encoding='utf-8')
           anchor = '    ROOT / ".github/workflows/scan-madgod-annhien.yml",\n'
-          extra = (
-              '    ROOT / ".github/scripts/sanitize-shared-patches.py",\n'
-              '    ROOT / ".github/workflows/continue-purge.yml",\n'
-          )
-          if extra not in text:
-              if anchor not in text:
-                  raise SystemExit('purge exclusion anchor missing')
-              text = text.replace(anchor, anchor + extra, 1)
+          extras = [
+              '    ROOT / ".github/scripts/sanitize-shared-patches.py",\n',
+              '    ROOT / ".github/scripts/sanitize-active-residue.py",\n',
+              '    ROOT / ".github/workflows/continue-purge.yml",\n',
+          ]
+          if anchor not in text:
+              raise SystemExit('purge exclusion anchor missing')
+          insertion = ''.join(extra for extra in extras if extra not in text)
+          if insertion:
+              text = text.replace(anchor, anchor + insertion, 1)
           compile(text, str(p), 'exec')
           p.write_text(text, encoding='utf-8')
           PY
@@ -113,6 +116,7 @@ jobs:
           set -euo pipefail
           rm -f .github/scripts/purge-retired-systems.py
           rm -f .github/scripts/sanitize-shared-patches.py
+          rm -f .github/scripts/sanitize-active-residue.py
           rm -f .github/workflows/scan-madgod-annhien.yml
           rm -f .github/workflows/continue-purge.yml
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
