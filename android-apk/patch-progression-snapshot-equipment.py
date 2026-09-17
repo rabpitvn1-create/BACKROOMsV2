@@ -126,26 +126,17 @@ for script in ("patch-pressure-combat.py", "patch-unified-entity-spawn-pool.py",
         raise RuntimeError(f"Required runtime patch missing: {script}")
     exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), {"__name__": "__main__", "__file__": str(path)})
 
-# Cleanup removed two retired systems, but Iris and Syvial remain supported canonical followers.
-# Keep their registry/loadouts authoritative at the central normalization boundary so New Game,
-# save/load migration, inventory capacity and generated regression tests all see the same state.
+# The nested release chain has already upgraded the normalizer to the final three-argument
+# signature and wrapped the source with LuciaCanon. Add the still-supported Iris/Syvial registry
+# at that verified final boundary instead of depending on an obsolete pre-upgrade signature.
 equipment_system_path = ROOT / "app/src/main/java/com/rabpit/backroom/core/CharacterEquipmentSystem.kt"
 equipment_system = equipment_system_path.read_text(encoding="utf-8")
-old_normalization = '''  fun seedFresh(state: GameState): GameState = normalizeInternal(state, true)
-
-  fun normalize(state: GameState): GameState = normalizeInternal(state, state.metadata["characterEquipmentSchemaVersion"] != SCHEMA_VERSION)
-'''
-new_normalization = '''  fun seedFresh(state: GameState): GameState = normalizeInternal(SpecialFollowersCanon.ensure(state), true)
-
-  fun normalize(state: GameState): GameState {
-    val ensured = SpecialFollowersCanon.ensure(state)
-    return normalizeInternal(ensured, ensured.metadata["characterEquipmentSchemaVersion"] != SCHEMA_VERSION)
-  }
-'''
-if new_normalization not in equipment_system:
-    if equipment_system.count(old_normalization) != 1:
-        raise RuntimeError("Supported follower normalization anchor missing")
-    equipment_system = equipment_system.replace(old_normalization, new_normalization, 1)
+old_supported_followers = "    val input = LuciaCanon.ensure(source)\n"
+new_supported_followers = "    val input = LuciaCanon.ensure(SpecialFollowersCanon.ensure(source))\n"
+if new_supported_followers not in equipment_system:
+    if equipment_system.count(old_supported_followers) != 1:
+        raise RuntimeError("Final supported follower normalization anchor missing")
+    equipment_system = equipment_system.replace(old_supported_followers, new_supported_followers, 1)
 equipment_system_path.write_text(equipment_system, encoding="utf-8")
 
 # Final CI guard: nested patch scripts must not recreate retired runtime code, tests or assets.
@@ -164,8 +155,8 @@ for path in app_src.rglob("*"):
         raise RuntimeError(f"Retired runtime content recreated in: {rel}")
 
 for marker in (
-    "normalizeInternal(SpecialFollowersCanon.ensure(state), true)",
-    "val ensured = SpecialFollowersCanon.ensure(state)",
+    "LuciaCanon.ensure(SpecialFollowersCanon.ensure(source))",
+    "private fun normalizeInternal(source: GameState, seedStarting: Boolean, fillStartingHp: Boolean)",
 ):
     if marker not in equipment_system:
         raise RuntimeError("Supported follower registry repair missing: " + marker)
