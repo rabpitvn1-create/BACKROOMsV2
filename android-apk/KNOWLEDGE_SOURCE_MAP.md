@@ -1,173 +1,140 @@
 # The BACKROOMS — Drive Source Map for Runtime Knowledge
 
-Status: SOURCE MAP / implementation prerequisite
+Status: CURRENT SOURCE MAP
+Last character sync: 2026-09-17
 
-This file maps runtime facts to their authoritative Google Drive source. It is intentionally independent from `drive-canon.txt`, current prompts, legacy compact canon, and old patches. Those implementation artifacts are audit inputs only.
+This file maps runtime knowledge to its authoritative Google Drive source. Local mirrors, old saves/logs and retired patch artifacts are not canon authorities when they conflict with a newer Drive source.
 
 ## Authority order
 
 1. Latest explicit user instruction.
 2. Current Text Game rules and current campaign state for runtime facts.
-3. Current Character Codex for immutable character identity, personality core, abilities, equipment, knowledge limits, relationship baseline, address rules, and hard locks.
+3. Current Character Codex for immutable identity, personality, abilities, equipment, knowledge limits, relationship baselines, address rules and hard locks.
 4. Current World canon for world/level/entity/item facts.
 5. Current story/continuity for mutable campaign state.
 6. Writing rules for prose/dialogue/POV/knowledge boundaries.
 7. Reference/benchmark material only where its own source says it applies.
 
-`UNKNOWN`, `OPEN`, `CHƯA KHÓA`, or equivalent remains unknown. The runtime database must not reconcile it by inference.
+`UNKNOWN`, `OPEN`, `CHƯA KHÓA` or equivalent remains unknown. Runtime must not fill these fields by inference.
 
-## Drive audit notes
+## Current machine-readable character canon
 
-Directly opened from Google Drive before implementation:
+Runtime character source: `app/src/main/assets/knowledge/characters_current.json`.
+Human audit wiki: `CHARACTER_CODEX_CURRENT.md`.
 
-- `00_RULES/00_RULES_BOOT.md`
-- `05_TextGame/RULES/TEXT_GAME_RULES.md`
-- `05_TextGame/RULES/GAME_MASTER_RULES.md`
-- `05_TextGame/STORY/MAIN_STORY.md`
-- `02_CHARACTERS/Kai_Codex.docx`
-- `02_CHARACTERS/Iris_Codex.docx`
-- `02_CHARACTERS/Syvial_Codex.docx`
-- `01_WORLD/world.md`
-- `01_WORLD/level.md`
-- `01_WORLD/entity.md`
-- `01_WORLD/items.md`
-- `00_RULES/worldcodex.md`
-- `00_RULES/CONVERSATION.MD`
-- `00_RULES/WayOfWriting.md`
-- `00_RULES/Vivid_Verbs_Guide.md`
-- `00_RULES/Supernatural_Horror_Craft_Guide.md`
-- `00_RULES/Intimacy_Writing_Guide.md`
-- `00_RULES/Dialogue_Benchmarks.md`
-- `00_RULES/Những điều bắt buộc không được làm khi viết tiểu thuyết.md`
-- `00_RULES/HuongDan.txt`, because the boot/writing router delegates supplemental prose behavior to it.
+The old `app/src/main/assets/knowledge/knowledge_db.json` predates the 2026-09-17 Characters Drive sync and contains legacy character rows. Those legacy character rows are **not authoritative** for Kai/Iris/Syvial/Lucia. World/level/entity records in that file may still be used only when they do not conflict with a newer Drive source.
 
-The Drive folder `05_TextGame/SAVE` was opened directly and currently returned no files. Searches for the exact three required save names also returned no Drive result. Therefore no campaign state is imported from a guessed or legacy source. Runtime migration may preserve existing local APK save data, but the database seed treats the Drive save state as absent rather than inventing it.
+Current game state embeds the compact current character canon so the Java-only Gemini path receives the latest character locks without restoring the retired Kotlin/LiteRT knowledge engine.
 
-## Record contract
+## Character Drive audit
 
-Every important runtime record must expose:
+Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
 
-- `id`: stable, namespaced identifier.
-- `domain`: CHARACTER / RELATIONSHIP / WORLD / LEVEL / ENTITY / ITEM / WRITING / STORY / GAME_RULE.
-- `kind`: runtime-card, identity, ability, equipment, hard-lock, level, entity, item, writing-rule, objective, event, discovery, promise, thread, knowledge-edge, etc.
-- `text`: compact authoritative payload used in a context packet.
-- `source.document`: exact Drive source path/title.
-- `source.anchor`: source section/code when available.
-- `authority`: authority class.
-- `mutability`: IMMUTABLE / BASELINE / RUNTIME_MUTABLE.
-- `priority`: hard-canon ordering for budget selection.
-- `tags`: structured lookup tags.
-- `references`: direct record IDs.
-- `affordances`: scene-driven capability lookup tags.
+- `Kai_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — current revision R12.
+- `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k` — current revision R07.
+- `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY` — current Drive canon.
+- `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ` — current revision R03.
 
-Runtime traceability is therefore:
+### Kai source map
 
-`GM context line -> KnowledgeRecord.id -> source.document + source.anchor`.
+| Runtime concept | Source anchor | Current lock |
+| --- | --- | --- |
+| Identity / organization | `KAI-ID-01`, quick lock | Kai Akechi / Twilight; SRU Captain in anti-anomalous police. Legacy Black Blood/Vatican organization continuity is not current. Public SRU classification is human; half-human/half-demon son of Sparda and Eve is KNOWLEDGE_LOCK. Origin era 2299 is not birth year; true age unknown. |
+| Sparda Core | `KAI-CORE-SPARDA-01` | Infinite demon power; no intrinsic depletion/cooldown/corruption/berserk. Powers regeneration and self-repair of all currently equipped gear. |
+| Devil Trigger | `KAI-DT-01` | No intrinsic duration cap/cooldown/backlash/control loss. |
+| Guilty Crown Override | `KAI-ULT-GCO-01` | Exactly 24 Sparda demonic 5.56×45 mm shots through SRU Assault Rifle MK19 while external time is fully stopped. |
+| SRU Assault Rifle MK19 | `KAI-EQP-SRU-AR-MK19-01` | Current signature weapon. Physical 5.56×45 NATO, 30-round physical magazine, 700–950 rpm, 368 mm barrel, effective range about 500–600 m; physical ammo finite. Sparda demonic 5.56×45 forms directly from Core and does not consume physical ammo. |
+| SRU-MK20 | `KAI-EQP-SRU-MK20-01` | Current powered armor. R12 visual lock: black/gunmetal + ivory, small brass/gold accents, head/face exposed, very long silver-white high ponytail. |
+| Omnivault | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | Infinite storage/retrieval for inanimate objects + Restore of the same existing equipment. 24h per-item Restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed. |
 
-## Character source map
+### Iris source map
 
-| Runtime ID | Source | Anchor | Mutability | Notes |
-| --- | --- | --- | --- | --- |
-| `CHAR.KAI.RUNTIME_CORE` | `Kai_Codex.docx` | `KAI-QUICK-01`, `KAI-PER-01`, `KAI-DLG-01`, `KAI-WEAK-01`, `KAI-ACTION-LOCK-01` | IMMUTABLE | Minimal present-character card, not full ability dump. |
-| `CHAR.KAI.IDENTITY` | `Kai_Codex.docx` | `KAI-ID-01` | IMMUTABLE | Kai Akechi / Twilight; origin era 2299 is not birth year; true age unknown. |
-| `CHAR.KAI.SPARDA_CORE` | `Kai_Codex.docx` | `KAI-CORE-SPARDA-01` | IMMUTABLE | Infinite demon power; do not add intrinsic depletion/cooldown. |
-| `CHAR.KAI.DEVIL_TRIGGER` | `Kai_Codex.docx` | `KAI-DT-01` | IMMUTABLE | No invented berserk state, intrinsic duration cap, cooldown, or backlash. |
-| `CHAR.KAI.GUILTY_CROWN_OVERRIDE` | `Kai_Codex.docx` | `KAI-ULT-GCO-01` | IMMUTABLE | Exact 24-shot override while external time is fully stopped, under the codex conditions. |
-| `CHAR.KAI.WHITE_WRAITH` | `Kai_Codex.docx` | `KAI-EQP-WWM-01` | IMMUTABLE | Signature firearm; demonic ammunition comes from Kai. |
-| `CHAR.KAI.ARMOR` | `Kai_Codex.docx` | `KAI-EQP-ARMOR-01` | IMMUTABLE | Blackblood Armor and linked modules. |
-| `CHAR.KAI.OMNIVAULT` | `Kai_Codex.docx` | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | IMMUTABLE | Inanimate-only storage; 3 scan/copy slots and codex restore constraints. |
-| `CHAR.IRIS.RUNTIME_CORE` | `Iris_Codex.docx` | `IRIS-QUICK-01`, `IRIS-PER-01`, `IRIS-REL-01`, `IRIS-CANON-GATE-01` | IMMUTABLE | Present-character card. Iris is a ranged combatant/scout, not a remote drone station. |
-| `CHAR.IRIS.ARGUS` | `Iris_Codex.docx` | `IRIS-SCOUT-TERRAIN-01`, `IRIS-SCOUT-GROUND-01`, `IRIS-SCOUT-TARGET-01` | IMMUTABLE | Direct observation + armor sensors + terrain/route/cover/trace analysis. No omniscience, wall vision, remote cameras, or automatic true-form detection. |
-| `CHAR.IRIS.THOUSANDFOLD` | `Iris_Codex.docx` | `IRIS-THOUSANDFOLD-01` | IMMUTABLE | Information processing up to 1:1000; does not accelerate the body 1000x. |
-| `CHAR.IRIS.IVORY_EBONY` | `Iris_Codex.docx` | `IRIS-COMBAT-TWIN-01`, `IRIS-AMMO-DEMONIC-01` | IMMUTABLE | Mechanical twin pistols; ammunition formed from Iris's demon power; infinite source does not imply infinite ROF/durability/damage/accuracy. |
-| `CHAR.IRIS.SUPPORT` | `Iris_Codex.docx` | Field Galley / Field MedNet sections | IMMUTABLE | Field MedNet is not magic healing; Field Galley does not create matter. |
-| `CHAR.IRIS.UNKNOWN` | `Iris_Codex.docx` | `IRIS-UNKNOWN-01` | IMMUTABLE | Preserve current unknown fields, including exact combat tier and Iris↔Syvial address if not otherwise locked. |
-| `CHAR.SYVIAL.RUNTIME_CORE` | `Syvial_Codex.docx` | `SYVIAL-QUICK-01`, `SYVIAL-OVERVIEW-01`, `SYVIAL-YANDERE-01`, `SYVIAL-REL-KAI-01`, `SYVIAL-ACTION-LOCK-01` | IMMUTABLE | UR+, lucid/socially capable, heavy yandere toward Kai without random murder or loss of tactical intelligence. |
-| `CHAR.SYVIAL.LUCIFER_CORE` | `Syvial_Codex.docx` | `SYVIAL-CORE-LUCIFER-01` | IMMUTABLE | Infinite demon power; no invented intrinsic energy meter/cooldown. |
-| `CHAR.SYVIAL.DEVIL_TRIGGER` | `Syvial_Codex.docx` | `SYVIAL-DT-01` | IMMUTABLE | Does not remove control or add an intrinsic duration/cooldown absent from codex. |
-| `CHAR.SYVIAL.GODKILLER` | `Syvial_Codex.docx` | `SYVIAL-EQP-GODKILLER-01` | IMMUTABLE | Purely mechanical greatsword; do not turn into gun/gunblade. |
-| `CHAR.SYVIAL.GODKILLER_OVERRIDE` | `Syvial_Codex.docx` | `SYVIAL-ULT-GKO-01` | IMMUTABLE | Exact 24 cuts in fully stopped external time under codex conditions. |
-| `CHAR.SYVIAL.COMBAT` | `Syvial_Codex.docx` | `SYVIAL-COMBAT-01`, `SYVIAL-STYLE-COMBAT-01`, `SYVIAL-WEAK-01` | IMMUTABLE | High-tier sword combat, assault/control/counter/finish; do not competence-suppress. |
+| Runtime concept | Source anchor | Current lock |
+| --- | --- | --- |
+| Identity / organization | `IRIS-QUICK-01`, identity sections | Iris has no locked surname; ARGUS is SRU combat callsign. Scout / Target Eliminator in Kai's SRU team. |
+| Origin | `IRIS-BELIAL-01`, `IRIS-ORIGIN-KAI-01` | Half-human/half-demon daughter of Belial and a deceased human mother. Mother's identity/details and Iris's birth era remain UNKNOWN. Kai was the first SRU member to discover her; SRU later standardized Project 07. |
+| ARGUS Terrain Read | `IRIS-SCOUT-TERRAIN-01`, `IRIS-SCOUT-GROUND-01`, `IRIS-SCOUT-TARGET-01` | Direct observation + local Recon Frame sensors + terrain/route/cover/trace analysis. No omniscience, wall vision, remote cameras or automatic true-form detection. |
+| Thousandfold Cognition | `IRIS-THOUSANDFOLD-01` | Information processing up to 1:1000; does not accelerate body/weapon mechanics 1000x. |
+| Ivory & Ebony | `IRIS-COMBAT-TWIN-01`, `IRIS-AMMO-DEMONIC-01` | Twin mechanical pistols; bullets form directly from Iris's demon power. Infinite source does not mean infinite ROF/durability/damage/accuracy. |
+| Recon Frame | `IRIS-EQP-ARMOR-01` | Current SRU Recon Frame R03, mobile scout/ranged-combat configuration. |
+| Unknown combat tier | `IRIS-UNKNOWN-01`, canon gate | Exact combat tier remains UNKNOWN; do not infer UR+ from Kai/Syvial. |
+| Kai relationship | `IRIS-REL-KAI-01` | Iris has romantic feelings for Kai; Kai knows but reciprocation is not locked. Iris uses `anh–em` with Kai. |
+| Syvial relationship | `IRIS-REL-SYVIAL-01` | Friends/trusted teammates with romantic rivalry; not enemies. Exact Iris↔Syvial address remains UNKNOWN. |
 
-## Relationship and address source map
+### Syvial source map
 
-| Runtime ID | Source | Anchor | Mutability | Canon baseline |
-| --- | --- | --- | --- | --- |
-| `REL.KAI.IRIS.BASELINE` | `Iris_Codex.docx` | `IRIS-REL-KAI-01` | BASELINE | Iris has romantic feelings for Kai; Kai knows but has not reciprocated; official state remains teammate / commander-specialist. |
-| `ADDR.IRIS.KAI` | `Iris_Codex.docx` | `IRIS-REL-KAI-01`, `IRIS-DLG-01` | IMMUTABLE | Iris uses the `anh–em` system with Kai. |
-| `REL.IRIS.SYVIAL.BASELINE` | `Iris_Codex.docx` | `IRIS-REL-SYVIAL-01` | BASELINE | Friends and trusted teammates with romantic rivalry around Kai; not enemies. |
-| `REL.KAI.SYVIAL.BASELINE` | `Syvial_Codex.docx` | `SYVIAL-REL-KAI-01` | BASELINE | Syvial's feelings are immutable; how far Kai reciprocates is continuity-controlled. |
-| `ADDR.SYVIAL.KAI` | `Syvial_Codex.docx` | `SYVIAL-REL-KAI-01` | IMMUTABLE | Syvial -> Kai: `em`, calls `anh` or `Kai`; `Anh Kai` may be emphatic/teasing. Kai -> Syvial: `anh`, calls `Syvial` or `em`. `cục cưng` only if continuity has locked a long-term romantic relationship, not the default. |
-| `REL.CAMPAIGN.*` | runtime continuity | relationship-change events | RUNTIME_MUTABLE | Campaign delta overlays baseline without mutating codex records. |
+| Runtime concept | Source anchor | Current lock |
+| --- | --- | --- |
+| Identity / organization | `SYVIAL-ID-01`, `SYVIAL-OVERVIEW-01` | Half-human/half-demon daughter of Lucifer; mother unknown. Origin era 2299, true age unknown. UR+, same overall tier as Kai. SRU deputy leader of Kai's team. |
+| Personality / yandere | `SYVIAL-YANDERE-01`, relationship/action locks | Heavy yandere toward Kai while lucid, intelligent and socially capable. Values Kai's voluntary choice; no random murder, mission sabotage, mind-control or memory erasure merely to keep him. |
+| Lucifer Core | `SYVIAL-CORE-LUCIFER-01` | Infinite demon power; powers/enhances established physiology, armor and GodKiller. Not a second intelligence. |
+| Devil Trigger | `SYVIAL-DT-01` | No invented intrinsic duration/cooldown/control loss. |
+| GodKiller | `SYVIAL-EQP-GODKILLER-01` | Massive purely mechanical greatsword; never a gun/gunblade. Can be recalled unless its link is directly blocked. |
+| Lucifer Armor | `SYVIAL-EQP-LUCIFER-ARMOR-01` | Mobile black/gunmetal/silver mecha armor with magenta accents. Pointed head modules are mechanical. Very durable and fast self-repairing, not absolutely indestructible. |
+| GodKiller Override | `SYVIAL-ULT-GKO-01` | Exactly 24 cuts while external time is fully stopped. |
+
+### Lucia source map
+
+| Runtime concept | Source anchor | Current lock |
+| --- | --- | --- |
+| Identity | R03 identity / quick lock | Legal name Hứa Thuý Mai. Lucia Lục is military nickname/callsign. Human Vietnamese woman, age 19, Hoa Kiều, great-great-granddaughter of the Hứa family. |
+| Background | R03 quick lock | One year military service/training via Vietnam + USA; entrance result excellent. Skilled human tactical riflewoman, not supernatural/UR+. |
+| Story ownership | Level 0 encounter lock | Fixed story-owned Level 0 encounter; not random/quest spawn and not model-created on demand. Not part of the initial SRU Async group; initial group is Kai/Iris/Syvial. |
+| Gameplay stats | R03 gameplay lock | HP 100, STR 7, DF 7, AGI 8, CRIT 7; +2 HP after every 3 separately completed turns with save/load persistence. |
+| Equipment | R03 equipment sections | Personalized M4A1, combat dagger, military navigation watch. Baseline M4A1 physical ammo: 60 in main magazines + 90 reserve = 150. Black handgun visible in thigh holster but exact model/ammo/gameplay remain OPEN. |
+| Inventory | R03 gameplay lock | 8 item types, maximum 100 units each; Equipment separate from Inventory. |
+| Relationship/address | R03 open fields | Kai relationship and address remain OPEN. |
+
+## Relationship / address locks
+
+- `Iris -> Kai`: `anh–em`.
+- `Syvial -> Kai`: Syvial uses `em`, normally calls him `anh` or `Kai`; continuity controls deeper romantic address.
+- `Kai -> Syvial`: Kai uses `anh`, calls her `Syvial` or `em`.
+- `Iris <-> Syvial`: exact address remains UNKNOWN unless a newer source locks it.
+- `Lucia <-> Kai`: relationship/address remain OPEN.
 
 ## World source map
 
-| Runtime ID | Source | Anchor | Mutability |
-| --- | --- | --- | --- |
-| `WORLD.CORE` | `01_WORLD/world.md` | `BACKROOMS-WORLD-CORE-R2` / 0.1–0.5 | IMMUTABLE |
-| `LEVEL.00` … `LEVEL.06` | `01_WORLD/level.md` | corresponding Level section | IMMUTABLE |
-| `ENTITY.GLOBAL_HARD_LOCK` | `01_WORLD/entity.md` | 0.6 | IMMUTABLE |
-| `ENTITY.*` | `01_WORLD/entity.md` | stable entity codes such as `ENT-1A`, `ENT-2C`, `ENT-R01` | IMMUTABLE |
-| `ITEM.GLOBAL_HARD_LOCK` | `01_WORLD/items.md` | 0.7–0.8 | IMMUTABLE |
-| `ITEM.ALMOND_WATER` | `01_WORLD/items.md` | 8.1 | IMMUTABLE |
-| `ITEM.GREEK_FIRE` | `01_WORLD/items.md` | 8.2 | IMMUTABLE |
-| `ITEM.LIQUID_PAIN` | `01_WORLD/items.md` | 8.3 | IMMUTABLE |
-| `ITEM.*` | `01_WORLD/items.md` | stable item/resource section | IMMUTABLE |
+World data remains sourced from Drive, independent of the character sync:
 
-Adding future levels/entities is append-only: add records and references/tags; the GM prompt must not require a code branch for each new Level/Entity.
+| Runtime domain | Source |
+| --- | --- |
+| World core | `01_WORLD/world.md` |
+| Levels | `01_WORLD/level.md` |
+| Entities | `01_WORLD/entity.md` |
+| Items/resources | `01_WORLD/items.md` |
 
-## Game rules and story source map
+Adding future levels/entities remains append-only. Character codex must not be used to invent world facts.
 
-| Runtime ID | Source | Anchor | Mutability |
-| --- | --- | --- | --- |
-| `GAME.TEXT.CORE` | `05_TextGame/RULES/TEXT_GAME_RULES.md` | 1–12 | IMMUTABLE |
-| `GAME.GM.FAIRNESS` | `05_TextGame/RULES/GAME_MASTER_RULES.md` | 1–15 | IMMUTABLE |
-| `STORY.MAIN.PREMISE` | `05_TextGame/STORY/MAIN_STORY.md` | 2 | IMMUTABLE |
-| `STORY.MAIN.OBJECTIVE` | `05_TextGame/STORY/MAIN_STORY.md` | 3 | BASELINE |
-| `STORY.MAIN.COMMS_INITIAL` | `05_TextGame/STORY/MAIN_STORY.md` | 4 | BASELINE |
-| `STORY.MAIN.IRIS_EXISTENCE` | `05_TextGame/STORY/MAIN_STORY.md` | 5 | BASELINE |
-| `STORY.MAIN.SYVIAL_EXISTENCE` | `05_TextGame/STORY/MAIN_STORY.md` | 5 | BASELINE |
-| `STORY.CONTINUITY.EVENT.*` | runtime reducer | committed gameplay events | RUNTIME_MUTABLE |
-| `STORY.CONTINUITY.OBJECTIVE.*` | runtime continuity | objective state | RUNTIME_MUTABLE |
-| `STORY.CONTINUITY.DISCOVERY.*` | runtime continuity | deterministic discovery event | RUNTIME_MUTABLE |
-| `STORY.CONTINUITY.PROMISE.*` | runtime continuity | explicit validated social event | RUNTIME_MUTABLE |
-| `STORY.CONTINUITY.THREAD.*` | runtime continuity | unresolved-thread state | RUNTIME_MUTABLE |
-| `STORY.CONTINUITY.KNOWLEDGE.*` | runtime continuity | character knowledge ownership edge | RUNTIME_MUTABLE |
+## Game / story sources
 
-The required Drive save files are currently absent from the Drive folder, so there is no source-authorized row that claims a current `ACTIVE_RUN` value or current campaign facts. Local saves are migration input only, not Drive canon.
+| Domain | Source |
+| --- | --- |
+| Text Game hard rules | `05_TextGame/RULES/TEXT_GAME_RULES.md` |
+| GM fairness / consequences | `05_TextGame/RULES/GAME_MASTER_RULES.md` |
+| Main campaign premise/objectives | `05_TextGame/STORY/MAIN_STORY.md` |
+| Mutable campaign facts | Live validated save / committed runtime continuity |
 
-## Writing source map
+## Writing sources
 
-| Runtime ID | Source | Anchor/use |
-| --- | --- | --- |
-| `WRITING.DIALOGUE` | `00_RULES/CONVERSATION.MD` | `RULES.DIALOGUE`; sole authority for dialogue generation/audit. |
-| `WRITING.ADDRESS` | `00_RULES/CONVERSATION.MD` + character relationship sections | Address is relationship canon, never guessed. |
-| `WRITING.KNOWLEDGE_BOUNDARY` | `00_RULES/worldcodex.md`, forbidden rules, `CONVERSATION.MD` | No backstage/other-character knowledge leak. |
-| `WRITING.COMPETENCE` | forbidden rules + `worldcodex.md` + GM rules | No sudden stupidity or hidden competence. |
-| `WRITING.PROSE_POV` | `WayOfWriting.md` + relevant hard bans | POV/information discipline. |
-| `WRITING.VIVID_VERBS` | `Vivid_Verbs_Guide.md` | prose-level verb selection only, not dialogue generation. |
-| `WRITING.HORROR` | `Supernatural_Horror_Craft_Guide.md` | horror/suspense distribution; never withhold competence. |
-| `WRITING.INTIMACY` | `Intimacy_Writing_Guide.md` | relationship/intimacy reference, cannot override canon/address/consent. |
-| `WRITING.DIALOGUE_BENCHMARK` | `Dialogue_Benchmarks.md` | post-draft reference only, never a generation template. |
-| `WRITING.GUIDE_SUPPLEMENT` | `HuongDan.txt` | supplemental emotion/action around dialogue; delegated dialogue authority remains `CONVERSATION.MD`. |
+| Domain | Source |
+| --- | --- |
+| Dialogue generation/address discipline | `00_RULES/CONVERSATION.MD` + character relationship locks |
+| Knowledge boundary | `00_RULES/worldcodex.md` + forbidden-writing rules |
+| Competence preservation | forbidden-writing rules + `worldcodex.md` + GM rules |
+| POV/prose | `00_RULES/WayOfWriting.md` |
+| Horror | `00_RULES/Supernatural_Horror_Craft_Guide.md` |
+| Intimacy | `00_RULES/Intimacy_Writing_Guide.md` |
 
-## Retrieval rules derived from sources
+## Java-only runtime notes
 
-1. Direct stable IDs first.
-2. Explicit relationship edges second.
-3. Current state, party presence, level and structured tags third.
-4. Scene affordance -> relevant present-character capability next.
-5. Semantic retrieval is a last resort only when structured lookup is insufficient.
-6. Present characters always receive a compact runtime core. They do not need to be named by player input.
-7. Scene-driven capability examples:
-   - trace/route/cover/ambush/target-identification problem + Iris present -> `CHAR.IRIS.ARGUS`.
-   - direct combat/threat/control/frontline problem + Syvial present -> `CHAR.SYVIAL.COMBAT` and, only when relevant, weapon/override modules.
-8. Capability retrieval never implies omniscience, invented limits, or automatic action. Followers retain autonomy.
-9. Raw dialogue log is a small recency buffer only. Long-term memory is structured continuity.
-10. Context budget priority: hard canon -> current state/scene -> active story -> present runtime cards -> relationship/address -> relevant ability/knowledge limits -> relevant Level/Entity/Item -> flavor.
+The former patch-generated Kotlin/LiteRT knowledge pipeline is retired. Current Android runtime is Java 17 plus WebView HTML/JavaScript. Character canon is injected into the game state as a compact `characterCanon` block so the existing Java Gemini orchestration receives it every AI turn without Python, Kotlin or LiteRT.
 
-## Baseline implementation audit link
+Rules:
 
-The current build-time runtime is patch-generated. `patch-ai-orchestrator.py` extracts broad string sections from `drive-canon.txt` and `kai-codex.txt`; `compactStateForPrompt` copies most legacy state and retains six recent log entries; routing uses keyword helpers such as dialogue/combat/item/entity plus limited presence checks. `patch-conditional-audit.py` already skips the AI critic below a risk threshold, but critic calls duplicate a broad canon/state slice.
-
-Those files are not a canon source for the new database. They are retained only as OLD-system input for benchmark comparison.
+1. Current Drive character canon overrides conflicting legacy character facts in old logs/local mirrors.
+2. Runtime campaign state still controls mutable facts such as current location, injuries, acquired/lost items and relationship development when those facts do not contradict immutable character canon.
+3. KNOWLEDGE_LOCK never becomes character knowledge automatically.
+4. UNKNOWN/OPEN stays unknown.
+5. Lucia's codex is knowledge that she exists in the setting; it is not permission to spawn her outside her fixed Level 0 story encounter.
+6. New Turn 1 baseline uses SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring. Untouched Turn 1 saves with the old White Wraith baseline are migrated; progressed campaigns are not blindly rewritten.
