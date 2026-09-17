@@ -5,4 +5,10 @@ Backroom 1.1.65
 - Loại bỏ LiteRT, model intent local và dependency liên quan.
 - Loại bỏ Python patch/ML pipeline khỏi quy trình build APK.
 - CI hiện kiểm tra Java-only baseline trước khi test và build.
+- Đồng bộ Character Codex hiện hành từ Google Drive cho Kai, Iris, Syvial và Lucia.
+- Kai chuyển canon hiện hành sang SRU: SRU Assault Rifle MK19 + SRU-MK20; loại White Wraith/Blackblood Armor khỏi baseline Turn 1.
+- Omnivault hiện chỉ còn lưu/lấy vật vô tri và Hoàn nguyên trang bị; bỏ Scan/Copy/Create/Marked/Upgrade legacy.
+- Iris/ARGUS và Syvial được đồng bộ tổ chức SRU; Syvial là Đội phó đội Kai.
+- Bổ sung Lucia/Hứa Thuý Mai R03 vào codex runtime với fixed encounter Level 0 và các trường OPEN/UNKNOWN được giữ nguyên.
+- Character canon hiện hành được nhúng vào game state để Java Gemini path nhận đúng Drive canon mỗi lượt.
 - Giữ WebView HTML/JavaScript làm lớp giao diện của game.
