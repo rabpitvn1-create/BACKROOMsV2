@@ -227,6 +227,7 @@ public final class CombatChoiceEngine {
 
     combat.put("resolvedActorIndex", actorIndex);
     combat.put("resolvedActorName", actor.optString("name", "Nhân vật"));
+    combat.put("resolvedRound", Math.max(1, combat.optInt("round", 1)));
     JSONObject entity = combat.getJSONObject("entity");
     if (actorIndex == 0 && combat.optInt("round", 1) > 1) {
       tickRoundStartEffects(state, combat, entity);
