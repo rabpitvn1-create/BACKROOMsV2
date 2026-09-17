@@ -1,0 +1,30 @@
+name: Scan MadGod and An Nhien
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/scan-madgod-annhien.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Scan repository text and filenames
+        shell: bash
+        run: |
+          set -uo pipefail
+          export LC_ALL=C.UTF-8
+          echo '===== TEXT REFERENCES ====='
+          git grep -n -I -i -E 'MadGod|Mad God|madgod|mad god|An Nhiên|An Nhien|AnNhien|an_nhien|an-nhien|annhien' -- . || true
+          echo '===== FILENAMES ====='
+          find . -type f \( -iname '*madgod*' -o -iname '*mad*god*' -o -iname '*annhien*' -o -iname '*an-nhien*' -o -iname '*an_nhien*' -o -iname '*an*nhien*' \) -print | sort
