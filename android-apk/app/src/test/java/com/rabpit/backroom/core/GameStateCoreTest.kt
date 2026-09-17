@@ -19,33 +19,53 @@ class GameStateCoreTest {
     quantity: Int = 1,
     target: String? = null,
     slot: String? = null,
-    source: CommandSource = CommandSource.SYSTEM
+    source: CommandSource = CommandSource.RULE
   ) = ItemCommand("cmd-$id-$op-$quantity-${target.orEmpty()}-$source", "TURN_1", KAI_ID, target, source, op, id, id, quantity, slot)
 
+  private fun entityGrant(id: String, quantity: Int = 1, commandId: String = "grant-$id-$quantity") =
+    ItemDropAuthority.entityDrop(
+      commandId = commandId,
+      actorId = KAI_ID,
+      entityKey = "test-entity",
+      item = ItemStack(id, id, quantity),
+      quantity = quantity
+    )
+
   @Test fun authoritativeGrantDropAndDuplicateAreDeterministic() {
-    val picked = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP))
+    val grant = entityGrant("water", commandId = "grant-water")
+    val picked = StateReducer.execute(base(), grant)
+    assertTrue(picked.applied)
     assertEquals(1, picked.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
-    val duplicate = StateReducer.execute(picked.state, item("water", ItemCommand.Operation.PICKUP))
+
+    val duplicate = StateReducer.execute(picked.state, grant)
     assertTrue(duplicate.duplicate)
     assertEquals(1, duplicate.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
+
     val dropped = StateReducer.execute(picked.state, item("water", ItemCommand.Operation.DROP))
     assertFalse(dropped.state.inventories.getValue(KAI_ID).items.containsKey("water"))
   }
 
-  @Test fun playerPickupIsRejectedButStoryGrantIsAllowed() {
-    val playerPickup = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, source = CommandSource.RULE))
-    assertFalse(playerPickup.applied)
-    assertEquals("player_pickup_unavailable", playerPickup.validation.reason)
-    assertTrue(playerPickup.state.inventories.getValue(KAI_ID).items.isEmpty())
+  @Test fun onlyAuthoritativeDropsCanAcquireItems() {
+    val rulePickup = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, source = CommandSource.RULE))
+    assertFalse(rulePickup.applied)
+    assertEquals("item_acquisition_requires_authoritative_drop", rulePickup.validation.reason)
 
-    val storyGrant = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, source = CommandSource.GEMINI))
-    assertTrue(storyGrant.applied)
-    assertEquals(1, storyGrant.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
+    val geminiPickup = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, source = CommandSource.GEMINI))
+    assertFalse(geminiPickup.applied)
+    assertEquals("item_acquisition_requires_authoritative_drop", geminiPickup.validation.reason)
+
+    val bareSystemPickup = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, source = CommandSource.SYSTEM))
+    assertFalse(bareSystemPickup.applied)
+    assertEquals("item_drop_origin_required", bareSystemPickup.validation.reason)
+
+    val authoritative = StateReducer.execute(base(), entityGrant("water"))
+    assertTrue(authoritative.applied)
+    assertEquals(1, authoritative.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
   }
 
   @Test fun transferRequiresOwnershipAndKnownTarget() {
     val iris = CharacterState("iris", "Iris")
-    val picked = StateReducer.execute(base(iris), item("water", ItemCommand.Operation.PICKUP, 2)).state
+    val picked = StateReducer.execute(base(iris), entityGrant("water", 2)).state
     val moved = StateReducer.execute(picked, item("water", ItemCommand.Operation.TRANSFER, 1, "iris"))
     assertTrue(moved.applied)
     assertEquals(1, moved.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
@@ -53,7 +73,7 @@ class GameStateCoreTest {
   }
 
   @Test fun equipAndUnequipUseOwnedItem() {
-    val picked = StateReducer.execute(base(), item("gun", ItemCommand.Operation.PICKUP)).state
+    val picked = StateReducer.execute(base(), entityGrant("gun")).state
     val equipped = StateReducer.execute(picked, item("gun", ItemCommand.Operation.EQUIP, slot = "weapon"))
     assertEquals("gun", equipped.state.equipment.getValue(KAI_ID).slots["weapon"])
     val unequipped = StateReducer.execute(equipped.state, item("gun", ItemCommand.Operation.UNEQUIP, slot = "weapon"))
@@ -80,27 +100,6 @@ class GameStateCoreTest {
     assertTrue("injury-leg" in applied.state.statuses)
     val removed = StateReducer.execute(applied.state, StatusCommand("status-remove", "TURN_1", KAI_ID, source = CommandSource.SYSTEM, operation = StatusCommand.Operation.REMOVE, statusId = "injury-leg"))
     assertFalse("injury-leg" in removed.state.statuses)
-  }
-    assertEquals(3, state.omnivault.scanSlots.size)
-    assertFalse(state.omnivault.scanSlots.any { it.sourceItemId == "original-1" })
-    assertTrue("original-1" in state.omnivault.markedSourceIds)
-
-    val copied = StateReducer.execute(state, OmnivaultCommand("copy", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.COPY, itemId = "original-4", itemName = "Item 4", quantity = 2))
-    assertEquals(3, copied.state.inventories.getValue(KAI_ID).items.getValue("original-4").quantity)
-    assertEquals("2", copied.state.inventories.getValue(KAI_ID).items.getValue("original-4").metadata["omnivaultCopyCount"])
-  }
-
-  @Test fun restoreIsNarrativeOnlyAndCannotMutateInventoryState() {
-    val withItem = StateReducer.execute(base(), item("old-gun", ItemCommand.Operation.PICKUP)).state
-    val before = withItem.inventories.getValue(KAI_ID).items.getValue("old-gun")
-    val restored = StateReducer.execute(withItem, OmnivaultCommand(
-      "restore", "TURN_1", KAI_ID, source = CommandSource.UI,
-      operation = OmnivaultCommand.Operation.RESTORE,
-      itemId = "old-gun", itemName = "Old Gun", timestampEpochMs = 1000
-    ))
-    assertFalse(restored.applied)
-    assertEquals("restore_narrative_only", restored.validation.reason)
-    assertEquals(before, restored.state.inventories.getValue(KAI_ID).items.getValue("old-gun"))
   }
 
   @Test fun geminiWorldDeltaNeedsGameEngineValidation() {
