@@ -143,126 +143,6 @@ bỏ trang bị chìa khóa,UNEQUIP_ITEM,train,template-2
 bỏ trang bị bộ sơ cứu,UNEQUIP_ITEM,train,template-2
 bỏ trang bị viên pin,UNEQUIP_ITEM,train,template-2
 bỏ trang bị mặt nạ,UNEQUIP_ITEM,train,template-2
-cất chai nước vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất đèn pin vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất khẩu súng vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất cuộn băng vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất chìa khóa vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất bộ sơ cứu vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất viên pin vào nhẫn,OMNIVAULT_STORE,train,template-0
-cất mặt nạ vào nhẫn,OMNIVAULT_STORE,train,template-0
-bỏ chai nước trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ đèn pin trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ khẩu súng trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ cuộn băng trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ chìa khóa trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ bộ sơ cứu trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ viên pin trong Omnivault,OMNIVAULT_STORE,train,template-1
-bỏ mặt nạ trong Omnivault,OMNIVAULT_STORE,train,template-1
-lưu chai nước vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu đèn pin vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu khẩu súng vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu cuộn băng vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu chìa khóa vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu bộ sơ cứu vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu viên pin vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lưu mặt nạ vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,template-2
-lấy chai nước ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy đèn pin ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy khẩu súng ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy cuộn băng ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy chìa khóa ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy bộ sơ cứu ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy viên pin ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-lấy mặt nạ ra khỏi nhẫn,OMNIVAULT_WITHDRAW,train,template-0
-rút chai nước từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút đèn pin từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút khẩu súng từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút cuộn băng từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút chìa khóa từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút bộ sơ cứu từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút viên pin từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-rút mặt nạ từ Omnivault,OMNIVAULT_WITHDRAW,train,template-1
-triệu hồi chai nước từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi đèn pin từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi khẩu súng từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi cuộn băng từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi chìa khóa từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi bộ sơ cứu từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi viên pin từ kho,OMNIVAULT_WITHDRAW,train,template-2
-triệu hồi mặt nạ từ kho,OMNIVAULT_WITHDRAW,train,template-2
-quét chai nước,OMNIVAULT_SCAN,train,template-0
-quét đèn pin,OMNIVAULT_SCAN,train,template-0
-quét khẩu súng,OMNIVAULT_SCAN,train,template-0
-quét cuộn băng,OMNIVAULT_SCAN,train,template-0
-quét chìa khóa,OMNIVAULT_SCAN,train,template-0
-quét bộ sơ cứu,OMNIVAULT_SCAN,train,template-0
-quét viên pin,OMNIVAULT_SCAN,train,template-0
-quét mặt nạ,OMNIVAULT_SCAN,train,template-0
-scan chai nước,OMNIVAULT_SCAN,train,template-1
-scan đèn pin,OMNIVAULT_SCAN,train,template-1
-scan khẩu súng,OMNIVAULT_SCAN,train,template-1
-scan cuộn băng,OMNIVAULT_SCAN,train,template-1
-scan chìa khóa,OMNIVAULT_SCAN,train,template-1
-scan bộ sơ cứu,OMNIVAULT_SCAN,train,template-1
-scan viên pin,OMNIVAULT_SCAN,train,template-1
-scan mặt nạ,OMNIVAULT_SCAN,train,template-1
-nhẫn quét chai nước,OMNIVAULT_SCAN,train,template-2
-nhẫn quét đèn pin,OMNIVAULT_SCAN,train,template-2
-nhẫn quét khẩu súng,OMNIVAULT_SCAN,train,template-2
-nhẫn quét cuộn băng,OMNIVAULT_SCAN,train,template-2
-nhẫn quét chìa khóa,OMNIVAULT_SCAN,train,template-2
-nhẫn quét bộ sơ cứu,OMNIVAULT_SCAN,train,template-2
-nhẫn quét viên pin,OMNIVAULT_SCAN,train,template-2
-nhẫn quét mặt nạ,OMNIVAULT_SCAN,train,template-2
-sao chép chai nước,OMNIVAULT_COPY,train,template-0
-sao chép đèn pin,OMNIVAULT_COPY,train,template-0
-sao chép khẩu súng,OMNIVAULT_COPY,train,template-0
-sao chép cuộn băng,OMNIVAULT_COPY,train,template-0
-sao chép chìa khóa,OMNIVAULT_COPY,train,template-0
-sao chép bộ sơ cứu,OMNIVAULT_COPY,train,template-0
-sao chép viên pin,OMNIVAULT_COPY,train,template-0
-sao chép mặt nạ,OMNIVAULT_COPY,train,template-0
-copy chai nước,OMNIVAULT_COPY,train,template-1
-copy đèn pin,OMNIVAULT_COPY,train,template-1
-copy khẩu súng,OMNIVAULT_COPY,train,template-1
-copy cuộn băng,OMNIVAULT_COPY,train,template-1
-copy chìa khóa,OMNIVAULT_COPY,train,template-1
-copy bộ sơ cứu,OMNIVAULT_COPY,train,template-1
-copy viên pin,OMNIVAULT_COPY,train,template-1
-copy mặt nạ,OMNIVAULT_COPY,train,template-1
-nhân bản chai nước,OMNIVAULT_COPY,train,template-2
-nhân bản đèn pin,OMNIVAULT_COPY,train,template-2
-nhân bản khẩu súng,OMNIVAULT_COPY,train,template-2
-nhân bản cuộn băng,OMNIVAULT_COPY,train,template-2
-nhân bản chìa khóa,OMNIVAULT_COPY,train,template-2
-nhân bản bộ sơ cứu,OMNIVAULT_COPY,train,template-2
-nhân bản viên pin,OMNIVAULT_COPY,train,template-2
-nhân bản mặt nạ,OMNIVAULT_COPY,train,template-2
-hoàn nguyên chai nước,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên đèn pin,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên khẩu súng,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên cuộn băng,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên chìa khóa,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên bộ sơ cứu,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên viên pin,OMNIVAULT_RESTORE,train,template-0
-hoàn nguyên mặt nạ,OMNIVAULT_RESTORE,train,template-0
-restore chai nước,OMNIVAULT_RESTORE,train,template-1
-restore đèn pin,OMNIVAULT_RESTORE,train,template-1
-restore khẩu súng,OMNIVAULT_RESTORE,train,template-1
-restore cuộn băng,OMNIVAULT_RESTORE,train,template-1
-restore chìa khóa,OMNIVAULT_RESTORE,train,template-1
-restore bộ sơ cứu,OMNIVAULT_RESTORE,train,template-1
-restore viên pin,OMNIVAULT_RESTORE,train,template-1
-restore mặt nạ,OMNIVAULT_RESTORE,train,template-1
-khôi phục chai nước về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục đèn pin về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục khẩu súng về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục cuộn băng về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục chìa khóa về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục bộ sơ cứu về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục viên pin về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
-khôi phục mặt nạ về trạng thái tốt nhất,OMNIVAULT_RESTORE,train,template-2
 xem inventory,INVENTORY_QUERY,train,manual-0
 kiểm tra túi đồ,INVENTORY_QUERY,train,manual-1
 kho đồ hiện có gì,INVENTORY_QUERY,train,manual-2
@@ -359,31 +239,6 @@ gỡ mặt nạ đang đeo,UNEQUIP_ITEM,train,paraphrase-1
 tháo vật khỏi ô vũ khí,UNEQUIP_ITEM,train,paraphrase-2
 Kai bỏ vũ khí đang cầm,UNEQUIP_ITEM,train,paraphrase-3
 cất món đang trang bị,UNEQUIP_ITEM,train,paraphrase-4
-Nhẫn Vạn Tàng thu radio vào kho,OMNIVAULT_STORE,train,paraphrase-0
-cho món đó biến vào Omnivault,OMNIVAULT_STORE,train,paraphrase-1
-đưa vật vào không gian nhẫn,OMNIVAULT_STORE,train,paraphrase-2
-Omnivault cất giữ chiếc hộp,OMNIVAULT_STORE,train,paraphrase-3
-Kai chuyển vật sở hữu vào Nhẫn Vạn Tàng,OMNIVAULT_STORE,train,paraphrase-4
-gọi radio từ Nhẫn Vạn Tàng ra,OMNIVAULT_WITHDRAW,train,paraphrase-0
-lấy lại món vừa cất trong Omnivault,OMNIVAULT_WITHDRAW,train,paraphrase-1
-cho vật xuất hiện từ kho nhẫn,OMNIVAULT_WITHDRAW,train,paraphrase-2
-nhẫn triệu hồi món đã lưu,OMNIVAULT_WITHDRAW,train,paraphrase-3
-Kai đưa vật lưu trữ trở lại tay,OMNIVAULT_WITHDRAW,train,paraphrase-4
-ghi mẫu radio vào scan slot,OMNIVAULT_SCAN,train,paraphrase-0
-Omnivault đọc mẫu vật thể,OMNIVAULT_SCAN,train,paraphrase-1
-chiếu luồng quét lên kim loại,OMNIVAULT_SCAN,train,paraphrase-2
-nhẫn ghi nhận cấu trúc vật,OMNIVAULT_SCAN,train,paraphrase-3
-tạo template từ vật gốc,OMNIVAULT_SCAN,train,paraphrase-4
-tạo bản thứ hai từ mẫu nhẫn,OMNIVAULT_COPY,train,paraphrase-0
-sinh thêm bản sao radio,OMNIVAULT_COPY,train,paraphrase-1
-Omnivault dựng lại hai bản,OMNIVAULT_COPY,train,paraphrase-2
-nhân thêm vật từ scan slot,OMNIVAULT_COPY,train,paraphrase-3
-tạo một copy từ template,OMNIVAULT_COPY,train,paraphrase-4
-đưa radio về trạng thái nguyên vẹn,OMNIVAULT_RESTORE,train,paraphrase-0
-nhẫn phục hồi chai móp,OMNIVAULT_RESTORE,train,paraphrase-1
-trả vật hỏng về tình trạng tốt nhất,OMNIVAULT_RESTORE,train,paraphrase-2
-sửa vật thể bằng Hoàn nguyên,OMNIVAULT_RESTORE,train,paraphrase-3
-khôi phục trạng thái tốt nhất từng có,OMNIVAULT_RESTORE,train,paraphrase-4
 Kai còn sở hữu món nào,INVENTORY_QUERY,train,paraphrase-0
 liệt kê hành trang hiện giờ,INVENTORY_QUERY,train,paraphrase-1
 trong túi có bao nhiêu thứ,INVENTORY_QUERY,train,paraphrase-2
@@ -517,21 +372,6 @@ lắp món đồ vào ô vũ khí,EQUIP_ITEM,test,heldout-2
 Kai hạ súng và cất khỏi tay,UNEQUIP_ITEM,test,heldout-0
 gỡ mặt nạ đang đeo,UNEQUIP_ITEM,test,heldout-1
 tháo món đồ khỏi ô vũ khí,UNEQUIP_ITEM,test,heldout-2
-Nhẫn Vạn Tàng thu chiếc radio vào kho,OMNIVAULT_STORE,test,heldout-0
-Kai cho món đó biến vào Omnivault,OMNIVAULT_STORE,test,heldout-1
-đưa vật đang cầm vào không gian nhẫn,OMNIVAULT_STORE,test,heldout-2
-gọi chiếc radio từ Nhẫn Vạn Tàng ra,OMNIVAULT_WITHDRAW,test,heldout-0
-Kai lấy lại món vừa cất trong Omnivault,OMNIVAULT_WITHDRAW,test,heldout-1
-cho vật đó xuất hiện từ kho nhẫn,OMNIVAULT_WITHDRAW,test,heldout-2
-ghi mẫu chiếc radio vào một scan slot,OMNIVAULT_SCAN,test,heldout-0
-Omnivault đọc mẫu vật thể này,OMNIVAULT_SCAN,test,heldout-1
-chiếu luồng quét lên tấm kim loại,OMNIVAULT_SCAN,test,heldout-2
-tạo một bản thứ hai từ mẫu trong nhẫn,OMNIVAULT_COPY,test,heldout-0
-sinh thêm bản sao chiếc radio,OMNIVAULT_COPY,test,heldout-1
-Kai cho Omnivault dựng lại hai bản,OMNIVAULT_COPY,test,heldout-2
-đưa chiếc radio về trạng thái nguyên vẹn nhất,OMNIVAULT_RESTORE,test,heldout-0
-nhẫn phục hồi chai móp,OMNIVAULT_RESTORE,test,heldout-1
-trả vật thể hỏng về tình trạng tốt nhất trước đây,OMNIVAULT_RESTORE,test,heldout-2
 Kai còn sở hữu món đồ nào,INVENTORY_QUERY,test,heldout-0
 liệt kê hành trang hiện giờ,INVENTORY_QUERY,test,heldout-1
 trong túi đang có bao nhiêu thứ,INVENTORY_QUERY,test,heldout-2

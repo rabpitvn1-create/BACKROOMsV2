@@ -44,7 +44,7 @@ def old_drive_packet(case: dict) -> str:
         section(DRIVE_CANON, "GAMEPLAY HARD LOCK", "END DRIVE CANON R06"),
     ]
     action = case["action"].lower()
-    if any(k in action for k in ["entity", "hound", "smiler", "jeff", "almond", "item", "loot", "inventory", "omnivault", "water", "nước", "thuốc"]):
+    if any(k in action for k in ["entity", "hound", "smiler", "jeff", "almond", "item", "loot", "inventory", "water", "nước", "thuốc"]):
         out.append(section(DRIVE_CANON, "ENTITY VÀ TÀI NGUYÊN", "IRIS / SYVIAL"))
     if case.get("present") or any(k in action for k in ["iris", "syvial", "nói", "hỏi", "dialogue", "trò chuyện"]):
         out.append(section(DRIVE_CANON, "IRIS / SYVIAL", "GAMEPLAY HARD LOCK"))
@@ -58,7 +58,7 @@ def old_kai_packet(case: dict) -> str:
         section(KAI_CANON, "4. PHONG CÁCH GIAO TIẾP", "5. NĂNG LỰC CHIẾN ĐẤU"),
         section(KAI_CANON, "5. NĂNG LỰC CHIẾN ĐẤU", "6. SPARDA CORE"),
         section(KAI_CANON, "6. SPARDA CORE", "7. DEVIL TRIGGER"),
-        section(KAI_CANON, "10. BLACKBLOOD ARMOR & MODULES", "11. OMNIVAULT RING / NHẪN VẠN TÀNG"),
+        section(KAI_CANON, "10. BLACKBLOOD ARMOR & MODULES", "12. PHONG CÁCH CHIẾN ĐẤU"),
         section(KAI_CANON, "13. GIỚI HẠN THỰC SỰ", "14. ACTION LOCKS / CẤM MODEL TỰ BỊA"),
         section(KAI_CANON, "14. ACTION LOCKS / CẤM MODEL TỰ BỊA", "END OF KAI OPERATIONAL CODEX"),
     ]
@@ -68,7 +68,7 @@ def old_kai_packet(case: dict) -> str:
             section(KAI_CANON, "7. DEVIL TRIGGER", "10. BLACKBLOOD ARMOR & MODULES"),
             section(KAI_CANON, "12. PHONG CÁCH CHIẾN ĐẤU", "13. GIỚI HẠN THỰC SỰ"),
         ])
-    if any(k in action for k in ["omnivault", "item", "inventory", "scan", "hoàn nguyên", "restore"]):
+    if any(k in action for k in ["item", "inventory", "scan", "hoàn nguyên", "restore"]):
         out.append(section(KAI_CANON, "11. OMNIVAULT RING / NHẪN VẠN TÀNG", "12. PHONG CÁCH CHIẾN ĐẤU"))
     return "\n\n".join(x for x in out if x)
 
@@ -97,8 +97,7 @@ def select_new(case: dict) -> set[str]:
         "field mednet": "CHAR.IRIS.SUPPORT", "field galley": "CHAR.IRIS.SUPPORT",
         "godkiller override": "CHAR.SYVIAL.GODKILLER_OVERRIDE", "lucifer core": "CHAR.SYVIAL.LUCIFER_CORE",
         "sparda core": "CHAR.KAI.SPARDA_CORE", "white wraith": "CHAR.KAI.WHITE_WRAITH",
-        "omnivault": "CHAR.KAI.OMNIVAULT", "nhẫn vạn tàng": "CHAR.KAI.OMNIVAULT",
-    }
+            }
     for needle, rid in direct.items():
         if needle in action:
             selected.add(rid)
@@ -173,7 +172,6 @@ def old_supports(case: dict, rid: str) -> bool:
         "CHAR.SYVIAL.RUNTIME_CORE": ["syvial: con gái lucifer"],
         "CHAR.SYVIAL.COMBAT": ["kiếm sĩ siêu nhiên"],
         "ADDR.SYVIAL.KAI": ["xưng “em”, gọi “anh” hoặc “kai”", "xưng \"em\", gọi \"anh\" hoặc \"kai\""],
-        "CHAR.KAI.OMNIVAULT": ["omnivault ring / nhẫn vạn tàng"],
         "CHAR.KAI.GUILTY_CROWN_OVERRIDE": ["guilty crown override"],
         "STORY.MAIN.OBJECTIVE": ["mục tiêu dài hạn"],
         "STORY.MAIN.SEPARATION": ["black_blood_link", "location unknown to kai"],
@@ -230,12 +228,6 @@ CORPUS = [
         "quality": {"character_errors": {"CHAR.IRIS.RUNTIME_CORE", "CHAR.SYVIAL.RUNTIME_CORE"}, "address_errors": {"ADDR.IRIS.KAI", "ADDR.SYVIAL.KAI"}}
     },
     {
-        "name": "omnivault_scan", "level": 1, "action": "Kai dùng Omnivault scan vật vô tri vừa tìm được.",
-        "present": [], "log": long_log,
-        "required": {"CHAR.KAI.OMNIVAULT", "LEVEL.01"},
-        "quality": {"ability_overreach": {"CHAR.KAI.OMNIVAULT"}}
-    },
-    {
         "name": "level5_beast", "level": 5, "action": "Dấu vết cho thấy Beast of Level 5 có thể đang theo dõi nhóm.", "scene": "trace threat",
         "present": ["syvial"], "log": long_log,
         "required": {"LEVEL.05", "ENTITY.BEAST_LEVEL_5", "ENTITY.GLOBAL_HARD_LOCK", "CHAR.SYVIAL.COMBAT"},
@@ -275,7 +267,7 @@ for case in CORPUS:
     old_missing += len(old_missing_ids)
     new_missing += len(new_missing_ids)
     # OLD compact packets are broad prose blobs. Count sections outside direct required needs as coarse irrelevant units.
-    old_units = 8 + (2 if any(k in case["action"].lower() for k in ["entity", "hound", "item", "omnivault", "water", "nước"]) else 0) + (1 if case.get("present") else 0)
+    old_units = 8 + (2 if any(k in case["action"].lower() for k in ["entity", "hound", "item", "water", "nước"]) else 0) + (1 if case.get("present") else 0)
     old_irrelevant += max(0, old_units - len(required))
     supportive = required | MANDATORY | {f"LEVEL.{case['level']:02d}", "ENTITY.GLOBAL_HARD_LOCK", "ITEM.GLOBAL_HARD_LOCK", "REL.KAI.IRIS.BASELINE", "REL.KAI.SYVIAL.BASELINE"}
     new_irrelevant += len(selected - supportive)

@@ -75,7 +75,6 @@ Runtime traceability is therefore:
 | `CHAR.KAI.GUILTY_CROWN_OVERRIDE` | `Kai_Codex.docx` | `KAI-ULT-GCO-01` | IMMUTABLE | Exact 24-shot override while external time is fully stopped, under the codex conditions. |
 | `CHAR.KAI.WHITE_WRAITH` | `Kai_Codex.docx` | `KAI-EQP-WWM-01` | IMMUTABLE | Signature firearm; demonic ammunition comes from Kai. |
 | `CHAR.KAI.ARMOR` | `Kai_Codex.docx` | `KAI-EQP-ARMOR-01` | IMMUTABLE | Blackblood Armor and linked modules. |
-| `CHAR.KAI.OMNIVAULT` | `Kai_Codex.docx` | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | IMMUTABLE | Inanimate-only storage; 3 scan/copy slots and codex restore constraints. |
 | `CHAR.IRIS.RUNTIME_CORE` | `Iris_Codex.docx` | `IRIS-QUICK-01`, `IRIS-PER-01`, `IRIS-REL-01`, `IRIS-CANON-GATE-01` | IMMUTABLE | Present-character card. Iris is a ranged combatant/scout, not a remote drone station. |
 | `CHAR.IRIS.ARGUS` | `Iris_Codex.docx` | `IRIS-SCOUT-TERRAIN-01`, `IRIS-SCOUT-GROUND-01`, `IRIS-SCOUT-TARGET-01` | IMMUTABLE | Direct observation + armor sensors + terrain/route/cover/trace analysis. No omniscience, wall vision, remote cameras, or automatic true-form detection. |
 | `CHAR.IRIS.THOUSANDFOLD` | `Iris_Codex.docx` | `IRIS-THOUSANDFOLD-01` | IMMUTABLE | Information processing up to 1:1000; does not accelerate the body 1000x. |
