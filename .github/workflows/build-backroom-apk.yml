@@ -41,6 +41,11 @@ jobs:
           test ! -d android-apk/ml
           test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
           ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
+          grep -Fq 'function activeEntityKey()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
 
       - name: Validate Game Master configuration
         run: |
