@@ -90,6 +90,27 @@ jobs:
       - name: Remove retired systems and repair patch chain
         run: python3 .github/scripts/purge-retired-systems.py
 
+      - name: Stabilize Jeff prompt anchor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('android-apk/patch-jeff-encounter-2pct.py')
+          text = p.read_text(encoding='utf-8')
+          text, count = re.subn(
+              r"^prompt_anchor = .*?$",
+              "prompt_anchor = '\"Chỉ dùng flag root:'",
+              text,
+              count=1,
+              flags=re.M,
+          )
+          if count != 1:
+              raise SystemExit(f'Jeff prompt anchor rewrite expected 1 match, got {count}')
+          p.write_text(text, encoding='utf-8')
+          PY
+
       - name: Syntax-check surviving Python patches
         shell: bash
         run: |
