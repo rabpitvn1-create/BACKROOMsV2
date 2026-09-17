@@ -1,5 +1,5 @@
 name: Build Backroom APK
-# Clean-state verification trigger after retired gameplay cleanup.
+# Clean-state verification trigger after runtime contract alignment.
 
 on:
   workflow_dispatch:
