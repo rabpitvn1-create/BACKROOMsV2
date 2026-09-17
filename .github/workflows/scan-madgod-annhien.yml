@@ -31,6 +31,10 @@ jobs:
           from pathlib import Path
           p = Path('.github/scripts/purge-retired-systems.py')
           text = p.read_text(encoding='utf-8')
+          text = text.replace(
+              'TARGET = re.compile(r"MadGod|Mad God|madgod|mad god|AN_NHIEN|AnNhien|an_nhien|an-nhien|An Nhiên|An Nhien|annhien", re.I)',
+              'TARGET = re.compile(r"MadGod|Mad God|madgod|mad god|AN_NHIEN|AnNhien|an_nhien|an-nhien|(?<![\\w])An Nhiên(?![\\w])|(?<![\\w])An Nhien(?![\\w])|annhien", re.I)',
+          )
 
           def switch_block(text, marker, end_marker):
               start = text.index(marker)
@@ -103,7 +107,7 @@ jobs:
           from pathlib import Path
           import re
           root = Path('/tmp/backroom-verify/android-apk')
-          target = re.compile(r'MadGod|Mad God|madgod|mad god|AN_NHIEN|AnNhien|an_nhien|an-nhien|An Nhiên|An Nhien|annhien', re.I)
+          target = re.compile(r'MadGod|Mad God|madgod|mad god|AN_NHIEN|AnNhien|an_nhien|an-nhien|(?<![\w])An Nhiên(?![\w])|(?<![\w])An Nhien(?![\w])|annhien', re.I)
           for path in root.rglob('*'):
               if not path.is_file():
                   continue
