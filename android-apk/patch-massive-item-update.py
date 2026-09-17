@@ -422,6 +422,30 @@ for path in TESTS.glob("*.kt"):
     if cleaned != text:
         write(path, cleaned)
 
+# Generated healing tests may still carry the pre-update generic-loot assertion.
+healing_test = TESTS / "HealingItemTest.kt"
+if healing_test.exists():
+    healing_text = read(healing_test)
+    healing_text = sub(
+        healing_text,
+        r"\n\s*@Test fun healingItemsShareTheOrdinaryLootGate\(\) \{.*?\n\s*\}",
+        "",
+        "Healing generic-loot regression",
+    )
+    write(healing_test, healing_text)
+
+# Rewrite the generated healing prompt so it describes effects only;
+# acquisition remains exclusively controlled by Entity/ItemBox tables.
+if MAIN.exists():
+    main = read(MAIN)
+    main = sub(
+        main,
+        r'\n\s*String healingItemDirective = "HEALING ITEM HARD LOCK:.*?;\n',
+        '\n    String healingItemDirective = "HEALING ITEM DATA: Băng gạc hồi đúng 10 HP; Thuốc sát trùng hồi đúng 20 HP. Hai Item này không có generic loot roll. Việc cấp Item chỉ do Android Entity drop hoặc ItemBox drop quyết định.";\n',
+        "Healing prompt authority",
+    )
+    write(MAIN, main)
+
 # Core/runtime must not retain an executable Omnivault system.
 for path in list(CORE.glob("*.kt")):
     lower = read(path).lower()

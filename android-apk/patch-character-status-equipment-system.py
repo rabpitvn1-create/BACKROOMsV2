@@ -576,6 +576,8 @@ engines = ENGINES.read_text(encoding="utf-8")
 # Replace whatever EQUIP/UNEQUIP implementation earlier patches produced.
 start = engines.find('      ItemCommand.Operation.EQUIP -> {')
 end = engines.find('      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW', start)
+if end < 0 and start >= 0:
+    end = engines.find('    }\n  }\n}\n\nobject PartyEngine', start)
 if start < 0 or end < 0:
     raise RuntimeError("InventoryEngine equipment operation block missing")
 new_ops = '''      ItemCommand.Operation.EQUIP -> EquipmentEngine.equip(state, command)
