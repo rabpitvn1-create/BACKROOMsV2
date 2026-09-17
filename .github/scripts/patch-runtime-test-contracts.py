@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[2]
 TESTS = ROOT / "android-apk/app/src/test/java/com/rabpit/backroom/core"
@@ -22,6 +23,14 @@ def replace_exact_count(path: Path, old: str, new: str, expected: int, label: st
     if count != expected:
         raise RuntimeError(f"{label}: expected {expected} anchors, found {count}")
     path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def regex_once(path: Path, pattern: str, replacement: str, label: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    updated, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+    if count != 1:
+        raise RuntimeError(f"{label}: expected exactly 1 semantic anchor, found {count}")
+    path.write_text(updated, encoding="utf-8")
 
 
 # The final ItemDropAuthority only accepts Android-authoritative Entity/ItemBox
@@ -92,17 +101,43 @@ replace_once(
 ''',
     "Fresh canonical equipment ownership contract",
 )
-replace_once(
-    codec,
-    '''    assertEquals(1, migrated.inventories.getValue(KAI_ID).items.size)
-    assertEquals(2, migrated.inventories.getValue(KAI_ID).items.values.single().quantity)
-''',
-    '''    val migratedItems = migrated.inventories.getValue(KAI_ID).items.values
+
+legacy_method = '''  @Test fun legacyWebViewSaveMigratesWithoutLosingNormalInventoryOrParty() {
+    val legacy = """{
+      "turn":184,
+      "title":"BACKROOMS",
+      "location":"Level 0",
+      "inventory":[
+        {"name":"White Wraith Magnum","quantity":1},
+        {"name":"Blackblood Armor & linked modules","quantity":1},
+        {"name":"Omnivault Ring / Nhẫn Vạn Tàng","quantity":1},
+        {"name":"Almond Water","quantity":2,"state":"sealed"}
+      ],
+      "party":[{"id":"iris","name":"Iris","avatar":"iris.png"}]
+    }"""
+    val migrated = GameStateCodec.decode(legacy)
+    assertEquals(CURRENT_SAVE_VERSION, migrated.saveVersion)
+    assertEquals("TURN_184", migrated.turn.currentTurnId)
+    assertEquals(GameTimeState(), migrated.time)
+    assertEquals(0L, migrated.characters.getValue(KAI_ID).physiology.minutesSinceFood)
+    assertEquals(0L, migrated.characters.getValue(KAI_ID).physiology.minutesSinceWater)
+    assertEquals(0L, migrated.characters.getValue(KAI_ID).physiology.minutesAwake)
+    assertEquals(PhysiologyState(), migrated.characters.getValue("iris").physiology)
+    val migratedItems = migrated.inventories.getValue(KAI_ID).items.values
     assertTrue(migratedItems.any { it.quantity == 2 && it.name.contains("Almond Water", ignoreCase = true) })
     assertFalse(migratedItems.any {
       it.name.contains("Omnivault", ignoreCase = true) || it.name.contains("Vạn Tàng", ignoreCase = true)
     })
-''',
+    assertEquals(KAI_WHITE_WRAITH_ID, migrated.equipment.getValue(KAI_ID).slots["weapon"])
+    assertEquals(KAI_BLACKBLOOD_ARMOR_ID, migrated.equipment.getValue(KAI_ID).slots["armor"])
+    assertEquals(listOf(KAI_ID, "iris"), migrated.party.memberIds)
+    assertEquals("Level 0", migrated.world["location"])
+  }
+'''
+regex_once(
+    codec,
+    r'''  @Test fun legacyWebViewSaveMigratesWithoutLosingNormalInventoryOrParty\(\) \{.*?\n  \}\n(?=\n  @Test fun v2CoreSaveMovesSignatureItemsOutOfInventory\(\))''',
+    legacy_method,
     "Legacy migration inventory contract",
 )
 
