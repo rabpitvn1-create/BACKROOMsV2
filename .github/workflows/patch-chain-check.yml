@@ -25,13 +25,91 @@ jobs:
         run: python -m pip install pillow
       - name: Sync runtime assets
         run: python android-apk/sync-kai-sru-assets.py
-      - name: Apply runtime patch chain
-        shell: bash
-        run: |
-          set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-sru-visuals.py patch-player-address-lock.py patch-runtime-canon-final.py sync-play-font-assets.py apply-android-ui.py patch-android-launch-safety.py patch-level-transition-final.py patch-haiku-provider-final.py patch-party-turn-combat-final.py patch-entity-rates-drops-final.py patch-gm-choices-freedom-final.py patch-lucia-story-gate-final.py patch-low-risk-canon-fallback-final.py patch-overlay-visible-height-scale-final.py)
-          for script in "${scripts[@]}"; do
-            echo "==> $script"
-            python3 "android-apk/$script"
-          done
-          git diff --check
+      - name: patch-provider-status.py
+        run: python3 android-apk/patch-provider-status.py
+      - name: patch-gemini-five-keys.py
+        run: python3 android-apk/patch-gemini-five-keys.py
+      - name: patch-level-snapshot-backgrounds.py
+        run: python3 android-apk/patch-level-snapshot-backgrounds.py
+      - name: patch-snapshot-fallback.py
+        run: python3 android-apk/patch-snapshot-fallback.py
+      - name: patch-kai-hd-continuous.py
+        run: python3 android-apk/patch-kai-hd-continuous.py
+      - name: patch-kai-png-preferred.py
+        run: python3 android-apk/patch-kai-png-preferred.py
+      - name: patch-kai-codex.py
+        run: python3 android-apk/patch-kai-codex.py
+      - name: patch-r06-source-marker.py
+        run: python3 android-apk/patch-r06-source-marker.py
+      - name: patch-drive-canon-gameplay.py
+        run: python3 android-apk/patch-drive-canon-gameplay.py
+      - name: patch-inventory-persistence.py
+        run: python3 android-apk/patch-inventory-persistence.py
+      - name: patch-ai-orchestrator.py
+        run: python3 android-apk/patch-ai-orchestrator.py
+      - name: patch-state-op-hardening.py
+        run: python3 android-apk/patch-state-op-hardening.py
+      - name: patch-gemini-health-pool.py
+        run: python3 android-apk/patch-gemini-health-pool.py
+      - name: patch-conditional-audit.py
+        run: python3 android-apk/patch-conditional-audit.py
+      - name: patch-audit-validated-risk.py
+        run: python3 android-apk/patch-audit-validated-risk.py
+      - name: patch-gameplay-parity-final.py
+        run: python3 android-apk/patch-gameplay-parity-final.py
+      - name: patch-final-authority-hardening.py
+        run: python3 android-apk/patch-final-authority-hardening.py
+      - name: patch-rejected-op-repair-final.py
+        run: python3 android-apk/patch-rejected-op-repair-final.py
+      - name: patch-kai-resource-policy-final.py
+        run: python3 android-apk/patch-kai-resource-policy-final.py
+      - name: patch-gemini-provider-label.py
+        run: python3 android-apk/patch-gemini-provider-label.py
+      - name: patch-gemini-model-matrix-final.py
+        run: python3 android-apk/patch-gemini-model-matrix-final.py
+      - name: patch-java-compile-hardening.py
+        run: python3 android-apk/patch-java-compile-hardening.py
+      - name: patch-save-controls-final.py
+        run: python3 android-apk/patch-save-controls-final.py
+      - name: patch-hard-mode-label.py
+        run: python3 android-apk/patch-hard-mode-label.py
+      - name: patch-snapshot-unconfigured.py
+        run: python3 android-apk/patch-snapshot-unconfigured.py
+      - name: patch-game-state-core-bridge.py
+        run: python3 android-apk/patch-game-state-core-bridge.py
+      - name: patch-character-inventory-ui.py
+        run: python3 android-apk/patch-character-inventory-ui.py
+      - name: patch-character-detail-avatar-fallback.py
+        run: python3 android-apk/patch-character-detail-avatar-fallback.py
+      - name: patch-progression-snapshot-equipment.py
+        run: python3 android-apk/patch-progression-snapshot-equipment.py
+      - name: patch-kai-sru-visuals.py
+        run: python3 android-apk/patch-kai-sru-visuals.py
+      - name: patch-player-address-lock.py
+        run: python3 android-apk/patch-player-address-lock.py
+      - name: patch-runtime-canon-final.py
+        run: python3 android-apk/patch-runtime-canon-final.py
+      - name: sync-play-font-assets.py
+        run: python3 android-apk/sync-play-font-assets.py
+      - name: apply-android-ui.py
+        run: python3 android-apk/apply-android-ui.py
+      - name: patch-android-launch-safety.py
+        run: python3 android-apk/patch-android-launch-safety.py
+      - name: patch-level-transition-final.py
+        run: python3 android-apk/patch-level-transition-final.py
+      - name: patch-haiku-provider-final.py
+        run: python3 android-apk/patch-haiku-provider-final.py
+      - name: patch-party-turn-combat-final.py
+        run: python3 android-apk/patch-party-turn-combat-final.py
+      - name: patch-entity-rates-drops-final.py
+        run: python3 android-apk/patch-entity-rates-drops-final.py
+      - name: patch-gm-choices-freedom-final.py
+        run: python3 android-apk/patch-gm-choices-freedom-final.py
+      - name: patch-lucia-story-gate-final.py
+        run: python3 android-apk/patch-lucia-story-gate-final.py
+      - name: patch-low-risk-canon-fallback-final.py
+        run: python3 android-apk/patch-low-risk-canon-fallback-final.py
+      - name: patch-overlay-visible-height-scale-final.py
+        run: python3 android-apk/patch-overlay-visible-height-scale-final.py
+      - name: git diff --check
+        run: git diff --check
