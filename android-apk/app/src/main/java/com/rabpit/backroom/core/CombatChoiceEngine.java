@@ -618,6 +618,18 @@ public final class CombatChoiceEngine {
       appendBattleLine(state, combat, entityName + " bị tiêu diệt.", entityName);
       combat.put("victoryLogged", true);
     }
+    if (!combat.optBoolean("lootResolved", false)) {
+      String entityKey = entity.optString("key", "entity");
+      int rate = ItemCore.entityDropRatePercent(entityKey);
+      int dropRoll = nextRoll(combat, "loot-drop:" + entityKey);
+      combat.put("entityLootRatePercent", rate).put("entityLootRoll", dropRoll);
+      if (ItemCore.shouldDropEntityLoot(dropRoll, rate)) {
+        String itemName = ItemCore.grantLootItem(state, nextRoll(combat, "loot-item:" + entityKey));
+        appendBattleLine(state, combat, entityName + " rơi " + itemName + " x1.", entityName, itemName);
+        combat.put("droppedItem", itemName);
+      }
+      combat.put("lootResolved", true);
+    }
     combat.put("active", false).put("outcome", "victory").put("choices", new JSONArray());
     JSONObject flags = state.optJSONObject("flags");
     if (flags != null) flags.put("entityEncounterKey", "");
