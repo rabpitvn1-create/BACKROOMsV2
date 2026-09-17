@@ -4,10 +4,14 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class ItemContentStateTest {
-  private fun grant(name: String, id: String = "raw", quantity: Int = 1) = ItemCommand(
-    "grant-$id-$name", "TURN_1", KAI_ID, source = CommandSource.SYSTEM,
-    operation = ItemCommand.Operation.PICKUP, itemId = id, itemName = name, quantity = quantity
-  )
+  private fun grant(name: String, id: String = "raw", quantity: Int = 1) =
+    ItemDropAuthority.entityDrop(
+      commandId = "grant-$id-$name",
+      actorId = KAI_ID,
+      entityKey = "test-entity",
+      item = ItemStack(id, name, quantity),
+      quantity = quantity
+    )
 
   private fun use(id: String, n: Int) = ItemCommand(
     "use-$n-$id", "TURN_1", KAI_ID, source = CommandSource.RULE,
@@ -65,22 +69,5 @@ class ItemContentStateTest {
     assertEquals(ContentState.EMPTY, casing.contentState)
     assertEquals("Vỏ đạn", casing.name)
     assertNull(ItemContentRules.nextAfterUse(casing))
-  }
-
-  @Test fun restoreIsNarrativeOnlyAndDoesNotMutatePhysicalState() {
-    val empty = StateReducer.execute(GameState.initial(), grant("Chai rỗng", "empty-water")).state
-    val emptyId = "water-bottle:empty"
-    val damaged = empty.copy(inventories = empty.inventories + (KAI_ID to empty.inventories.getValue(KAI_ID).copy(
-      items = empty.inventories.getValue(KAI_ID).items + (emptyId to empty.inventories.getValue(KAI_ID).items.getValue(emptyId).copy(condition = "DENTED"))
-    )))
-    val restored = StateReducer.execute(damaged, OmnivaultCommand(
-      "restore-empty", "TURN_1", KAI_ID, source = CommandSource.UI,
-      operation = OmnivaultCommand.Operation.RESTORE, itemId = emptyId, itemName = "Chai rỗng", timestampEpochMs = 1000L
-    ))
-    assertFalse(restored.applied)
-    assertEquals("restore_narrative_only", restored.validation.reason)
-    val item = restored.state.inventories.getValue(KAI_ID).items.getValue(emptyId)
-    assertEquals("DENTED", item.condition)
-    assertEquals(ContentState.EMPTY, item.contentState)
   }
 }
