@@ -7,7 +7,18 @@
   style.textContent = [
     "@font-face{font-family:'Play';font-style:normal;font-weight:700;src:url('file:///android_asset/fonts/Play-Bold.ttf') format('truetype');font-display:swap}",
     ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play',system-ui,sans-serif;font-weight:700}",
-    ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px}",
+    ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px;text-decoration-color:currentColor}",
+    ".semantic-character{color:#67d5ff}",
+    ".semantic-entity{color:#ff6b6b}",
+    ".semantic-item{color:#f6c85f}",
+    ".semantic-skill{color:#c792ea}",
+    ".semantic-effect{color:#ff9f43}",
+    ".semantic-location{color:#7bd88f}",
+    ".semantic-stat{color:#ffd166}",
+    ".semantic-damage{color:#ff5c5c}",
+    ".semantic-buff{color:#73e6a2}",
+    ".semantic-generic{color:#e5e9ed}",
+    ".gm-choice:disabled .semantic{opacity:.72}",
     ".gm-main-text{white-space:pre-wrap;line-height:1.55}",
     ".battle-log{display:grid;gap:5px;margin-top:10px}",
     ".battle-line{white-space:pre-wrap;line-height:1.45}",
@@ -31,40 +42,65 @@
   var defaultPlaceholder = action ? action.getAttribute('placeholder') : '';
   window.__combatBusy = false;
 
-  function addTerm(set, value) {
+  var semanticPriority = {generic:0,location:1,item:2,effect:3,skill:4,character:5,entity:6};
+  var knownSkills = [
+    'The Last Requiem','Silent Lullaby','Salvation','Quick Step','Guilty Crown Override',
+    'Twosome Time','Rain Storm','Honeycomb Fire','Charged Shot',
+    'Rift Sever','Crimson Guillotine','Lucifer Breaker','Spatial Dominion','M4A1 Joint Attack'
+  ];
+  var knownEffects = ['Choáng','Chảy máu','Phá giáp','Né tránh','Mất phương hướng'];
+
+  function normalizeSemanticType(value) {
+    var type = String(value || '').trim().toLowerCase();
+    if (type === 'npc' || type === 'ally' || type === 'player') type = 'character';
+    if (type === 'enemy' || type === 'monster' || type === 'quái vật') type = 'entity';
+    if (type === 'level' || type === 'area' || type === 'zone' || type === 'place') type = 'location';
+    if (type === 'status' || type === 'buff' || type === 'debuff') type = 'effect';
+    return semanticPriority.hasOwnProperty(type) ? type : 'generic';
+  }
+
+  function addTerm(map, value, type) {
     if (value === null || value === undefined) return;
     var text = String(value).trim();
-    if (text.length > 1) set.add(text);
+    if (text.length < 2) return;
+    var normalizedType = normalizeSemanticType(type);
+    var key = text.toLocaleLowerCase('vi');
+    var previous = map.get(key);
+    if (!previous || semanticPriority[normalizedType] > semanticPriority[previous.type]) {
+      map.set(key, {text:text,type:normalizedType});
+    }
+  }
+
+  function addHighlightList(map, list) {
+    (Array.isArray(list) ? list : []).forEach(function(x){
+      if (typeof x === 'string') addTerm(map, x, 'generic');
+      else if (x) addTerm(map, x.text || x.name, x.type || x.kind || 'generic');
+    });
   }
 
   function entryHighlights(entry) {
-    var set = new Set();
-    addTerm(set, 'Kai');
-    addTerm(set, 'Kai Akechi');
-    addTerm(set, 'Iris');
-    addTerm(set, 'Syvial');
-    addTerm(set, 'Lucia Lục');
-    addTerm(set, 'Hứa Thuý Mai');
-    ['Choáng','Chảy máu','Phá giáp','Né tránh','Mất phương hướng'].forEach(function(x){ addTerm(set,x); });
+    var map = new Map();
+    ['Kai','Kai Akechi','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
+    knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
+    knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
 
     try {
-      if (state && state.player) addTerm(set, state.player.name);
+      if (state && state.player) addTerm(map, state.player.name, 'character');
       if (state && state.location) {
         var locationHead = String(state.location).split('—')[0];
-        locationHead.split('/').forEach(function(x){ addTerm(set, x); });
+        locationHead.split('/').forEach(function(x){ addTerm(map, x, 'location'); });
       }
-      if (state && Array.isArray(state.party)) state.party.forEach(function(x){ addTerm(set, typeof x === 'string' ? x : x && (x.name || x.id)); });
-      if (state && Array.isArray(state.inventory)) state.inventory.forEach(function(x){ addTerm(set, typeof x === 'string' ? x : x && x.name); });
+      if (state && Array.isArray(state.party)) state.party.forEach(function(x){ addTerm(map, typeof x === 'string' ? x : x && (x.name || x.id), 'character'); });
+      if (state && Array.isArray(state.inventory)) state.inventory.forEach(function(x){ addTerm(map, typeof x === 'string' ? x : x && x.name, 'item'); });
       if (state && state.combat) {
-        addTerm(set, state.combat.currentActor);
-        if (state.combat.entity) addTerm(set, state.combat.entity.name);
-        if (state.combat.currentSkill) addTerm(set, state.combat.currentSkill.name);
+        addTerm(map, state.combat.currentActor, 'character');
+        if (state.combat.entity) addTerm(map, state.combat.entity.name, 'entity');
+        if (state.combat.currentSkill) addTerm(map, state.combat.currentSkill.name, 'skill');
       }
     } catch (_) {}
 
-    var list = entry && Array.isArray(entry.highlights) ? entry.highlights : [];
-    list.forEach(function(x){ addTerm(set, typeof x === 'string' ? x : x && (x.text || x.name)); });
-    return Array.from(set).sort(function(a,b){ return b.length-a.length; });
+    addHighlightList(map, entry && entry.highlights);
+    return Array.from(map.values()).sort(function(a,b){ return b.text.length-a.text.length; });
   }
 
   function escapeRegex(value) {
@@ -73,14 +109,15 @@
 
   function appendRichText(container, text, entry, extraHighlights) {
     var source = text === null || text === undefined ? '' : String(text);
-    var terms = entryHighlights(entry);
-    (extraHighlights || []).forEach(function(x){
-      var value = typeof x === 'string' ? x : x && (x.text || x.name);
-      if (value && terms.indexOf(String(value)) < 0) terms.push(String(value));
-    });
-    terms.sort(function(a,b){ return b.length-a.length; });
+    var baseTerms = entryHighlights(entry);
+    var termMap = new Map();
+    baseTerms.forEach(function(x){ addTerm(termMap, x.text, x.type); });
+    addHighlightList(termMap, extraHighlights || []);
+    var terms = Array.from(termMap.values()).sort(function(a,b){ return b.text.length-a.text.length; });
+    var lookup = new Map();
+    terms.forEach(function(x){ lookup.set(x.text.toLocaleLowerCase('vi'), x.type); });
 
-    var patterns = terms.map(escapeRegex);
+    var patterns = terms.map(function(x){ return escapeRegex(x.text); });
     patterns.push('[+-]\\d+(?:\\.\\d+)?%?\\s*(?:HP|DEF)');
     patterns.push('HP\\s*\\d+\\s*\\/\\s*\\d+');
     patterns.push('Level\\s+\\d+(?:\\s*[-–—/]\\s*[A-Za-zÀ-ỹ0-9 _]+)?');
@@ -89,12 +126,21 @@
     var match;
     while ((match = re.exec(source)) !== null) {
       if (match.index > cursor) container.appendChild(document.createTextNode(source.slice(cursor, match.index)));
+      var matched = match[0];
+      var type = lookup.get(matched.toLocaleLowerCase('vi')) || '';
+      if (!type) {
+        if (/^-/.test(matched) && /(?:HP|DEF)$/i.test(matched)) type = 'damage';
+        else if (/^\+/.test(matched) && /(?:HP|DEF)$/i.test(matched)) type = 'buff';
+        else if (/^HP\s*\d+\s*\/\s*\d+$/i.test(matched)) type = 'stat';
+        else if (/^Level\s+\d+/i.test(matched)) type = 'location';
+        else type = 'generic';
+      }
       var span = document.createElement('span');
-      span.className = 'semantic';
-      span.textContent = match[0];
+      span.className = 'semantic semantic-' + type;
+      span.textContent = matched;
       container.appendChild(span);
-      cursor = match.index + match[0].length;
-      if (match[0].length === 0) re.lastIndex++;
+      cursor = match.index + matched.length;
+      if (matched.length === 0) re.lastIndex++;
     }
     if (cursor < source.length) container.appendChild(document.createTextNode(source.slice(cursor)));
   }
