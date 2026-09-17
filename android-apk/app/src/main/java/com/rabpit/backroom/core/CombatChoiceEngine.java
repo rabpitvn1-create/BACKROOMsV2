@@ -21,6 +21,9 @@ public final class CombatChoiceEngine {
   public static final String ACTION_A = "__combat:A";
   public static final String ACTION_B = "__combat:B";
   public static final String ACTION_C = "__combat:C";
+  private static final int GUILTY_CROWN_SHOTS = 24;
+  private static final int GUILTY_CROWN_DAMAGE_PER_SHOT = 10;
+  private static final int GUILTY_CROWN_TOTAL_DAMAGE = GUILTY_CROWN_SHOTS * GUILTY_CROWN_DAMAGE_PER_SHOT;
 
   private static final class EntityProfile {
     final String key;
@@ -82,13 +85,14 @@ public final class CombatChoiceEngine {
     entity("slenderman", "Slenderman", 160, 23, 8);
     entity("diep_minh", "Diệp Minh", 2000, 42, 14);
 
-    // Kai's former AUTO skills are now candidates for choice C. Their legacy proc rates and damage
-    // percentages are preserved; pressing C does not force a proc.
+    // Kai's combat skills are candidates for choice C. Pressing C still rolls the selected skill's
+    // proc gate. Guilty Crown Override is now a 40% proc while preserving its exact 24 x 10 HP contract.
     skills("kai",
       skill("The Last Requiem", 30, 170, "Chảy máu", 3, 5, true),
       skill("Silent Lullaby", 20, 130, "Choáng", 1, 0, true),
       skill("Salvation", 20, 147, "", 0, 0, true),
-      skill("Quick Step", 30, 0, "Né tránh", 3, 50, false));
+      skill("Quick Step", 30, 0, "Né tránh", 3, 50, false),
+      skill("Guilty Crown Override", 40, 0, "", 0, 0, true));
 
     skills("iris",
       skill("Twosome Time", 30, 155, "", 0, 0, true),
@@ -341,6 +345,17 @@ public final class CombatChoiceEngine {
     }
 
     boolean offensive = selected.optBoolean("offensive", true);
+    if ("Guilty Crown Override".equals(skillName)) {
+      int hp = Math.max(0, entity.optInt("hp", 0) - GUILTY_CROWN_TOTAL_DAMAGE);
+      entity.put("hp", hp);
+      String damageText = "-" + GUILTY_CROWN_TOTAL_DAMAGE + " HP";
+      String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
+      appendBattleLine(state, combat,
+        actorName + " dùng " + skillName + ": " + GUILTY_CROWN_SHOTS + "/" + GUILTY_CROWN_SHOTS +
+          " phát trúng khi ngoại giới dừng thời gian. " + damageText + " (" + hpText + ")",
+        actorName, skillName, entityName, damageText, hpText);
+      return;
+    }
     if (offensive) {
       // Lucia's command historically still passes through Entity evasion. Other former AUTO proc skills
       // retain their old proc as the gate, so we do not add a second accuracy penalty to them.
