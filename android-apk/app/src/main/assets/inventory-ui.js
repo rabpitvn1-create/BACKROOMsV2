@@ -20,7 +20,7 @@
     ".inventory-share{display:grid;grid-template-columns:1fr auto;gap:8px}",
     ".inventory-drop{background:#241616;color:#f1b3b3;border-color:#663b3b}",
     ".inventory-note{font-size:12px;color:#8d979f}",
-    ".vitals-inline{font-size:12px;color:#aab3ba;margin-top:7px}"
+    ".vitals-inline{grid-column:2;font-size:12px;color:#aab3ba;margin-top:7px}"
   ].join('');
   document.head.appendChild(style);
 
