@@ -20,7 +20,6 @@ class GameStateCodecTest {
       inventories = mapOf(KAI_ID to InventoryState(KAI_ID, mapOf("water" to ItemStack("water", "Almond Water", 2)))),
       statuses = mapOf(effect.id to effect),
       characters = mapOf(KAI_ID to CharacterState(KAI_ID, "Kai Akechi", statusIds = setOf(effect.id), physiology = physiology)),
-      omnivault = OmnivaultState(scanSlots = listOf(ScanSlot(1, "water", ItemStack("water", "Almond Water"), 10)), markedSourceIds = setOf("water")),
       turn = TurnState("TURN_9", PendingTurn("TURN_9", "Kai nhặt nước", PendingTurnStatus.INTERPRETING)),
       time = GameTimeState(elapsedSubjectiveMinutes = 485L, lastAdvanceMinutes = 15, lastAdvanceReason = "travel")
     )
@@ -56,7 +55,6 @@ class GameStateCodecTest {
     assertTrue(state.inventories.getValue(KAI_ID).items.isEmpty())
     assertEquals(KAI_WHITE_WRAITH_ID, state.equipment.getValue(KAI_ID).slots["weapon"])
     assertEquals(KAI_BLACKBLOOD_ARMOR_ID, state.equipment.getValue(KAI_ID).slots["armor"])
-    assertEquals(KAI_OMNIVAULT_RING_ID, state.equipment.getValue(KAI_ID).slots["ring"])
   }
 
   @Test fun legacyWebViewSaveMigratesWithoutLosingNormalInventoryOrParty() {
@@ -84,7 +82,6 @@ class GameStateCodecTest {
     assertEquals(2, migrated.inventories.getValue(KAI_ID).items.values.single().quantity)
     assertEquals(KAI_WHITE_WRAITH_ID, migrated.equipment.getValue(KAI_ID).slots["weapon"])
     assertEquals(KAI_BLACKBLOOD_ARMOR_ID, migrated.equipment.getValue(KAI_ID).slots["armor"])
-    assertEquals(KAI_OMNIVAULT_RING_ID, migrated.equipment.getValue(KAI_ID).slots["ring"])
     assertEquals(listOf(KAI_ID, "iris"), migrated.party.memberIds)
     assertEquals("Level 0", migrated.world["location"])
   }
@@ -113,6 +110,5 @@ class GameStateCodecTest {
     assertEquals(setOf("rope"), migrated.inventories.getValue(KAI_ID).items.keys)
     assertEquals(KAI_WHITE_WRAITH_ID, migrated.equipment.getValue(KAI_ID).slots["weapon"])
     assertEquals(KAI_BLACKBLOOD_ARMOR_ID, migrated.equipment.getValue(KAI_ID).slots["armor"])
-    assertEquals(KAI_OMNIVAULT_RING_ID, migrated.equipment.getValue(KAI_ID).slots["ring"])
   }
 }
