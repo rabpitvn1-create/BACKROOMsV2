@@ -94,11 +94,16 @@ jobs:
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'characterPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
           grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java

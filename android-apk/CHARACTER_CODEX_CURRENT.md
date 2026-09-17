@@ -60,7 +60,7 @@ Ngoài chiến đấu, Syvial tự nhiên, giao tiếp bình thường, thích �
 
 Tên thật/pháp lý là **Hứa Thuý Mai**. `Lucia Lục` là biệt danh/callsign dùng trong môi trường quân đội. Lucia là nữ, 19 tuổi, **con người**, quốc tịch Việt Nam, xuất thân Hoa Kiều và là chít nội Gia tộc Họ Hứa. Cô đã tham gia quân ngũ một năm theo chương trình huấn luyện tại Việt Nam kết hợp Hoa Kỳ, kỳ thi đầu vào đạt loại xuất sắc. Đây là một quân nhân trẻ có nền tảng tốt trong phạm vi con người, không phải chiến lực siêu nhiên/UR+.
 
-Lucia là **fixed encounter do story sở hữu tại Level 0**. Không quest, không random spawn, AI không được tự tạo cô ở nơi thuận tiện. Lucia không thuộc nhóm SRU ban đầu đi qua sự kiện Async; nhóm ban đầu là Kai, Iris và Syvial. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
+Lucia chỉ có thể xuất hiện qua roll Explorer tại Level 0 do **CharacterEncounterCore** sở hữu. Gemini không được tự tạo cô ở nơi thuận tiện và không được sửa Party. Lucia không thuộc nhóm SRU ban đầu đi qua sự kiện Async; nhóm ban đầu là Kai, Iris và Syvial. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
 
 Gameplay baseline hiện hành: `HP 100`, `STR 7`, `DF 7`, `AGI 8`, `CRIT 7`; hồi `+2 HP` sau mỗi 3 lượt hoàn tất riêng biệt và trạng thái này phải tồn tại qua save/load.
 
@@ -77,6 +77,6 @@ Khi prompt/game state chứa bản canon này:
 1. Canon Drive hiện hành thắng dữ kiện character legacy trong save/log cũ nếu có xung đột.
 2. Không tự biến KNOWLEDGE_LOCK thành kiến thức của nhân vật.
 3. Không tự điền UNKNOWN/OPEN.
-4. Lucia không được auto-spawn chỉ vì model biết cô tồn tại.
+4. Lucia không được auto-spawn chỉ vì model biết cô tồn tại; chỉ CharacterEncounterCore được roll và auto-join.
 5. Kai không còn dùng White Wraith/Blackblood Armor như loadout hiện hành; baseline mới là SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring.
 6. Omnivault không còn Scan/Copy/Create/Marked/Upgrade.

@@ -1,5 +1,7 @@
 package com.rabpit.backroom.core;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -47,5 +49,36 @@ public class CombatChoiceEngineTest {
     assertTrue(CombatChoiceEngine.isKnownEntity("jeff_the_killer"));
     assertTrue(CombatChoiceEngine.isKnownEntity("slenderman"));
     assertFalse(CombatChoiceEngine.isKnownEntity("not_a_real_entity"));
+  }
+
+  @Test public void soloCombatRosterContainsOnlyKai() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
+    assertEquals(1, participants.length());
+    assertEquals("kai", participants.getJSONObject(0).getString("id"));
+  }
+
+  @Test public void onlyJoinedPartyCharactersEnterCombatInCanonicalOrder() throws Exception {
+    JSONArray party = new JSONArray()
+        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true))
+        .put(new JSONObject().put("id", "iris").put("name", "Iris").put("joined", false))
+        .put(new JSONObject().put("id", "syvial").put("name", "Syvial").put("joined", true));
+    JSONObject state = combatState(party);
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
+    assertEquals(3, participants.length());
+    assertEquals("kai", participants.getJSONObject(0).getString("id"));
+    assertEquals("lucia", participants.getJSONObject(1).getString("id"));
+    assertEquals("syvial", participants.getJSONObject(2).getString("id"));
+  }
+
+  private static JSONObject combatState(JSONArray party) throws Exception {
+    return new JSONObject()
+        .put("turn", 4)
+        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("party", party)
+        .put("flags", new JSONObject().put("entityEncounterKey", "hound"))
+        .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Hound xuất hiện")));
   }
 }
