@@ -2,65 +2,78 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
+FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
 INDEX = ROOT / "app/src/main/assets/index.html"
 INTENT = ROOT / "app/src/main/java/com/rabpit/backroom/core/IntentPipeline.kt"
-FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
+
 text = MAIN.read_text(encoding="utf-8")
 
 core_import = "import com.rabpit.backroom.core.GameCoreFacade;\n"
-if core_import not in text:
-    anchor = "import android.webkit.WebViewClient;\n"
+if core_import.strip() not in text:
+    anchor = "import android.webkit.WebView;\n"
     if anchor not in text:
-        raise RuntimeError("Game State Core import anchor not found")
+        raise RuntimeError("GameCoreFacade import anchor not found")
     text = text.replace(anchor, anchor + core_import, 1)
 
 field = "  private GameCoreFacade gameCore;\n"
-if field not in text:
+if field.strip() not in text:
     anchor = "  private WebView webView;\n"
     if anchor not in text:
-        raise RuntimeError("Game State Core field anchor not found")
+        raise RuntimeError("GameCoreFacade field anchor not found")
     text = text.replace(anchor, anchor + field, 1)
 
-initialization = "    gameCore = GameCoreFacade.create(getApplicationContext(), BuildConfig.DEBUG);\n"
-if initialization not in text:
-    anchor = "    super.onCreate(savedInstanceState);\n"
+initialization = "    gameCore = GameCoreFacade.create(this, BuildConfig.DEBUG);\n"
+if initialization.strip() not in text:
+    anchor = "    webView = new WebView(this);\n"
     if anchor not in text:
-        raise RuntimeError("Game State Core initialization anchor not found")
-    text = text.replace(anchor, anchor + initialization, 1)
+        raise RuntimeError("GameCoreFacade initialization anchor not found")
+    text = text.replace(anchor, initialization + anchor, 1)
 
 close_line = "    if (gameCore != null) gameCore.close();\n"
-if close_line not in text:
-    anchor = "  @Override protected void onDestroy() {\n"
+if close_line.strip() not in text:
+    anchor = "    super.onDestroy();\n"
     if anchor not in text:
-        raise RuntimeError("Game State Core close anchor not found")
-    text = text.replace(anchor, anchor + close_line, 1)
+        raise RuntimeError("GameCoreFacade close anchor not found")
+    text = text.replace(anchor, close_line + anchor, 1)
 
-clear_core_bridge = '''    @JavascriptInterface public void clearCoreState() {
-      if (gameCore != null) gameCore.clear();
+clear_method = '''    @JavascriptInterface public void clearCoreState() {
+      runOnUiThread(() -> {
+        if (gameCore != null) gameCore.clear();
+      });
     }
 
 '''
 if "@JavascriptInterface public void clearCoreState()" not in text:
     anchor = "  private class GameBridge {\n"
     if anchor not in text:
-        raise RuntimeError("GameBridge anchor not found")
-    text = text.replace(anchor, anchor + clear_core_bridge, 1)
+        raise RuntimeError("clearCoreState GameBridge anchor not found")
+    text = text.replace(anchor, anchor + clear_method, 1)
 
-local_pass = '''          JSONObject localResult = new JSONObject(gameCore.processRule(stateJson, action));
-          if (localResult.optBoolean("handled", false)) {
-            emit("backroomTurn", localResult.getJSONObject("state").toString());
+rule_bridge = '''          String coreRaw = requireGameCore().processRule(stateJson, action);
+          JSONObject coreResult = new JSONObject(coreRaw);
+          if (coreResult.optBoolean("handled", false)) {
+            emit("backroomTurn", coreResult.getJSONObject("state").toString());
             return;
           }
 '''
-if local_pass not in text:
-    bridge = text.index("  private class GameBridge {")
-    submit = text.index("    @JavascriptInterface public void submitTurn(String stateJson, String action) {", bridge)
+if ".processRule(stateJson, action)" not in text:
+    # Historical Android patches may rebuild submitTurn and remove the earlier Core fast pass.
+    # Re-anchor at submitTurn itself instead of depending on a particular beginAction shape.
+    submit_signature = "    @JavascriptInterface public void submitTurn(String stateJson, String action) {\n"
+    submit = text.find(submit_signature)
+    if submit < 0:
+        raise RuntimeError("submitTurn bridge anchor not found")
     try_anchor = "        try {\n"
-    position = text.index(try_anchor, submit) + len(try_anchor)
-    text = text[:position] + local_pass + text[position:]
+    position = text.find(try_anchor, submit)
+    if position < 0:
+        raise RuntimeError("submitTurn try anchor not found")
+    position += len(try_anchor)
+    text = text[:position] + rule_bridge + text[position:]
 
+# Candidate state/ops emitted by the writer are advisory until Kotlin validates and commits them.
+# Keep the existing five-argument Core boundary: before, candidate, rolls, accepted ops, action.
 gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
-          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
+          JSONObject coreCommit = new JSONObject(requireGameCore().processValidatedCandidate(
             before.toString(), candidateState.toString(), rolls.toString(),
             coreOps == null ? "[]" : coreOps.toString(), action));
           if (!coreCommit.optBoolean("handled", false)) {
@@ -69,13 +82,31 @@ gemini_commit = '''          JSONArray coreOps = generated.optJSONArray("ops");
           candidateState = coreCommit.getJSONObject("state");
 
 '''
-if "gameCore.processValidatedCandidate(" not in text:
+validated_bridge_present = (
+    "processValidatedCandidate(" in text
+    and 'before.toString(), candidateState.toString(), rolls.toString(),' in text
+    and 'coreOps == null ? "[]" : coreOps.toString(), action' in text
+)
+if not validated_bridge_present:
+    # This is the stable terminal location used by the historical provider pipeline after
+    # candidate audit/repair. It is intentionally later than provider JSON construction.
     anchor = "          JSONObject state = candidateState;\n"
     if anchor not in text:
         raise RuntimeError("validated Gemini candidate anchor not found")
     text = text.replace(anchor, gemini_commit + anchor, 1)
 
-for required in [core_import.strip(), field.strip(), initialization.strip(), close_line.strip(), "@JavascriptInterface public void clearCoreState()", "gameCore.clear();", "gameCore.processRule(stateJson, action)", "JSONArray coreOps = generated.optJSONArray(\"ops\")", "coreOps == null ? \"[]\" : coreOps.toString(), action"]:
+for required in [
+    core_import.strip(),
+    field.strip(),
+    initialization.strip(),
+    close_line.strip(),
+    "@JavascriptInterface public void clearCoreState()",
+    "gameCore.clear();",
+    ".processRule(stateJson, action)",
+    "JSONArray coreOps = generated.optJSONArray(\"ops\")",
+    'before.toString(), candidateState.toString(), rolls.toString(),',
+    'coreOps == null ? "[]" : coreOps.toString(), action',
+]:
     if required not in text:
         raise RuntimeError(f"Game State Core integration missing: {required}")
 
@@ -89,38 +120,19 @@ if "|nhặt|được|lượm|" not in intent:
     intent = intent.replace(anchor, "|nhặt|được|lượm|", 1)
 INTENT.write_text(intent, encoding="utf-8")
 
+# GameCoreFacade is now checked in as the settled post-patch source. This patch may
+# verify the Core contract required by its Java/UI bridge, but it must not rewrite
+# gameplay authority at build time.
 facade = FACADE.read_text(encoding="utf-8")
-# StoryProgressionPolicy is already invoked at the final MainActivity canon boundary by
-# patch-lucia-story-gate-final.py before audit and before the candidate reaches GameCore.
-# Do not rewrite GameCoreFacade to normalize the same candidate a second time: that creates
-# a duplicate active path and makes build-time Python own Kotlin source semantics again.
 if "StoryProgressionPolicy.normalizeCandidate(" in facade:
     raise RuntimeError("Duplicate StoryProgressionPolicy normalization survived inside GameCoreFacade")
-
-warning_marker = 'return "[Warning] $message"'
-if warning_marker not in facade:
-    start_anchor = "  private fun validationReply(reason: String): String = when (reason) {"
-    end_anchor = "\n\n  companion object {"
-    start = facade.find(start_anchor)
-    end = facade.find(end_anchor, start)
-    if start < 0 or end < 0:
-        raise RuntimeError("validationReply anchors not found")
-    warning_reply = '''  private fun validationReply(reason: String): String {
-    val message = when (reason) {
-      "scan_source_missing", "scan_template_missing" -> "There is no object available for scanning or multiplying."
-      "precise_content_amount_forbidden" -> "This action is not available."
-      "item_content_empty" -> "This action is not available."
-      "insufficient_item_quantity", "item_not_owned" -> "This action is not available."
-      "party_full" -> "Party đã đủ tối đa bốn thành viên."
-      "join_not_confirmed" -> "Yêu cầu gia nhập chưa đủ điều kiện hoặc chưa được NPC xác nhận."
-      "living_target_forbidden" -> "Omnivault không thể tác động lên sinh vật sống."
-      "restore_cooldown_active" -> "Vật phẩm này vẫn đang trong cooldown Hoàn Nguyên 24 giờ."
-      else -> "This action is not available."
-    }
-    return "[Warning] $message"
-  }'''
-    facade = facade[:start] + warning_reply + facade[end:]
-FACADE.write_text(facade, encoding="utf-8")
+for marker in (
+    "private fun validationReply(reason: String): String",
+    'return "[Cảnh báo] $message"',
+    "private fun response(handled: Boolean, state: JSONObject, error: String?, reason: String, reply: String? = null): String",
+):
+    if marker not in facade:
+        raise RuntimeError("Materialized GameCoreFacade validation reply contract is missing: " + marker)
 
 html = INDEX.read_text(encoding="utf-8")
 old_chips = 'function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}'
@@ -136,17 +148,17 @@ if clean_chips not in html:
 
 warning_css = ".message.warning{border-left-color:#d99a2b;background:#231a0b}.message.warning .role{color:#e3a83a}.message.warning .text{color:#ffd27a;font-weight:650}"
 if warning_css not in html:
-    css_anchor = ".chips span{border:1px solid #313940;padding:5px 7px;font-size:12px}"
-    if css_anchor not in html:
-        raise RuntimeError("Warning CSS anchor not found")
-    html = html.replace(css_anchor, css_anchor + warning_css, 1)
+    anchor = ".message.player{"
+    if anchor not in html:
+        raise RuntimeError("warning style anchor not found")
+    html = html.replace(anchor, warning_css + anchor, 1)
 
 old_log_render = 'logEl.innerHTML=(state.log||[]).map(x=>"<article class=\'message "+(x.role==="player"?"player":"")+"\'><div class=\'role\'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class=\'text\'>"+esc(x.text)+"</div></article>").join("")'
-warning_log_render = 'logEl.innerHTML=(state.log||[]).map(x=>{const w=x.role!=="player"&&String(x.text||"").trim().startsWith("[Warning]");return "<article class=\'message "+(x.role==="player"?"player":"")+(w?" warning":"")+"\'><div class=\'role\'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class=\'text\'>"+esc(x.text)+"</div></article>"}).join("")'
+warning_log_render = 'logEl.innerHTML=(state.log||[]).map(x=>{const w=x.role!=="player"&&String(x.text||"").trim().startsWith("[Cảnh báo]");return "<article class=\'message "+(x.role==="player"?"player":"")+(w?" warning":"")+"\'><div class=\'role\'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class=\'text\'>"+esc(x.text)+"</div></article>"}).join("")'
 if warning_log_render not in html:
     if old_log_render not in html:
-        raise RuntimeError("Warning log renderer anchor not found")
+        raise RuntimeError("warning log renderer anchor not found")
     html = html.replace(old_log_render, warning_log_render, 1)
 
 INDEX.write_text(html, encoding="utf-8")
-print("Final Game State Core bridge applied without duplicate StoryProgressionPolicy source rewrite; reset/load core invalidation, item cleanup, quantity UI and warning feedback preserved.")
+print("Game State Core bridge applied; checked-in GameCoreFacade authority verified without source rewrite.")

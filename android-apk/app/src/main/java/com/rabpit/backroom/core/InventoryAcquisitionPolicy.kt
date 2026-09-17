@@ -44,11 +44,9 @@ object InventoryAcquisitionPolicy {
     val worldAcquisition = basis.trim().equals("world_consequence", ignoreCase = true)
     val established = establishedStructured(before, name)
     val normalizedName = name.lowercase(Locale.ROOT)
-    val isMadGod = normalizedName.contains("madgod")
     val isAlmondWater = normalizedName.contains("almond water")
 
     return when {
-      isMadGod -> directAcquisition && madGodAlreadySpawned(before) && established
       copyIntent(action) -> directAcquisition && established
       isAlmondWater -> (directAcquisition || worldAcquisition) &&
         (established || rollSuccess(rolls, "almondWater"))
@@ -73,13 +71,10 @@ object InventoryAcquisitionPolicy {
   private fun establishedStructured(before: JSONObject, itemName: String): Boolean {
     val flags = before.optJSONObject("flags") ?: return false
     val needle = itemName.lowercase(Locale.ROOT)
-    return listOf("exploration", "omnivault", "madGod").any { key ->
+    return listOf("exploration", "omnivault").any { key ->
       flags.optJSONObject(key)?.toString()?.lowercase(Locale.ROOT)?.contains(needle) == true
     }
   }
-
-  private fun madGodAlreadySpawned(before: JSONObject): Boolean =
-    before.optJSONObject("flags")?.optJSONObject("madGod")?.optBoolean("spawned", false) == true
 
   private fun rollSuccess(rolls: JSONObject, key: String): Boolean =
     rolls.optJSONObject(key)?.optBoolean("success", false) == true

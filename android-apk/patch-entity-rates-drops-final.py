@@ -6,12 +6,6 @@ MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
 FACADE = ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt"
 
 
-def once(source, old, new):
-    if source.count(old) != 1:
-        raise RuntimeError(f"Entity policy anchor count != 1: {old[:100]}")
-    return source.replace(old, new, 1)
-
-
 main = MAIN.read_text(encoding="utf-8")
 
 # The settled pre-final runtime still contains legacy Java-side pool/rate selection.
@@ -100,55 +94,32 @@ for required in (
 
 MAIN.write_text(main, encoding="utf-8")
 
-# Temporary compatibility wiring. Gameplay behavior is implemented by Kotlin
-# EntityEncounterPolicy / CombatRuntime / EntityDrops; this patch only connects the
-# legacy Activity pipeline to those Core entry points until MainActivity is thinned.
+# Kotlin gameplay authority is now materialized in checked-in GameCoreFacade.kt.
+# This legacy patch may adapt Java/UI callers, but it must not synthesize or rewrite
+# the authoritative Entity queue/reward/combat bridge at build time.
 facade = FACADE.read_text(encoding="utf-8")
-facade = once(facade, '  fun startCombatState(legacyStateJson: String, entityKey: String): String {', '''  fun startEntityEncounters(legacyStateJson: String, keysJson: String): String {
-    val legacy = JSONObject(legacyStateJson)
-    val keys = JSONArray(keysJson)
-    val next = EntityEncounterPolicy.enqueue(loadOrMigrate(legacy),
-      (0 until keys.length()).map { keys.getString(it) })
-    repository.save(next)
-    return syncLegacy(legacy, next, incrementTurn = false).toString()
-  }
+for required in (
+    'fun startEntityEncounters(legacyStateJson: String, keysJson: String)',
+    'EntityEncounterPolicy.enqueue(loadOrMigrate(legacy)',
+    'var resolution = CombatTurnAuthority.resolve(current, actionKind, action)',
+    'EntityDrops.award(next, CombatRuntime.active(current)!!.encounterId)',
+    'next = EntityEncounterPolicy.advance(next)',
+    'EntityDrops.claimPending(normalizeVisualPresence(loaded))',
+):
+    if required not in facade:
+        raise RuntimeError("Materialized Kotlin Entity/Core contract missing: " + required)
 
-  fun startCombatState(legacyStateJson: String, entityKey: String): String {''')
-# Entity reward/queue projection may update the returned Resolution reply/state after
-# CombatTurnAuthority has already made the combat decision. Keep only this adapter value mutable.
-facade = once(
-    facade,
-    '    val resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n',
-    '    var resolution = CombatTurnAuthority.resolve(current, actionKind, action)\n',
-)
-facade = once(facade, '    var next = resolution.state\n', '''    var next = resolution.state
-    if (resolution.entityDestroyed) {
-      val reward = EntityDrops.award(next, CombatRuntime.active(current)!!.encounterId)
-      next = reward.state
-      resolution = resolution.copy(state = next, reply = resolution.reply + " " + reward.message)
-    }
-''')
-# Resolve cleanup first, then start the next successful die without rolling again.
-start = facade.index('  fun processCombat(')
-end = facade.index('  private fun normalizeVisualPresence(', start)
-combat = facade[start:end]
-combat = once(combat, '    repository.save(next)\n', '''    if (resolution.entityDestroyed || resolution.escaped) {
-      next = EntityEncounterPolicy.advance(next)
-      CombatRuntime.active(next)?.let {
-        resolution = resolution.copy(reply = resolution.reply + " Entity tiếp theo: ${it.entityName}.")
-      }
-    }
-    repository.save(next)
-''')
-facade = facade[:start] + combat + facade[end:]
-facade = once(facade, '    val normalized = normalizeVisualPresence(loaded)\n',
-              '    val normalized = EntityDrops.claimPending(normalizeVisualPresence(loaded))\n')
-FACADE.write_text(facade, encoding="utf-8")
-print("Entity bridge applied: Kotlin Game Core owns the shared Entity pool, independent encounter dice, queue order and catalog kill drops.")
+for forbidden in (
+    'val resolution = CombatRuntime.resolve(current, actionKind, action)',
+    'fun startEntityEncounters(legacyStateJson: String, keysJson: String): String {\n    val legacy = JSONObject(legacyStateJson)\n    val keys = JSONArray(keysJson)\n    val next = EntityEncounterPolicy.enqueue(loadOrMigrate(legacy),\n      (0 until keys.length()).map { keys.getString(it) })\n    repository.save(next)\n    return syncLegacy(legacy, next, incrementTurn = false).toString()\n  }\n\n  fun startEntityEncounters',
+):
+    if forbidden in facade:
+        raise RuntimeError("Duplicate/legacy Entity authority survived in checked-in GameCoreFacade")
+
+print("Entity Core contract verified: Kotlin owns encounter queue, combat handoff and catalog kill drops; no GameCoreFacade rewrite performed.")
 
 # These legacy transforms still need the settled Java method shape while they install their
-# transition/debug adapters. Run them first; only after they finish do we collapse the final
-# Android roll method to a pure Kotlin Game Core bridge.
+# transition/debug adapters. They may rewrite Android bridge/UI source only.
 import runpy
 runpy.run_path(str(ROOT / "patch-level0-6-traversal-final.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-gm-action-policy-final.py"), run_name="__main__")

@@ -11,21 +11,27 @@ text = FACADE.read_text(encoding="utf-8")
 
 old_guard = "    if (isDirectPlayerPickupAction(action) || interpreted.candidates.any { it.intent == GameIntent.PICKUP_ITEM }) {\n"
 new_guard = "    if (isDirectPlayerPickupAction(action)) {\n"
-if new_guard not in text:
+# The checked-in materialized Core already contains an earlier direct-action guard.
+# Replace the one remaining legacy classifier-owned guard whenever it survives; do not
+# use presence of the earlier guard as a reason to skip this cleanup.
+if old_guard in text:
     count = text.count(old_guard)
     if count != 1:
         raise RuntimeError(f"Pickup false-positive guard expected one legacy match, found {count}")
     text = text.replace(old_guard, new_guard, 1)
-if old_guard in text:
+if old_guard in text or new_guard not in text:
     raise RuntimeError("LiteRT PICKUP_ITEM classification can still reject non-pickup prose")
 
 old_inventory_lock = "    val inventoryLocked = isDirectPlayerPickupAction(action) || GameIntent.PICKUP_ITEM in actionIntents || GameIntent.OMNIVAULT_RESTORE in actionIntents\n"
 new_inventory_lock = "    val inventoryLocked = isDirectPlayerPickupAction(action) || GameIntent.OMNIVAULT_RESTORE in actionIntents\n"
-if new_inventory_lock not in text:
+materialized_inventory_lock = "    val inventoryLocked = isDirectPlayerPickupAction(action) || GameIntent.OMNIVAULT_RESTORE in actionIntents || GameIntent.OMNIVAULT_SCAN in actionIntents || GameIntent.OMNIVAULT_COPY in actionIntents\n"
+if new_inventory_lock not in text and materialized_inventory_lock not in text:
     count = text.count(old_inventory_lock)
     if count != 1:
         raise RuntimeError(f"Validated inventory lock expected one legacy match, found {count}")
     text = text.replace(old_inventory_lock, new_inventory_lock, 1)
+if "GameIntent.PICKUP_ITEM in actionIntents" in text:
+    raise RuntimeError("LiteRT PICKUP_ITEM still owns validated Inventory locking")
 
 old_inventory_assertion = r'''    val inventoryAssertion = Regex("(?:thêm|bỏ|đưa).{0,80}(?:vào|trong)\\s+(?:inventory|kho đồ|túi đồ)", RegexOption.IGNORE_CASE)
 '''
@@ -37,8 +43,6 @@ if new_inventory_assertion not in text:
         raise RuntimeError(f"Inventory assertion expected one legacy match, found {count}")
     text = text.replace(old_inventory_assertion, new_inventory_assertion, 1)
 
-# Keep the historical combined scan-source/template warning untouched here because the later
-# MadGod patch intentionally anchors on that exact line before adding its own validation messages.
 translations = {
     '"precise_content_amount_forbidden" -> "This action is not available."': '"precise_content_amount_forbidden" -> "Hành động này không khả dụng với lượng nội dung được chỉ định."',
     '"item_content_empty" -> "This action is not available."': '"item_content_empty" -> "Vật phẩm này hiện không có nội dung khả dụng."',
@@ -49,17 +53,16 @@ for old, new in translations.items():
     if old in text:
         text = text.replace(old, new)
 
-pickup_line = '      "player_pickup_unavailable" -> "Không thể tự thêm vật phẩm vào Inventory; hãy tìm kiếm hoặc tương tác với môi trường để game xác định kết quả."\n'
-party_anchor = '      "party_full" -> "Party đã đủ tối đa bốn thành viên."\n'
-if pickup_line not in text:
+if '"player_pickup_unavailable" ->' not in text:
+    pickup_line = '      "player_pickup_unavailable" -> "Không thể tự thêm vật phẩm vào Inventory; hãy tìm kiếm hoặc tương tác với môi trường để game xác định kết quả."\n'
+    party_anchor = '      "party_full" -> "Party đã đủ tối đa bốn thành viên."\n'
     if party_anchor not in text:
-        raise RuntimeError("validationReply party anchor missing")
+        raise RuntimeError("validationReply pickup contract missing")
     text = text.replace(party_anchor, pickup_line + party_anchor, 1)
 FACADE.write_text(text, encoding="utf-8")
 
-# Inventory acquisition gameplay rules moved into Kotlin InventoryAcquisitionPolicy. This
-# historical compatibility layer may validate the bridge shape, but must not recreate loot,
-# Almond Water, MadGod, copy or world_consequence authorization in generated Java.
+# Inventory acquisition rules remain Kotlin-owned. Java is only an early bridge so
+# rejected provider operations keep the established audit/repair behavior.
 java = MAIN.read_text(encoding="utf-8")
 kotlin_world_inventory = r'''        // Kotlin Game Core owns acquisition eligibility. Java only applies the decision early so
         // rejected provider ops keep the existing audit/repair behavior before Core commit.
@@ -78,10 +81,9 @@ for retired in (
 ):
     if retired in java:
         raise RuntimeError("Retired Java Inventory acquisition authority survived: " + retired)
-MAIN.write_text(java, encoding="utf-8")
 
 builder = KNOWLEDGE_BUILDER.read_text(encoding="utf-8")
-prompt_anchor = '      "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory. " +\n'
+prompt_anchor = '      "Inventory chỉ đổi khi Kai thật sự lấy/nhận/copy/trao/mất/tiêu thụ vật; nhìn thấy không đồng nghĩa sở hữu. " +\n'
 world_prompt_line = r'''      "Khi GAMEPLAY_ROLLS hợp lệ tạo loot/Almond Water và reply xác nhận môi trường hoặc NPC thực sự giao vật đó cho Kai, bắt buộc kèm inventory_upsert với basis:\"world_consequence\" trong cùng response; nếu không có op hợp lệ thì không được kể rằng Kai đã nhận hoặc sở hữu vật. " +
 '''
 if world_prompt_line not in builder:
@@ -232,14 +234,19 @@ final_intent = INTENT.read_text(encoding="utf-8")
 final_command = COMMAND.read_text(encoding="utf-8")
 for token in (
     "if (isDirectPlayerPickupAction(action))",
-    new_inventory_lock.strip(),
     '(?:thêm|đưa).{0,80}(?:vào|trong)\\\\s+(?:inventory|kho đồ|túi đồ)',
     "player_pickup_unavailable",
-    "Hành động này không khả dụng trong trạng thái hiện tại.",
     "resolver.resolveSequence(interpreted.candidates, turnId, context).filterNotNull()",
 ):
     if token not in final_facade:
         raise RuntimeError(f"Search/world-acquisition/Omnivault facade contract missing: {token}")
+if "GameIntent.PICKUP_ITEM in actionIntents" in final_facade or old_guard in final_facade or old_inventory_assertion in final_facade:
+    raise RuntimeError("Legacy pickup/inventory false-positive authority survived")
+if not (
+    "Hành động này không khả dụng trong trạng thái hiện tại." in final_facade
+    or "Không thể thực hiện hành động này." in final_facade
+):
+    raise RuntimeError("Localized validation fallback contract missing")
 for token in (
     "InventoryAcquisitionPolicy.allows(",
     'op.optString("basis", "")',
@@ -266,7 +273,5 @@ for token in (
         raise RuntimeError(f"Omnivault command-resolution contract missing: {token}")
 if 'basis:\\"world_consequence\\"' not in final_builder:
     raise RuntimeError("Writer prompt does not require world_consequence Inventory handoff")
-if old_inventory_lock in final_facade or old_inventory_assertion in final_facade:
-    raise RuntimeError("Legacy inventory false-positive lock survived")
 
-print("World handoffs remain synchronized through Kotlin InventoryAcquisitionPolicy; Omnivault Scan -> Copy still preserves item references and requested total quantities while keeping the 3-slot/template rules authoritative.")
+print("Search false-positive compatibility applied safely over materialized Core; Inventory authority remains Kotlin-owned.")

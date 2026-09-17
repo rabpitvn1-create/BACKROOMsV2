@@ -120,8 +120,6 @@ pickup_block = '''    if (isDirectPlayerPickupAction(action) || interpreted.cand
       return response(true, result, "player_pickup_unavailable", "validation_rejected", reply)
     }
 '''
-if pickup_block not in facade:
-    raise RuntimeError("Player pickup authority block missing")
 ui_lock = pickup_block + '''
     val uiOnlyItemIntent = interpreted.candidates.firstOrNull {
       it.intent in setOf(GameIntent.USE_ITEM, GameIntent.TRANSFER_ITEM, GameIntent.DROP_ITEM)
@@ -134,12 +132,20 @@ ui_lock = pickup_block + '''
       return response(true, result, "inventory_ui_required", "validation_rejected", reply)
     }
 '''
-facade = facade.replace(pickup_block, ui_lock, 1)
+if "val uiOnlyItemIntent = interpreted.candidates.firstOrNull" not in facade:
+    if pickup_block not in facade:
+        raise RuntimeError("Player pickup authority block missing")
+    facade = facade.replace(pickup_block, ui_lock, 1)
+for marker in (
+    'abortAction("player_pickup_unavailable")',
+    'abortAction("inventory_ui_required")',
+    "GameIntent.USE_ITEM, GameIntent.TRANSFER_ITEM, GameIntent.DROP_ITEM",
+):
+    if marker not in facade:
+        raise RuntimeError("Checked-in Inventory UI authority missing: " + marker)
 
 start = facade.find("    val desiredById = mutableMapOf<String, ItemStack>()")
 end = facade.find("    val desiredParty = mutableMapOf<String, JSONObject>()", start)
-if start < 0 or end < 0:
-    raise RuntimeError("Gemini inventory delta anchors missing")
 reward_block = r'''    val desiredById = current.toMutableMap()
     if (!inventoryLocked) {
       val desiredInventory = candidate.optJSONArray("inventory") ?: JSONArray()
@@ -174,7 +180,14 @@ reward_block = r'''    val desiredById = current.toMutableMap()
     }
 
 '''
-facade = facade[:start] + reward_block + facade[end:]
+if start >= 0 and end >= 0:
+    facade = facade[:start] + reward_block + facade[end:]
+elif not all(marker in facade for marker in (
+    "val desiredById = current.toMutableMap()",
+    "ItemCatalog.resolve(requestedId, name)",
+    "InventoryAcquisitionPolicy.allows(before, rolls, action, name, old != null, acquisitionBasis)",
+)):
+    raise RuntimeError("Checked-in Gemini inventory delta authority missing")
 
 load_old = '''  private fun loadOrMigrate(legacy: JSONObject): GameState {
     if (repository.exists()) return repository.load()

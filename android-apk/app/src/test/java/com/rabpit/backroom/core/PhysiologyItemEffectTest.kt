@@ -21,20 +21,22 @@ class PhysiologyItemEffectTest {
 
   private fun grant(
     state: GameState,
-    id: String,
-    name: String,
-    metadata: Map<String, String>
+    itemId: String,
+    itemName: String,
+    quantity: Int = 1,
+    metadata: Map<String, String> = emptyMap()
   ): GameState {
     val result = StateReducer.execute(
       state,
       ItemCommand(
-        commandId = "grant-$id",
+        commandId = "grant-$itemId",
         turnId = "TURN_1",
         actorId = KAI_ID,
         source = CommandSource.SYSTEM,
         operation = ItemCommand.Operation.PICKUP,
-        itemId = id,
-        itemName = name,
+        itemId = itemId,
+        itemName = itemName,
+        quantity = quantity,
         metadata = metadata
       )
     )
@@ -48,133 +50,87 @@ class PhysiologyItemEffectTest {
       commandId = commandId,
       turnId = "TURN_1",
       actorId = KAI_ID,
-      source = CommandSource.RULE,
+      source = CommandSource.UI,
       operation = ItemCommand.Operation.USE,
       itemId = itemId,
       itemName = itemId
     )
   )
 
-  @Test fun waterEffectResetsOnlyWaterCounter() {
-    val granted = grant(
-      stateWithPhysiology(),
-      "water",
-      "Chai nước",
-      mapOf("physiologyEffect" to "WATER")
-    )
+  @Test fun waterEffectResetsOnlyWaterCounterAndConsumesWholeUnit() {
+    val granted = grant(stateWithPhysiology(), "water-bottle", "Chai nước")
 
-    val result = use(granted, "use-water", "water-bottle:full")
+    val result = use(granted, "use-water", "water-bottle")
 
     assertTrue(result.applied)
     val physiology = result.state.characters.getValue(KAI_ID).physiology
     assertEquals(240L, physiology.minutesSinceFood)
     assertEquals(0L, physiology.minutesSinceWater)
     assertEquals(720L, physiology.minutesAwake)
+    assertFalse(result.state.inventories.getValue(KAI_ID).items.containsKey("water-bottle"))
     assertTrue("physiology_water_recorded" in result.events)
   }
 
-  @Test fun foodEffectResetsOnlyFoodCounter() {
-    val granted = grant(
-      stateWithPhysiology(),
-      "food",
-      "Hộp thức ăn",
-      mapOf("physiologyEffect" to "FOOD")
-    )
+  @Test fun foodEffectResetsOnlyFoodCounterAndConsumesWholeUnit() {
+    val granted = grant(stateWithPhysiology(), "food-container", "Hộp đồ hộp")
 
-    val result = use(granted, "use-food", "food-container:full")
+    val result = use(granted, "use-food", "food-container")
 
     assertTrue(result.applied)
     val physiology = result.state.characters.getValue(KAI_ID).physiology
     assertEquals(0L, physiology.minutesSinceFood)
     assertEquals(90L, physiology.minutesSinceWater)
     assertEquals(720L, physiology.minutesAwake)
+    assertFalse(result.state.inventories.getValue(KAI_ID).items.containsKey("food-container"))
     assertTrue("physiology_food_recorded" in result.events)
   }
 
-  @Test fun combinedEffectsResetFoodAndWaterTogether() {
-    val granted = grant(
-      stateWithPhysiology(),
-      "ration-gel",
-      "Emergency ration gel",
-      mapOf(
-        "physiologyEffect" to "WATER,FOOD",
-        "consumable" to "true"
-      )
-    )
-
-    val result = use(granted, "use-ration", "ration-gel")
-
-    assertTrue(result.applied)
-    val physiology = result.state.characters.getValue(KAI_ID).physiology
-    assertEquals(0L, physiology.minutesSinceFood)
-    assertEquals(0L, physiology.minutesSinceWater)
-    assertFalse(result.state.inventories.getValue(KAI_ID).items.containsKey("ration-gel"))
-    assertTrue("physiology_water_recorded" in result.events)
-    assertTrue("physiology_food_recorded" in result.events)
-  }
-
-  @Test fun untaggedItemDoesNotMutatePhysiology() {
-    val granted = grant(stateWithPhysiology(), "tool", "Small tool", emptyMap())
+  @Test fun catalogNonUsableItemRejectsWithoutMutation() {
+    val granted = grant(stateWithPhysiology(), "electrical:charged-cell", "Pin tích điện")
     val before = granted.characters.getValue(KAI_ID).physiology
 
-    val result = use(granted, "use-tool", "tool")
+    val result = use(granted, "use-charged-cell", "electrical:charged-cell")
 
-    assertTrue(result.applied)
+    assertFalse(result.applied)
+    assertEquals("item_use_not_supported", result.validation.reason)
+    assertEquals(granted, result.state)
     assertEquals(before, result.state.characters.getValue(KAI_ID).physiology)
   }
 
-  @Test fun invalidEffectRejectsUseWithoutInventoryOrPhysiologyMutation() {
+  @Test fun catalogDefinitionOverridesUntrustedPhysiologyMetadata() {
     val granted = grant(
       stateWithPhysiology(),
-      "bad-tonic",
-      "Bad tonic",
-      mapOf(
-        "physiologyEffect" to "HEAL",
-        "consumable" to "true"
-      )
-    )
-
-    val result = use(granted, "use-bad-tonic", "bad-tonic")
-
-    assertFalse(result.applied)
-    assertEquals("physiology_effect_invalid", result.validation.reason)
-    assertEquals(granted, result.state)
-  }
-
-  @Test fun failedUseDoesNotApplyPhysiologyEffect() {
-    val granted = grant(
-      stateWithPhysiology(),
-      "empty-water",
-      "Chai rỗng",
-      mapOf("physiologyEffect" to "WATER")
-    )
-
-    val result = use(granted, "use-empty-water", "water-bottle:empty")
-
-    assertFalse(result.applied)
-    assertEquals("item_content_empty", result.validation.reason)
-    assertEquals(granted, result.state)
-  }
-
-  @Test fun duplicateUseNeverAppliesPhysiologyTwice() {
-    val granted = grant(
-      stateWithPhysiology(),
-      "water",
+      "water-bottle",
       "Chai nước",
-      mapOf("physiologyEffect" to "WATER")
+      metadata = mapOf("physiologyEffect" to "HEAL", "consumable" to "false")
     )
+
+    val stored = granted.inventories.getValue(KAI_ID).items.getValue("water-bottle")
+    assertEquals("WATER", stored.metadata["physiologyEffect"])
+    assertEquals("true", stored.metadata["consumable"])
+
+    val result = use(granted, "use-canonical-water", "water-bottle")
+    assertTrue(result.applied)
+    val physiology = result.state.characters.getValue(KAI_ID).physiology
+    assertEquals(240L, physiology.minutesSinceFood)
+    assertEquals(0L, physiology.minutesSinceWater)
+  }
+
+  @Test fun duplicateUseNeverConsumesOrAppliesPhysiologyTwice() {
+    val granted = grant(stateWithPhysiology(), "water-bottle", "Chai nước", quantity = 2)
     val command = ItemCommand(
       commandId = "same-use",
       turnId = "TURN_1",
       actorId = KAI_ID,
-      source = CommandSource.RULE,
+      source = CommandSource.UI,
       operation = ItemCommand.Operation.USE,
-      itemId = "water-bottle:full",
-      itemName = "water-bottle:full"
+      itemId = "water-bottle",
+      itemName = "Chai nước"
     )
 
     val first = StateReducer.execute(granted, command)
     assertTrue(first.applied)
+    assertEquals(1, first.state.inventories.getValue(KAI_ID).items.getValue("water-bottle").quantity)
     assertEquals(0L, first.state.characters.getValue(KAI_ID).physiology.minutesSinceWater)
 
     val second = StateReducer.execute(first.state, command)

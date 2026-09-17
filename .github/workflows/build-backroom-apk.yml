@@ -220,8 +220,6 @@ jobs:
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.77.apk | grep -q 'assets/Kai_MadGod_snapshot_overlay.png'
-          unzip -l Backroom-1.1.77.apk | grep -q 'assets/avatars/MadGod.jpg'
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/kai_snapshot_overlay.png'
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/kai_entity_overlay.png'
           unzip -l Backroom-1.1.77.apk | grep -q 'assets/overlay-visible-metrics.json'

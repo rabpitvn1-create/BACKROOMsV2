@@ -116,7 +116,7 @@ old = "if(r){var bg=document.createElement('img');bg.className='snapshot-bg';bg.
 # as network-failure fallback for parent Levels only. Deferred sublevels intentionally do
 # not borrow a parent image because that would mislabel the scene as the wrong sublevel.
 # The structured-Level picker and Kai sequence deliberately keep the exact anchors used by
-# patch-visual-state-sync-final.py, MadGod, and progression snapshot composition.
+# later visual-state and progression snapshot composition patches.
 new = (
     "var refs={0:'file:///android_asset/level_snapshots/level_0.webp',1:'file:///android_asset/level_snapshots/level_1.webp',2:'file:///android_asset/level_snapshots/level_2.webp',3:'file:///android_asset/level_snapshots/level_3.webp',4:'file:///android_asset/level_snapshots/level_4.webp',5:'file:///android_asset/level_snapshots/level_5.webp',6:'file:///android_asset/level_snapshots/level_6.webp'};"
     "var structuredLevel=state&&state.level&&state.level.number;var where=String(state&&state.location||'')+' '+String(state&&state.title||'');var lm=where.match(/Level[^0-9]*([0-6])/i);var lv=(structuredLevel!==undefined&&structuredLevel!==null&&Number(structuredLevel)>=0&&Number(structuredLevel)<=6)?Number(structuredLevel):(lm?Number(lm[1]):0);"

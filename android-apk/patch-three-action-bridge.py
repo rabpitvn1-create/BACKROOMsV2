@@ -31,19 +31,33 @@ if "@JavascriptInterface public void submitAction(String stateJson, String actio
         raise RuntimeError("MainActivity submitTurn anchor missing")
     main = main.replace(old_signature, new_signature, 1)
 
-core_call = "requireGameCore()" if "requireGameCore().processRule(stateJson, action)" in main else "gameCore"
-local_line = f'''          JSONObject localResult = new JSONObject({core_call}.processRule(stateJson, action));
-'''
+# patch-game-state-core-bridge may have already materialized the Core fast path as
+# String coreRaw + JSONObject coreResult. Older snapshots used a one-line localResult.
+# Accept either settled shape and insert beginAction exactly once before processRule.
+core_call = "requireGameCore()" if "requireGameCore()" in main else "gameCore"
 if "beginAction(stateJson, actionKind, action)" not in main:
-    if local_line not in main:
+    rule_shapes = (
+        (
+            f'''          String coreRaw = {core_call}.processRule(stateJson, action);\n''',
+            f'''          JSONObject actionStart = new JSONObject({core_call}.beginAction(stateJson, actionKind, action));\n          if (!actionStart.optBoolean("handled", false)) {{\n            throw new Exception("Action Runtime từ chối hành động: " + actionStart.optString("error", "action_start_failed"));\n          }}\n          String coreRaw = {core_call}.processRule(stateJson, action);\n''',
+        ),
+        (
+            f'''          JSONObject localResult = new JSONObject({core_call}.processRule(stateJson, action));\n''',
+            f'''          JSONObject actionStart = new JSONObject({core_call}.beginAction(stateJson, actionKind, action));\n          if (!actionStart.optBoolean("handled", false)) {{\n            throw new Exception("Action Runtime từ chối hành động: " + actionStart.optString("error", "action_start_failed"));\n          }}\n          JSONObject localResult = new JSONObject({core_call}.processRule(stateJson, action));\n''',
+        ),
+        (
+            '''          String coreRaw = requireGameCore().processRule(stateJson, action);\n''',
+            '''          JSONObject actionStart = new JSONObject(requireGameCore().beginAction(stateJson, actionKind, action));\n          if (!actionStart.optBoolean("handled", false)) {\n            throw new Exception("Action Runtime từ chối hành động: " + actionStart.optString("error", "action_start_failed"));\n          }\n          String coreRaw = requireGameCore().processRule(stateJson, action);\n''',
+        ),
+    )
+    matched = False
+    for old, new in rule_shapes:
+        if old in main:
+            main = main.replace(old, new, 1)
+            matched = True
+            break
+    if not matched:
         raise RuntimeError("MainActivity processRule anchor missing")
-    begin_block = f'''          JSONObject actionStart = new JSONObject({core_call}.beginAction(stateJson, actionKind, action));
-          if (!actionStart.optBoolean("handled", false)) {{
-            throw new Exception("Action Runtime từ chối hành động: " + actionStart.optString("error", "action_start_failed"));
-          }}
-          JSONObject localResult = new JSONObject({core_call}.processRule(stateJson, action));
-'''
-    main = main.replace(local_line, begin_block, 1)
 
 # Entity encounter generation is authoritative to the typed ActionRuntime kind, not to words found
 # in the Vietnamese/freeform action label. EXPLORE is the only action that may start a NEW Entity
@@ -65,8 +79,6 @@ normal_new = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter",
 if normal_new not in main:
     main = replace_once(main, normal_old, normal_new, "normal Entity EXPLORE gate")
 
-# Independent killer rolls are retired. If another earlier patch brings them back, stop here rather
-# than adapting them to EXPLORE and silently preserving obsolete encounter behavior.
 for legacy_marker in (
     'rolls.put("jeffEncounter"',
     'rolls.put("janeEncounter"',
@@ -81,9 +93,6 @@ roll_call_new = "          JSONObject rolls = makeGameplayRolls(before, actionKi
 if roll_call_new not in main:
     main = replace_once(main, roll_call_old, roll_call_new, "typed gameplay roll call")
 
-# The final patch chain no longer builds the GM prompt inside submitTurn. It calls writerPrompt().
-# Pull the typed ActionRuntime context there so the initial writer and any repair pass receive the
-# exact same Search / Execute / Explore semantics.
 writer_sig = "  private String writerPrompt(JSONObject before, String action, JSONObject rolls, JSONArray auditFeedback) throws Exception {\n"
 if "String actionRuntimeContext =" not in main:
     writer_pos = main.find(writer_sig)
@@ -109,8 +118,6 @@ if "String actionRuntimeContext =" not in main:
     )
     main = main[:return_pos] + replacement_return + main[return_pos + len(original_return):]
 
-# Technical/provider failure does not represent successful in-world progress. End the active session
-# as interrupted so the next player decision cannot inherit a stale action lock.
 if "abortAction(\"pipeline_error\")" not in main:
     submit_pos = main.find("    private void submitTurnInternal(String stateJson, String actionKind, String action) {")
     if submit_pos < 0:

@@ -49,10 +49,53 @@ omnivault_current = ROOT / "patch-omnivault-current-canon-final.py"
 for required in (inventory_compat, inventory_v4, inventory_regression, omnivault_current):
     if not required.is_file():
         raise RuntimeError("Final gameplay patch missing: " + required.name)
-runpy.run_path(str(inventory_compat), run_name="__main__")
-runpy.run_path(str(inventory_v4), run_name="__main__")
-runpy.run_path(str(inventory_regression), run_name="__main__")
-runpy.run_path(str(omnivault_current), run_name="__main__")
+v4_authority = all(
+    marker in path.read_text(encoding="utf-8")
+    for path, marker in (
+        (ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt", "fun processInventoryUiAction("),
+        (ROOT / "app/src/main/java/com/rabpit/backroom/core/Engines.kt", "ItemCatalog.resolve(ownedRaw.itemId, ownedRaw.name)"),
+        (ROOT / "app/src/test/java/com/rabpit/backroom/core/InventoryV4ArchitectureTest.kt", "uiTransferMovesWholeUnitsBetweenAuthoritativeInventories"),
+    )
+)
+if v4_authority:
+    anchor_source = inventory_compat.read_text(encoding="utf-8")
+    facade_start = anchor_source.index("# Generated GameCoreFacade compatibility.")
+    anchor_main_start = anchor_source.index("main = MAIN.read_text")
+    anchor_compat = anchor_source[:facade_start] + anchor_source[anchor_main_start:]
+    pickup_start = anchor_source.index("pickup_block = '''") + len("pickup_block = '''")
+    pickup_end = anchor_source.index("'''", pickup_start)
+    pickup_block = anchor_source[pickup_start:pickup_end]
+    exec(
+        compile(anchor_compat, str(inventory_compat), "exec"),
+        {"__name__": "__main__", "__file__": str(inventory_compat), "pickup_block": pickup_block},
+    )
+
+    source = inventory_v4.read_text(encoding="utf-8")
+    core_start = source.index("# Core item semantics")
+    main_start = source.index("main = MAIN.read_text")
+    tests_start = source.index("# Regression tests:")
+    compatibility_source = source[:core_start] + source[main_start:tests_start]
+    exec(compile(compatibility_source, str(inventory_v4), "exec"), {"__name__": "__main__", "__file__": str(inventory_v4)})
+
+    omni_source = omnivault_current.read_text(encoding="utf-8")
+    omni_core_start = omni_source.index("# Runtime authority.")
+    omni_main_start = omni_source.index("main = MAIN.read_text")
+    omni_tests_start = omni_source.index("# Regression coverage.")
+    omni_compat = omni_source[:omni_core_start] + omni_source[omni_main_start:omni_tests_start]
+    exec(compile(omni_compat, str(omnivault_current), "exec"), {"__name__": "__main__", "__file__": str(omnivault_current)})
+    for path, marker in (
+        (ROOT / "app/src/main/java/com/rabpit/backroom/core/OmnivaultEngine.kt", 'return invalid(state, "omnivault_operation_retired")'),
+        (ROOT / "app/src/test/java/com/rabpit/backroom/core/InventoryV4ArchitectureTest.kt", "omnivaultScanAndCopyAreRetiredWithoutMutation"),
+        (ROOT / "app/src/test/java/com/rabpit/backroom/core/OmnivaultNaturalFlowTest.kt", "scanAndCopyAreRetiredInNaturalFlow"),
+    ):
+        if marker not in path.read_text(encoding="utf-8"):
+            raise RuntimeError("Checked-in Inventory V4/Omnivault authority missing: " + marker)
+    print("Inventory V4 and Omnivault Kotlin/test authority verified; runtime compatibility staged.")
+else:
+    runpy.run_path(str(inventory_compat), run_name="__main__")
+    runpy.run_path(str(inventory_v4), run_name="__main__")
+    runpy.run_path(str(inventory_regression), run_name="__main__")
+    runpy.run_path(str(omnivault_current), run_name="__main__")
 
 # Inventory V4 rewrites the candidate-reward projection for catalog normalization. Preserve the
 # Kotlin-owned acquisition gate after that compatibility rewrite. This is bridge wiring only: the

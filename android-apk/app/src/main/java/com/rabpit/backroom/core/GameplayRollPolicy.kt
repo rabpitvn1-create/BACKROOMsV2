@@ -66,10 +66,6 @@ object GameplayRollPolicy {
       flags?.optJSONObject("anNhien")?.optBoolean("encountered", false) == true
     val survivorAllowed = flags == null || flags.optBoolean("survivorEncountersAllowed", true)
     val entityAllowed = flags == null || flags.optBoolean("entityEncountersAllowed", true)
-    val madGod = flags?.optJSONObject("madGod")
-    val madGodEligible = search &&
-      (madGod == null || !madGod.optBoolean("spawned", false)) &&
-      (flags == null || flags.optBoolean("madGodDiscoveryAllowed", true))
 
     // Special followers use three independent 0.25% physical-turn checks on Levels 0-6.
     rolls.put("anNhienEncounter", thresholdRoll(
@@ -102,8 +98,6 @@ object GameplayRollPolicy {
     rolls.put("loot", thresholdRoll(
       "loot", 10_000, lootThreshold, search,
       if (anNhienFollowing) " +10% An Nhiên" else "", random))
-    rolls.put("madGodSet", thresholdRoll(
-      "madGodSet", 10_000, 1, madGodEligible, " UR+ UNIQUE discovery", random))
     rolls.put("almondWater", thresholdRoll(
       "almondWater", 10_000, WATER_THRESHOLDS[level], search && water, "", random))
 

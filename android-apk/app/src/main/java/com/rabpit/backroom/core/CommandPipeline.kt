@@ -14,12 +14,27 @@ class CommandResolver(
   private val itemResolver: ItemResolver = DefaultItemResolver(),
   private val quantityResolver: QuantityResolver = DefaultQuantityResolver()
 ) {
+  fun resolveSequence(candidates: List<IntentCandidate>, turnId: String, context: GameContext): List<GameCommand?> {
+    var resolutionContext = context
+    return candidates.mapIndexed { index, candidate ->
+      val command = resolve(candidate, index, turnId, resolutionContext)
+      val itemId = when (command) {
+        is ItemCommand -> command.itemId
+        is OmnivaultCommand -> command.itemId
+        else -> null
+      }
+      if (itemId != null) resolutionContext = resolutionContext.copy(lastReferencedItemId = itemId)
+      command
+    }
+  }
+
   fun resolve(candidate: IntentCandidate, index: Int, turnId: String, context: GameContext): GameCommand? {
     val actor = actorResolver.resolve(candidate.clause, context) ?: return null
     val target = targetResolver.resolve(candidate.clause, context)
     val commandId = stableCommandId(turnId, index, candidate.clause)
     val item = itemResolver.resolve(candidate.clause, context)
-    val quantity = quantityResolver.resolve(candidate.clause)
+    val rawQuantity = quantityResolver.resolve(candidate.clause)
+    val quantity = resolvedQuantity(candidate, actor, item, rawQuantity, context)
     val source = candidate.source
     return when (candidate.intent) {
       GameIntent.PICKUP_ITEM -> item?.let { itemCommand(commandId, turnId, actor, target, source, ItemCommand.Operation.PICKUP, it, quantity) }
@@ -44,6 +59,15 @@ class CommandResolver(
       GameIntent.STATUS_QUERY -> QueryCommand(commandId, turnId, actor, target, source, QueryCommand.Type.STATUS)
       else -> null
     }
+  }
+
+  private fun resolvedQuantity(candidate: IntentCandidate, actor: String, item: Pair<String, String>?, rawQuantity: Int, context: GameContext): Int {
+    if (candidate.intent != GameIntent.OMNIVAULT_COPY || item == null) return rawQuantity
+    val targetTotal = Regex("(?:thành|tổng\\s+cộng|đủ)\\s+(?:\\d+|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười|một\\s+trăm)\\b", RegexOption.IGNORE_CASE)
+      .containsMatchIn(candidate.clause)
+    if (!targetTotal) return rawQuantity
+    val existing = context.state.inventories[actor]?.items?.get(item.first)?.quantity ?: 0
+    return (rawQuantity - existing).coerceAtLeast(1)
   }
 
   private fun itemCommand(id: String, turn: String, actor: String, target: String?, source: CommandSource, operation: ItemCommand.Operation, item: Pair<String, String>, quantity: Int, slot: String? = null) =

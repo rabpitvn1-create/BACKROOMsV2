@@ -141,19 +141,20 @@ class GameStateCoreTest {
     assertEquals("living_target_forbidden", living.validation.reason)
   }
 
-  @Test fun omnivaultThreeSlotsAndCopyRemainGameplayMechanics() {
-    var state = base()
-    for (i in 1..4) {
-      state = StateReducer.execute(state, item("original-$i", ItemCommand.Operation.PICKUP)).state
-      state = StateReducer.execute(state, OmnivaultCommand("scan-$i", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.SCAN, itemId = "original-$i", itemName = "Item $i", timestampEpochMs = i.toLong())).state
+  @Test fun omnivaultScanAndCopyAreRetiredGameplayMechanics() {
+    val state = GameState.initial()
+    for (operation in listOf(OmnivaultCommand.Operation.SCAN, OmnivaultCommand.Operation.COPY)) {
+      val result = StateReducer.execute(state, OmnivaultCommand(
+        "retired-${operation.name}", state.turn.currentTurnId, KAI_ID,
+        source = CommandSource.RULE, operation = operation,
+        itemId = "water-bottle", itemName = "Chai nước", quantity = 1
+      ))
+      assertFalse(result.applied)
+      assertEquals("omnivault_operation_retired", result.validation.reason)
+      assertEquals(state.inventories, result.state.inventories)
+      assertTrue(result.state.omnivault.scanSlots.isEmpty())
+      assertTrue(result.state.omnivault.markedSourceIds.isEmpty())
     }
-    assertEquals(3, state.omnivault.scanSlots.size)
-    assertFalse(state.omnivault.scanSlots.any { it.sourceItemId == "original-1" })
-    assertTrue("original-1" in state.omnivault.markedSourceIds)
-
-    val copied = StateReducer.execute(state, OmnivaultCommand("copy", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.COPY, itemId = "original-4", itemName = "Item 4", quantity = 2))
-    assertEquals(3, copied.state.inventories.getValue(KAI_ID).items.getValue("original-4").quantity)
-    assertEquals("2", copied.state.inventories.getValue(KAI_ID).items.getValue("original-4").metadata["omnivaultCopyCount"])
   }
 
   @Test fun restoreIsNarrativeOnlyAndCannotMutateInventoryState() {

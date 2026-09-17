@@ -25,7 +25,15 @@ print("Character detail avatar fallback hardened: non-Kai members without avatar
 
 runpy.run_path(str(ROOT / "patch-survival-hud-chat-ux.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-an-nhien-follower-final.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-search-action-false-warning.py"), run_name="__main__")
+search_facade = (ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt").read_text(encoding="utf-8")
+omnivault_test = (ROOT / "app/src/test/java/com/rabpit/backroom/core/OmnivaultNaturalFlowTest.kt").read_text(encoding="utf-8")
+if (
+    'isDirectPlayerPickupAction(action)' in search_facade
+    and 'scanAndCopyAreRetiredInNaturalFlow' in omnivault_test
+):
+    print("Search/Omnivault Kotlin authority verified; legacy regression generator skipped.")
+else:
+    runpy.run_path(str(ROOT / "patch-search-action-false-warning.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-annhien-cheat-code.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-an-nhien-crocs.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-friendly-item-display.py"), run_name="__main__")
@@ -39,64 +47,29 @@ runpy.run_path(str(ROOT / "patch-jane-killer.py"), run_name="__main__")
 # WebView controls themselves are installed once by apply-android-ui.py.
 runpy.run_path(str(ROOT / "patch-three-action-core.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-three-action-bridge.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-madgod-equipment.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-madgod-overwrite-hotfix.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-madgod-runtime-equip.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-entity-overlay-runtime-hotfix.py"), run_name="__main__")
 
 final_html = INDEX.read_text(encoding="utf-8")
 final_java = (ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java").read_text(encoding="utf-8")
 final_facade = (ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt").read_text(encoding="utf-8")
-final_madgod = (ROOT / "app/src/main/java/com/rabpit/backroom/core/MadGodCanon.kt").read_text(encoding="utf-8")
-final_engines = (ROOT / "app/src/main/java/com/rabpit/backroom/core/Engines.kt").read_text(encoding="utf-8")
-final_tests = (ROOT / "app/src/test/java/com/rabpit/backroom/core/MadGodEquipmentTest.kt").read_text(encoding="utf-8")
 
 # UI assertions deliberately live in apply-android-ui.py now. This stage only
 # verifies the gameplay and visual data contracts it actually owns.
-for marker in ('madGodSetEquipped()', "return ['MadGod Set','Omnivault Ring']"):
-    if marker not in final_html:
-        raise RuntimeError(f"Character/MadGod UI data contract missing: {marker}")
-
 for marker in (
     '@JavascriptInterface public void submitAction(String stateJson, String actionKind, String action)',
     '.beginAction(stateJson, actionKind, action)', 'SEARCH HARD LOCK:', 'EXPLORE HARD LOCK:',
     'file:///android_asset/entity/', 'window.backroomEntityOverlay=function(payload)',
     'private void forceEntityEncounterFlag(JSONObject candidateState, JSONObject rolls)',
-    'forceEntityEncounterFlag(candidateState, rolls);', 'Kai_MadGod_snapshot_overlay.png',
+    'forceEntityEncounterFlag(candidateState, rolls);',
 ):
     if marker not in final_java:
         raise RuntimeError(f"Android runtime contract missing: {marker}")
 
 for marker in (
-    'MadGodCanon.cheat(action)', 'applyMadGodCheat(legacy,state)',
     'fun beginAction(legacyStateJson: String, kindRaw: String, action: String)',
     'private fun commitActionRuntime(', 'ActionRuntime.markSearchCoverage(',
-    'output.put("equipment",MadGodCanon.legacy(state))',
-    'if (isMadGodEquipRequest(action))',
-    'commandId = "$turnId:MADGOD:EQUIP"',
-    '"madgod_equipped"',
 ):
     if marker not in final_facade:
         raise RuntimeError(f"Core contract missing: {marker}")
 
-for marker in ('const val MADGOD_SET_ID = "madgod:set"', 'const val CHEAT_CODE = "/madgod"', 'const val SET_NAME = "MadGod Set"'):
-    if marker not in final_madgod:
-        raise RuntimeError(f"MadGod canon missing: {marker}")
-
-for marker in (
-    'val boundSlots = equipment.slots + mapOf("weapon" to MADGOD_SET_ID, "armor" to MADGOD_SET_ID)',
-    'if (command.actorId != KAI_ID) return invalid(state,"madgod_equipment_slot_mismatch")',
-):
-    if marker not in final_engines:
-        raise RuntimeError(f"MadGod overwrite engine missing: {marker}")
-if 'slot != "set" || MadGodCanon.slot(command.itemId' in final_engines:
-    raise RuntimeError("MadGod still requires synthetic set slot")
-
-for marker in (
-    'equipOverwritesKaisExistingWeaponAndArmorFromNormalWeaponSlot',
-    'runtimeEquipStateProjectsMadGodInsteadOfKaiDefaultGear',
-):
-    if marker not in final_tests:
-        raise RuntimeError(f"MadGod runtime regression test missing: {marker}")
-
-print("Character/runtime contract verified: core + bridge actions, MadGod typed equip, avatar/entity authority; WebView layout deferred to canonical Android UI.")
+print("Character/runtime contract verified: core + bridge actions and avatar/entity authority; WebView layout deferred to canonical Android UI.")

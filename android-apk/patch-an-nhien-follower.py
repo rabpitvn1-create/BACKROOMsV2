@@ -365,12 +365,12 @@ new_snapshot = '''    else if (kind.equals("character_encounter")) allowed = rol
 '''
 main = replace_once(main, old_snapshot, new_snapshot, "An Nhien snapshot event")
 
-old_tail = '''    flags.put("madGod", madGod).put("lastRolls", rolls);
+old_tail = '''    flags.put("lastRolls", rolls);
     state.put("flags", flags);
     return state;
   }
 '''
-new_tail = '''    flags.put("madGod", madGod).put("lastRolls", rolls);
+new_tail = '''    flags.put("lastRolls", rolls);
 
     boolean anNhienNow = anNhienEncountered(before) || rollSuccess(rolls, "anNhienEncounter");
     if (anNhienNow) {

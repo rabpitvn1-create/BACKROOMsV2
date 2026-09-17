@@ -13,17 +13,6 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
 
 text = MAIN.read_text(encoding="utf-8")
 
-old = r'''        boolean allowedNew = acquisitionIntent(action);
-        if (madGod && !before.optJSONObject("flags").optJSONObject("madGod").optBoolean("spawned", false)) allowedNew = false;
-'''
-new = r'''        boolean allowedNew = acquisitionIntent(action);
-        JSONObject beforeFlagsForItem = before.optJSONObject("flags");
-        JSONObject beforeMadGodForItem = beforeFlagsForItem != null ? beforeFlagsForItem.optJSONObject("madGod") : null;
-        boolean madGodAlreadySpawned = beforeMadGodForItem != null && beforeMadGodForItem.optBoolean("spawned", false);
-        if (madGod && !madGodAlreadySpawned) allowedNew = false;
-'''
-text = replace_once(text, old, new, "MadGod inventory null safety")
-
 old_remove = r'''        boolean consequence = "world_consequence".equals(lower(op.optString("basis", ""))) &&
           (rollSuccess(rolls, "hazard") || rollSuccess(rolls, "entityEncounter"));
 '''
@@ -34,4 +23,4 @@ new_remove = r'''        boolean consequence = "world_consequence".equals(lower(
 text = replace_once(text, old_remove, new_remove, "inventory removal authority comment")
 
 MAIN.write_text(text, encoding="utf-8")
-print("APK state-op hardening applied: old-save null safety and conservative inventory deletion authority.")
+print("APK state-op hardening applied: conservative inventory deletion authority.")

@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import base64
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parent
+REPO = ROOT.parent
 ASSETS = ROOT / "app/src/main/assets"
 INDEX = ASSETS / "index.html"
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -22,7 +23,6 @@ BASELINES = {
 
 CHARACTER_ASSETS = {
     "kai_snapshot_overlay.png": "male",
-    "Kai_MadGod_snapshot_overlay.png": "male",
     "kai_entity_overlay.png": "male",
     "lucia_entity_overlay.png": "female",
     "syvial_entity_overlay.png": "female",
@@ -168,12 +168,36 @@ def patch_index_runtime(source: str, metadata: dict[str, object]) -> str:
     return source
 
 
-def dump_generated_source(label: str, path: Path) -> None:
-    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
-    print(f"GENERATED_CORE_BEGIN:{label}")
-    for offset in range(0, len(encoded), 120):
-        print(encoded[offset:offset + 120])
-    print(f"GENERATED_CORE_END:{label}")
+def verify_gameplay_core_not_rewritten() -> None:
+    """Fail the build if any runtime patch changed checked-in Kotlin gameplay authority."""
+    guarded_paths = (
+        "android-apk/app/src/main/java/com/rabpit/backroom/core",
+        "android-apk/app/src/test/java/com/rabpit/backroom/core",
+    )
+    name_result = subprocess.run(
+        ["git", "diff", "--name-only", "--", *guarded_paths],
+        cwd=REPO,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    result = subprocess.run(
+        ["git", "diff", "--exit-code", "--", *guarded_paths],
+        cwd=REPO,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        check=False,
+    )
+    if result.returncode != 0:
+        names = name_result.stdout.strip() if name_result.stdout else "(git diff --name-only produced no text)"
+        detail = result.stdout[-12000:] if result.stdout else "(git diff produced no text)"
+        raise RuntimeError(
+            "Runtime patch chain modified checked-in Kotlin Game Core/test authority. "
+            "Materialize the intended source change in Git and make the patch verification-only.\n"
+            "Modified guarded paths:\n" + names + "\nDiff tail:\n" + detail
+        )
 
 
 def main() -> None:
@@ -201,15 +225,13 @@ def main() -> None:
     METADATA.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     MAIN.write_text(main_source, encoding="utf-8")
     INDEX.write_text(index_source, encoding="utf-8")
+    verify_gameplay_core_not_rewritten()
     print(
         "Visible-height overlay scale finalized: "
         f"male={BASELINES['male']:.2f}, female={BASELINES['female']:.2f}, "
-        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}."
+        f"entity={BASELINES['entity']:.2f}, assets={len(metadata['assets'])}; "
+        "checked-in Kotlin Game Core remained unchanged."
     )
-
-    dump_generated_source("GameCoreFacade.kt", ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt")
-    dump_generated_source("CombatRuntime.kt", ROOT / "app/src/main/java/com/rabpit/backroom/core/CombatRuntime.kt")
-    dump_generated_source("CombatRuntimeTest.kt", ROOT / "app/src/test/java/com/rabpit/backroom/core/CombatRuntimeTest.kt")
 
 
 if __name__ == "__main__":

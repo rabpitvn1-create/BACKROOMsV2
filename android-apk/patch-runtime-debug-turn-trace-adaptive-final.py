@@ -13,6 +13,28 @@ source = TEMPLATE.read_text(encoding="utf-8")
 # copy of the already-large tracing template.
 if "requireGameCore().processRule(stateJson, action)" in main:
     source = source.replace("gameCore.processRule(stateJson, action)", "requireGameCore().processRule(stateJson, action)")
+if "String coreRaw = requireGameCore().processRule(stateJson, action);" in main:
+    legacy_local = '''local_old = \'\'\'          JSONObject localResult = new JSONObject(requireGameCore().processRule(stateJson, action));
+          if (localResult.optBoolean("handled", false)) {
+            emit("backroomTurn", localResult.getJSONObject("state").toString());
+            return;
+          }
+\'\'\'
+'''
+    settled_local = '''local_old = \'\'\'          String coreRaw = requireGameCore().processRule(stateJson, action);
+          JSONObject coreResult = new JSONObject(coreRaw);
+          if (coreResult.optBoolean("handled", false)) {
+            emit("backroomTurn", coreResult.getJSONObject("state").toString());
+            return;
+          }
+\'\'\'
+'''
+    if legacy_local not in source:
+        raise RuntimeError("adaptive GameCore fast-path template anchor missing")
+    source = source.replace(legacy_local, settled_local, 1)
+    source = source.replace("String localRaw = requireGameCore().processRule(stateJson, action);", "String coreRaw = requireGameCore().processRule(stateJson, action);", 1)
+    source = source.replace("JSONObject localResult = new JSONObject(localRaw);", "JSONObject coreResult = new JSONObject(coreRaw);", 1)
+    source = source.replace("localResult", "coreResult")
 # Candidate-commit arity has grown as Kotlin took ownership of rolls and accepted operation basis.
 # Detect the accessor independently of argument shape so debug-only tracing cannot pin the bridge to
 # a retired 3-argument signature.

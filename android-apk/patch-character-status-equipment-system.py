@@ -16,7 +16,6 @@ FACADE = CORE / "GameCoreFacade.kt"
 COMBAT = CORE / "CombatRuntime.kt"
 SPECIAL = CORE / "SpecialFollowersCanon.kt"
 AN_NHIEN = CORE / "AnNhienCanon.kt"
-MADGOD = CORE / "MadGodCanon.kt"
 SYSTEM = CORE / "CharacterEquipmentSystem.kt"
 TEST = TESTS / "CharacterStatusEquipmentSystemTest.kt"
 
@@ -60,7 +59,7 @@ enum class EquipmentSlot(val key: String) {
   }
 }
 
-enum class ItemClassification { CANONICAL, SPECIAL_CHEAT, GENERAL }
+enum class ItemClassification { CANONICAL, GENERAL }
 
 data class EquipmentBonuses(
   val hp: Int = 0,
@@ -251,33 +250,6 @@ object EquipmentCatalog {
       id = AN_NHIEN_FOOTWEAR_ID, name = AnNhienCanon.FOOTWEAR_NAME, type = "FOOTWEAR", primarySlot = EquipmentSlot.FOOTWEAR,
       canonRef = "AN-NHIEN-CURRENT"
     ),
-    EquipmentDefinition(
-      id = MADGOD_SET_ID, name = "MadGod Set", type = "SPECIAL EQUIPMENT SET", primarySlot = EquipmentSlot.WEAPON,
-      occupiesSlots = setOf(EquipmentSlot.WEAPON, EquipmentSlot.ARMOR), rarity = "SPECIAL / CHEAT",
-      bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12),
-      weapon = WeaponGameplayStats(55, "∞", 600, listOf("Single", "Full Auto")),
-      abilities = listOf(
-        ability("Demonic Ammunition", "Đạn được hình thành trực tiếp từ Sparda Core.", "Không cần magazine hoặc ammo inventory."),
-        ability("Infinite Ammo", "Nguồn đạn gameplay hiển thị ∞.", "Không tạo damage hoặc số Action vô hạn."),
-        ability("Single / Full Auto", "Hỗ trợ Single và Full Auto tới khoảng 600 RPM.", "600 RPM là capability, không phải số viên mặc định mỗi turn."),
-        ability("Core Self-Repair", "MadGod Magnum và MadGod Armor tự sửa bằng Sparda Core.", "Armor repair và Character HP regeneration là hai hệ riêng."),
-        ability("Environmental Protection", "Giữ chức năng bảo vệ nhiệt, lạnh, độc tố, áp suất và tác động môi trường tương đương Blackblood Armor."),
-        ability("Physical Amplification", "Tăng STR và khả năng phát lực của Kai."),
-        ability("Mobility Amplification", "Tăng AGI.", "Không tạo thêm Action miễn phí."),
-        ability("Permanent Binding", "Sau khi Kai Equip, set khóa vĩnh viễn vào Weapon + Armor."),
-        ability("Omnivault Copy Immunity", "Omnivault không thể Scan hoặc Copy MadGod Set."),
-        ability("MadGod Power Conversion", "Đầu ra cao hơn White Wraith thông thường nhưng đi qua Gameplay Combat Normalization.", "Không dùng raw canon power để one-shot mọi Entity.")
-      ),
-      restrictions = listOf(
-        "Kai Only", "Occupies Weapon + Armor", "Cannot Unequip after activation", "Cannot Drop after activation",
-        "Cannot be copied or scanned", "Cannot stack with another MadGod Set", "Does not multiply base stats or HP regeneration"
-      ),
-      classification = ItemClassification.SPECIAL_CHEAT,
-      components = listOf(
-        EquipmentComponent("MadGod Magnum", bonuses = EquipmentBonuses(crit = 12), weapon = WeaponGameplayStats(55, "∞", 600, listOf("Single", "Full Auto"))),
-        EquipmentComponent("MadGod Armor", bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12))
-      )
-    )
   )
 
   private val definitions = all.associateBy { it.id }
@@ -440,16 +412,12 @@ object EquipmentEngine {
     val owned = inventory.items[command.itemId] ?: return invalid(state, "item_not_owned")
     if (owned.quantity < 1) return invalid(state, "item_not_owned")
     val def = EquipmentCatalog.definition(command.itemId)
-    if (def?.classification == ItemClassification.SPECIAL_CHEAT && command.actorId != KAI_ID) return invalid(state, "madgod_equipment_slot_mismatch")
     val requested = EquipmentSlot.fromRaw(command.slot)
     val targetSlots = if (def != null) def.occupiesSlots.map { it.key }.toSet() else setOfNotNull(requested?.key ?: command.slot?.trim()?.lowercase())
     if (targetSlots.isEmpty()) return invalid(state, "equipment_slot_required")
     if (def != null && requested != null && requested !in def.occupiesSlots && requested != def.primarySlot) return invalid(state, "equipment_slot_mismatch")
 
     val equipment = state.equipment[command.actorId] ?: EquipmentState(command.actorId)
-    val lockedByMadGod = targetSlots.any { slot -> equipment.slots[slot] == MADGOD_SET_ID && command.itemId != MADGOD_SET_ID }
-    if (lockedByMadGod) return invalid(state, "madgod_equipment_permanent")
-    if (command.itemId == MADGOD_SET_ID && equipment.slots.values.count { it == MADGOD_SET_ID } >= 2) return changed(state, "item_equipped")
 
     val nextSlots = equipment.slots.toMutableMap()
     targetSlots.forEach { nextSlots[it] = command.itemId }
@@ -459,7 +427,6 @@ object EquipmentEngine {
   }
 
   fun unequip(state: GameState, command: ItemCommand): ExecutionResult {
-    if (command.itemId == MADGOD_SET_ID) return invalid(state, "madgod_equipment_permanent")
     val equipment = state.equipment[command.actorId] ?: return invalid(state, "equipment_missing")
     if (command.itemId !in equipment.slots.values) return invalid(state, "item_not_equipped")
     val nextSlots = equipment.slots.filterValues { it != command.itemId }
@@ -473,8 +440,6 @@ object EquipmentEngine {
     val def = EquipmentCatalog.definition(item.itemId) ?: return null
     val equipment = state.equipment[characterId] ?: EquipmentState(characterId)
     if (itemId in equipment.slots.values) return CharacterStatEngine.effective(state, characterId)
-    if (def.classification == ItemClassification.SPECIAL_CHEAT && characterId != KAI_ID) return null
-    if (def.occupiesSlots.any { equipment.slots[it.key] == MADGOD_SET_ID && itemId != MADGOD_SET_ID }) return null
     val next = equipment.slots.toMutableMap()
     def.occupiesSlots.forEach { next[it.key] = itemId }
     return CharacterStatEngine.effective(state.copy(equipment = state.equipment + (characterId to equipment.copy(slots = next))), characterId)
@@ -506,9 +471,6 @@ object CharacterEquipmentSystem {
       val loadout = EquipmentCatalog.startingLoadout(characterId)
       if (seedStarting) {
         loadout.forEach { (slot, itemId) ->
-          val madGodOccupies = characterId == KAI_ID && slot in setOf(EquipmentSlot.WEAPON, EquipmentSlot.ARMOR) &&
-            slots.values.any { it == MADGOD_SET_ID }
-          if (!madGodOccupies && slot.key !in slots) slots[slot.key] = itemId
           if (itemId !in inv.items) inv = inv.copy(items = inv.items + (itemId to EquipmentCatalog.stackFor(itemId)))
         }
       }
@@ -737,12 +699,12 @@ combat = one(combat,
 ''', "combat normalized weapon damage")
 
 combat = one(combat,
-'''      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
+'''          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) - when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 })
 ''',
-'''      val effective = CharacterStatEngine.effective(state, KAI_ID)
-      val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
-      val damage = max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
-        when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
+'''          val effective = CharacterStatEngine.effective(resolvedState, KAI_ID)
+          val mitigation = CombatStatMath.defenseReduction(effective.df) + CombatStatMath.agilityDefense(effective.agi)
+          max(1, profile.attack + roll(c.copy(eventCounter = c.eventCounter + 47), 7) -
+            when (c.cover) { Cover.HARD -> 8; Cover.PARTIAL -> 4; Cover.EXPOSED -> 0 } - mitigation)
 ''', "combat normalized defense")
 
 combat = combat.replace('    metadata[PLAYER_HP] = c.playerHp.toString()\n    metadata[PLAYER_MAX_HP] = c.playerMaxHp.toString()\n', '')
@@ -806,24 +768,6 @@ protect_block = '''    current.filterKeys { EquipmentCatalog.definition(it) != n
 '''
 facade = one(facade, protect_anchor, protect_block, "protect equipment inventory ownership")
 FACADE.write_text(facade, encoding="utf-8")
-
-# --- MadGod is normalized into the same 100-HP gameplay scale ----------------
-if MADGOD.exists():
-    mg = MADGOD.read_text(encoding="utf-8")
-    mg = re.sub(r'const val MULTIPLIER = \d+', 'const val MULTIPLIER = 1', mg)
-    mg = mg.replace('const val SCALING_MODE = "BASELINE_ONCE"', 'const val SCALING_MODE = "GAMEPLAY_NORMALIZED"')
-    replacements = {
-      r'const val MAGNUM_DMG = .*': 'const val MAGNUM_DMG = 55',
-      r'const val ARMOR_DF = .*': 'const val ARMOR_DF = 30',
-      r'const val ARMOR_STR = .*': 'const val ARMOR_STR = 15',
-      r'const val ARMOR_AGI = .*': 'const val ARMOR_AGI = 12',
-      r'const val ARMOR_HP = .*': 'const val ARMOR_HP = 50',
-      r'const val ARMOR_ENE = .*': 'const val ARMOR_ENE = 0',
-      r'const val ARMOR_CRIT = .*': 'const val ARMOR_CRIT = 0',
-    }
-    for pattern, repl in replacements.items():
-        mg = re.sub(pattern, repl, mg, count=1)
-    MADGOD.write_text(mg, encoding="utf-8")
 
 # --- Rich Character projection, derived from Base + unique equipped Items -----
 DETAIL.write_text(r'''package com.rabpit.backroom.core
@@ -1031,7 +975,7 @@ if 'id="equipmentDetailModal"' not in html:
 
 css_anchor = '</style>'
 css = r'''
-.character-role{margin-top:4px;color:#93a0a8;font-size:11px;letter-spacing:.04em}.character-core-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.character-core-stat{border:1px solid #30383d;background:#0a0d0f;padding:9px}.character-core-stat b{display:block;color:#7e8992;font-size:10px;letter-spacing:.12em}.character-core-stat strong{display:block;margin-top:4px;font-size:17px}.equipment-card,.inventory-item-card{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;border:1px solid #313940;background:#0b0f12;padding:8px;cursor:pointer}.equipment-card:hover,.inventory-item-card:hover{border-color:#52606a}.equipment-card-icon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #39434a;background:#11171b;font-weight:900;font-size:11px}.equipment-card-main{min-width:0}.equipment-card-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.equipment-card-main small{display:block;color:#7f8b93;margin-top:3px}.equipment-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.equipment-badge{border:1px solid #45515a;padding:3px 5px;font-size:8px;letter-spacing:.08em}.equipment-badge.equipped{border-color:#3c8466;color:#8ed3b1}.equipment-badge.cheat{border-color:#8c7042;color:#e4c07e}.equipment-detail-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}.equipment-detail-modal[hidden]{display:none}.equipment-detail-sheet{position:relative;width:min(720px,100%);max-height:88vh;overflow:auto;background:#0b0e11;border:1px solid #3a444b;border-bottom:0;padding:18px}.equipment-detail-close{position:absolute;right:10px;top:10px;width:38px;height:38px}.equipment-detail-header{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;padding-right:42px}.equipment-detail-icon{width:58px;height:58px;border:1px solid #46525a;display:grid;place-items:center;font-weight:900}.equipment-detail-header h2{margin:3px 0}.equipment-detail-meta{color:#89949c;font-size:11px}.equipment-detail-sheet section{border-top:1px solid #2c3338;margin-top:15px;padding-top:13px}.equipment-detail-sheet section h3{font-size:11px;letter-spacing:.14em;margin:0 0 9px}.equipment-detail-row,.ability-row,.restriction-row{border:1px solid #2e373d;padding:8px;margin-top:6px}.equipment-detail-row{display:flex;justify-content:space-between;gap:12px}.ability-row strong{display:block}.ability-row p{margin:5px 0 0;color:#c0c8cd;font-size:12px}.ability-row em{display:block;margin-top:5px;color:#d0af77;font-style:normal;font-size:11px}.restriction-row{color:#c7b38b;font-size:12px}.stat-delta-positive{color:#8fd2ad}.stat-delta-negative{color:#dc9b9b}@media(max-width:520px){.character-core-stats{grid-template-columns:1fr 1fr}.equipment-detail-sheet{padding:14px}.equipment-card,.inventory-item-card{grid-template-columns:34px 1fr}.equipment-badges{grid-column:2;justify-content:flex-start}}
+.character-role{margin-top:4px;color:#93a0a8;font-size:11px;letter-spacing:.04em}.character-core-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0}.character-core-stat{border:1px solid #30383d;background:#0a0d0f;padding:9px}.character-core-stat b{display:block;color:#7e8992;font-size:10px;letter-spacing:.12em}.character-core-stat strong{display:block;margin-top:4px;font-size:17px}.equipment-card,.inventory-item-card{display:grid;grid-template-columns:38px 1fr auto;gap:9px;align-items:center;border:1px solid #313940;background:#0b0f12;padding:8px;cursor:pointer}.equipment-card:hover,.inventory-item-card:hover{border-color:#52606a}.equipment-card-icon{width:38px;height:38px;display:grid;place-items:center;border:1px solid #39434a;background:#11171b;font-weight:900;font-size:11px}.equipment-card-main{min-width:0}.equipment-card-main strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.equipment-card-main small{display:block;color:#7f8b93;margin-top:3px}.equipment-badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}.equipment-badge{border:1px solid #45515a;padding:3px 5px;font-size:8px;letter-spacing:.08em}.equipment-badge.equipped{border-color:#3c8466;color:#8ed3b1}.equipment-detail-modal{position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.72);display:flex;align-items:flex-end;justify-content:center}.equipment-detail-modal[hidden]{display:none}.equipment-detail-sheet{position:relative;width:min(720px,100%);max-height:88vh;overflow:auto;background:#0b0e11;border:1px solid #3a444b;border-bottom:0;padding:18px}.equipment-detail-close{position:absolute;right:10px;top:10px;width:38px;height:38px}.equipment-detail-header{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;padding-right:42px}.equipment-detail-icon{width:58px;height:58px;border:1px solid #46525a;display:grid;place-items:center;font-weight:900}.equipment-detail-header h2{margin:3px 0}.equipment-detail-meta{color:#89949c;font-size:11px}.equipment-detail-sheet section{border-top:1px solid #2c3338;margin-top:15px;padding-top:13px}.equipment-detail-sheet section h3{font-size:11px;letter-spacing:.14em;margin:0 0 9px}.equipment-detail-row,.ability-row,.restriction-row{border:1px solid #2e373d;padding:8px;margin-top:6px}.equipment-detail-row{display:flex;justify-content:space-between;gap:12px}.ability-row strong{display:block}.ability-row p{margin:5px 0 0;color:#c0c8cd;font-size:12px}.ability-row em{display:block;margin-top:5px;color:#d0af77;font-style:normal;font-size:11px}.restriction-row{color:#c7b38b;font-size:12px}.stat-delta-positive{color:#8fd2ad}.stat-delta-negative{color:#dc9b9b}@media(max-width:520px){.character-core-stats{grid-template-columns:1fr 1fr}.equipment-detail-sheet{padding:14px}.equipment-card,.inventory-item-card{grid-template-columns:34px 1fr}.equipment-badges{grid-column:2;justify-content:flex-start}}
 '''
 if '.equipment-detail-modal{' not in html:
     if css_anchor not in html: raise RuntimeError("HTML style anchor missing")
@@ -1060,7 +1004,7 @@ script = r'''
   function iconFor(item){return String((item&&item.type)||'EQ').split(/[ /_-]+/).filter(Boolean).map(x=>x[0]).join('').slice(0,3).toUpperCase()||'EQ'}
   function itemById(member,id){return (member&&member.inventory||[]).find(x=>String(x.id)===String(id))||(member&&member.equipmentItems||[]).find(x=>String(x.id)===String(id))}
   function card(item,slot){
-    const badges=[];if(item.equipped)badges.push('<span class="equipment-badge equipped">EQUIPPED</span>');if(item.statItem)badges.push('<span class="equipment-badge">STAT ITEM</span>');if(item.classification==='SPECIAL_CHEAT')badges.push('<span class="equipment-badge cheat">SPECIAL / CHEAT</span>');
+    const badges=[];if(item.equipped)badges.push('<span class="equipment-badge equipped">EQUIPPED</span>');if(item.statItem)badges.push('<span class="equipment-badge">STAT ITEM</span>');
     return '<div class="'+(slot?'equipment-card':'inventory-item-card')+'" data-item-id="'+e(item.id)+'"><div class="equipment-card-icon">'+e(iconFor(item))+'</div><div class="equipment-card-main"><strong>'+e(item.name||item.id)+'</strong><small>'+e(slot?String(slot).toUpperCase():(item.rarity||('×'+(item.quantity||1))))+'</small></div><div class="equipment-badges">'+badges.join('')+'</div></div>';
   }
   function render(member){
@@ -1080,9 +1024,9 @@ script = r'''
     const b=item.bonuses||{},w=item.weapon||{},rows=[];if(Number(b.HP))rows.push(['HP',(b.HP>0?'+':'')+b.HP]);if(Number(b.DF))rows.push(['DF',(b.DF>0?'+':'')+b.DF]);if(Number(b.STR))rows.push(['STR',(b.STR>0?'+':'')+b.STR]);if(Number(b.AGI))rows.push(['AGI',(b.AGI>0?'+':'')+b.AGI]);if(Number(b.CRIT))rows.push(['CRIT',(b.CRIT>0?'+':'')+b.CRIT]);if(w.DMG!=null)rows.push(['DMG',w.DMG]);if(w.ammo!=null)rows.push(['Ammo',w.ammo]);if(w.rpm!=null)rows.push(['Full Auto',w.rpm+' RPM']);return rows
   }
   function comparisonRows(c){if(!c)return[];return ['maxHp','STR','DF','AGI','CRIT'].map(k=>{const x=c[k];if(!x)return null;const d=Number(x.delta)||0;return [k==='maxHp'?'MAX HP':k,x.before+' → '+x.after+' ('+(d>=0?'+':'')+d+')',d]}).filter(Boolean)}
-  function openItem(item){if(!item||!modal)return;q('equipmentDetailName').textContent=item.name||item.id;q('equipmentDetailIcon').textContent=iconFor(item);q('equipmentDetailClass').textContent=item.classification==='SPECIAL_CHEAT'?'SPECIAL / CHEAT':(item.type||'ITEM');q('equipmentDetailMeta').textContent=[item.type,item.slot,item.rarity,item.equipped?'EQUIPPED':'UNEQUIPPED'].filter(Boolean).join(' · ');
+  function openItem(item){if(!item||!modal)return;q('equipmentDetailName').textContent=item.name||item.id;q('equipmentDetailIcon').textContent=iconFor(item);q('equipmentDetailClass').textContent=item.type||'ITEM';q('equipmentDetailMeta').textContent=[item.type,item.slot,item.rarity,item.equipped?'EQUIPPED':'UNEQUIPPED'].filter(Boolean).join(' · ');
     const sr=statRows(item);q('equipmentDetailStats').innerHTML=sr.length?sr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong>'+e(r[1])+'</strong></div>').join(''):'<div class="equipment-detail-row"><span>Combat bonus</span><strong>0</strong></div>';
-    const compare=item.comparison||((item.classification==='SPECIAL_CHEAT')?item.baseItemEffect:null),cr=comparisonRows(compare);const cs=q('equipmentDetailComparisonSection');cs.hidden=!cr.length;q('equipmentDetailComparison').innerHTML=cr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong class="'+(r[2]>=0?'stat-delta-positive':'stat-delta-negative')+'">'+e(r[1])+'</strong></div>').join('');
+    const compare=item.comparison,cr=comparisonRows(compare);const cs=q('equipmentDetailComparisonSection');cs.hidden=!cr.length;q('equipmentDetailComparison').innerHTML=cr.map(r=>'<div class="equipment-detail-row"><span>'+e(r[0])+'</span><strong class="'+(r[2]>=0?'stat-delta-positive':'stat-delta-negative')+'">'+e(r[1])+'</strong></div>').join('');
     const abs=item.abilities||[];q('equipmentDetailAbilities').innerHTML=abs.length?abs.map(a=>'<div class="ability-row"><strong>'+e(a.name)+'</strong><p>'+e(a.description)+'</p>'+(a.limit?'<em>'+e(a.limit)+'</em>':'')+'</div>').join(''):'<div class="ability-row"><p>Không có Special Ability được ghi nhận.</p></div>';
     const rr=item.restrictions||[];q('equipmentDetailRestrictions').innerHTML=rr.length?rr.map(x=>'<div class="restriction-row">'+e(x)+'</div>').join(''):'<div class="restriction-row">Không có restriction bổ sung.</div>';modal.hidden=false}
   if(view)view.addEventListener('click',ev=>{const card=ev.target.closest('[data-item-id]');if(!card)return;const member=selected();openItem(itemById(member,card.getAttribute('data-item-id')))});
@@ -1182,21 +1126,6 @@ class CharacterStatusEquipmentSystemTest {
     val d = EquipmentCatalog.definition(SYVIAL_GODKILLER_ID)!!; assertEquals("MECHANICAL GREATSWORD", d.type); assertFalse(d.restrictions.joinToString().lowercase().contains("gunblade allowed"))
   }
 
-  @Test fun madGodIsNotCanonicalStartingLoadoutAndCountsOnceAcrossTwoSlots() {
-    assertFalse(EquipmentCatalog.startingLoadout(KAI_ID).values.contains(MADGOD_SET_ID))
-    var s = state(); val inv = s.inventories.getValue(KAI_ID); s = s.copy(inventories = s.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-    val r = EquipmentEngine.equip(s, cmd(ItemCommand.Operation.EQUIP, MADGOD_SET_ID, "weapon")); assertTrue(r.applied)
-    assertEquals(MADGOD_SET_ID, r.state.equipment.getValue(KAI_ID).slots["weapon"]); assertEquals(MADGOD_SET_ID, r.state.equipment.getValue(KAI_ID).slots["armor"])
-    assertTrue(r.state.inventories.getValue(KAI_ID).items.containsKey(MADGOD_SET_ID))
-    val e = CharacterStatEngine.effective(r.state, KAI_ID); assertEquals(165, e.maxHp); assertEquals(114, e.str); assertEquals(121, e.df); assertEquals(118, e.agi); assertEquals(113, e.crit)
-  }
-
-  @Test fun madGodPermanentLockAndNormalizedDamage() {
-    val d = EquipmentCatalog.definition(MADGOD_SET_ID)!!; assertEquals(55, d.weapon!!.dmg); assertEquals(50, d.bonuses.hp)
-    var s = state(); val inv = s.inventories.getValue(KAI_ID); s = s.copy(inventories = s.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-    val equip = EquipmentEngine.equip(s, cmd(ItemCommand.Operation.EQUIP, MADGOD_SET_ID, "weapon")); val un = EquipmentEngine.unequip(equip.state, cmd(ItemCommand.Operation.UNEQUIP, MADGOD_SET_ID, "weapon"))
-    assertFalse(un.applied); assertEquals("madgod_equipment_permanent", un.validation.reason)
-  }
 
   @Test fun projectionAfterReloadEqualsBasePlusEquippedItems() {
     val s = GameStateCodec.decode(GameStateCodec.encode(state())); val p = CharacterDetailProjector.projectCharacter(s, KAI_ID)!!
@@ -1230,7 +1159,7 @@ class CharacterStatusEquipmentSystemTest {
 combined = SYSTEM.read_text(encoding="utf-8") + DETAIL.read_text(encoding="utf-8") + DETAIL_JSON.read_text(encoding="utf-8") + INDEX.read_text(encoding="utf-8") + ENGINES.read_text(encoding="utf-8") + COMBAT.read_text(encoding="utf-8")
 required = [
   'EquipmentBonuses(hp = 25, str = 8, df = 18, agi = 6)', 'WeaponGameplayStats(32, "∞", 600',
-  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)', 'bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',
+  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)',
   'CharacterStatEngine.applyCompletedTurnRegen', 'CharacterStatEngine.preserveMissingHp', 'EquipmentEngine.equip(state, command)',
   'window.renderCharacterStatusEquipment=render;', 'id="equipmentDetailModal"', 'SPECIAL ABILITIES', 'CANON / RESTRICTIONS',
   'CharacterStatEngine.weaponDamage(state, KAI_ID)', 'CombatStatMath.defenseReduction',
@@ -1239,4 +1168,3 @@ for marker in required:
     if marker not in combined:
         raise RuntimeError("Character Status/Equipment contract missing: " + marker)
 
-print("Character Status + Equipment + Inventory Detail System installed: shared Item ownership, normalized stats, HP preservation, regen, UI detail, MadGod normalization, combat integration, and tests.")

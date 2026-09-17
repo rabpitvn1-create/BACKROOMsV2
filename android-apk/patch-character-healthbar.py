@@ -4,46 +4,55 @@ import runpy
 ROOT = Path(__file__).resolve().parent
 COMBAT_TURN_AUTHORITY = ROOT / "app/src/main/java/com/rabpit/backroom/core/CombatTurnAuthority.kt"
 
-# Step 1: Character stat/vital schema.
-runpy.run_path(str(ROOT / "patch-character-stat-schema.py"), run_name="__main__")
-
-# Steps 2-10: Equipment definitions, slot semantics, normalized item stats, effective-stat resolver,
-# HP-preserving equip/unequip, completed-turn regeneration, shared Item Detail UI, persistence,
-# Pressure Combat integration, and regression tests.
-#
-# CombatTurnAuthority now owns combat time + completed-turn regeneration in source Kotlin. The
-# historical status patch still carries the retired facade injection, so strip only that block at
-# execution time while preserving its generic TurnCoordinator regeneration and equipment work.
-status_patch = ROOT / "patch-character-status-equipment-system.py"
-status_source = status_patch.read_text(encoding="utf-8")
-legacy_combat_start = "# Combat actions are completed gameplay turns too. Regen token derives from the UI turn so save/load cannot reapply it.\n"
-legacy_combat_end = "# Gemini candidate inventory can never silently delete equipment definitions. Equipment remains one owned Item.\n"
-legacy_start = status_source.find(legacy_combat_start)
-legacy_end = status_source.find(legacy_combat_end, legacy_start)
-if legacy_start < 0 or legacy_end < 0:
-    raise RuntimeError("Legacy combat regeneration block missing from character status patch")
-authority = COMBAT_TURN_AUTHORITY.read_text(encoding="utf-8")
-for marker in (
-    "object CombatTurnAuthority",
-    "CharacterStatEngine.applyCompletedTurnRegen(next, completedTurnRegenToken(state))",
-    'return "COMBAT_TURN_$turnNumber"',
-):
-    if marker not in authority:
-        raise RuntimeError("Kotlin combat regeneration authority missing: " + marker)
-status_source = (
-    status_source[:legacy_start]
-    + "# Combat completed-turn regeneration is source-owned by CombatTurnAuthority.\n"
-    + 'facade = FACADE.read_text(encoding="utf-8")\n\n'
-    + status_source[legacy_end:]
+CORE = ROOT / "app/src/main/java/com/rabpit/backroom/core"
+settled_core = all(
+    marker in (CORE / filename).read_text(encoding="utf-8")
+    for filename, marker in (
+        ("CharacterStats.kt", "object CharacterStatProfiles"),
+        ("CharacterEquipmentSystem.kt", "object CharacterStatEngine"),
+        ("GameStateCodec.kt", "CharacterEquipmentSystem.normalize"),
+        ("TurnCoordinator.kt", "applyCompletedTurnRegen"),
+        ("CombatTurnAuthority.kt", "object CombatTurnAuthority"),
+    )
 )
-exec(compile(status_source, str(status_patch), "exec"), {"__name__": "__main__", "__file__": str(status_patch)})
 
-# Hard cleanup after the large status patch: no retired combat HP metadata reference may survive.
-runpy.run_path(str(ROOT / "patch-combat-hp-metadata-cleanup.py"), run_name="__main__")
-
-# Fresh canonical loadouts begin at full Effective HP. This is initialization only; later equipment
-# changes keep Missing HP through CharacterStatEngine.preserveMissingHp.
-runpy.run_path(str(ROOT / "patch-fresh-effective-hp.py"), run_name="__main__")
+if settled_core:
+    authority = COMBAT_TURN_AUTHORITY.read_text(encoding="utf-8")
+    for marker in (
+        "object CombatTurnAuthority",
+        "CharacterStatEngine.applyCompletedTurnRegen(next, completedTurnRegenToken(state))",
+        'return "COMBAT_TURN_$turnNumber"',
+    ):
+        if marker not in authority:
+            raise RuntimeError("Kotlin combat regeneration authority missing: " + marker)
+    status_patch = ROOT / "patch-character-status-equipment-system.py"
+    status_source = status_patch.read_text(encoding="utf-8")
+    declarations_end = status_source.index("SYSTEM.write_text")
+    ui_start = status_source.index("# --- Shared Character + Inventory Item Detail UI")
+    tests_start = status_source.index("# --- Required regression tests")
+    ui_source = status_source[:declarations_end] + status_source[ui_start:tests_start]
+    exec(compile(ui_source, str(status_patch), "exec"), {"__name__": "__main__", "__file__": str(status_patch)})
+    print("Character Stat/Equipment authority verified in checked-in Kotlin; no source rewrite performed.")
+else:
+    # Compatibility path for pre-materialization branches.
+    runpy.run_path(str(ROOT / "patch-character-stat-schema.py"), run_name="__main__")
+    status_patch = ROOT / "patch-character-status-equipment-system.py"
+    status_source = status_patch.read_text(encoding="utf-8")
+    legacy_combat_start = "# Combat actions are completed gameplay turns too. Regen token derives from the UI turn so save/load cannot reapply it.\n"
+    legacy_combat_end = "# Gemini candidate inventory can never silently delete equipment definitions. Equipment remains one owned Item.\n"
+    legacy_start = status_source.find(legacy_combat_start)
+    legacy_end = status_source.find(legacy_combat_end, legacy_start)
+    if legacy_start < 0 or legacy_end < 0:
+        raise RuntimeError("Legacy combat regeneration block missing from character status patch")
+    status_source = (
+        status_source[:legacy_start]
+        + "# Combat completed-turn regeneration is source-owned by CombatTurnAuthority.\n"
+        + 'facade = FACADE.read_text(encoding="utf-8")\n\n'
+        + status_source[legacy_end:]
+    )
+    exec(compile(status_source, str(status_patch), "exec"), {"__name__": "__main__", "__file__": str(status_patch)})
+    runpy.run_path(str(ROOT / "patch-combat-hp-metadata-cleanup.py"), run_name="__main__")
+    runpy.run_path(str(ROOT / "patch-fresh-effective-hp.py"), run_name="__main__")
 
 INDEX = ROOT / "app/src/main/assets/index.html"
 html = INDEX.read_text(encoding="utf-8")
@@ -118,10 +127,29 @@ print("Character Status + Equipment + Inventory Detail UI applied.")
 # before any gameplay turn has synchronized legacy state.partyDetails.
 runpy.run_path(str(ROOT / "patch-character-detail-live-ui-fix.py"), run_name="__main__")
 
-# Final New Game + inventory capacity contract. Equipped Items remain the one owned Inventory Item,
-# but consume zero backpack slots for every CharacterState.
-runpy.run_path(str(ROOT / "patch-newgame-inventory-capacity.py"), run_name="__main__")
+# Final New Game + inventory capacity contract. Kotlin and its regression test are checked in;
+# retain only the Java/WebView compatibility projection from the historical materializer.
+capacity_patch = ROOT / "patch-newgame-inventory-capacity.py"
+capacity_source = capacity_patch.read_text(encoding="utf-8")
+capacity_markers = (
+    (CORE / "CharacterEquipmentSystem.kt", "object InventoryCapacityPolicy"),
+    (CORE / "InventoryPolicy.kt", "InventoryCapacityPolicy.usedSlots(state, ownerId, inventory)"),
+    (CORE / "GameCoreFacade.kt", "fun resetNewGame(): String"),
+    (ROOT / "app/src/test/java/com/rabpit/backroom/core/InventoryCapacityNewGameTest.kt", "equippedItemsConsumeZeroCapacityForAllFourCharacters"),
+)
+if all(marker in path.read_text(encoding="utf-8") for path, marker in capacity_markers):
+    core_start = capacity_source.index("# ---------------------------------------------------------------------------\n# 1) Inventory capacity")
+    java_start = capacity_source.index("main = MAIN.read_text")
+    regression_start = capacity_source.index("# Regression gates.")
+    compatibility_source = capacity_source[:core_start] + capacity_source[java_start:regression_start]
+    exec(compile(compatibility_source, str(capacity_patch), "exec"), {"__name__": "__main__", "__file__": str(capacity_patch)})
+    print("New Game/Inventory Kotlin authority verified; Java and WebView compatibility staged.")
+else:
+    runpy.run_path(str(capacity_patch), run_name="__main__")
 
 # Final candidate-inventory semantics: capacity validation must evaluate the Inventory instance being
 # mutated, while equipped Items cost zero slots and displaced equipment costs a carried slot.
 runpy.run_path(str(ROOT / "patch-inventory-capacity-final-fix.py"), run_name="__main__")
+
+# Final Entity authority pass. Run after status/equipment/visual-state patches so their anchors remain intact.
+runpy.run_path(str(ROOT / "patch-unified-entity-spawn-pool.py"), run_name="__main__")

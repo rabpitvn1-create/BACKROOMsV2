@@ -69,18 +69,10 @@ object StateReducer {
   }
 
   private fun rememberedItemAfter(before: GameState, after: GameState, command: ItemCommand): String {
-    if (command.operation == ItemCommand.Operation.PICKUP) {
-      return ItemContentRules.normalize(ItemStack(command.itemId, command.itemName, command.quantity, metadata = command.metadata)).itemId
-    }
-    if (command.operation == ItemCommand.Operation.USE) {
-      val old = before.inventories[command.actorId]?.items?.get(command.itemId)
-      if (old != null) {
-        val next = ItemContentRules.nextAfterUse(old)
-        if (next != null && after.inventories[command.actorId]?.items?.containsKey(next.itemId) == true) return next.itemId
-      }
-    }
-    return command.itemId
+    val definition = ItemCatalog.resolve(command.itemId, command.itemName)
+    return definition?.id ?: command.itemId
   }
+
 
   fun executeAll(state: GameState, commands: List<GameCommand>): ExecutionResult {
     var current = state

@@ -45,12 +45,16 @@ if "LUCIA_AUTO_ATTACK_V1" not in combat:
     if count != 1:
         raise RuntimeError(f"Lucia automatic attack gate: expected 1 joint-order block, found {count}")
 
-combat = replace_once(
-    combat,
-    '        if (jointOrder && luciaActive && c.entityHp > 0) {\n',
-    '        if (luciaActive && c.entityHp > 0) {\n',
-    "Lucia automatic combat participation",
-)
+legacy_lucia_gate = '        if (jointOrder && luciaActive && c.entityHp > 0) {\n'
+round_lucia_gate = '        if (luciaActive && c.entityHp > 0) {\n'
+true_turn_lucia_gate = '        if ((!splitAuto || autoActor == "lucia") && luciaActive && c.entityHp > 0) {\n'
+if round_lucia_gate not in combat and true_turn_lucia_gate not in combat:
+    combat = replace_once(
+        combat,
+        legacy_lucia_gate,
+        round_lucia_gate,
+        "Lucia automatic combat participation",
+    )
 
 # Mark the JSON projection as auto-round combat and expose the authoritative
 # round counter. activeActorId remains presentation-only and is never persisted
@@ -65,7 +69,7 @@ if 'put("auto", true)' not in combat:
 
 for marker in (
     "LUCIA_AUTO_ATTACK_V1",
-    "if (luciaActive && c.entityHp > 0)",
+    "luciaActive && c.entityHp > 0)",
     'put("auto", true)',
     'put("round", c.eventCounter)',
 ):
@@ -73,7 +77,8 @@ for marker in (
         raise RuntimeError("Auto-party CombatRuntime contract missing: " + marker)
 if "jointOrder && luciaActive" in combat:
     raise RuntimeError("Legacy Lucia joint-order combat gate is still active")
-COMBAT.write_text(combat, encoding="utf-8")
+# CombatRuntime is checked-in Kotlin authority. The legacy automatic-combat layer may prepare
+# WebView compatibility below, but it must not rewrite the materialized true-turn gameplay source.
 
 
 # ---------------------------------------------------------------------------

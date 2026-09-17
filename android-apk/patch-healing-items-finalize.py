@@ -5,19 +5,12 @@ ROOT = Path(__file__).resolve().parent
 ENGINES = ROOT / "app/src/main/java/com/rabpit/backroom/core/Engines.kt"
 
 text = ENGINES.read_text(encoding="utf-8")
-old = 'finishItemUse(state, changed(state, "item_used"), command, physiologyEffects)'
-new = 'finishItemUse(state, changed(state, "item_used"), command, physiologyEffects, healingAmount)'
-if new not in text:
-    count = text.count(old)
-    if count != 1:
-        raise RuntimeError(f"Healing fallback-use call: expected exactly 1 anchor, found {count}")
-    text = text.replace(old, new, 1)
-
-if 'finishItemUse(state, inventoryResult, command, physiologyEffects)' in text or old in text:
+authority = 'return finishItemUse(state, inventoryResult, command, physiologyEffects, healingAmount)'
+if authority not in text:
+    raise RuntimeError("Checked-in healing item completion authority missing: " + authority)
+if 'finishItemUse(state, inventoryResult, command, physiologyEffects)' in text:
     raise RuntimeError("A pre-healing finishItemUse call survived")
-
-ENGINES.write_text(text, encoding="utf-8")
-print("Healing item final use call updated with healHp argument.")
+print("Healing item completion authority verified in checked-in Kotlin; no source rewrite performed.")
 
 # Final Entity combat balance authority runs after the healing-item chain so no later runtime patch can
 # rewrite Entity HP, evasion, regeneration, or legacy combat migration semantics.

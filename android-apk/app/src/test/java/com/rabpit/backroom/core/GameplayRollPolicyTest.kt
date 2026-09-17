@@ -66,11 +66,10 @@ class GameplayRollPolicyTest {
     assertEquals(10_000, rolls.getJSONObject("syvialReunion").getInt("max"))
     assertEquals(300, rolls.getJSONObject("hazard").getInt("threshold"))
     assertEquals(180, rolls.getJSONObject("loot").getInt("threshold"))
-    assertEquals(1, rolls.getJSONObject("madGodSet").getInt("threshold"))
     assertEquals(120, rolls.getJSONObject("almondWater").getInt("threshold"))
     assertFalse(rolls.getJSONObject("entityEncounter").getBoolean("success"))
     assertFalse(rolls.getJSONObject("exitProbe").getBoolean("eligible"))
-    assertEquals(List(8) { 10_000 }, random.bounds)
+    assertEquals(List(7) { 10_000 }, random.bounds)
   }
 
   @Test fun exploreDelegatesTheCompleteEntityBatchToEntityPolicy() {

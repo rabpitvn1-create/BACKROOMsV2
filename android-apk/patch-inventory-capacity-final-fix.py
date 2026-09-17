@@ -45,25 +45,8 @@ if new_policy not in policy:
     policy = policy.replace(old_policy, new_policy, 1)
 POLICY.write_text(policy, encoding="utf-8")
 
-test = TEST.read_text(encoding="utf-8")
-old_expectation = '''    assertFalse(InventoryCapacityPolicy.consumesSlot(equip.state, KAI_ID, MADGOD_SET_ID))
-    assertEquals(0, InventoryCapacityPolicy.usedSlots(equip.state, KAI_ID))
-'''
-new_expectation = '''    assertFalse(InventoryCapacityPolicy.consumesSlot(equip.state, KAI_ID, MADGOD_SET_ID))
-    // MadGod itself consumes zero slots while equipped. The displaced White Wraith and
-    // Blackblood Armor remain owned but are now unequipped, so they correctly consume two slots.
-    assertEquals(2, InventoryCapacityPolicy.usedSlots(equip.state, KAI_ID))
-    assertTrue(InventoryCapacityPolicy.consumesSlot(equip.state, KAI_ID, KAI_WHITE_WRAITH_ID))
-    assertTrue(InventoryCapacityPolicy.consumesSlot(equip.state, KAI_ID, KAI_BLACKBLOOD_ARMOR_ID))
-'''
-if new_expectation not in test:
-    if old_expectation not in test:
-        raise RuntimeError("MadGod capacity regression anchor missing")
-    test = test.replace(old_expectation, new_expectation, 1)
-TEST.write_text(test, encoding="utf-8")
-
-# Character Detail must render one card per equipped item, even when one item
-# intentionally occupies multiple equipment slots (for example MadGod weapon+armor).
+# Character Detail renders one card per equipped item even when one item intentionally occupies
+# multiple equipment slots.
 html = INDEX.read_text(encoding="utf-8")
 old_equipment_renderer = '''    if(equipment){const rendered=[];Object.keys(eq).sort().forEach(slot=>{const id=eq[slot],item=details.find(x=>String(x.id)===String(id))||itemById(member,id);if(item)rendered.push(card(item,slot))});equipment.innerHTML=rendered.length?rendered.join(''):'<span>Không có trang bị được ghi nhận.</span>'}
 '''
@@ -81,7 +64,6 @@ combined = SYSTEM.read_text(encoding="utf-8") + POLICY.read_text(encoding="utf-8
 for marker in (
     'fun usedSlots(state: GameState, characterId: String, inventory: InventoryState)',
     'InventoryCapacityPolicy.usedSlots(state, ownerId, inventory)',
-    'assertEquals(2, InventoryCapacityPolicy.usedSlots(equip.state, KAI_ID))',
     'const grouped=new Map();Object.keys(eq).sort()',
     "rendered.push(card(item,slots.join(' / ')))",
 ):
@@ -100,7 +82,26 @@ runpy.run_path(str(ROOT / "patch-lucia-normalize-compat.py"), run_name="__main__
 
 # Lucia is applied after all existing runtime/UI transforms so later patches cannot erase her
 # stats, inventory policy, three-slot loadout, encounter gate, or prompt contract.
-runpy.run_path(str(ROOT / "patch-lucia-follower.py"), run_name="__main__")
+lucia_patch = ROOT / "patch-lucia-follower.py"
+lucia_source = lucia_patch.read_text(encoding="utf-8")
+lucia_authority = all(
+    marker in path.read_text(encoding="utf-8")
+    for path, marker in (
+        (CORE / "LuciaCanon.kt", "object LuciaCanon"),
+        (CORE / "GameState.kt", "LUCIA_ID to LuciaCanon.character()"),
+        (CORE / "GameStateCodec.kt", "LuciaCanon.ensure"),
+        (TESTS / "LuciaFollowerTest.kt", "luciaRegeneratesThreePercentEveryThirdCompletedTurn"),
+    )
+)
+if lucia_authority:
+    core_start = lucia_source.index("# Canon: Lucia")
+    main_start = lucia_source.index("main = MAIN.read_text")
+    tests_start = lucia_source.index("# Regression tests:")
+    lucia_compat = lucia_source[:core_start] + lucia_source[main_start:tests_start]
+    exec(compile(lucia_compat, str(lucia_patch), "exec"), {"__name__": "__main__", "__file__": str(lucia_patch)})
+    print("Lucia Kotlin/test authority verified; Android runtime compatibility staged.")
+else:
+    runpy.run_path(str(lucia_patch), run_name="__main__")
 
 # The typed action bridge remains the sole new-Entity action authority: EXPLORE may open
 # roaming encounters, while SEARCH/EXECUTE cannot. Do not widen that gate in this release chain.
