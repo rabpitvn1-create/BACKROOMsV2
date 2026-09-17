@@ -77,8 +77,25 @@ jobs:
             python3 "android-apk/$script"
           done
           git diff --check
+
+          # Omnivault is fully retired from executable runtime, active knowledge,
+          # benchmark routing and LiteRT output classes.
           test ! -e android-apk/app/src/main/java/com/rabpit/backroom/core/OmnivaultEngine.kt
           ! grep -R -E 'OmnivaultCommand|OmnivaultEngine|KAI_OMNIVAULT_RING_ID' android-apk/app/src/main/java/com/rabpit/backroom/core
+          ! grep -R -F 'CHAR.KAI.OMNIVAULT' android-apk/app/src/main/assets/knowledge android-apk/app/src/main/java/com/rabpit/backroom/core/knowledge android-apk/benchmark-knowledge-context.py android-apk/KNOWLEDGE_SOURCE_MAP.md
+          ! grep -E '^OMNIVAULT_' android-apk/app/src/main/assets/models/backroom_intent_labels.txt
+
+          # New item acquisition is Android-authoritative and only Entity/ItemBox
+          # provenance may create inventory entries. Generic narrative loot is gone.
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/ItemDropAuthority.kt
+          grep -Fq 'enum class ItemDropOrigin { ENTITY, ITEM_BOX }' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemDropAuthority.kt
+          grep -Fq 'fun forEntity(entityKey: String): List<ItemStack> = emptyList()' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemDropAuthority.kt
+          grep -Fq 'fun forItemBox(itemBoxId: String): List<ItemStack> = emptyList()' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemDropAuthority.kt
+          ! grep -R -F 'DROP_ROLL_KEY' android-apk/app/src/main/java/com/rabpit/backroom/core
+          ! grep -F 'rolls.put("loot"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -F 'rolls.put("almondWater"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -F 'lootChanceBonusPercent' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+
           ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
 
