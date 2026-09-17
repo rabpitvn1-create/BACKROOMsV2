@@ -1,4 +1,4 @@
-name: Purge GitHub Actions History
+name: Purge Failed GitHub Actions Runs
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
-      - name: Purge all previous workflow runs
+      - name: Delete failed workflow runs only
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -25,24 +25,11 @@ jobs:
           mapfile -t RUN_IDS < <(
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
-              "/repos/${REPO}/actions/runs?per_page=100" \
+              "/repos/${REPO}/actions/runs?status=failure&per_page=100" \
               --jq '.workflow_runs[].id'
           )
 
-          echo "Found ${#RUN_IDS[@]} workflow runs."
-
-          # Cancel every other active run first so deletion is not blocked.
-          for run_id in "${RUN_IDS[@]}"; do
-            [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
-
-            status=$(gh api "/repos/${REPO}/actions/runs/${run_id}" --jq '.status' 2>/dev/null || true)
-            if [[ "${status}" == "queued" || "${status}" == "in_progress" || "${status}" == "waiting" || "${status}" == "pending" || "${status}" == "requested" ]]; then
-              echo "Cancelling active run ${run_id} (${status})"
-              gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
-            fi
-          done
-
-          sleep 5
+          echo "Found ${#RUN_IDS[@]} failed workflow runs."
 
           deleted=0
           failed=0
@@ -50,14 +37,14 @@ jobs:
           for run_id in "${RUN_IDS[@]}"; do
             [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
 
-            echo "Deleting run ${run_id}"
+            echo "Deleting failed run ${run_id}"
             success=false
             for attempt in 1 2 3 4 5; do
               if gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}" >/dev/null 2>&1; then
                 success=true
                 break
               fi
-              sleep 3
+              sleep 2
             done
 
             if [[ "${success}" == "true" ]]; then
@@ -68,9 +55,9 @@ jobs:
             fi
           done
 
-          echo "Deleted ${deleted} previous workflow runs."
+          echo "Deleted ${deleted} failed workflow runs."
           echo "Failed deletions: ${failed}."
-          echo "This purge run remains because GitHub cannot delete the currently executing run."
+          echo "Successful/cancelled runs are preserved."
 
           if [[ "${failed}" -ne 0 ]]; then
             exit 1
