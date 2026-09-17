@@ -72,6 +72,11 @@ jobs:
           grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq "@font-face{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-character{color:#67d5ff}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-entity{color:#ff6b6b}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-item{color:#f6c85f}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-skill{color:#c792ea}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
