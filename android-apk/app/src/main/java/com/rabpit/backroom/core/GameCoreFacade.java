@@ -7,6 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public final class GameCoreFacade implements AutoCloseable {
@@ -117,7 +118,11 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private JSONObject deepCopy(JSONObject source) {
-    return new JSONObject(source == null ? "{}" : source.toString());
+    try {
+      return new JSONObject(source == null ? "{}" : source.toString());
+    } catch (Exception e) {
+      return new JSONObject();
+    }
   }
 
   private void copyField(JSONObject source, JSONObject target, String key) throws Exception {
@@ -137,7 +142,12 @@ public final class GameCoreFacade implements AutoCloseable {
       String id = item.optString("id", "").trim();
       if (id.isEmpty()) id = GameCoreRules.stableItemId(name);
       int quantity = Math.max(1, item.optInt("quantity", 1));
-      JSONObject normalized = new JSONObject(item.toString());
+      JSONObject normalized;
+      try {
+        normalized = new JSONObject(item.toString());
+      } catch (Exception e) {
+        normalized = new JSONObject();
+      }
       try {
         normalized.put("id", id);
         normalized.put("name", name);
@@ -168,7 +178,13 @@ public final class GameCoreFacade implements AutoCloseable {
       if (id.isEmpty()) continue;
       boolean alreadyMember = existing.containsKey(id);
       boolean confirmedJoin = member.optBoolean("joinConfirmed", false) && member.optBoolean("present", false);
-      if (alreadyMember || confirmedJoin) output.put(new JSONObject(member.toString()));
+      if (alreadyMember || confirmedJoin) {
+        try {
+          output.put(new JSONObject(member.toString()));
+        } catch (Exception ignored) {
+          output.put(member);
+        }
+      }
     }
     return output;
   }
@@ -176,7 +192,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private String memberId(JSONObject member) {
     String id = member.optString("id", "").trim();
     if (!id.isEmpty()) return id;
-    return member.optString("name", "").trim().toLowerCase();
+    return member.optString("name", "").trim().toLowerCase(Locale.ROOT);
   }
 
   private void incrementTurn(JSONObject state) throws Exception {
