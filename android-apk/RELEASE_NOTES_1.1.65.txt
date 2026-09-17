@@ -1,0 +1,8 @@
+Backroom 1.1.65
+
+- Chuyển Android Game State Core sang Java 17.
+- Loại bỏ Kotlin plugin và toàn bộ source/test Kotlin khỏi app.
+- Loại bỏ LiteRT, model intent local và dependency liên quan.
+- Loại bỏ Python patch/ML pipeline khỏi quy trình build APK.
+- CI hiện kiểm tra Java-only baseline trước khi test và build.
+- Giữ WebView HTML/JavaScript làm lớp giao diện của game.
