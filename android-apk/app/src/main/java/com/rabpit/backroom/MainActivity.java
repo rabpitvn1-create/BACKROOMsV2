@@ -65,16 +65,17 @@ public class MainActivity extends Activity {
       "(function(){" +
       "if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;" +
       "var st=document.createElement('style');" +
-      "st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-character{position:absolute;right:-2%;bottom:-8%;width:62%;height:118%;object-fit:contain;object-position:right bottom;z-index:2;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{position:absolute;left:0;bottom:0;width:auto;max-width:55%;height:97%;object-fit:contain;object-position:left bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}';" +
+      "st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-character{position:absolute;right:-2%;bottom:-8%;width:62%;height:118%;object-fit:contain;object-position:right bottom;z-index:2;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{position:absolute;left:0;bottom:0;width:auto;max-width:55%;height:97%;object-fit:contain;object-position:left bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}';" +
       "document.head.appendChild(st);" +
       "function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}" +
       "function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}" +
+      "function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}" +
       "var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];" +
       "function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}" +
       "function activeEntityKey(){try{var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||c.entityKey||c.enemyKey||c.entity||c.enemy||'');if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}" +
       "function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey());}catch(e){return false;}}" +
       "function appendSnapshotOverlay(box){var key=activeEntityKey(),img;if(key){img=document.createElement('img');img.className='snapshot-entity';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);return;}if(shouldShowKaiOverlay()){img=document.createElement('img');img.className='snapshot-character';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';box.appendChild(img);}}" +
-      "function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>GEMINI SNAPSHOT</b><small>Chưa có ảnh của turn hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}" +
+      "function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh cho Level hiện tại.</small>';box.appendChild(p);}}appendSnapshotOverlay(box);}" +
       "function requestSnapshot(){if(!window.Android||typeof Android.requestSnapshot!=='function'){var s=document.getElementById('status');if(s)s.textContent='Không tìm thấy Android snapshot bridge.';return;}var s=document.getElementById('status');if(s)s.textContent='Gemini đang tạo snapshot…';Android.requestSnapshot(JSON.stringify(state));}" +
       "window.requestSnapshot=requestSnapshot;" +
       "var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){oldRender();renderSnapshot();scrollBottom();};}" +
@@ -266,6 +267,7 @@ public class MainActivity extends Activity {
   }
 
   private String snapshotPrompt(JSONObject state) {
+    String levelContext = gameCore.levelPromptContext(state.toString());
     StringBuilder recent = new StringBuilder();
     JSONArray log = state.optJSONArray("log");
     if (log != null) {
@@ -282,8 +284,9 @@ public class MainActivity extends Activity {
     return "Create one cinematic 16:9 visual snapshot of the CURRENT END STATE of this Backrooms text game.\n" +
       "Show the present scene only, not a montage. Kai Akechi / Twilight is the main character. " +
       "Do not invent NPCs, monsters, exits, loot, injuries, weapons, text, HUD, blood or props that are not explicitly present in the state. " +
-      "If party is empty, Kai is alone. Level 0 uses stale yellow wallpaper, damp carpet, fluorescent ceiling panels and oppressive empty office-like geometry. " +
+      "If party is empty, Kai is alone. Follow the CURRENT LEVEL CANON exactly and do not borrow architecture from another Level. " +
       "Photorealistic cinematic game concept art, grounded anatomy and materials, no written text in the image.\n\n" +
+      levelContext + "\n\n" +
       "Turn: " + state.optInt("turn", 1) + "\n" +
       "Location: " + clipped(state.optString("location", ""), 1200) + "\n" +
       "Player: " + clipped(state.optJSONObject("player"), 1800) + "\n" +
@@ -334,12 +337,18 @@ public class MainActivity extends Activity {
             emit("backroomTurn", localResult.getJSONObject("state").toString());
             return;
           }
-          JSONObject state = new JSONObject(stateJson);
+          JSONObject state = localResult.optJSONObject("state");
+          if (state == null) state = new JSONObject(stateJson);
+          String coreBeforeJson = state.toString();
+          String levelContext = gameCore.levelPromptContext(coreBeforeJson);
+          String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một lượt và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
-            "ENTITY OVERLAY STATE CONTRACT: flags.entityEncounterKey bắt buộc có ở mọi lượt AI. Nếu một Entity đang trực tiếp hiện diện hoặc đối đầu, đặt canonical key local tương ứng; nếu không còn Entity trực tiếp hiện diện thì đặt chuỗi rỗng. Canonical keys: hound, clump, duller, deathmoth, hostile_faceling, false_puddle, paintings, smiler, skin-stealer, predatory_window, biological_pipeline, wretch, cable_mimic, the_beast_of_level_5, hotel_corpse_lure, jeff_the_killer, jane_the_killer, slenderman, diep_minh. Không dùng đường dẫn, URL hoặc alias khác. " +
+            "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
+            "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
+            levelContext + "\n" + entityContext + "\n" +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
-            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
+            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
@@ -348,6 +357,7 @@ public class MainActivity extends Activity {
           String title = generated.optString("title", "").trim();
           String location = generated.optString("location", "").trim();
           if (!title.isEmpty()) state.put("title", title);
+          if (generated.has("currentLevel")) state.put("currentLevel", generated.optInt("currentLevel", state.optInt("currentLevel", 0)));
           if (!location.isEmpty()) state.put("location", location);
           JSONObject generatedFlags = generated.optJSONObject("flags");
           if (generatedFlags != null) {
@@ -357,7 +367,7 @@ public class MainActivity extends Activity {
             if (!generatedFlags.has("entityEncounterKey")) flags.put("entityEncounterKey", "");
             state.put("flags", flags);
           }
-          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(stateJson, state.toString(), action));
+          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(coreBeforeJson, state.toString(), action));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
           }
@@ -377,6 +387,10 @@ public class MainActivity extends Activity {
 
     @JavascriptInterface public void requestSnapshot(String stateJson) {
       imageIo.execute(() -> requestSnapshotInternal(stateJson));
+    }
+
+    @JavascriptInterface public String levelSnapshot(String stateJson) {
+      return gameCore.levelSnapshotDescriptor(stateJson);
     }
   }
 

@@ -30,6 +30,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Apply Entity Core runtime
+        run: python3 .github/scripts/apply-entity-core-runtime.py
+
+      - name: Commit Entity Core runtime
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          if git diff --cached --quiet; then
+            echo 'Entity Core runtime already connected.'
+          else
+            git commit -m 'Connect Entity Core to gameplay runtime'
+            git push origin HEAD:${GITHUB_REF_NAME}
+          fi
+
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
@@ -46,6 +62,23 @@ jobs:
           grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
+          test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
+          grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'entityCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'entityCore.prepareEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'levelPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'entityPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'levelSnapshotDescriptor' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'currentLevel' android-apk/app/src/main/assets/index.html
+          jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
+          ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
+          ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
 
       - name: Validate Game Master configuration
         run: |
@@ -86,6 +119,11 @@ jobs:
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_snapshot_overlay.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/knowledge/knowledge_db.json'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/knowledge/entity_encounters.json'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/manifest.json'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/level_0/01.webp'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
