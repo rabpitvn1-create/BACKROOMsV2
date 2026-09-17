@@ -127,17 +127,17 @@ for script in ("patch-pressure-combat.py", "patch-unified-entity-spawn-pool.py",
         raise RuntimeError(f"Required runtime patch missing: {script}")
     exec(compile(path.read_text(encoding="utf-8"), str(path), "exec"), {"__name__": "__main__", "__file__": str(path)})
 
-# The nested release chain has already upgraded the normalizer to the final three-argument
-# signature and wrapped the source with LuciaCanon. Add the still-supported Iris/Syvial registry
-# at that verified final boundary instead of depending on an obsolete pre-upgrade signature.
+# The final normalizer deliberately preserves caller-owned inventory/equipment identifiers.
+# Only fresh canonical seeding needs to materialize the supported Iris/Syvial registry; save/load
+# already applies SpecialFollowersCanon.ensure(decoded) in the codec patch chain.
 equipment_system_path = ROOT / "app/src/main/java/com/rabpit/backroom/core/CharacterEquipmentSystem.kt"
 equipment_system = equipment_system_path.read_text(encoding="utf-8")
-old_supported_followers = "    val input = LuciaCanon.ensure(source)\n"
-new_supported_followers = "    val input = LuciaCanon.ensure(SpecialFollowersCanon.ensure(source))\n"
-if new_supported_followers not in equipment_system:
-    if equipment_system.count(old_supported_followers) != 1:
-        raise RuntimeError("Final supported follower normalization anchor missing")
-    equipment_system = equipment_system.replace(old_supported_followers, new_supported_followers, 1)
+old_seed = "  fun seedFresh(state: GameState): GameState = normalizeInternal(state, true, fillStartingHp = true)\n"
+new_seed = "  fun seedFresh(state: GameState): GameState = normalizeInternal(SpecialFollowersCanon.ensure(state), true, fillStartingHp = true)\n"
+if new_seed not in equipment_system:
+    if equipment_system.count(old_seed) != 1:
+        raise RuntimeError("Final fresh follower seed anchor missing")
+    equipment_system = equipment_system.replace(old_seed, new_seed, 1)
 equipment_system_path.write_text(equipment_system, encoding="utf-8")
 
 # Final CI guard: nested patch scripts must not recreate retired runtime code, tests or assets.
@@ -158,10 +158,11 @@ for path in app_src.rglob("*"):
         raise RuntimeError(f"Retired runtime content recreated in: {rel}")
 
 for marker in (
-    "LuciaCanon.ensure(SpecialFollowersCanon.ensure(source))",
+    "normalizeInternal(SpecialFollowersCanon.ensure(state), true, fillStartingHp = true)",
+    "val input = LuciaCanon.ensure(source)",
     "private fun normalizeInternal(source: GameState, seedStarting: Boolean, fillStartingHp: Boolean)",
 ):
     if marker not in equipment_system:
-        raise RuntimeError("Supported follower registry repair missing: " + marker)
+        raise RuntimeError("Supported follower fresh-state repair missing: " + marker)
 
-print("Scene-keyed Snapshot cache, progression, combat and healthbar chain installed; Iris/Syvial registry normalized and retired runtime content blocked.")
+print("Scene-keyed Snapshot cache, progression, combat and healthbar chain installed; fresh Iris/Syvial registry seeded without overriding caller-owned character storage IDs.")
