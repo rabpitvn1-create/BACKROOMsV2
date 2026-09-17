@@ -184,6 +184,7 @@ const initial={
   title:"MAIN_BACKROOMS — Kai Akechi",
   turn:1,
   mode:"local APK",
+  currentLevel:0,
   location:"Level 0 / The Lobby — khu phòng vàng ban đầu sau no-clip",
   player:{name:"Kai Akechi",condition:"Ổn định"},
   party:[],
@@ -205,6 +206,8 @@ const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),mode
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
+function ensureCurrentLevel(s){if(!Number.isInteger(s?.currentLevel)||s.currentLevel<0||s.currentLevel>6){const m=String(s?.location||"").match(/\bLevel\s*([0-6])\b/i);s.currentLevel=m?Number(m[1]):0}return s}
+ensureCurrentLevel(state);
 state.characterCanon=CURRENT_CHARACTER_CANON;
 const oldPrologueSignature="Không beacon. Không telemetry.";
 if(state.turn===1){
@@ -226,11 +229,11 @@ function esc(s){const d=document.createElement("div");d.textContent=s||"";return
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
 function render(){titleEl.textContent=state.title;turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Kai Akechi";partyEl.innerHTML=chips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");logEl.scrollTop=logEl.scrollHeight;statusEl.textContent="Save được lưu riêng trên thiết bị này."}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
-function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}
+function load(){state=ensureCurrentLevel(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial);state.characterCanon=CURRENT_CHARACTER_CANON;render()}
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Gemini đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
-window.backroomTurn=json=>{state=JSON.parse(json);state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
+window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" · Level "+state.currentLevel+" đã lưu trên máy.";render()};
 window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi Gemini: "+message};
 render();
 </script>
