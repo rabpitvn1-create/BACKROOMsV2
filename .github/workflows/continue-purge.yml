@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - '.github/workflows/continue-purge.yml'
+      - '.github/scripts/sanitize-shared-patches.py'
+      - '.github/scripts/sanitize-active-residue.py'
   workflow_dispatch:
 
 permissions:
