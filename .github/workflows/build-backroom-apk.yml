@@ -71,6 +71,15 @@ jobs:
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
+          grep -Fq 'CHEST_SPAWN_RATE_PERCENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MIN_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MAX_PERCENT = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'itemCore.prepareExplorationLoot' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'itemCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'gameCore.processItemAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'ITEM.GAMEPLAY_LOOT_LOCK' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq "@font-face{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '.semantic-character{color:#67d5ff}' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '.semantic-entity{color:#ff6b6b}' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -132,6 +141,8 @@ jobs:
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/snapshot-ui.js'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/inventory-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/chest_overlay.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/OFL-Play.txt'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
