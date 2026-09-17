@@ -279,12 +279,28 @@
       "tags": ["item", "resource", "scarcity"], "references": [], "affordances": ["item_manipulation"]
     },
     {
+      "id": "ITEM.GAMEPLAY_LOOT_LOCK",
+      "domain": "ITEM", "kind": "hard-lock",
+      "text": "Gameplay loot is Core-owned. Consumable items may enter player Inventory only from a defeated Entity drop (entity-specific rate between 10% and 20%) or a Core-spawned exploration chest. Exploration chest spawn rate is exactly 3%; every spawned chest contains an item 100%. AI narration must never create loose loot or mutate Inventory directly.",
+      "source": {"document": "GAMEPLAY_RULE", "anchor": "Core loot contract 2026-09-18"},
+      "authority": "GAMEPLAY_CANON", "mutability": "IMMUTABLE", "priority": 80,
+      "tags": ["item", "loot", "chest", "entity drop"], "references": ["ITEM.ALMOND_WATER", "ITEM.BANDAGE"], "affordances": ["item_manipulation"]
+    },
+    {
       "id": "ITEM.ALMOND_WATER",
       "domain": "ITEM", "kind": "item",
-      "text": "Almond Water is a key anomalous drinking-water resource but remains scarce in Project canon. It can rehydrate and support alertness/some mild symptoms; it is not a cure-all and does not negate every Entity effect. It can expire and become poisonous. Open sources must be checked; Level 0 carpet moisture is not drinking water.",
+      "text": "Almond Water is a key anomalous drinking-water resource but remains scarce in Project canon. It can rehydrate and support alertness/some mild symptoms; it is not a cure-all and does not negate every Entity effect. It can expire and become poisonous. Open sources must be checked; Level 0 carpet moisture is not drinking water. Gameplay effect per unit: +50 Hunger and +100 Thirsty.",
       "source": {"document": "01_WORLD/items.md", "anchor": "8.1 Object 1 — Almond Water"},
       "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 58,
       "tags": ["almond water", "water"], "references": [], "affordances": ["resource_check"]
+    },
+    {
+      "id": "ITEM.BANDAGE",
+      "domain": "ITEM", "kind": "item",
+      "text": "Bandage is a consumable medical item. Gameplay effect per unit: +15 HP, capped by the target character's max HP.",
+      "source": {"document": "GAMEPLAY_RULE", "anchor": "Consumable item contract 2026-09-18"},
+      "authority": "GAMEPLAY_CANON", "mutability": "IMMUTABLE", "priority": 70,
+      "tags": ["bandage", "medical", "healing"], "references": [], "affordances": ["item_manipulation"]
     },
     {
       "id": "ITEM.GREEK_FIRE",

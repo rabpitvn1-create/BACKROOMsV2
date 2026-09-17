@@ -7,6 +7,24 @@ def secret = { name ->
   return value.replace("\\", "\\\\").replace("\"", "\\\"")
 }
 
+def playBoldFont = file('src/main/assets/fonts/Play-Bold.ttf')
+def playBoldUrl = 'https://raw.githubusercontent.com/google/fonts/e36afc7567e2c4dbe669ca5810e0c77f307295a0/ofl/play/Play-Bold.ttf'
+
+tasks.register('syncPlayBoldFont') {
+  outputs.file(playBoldFont)
+  doLast {
+    if (!playBoldFont.isFile()) {
+      playBoldFont.parentFile.mkdirs()
+      new URL(playBoldUrl).withInputStream { input ->
+        playBoldFont.withOutputStream { output -> output << input }
+      }
+    }
+    if (playBoldFont.length() < 150000L) {
+      throw new GradleException('Play-Bold.ttf download failed validation')
+    }
+  }
+}
+
 android {
   namespace 'com.rabpit.backroom'
   compileSdk 35
@@ -38,6 +56,10 @@ android {
   }
 
   testOptions { unitTests.returnDefaultValues = true }
+}
+
+tasks.named('preBuild').configure {
+  dependsOn tasks.named('syncPlayBoldFont')
 }
 
 dependencies {

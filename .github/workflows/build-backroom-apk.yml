@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - 'release/**'
+      - 'feature/**'
     paths:
       - 'android-apk/**'
       - '.github/workflows/build-backroom-apk.yml'
@@ -31,7 +32,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Apply Entity Core runtime
-        run: python3 .github/scripts/apply-entity-core-runtime.py
+        run: |
+          set -euo pipefail
+          if grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java; then
+            echo 'Entity Core runtime already connected.'
+          else
+            python3 .github/scripts/apply-entity-core-runtime.py
+          fi
 
       - name: Commit Entity Core runtime
         run: |
@@ -57,11 +64,29 @@ jobs:
           test ! -d android-apk/ml
           test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
           ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
-          grep -Fq 'function activeEntityKey()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'function activeEntityKey()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
+          grep -Fq 'CHEST_SPAWN_RATE_PERCENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MIN_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MAX_PERCENT = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'itemCore.prepareExplorationLoot' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'itemCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'gameCore.processItemAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'ITEM.GAMEPLAY_LOOT_LOCK' android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          grep -Fq "@font-face{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-character{color:#67d5ff}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-entity{color:#ff6b6b}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-item{color:#f6c85f}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq '.semantic-skill{color:#c792ea}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
@@ -114,6 +139,12 @@ jobs:
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/snapshot-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/inventory-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/chest_overlay.png'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/OFL-Play.txt'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'

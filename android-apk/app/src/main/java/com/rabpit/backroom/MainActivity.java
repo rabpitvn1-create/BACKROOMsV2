@@ -3,11 +3,14 @@ package com.rabpit.backroom;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import com.rabpit.backroom.core.CombatChoiceEngine;
 import com.rabpit.backroom.core.GameCoreFacade;
+import com.rabpit.backroom.core.GmChoiceContract;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -22,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
+  private static final String TAG = "BackroomMain";
   private WebView webView;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
   private final ExecutorService imageIo = Executors.newSingleThreadExecutor();
@@ -44,7 +48,7 @@ public class MainActivity extends Activity {
     webView.setWebViewClient(new WebViewClient() {
       @Override public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        installUiEnhancements();
+        installUiScripts();
       }
     });
     webView.addJavascriptInterface(new GameBridge(), "Android");
@@ -60,34 +64,26 @@ public class MainActivity extends Activity {
     super.onDestroy();
   }
 
-  private void installUiEnhancements() {
-    String script =
-      "(function(){" +
-      "if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;" +
-      "var st=document.createElement('style');" +
-      "st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-character{position:absolute;right:-2%;bottom:-8%;width:62%;height:118%;object-fit:contain;object-position:right bottom;z-index:2;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{position:absolute;left:0;bottom:0;width:auto;max-width:55%;height:97%;object-fit:contain;object-position:left bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}';" +
-      "document.head.appendChild(st);" +
-      "function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}" +
-      "function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}" +
-      "function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}" +
-      "var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];" +
-      "function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}" +
-      "function activeEntityKey(){try{var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||c.entityKey||c.enemyKey||c.entity||c.enemy||'');if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}" +
-      "function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey());}catch(e){return false;}}" +
-      "function appendSnapshotOverlay(box){var key=activeEntityKey(),img;if(key){img=document.createElement('img');img.className='snapshot-entity';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);return;}if(shouldShowKaiOverlay()){img=document.createElement('img');img.className='snapshot-character';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';box.appendChild(img);}}" +
-      "function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh cho Level hiện tại.</small>';box.appendChild(p);}}appendSnapshotOverlay(box);}" +
-      "function requestSnapshot(){if(!window.Android||typeof Android.requestSnapshot!=='function'){var s=document.getElementById('status');if(s)s.textContent='Không tìm thấy Android snapshot bridge.';return;}var s=document.getElementById('status');if(s)s.textContent='Gemini đang tạo snapshot…';Android.requestSnapshot(JSON.stringify(state));}" +
-      "window.requestSnapshot=requestSnapshot;" +
-      "var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){oldRender();renderSnapshot();scrollBottom();};}" +
-      "var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',requestSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}" +
-      "var oldTurn=window.backroomTurn;window.backroomTurn=function(json){if(typeof oldTurn==='function')oldTurn(json);document.querySelectorAll('[data-pending=\"1\"]').forEach(function(n){n.remove();});var s=document.getElementById('status');if(s)s.textContent='Turn '+state.turn+' đã lưu trên máy. Đang tạo snapshot…';renderSnapshot();scrollBottom();requestSnapshot();};" +
-      "var oldError=window.backroomError;window.backroomError=function(message){document.querySelectorAll('[data-pending=\"1\"]').forEach(function(n){n.remove();});if(typeof oldError==='function')oldError(message);scrollBottom();};" +
-      "window.backroomSnapshot=function(payload){try{var r=JSON.parse(payload);if(!state||Number(r.turn)!==Number(state.turn))return;if(!r.dataUri)return;localStorage.setItem('backroom-apk-snapshot',JSON.stringify({turn:r.turn,model:r.model||'Gemini',dataUri:r.dataUri}));renderSnapshot();var s=document.getElementById('status');if(s)s.textContent='Snapshot Turn '+state.turn+' đã tạo bằng '+(r.model||'Gemini')+'.';}catch(e){var s=document.getElementById('status');if(s)s.textContent='Snapshot trả về không hợp lệ.';}};" +
-      "window.backroomSnapshotError=function(payload){try{var r=JSON.parse(payload);if(state&&Number(r.turn)!==Number(state.turn))return;var s=document.getElementById('status');if(s)s.textContent='Snapshot lỗi: '+(r.message||'Không thể tạo ảnh.');}catch(e){var s=document.getElementById('status');if(s)s.textContent='Snapshot lỗi.';}};" +
-      "var f=document.getElementById('form');if(f){f.addEventListener('submit',function(){var a=document.getElementById('action');var text=a?a.value.trim():'';if(!text)return;var l=document.getElementById('log');if(!l)return;var player=document.createElement('article');player.className='message player pending';player.setAttribute('data-pending','1');player.innerHTML='<div class=\"role\">BẠN</div><div class=\"text\"></div>';player.querySelector('.text').textContent=text;l.appendChild(player);var gm=document.createElement('article');gm.className='message pending';gm.setAttribute('data-pending','1');gm.innerHTML='<div class=\"role\">GAME MASTER</div><div class=\"text\">Đang xử lý lượt…</div>';l.appendChild(gm);scrollBottom();},true);}" +
-      "renderSnapshot();scrollBottom();if(typeof state!=='undefined'&&state&&!cachedSnapshot())setTimeout(requestSnapshot,700);" +
-      "})();";
-    webView.evaluateJavascript(script, null);
+  private String readAssetText(String path) throws Exception {
+    StringBuilder text = new StringBuilder();
+    try (InputStream input = getAssets().open(path);
+         BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+      String line;
+      while ((line = reader.readLine()) != null) text.append(line).append('\n');
+    }
+    return text.toString();
+  }
+
+  private void installUiScripts() {
+    try {
+      String snapshotUi = readAssetText("snapshot-ui.js");
+      String gmChoiceUi = readAssetText("gm-choice-ui.js");
+      String inventoryUi = readAssetText("inventory-ui.js");
+      webView.evaluateJavascript(snapshotUi, ignored ->
+        webView.evaluateJavascript(gmChoiceUi, ignoredChoice -> webView.evaluateJavascript(inventoryUi, null)));
+    } catch (Exception e) {
+      Log.e(TAG, "Unable to install WebView UI scripts", e);
+    }
   }
 
   private boolean retryable(int code) {
@@ -278,12 +274,22 @@ public class MainActivity extends Activity {
         if (recent.length() > 0) recent.append("\n\n");
         recent.append("player".equals(entry.optString("role")) ? "PLAYER: " : "GM: ");
         recent.append(clipped(entry.optString("text", ""), 1800));
+        JSONArray battleLog = entry.optJSONArray("battleLog");
+        if (battleLog != null && battleLog.length() > 0) {
+          recent.append("\nCOMBAT: ");
+          int from = Math.max(0, battleLog.length() - 4);
+          for (int j = from; j < battleLog.length(); j++) {
+            JSONObject line = battleLog.optJSONObject(j);
+            if (line != null) recent.append(clipped(line.optString("text", ""), 400)).append(' ');
+          }
+        }
       }
     }
 
     return "Create one cinematic 16:9 visual snapshot of the CURRENT END STATE of this Backrooms text game.\n" +
       "Show the present scene only, not a montage. Kai Akechi / Twilight is the main character. " +
       "Do not invent NPCs, monsters, exits, loot, injuries, weapons, text, HUD, blood or props that are not explicitly present in the state. " +
+      "Do not render a loot chest in the base snapshot image; the app draws the chest from a local overlay asset when Core says one is present. " +
       "If party is empty, Kai is alone. Follow the CURRENT LEVEL CANON exactly and do not borrow architecture from another Level. " +
       "Photorealistic cinematic game concept art, grounded anatomy and materials, no written text in the image.\n\n" +
       levelContext + "\n\n" +
@@ -323,6 +329,21 @@ public class MainActivity extends Activity {
     }
   }
 
+  private String encounterKey(JSONObject state) {
+    JSONObject flags = state == null ? null : state.optJSONObject("flags");
+    return flags == null ? "" : flags.optString("entityEncounterKey", "").trim().toLowerCase();
+  }
+
+  private int lastGmLogIndex(JSONObject state) {
+    JSONArray log = state == null ? null : state.optJSONArray("log");
+    if (log == null || log.length() == 0) return 0;
+    for (int i = log.length() - 1; i >= 0; i--) {
+      JSONObject entry = log.optJSONObject(i);
+      if (entry != null && !"player".equals(entry.optString("role"))) return i;
+    }
+    return Math.max(0, log.length() - 1);
+  }
+
   private void emit(String function, String json) {
     String script = "window." + function + "(" + JSONObject.quote(json) + ")";
     runOnUiThread(() -> webView.evaluateJavascript(script, null));
@@ -332,23 +353,51 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void submitTurn(String stateJson, String action) {
       io.execute(() -> {
         try {
+          JSONObject submitted = new JSONObject(stateJson);
+
+          if (CombatChoiceEngine.isActive(submitted)) {
+            if (!CombatChoiceEngine.isCombatAction(action)) {
+              throw new Exception("Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.");
+            }
+            JSONObject resolved = CombatChoiceEngine.resolve(submitted, action);
+            emit("backroomCombatTurn", resolved.toString());
+            return;
+          }
+
+          String existingEncounter = encounterKey(submitted);
+          if (CombatChoiceEngine.isKnownEntity(existingEncounter)) {
+            CombatChoiceEngine.start(submitted, existingEncounter, lastGmLogIndex(submitted));
+            emit("backroomCombatTurn", submitted.toString());
+            return;
+          }
+
+          if (CombatChoiceEngine.isCombatAction(action)) {
+            throw new Exception("Không có trận chiến đang hoạt động.");
+          }
+
           JSONObject localResult = new JSONObject(gameCore.processRule(stateJson, action));
           if (localResult.optBoolean("handled", false)) {
             emit("backroomTurn", localResult.getJSONObject("state").toString());
             return;
           }
+
           JSONObject state = localResult.optJSONObject("state");
-          if (state == null) state = new JSONObject(stateJson);
+          if (state == null) state = submitted;
           String coreBeforeJson = state.toString();
           String levelContext = gameCore.levelPromptContext(coreBeforeJson);
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
-          String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một lượt và trả DUY NHẤT JSON hợp lệ, không markdown. " +
+          String itemContext = gameCore.itemPromptContext(coreBeforeJson);
+          String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
+            "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
+            "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
+            "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
+            "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
             "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
-            levelContext + "\n" + entityContext + "\n" +
+            levelContext + "\n" + entityContext + "\n" + itemContext + "\n" +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
-            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
+            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{},\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Nhặt Đèn pin\",\"highlights\":[{\"text\":\"Đèn pin\",\"type\":\"item\"}]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
@@ -367,6 +416,7 @@ public class MainActivity extends Activity {
             if (!generatedFlags.has("entityEncounterKey")) flags.put("entityEncounterKey", "");
             state.put("flags", flags);
           }
+
           JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(coreBeforeJson, state.toString(), action));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
@@ -376,11 +426,45 @@ public class MainActivity extends Activity {
           JSONArray log = state.optJSONArray("log");
           if (log == null) log = new JSONArray();
           log.put(new JSONObject().put("role", "player").put("text", action));
-          log.put(new JSONObject().put("role", "gm").put("text", reply));
+          JSONObject gmEntry = GmChoiceContract.gmEntry(reply, generated);
+          log.put(gmEntry);
           state.put("log", log);
+
+          String newEncounter = encounterKey(state);
+          if (CombatChoiceEngine.isKnownEntity(newEncounter)) {
+            gmEntry.remove("choices");
+            CombatChoiceEngine.start(state, newEncounter, log.length() - 1);
+          }
+
           emit("backroomTurn", state.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể xử lý lượt." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void itemAction(String stateJson, String itemId, String operation,
+                                                String targetId, int quantity) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          if (CombatChoiceEngine.isActive(submitted)) {
+            JSONObject rejected = new JSONObject()
+              .put("handled", false)
+              .put("state", submitted)
+              .put("reason", "combat_locked")
+              .put("error", "Battle đang hoạt động. Chỉ A/B/C được phép thực hiện.");
+            emit("backroomItemAction", rejected.toString());
+            return;
+          }
+          emit("backroomItemAction", gameCore.processItemAction(stateJson, itemId, operation, targetId, quantity));
+        } catch (Exception e) {
+          JSONObject rejected = new JSONObject();
+          try {
+            rejected.put("handled", false).put("state", new JSONObject(stateJson));
+            rejected.put("error", e.getMessage() == null ? "Không thể xử lý vật phẩm." : e.getMessage());
+          } catch (Exception ignored) {}
+          emit("backroomItemAction", rejected.toString());
         }
       });
     }
