@@ -169,19 +169,22 @@ data class GameState(
         ),
         AN_NHIEN_ID to AnNhienCanon.character(),
         IRIS_ID to SpecialFollowersCanon.irisCharacter(),
-        SYVIAL_ID to SpecialFollowersCanon.syvialCharacter()
+        SYVIAL_ID to SpecialFollowersCanon.syvialCharacter(),
+        LUCIA_ID to LuciaCanon.character()
       ),
       inventories = mapOf(
         KAI_ID to InventoryState(KAI_ID),
         AN_NHIEN_ID to AnNhienCanon.inventory(),
         IRIS_ID to InventoryState(IRIS_ID),
-        SYVIAL_ID to InventoryState(SYVIAL_ID)
+        SYVIAL_ID to InventoryState(SYVIAL_ID),
+        LUCIA_ID to LuciaCanon.inventory()
       ),
       equipment = mapOf(
         KAI_ID to EquipmentState(KAI_ID, KaiStartingEquipment.slots),
         AN_NHIEN_ID to AnNhienCanon.equipment(),
         IRIS_ID to EquipmentState(IRIS_ID, SpecialFollowersCanon.irisEquipmentSlots),
-        SYVIAL_ID to EquipmentState(SYVIAL_ID, SpecialFollowersCanon.syvialEquipmentSlots)
+        SYVIAL_ID to EquipmentState(SYVIAL_ID, SpecialFollowersCanon.syvialEquipmentSlots),
+        LUCIA_ID to LuciaCanon.equipment()
       )
     ))
   }

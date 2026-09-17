@@ -82,7 +82,26 @@ runpy.run_path(str(ROOT / "patch-lucia-normalize-compat.py"), run_name="__main__
 
 # Lucia is applied after all existing runtime/UI transforms so later patches cannot erase her
 # stats, inventory policy, three-slot loadout, encounter gate, or prompt contract.
-runpy.run_path(str(ROOT / "patch-lucia-follower.py"), run_name="__main__")
+lucia_patch = ROOT / "patch-lucia-follower.py"
+lucia_source = lucia_patch.read_text(encoding="utf-8")
+lucia_authority = all(
+    marker in path.read_text(encoding="utf-8")
+    for path, marker in (
+        (CORE / "LuciaCanon.kt", "object LuciaCanon"),
+        (CORE / "GameState.kt", "LUCIA_ID to LuciaCanon.character()"),
+        (CORE / "GameStateCodec.kt", "LuciaCanon.ensure"),
+        (TESTS / "LuciaFollowerTest.kt", "luciaRegeneratesThreePercentEveryThirdCompletedTurn"),
+    )
+)
+if lucia_authority:
+    core_start = lucia_source.index("# Canon: Lucia")
+    main_start = lucia_source.index("main = MAIN.read_text")
+    tests_start = lucia_source.index("# Regression tests:")
+    lucia_compat = lucia_source[:core_start] + lucia_source[main_start:tests_start]
+    exec(compile(lucia_compat, str(lucia_patch), "exec"), {"__name__": "__main__", "__file__": str(lucia_patch)})
+    print("Lucia Kotlin/test authority verified; Android runtime compatibility staged.")
+else:
+    runpy.run_path(str(lucia_patch), run_name="__main__")
 
 # The typed action bridge remains the sole new-Entity action authority: EXPLORE may open
 # roaming encounters, while SEARCH/EXECUTE cannot. Do not widen that gate in this release chain.

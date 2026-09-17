@@ -31,7 +31,7 @@ object GameStateCodec {
       version == 2 && root.has("inventories") -> migrateV2Core(root)
       else -> LegacySaveMigration.migrate(root)
     }
-    return CharacterEquipmentSystem.normalize(SpecialFollowersCanon.ensure(AnNhienCanon.ensure(decoded)))
+    return CharacterEquipmentSystem.normalize(LuciaCanon.ensure(SpecialFollowersCanon.ensure(AnNhienCanon.ensure(decoded))))
   }
 
   private fun migrateV2Core(root: JSONObject): GameState {

@@ -25,7 +25,15 @@ print("Character detail avatar fallback hardened: non-Kai members without avatar
 
 runpy.run_path(str(ROOT / "patch-survival-hud-chat-ux.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-an-nhien-follower-final.py"), run_name="__main__")
-runpy.run_path(str(ROOT / "patch-search-action-false-warning.py"), run_name="__main__")
+search_facade = (ROOT / "app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.kt").read_text(encoding="utf-8")
+omnivault_test = (ROOT / "app/src/test/java/com/rabpit/backroom/core/OmnivaultNaturalFlowTest.kt").read_text(encoding="utf-8")
+if (
+    'isDirectPlayerPickupAction(action)' in search_facade
+    and 'scanAndCopyAreRetiredInNaturalFlow' in omnivault_test
+):
+    print("Search/Omnivault Kotlin authority verified; legacy regression generator skipped.")
+else:
+    runpy.run_path(str(ROOT / "patch-search-action-false-warning.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-annhien-cheat-code.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-an-nhien-crocs.py"), run_name="__main__")
 runpy.run_path(str(ROOT / "patch-friendly-item-display.py"), run_name="__main__")
