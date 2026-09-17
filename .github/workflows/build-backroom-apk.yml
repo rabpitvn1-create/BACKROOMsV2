@@ -41,11 +41,15 @@ jobs:
           test ! -d android-apk/ml
           test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
           ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
-          grep -Fq 'function activeEntityKey()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'function activeEntityKey()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq "@font-face{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
+          test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
 
       - name: Validate Game Master configuration
         run: |
@@ -81,6 +85,10 @@ jobs:
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/snapshot-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/OFL-Play.txt'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/entity/diep_minh.png'
