@@ -157,6 +157,17 @@ public final class CombatChoiceEngine {
     return Math.max(1, (Math.max(1, normalAttackDamage) + 1) / 2);
   }
 
+  static int configuredProcPercent(String characterId, String skillName) {
+    List<Skill> pool = SKILLS.get(normalizeCharacterId(characterId));
+    if (pool == null || skillName == null) return -1;
+    for (Skill skill : pool) if (skillName.equals(skill.name)) return skill.procPercent;
+    return -1;
+  }
+
+  static int exactDamageForSkill(String skillName) {
+    return "Guilty Crown Override".equals(skillName) ? GUILTY_CROWN_TOTAL_DAMAGE : 0;
+  }
+
   public static JSONObject start(JSONObject state, String entityKey, int gmLogIndex) throws Exception {
     if (state == null) throw new IllegalArgumentException("state is required");
     String normalized = entityKey == null ? "" : entityKey.trim().toLowerCase(Locale.ROOT);
@@ -345,10 +356,11 @@ public final class CombatChoiceEngine {
     }
 
     boolean offensive = selected.optBoolean("offensive", true);
-    if ("Guilty Crown Override".equals(skillName)) {
-      int hp = Math.max(0, entity.optInt("hp", 0) - GUILTY_CROWN_TOTAL_DAMAGE);
+    int exactDamage = exactDamageForSkill(skillName);
+    if (exactDamage > 0) {
+      int hp = Math.max(0, entity.optInt("hp", 0) - exactDamage);
       entity.put("hp", hp);
-      String damageText = "-" + GUILTY_CROWN_TOTAL_DAMAGE + " HP";
+      String damageText = "-" + exactDamage + " HP";
       String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
       appendBattleLine(state, combat,
         actorName + " dùng " + skillName + ": " + GUILTY_CROWN_SHOTS + "/" + GUILTY_CROWN_SHOTS +
