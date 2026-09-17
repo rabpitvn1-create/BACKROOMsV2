@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[2]
 PATCH = ROOT / "android-apk/patch-lucia-follower.py"
@@ -12,7 +11,7 @@ end = text.find(end_marker, start)
 if start < 0 or end < 0:
     raise RuntimeError("Lucia runtime section markers missing")
 
-runtime = r'''# ---------------------------------------------------------------------------
+runtime = r"""# ---------------------------------------------------------------------------
 # Android runtime: 50% encounter only while EXPLORE is active in Level 0.
 # This is self-contained and does not depend on any retired follower helper.
 # ---------------------------------------------------------------------------
@@ -112,7 +111,7 @@ for marker in (
         raise RuntimeError("Lucia runtime contract missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
-'''
+"""
 
 text = text[:start] + runtime + text[end:]
 compile(text, str(PATCH), "exec")
