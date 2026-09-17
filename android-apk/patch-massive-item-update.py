@@ -41,19 +41,24 @@ state = strip_lines(state, (
     "omnivault ring",
     "nhẫn vạn tàng",
 ))
-state = sub(
-    state,
-    r"\ndata class ScanSlot\(.*?\n\}\n\ndata class OmnivaultState\(.*?\n\}\n",
-    "\n",
-    "Omnivault state model",
-)
+start = state.find("\ndata class ScanSlot(")
+if start >= 0:
+    end = state.find("\ndata class PendingTurn(", start)
+    if end < 0:
+        raise RuntimeError("PendingTurn anchor missing after retired Omnivault state")
+    state = state[:start] + "\n" + state[end:]
 state = sub(state, r"\n\s*val omnivault: OmnivaultState = OmnivaultState\(\),", "", "GameState omnivault field")
 write(state_path, state)
 
 command_path = CORE / "GameCommand.kt"
 command = read(command_path)
 command = command.replace("PICKUP, DROP, USE, TRANSFER, STORE, WITHDRAW, EQUIP, UNEQUIP", "PICKUP, DROP, USE, TRANSFER, EQUIP, UNEQUIP")
-command = sub(command, r"\ndata class OmnivaultCommand\(.*?\n\) : GameCommand\n", "\n", "Omnivault command")
+start = command.find("\ndata class OmnivaultCommand(")
+if start >= 0:
+    end = command.find("\ndata class PartyCommand(", start)
+    if end < 0:
+        raise RuntimeError("PartyCommand anchor missing after OmnivaultCommand")
+    command = command[:start] + "\n" + command[end:]
 command = command.replace("CHARACTER, INVENTORY, PARTY, STATUS, OMNIVAULT", "CHARACTER, INVENTORY, PARTY, STATUS")
 write(command_path, command)
 
