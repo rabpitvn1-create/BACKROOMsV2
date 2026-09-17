@@ -14,17 +14,19 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 4;
+  private static final int CURRENT_SAVE_VERSION = 5;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
   private final LevelCore levelCore;
+  private final EntityCore entityCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
     this.preferences = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     this.debugLogging = debugLogging;
     this.levelCore = new LevelCore(appContext);
+    this.entityCore = new EntityCore(appContext);
   }
 
   public static GameCoreFacade create(Context context, boolean debugLogging) {
@@ -67,6 +69,7 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
+      entityCore.prepareEncounter(legacy);
       return response(false, legacy, null, "fallback_required", null);
     } catch (Exception e) {
       debug("processRule failed: " + e.getMessage());
@@ -91,6 +94,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
       sanitized.put("party", sanitizeParty(before.optJSONArray("party"), candidate.optJSONArray("party")));
       levelCore.validateAndApplyTransition(before, sanitized);
+      entityCore.validateAndApply(before, sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
 
@@ -109,6 +113,16 @@ public final class GameCoreFacade implements AutoCloseable {
       return levelCore.promptContext(state);
     } catch (Exception e) {
       return "CURRENT LEVEL: 0\nLEVEL CANON: unavailable";
+    }
+  }
+
+  public synchronized String entityPromptContext(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      return entityCore.promptContext(state);
+    } catch (Exception e) {
+      return "ENTITY CORE: unavailable. Do not invent an Entity.";
     }
   }
 
