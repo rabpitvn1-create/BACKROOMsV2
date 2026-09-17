@@ -4,7 +4,7 @@ Toàn bộ sprite Entity dùng trong APK nằm trực tiếp tại:
 
 `android-apk/app/src/main/assets/entity/`
 
-Runtime chỉ dùng canonical Entity key trùng chính xác với tên file bỏ phần mở rộng `.png`. Không có alias theo Level, không có mã Entity cũ, không có manifest từ xa và không tải ảnh mạng.
+Runtime overlay dùng canonical Entity key trùng chính xác với tên file bỏ phần mở rộng `.png`. Không có manifest từ xa và không tải ảnh Entity từ mạng.
 
 | Canonical Entity key | Local asset |
 |---|---|
@@ -28,10 +28,20 @@ Runtime chỉ dùng canonical Entity key trùng chính xác với tên file bỏ
 | `slenderman` | `slenderman.png` |
 | `diep_minh` | `diep_minh.png` |
 
-`diep_minh` là boss unique dùng roll xuất hiện độc lập 3%, không nằm trong shared roaming Entity pool.
+## Encounter runtime
 
-Snapshot đọc trực tiếp bằng đường dẫn:
+Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/assets/knowledge/entity_encounters.json`.
+
+- There is no shared spawn-rate pool.
+- Every current-canon auto-spawn Entity has its own fixed independent roll between **1.00% and 1.50%** on each eligible world-advancing gameplay turn.
+- Eligibility is constrained by the current Level according to the current `01_WORLD/entity.md` canon.
+- If an Entity encounter is already active, Core does not roll a replacement Entity.
+- If multiple independent rolls succeed on the same turn, Core selects one of those successful rolls because runtime supports one active encounter overlay at a time.
+- Gemini does not choose the spawned Entity and cannot replace `flags.entityEncounterKey`.
+- `jane_the_killer`, `slenderman` and `diep_minh` remain local overlay assets for legacy-save compatibility but are not auto-spawned because the current Entity canon does not define them as Level 0–6 encounter records.
+
+Current fixed rates are stored only in `entity_encounters.json`; that file is the machine-readable encounter authority so documentation and runtime cannot quietly grow two different probability systems.
+
+Snapshot overlay reads:
 
 `file:///android_asset/entity/<canonical-key>.png`
-
-Gameplay runtime không được suy ra Entity từ Level hoặc từ registry lịch sử. Một Entity hiện tại chỉ được nhận diện bằng canonical key đang hoạt động trong state.
