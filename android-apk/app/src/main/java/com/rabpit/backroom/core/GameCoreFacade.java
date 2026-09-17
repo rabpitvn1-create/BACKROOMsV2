@@ -14,12 +14,13 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 5;
+  private static final int CURRENT_SAVE_VERSION = 6;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
   private final LevelCore levelCore;
   private final EntityCore entityCore;
+  private final ItemCore itemCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
@@ -27,6 +28,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.debugLogging = debugLogging;
     this.levelCore = new LevelCore(appContext);
     this.entityCore = new EntityCore(appContext);
+    this.itemCore = new ItemCore();
   }
 
   public static GameCoreFacade create(Context context, boolean debugLogging) {
@@ -39,6 +41,17 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
+
+      if (itemCore.isOpenChestAction(text)) {
+        JSONObject result = deepCopy(legacy);
+        String itemName = itemCore.openChest(result);
+        incrementTurn(result);
+        advanceGameTime(result, text);
+        String reply = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory.";
+        appendLog(result, "Mở Rương", reply);
+        persist(result);
+        return response(true, result, null, "chest_opened", reply);
+      }
 
       if (GameCoreRules.isDirectPlayerPickupAction(text)) {
         JSONObject result = deepCopy(legacy);
@@ -69,6 +82,7 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
+      itemCore.prepareExplorationLoot(legacy);
       entityCore.prepareEncounter(legacy);
       return response(false, legacy, null, "fallback_required", null);
     } catch (Exception e) {
@@ -84,17 +98,13 @@ public final class GameCoreFacade implements AutoCloseable {
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
-      if (GameCoreRules.inventoryMutationLocked(action)) {
-        copyField(before, sanitized, "inventory");
-      } else if (candidate.has("inventory")) {
-        sanitized.put("inventory", normalizeInventory(candidate.optJSONArray("inventory")));
-      } else {
-        copyField(before, sanitized, "inventory");
-      }
+      // Loot and consumable inventory are Core-owned. Gemini never mutates inventory directly.
+      copyField(before, sanitized, "inventory");
 
       sanitized.put("party", sanitizeParty(before.optJSONArray("party"), candidate.optJSONArray("party")));
       levelCore.validateAndApplyTransition(before, sanitized);
       entityCore.validateAndApply(before, sanitized);
+      itemCore.validateAndApply(before, sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
 
@@ -123,6 +133,30 @@ public final class GameCoreFacade implements AutoCloseable {
       return entityCore.promptContext(state);
     } catch (Exception e) {
       return "ENTITY CORE: unavailable. Do not invent an Entity.";
+    }
+  }
+
+  public synchronized String itemPromptContext(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      return itemCore.promptContext(state);
+    } catch (Exception e) {
+      return "ITEM CORE: unavailable. Do not invent or grant loot.";
+    }
+  }
+
+  public synchronized String processItemAction(String stateJson, String itemId, String operation,
+                                               String targetId, int quantity) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "item_action_committed", reply);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "item_action_rejected", null);
     }
   }
 
