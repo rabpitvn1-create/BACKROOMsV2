@@ -1,6 +1,7 @@
 package com.rabpit.backroom.core;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class GameCoreRules {
@@ -25,6 +26,7 @@ final class GameCoreRules {
   private static final Pattern LONG_REST = Pattern.compile("(?:ngủ|sleep)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern REST = Pattern.compile("(?:nghỉ|rest)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern MOVE = Pattern.compile("(?:đi|chạy|di chuyển|leo|bò|walk|run|move)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern LEVEL_LOCATION = Pattern.compile("(?i)(?:^|\\b)level\\s*([0-6])(?:\\b|\\s|/|—|-)");
 
   private GameCoreRules() {}
 
@@ -57,6 +59,32 @@ final class GameCoreRules {
     if (REST.matcher(text).find()) return 10;
     if (MOVE.matcher(text).find()) return 5;
     return Math.min(5, Math.max(1, text.length() / 80 + 1));
+  }
+
+  static int levelFromLocation(String location) {
+    Matcher matcher = LEVEL_LOCATION.matcher(location == null ? "" : location);
+    if (!matcher.find()) return -1;
+    try {
+      return Integer.parseInt(matcher.group(1));
+    } catch (Exception ignored) {
+      return -1;
+    }
+  }
+
+  static boolean levelTransitionAllowed(int from, int to) {
+    if (from < 0 || from > 6 || to < 0 || to > 6) return false;
+    if (from == to) return true;
+    return edge(from, to, 0, 1)
+        || edge(from, to, 1, 2)
+        || edge(from, to, 2, 3)
+        || edge(from, to, 3, 4)
+        || edge(from, to, 3, 6)
+        || edge(from, to, 4, 5)
+        || edge(from, to, 5, 6);
+  }
+
+  private static boolean edge(int from, int to, int a, int b) {
+    return (from == a && to == b) || (from == b && to == a);
   }
 
   static String stableItemId(String name) {
