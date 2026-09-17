@@ -2,6 +2,9 @@ name: Purge Failed GitHub Actions Runs
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/purge-actions-history.yml'
 
 permissions:
   actions: write
