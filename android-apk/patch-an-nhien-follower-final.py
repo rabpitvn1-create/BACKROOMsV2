@@ -14,7 +14,7 @@ core_markers = {
         "AN_NHIEN_ID to AnNhienCanon.inventory()",
         "AN_NHIEN_ID to AnNhienCanon.equipment()",
     ),
-    "GameStateCodec.kt": ("return AnNhienCanon.ensure(decoded)",),
+    "GameStateCodec.kt": ("AnNhienCanon.ensure(decoded)",),
     "InventoryPolicy.kt": (
         "val AN_NHIEN = InventoryProfile",
         "if (characterId == AN_NHIEN_ID) return AN_NHIEN",
