@@ -6,10 +6,6 @@ on:
       - main
     paths:
       - '.github/workflows/continue-purge.yml'
-      - '.github/scripts/sanitize-shared-patches.py'
-      - '.github/scripts/sanitize-active-residue.py'
-      - '.github/scripts/repair-sanitized-patches.py'
-      - '.github/scripts/repair-lucia-runtime.py'
   workflow_dispatch:
 
 permissions:
@@ -127,8 +123,6 @@ jobs:
           rm -f .github/scripts/sanitize-active-residue.py
           rm -f .github/scripts/repair-sanitized-patches.py
           rm -f .github/scripts/repair-lucia-runtime.py
-          rm -f .github/workflows/scan-madgod-annhien.yml
-          rm -f .github/workflows/continue-purge.yml
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
           git diff --check
           git status --short
