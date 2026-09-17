@@ -7,6 +7,7 @@ on:
       - main
       - 'release/**'
       - 'feature/**'
+      - 'fix/**'
     paths:
       - 'android-apk/**'
       - '.github/workflows/build-backroom-apk.yml'
@@ -85,6 +86,10 @@ jobs:
           grep -Fq '.semantic-entity{color:#ff6b6b}' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '.semantic-item{color:#f6c85f}' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '.semantic-skill{color:#c792ea}' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:none}" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq ".inventory-item-name{font-family:'Play',system-ui,sans-serif;font-weight:700;color:#f6c85f;text-decoration:none}" android-apk/app/src/main/assets/inventory-ui.js
+          ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
@@ -101,9 +106,30 @@ jobs:
           grep -Fq 'entityPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'levelSnapshotDescriptor' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'currentLevel' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
+          grep -Fq 'Level "+level+" : ' android-apk/app/src/main/assets/index.html
+          grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
+          grep -Fq 'VIRTUAL_GROUND_RATIO=0.92' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function visibleAlphaBounds' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function alignOverlayToGround' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'snapshot-grounded' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'COMBAT_PHASE_MS = 1000' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function playCombatPhase' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'combat-float' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'combat-hit-flash' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'snapshot-character-placeholder' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'backroomSetCombatVisualActor' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'MAX_COMBAT_PARTICIPANTS = 4' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'output.length() < MAX_COMBAT_PARTICIPANTS' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'feedbackEvents' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
+          node --check android-apk/app/src/main/assets/snapshot-ui.js
+          node --check android-apk/app/src/main/assets/gm-choice-ui.js
+          node --check android-apk/app/src/main/assets/inventory-ui.js
 
       - name: Validate Game Master configuration
         run: |

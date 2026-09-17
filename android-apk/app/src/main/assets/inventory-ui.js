@@ -7,7 +7,7 @@
   style.textContent=[
     ".inventory-grid{display:grid;gap:7px}",
     ".inventory-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:9px 10px}",
-    ".inventory-item-name{font-family:'Play',system-ui,sans-serif;font-weight:700;color:#f6c85f;text-decoration:underline;text-underline-offset:2px}",
+    ".inventory-item-name{font-family:'Play',system-ui,sans-serif;font-weight:700;color:#f6c85f;text-decoration:none}",
     ".inventory-item-qty{color:#aeb7be;font-size:12px;white-space:nowrap}",
     ".inventory-overlay{position:fixed;inset:0;z-index:1000;background:#000a;display:grid;place-items:end center;padding:12px}",
     ".inventory-sheet{width:min(560px,100%);max-height:82vh;overflow:auto;background:#101419;border:1px solid #39424a;box-shadow:0 18px 60px #000c;padding:14px;display:grid;gap:12px}",

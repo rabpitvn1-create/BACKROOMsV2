@@ -25,6 +25,10 @@ public class CombatChoiceEngineTest {
     assertEquals(1, CombatChoiceEngine.counterDamage(1));
   }
 
+  @Test public void combatPartyCapacityIsFourIncludingKai() {
+    assertEquals(4, CombatChoiceEngine.maxCombatParticipants());
+  }
+
   @Test public void battleAcceptsOnlyFixedAbcTokens() {
     assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_A));
     assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_B));
