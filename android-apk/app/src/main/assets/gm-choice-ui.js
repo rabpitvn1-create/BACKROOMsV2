@@ -7,7 +7,7 @@
   style.textContent = [
     "@font-face{font-family:'Play';font-style:normal;font-weight:700;src:url('file:///android_asset/fonts/Play-Bold.ttf') format('truetype');font-display:swap}",
     ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play',system-ui,sans-serif;font-weight:700}",
-    ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:2px;text-decoration-color:currentColor}",
+    ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:none}",
     ".semantic-character{color:#67d5ff}",
     ".semantic-entity{color:#ff6b6b}",
     ".semantic-item{color:#f6c85f}",
