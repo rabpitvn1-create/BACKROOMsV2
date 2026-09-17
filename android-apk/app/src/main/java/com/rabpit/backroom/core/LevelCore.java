@@ -13,6 +13,7 @@ import java.util.Map;
 final class LevelCore {
   private static final String KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
   private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/wiki/manifest.json";
+  private static final int LEVEL_MISMATCH = -2;
 
   private final Map<Integer, String> canonByLevel = new LinkedHashMap<>();
   private final Map<Integer, JSONArray> snapshotsByLevel = new LinkedHashMap<>();
@@ -30,7 +31,11 @@ final class LevelCore {
 
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {
     int from = resolveLevel(before);
-    int requested = requestedLevel(candidate, from);
+    int explicit = candidate != null && candidate.has("currentLevel") ? candidate.optInt("currentLevel", -1) : -1;
+    int requested = requestedLevel(explicit, candidate == null ? "" : candidate.optString("location", ""), from);
+    if (requested == LEVEL_MISMATCH) {
+      throw new IllegalArgumentException("currentLevel does not match location");
+    }
     if (!GameCoreRules.levelTransitionAllowed(from, requested)) {
       throw new IllegalArgumentException("Invalid Level transition: " + from + " -> " + requested);
     }
@@ -70,12 +75,12 @@ final class LevelCore {
     return output.toString();
   }
 
-  private int requestedLevel(JSONObject candidate, int fallback) {
-    if (candidate != null && candidate.has("currentLevel")) {
-      int explicit = candidate.optInt("currentLevel", -1);
-      if (explicit >= 0 && explicit <= 6) return explicit;
+  static int requestedLevel(int explicit, String location, int fallback) {
+    int inferred = GameCoreRules.levelFromLocation(location);
+    if (explicit >= 0 && explicit <= 6) {
+      if (inferred >= 0 && inferred != explicit) return LEVEL_MISMATCH;
+      return explicit;
     }
-    int inferred = GameCoreRules.levelFromLocation(candidate == null ? "" : candidate.optString("location", ""));
     return inferred >= 0 ? inferred : fallback;
   }
 
