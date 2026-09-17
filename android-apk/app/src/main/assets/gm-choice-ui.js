@@ -167,6 +167,24 @@
     else form.dispatchEvent(new Event('submit', {bubbles:true,cancelable:true}));
   }
 
+  function chestPresent() {
+    try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
+  }
+
+  function submitChestChoice() {
+    if (!chestPresent() || window.__combatBusy || (state.combat && state.combat.active)) return;
+    if (!window.Android || typeof Android.submitTurn !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = 'Đang mở Rương…';
+    if (typeof window.render === 'function') window.render();
+    Android.submitTurn(JSON.stringify(state), '__loot:open_chest');
+  }
+
   function submitCombatChoice(choice) {
     if (!choice || choice.disabled || window.__combatBusy) return;
     if (!window.Android || typeof Android.submitTurn !== 'function') {
@@ -228,13 +246,23 @@
   }
 
   function appendExplorerChoices(article, entry, index) {
-    if (!entry || !Array.isArray(entry.choices) || !entry.choices.length) return;
+    if (!entry) return;
     if (state.combat && state.combat.active && Number(state.combat.logIndex) === Number(index)) return;
-    var actionable = index === lastGmIndex() && !(state.combat && state.combat.active) && !window.__combatBusy;
+    var latest = index === lastGmIndex();
+    var hasChest = latest && chestPresent();
+    var choices = Array.isArray(entry.choices) ? entry.choices : [];
+    if (!hasChest && !choices.length) return;
+    var actionable = latest && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
     box.className = 'gm-choices explorer-choices';
-    entry.choices.slice(0,3).forEach(function(choice, choiceIndex){
-      var id = choice.id || String.fromCharCode(65 + choiceIndex);
+    var choiceOffset = 0;
+    if (hasChest) {
+      box.appendChild(makeChoiceButton('A', 'Mở Rương', entry, [{text:'Rương',type:'item'}], !actionable, false,
+        function(){ submitChestChoice(); }));
+      choiceOffset = 1;
+    }
+    choices.slice(0, 3 - choiceOffset).forEach(function(choice, choiceIndex){
+      var id = String.fromCharCode(65 + choiceOffset + choiceIndex);
       var disabled = !actionable || !!choice.disabled || !!choice.selected;
       box.appendChild(makeChoiceButton(id, choice.text || choice.action || '', entry, choice.highlights || [],
         disabled, !!choice.selected, function(){ submitExplorerChoice(entry, choice); }));
