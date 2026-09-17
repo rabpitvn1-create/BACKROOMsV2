@@ -285,6 +285,7 @@ public final class CombatChoiceEngine {
     for (int i = 0; i < party.length() && output.length() < MAX_COMBAT_PARTICIPANTS; i++) {
       JSONObject member = party.optJSONObject(i);
       if (member == null) continue;
+      if (!CharacterEncounterCore.isJoinedMember(member)) continue;
       String name = member.optString("name", member.optString("id", "")).trim();
       if (name.isEmpty() || normalizeCharacterId(name).equals("kai")) continue;
       String id = normalizeCharacterId(member.optString("id", name));

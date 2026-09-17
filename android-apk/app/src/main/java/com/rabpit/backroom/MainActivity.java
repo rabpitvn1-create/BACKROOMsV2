@@ -262,6 +262,18 @@ public class MainActivity extends Activity {
     return text.length() > max ? text.substring(text.length() - max) : text;
   }
 
+  private String appendEncounterDialogue(String reply, JSONArray dialogue) {
+    if (dialogue == null || dialogue.length() == 0) return reply;
+    StringBuilder output = new StringBuilder(reply == null ? "" : reply.trim());
+    for (int i = 0; i < dialogue.length(); i++) {
+      String line = dialogue.optString(i, "").trim();
+      if (line.isEmpty()) continue;
+      if (output.length() > 0) output.append('\n');
+      output.append(line);
+    }
+    return output.toString();
+  }
+
   private String snapshotPrompt(JSONObject state) {
     String levelContext = gameCore.levelPromptContext(state.toString());
     StringBuilder recent = new StringBuilder();
@@ -352,6 +364,7 @@ public class MainActivity extends Activity {
   private class GameBridge {
     @JavascriptInterface public void submitTurn(String stateJson, String action) {
       io.execute(() -> {
+        JSONObject committedBeforeGemini = null;
         try {
           JSONObject submitted = new JSONObject(stateJson);
 
@@ -383,10 +396,12 @@ public class MainActivity extends Activity {
 
           JSONObject state = localResult.optJSONObject("state");
           if (state == null) state = submitted;
+          committedBeforeGemini = new JSONObject(state.toString());
           String coreBeforeJson = state.toString();
           String levelContext = gameCore.levelPromptContext(coreBeforeJson);
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String itemContext = gameCore.itemPromptContext(coreBeforeJson);
+          String characterContext = gameCore.characterPromptContext(coreBeforeJson);
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
@@ -394,13 +409,16 @@ public class MainActivity extends Activity {
             "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
             "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
+            "CHARACTER CORE CONTRACT: Gemini không được spawn character, thêm/xóa/sắp xếp lại Party hoặc sửa trạng thái joined. Party trong state là bất biến đối với Gemini. Nếu Character Core báo pending intro, viết đúng 2-5 lượt thoại ngắn trong encounterDialogue; không hỏi người chơi có nhận character hay không. Nếu không pending thì encounterDialogue phải là []. " +
             "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
-            levelContext + "\n" + entityContext + "\n" + itemContext + "\n" +
+            levelContext + "\n" + entityContext + "\n" + itemContext + "\n" + characterContext + "\n" +
             "State hiện tại: " + state.toString() + "\nHành động: " + action +
-            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{},\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Nhặt Đèn pin\",\"highlights\":[{\"text\":\"Đèn pin\",\"type\":\"item\"}]}]}";
+            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"flags\":{},\"encounterDialogue\":[],\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Đi tiếp\",\"highlights\":[{\"text\":\"Level 0\",\"type\":\"location\"}]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
+          JSONArray encounterDialogue = generated.optJSONArray("encounterDialogue");
+          if (encounterDialogue == null) encounterDialogue = new JSONArray();
 
           state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
           String title = generated.optString("title", "").trim();
@@ -417,11 +435,13 @@ public class MainActivity extends Activity {
             state.put("flags", flags);
           }
 
-          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(coreBeforeJson, state.toString(), action));
+          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
+              coreBeforeJson, state.toString(), action, encounterDialogue.toString()));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối Gemini delta: " + coreCommit.optString("error", "invalid_delta"));
           }
           state = coreCommit.getJSONObject("state");
+          reply = appendEncounterDialogue(reply, encounterDialogue);
 
           JSONArray log = state.optJSONArray("log");
           if (log == null) log = new JSONArray();
@@ -438,7 +458,17 @@ public class MainActivity extends Activity {
 
           emit("backroomTurn", state.toString());
         } catch (Exception e) {
-          emit("backroomError", e.getMessage() == null ? "Không thể xử lý lượt." : e.getMessage());
+          String message = e.getMessage() == null ? "Không thể xử lý lượt." : e.getMessage();
+          if (committedBeforeGemini != null) {
+            try {
+              JSONObject payload = new JSONObject().put("state", committedBeforeGemini).put("message", message);
+              emit("backroomCommittedError", payload.toString());
+            } catch (Exception ignored) {
+              emit("backroomError", message);
+            }
+          } else {
+            emit("backroomError", message);
+          }
         }
       });
     }
@@ -475,6 +505,10 @@ public class MainActivity extends Activity {
 
     @JavascriptInterface public String levelSnapshot(String stateJson) {
       return gameCore.levelSnapshotDescriptor(stateJson);
+    }
+
+    @JavascriptInterface public String normalizeState(String stateJson) {
+      return gameCore.normalizeState(stateJson);
     }
   }
 

@@ -14,13 +14,14 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 6;
+  private static final int CURRENT_SAVE_VERSION = 7;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
   private final LevelCore levelCore;
   private final EntityCore entityCore;
   private final ItemCore itemCore;
+  private final CharacterEncounterCore characterEncounterCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
@@ -29,6 +30,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.levelCore = new LevelCore(appContext);
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
+    this.characterEncounterCore = new CharacterEncounterCore();
   }
 
   public static GameCoreFacade create(Context context, boolean debugLogging) {
@@ -39,6 +41,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject legacy = parseState(legacyStateJson);
     try {
       levelCore.normalizeState(legacy);
+      characterEncounterCore.normalizeState(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
@@ -84,6 +87,9 @@ public final class GameCoreFacade implements AutoCloseable {
 
       itemCore.prepareExplorationLoot(legacy);
       entityCore.prepareEncounter(legacy);
+      characterEncounterCore.rollForExplorerAction(legacy, text);
+      legacy.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(legacy);
       return response(false, legacy, null, "fallback_required", null);
     } catch (Exception e) {
       debug("processRule failed: " + e.getMessage());
@@ -91,20 +97,22 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action) {
+  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
+                                                       String encounterDialogueJson) {
     JSONObject before = parseState(beforeJson);
     try {
       levelCore.normalizeState(before);
+      characterEncounterCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
       // Loot and consumable inventory are Core-owned. Gemini never mutates inventory directly.
       copyField(before, sanitized, "inventory");
 
-      sanitized.put("party", sanitizeParty(before.optJSONArray("party"), candidate.optJSONArray("party")));
       levelCore.validateAndApplyTransition(before, sanitized);
       entityCore.validateAndApply(before, sanitized);
       itemCore.validateAndApply(before, sanitized);
+      characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
 
@@ -123,6 +131,17 @@ public final class GameCoreFacade implements AutoCloseable {
       return levelCore.promptContext(state);
     } catch (Exception e) {
       return "CURRENT LEVEL: 0\nLEVEL CANON: unavailable";
+    }
+  }
+
+  public synchronized String characterPromptContext(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      characterEncounterCore.normalizeState(state);
+      return characterEncounterCore.promptContext(state);
+    } catch (Exception e) {
+      return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
   }
 
@@ -151,6 +170,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       levelCore.normalizeState(state);
+      characterEncounterCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -168,6 +188,19 @@ public final class GameCoreFacade implements AutoCloseable {
     } catch (Exception e) {
       return "{\"level\":0}";
     }
+  }
+
+  public synchronized String normalizeState(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      characterEncounterCore.normalizeState(state);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+    } catch (Exception e) {
+      debug("normalizeState failed: " + e.getMessage());
+    }
+    return state.toString();
   }
 
   public synchronized String currentCoreState() {
@@ -188,6 +221,15 @@ public final class GameCoreFacade implements AutoCloseable {
       return new JSONObject(json);
     } catch (Exception e) {
       return new JSONObject();
+    }
+  }
+
+  private JSONArray parseArray(String json) {
+    try {
+      if (json == null || json.trim().isEmpty()) return new JSONArray();
+      return new JSONArray(json);
+    } catch (Exception e) {
+      return new JSONArray();
     }
   }
 
@@ -231,42 +273,6 @@ public final class GameCoreFacade implements AutoCloseable {
     }
     for (JSONObject value : deduplicated.values()) output.put(value);
     return output;
-  }
-
-  private JSONArray sanitizeParty(JSONArray before, JSONArray candidate) {
-    JSONArray safeBefore = before == null ? new JSONArray() : before;
-    JSONArray safeCandidate = candidate == null ? new JSONArray() : candidate;
-    Map<String, JSONObject> existing = new LinkedHashMap<>();
-    for (int i = 0; i < safeBefore.length(); i++) {
-      JSONObject member = safeBefore.optJSONObject(i);
-      if (member == null) continue;
-      String id = memberId(member);
-      if (!id.isEmpty()) existing.put(id, member);
-    }
-
-    JSONArray output = new JSONArray();
-    for (int i = 0; i < safeCandidate.length(); i++) {
-      JSONObject member = safeCandidate.optJSONObject(i);
-      if (member == null) continue;
-      String id = memberId(member);
-      if (id.isEmpty()) continue;
-      boolean alreadyMember = existing.containsKey(id);
-      boolean confirmedJoin = member.optBoolean("joinConfirmed", false) && member.optBoolean("present", false);
-      if (alreadyMember || confirmedJoin) {
-        try {
-          output.put(new JSONObject(member.toString()));
-        } catch (Exception ignored) {
-          output.put(member);
-        }
-      }
-    }
-    return output;
-  }
-
-  private String memberId(JSONObject member) {
-    String id = member.optString("id", "").trim();
-    if (!id.isEmpty()) return id;
-    return member.optString("name", "").trim().toLowerCase(Locale.ROOT);
   }
 
   private void incrementTurn(JSONObject state) throws Exception {
