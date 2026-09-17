@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - massive-update
       - 'release/**'
     paths:
       - 'android-apk/**'
@@ -70,12 +71,14 @@ jobs:
       - name: Apply Android runtime patch chain
         run: |
           set -euo pipefail
-          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-encounter-overlay.py)
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-massive-item-update.py patch-kai-encounter-overlay.py)
           for script in "${scripts[@]}"; do
             echo "==> $script"
             python3 "android-apk/$script"
           done
           git diff --check
+          test ! -e android-apk/app/src/main/java/com/rabpit/backroom/core/OmnivaultEngine.kt
+          ! grep -R -E 'OmnivaultCommand|OmnivaultEngine|KAI_OMNIVAULT_RING_ID' android-apk/app/src/main/java/com/rabpit/backroom/core
           ! grep -q 'LUNA_' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -q 'Luna fallback' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
 
