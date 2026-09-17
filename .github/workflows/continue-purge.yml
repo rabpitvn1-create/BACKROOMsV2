@@ -1,4 +1,5 @@
 name: Continue Retired Content Purge
+# One-shot cleanup runner; removed after the purge commit lands.
 
 on:
   push:
