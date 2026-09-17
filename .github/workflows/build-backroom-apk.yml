@@ -30,22 +30,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Apply Level runtime migration
-        run: python3 .github/scripts/apply-level-runtime.py
-
-      - name: Commit Level runtime migration
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java android-apk/app/src/main/assets/index.html
-          if git diff --cached --quiet; then
-            echo 'Level runtime already connected.'
-          else
-            git commit -m 'Finalize level runtime connection'
-            git push origin HEAD:${GITHUB_REF_NAME}
-          fi
-
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
