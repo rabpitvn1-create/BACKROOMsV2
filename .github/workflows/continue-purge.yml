@@ -9,6 +9,7 @@ on:
       - '.github/scripts/sanitize-shared-patches.py'
       - '.github/scripts/sanitize-active-residue.py'
       - '.github/scripts/repair-sanitized-patches.py'
+      - '.github/scripts/repair-lucia-runtime.py'
   workflow_dispatch:
 
 permissions:
@@ -32,6 +33,7 @@ jobs:
           set -euo pipefail
           python3 .github/scripts/sanitize-shared-patches.py
           python3 .github/scripts/repair-sanitized-patches.py
+          python3 .github/scripts/repair-lucia-runtime.py
           python3 .github/scripts/sanitize-active-residue.py
           python3 - <<'PY'
           from pathlib import Path
@@ -42,6 +44,7 @@ jobs:
               '    ROOT / ".github/scripts/sanitize-shared-patches.py",\n',
               '    ROOT / ".github/scripts/sanitize-active-residue.py",\n',
               '    ROOT / ".github/scripts/repair-sanitized-patches.py",\n',
+              '    ROOT / ".github/scripts/repair-lucia-runtime.py",\n',
               '    ROOT / ".github/workflows/continue-purge.yml",\n',
           ]
           if anchor not in text:
@@ -123,6 +126,7 @@ jobs:
           rm -f .github/scripts/sanitize-shared-patches.py
           rm -f .github/scripts/sanitize-active-residue.py
           rm -f .github/scripts/repair-sanitized-patches.py
+          rm -f .github/scripts/repair-lucia-runtime.py
           rm -f .github/workflows/scan-madgod-annhien.yml
           rm -f .github/workflows/continue-purge.yml
           find . -type d -name '__pycache__' -prune -exec rm -rf {} +
