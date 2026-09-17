@@ -23,6 +23,32 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Repair one-shot script delimiter
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/scripts/purge-retired-systems.py')
+          text = p.read_text(encoding='utf-8')
+          marker = '# Progression/Snapshot patch keeps its level/cache/combat/healthbar duties only.'
+          start = text.index(marker)
+          end = text.index('# Build packaging must not require removed assets.', start)
+          block = text[start:end]
+          opener = "write(rel, dedent('''\\\n"
+          closer = "'''))\n\n"
+          if opener not in block or closer not in block:
+              raise SystemExit('progression rewrite delimiters not found')
+          block = block.replace(opener, 'write(rel, dedent("""\\\n', 1)
+          pos = block.rfind(closer)
+          if pos < 0:
+              raise SystemExit('progression rewrite closing delimiter not found')
+          block = block[:pos] + '"""))\n\n' + block[pos + len(closer):]
+          text = text[:start] + block + text[end:]
+          p.write_text(text, encoding='utf-8')
+          PY
+          python3 -m py_compile .github/scripts/purge-retired-systems.py
+
       - name: Remove retired systems and repair patch chain
         run: python3 .github/scripts/purge-retired-systems.py
 
