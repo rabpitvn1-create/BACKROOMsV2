@@ -48,7 +48,7 @@ public final class GmChoiceContract {
     return output;
   }
 
-  public static JSONArray sanitizeHighlights(JSONArray input) {
+  public static JSONArray sanitizeHighlights(JSONArray input) throws Exception {
     JSONArray output = new JSONArray();
     if (input == null) return output;
     for (int i = 0; i < input.length() && output.length() < MAX_HIGHLIGHTS; i++) {
