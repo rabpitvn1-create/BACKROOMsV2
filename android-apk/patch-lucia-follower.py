@@ -116,7 +116,7 @@ object LuciaCanon {
 # ---------------------------------------------------------------------------
 stats = STATS.read_text(encoding="utf-8")
 if 'private val lucia = CharacterStatProfile(' not in stats:
-    anchor = '''  private val anNhien = CharacterStatProfile(
+    anchor = '''  private val fallback = CharacterStatProfile()
 '''
     lucia_profile = '''  private val lucia = CharacterStatProfile(
     baseMaxHp = 100,
@@ -137,11 +137,9 @@ if 'private val lucia = CharacterStatProfile(' not in stats:
 
 stats = replace_once(
     stats,
-    '''    "an-nhien", "an_nhien", "annhien" -> anNhien
-    else -> fallback
+    '''    else -> fallback
 ''',
-    '''    "an-nhien", "an_nhien", "annhien" -> anNhien
-    "lucia", "luc", "lucia-luc" -> lucia
+    '''    "lucia", "luc", "lucia-luc" -> lucia
     else -> fallback
 ''',
     "Lucia stat resolver",
@@ -176,8 +174,9 @@ system = replace_once(
 )
 
 if 'id = LUCIA_M4A1_ID' not in system:
-    insert_anchor = '''    EquipmentDefinition(
-      id = AN_NHIEN_OUTFIT_ID'''
+    insert_anchor = '''  )
+
+  private val definitions'''
     lucia_defs = '''    EquipmentDefinition(
       id = LUCIA_M4A1_ID, name = "M4A1 cá nhân hóa", type = "ASSAULT RIFLE", primarySlot = EquipmentSlot.WEAPON,
       weapon = WeaponGameplayStats(26, "60 / 90 reserve", 800, listOf("Semi", "Burst", "Auto")),
@@ -209,11 +208,9 @@ if 'id = LUCIA_M4A1_ID' not in system:
 
 system = replace_once(
     system,
-    '''    AN_NHIEN_ID -> linkedMapOf(EquipmentSlot.OUTFIT to AN_NHIEN_OUTFIT_ID, EquipmentSlot.FOOTWEAR to AN_NHIEN_FOOTWEAR_ID)
-    else -> emptyMap()
+    '''    else -> emptyMap()
 ''',
-    '''    AN_NHIEN_ID -> linkedMapOf(EquipmentSlot.OUTFIT to AN_NHIEN_OUTFIT_ID, EquipmentSlot.FOOTWEAR to AN_NHIEN_FOOTWEAR_ID)
-    LUCIA_ID -> linkedMapOf(
+    '''    LUCIA_ID -> linkedMapOf(
       EquipmentSlot.WEAPON to LUCIA_M4A1_ID,
       EquipmentSlot.BLADE to LUCIA_KNIFE_ID,
       EquipmentSlot.WRIST to LUCIA_WATCH_ID
@@ -246,17 +243,9 @@ SYSTEM.write_text(system, encoding="utf-8")
 # ---------------------------------------------------------------------------
 policy = POLICY.read_text(encoding="utf-8")
 if 'val LUCIA = InventoryProfile(maxTypes = 3, maxPerType = 100)' not in policy:
-    policy = replace_once(
-        policy,
-        '''  val SPECIAL_COMPANION = InventoryProfile(maxTypes = 6, maxPerType = 20)
-  val NORMAL = InventoryProfile(maxTypes = 2, maxPerType = 2)
-''',
-        '''  val SPECIAL_COMPANION = InventoryProfile(maxTypes = 6, maxPerType = 20)
-  val LUCIA = InventoryProfile(maxTypes = 3, maxPerType = 100)
-  val NORMAL = InventoryProfile(maxTypes = 2, maxPerType = 2)
-''',
-        "Lucia inventory profile",
-    )
+    profile_anchor = '  val NORMAL = InventoryProfile(maxTypes = 2, maxPerType = 2)\n'
+    policy = replace_once(policy, profile_anchor, '  val LUCIA = InventoryProfile(maxTypes = 3, maxPerType = 100)\n' + profile_anchor, "Lucia inventory profile")
+
 policy = replace_once(
     policy,
     '''    if (characterId == KAI_ID) return KAI
@@ -273,29 +262,62 @@ POLICY.write_text(policy, encoding="utf-8")
 
 # ---------------------------------------------------------------------------
 # Android runtime: 50% encounter only while EXPLORE is active in Level 0.
-# Once encountered, Lucia is persisted and the roll becomes ineligible.
+# This is self-contained and does not depend on any retired follower helper.
 # ---------------------------------------------------------------------------
 main = MAIN.read_text(encoding="utf-8")
 if 'rolls.put("luciaEncounter"' not in main:
-    roll_anchor = '    rolls.put("syvialReunion", thresholdRoll("syvialReunion", 10000, 25, physical && reunionEligibleAndroid(state, "syvial"), " follower encounter"));\n'
+    roll_anchor = '    JSONObject normalEntityRoll = thresholdRoll("entityEncounter", 10000, entityThresholds[level], exploreAction && entityAllowed, entitySuffix);\n'
     roll_line = roll_anchor + '    rolls.put("luciaEncounter", thresholdRoll("luciaEncounter", 10000, 5000, exploreAction && level == 0 && !flagSpawned(state, "lucia"), " Level 0 Lucia follower encounter"));\n'
     if roll_anchor not in main:
         raise RuntimeError("Lucia encounter roll anchor missing")
     main = main.replace(roll_anchor, roll_line, 1)
 
-if 'ensureSpecialFollowerInLegacyParty(state, "lucia", "Lucia \\"Lục\\"", false)' not in main:
-    tail_anchor = '''      flags.put("syvial", syvial);
-    }
-
-    state.put("flags", flags);
+# Let validated party/flag operations represent Lucia when and only when her locked roll succeeds.
+old_character_gate = '''    if (value.contains("syvial")) return presentCharacter(before, "syvial") || rollSuccess(rolls, "syvialReunion");
+    return rollSuccess(rolls, "survivor");
 '''
-    lucia_commit = '''      flags.put("syvial", syvial);
-    }
+new_character_gate = '''    if (value.contains("syvial")) return presentCharacter(before, "syvial") || rollSuccess(rolls, "syvialReunion");
+    if (value.contains("lucia") || value.contains("lục")) return flagSpawned(before, "lucia") || rollSuccess(rolls, "luciaEncounter");
+    return rollSuccess(rolls, "survivor");
+'''
+if new_character_gate not in main:
+    if old_character_gate not in main:
+        raise RuntimeError("Lucia character operation gate anchor missing")
+    main = main.replace(old_character_gate, new_character_gate, 1)
 
-    if (rollSuccess(rolls, "luciaEncounter")) {
+old_flag_gate = '''    if (root.equals("syvial")) return presentCharacter(before, "syvial") || rollSuccess(rolls, "syvialReunion");
+    if (root.equals("jeff")'''
+new_flag_gate = '''    if (root.equals("syvial")) return presentCharacter(before, "syvial") || rollSuccess(rolls, "syvialReunion");
+    if (root.equals("lucia")) return flagSpawned(before, "lucia") || rollSuccess(rolls, "luciaEncounter");
+    if (root.equals("jeff")'''
+if new_flag_gate not in main:
+    if old_flag_gate not in main:
+        raise RuntimeError("Lucia flag operation gate anchor missing")
+    main = main.replace(old_flag_gate, new_flag_gate, 1)
+
+# A successful locked roll commits the encounter even if the model omits the corresponding ops.
+commit_anchor = '''    flags.put("lastRolls", rolls);
+    state.put("flags", flags);
+    return state;
+'''
+commit_block = '''    if (rollSuccess(rolls, "luciaEncounter")) {
+      JSONArray party = state.optJSONArray("party");
+      if (party == null) party = new JSONArray();
+      boolean joined = arrayIndexByName(party, "Lucia \\"Lục\\"") >= 0;
+      if (!joined && party.length() < 3) {
+        party.put(new JSONObject()
+          .put("id", "lucia")
+          .put("name", "Lucia \\"Lục\\"")
+          .put("present", true)
+          .put("joinConfirmed", true)
+          .put("presence", "ACTIVE")
+          .put("role", "follower")
+          .put("nonCombat", false));
+        joined = true;
+      }
+      state.put("party", party);
       JSONObject lucia = flags.optJSONObject("lucia");
       if (lucia == null) lucia = new JSONObject();
-      boolean luciaJoined = ensureSpecialFollowerInLegacyParty(state, "lucia", "Lucia \\"Lục\\"", false);
       lucia.put("exists", true)
         .put("encountered", true)
         .put("present", true)
@@ -304,15 +326,22 @@ if 'ensureSpecialFollowerInLegacyParty(state, "lucia", "Lucia \\"Lục\\"", fals
         .put("reunionEligible", false)
         .put("continuity", "RECRUITED_LEVEL_0")
         .put("levelEncountered", 0)
-        .put("joinPending", !luciaJoined);
+        .put("joinPending", !joined);
       flags.put("lucia", lucia);
     }
-
+    flags.put("lastRolls", rolls);
     state.put("flags", flags);
+    return state;
 '''
-    if tail_anchor not in main:
-        raise RuntimeError("Lucia encounter commit anchor missing")
-    main = main.replace(tail_anchor, lucia_commit, 1)
+if commit_block not in main:
+    if commit_anchor not in main:
+        raise RuntimeError("Lucia deterministic encounter commit anchor missing")
+    main = main.replace(commit_anchor, commit_block, 1)
+
+snapshot_old = 'rollSuccess(rolls, "survivor") || rollSuccess(rolls, "irisReunion") || rollSuccess(rolls, "syvialReunion")'
+snapshot_new = snapshot_old + ' || rollSuccess(rolls, "luciaEncounter")'
+if snapshot_new not in main and snapshot_old in main:
+    main = main.replace(snapshot_old, snapshot_new, 1)
 
 if 'LUCIA FOLLOWER HARD LOCK:' not in main:
     return_anchor = '    return actionDirective + "\\nACTION_RUNTIME: " + actionRuntimeContext + "\\n" +\n'
@@ -320,6 +349,15 @@ if 'LUCIA FOLLOWER HARD LOCK:' not in main:
     if return_anchor not in main:
         raise RuntimeError("Lucia GM prompt anchor missing")
     main = main.replace(return_anchor, return_new, 1)
+
+for marker in (
+    'thresholdRoll("luciaEncounter", 10000, 5000, exploreAction && level == 0 && !flagSpawned(state, "lucia")',
+    'root.equals("lucia")',
+    'rollSuccess(rolls, "luciaEncounter")',
+    'LUCIA FOLLOWER HARD LOCK:',
+):
+    if marker not in main:
+        raise RuntimeError("Lucia runtime contract missing: " + marker)
 
 MAIN.write_text(main, encoding="utf-8")
 

@@ -10,7 +10,6 @@ INVENTORY_POLICY = CORE / "InventoryPolicy.kt"
 EQUIPMENT_SYSTEM = CORE / "CharacterEquipmentSystem.kt"
 CODEC_TEST = TESTS / "GameStateCodecTest.kt"
 COMBAT_TEST = TESTS / "CombatRuntimeTest.kt"
-MADGOD_TEST = TESTS / "MadGodEquipmentTest.kt"
 
 text = COMBAT.read_text(encoding="utf-8")
 
@@ -101,7 +100,7 @@ if new_inventory_json not in detail_json:
     detail_json = detail_json.replace(old_inventory_json, new_inventory_json, 1)
 DETAIL_JSON.write_text(detail_json, encoding="utf-8")
 
-# Equipped clothing is owned by An Nhiên's Inventory but does not consume her two FOOD carry slots.
+# Equipped items stay inventory-owned while capacity accounting is handled by the shared policy.
 policy = INVENTORY_POLICY.read_text(encoding="utf-8")
 old_capacity = '    if (old == null && inventory.items.size >= profile.maxTypes) return "inventory_slot_limit"\n'
 new_capacity = '''    val carriedTypes = inventory.items.values.count { EquipmentCatalog.definition(it.itemId) == null }
@@ -114,37 +113,12 @@ if new_capacity not in policy:
     policy = policy.replace(old_capacity, new_capacity, 1)
 INVENTORY_POLICY.write_text(policy, encoding="utf-8")
 
-# An Nhiên's outfit/footwear remain fixed even though all Equipment now uses the shared engine.
-equipment_system = EQUIPMENT_SYSTEM.read_text(encoding="utf-8")
-equip_anchor = '''  fun equip(state: GameState, command: ItemCommand): ExecutionResult {
-    val inventory = state.inventories[command.actorId] ?: return invalid(state, "item_not_owned")
-'''
-equip_locked = '''  fun equip(state: GameState, command: ItemCommand): ExecutionResult {
-    if (command.actorId == AN_NHIEN_ID) return invalid(state, "an_nhien_equipment_locked")
-    val inventory = state.inventories[command.actorId] ?: return invalid(state, "item_not_owned")
-'''
-if equip_locked not in equipment_system:
-    if equip_anchor not in equipment_system:
-        raise RuntimeError("EquipmentEngine equip anchor missing")
-    equipment_system = equipment_system.replace(equip_anchor, equip_locked, 1)
-unequip_anchor = '''  fun unequip(state: GameState, command: ItemCommand): ExecutionResult {
-    if (command.itemId == MADGOD_SET_ID) return invalid(state, "madgod_equipment_permanent")
-'''
-unequip_locked = '''  fun unequip(state: GameState, command: ItemCommand): ExecutionResult {
-    if (command.actorId == AN_NHIEN_ID) return invalid(state, "an_nhien_equipment_locked")
-    if (command.itemId == MADGOD_SET_ID) return invalid(state, "madgod_equipment_permanent")
-'''
-if unequip_locked not in equipment_system:
-    if unequip_anchor not in equipment_system:
-        raise RuntimeError("EquipmentEngine unequip anchor missing")
-    equipment_system = equipment_system.replace(unequip_anchor, unequip_locked, 1)
-EQUIPMENT_SYSTEM.write_text(equipment_system, encoding="utf-8")
 
 # Migrate pre-redesign regression expectations to the new Inventory-owned Equipment architecture.
 codec_test = CODEC_TEST.read_text(encoding="utf-8")
 codec_test = codec_test.replace(
-    '    val canonicalState = SpecialFollowersCanon.ensure(AnNhienCanon.ensure(state))\n',
-    '    val canonicalState = CharacterEquipmentSystem.normalize(SpecialFollowersCanon.ensure(AnNhienCanon.ensure(state)))\n'
+    '    val canonicalState = SpecialFollowersCanon.ensure(state)\n',
+    '    val canonicalState = CharacterEquipmentSystem.normalize(SpecialFollowersCanon.ensure(state))\n'
 )
 codec_test = codec_test.replace(
 '''  @Test fun freshStateKeepsSignatureGearOnlyInEquipment() {
@@ -190,73 +164,5 @@ combat_test = combat_test.replace(
 ''')
 COMBAT_TEST.write_text(combat_test, encoding="utf-8")
 
-# Historical MadGod tests encoded the retired x50 implementation and removal-from-Inventory model.
-# Replace them with normalized, single-Item, multi-slot tests matching the current specification.
-if MADGOD_TEST.exists():
-    MADGOD_TEST.write_text(r'''package com.rabpit.backroom.core
 
-import org.junit.Assert.*
-import org.junit.Test
-
-class MadGodEquipmentTest {
-  private fun withMadGod(): GameState {
-    val state = GameState.initial()
-    val inv = state.inventories.getValue(KAI_ID)
-    return state.copy(inventories = state.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-  }
-
-  @Test fun oneSetContainsBothNormalizedComponents() {
-    val def = EquipmentCatalog.definition(MADGOD_SET_ID)!!
-    assertEquals(ItemClassification.SPECIAL_CHEAT, def.classification)
-    assertEquals(setOf(EquipmentSlot.WEAPON, EquipmentSlot.ARMOR), def.occupiesSlots)
-    assertEquals(55, def.weapon!!.dmg)
-    assertEquals(50, def.bonuses.hp)
-    assertEquals(15, def.bonuses.str)
-    assertEquals(30, def.bonuses.df)
-    assertEquals(12, def.bonuses.agi)
-    assertEquals(12, def.bonuses.crit)
-    assertEquals(1, MadGodCanon.MULTIPLIER)
-    assertEquals("GAMEPLAY_NORMALIZED", MadGodCanon.SCALING_MODE)
-  }
-
-  @Test fun equipOverwritesWeaponAndArmorButKeepsTheSingleOwnedItem() {
-    val state = withMadGod()
-    val result = EquipmentEngine.equip(state, ItemCommand(
-      "madgod-equip", state.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
-      operation = ItemCommand.Operation.EQUIP, itemId = MADGOD_SET_ID, itemName = "MadGod Set", slot = "weapon"
-    ))
-    assertTrue(result.applied)
-    val slots = result.state.equipment.getValue(KAI_ID).slots
-    assertEquals(MADGOD_SET_ID, slots["weapon"])
-    assertEquals(MADGOD_SET_ID, slots["armor"])
-    assertEquals(KAI_DEMON_JAW_MASK_ID, slots["head"])
-    assertEquals(KAI_TALON_GAUNTLETS_ID, slots["gauntlets"])
-    assertEquals(KAI_PHANTOM_GREAVES_ID, slots["greaves"])
-    assertEquals(KAI_OMNIVAULT_RING_ID, slots["ring"])
-    assertTrue(result.state.inventories.getValue(KAI_ID).items.containsKey(MADGOD_SET_ID))
-    val effective = CharacterStatEngine.effective(result.state, KAI_ID)
-    assertEquals(165, effective.maxHp)
-    assertEquals(114, effective.str)
-    assertEquals(121, effective.df)
-    assertEquals(118, effective.agi)
-    assertEquals(113, effective.crit)
-  }
-
-  @Test fun equippedMadGodIsPermanentAndCannotBeDuplicatedByBonusCounting() {
-    val state = withMadGod()
-    val equipped = EquipmentEngine.equip(state, ItemCommand(
-      "madgod-equip", state.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
-      operation = ItemCommand.Operation.EQUIP, itemId = MADGOD_SET_ID, itemName = "MadGod Set", slot = "weapon"
-    )).state
-    assertEquals(50, CharacterStatEngine.effective(equipped, KAI_ID).equipmentHp - 15) // canonical head/gauntlets/greaves add 15 HP
-    val unequip = EquipmentEngine.unequip(equipped, ItemCommand(
-      "madgod-unequip", equipped.turn.currentTurnId, KAI_ID, source = CommandSource.SYSTEM,
-      operation = ItemCommand.Operation.UNEQUIP, itemId = MADGOD_SET_ID, itemName = "MadGod Set", slot = "weapon"
-    ))
-    assertFalse(unequip.applied)
-    assertEquals("madgod_equipment_permanent", unequip.validation.reason)
-  }
-}
-''', encoding="utf-8")
-
-print("Combat HP cleanup, UI compatibility, An Nhien equipment rules, and redesigned regression expectations applied.")
+print("Combat HP cleanup, UI compatibility, and redesigned regression expectations applied.")

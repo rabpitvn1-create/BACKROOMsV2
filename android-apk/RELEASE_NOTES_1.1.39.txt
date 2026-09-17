@@ -1,7 +1,5 @@
 Backroom 1.1.39
-
 Character Inventory, Prologue restoration, and Android runtime cleanup release.
-
 - Restores the packaged Prologue and repairs early saves that lost the opening log.
 - Adds character-scoped Inventory UI from Party cards. Kai's avatar opens a dedicated Inventory view instead of using a global Inventory panel.
 - Kai carries up to 9 normal item stacks with up to x999 per stack. Iris and Syvial use 4 stacks / x20, while ordinary characters use 2 stacks / x2.

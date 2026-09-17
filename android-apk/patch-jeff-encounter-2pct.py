@@ -42,7 +42,7 @@ if 'root.equals("jeff") && value instanceof JSONObject' not in text:
     text = replace_once(text, old_flag_gate, new_flag_gate, "Jeff flag authority")
 
 # Make the GM treat the 8% roll as authoritative, not as optional flavor text.
-prompt_anchor = '            "AN NHIÊN HARD LOCK:'
+prompt_anchor = '"Chỉ dùng flag root:'
 if 'JEFF THE KILLER HARD LOCK:' not in text:
     start = text.find(prompt_anchor)
     if start < 0:

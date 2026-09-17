@@ -66,8 +66,6 @@ replacement = r'''  private JSONObject thresholdRoll(String label, int max, int 
     JSONObject flags = state.optJSONObject("flags");
     boolean survivorAllowed = flags == null || flags.optBoolean("survivorEncountersAllowed", true);
     boolean entityAllowed = flags == null || flags.optBoolean("entityEncountersAllowed", true);
-    JSONObject madGod = flags != null ? flags.optJSONObject("madGod") : null;
-    boolean madGodEligible = search && (madGod == null || !madGod.optBoolean("spawned", false)) && (flags == null || flags.optBoolean("madGodDiscoveryAllowed", true));
 
     rolls.put("survivor", thresholdRoll("survivor", 10000, 200, survivorAllowed, ""));
     rolls.put("irisReunion", thresholdRoll("irisReunion", 1000000, 25, reunionEligibleAndroid(state, "iris"), ""));
@@ -76,7 +74,6 @@ replacement = r'''  private JSONObject thresholdRoll(String label, int max, int 
     String entitySuffix = level == 0 || level == 4 || level == 6 ? " incursion/roaming only" : "";
     rolls.put("entityEncounter", thresholdRoll("entityEncounter", 10000, entityThresholds[level], physical && entityAllowed, entitySuffix));
     rolls.put("loot", thresholdRoll("loot", 10000, lootThresholds[level], search, ""));
-    rolls.put("madGodSet", thresholdRoll("madGodSet", 10000, 1, madGodEligible, " UR+ UNIQUE discovery"));
     rolls.put("almondWater", thresholdRoll("almondWater", 10000, waterThresholds[level], search && water, ""));
 
     int exitThreshold = exitThresholdAndroid(state);

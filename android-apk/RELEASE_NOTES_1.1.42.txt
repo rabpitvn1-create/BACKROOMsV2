@@ -1,7 +1,5 @@
 Backroom 1.1.42
-
 Survival HUD and chat readability release.
-
 - Fresh New Game now starts with known satisfied food, water, and rest baselines instead of showing those values as unknown.
 - Keeps genuinely unknown physiology unknown for migrated characters or saves that do not establish those values.
 - Adds continuous derived percentages for food, water, and rest without persisting duplicate state.

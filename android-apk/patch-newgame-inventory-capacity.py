@@ -253,12 +253,12 @@ import org.junit.Test
 
 class InventoryCapacityNewGameTest {
   private fun freshAll(): GameState = CharacterEquipmentSystem.normalize(
-    SpecialFollowersCanon.ensure(AnNhienCanon.ensure(GameState.initial()))
+    SpecialFollowersCanon.ensure(GameState.initial())
   )
 
-  @Test fun equippedItemsConsumeZeroCapacityForAllFourCharacters() {
+  @Test fun equippedItemsConsumeZeroCapacityForBaselineCharacters() {
     val state = freshAll()
-    listOf(KAI_ID, IRIS_ID, SYVIAL_ID, AN_NHIEN_ID).forEach { id ->
+    listOf(KAI_ID, IRIS_ID, SYVIAL_ID).forEach { id ->
       assertTrue("character must exist: $id", state.characters.containsKey(id))
       val slots = state.equipment[id]?.slots.orEmpty()
       assertTrue("expected equipped loadout: $id", slots.isNotEmpty())
@@ -290,26 +290,10 @@ class InventoryCapacityNewGameTest {
     assertEquals(0, InventoryCapacityPolicy.usedSlots(reEquip.state, KAI_ID))
   }
 
-  @Test fun madGodOccupiesTwoEquipmentSlotsButIsOneOwnedZeroCapacityItem() {
-    var state = freshAll()
-    val inv = state.inventories.getValue(KAI_ID)
-    state = state.copy(inventories = state.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-    val equip = EquipmentEngine.equip(state, ItemCommand(
-      "M", null, KAI_ID, source=CommandSource.UI, operation=ItemCommand.Operation.EQUIP,
-      itemId=MADGOD_SET_ID, itemName="MadGod Set", slot="weapon"
-    ))
-    assertTrue(equip.applied)
-    val slots = equip.state.equipment.getValue(KAI_ID).slots
-    assertEquals(2, slots.values.count { it == MADGOD_SET_ID })
-    assertEquals(1, InventoryCapacityPolicy.equippedItemIds(equip.state, KAI_ID).count { it == MADGOD_SET_ID })
-    assertTrue(equip.state.inventories.getValue(KAI_ID).items.containsKey(MADGOD_SET_ID))
-    assertFalse(InventoryCapacityPolicy.consumesSlot(equip.state, KAI_ID, MADGOD_SET_ID))
-    assertEquals(0, InventoryCapacityPolicy.usedSlots(equip.state, KAI_ID))
-  }
 
   @Test fun saveLoadRecalculatesCapacityFromOwnershipAndEquipmentReferences() {
     val loaded = GameStateCodec.decode(GameStateCodec.encode(freshAll()))
-    listOf(KAI_ID, IRIS_ID, SYVIAL_ID, AN_NHIEN_ID).forEach { id ->
+    listOf(KAI_ID, IRIS_ID, SYVIAL_ID).forEach { id ->
       assertEquals(0, InventoryCapacityPolicy.usedSlots(loaded, id))
     }
   }
@@ -351,8 +335,7 @@ for marker in (
     '@JavascriptInterface public String resetNewGameCore()',
     'requireGameCore().resetNewGame()',
     'JSONObject.quote(message)',
-    'equippedItemsConsumeZeroCapacityForAllFourCharacters',
-    'madGodOccupiesTwoEquipmentSlotsButIsOneOwnedZeroCapacityItem',
+    'equippedItemsConsumeZeroCapacityForBaselineCharacters',
     'freshNewGameKaiProjectionIsImmediatelyAuthoritative',
     'const visibleInventory=(member.inventory||[]).filter(x=>x&&x.equipped!==true)',
 ):

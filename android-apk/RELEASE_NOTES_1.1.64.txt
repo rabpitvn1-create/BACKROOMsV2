@@ -1,5 +1,4 @@
 Backroom 1.1.64 Debug
-
 - Phát hành đầu tiên từ repository BACKROOMsV2 sau khi tái tạo lịch sử Git sạch từ baseline Backroom 1.1.63.
 - Bump Android versionCode từ 65 lên 66 và versionName từ 1.1.63 lên 1.1.64.
 - Giữ nguyên gameplay/canon của baseline 1.1.63; thay đổi hạ tầng provider để V2 dùng Gemini-only.

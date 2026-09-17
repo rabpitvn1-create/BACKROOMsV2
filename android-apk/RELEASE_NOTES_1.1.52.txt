@@ -1,5 +1,4 @@
 Backroom 1.1.52
-
 - Rebuilds the latest main branch after the verified Luna API smoke test.
 - Keeps the current Game Master provider chain, including configured Luna model fallback and active-model discovery.
 - Preserves stable reply-start scrolling, immersive fullscreen, startup hardening, Game State Core, party/inventory UI and current canon/gameplay patches.

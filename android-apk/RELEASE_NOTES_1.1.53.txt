@@ -1,5 +1,4 @@
 Backroom 1.1.53
-
 - Packages the latest verified main branch changes into a new APK release.
 - Integrates the Drive-backed Entity Snapshot overlay into runtime gameplay.
 - Hides the Entity overlay after the active encounter is defeated or escaped.

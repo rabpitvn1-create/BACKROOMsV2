@@ -15,8 +15,6 @@ DETAIL_JSON = CORE / "CharacterDetailJson.kt"
 FACADE = CORE / "GameCoreFacade.kt"
 COMBAT = CORE / "CombatRuntime.kt"
 SPECIAL = CORE / "SpecialFollowersCanon.kt"
-AN_NHIEN = CORE / "AnNhienCanon.kt"
-MADGOD = CORE / "MadGodCanon.kt"
 SYSTEM = CORE / "CharacterEquipmentSystem.kt"
 TEST = TESTS / "CharacterStatusEquipmentSystemTest.kt"
 
@@ -243,41 +241,6 @@ object EquipmentCatalog {
       restrictions = listOf("Lucifer Armor rất bền nhưng NOT ABSOLUTELY INDESTRUCTIBLE."),
       canonRef = "SYVIAL-LUCIFER-CODEX-20260816-R03"
     ),
-    EquipmentDefinition(
-      id = AN_NHIEN_OUTFIT_ID, name = AnNhienCanon.OUTFIT_NAME, type = "OUTFIT", primarySlot = EquipmentSlot.OUTFIT,
-      canonRef = "AN-NHIEN-CURRENT"
-    ),
-    EquipmentDefinition(
-      id = AN_NHIEN_FOOTWEAR_ID, name = AnNhienCanon.FOOTWEAR_NAME, type = "FOOTWEAR", primarySlot = EquipmentSlot.FOOTWEAR,
-      canonRef = "AN-NHIEN-CURRENT"
-    ),
-    EquipmentDefinition(
-      id = MADGOD_SET_ID, name = "MadGod Set", type = "SPECIAL EQUIPMENT SET", primarySlot = EquipmentSlot.WEAPON,
-      occupiesSlots = setOf(EquipmentSlot.WEAPON, EquipmentSlot.ARMOR), rarity = "SPECIAL / CHEAT",
-      bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12),
-      weapon = WeaponGameplayStats(55, "∞", 600, listOf("Single", "Full Auto")),
-      abilities = listOf(
-        ability("Demonic Ammunition", "Đạn được hình thành trực tiếp từ Sparda Core.", "Không cần magazine hoặc ammo inventory."),
-        ability("Infinite Ammo", "Nguồn đạn gameplay hiển thị ∞.", "Không tạo damage hoặc số Action vô hạn."),
-        ability("Single / Full Auto", "Hỗ trợ Single và Full Auto tới khoảng 600 RPM.", "600 RPM là capability, không phải số viên mặc định mỗi turn."),
-        ability("Core Self-Repair", "MadGod Magnum và MadGod Armor tự sửa bằng Sparda Core.", "Armor repair và Character HP regeneration là hai hệ riêng."),
-        ability("Environmental Protection", "Giữ chức năng bảo vệ nhiệt, lạnh, độc tố, áp suất và tác động môi trường tương đương Blackblood Armor."),
-        ability("Physical Amplification", "Tăng STR và khả năng phát lực của Kai."),
-        ability("Mobility Amplification", "Tăng AGI.", "Không tạo thêm Action miễn phí."),
-        ability("Permanent Binding", "Sau khi Kai Equip, set khóa vĩnh viễn vào Weapon + Armor."),
-        ability("Omnivault Copy Immunity", "Omnivault không thể Scan hoặc Copy MadGod Set."),
-        ability("MadGod Power Conversion", "Đầu ra cao hơn White Wraith thông thường nhưng đi qua Gameplay Combat Normalization.", "Không dùng raw canon power để one-shot mọi Entity.")
-      ),
-      restrictions = listOf(
-        "Kai Only", "Occupies Weapon + Armor", "Cannot Unequip after activation", "Cannot Drop after activation",
-        "Cannot be copied or scanned", "Cannot stack with another MadGod Set", "Does not multiply base stats or HP regeneration"
-      ),
-      classification = ItemClassification.SPECIAL_CHEAT,
-      components = listOf(
-        EquipmentComponent("MadGod Magnum", bonuses = EquipmentBonuses(crit = 12), weapon = WeaponGameplayStats(55, "∞", 600, listOf("Single", "Full Auto"))),
-        EquipmentComponent("MadGod Armor", bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12))
-      )
-    )
   )
 
   private val definitions = all.associateBy { it.id }
@@ -298,7 +261,6 @@ object EquipmentCatalog {
     )
     IRIS_ID -> linkedMapOf(EquipmentSlot.WEAPON to IRIS_IVORY_EBONY_SET_ID, EquipmentSlot.ARMOR to IRIS_RECON_FRAME_ID)
     SYVIAL_ID -> linkedMapOf(EquipmentSlot.WEAPON to SYVIAL_GODKILLER_ID, EquipmentSlot.ARMOR to SYVIAL_LUCIFER_ARMOR_ID)
-    AN_NHIEN_ID -> linkedMapOf(EquipmentSlot.OUTFIT to AN_NHIEN_OUTFIT_ID, EquipmentSlot.FOOTWEAR to AN_NHIEN_FOOTWEAR_ID)
     else -> emptyMap()
   }
 
@@ -428,16 +390,13 @@ object EquipmentEngine {
     val owned = inventory.items[command.itemId] ?: return invalid(state, "item_not_owned")
     if (owned.quantity < 1) return invalid(state, "item_not_owned")
     val def = EquipmentCatalog.definition(command.itemId)
-    if (def?.classification == ItemClassification.SPECIAL_CHEAT && command.actorId != KAI_ID) return invalid(state, "madgod_equipment_slot_mismatch")
+    if (def?.classification == ItemClassification.SPECIAL_CHEAT && command.actorId != KAI_ID) return invalid(state, "special_equipment_slot_mismatch")
     val requested = EquipmentSlot.fromRaw(command.slot)
     val targetSlots = if (def != null) def.occupiesSlots.map { it.key }.toSet() else setOfNotNull(requested?.key ?: command.slot?.trim()?.lowercase())
     if (targetSlots.isEmpty()) return invalid(state, "equipment_slot_required")
     if (def != null && requested != null && requested !in def.occupiesSlots && requested != def.primarySlot) return invalid(state, "equipment_slot_mismatch")
 
     val equipment = state.equipment[command.actorId] ?: EquipmentState(command.actorId)
-    val lockedByMadGod = targetSlots.any { slot -> equipment.slots[slot] == MADGOD_SET_ID && command.itemId != MADGOD_SET_ID }
-    if (lockedByMadGod) return invalid(state, "madgod_equipment_permanent")
-    if (command.itemId == MADGOD_SET_ID && equipment.slots.values.count { it == MADGOD_SET_ID } >= 2) return changed(state, "item_equipped")
 
     val nextSlots = equipment.slots.toMutableMap()
     targetSlots.forEach { nextSlots[it] = command.itemId }
@@ -447,7 +406,6 @@ object EquipmentEngine {
   }
 
   fun unequip(state: GameState, command: ItemCommand): ExecutionResult {
-    if (command.itemId == MADGOD_SET_ID) return invalid(state, "madgod_equipment_permanent")
     val equipment = state.equipment[command.actorId] ?: return invalid(state, "equipment_missing")
     if (command.itemId !in equipment.slots.values) return invalid(state, "item_not_equipped")
     val nextSlots = equipment.slots.filterValues { it != command.itemId }
@@ -462,7 +420,6 @@ object EquipmentEngine {
     val equipment = state.equipment[characterId] ?: EquipmentState(characterId)
     if (itemId in equipment.slots.values) return CharacterStatEngine.effective(state, characterId)
     if (def.classification == ItemClassification.SPECIAL_CHEAT && characterId != KAI_ID) return null
-    if (def.occupiesSlots.any { equipment.slots[it.key] == MADGOD_SET_ID && itemId != MADGOD_SET_ID }) return null
     val next = equipment.slots.toMutableMap()
     def.occupiesSlots.forEach { next[it.key] = itemId }
     return CharacterStatEngine.effective(state.copy(equipment = state.equipment + (characterId to equipment.copy(slots = next))), characterId)
@@ -494,9 +451,7 @@ object CharacterEquipmentSystem {
       val loadout = EquipmentCatalog.startingLoadout(characterId)
       if (seedStarting) {
         loadout.forEach { (slot, itemId) ->
-          val madGodOccupies = characterId == KAI_ID && slot in setOf(EquipmentSlot.WEAPON, EquipmentSlot.ARMOR) &&
-            slots.values.any { it == MADGOD_SET_ID }
-          if (!madGodOccupies && slot.key !in slots) slots[slot.key] = itemId
+          if (slot.key !in slots) slots[slot.key] = itemId
           if (itemId !in inv.items) inv = inv.copy(items = inv.items + (itemId to EquipmentCatalog.stackFor(itemId)))
         }
       }
@@ -609,27 +564,11 @@ replacement = '''  val irisEquipmentSlots: Map<String, String> = linkedMapOf(
 special = special[:match.start()] + replacement + special[match.end():]
 SPECIAL.write_text(special, encoding="utf-8")
 
-# An Nhiên owns her equipped outfit/footwear in Inventory while retaining max two food item types.
-an = AN_NHIEN.read_text(encoding="utf-8")
-inv_start = an.find('  fun inventory(existing: InventoryState? = null): InventoryState {')
-inv_end = an.find('\n  fun equipment(): EquipmentState', inv_start)
-if inv_start < 0 or inv_end < 0:
-    raise RuntimeError("An Nhien inventory function missing")
-an_inventory = '''  fun inventory(existing: InventoryState? = null): InventoryState {
-    val all = existing?.items.orEmpty().values
-    val equipmentItems = all.filter { it.itemId == AN_NHIEN_OUTFIT_ID || it.itemId == AN_NHIEN_FOOTWEAR_ID }.associateBy { it.itemId }
-    val foodItems = all.filter(::isFoodItem).sortedBy { it.itemId }.take(2).associateBy { it.itemId }
-    return InventoryState(AN_NHIEN_ID, equipmentItems + foodItems)
-  }
-'''
-an = an[:inv_start] + an_inventory + an[inv_end:]
-AN_NHIEN.write_text(an, encoding="utf-8")
 
 # --- Save/load: recalculate from Base + currently equipped Items every load ---
 codec = CODEC.read_text(encoding="utf-8")
 for candidate in (
-    '    return SpecialFollowersCanon.ensure(AnNhienCanon.ensure(decoded))\n',
-    '    return AnNhienCanon.ensure(decoded)\n',
+    '    return SpecialFollowersCanon.ensure(decoded)\n',
 ):
     if candidate in codec:
         codec = codec.replace(candidate, candidate.replace('return ', 'return CharacterEquipmentSystem.normalize(').rstrip('\n') + ')\n', 1)
@@ -792,23 +731,6 @@ protect_block = '''    current.filterKeys { EquipmentCatalog.definition(it) != n
 facade = one(facade, protect_anchor, protect_block, "protect equipment inventory ownership")
 FACADE.write_text(facade, encoding="utf-8")
 
-# --- MadGod is normalized into the same 100-HP gameplay scale ----------------
-if MADGOD.exists():
-    mg = MADGOD.read_text(encoding="utf-8")
-    mg = re.sub(r'const val MULTIPLIER = \d+', 'const val MULTIPLIER = 1', mg)
-    mg = mg.replace('const val SCALING_MODE = "BASELINE_ONCE"', 'const val SCALING_MODE = "GAMEPLAY_NORMALIZED"')
-    replacements = {
-      r'const val MAGNUM_DMG = .*': 'const val MAGNUM_DMG = 55',
-      r'const val ARMOR_DF = .*': 'const val ARMOR_DF = 30',
-      r'const val ARMOR_STR = .*': 'const val ARMOR_STR = 15',
-      r'const val ARMOR_AGI = .*': 'const val ARMOR_AGI = 12',
-      r'const val ARMOR_HP = .*': 'const val ARMOR_HP = 50',
-      r'const val ARMOR_ENE = .*': 'const val ARMOR_ENE = 0',
-      r'const val ARMOR_CRIT = .*': 'const val ARMOR_CRIT = 0',
-    }
-    for pattern, repl in replacements.items():
-        mg = re.sub(pattern, repl, mg, count=1)
-    MADGOD.write_text(mg, encoding="utf-8")
 
 # --- Rich Character projection, derived from Base + unique equipped Items -----
 DETAIL.write_text(r'''package com.rabpit.backroom.core
@@ -1129,7 +1051,6 @@ class CharacterStatusEquipmentSystemTest {
   @Test fun energyAndRegenProfilesAreCorrect() {
     val s = state()
     listOf(KAI_ID, IRIS_ID, SYVIAL_ID).forEach { id -> assertEquals(EnergyMode.INFINITE, s.characters.getValue(id).statProfile.energy.mode); assertEquals(4, s.characters.getValue(id).statProfile.regen.amountPerCompletedTurn) }
-    assertEquals(EnergyMode.NOT_APPLICABLE, s.characters.getValue(AN_NHIEN_ID).statProfile.energy.mode); assertFalse(s.characters.getValue(AN_NHIEN_ID).statProfile.regen.enabled)
   }
 
   @Test fun regenRunsExactlyOnceAndZeroHpCannotBeRescued() {
@@ -1155,22 +1076,6 @@ class CharacterStatusEquipmentSystemTest {
 
   @Test fun godKillerRemainsMechanicalGreatsword() {
     val d = EquipmentCatalog.definition(SYVIAL_GODKILLER_ID)!!; assertEquals("MECHANICAL GREATSWORD", d.type); assertFalse(d.restrictions.joinToString().lowercase().contains("gunblade allowed"))
-  }
-
-  @Test fun madGodIsNotCanonicalStartingLoadoutAndCountsOnceAcrossTwoSlots() {
-    assertFalse(EquipmentCatalog.startingLoadout(KAI_ID).values.contains(MADGOD_SET_ID))
-    var s = state(); val inv = s.inventories.getValue(KAI_ID); s = s.copy(inventories = s.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-    val r = EquipmentEngine.equip(s, cmd(ItemCommand.Operation.EQUIP, MADGOD_SET_ID, "weapon")); assertTrue(r.applied)
-    assertEquals(MADGOD_SET_ID, r.state.equipment.getValue(KAI_ID).slots["weapon"]); assertEquals(MADGOD_SET_ID, r.state.equipment.getValue(KAI_ID).slots["armor"])
-    assertTrue(r.state.inventories.getValue(KAI_ID).items.containsKey(MADGOD_SET_ID))
-    val e = CharacterStatEngine.effective(r.state, KAI_ID); assertEquals(165, e.maxHp); assertEquals(114, e.str); assertEquals(121, e.df); assertEquals(118, e.agi); assertEquals(113, e.crit)
-  }
-
-  @Test fun madGodPermanentLockAndNormalizedDamage() {
-    val d = EquipmentCatalog.definition(MADGOD_SET_ID)!!; assertEquals(55, d.weapon!!.dmg); assertEquals(50, d.bonuses.hp)
-    var s = state(); val inv = s.inventories.getValue(KAI_ID); s = s.copy(inventories = s.inventories + (KAI_ID to inv.copy(items = inv.items + (MADGOD_SET_ID to EquipmentCatalog.stackFor(MADGOD_SET_ID)))))
-    val equip = EquipmentEngine.equip(s, cmd(ItemCommand.Operation.EQUIP, MADGOD_SET_ID, "weapon")); val un = EquipmentEngine.unequip(equip.state, cmd(ItemCommand.Operation.UNEQUIP, MADGOD_SET_ID, "weapon"))
-    assertFalse(un.applied); assertEquals("madgod_equipment_permanent", un.validation.reason)
   }
 
   @Test fun projectionAfterReloadEqualsBasePlusEquippedItems() {
@@ -1205,7 +1110,7 @@ class CharacterStatusEquipmentSystemTest {
 combined = SYSTEM.read_text(encoding="utf-8") + DETAIL.read_text(encoding="utf-8") + DETAIL_JSON.read_text(encoding="utf-8") + INDEX.read_text(encoding="utf-8") + ENGINES.read_text(encoding="utf-8") + COMBAT.read_text(encoding="utf-8")
 required = [
   'EquipmentBonuses(hp = 25, str = 8, df = 18, agi = 6)', 'WeaponGameplayStats(32, "∞", 600',
-  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)', 'bonuses = EquipmentBonuses(hp = 50, str = 15, df = 30, agi = 12, crit = 12)',
+  'IRIS_IVORY_EBONY_SET_ID', 'WeaponGameplayStats(38)',
   'CharacterStatEngine.applyCompletedTurnRegen', 'CharacterStatEngine.preserveMissingHp', 'EquipmentEngine.equip(state, command)',
   'window.renderCharacterStatusEquipment=render;', 'id="equipmentDetailModal"', 'SPECIAL ABILITIES', 'CANON / RESTRICTIONS',
   'CharacterStatEngine.weaponDamage(state, KAI_ID)', 'CombatStatMath.defenseReduction',
@@ -1214,4 +1119,4 @@ for marker in required:
     if marker not in combined:
         raise RuntimeError("Character Status/Equipment contract missing: " + marker)
 
-print("Character Status + Equipment + Inventory Detail System installed: shared Item ownership, normalized stats, HP preservation, regen, UI detail, MadGod normalization, combat integration, and tests.")
+print("Character Status + Equipment + Inventory Detail System installed: shared Item ownership, normalized stats, HP preservation, regen, UI detail, combat integration, and tests.")

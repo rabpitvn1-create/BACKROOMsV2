@@ -1,7 +1,5 @@
 Backroom 1.1.38
-
 Authoritative acquisition and Omnivault behavior correction.
-
 - Player-issued pickup/acquisition commands no longer create inventory items. Commands such as "nhặt", "lượm", "lấy", "cầm lên", "nhận" or direct "bỏ vào inventory" acquisition attempts are rejected with [Warning] This action is not available.
 - Invalid pickup attempts do not advance the turn and do not mutate Inventory.
 - Inventory acquisition remains available only to validated story/drop progression and deterministic SYSTEM events.

@@ -1,5 +1,4 @@
 Backroom 1.1.43
-
 - Rebuilds the APK with the latest configured Luna API credential from GitHub Actions Secrets.
 - Luna fallback now discovers active chat models from the provider /models endpoint.
 - The configured LUNA_MODEL remains preferred when active, but MODEL_INACTIVE responses no longer stop the entire fallback path.

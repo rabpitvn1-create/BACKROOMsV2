@@ -63,16 +63,6 @@ object CompanionSkillCatalog {
     s("GodKiller Override // Twenty-Four Severance", "ULTIMATE", "Mỗi 3 combat turn khi Devil Trigger", "Dừng thời gian ngoại giới, đúng 24 nhát chém x 10 HP = 240 HP; bỏ qua Evasion.", "Không phải instant-kill tuyệt đối.")
   )
 
-  private val anNhien = listOf(
-    s("Có Gì Đó Sai Sai", "PASSIVE", "Khi An Nhiên theo Party", "Giảm 25% xác suất hazard trên action vật lý hợp lệ."),
-    s("Nhặt Có Chọn Lọc", "PASSIVE", "Khi SEARCH", "+10 điểm phần trăm vào generic loot roll hiện có.", "Không tạo loot roll thứ hai."),
-    s("Không Phải Tôi Nhát, Tôi Có Chiến Thuật", "PASSIVE", "Khi tình huống xấu", "Ưu tiên vị trí an toàn; không biến An Nhiên thành combatant."),
-    s("Quăng Đại Cái Gì Đó", "UTILITY", "25% mỗi combat turn khi ACTIVE trong Party", "Ném vật vô hại để đánh lạc hướng, Entity -25 điểm % Accuracy trong phản ứng hiện tại.", "Không gây damage, không dùng vũ khí."),
-    s("Khoan, Để Tôi Đọc Cái Này", "UTILITY", "20% khi SEARCH một Exit", "Nếu proc, +20 điểm phần trăm cho Exit probe của action đó."),
-    s("Đừng Đụng Vào, Nhìn Là Biết Độc", "UTILITY", "30% khi kiểm tra nước/chất lỏng khả nghi", "Nếu proc, chặn hazard roll của action kiểm tra đó.", "Chỉ là kiểm tra nguy cơ, không tự biết toàn bộ bản chất vật thể."),
-    s("Thôi Để Tôi Làm", "UTILITY", "Khi xử lý thao tác sinh tồn", "Đại diện lợi thế thực dụng trong narration/Game Master; không áp cho hack, phép thuật hoặc công nghệ ngoài khả năng."),
-    s("Kế Hoạch Không Có Trong Kế Hoạch", "ULTIMATE", "Mỗi 5 combat turn khi ACTIVE trong Party", "Tận dụng địa hình: +30 Escape Progress và Entity -20 điểm % Accuracy trong phản ứng hiện tại.", "Không gây damage.")
-  )
 
   private val kai = listOf(
     s("The Last Requiem", "AUTO", "30% mỗi turn hợp lệ", "4 phát vào khớp vai, 170% Weapon DMG; Bleeding 3 turn x 5% Max HP."),
@@ -91,7 +81,6 @@ object CompanionSkillCatalog {
     KAI_ID -> kai
     IRIS_ID -> iris
     SYVIAL_ID -> syvial
-    AN_NHIEN_ID -> anNhien
     LUCIA_ID -> lucia
     else -> emptyList()
   }
@@ -120,7 +109,7 @@ DETAIL_JSON.write_text(detail, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
-# 3) Iris + Syvial + An Nhien runtime skills. These run after Kai, Diệp Minh,
+# 3) Iris + Syvial runtime skills. These run after Kai, Diệp Minh,
 # Lucia and Entity compatibility layers. Existing ultimate/boss contracts stay
 # authoritative; companion skills only wrap the finalized response path.
 # ---------------------------------------------------------------------------
@@ -135,7 +124,6 @@ constants = '''  private const val IRIS_ANALYZED_TURNS_KEY = "combat.irisAnalyze
   private const val SYVIAL_DISORIENT_TURNS_KEY = "combat.syvialDisorientTurns"
   private const val IRIS_ULTIMATE_INTERVAL_TURNS = 4
   private const val SYVIAL_ULTIMATE_INTERVAL_TURNS = 3
-  private const val AN_NHIEN_ULTIMATE_INTERVAL_TURNS = 5
 '''
 if 'IRIS_ANALYZED_TURNS_KEY' not in combat:
     combat = replace_once(combat, constants_anchor, constants_anchor + constants, "companion skill constants")
@@ -190,11 +178,10 @@ if 'Bleeding từ Crimson Guillotine gây' not in combat:
     combat = combat[:death_index] + bleed + combat[death_index:]
 
 response_anchor = '    // Enemy response. Diệp Minh uses percentage damage; all other Entity behavior remains unchanged.\n'
-companion_block = r'''    // COMPANION_SKILLS_R01: Iris, Syvial and An Nhien wrap the finalized combat response.
+companion_block = r'''    // COMPANION_SKILLS_R01: Iris and Syvial wrap the finalized combat response.
     val irisActive = activePartyCharacter(resolvedState, IRIS_ID) != null
     val syvialCharacter = activePartyCharacter(resolvedState, SYVIAL_ID)
     val syvialActive = syvialCharacter != null
-    val anNhienActive = activePartyCharacter(resolvedState, AN_NHIEN_ID) != null
 
     if (irisActive && c.entityHp > 0) {
       if (irisAnalyzedTurns <= 0) {
@@ -307,17 +294,6 @@ companion_block = r'''    // COMPANION_SKILLS_R01: Iris, Syvial and An Nhien wra
       }
     }
 
-    if (anNhienActive && c.entityHp > 0) {
-      if (roll(c.copy(eventCounter = c.eventCounter + 269), 100) < 25) {
-        companionEnemyAccuracyPenalty += 25
-        log += "An Nhiên dùng Quăng Đại Cái Gì Đó: tiếng động lệch hướng khiến Entity -25 điểm % Accuracy trong phản ứng hiện tại."
-      }
-      if (c.eventCounter % AN_NHIEN_ULTIMATE_INTERVAL_TURNS == 0) {
-        companionEnemyAccuracyPenalty += 20
-        c = c.copy(escapeProgress = min(100, c.escapeProgress + 30))
-        log += "Kế Hoạch Không Có Trong Kế Hoạch: +30 Escape Progress và Entity -20 điểm % Accuracy trong phản ứng hiện tại."
-      }
-    }
 
     if (syvialDisorientTurns > 0) companionEnemyAccuracyPenalty += 25
 
@@ -394,8 +370,6 @@ for marker in (
     'Crimson Guillotine tự động kích hoạt',
     'Lucifer Breaker tự động kích hoạt',
     'Spatial Dominion tự động kích hoạt',
-    'Quăng Đại Cái Gì Đó',
-    'Kế Hoạch Không Có Trong Kế Hoạch',
     '- quickStepEvasion - companionEnemyAccuracyPenalty',
     'Dead Angle: Iris phản kích',
     'Counterphase: Syvial',
@@ -404,44 +378,6 @@ for marker in (
         raise RuntimeError("Companion combat contract missing: " + marker)
 COMBAT.write_text(combat, encoding="utf-8")
 
-
-# ---------------------------------------------------------------------------
-# 4) An Nhien exploration utility. Existing +10pp loot remains authoritative.
-# No second loot roll is added.
-# ---------------------------------------------------------------------------
-main = MAIN.read_text(encoding="utf-8")
-hazard_old = '    rolls.put("hazard", thresholdRoll("hazard", 10000, hazardThresholds[level], physical, ""));\n'
-hazard_new = '''    int anNhienHazardThreshold = anNhienFollowing ? (hazardThresholds[level] * 75 / 100) : hazardThresholds[level];
-    JSONObject anNhienHazardCheck = thresholdRoll("anNhienHazardCheck", 10000, 3000, anNhienFollowing && search && water, " Đừng Đụng Vào, Nhìn Là Biết Độc");
-    rolls.put("anNhienHazardCheck", anNhienHazardCheck);
-    if (anNhienHazardCheck.optBoolean("success", false)) anNhienHazardThreshold = 0;
-    rolls.put("hazard", thresholdRoll("hazard", 10000, anNhienHazardThreshold, physical,
-      anNhienFollowing ? " -25% Có Gì Đó Sai Sai" : ""));
-'''
-if 'anNhienHazardCheck' not in main:
-    main = replace_once(main, hazard_old, hazard_new, "An Nhien hazard utility")
-
-exit_old = '''    int exitThreshold = exitThresholdAndroid(state);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search), " discovery clue");
-'''
-exit_new = '''    int exitThreshold = exitThresholdAndroid(state);
-    JSONObject anNhienRead = thresholdRoll("anNhienRead", 10000, 2000, anNhienFollowing && search && exitIntent, " Khoan, Để Tôi Đọc Cái Này");
-    rolls.put("anNhienRead", anNhienRead);
-    if (anNhienRead.optBoolean("success", false)) exitThreshold = Math.min(10000, exitThreshold + 2000);
-    JSONObject exitProbe = thresholdRoll("exitProbe", 10000, exitThreshold, exitIntent && (physical || search),
-      anNhienRead.optBoolean("success", false) ? " +20% An Nhiên đọc dấu Exit" : " discovery clue");
-'''
-if 'thresholdRoll("anNhienRead"' not in main:
-    main = replace_once(main, exit_old, exit_new, "An Nhien exit reading utility")
-for marker in (
-    'hazardThresholds[level] * 75 / 100',
-    'thresholdRoll("anNhienHazardCheck", 10000, 3000',
-    'thresholdRoll("anNhienRead", 10000, 2000',
-    'exitThreshold + 2000',
-):
-    if marker not in main:
-        raise RuntimeError("An Nhien exploration skill contract missing: " + marker)
-MAIN.write_text(main, encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -529,18 +465,10 @@ class CompanionSkillCatalogTest {
   @Test fun skillCatalogExposesNewCompanionSets() {
     assertEquals(8, CompanionSkillCatalog.forCharacter(IRIS_ID).size)
     assertEquals(10, CompanionSkillCatalog.forCharacter(SYVIAL_ID).size)
-    assertEquals(8, CompanionSkillCatalog.forCharacter(AN_NHIEN_ID).size)
     assertTrue(CompanionSkillCatalog.forCharacter(IRIS_ID).any { it.name == "ARGUS // Thousandfold Execution" })
     assertTrue(CompanionSkillCatalog.forCharacter(SYVIAL_ID).any { it.name.contains("Twenty-Four Severance") })
-    assertTrue(CompanionSkillCatalog.forCharacter(AN_NHIEN_ID).any { it.name == "Kế Hoạch Không Có Trong Kế Hoạch" })
   }
 
-  @Test fun anNhienRemainsNonCombatAndWeaponLocked() {
-    val character = AnNhienCanon.character()
-    assertEquals("true", character.metadata["nonCombat"])
-    assertEquals("false", character.metadata["canUseWeapons"])
-    assertFalse(CompanionSkillCatalog.forCharacter(AN_NHIEN_ID).any { it.effect.contains("Weapon DMG") })
-  }
 
   @Test fun irisAndSyvialAutomaticSkillsResolveWhenTheyAreActivePartyMembers() {
     val seen = mutableSetOf<String>()
@@ -558,25 +486,7 @@ class CompanionSkillCatalogTest {
     assertEquals(setOf("iris", "syvial"), seen)
   }
 
-  @Test fun anNhienCombatUtilityNeverDealsDamageDirectly() {
-    var observed = false
-    for (counter in 0..360) {
-      if (observed) break
-      var state = AnNhienCanon.ensure(GameState.initial()).copy(
-        party = PartyState(memberIds = listOf(KAI_ID, AN_NHIEN_ID))
-      )
-      state = CombatRuntime.start(state, "diep_minh")
-      state = state.copy(metadata = state.metadata + ("combat.eventCounter" to counter.toString()))
-      val result = CombatRuntime.resolve(state, "SEARCH", "tìm đường tránh giao tranh")
-      if (result.reply.contains("Quăng Đại Cái Gì Đó") || result.reply.contains("Kế Hoạch Không Có Trong Kế Hoạch")) {
-        observed = true
-        val fragment = result.reply.substringAfter("An Nhiên", result.reply)
-        assertFalse(fragment.contains("Weapon DMG"))
-      }
-    }
-    assertTrue(observed)
-  }
 }
 ''', encoding="utf-8")
 
-print("Companion skills R01 applied: Iris + Syvial combat kits, An Nhien utility kit, and compact Character Skill panel.")
+print("Companion skills R01 applied: Iris + Syvial combat kits and compact Character Skill panel.")

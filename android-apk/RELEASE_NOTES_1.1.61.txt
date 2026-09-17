@@ -1,5 +1,4 @@
 Backroom 1.1.61 Debug
-
 - Jeff the Killer và Jane the Killer được đưa vào cùng roaming Entity pool với các Entity khác.
 - Loại bỏ các lượt roll encounter độc lập của Jeff/Jane để một lượt EXPLORE chỉ có thể tạo một Entity encounter hợp lệ.
 - CombatRuntime giữ quyền hiển thị Entity hiện tại trên Snapshot, ngăn Entity đã kết thúc combat xuất hiện lại từ flag cũ.

@@ -1,5 +1,4 @@
 Backroom 1.1.50
-
 - Hardens Android startup so Game State Core and LiteRT are initialized lazily instead of blocking MainActivity creation.
 - Guards immersive fullscreen, WebView bootstrap and UI enhancement injection so a component failure no longer throws the user back to the launcher.
 - Adds an in-process startup diagnostic screen if WebView itself cannot initialize.

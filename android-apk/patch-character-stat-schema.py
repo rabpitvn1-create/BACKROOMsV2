@@ -110,25 +110,12 @@ object CharacterStatProfiles {
     statSource = StatSource.GAMEPLAY_NORMALIZED
   )
 
-  private val anNhien = CharacterStatProfile(
-    baseMaxHp = 100,
-    energy = EnergyProfile.notApplicable(),
-    regen = HpRegenRule(),
-    str = 10,
-    df = 10,
-    agi = 10,
-    crit = 0,
-    combatRole = "PROTECTED FOLLOWER / NON-COMBAT",
-    statSource = StatSource.GAMEPLAY_NORMALIZED
-  )
-
   private val fallback = CharacterStatProfile()
 
   fun forId(characterId: String): CharacterStatProfile = when (characterId.trim().lowercase()) {
     "kai" -> kai
     "iris" -> iris
     "syvial" -> syvial
-    "an-nhien", "an_nhien", "annhien" -> anNhien
     else -> fallback
   }
 
@@ -309,11 +296,6 @@ class CharacterStatSchemaTest {
     assertEquals(EnergyMode.INFINITE, syvial.energy.mode)
     assertEquals(4, syvial.regen.amountPerCompletedTurn)
 
-    val anNhien = CharacterStatProfiles.forId("an-nhien")
-    assertEquals(100, anNhien.baseMaxHp)
-    assertEquals(EnergyMode.NOT_APPLICABLE, anNhien.energy.mode)
-    assertFalse(anNhien.regen.enabled)
-    assertEquals(0, anNhien.crit)
   }
 
   @Test fun unknownCharacterGetsSafeExtensibleFallback() {
@@ -359,7 +341,6 @@ for marker in (
     "COMMANDER / SUPREME MARKSMAN / HIGH-MOBILITY COMBATANT",
     "SCOUT / TARGET ELIMINATOR / DUAL-GUN MARKSMAN",
     "HIGH-SPEED SWORDSMAN / ASSAULT / COUNTER / EXECUTION",
-    "PROTECTED FOLLOWER / NON-COMBAT",
     "val statProfile: CharacterStatProfile = CharacterStatProfiles.forId(id)",
     "val vitalState: CharacterVitalState = CharacterStatProfiles.initialVitals(id)",
     "put(\"statProfile\", characterStatProfile(value.statProfile))",

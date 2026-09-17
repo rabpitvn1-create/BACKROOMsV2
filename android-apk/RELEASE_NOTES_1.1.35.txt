@@ -1,7 +1,5 @@
 Backroom 1.1.35
-
 Deterministic Game State Core and LiteRT local command framework.
-
 - Adds a Kotlin Game State Core as the authoritative source of truth for gameplay state.
 - Adds structured GameCommand routing, validation, StateReducer commits and deterministic execution boundaries.
 - Adds Character, Party, Inventory, Equipment/Status scaffolding and a dedicated Omnivault engine.

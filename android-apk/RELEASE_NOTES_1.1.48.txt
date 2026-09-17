@@ -1,5 +1,4 @@
 Backroom 1.1.48
-
 - Replaces ephemeral GitHub runner debug signing with a fixed Android release signing identity.
 - Builds the published APK from the release variant instead of copying app-debug.apk into a release asset.
 - Verifies the APK signature certificate before upload and verifies the published asset again after download.

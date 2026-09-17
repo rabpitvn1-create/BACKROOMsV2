@@ -1,5 +1,4 @@
 Backroom 1.1.47
-
 - Consolidates the Drive-authoritative in-game knowledge database and budgeted Context Builder into the release line.
 - Uses structured runtime records with source provenance, immutable character canon, compact runtime cards, relationship/address locks and registry-driven Level/Entity lookup.
 - Adds deterministic structured long-term story continuity while keeping the recent dialogue buffer bounded.

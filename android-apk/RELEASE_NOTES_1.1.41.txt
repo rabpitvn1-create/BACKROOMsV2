@@ -1,7 +1,5 @@
 Backroom 1.1.41
-
 Game time, survival state, and Party character detail release.
-
 - Adds authoritative subjective game time that advances only when a gameplay turn commits successfully.
 - Persists game time across Save/Load and migrates older saves without inventing missing physiological state.
 - Adds per-character physiology state for food, water, wake time, pain, infection, and thermal condition.

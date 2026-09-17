@@ -1,7 +1,5 @@
 Backroom 1.1.37
-
 Item-state and warning feedback update.
-
 - Introduces a deterministic three-state consumable model for supported resource items: FULL -> LOW -> EMPTY, without ml/gram/percentage simulation.
 - Keeps empty containers and other persistent physical objects instead of deleting them on USE.
 - Separates stack variants by gameplay state, so full, low and empty items remain distinct inventory stacks.

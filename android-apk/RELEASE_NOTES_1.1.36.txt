@@ -1,7 +1,5 @@
 Backroom 1.1.36
-
 Omnivault reliability and inventory consistency hotfix.
-
 - Fixes Omnivault Restore target continuity for phrases such as "hoàn nguyên nó" and named restore targets.
 - Hard-locks Omnivault Restore as repair-only and resource-conserving: the same physical object returns to its best condition without creating a new object or refilling consumed water, food, ammo, fuel, medicine, charge or materials.
 - Keeps Restore item identity and stack quantity unchanged while preserving remaining-content metadata and the per-item 24-hour cooldown.

@@ -1,5 +1,4 @@
 Backroom 1.1.51
-
 - Promotes the verified startup-hardening path to the official package com.rabpit.backroom.
 - Keeps Game State Core and LiteRT lazy during Activity startup.
 - Preserves guarded immersive fullscreen, WebView bootstrap, JavaScript bridge and UI enhancement injection.

@@ -1,5 +1,4 @@
 Backroom APK 1.1.27
-
 - Game Master thử GEMINI_API_KEY_1 rồi GEMINI_API_KEY_2 trước khi fallback sang Luna.
 - Workflow kiểm tra đủ hai Gemini key và cấu hình Luna trước khi build APK.
 - Snapshot chưa dùng API tạo ảnh; nút tạo Snapshot được khóa cho đến khi có nhà cung cấp phù hợp.

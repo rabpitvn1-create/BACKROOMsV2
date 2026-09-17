@@ -1,5 +1,4 @@
 Backroom 1.1.29
-
 - Rebuilt Game Master orchestration around dependency-routed canon instead of sending the full canon corpus every turn.
 - Added bounded recent-history context to reduce prompt tokens while preserving current continuity.
 - Changed state authority to validated operations: AI proposes changes, deterministic code decides what may actually mutate inventory, party, Level, player status and runtime flags.
@@ -7,5 +6,4 @@ Backroom 1.1.29
 - Added conditional semantic auditing: ordinary turns skip audit, higher-risk turns receive targeted canon validation, and critical turns can run canon + character audits in parallel.
 - Hard canon conflicts receive at most one constrained repair attempt; unresolved conflicts do not advance/save the turn.
 - Hardened old-save handling and inventory/state gates.
-
 This release focuses on faster responses, lower token usage, stronger Codex/Canon adherence and safer state persistence.
