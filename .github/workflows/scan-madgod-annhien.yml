@@ -1,4 +1,4 @@
-name: Scan MadGod and An Nhien
+name: Purge Retired Gameplay Content
 
 on:
   push:
@@ -9,22 +9,70 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  scan:
+  purge:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - name: Scan repository text and filenames
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Remove retired systems and repair patch chain
+        run: python3 .github/scripts/purge-retired-systems.py
+
+      - name: Syntax-check surviving Python patches
         shell: bash
         run: |
-          set -uo pipefail
-          export LC_ALL=C.UTF-8
-          echo '===== TEXT REFERENCES ====='
-          git grep -n -I -i -E 'MadGod|Mad God|madgod|mad god|An Nhiên|An Nhien|AnNhien|an_nhien|an-nhien|annhien' -- . || true
-          echo '===== FILENAMES ====='
-          find . -type f \( -iname '*madgod*' -o -iname '*mad*god*' -o -iname '*annhien*' -o -iname '*an-nhien*' -o -iname '*an_nhien*' -o -iname '*an*nhien*' \) -print | sort
+          set -euo pipefail
+          find android-apk -maxdepth 1 -type f -name '*.py' -print0 | xargs -0 -n1 python3 -m py_compile
+
+      - name: Verify production patch chain in disposable copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/backroom-verify
+          mkdir -p /tmp/backroom-verify
+          cp -a android-apk /tmp/backroom-verify/android-apk
+          scripts=(patch-provider-status.py patch-gemini-five-keys.py patch-level-snapshot-backgrounds.py patch-snapshot-fallback.py patch-kai-hd-continuous.py patch-kai-png-preferred.py patch-kai-codex.py patch-r06-source-marker.py patch-drive-canon-gameplay.py patch-inventory-persistence.py patch-ai-orchestrator.py patch-state-op-hardening.py patch-gemini-health-pool.py patch-conditional-audit.py patch-audit-validated-risk.py patch-gameplay-parity-final.py patch-final-authority-hardening.py patch-rejected-op-repair-final.py patch-kai-resource-policy-final.py patch-gemini-provider-label.py patch-gemini-model-matrix-final.py patch-java-compile-hardening.py patch-save-controls-final.py patch-hard-mode-label.py patch-snapshot-unconfigured.py patch-game-state-core-bridge.py patch-character-inventory-ui.py patch-character-detail-avatar-fallback.py patch-progression-snapshot-equipment.py patch-kai-encounter-overlay.py)
+          for script in "${scripts[@]}"; do
+            echo "VERIFY ==> $script"
+            python3 "/tmp/backroom-verify/android-apk/$script"
+          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root = Path('/tmp/backroom-verify/android-apk')
+          target = re.compile(r'MadGod|Mad God|madgod|mad god|AN_NHIEN|AnNhien|an_nhien|an-nhien|An Nhiên|An Nhien|annhien', re.I)
+          for path in root.rglob('*'):
+              if not path.is_file():
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              match = target.search(text)
+              if match:
+                  line = text[:match.start()].count('\n') + 1
+                  raise SystemExit(f'generated output still contains retired reference: {path}:{line}:{match.group(0)}')
+          print('Generated patch-chain output is clean.')
+          PY
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/scripts/purge-retired-systems.py
+          rm .github/workflows/scan-madgod-annhien.yml
+          git diff --check
+          git status --short
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Remove retired gameplay systems'
+          git push origin HEAD:main
