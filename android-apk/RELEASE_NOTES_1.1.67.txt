@@ -1,0 +1,6 @@
+Backroom 1.1.67
+
+- Thêm CharacterEncounterCore sở hữu toàn bộ encounter roll và auto-join cho Lucia, Iris và Syvial.
+- Khóa Party khỏi Gemini, hỗ trợ migration save cũ và giữ encounter khi Gemini lỗi.
+- Đưa companion đã joined vào combat roster và overlay hiện có; Kai tiếp tục nằm ngoài state.party.
+- Bổ sung deterministic unit tests cho encounter rate, Party, migration và combat participation.
