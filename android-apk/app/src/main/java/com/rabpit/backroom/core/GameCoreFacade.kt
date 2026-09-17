@@ -39,12 +39,6 @@ class GameCoreFacade private constructor(
       return response(true, result, "player_pickup_unavailable", "validation_rejected", reply)
     }
 
-    // Restore is lore/narrative-only. Route prose to the GM, but authoritative state mutation is
-    // explicitly suppressed again in processValidatedCandidate().
-    if (interpreted.candidates.any { it.intent == GameIntent.OMNIVAULT_RESTORE }) {
-      return response(false, legacy, null, "fallback_required")
-    }
-
     if (interpreted.candidates.any { it.intent == GameIntent.NO_ACTION || it.confidence != IntentConfidence.HIGH }) {
       return response(false, legacy, null, "fallback_required")
     }
@@ -88,7 +82,7 @@ class GameCoreFacade private constructor(
     val commands = mutableListOf<GameCommand>()
     val current = pending.state.inventories[KAI_ID]?.items.orEmpty()
     val actionIntents = rules.interpretSync(action, contextFor(pending.state)).candidates.map { it.intent }.toSet()
-    val inventoryLocked = isDirectPlayerPickupAction(action) || GameIntent.PICKUP_ITEM in actionIntents || GameIntent.OMNIVAULT_RESTORE in actionIntents
+    val inventoryLocked = isDirectPlayerPickupAction(action) || GameIntent.PICKUP_ITEM in actionIntents
 
     val desiredById = mutableMapOf<String, ItemStack>()
     if (inventoryLocked) {
@@ -115,12 +109,12 @@ class GameCoreFacade private constructor(
 
     (current.keys + desiredById.keys).sorted().forEachIndexed { index, id ->
       val old = current[id]?.quantity ?: 0; val desired = desiredById[id]?.quantity ?: 0
-      if (desired == old) return@forEachIndexed
-      val stack = desiredById[id] ?: current.getValue(id)
+      if (desired == old || desired > old) return@forEachIndexed
+      val stack = current.getValue(id)
       commands += ItemCommand(
         "$turnId:GEMINI:INV:$index", turnId, KAI_ID, source = CommandSource.GEMINI,
-        operation = if (desired > old) ItemCommand.Operation.PICKUP else ItemCommand.Operation.DROP,
-        itemId = id, itemName = stack.name, quantity = kotlin.math.abs(desired - old), metadata = stack.metadata
+        operation = ItemCommand.Operation.DROP,
+        itemId = id, itemName = stack.name, quantity = old - desired, metadata = stack.metadata
       )
     }
 
@@ -175,14 +169,12 @@ class GameCoreFacade private constructor(
 
   private fun contextFor(state: GameState): GameContext {
     val actors = state.characters.values.associate { it.name.lowercase() to it.id } + mapOf("kai" to KAI_ID, "iris" to "iris", "syvial" to "syvial")
-    val items = (state.inventories.values.flatMap { it.items.values } + state.omnivault.storedItems.values).associate { it.name.lowercase() to it.itemId }
+    val items = (state.inventories.values.flatMap { it.items.values }).associate { it.name.lowercase() to it.itemId }
     return GameContext(state, actors, items)
   }
 
   private fun isDirectPlayerPickupAction(action: String): Boolean {
     val text = action.trim()
-    val omnivaultWithdrawal = Regex("(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:omnivault|nhẫn|kho)", RegexOption.IGNORE_CASE).containsMatchIn(text)
-    if (omnivaultWithdrawal) return false
     val directVerb = Regex("(?:^|\\s)(?:nhặt|lượm|cầm\\s+lên|lấy(?:\\s+lên)?|thu\\s+hồi|tịch\\s+thu|nhận(?:\\s+lấy)?|pick\\s+up|take|receive)(?:\\s|$)", RegexOption.IGNORE_CASE)
     val inventoryAssertion = Regex("(?:thêm|bỏ|đưa).{0,80}(?:vào|trong)\\s+(?:inventory|kho đồ|túi đồ)", RegexOption.IGNORE_CASE)
     return directVerb.containsMatchIn(text) || inventoryAssertion.containsMatchIn(text)
@@ -258,10 +250,6 @@ class GameCoreFacade private constructor(
     "inventory_transfer" -> "Vật phẩm đã được chuyển giao."
     "item_equipped" -> "Vật phẩm đã được trang bị."
     "item_unequipped" -> "Vật phẩm đã được tháo khỏi trang bị."
-    "omnivault_stored" -> "Vật phẩm đã được cất vào Omnivault."
-    "omnivault_withdrawn" -> "Vật phẩm đã được lấy ra khỏi Omnivault."
-    "omnivault_scanned" -> "Omnivault đã ghi mẫu vào scan slot và đánh dấu bản gốc."
-    "omnivault_copied" -> "Omnivault đã tạo bản sao từ mẫu còn hiệu lực."
     else -> "Hành động đã được Game State Core xác nhận."
   }
 

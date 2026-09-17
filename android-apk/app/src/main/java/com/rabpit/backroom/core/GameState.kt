@@ -4,23 +4,19 @@ const val CURRENT_SAVE_VERSION = 3
 const val KAI_ID = "kai"
 const val KAI_WHITE_WRAITH_ID = "kai:white-wraith-magnum"
 const val KAI_BLACKBLOOD_ARMOR_ID = "kai:blackblood-armor"
-const val KAI_OMNIVAULT_RING_ID = "kai:omnivault-ring"
 
 object KaiStartingEquipment {
   const val WEAPON_NAME = "W.W Magnum"
   const val ARMOR_NAME = "Blackblood Armor & linked modules"
-  const val RING_NAME = "Omnivault Ring"
 
   val slots: Map<String, String> = linkedMapOf(
     "weapon" to KAI_WHITE_WRAITH_ID,
     "armor" to KAI_BLACKBLOOD_ARMOR_ID,
-    "ring" to KAI_OMNIVAULT_RING_ID
   )
 
   fun displayName(itemId: String): String? = when (itemId) {
     KAI_WHITE_WRAITH_ID -> WEAPON_NAME
     KAI_BLACKBLOOD_ARMOR_ID -> ARMOR_NAME
-    KAI_OMNIVAULT_RING_ID -> RING_NAME
     else -> null
   }
 
@@ -29,7 +25,6 @@ object KaiStartingEquipment {
     return when {
       key.contains("w.w magnum") || key.contains("white wraith") || key.contains("wraith magnum") -> "weapon"
       key.contains("blackblood armor") || key.contains("black blood armor") -> "armor"
-      key.contains("omnivault ring") || key.contains("nhẫn omnivault") || key.contains("nhẫn vạn tàng") || key.contains("van tang") -> "ring"
       else -> null
     }
   }
@@ -138,7 +133,6 @@ data class GameState(
   val inventories: Map<String, InventoryState> = emptyMap(),
   val equipment: Map<String, EquipmentState> = emptyMap(),
   val statuses: Map<String, StatusEffect> = emptyMap(),
-  val omnivault: OmnivaultState = OmnivaultState(),
   val turn: TurnState = TurnState(),
   val time: GameTimeState = GameTimeState(),
   val world: Map<String, String> = emptyMap(),

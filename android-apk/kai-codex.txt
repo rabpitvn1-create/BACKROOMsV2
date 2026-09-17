@@ -81,7 +81,7 @@ Tệp này là bản canon vận hành của Kai dùng cho Game Master trong APK
 
 10. BLACKBLOOD ARMOR & MODULES
 Blackblood Armor:
-- Tăng sức mạnh/tốc độ; hấp thụ và phân tán va chạm; giảm tiếng bước chân; thích nghi môi trường khắc nghiệt; bảo vệ trước độc, nhiệt, lạnh, áp suất; theo dõi mục tiêu/phân tích chiến trường; nối Omnivault Ring.
+- Tăng sức mạnh/tốc độ; hấp thụ và phân tán va chạm; giảm tiếng bước chân; thích nghi môi trường khắc nghiệt; bảo vệ trước độc, nhiệt, lạnh, áp suất; theo dõi mục tiêu/phân tích chiến trường.
 - Là phần mở rộng của cơ thể, không phải giáp nặng làm Kai chậm đi.
 - Tự sửa chữa bằng Sparda Core.
 Demon Jaw Mask:
@@ -91,20 +91,6 @@ Talon Gauntlets:
 Phantom Greaves:
 - Bứt tốc/gia tốc tức thời; nhảy cao; đổi hướng giữa không trung; chạy tường; giảm tác động tiếp đất; tăng lực đá và khả năng truy đuổi.
 
-11. OMNIVAULT RING / NHẪN VẠN TÀNG
-- Chỉ tác động vật VÔ TRI. Tuyệt đối không lưu trữ, hoàn nguyên, nâng cấp, quét/sao chép, tái tạo hoặc triệu hồi sinh vật sống bằng cách dựng lại cơ thể.
-- Lưu trữ: không giới hạn số lượng, kích thước, khối lượng và quy tắc không gian thông thường đối với vật vô tri hợp lệ.
-- Hoàn nguyên: nhẫn phát luồng ánh sáng khóa mục tiêu; phần hợp lệ trở về trạng thái tốt nhất từng tồn tại của chính nó. Sau mỗi lần Hoàn nguyên thành công, CHÍNH vật phẩm đó cooldown đúng 24 giờ; cooldown tính riêng từng vật, không khóa vật khác.
-- Nâng cấp: có thể cải thiện vật liệu, độ bền, công suất, hiệu suất, độ chính xác, tương thích, năng lượng, chức năng và thuộc tính siêu nhiên trong phạm vi canon.
-- Quét: chỉ vật vô tri BẢN GỐC chưa Marked làm nguồn. Mỗi mẫu chiếm 1 trong đúng 3 slot. Khi đủ 3 slot, mẫu mới ghi đè một mẫu cũ. Bản gốc bị Marked ngay sau lần quét thành công và không thể làm nguồn quét lại.
-- Sao chép: từ mỗi mẫu còn trong 3 slot, tạo số bản sao vô tri không giới hạn. Bản sao do Omnivault tạo KHÔNG thể dùng làm nguồn quét. Khi slot bị ghi đè, bản sao cũ vẫn tồn tại nhưng không thể tạo thêm từ mẫu đã mất.
-- Muốn tạo lại mẫu đã bị ghi đè, Kai phải có một BẢN GỐC KHÁC chưa Marked.
-- Triệu hồi: vật đã lưu hoặc mẫu hợp lệ có thể xuất hiện tức thời ở vị trí được chỉ định.
-- Tái trang bị: khôi phục/thay thế vũ khí, giáp, công cụ và phương tiện gần như tức thời khi chúng là mục tiêu hợp lệ.
-- Lan theo khối liên tục: với Scan và Hoàn nguyên, vùng ánh sáng ban đầu không giới hạn phạm vi cuối. Nếu điểm khóa thuộc cùng một khối vật chất liên tục, hiệu ứng có thể lan qua toàn bộ khối bất kể kích thước/diện tích/khối lượng.
-- Vật phẩm hoàn chỉnh hợp lệ: bộ giáp của Kai, giáp chống đạn và súng cá nhân có thể được hệ thống công nhận là một đơn vị hoàn chỉnh dù gồm nhiều chi tiết.
-- Hệ lớn/lắp ghép: KHÔNG Scan hoặc Hoàn nguyên nguyên khối một hệ lớn đã lắp thành tổng thể như căn nhà thông thường, xe máy, xe tăng hoặc pháo/cannon hoàn chỉnh. Chỉ phần riêng đủ điều kiện hoặc khối vật chất liên tục hợp lệ được xử lý.
-- KHÔNG mặc định 3 slot đang EMPTY nếu state/canon hiện hành chưa xác nhận. Số slot là canon; nội dung slot là state.
 
 12. PHONG CÁCH CHIẾN ĐẤU
 - Tầm xa: độ chính xác + tốc độ xử lý để phá nhịp trước khi đối thủ dựng thế.

@@ -81,23 +81,6 @@ class GameStateCoreTest {
     val removed = StateReducer.execute(applied.state, StatusCommand("status-remove", "TURN_1", KAI_ID, source = CommandSource.SYSTEM, operation = StatusCommand.Operation.REMOVE, statusId = "injury-leg"))
     assertFalse("injury-leg" in removed.state.statuses)
   }
-
-  @Test fun omnivaultStoreWithdrawAndLivingValidation() {
-    val picked = StateReducer.execute(base(), item("water", ItemCommand.Operation.PICKUP, 2)).state
-    val stored = StateReducer.execute(picked, OmnivaultCommand("store", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.STORE, itemId = "water", itemName = "Water"))
-    assertEquals(1, stored.state.omnivault.storedItems.getValue("water").quantity)
-    val withdrawn = StateReducer.execute(stored.state, OmnivaultCommand("withdraw", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.WITHDRAW, itemId = "water", itemName = "Water"))
-    assertEquals(2, withdrawn.state.inventories.getValue(KAI_ID).items.getValue("water").quantity)
-    val living = StateReducer.execute(withdrawn.state, OmnivaultCommand("living", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.STORE, itemId = "iris", itemName = "Iris", isLiving = true))
-    assertEquals("living_target_forbidden", living.validation.reason)
-  }
-
-  @Test fun omnivaultThreeSlotsAndCopyRemainGameplayMechanics() {
-    var state = base()
-    for (i in 1..4) {
-      state = StateReducer.execute(state, item("original-$i", ItemCommand.Operation.PICKUP)).state
-      state = StateReducer.execute(state, OmnivaultCommand("scan-$i", "TURN_1", KAI_ID, source = CommandSource.RULE, operation = OmnivaultCommand.Operation.SCAN, itemId = "original-$i", itemName = "Item $i", timestampEpochMs = i.toLong())).state
-    }
     assertEquals(3, state.omnivault.scanSlots.size)
     assertFalse(state.omnivault.scanSlots.any { it.sourceItemId == "original-1" })
     assertTrue("original-1" in state.omnivault.markedSourceIds)

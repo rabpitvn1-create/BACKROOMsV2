@@ -129,7 +129,6 @@ object InventoryEngine {
         if (equipment.slots[slot] != command.itemId) return invalid(state, "item_not_equipped")
         changed(state.copy(equipment = state.equipment + (command.actorId to equipment.copy(slots = equipment.slots - slot))), "item_unequipped")
       }
-      ItemCommand.Operation.STORE, ItemCommand.Operation.WITHDRAW -> invalid(state, "use_omnivault_command")
     }
   }
 }

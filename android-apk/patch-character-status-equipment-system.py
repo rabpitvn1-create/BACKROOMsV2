@@ -132,7 +132,6 @@ object EquipmentCatalog {
         ability("Environmental Protection", "Bảo vệ trước độc tố, nhiệt, lạnh và áp suất."),
         ability("Core Self-Repair", "Tự sửa chữa bằng Sparda Core."),
         ability("Battlefield Tracking", "Theo dõi chiến trường, hỗ trợ combat analysis và đồng bộ dữ liệu tác chiến."),
-        ability("Omnivault Integration", "Kết nối trực tiếp Omnivault Ring.")
       ),
       restrictions = listOf("Không áp Heavy Armor mobility penalty; canon xác định giáp vận hành như phần mở rộng của cơ thể."),
       canonRef = "KAI-AKECHI-CODEX"
@@ -172,18 +171,7 @@ object EquipmentCatalog {
       ),
       canonRef = "KAI-AKECHI-CODEX"
     ),
-    EquipmentDefinition(
-      id = KAI_OMNIVAULT_RING_ID, name = "Omnivault Ring", type = "UTILITY EQUIPMENT", primarySlot = EquipmentSlot.RING,
-      abilities = listOf(
-        ability("Infinite Physical Storage", "Lưu trữ vật vô tri không giới hạn theo canon.", "Không tác động lên sinh vật sống."),
-        ability("Scan Template", "Lưu mẫu để sao chép.", "Có đúng 3 template slots."),
-        ability("Copy", "Tạo bản sao từ template còn tồn tại.", "Không tự tăng số template slot."),
-        ability("Summon", "Triệu hồi vật đã lưu hoặc template hợp lệ."),
-        ability("Rapid Re-Equip", "Hỗ trợ khôi phục hoặc thay thế trang bị gần như tức thời khi điều kiện hợp lệ.")
-      ),
-      restrictions = listOf("Giới hạn Omnivault lấy trực tiếp từ Character Codex; không tác động lên sinh vật sống."),
-      canonRef = "KAI-AKECHI-CODEX"
-    ),
+
     EquipmentDefinition(
       id = IRIS_RECON_FRAME_ID, name = "Blackblood Recon Frame R03", type = "RECON ARMOR", primarySlot = EquipmentSlot.ARMOR,
       bonuses = EquipmentBonuses(hp = 20, df = 14, agi = 10, crit = 4),
@@ -257,7 +245,6 @@ object EquipmentCatalog {
       EquipmentSlot.HEAD to KAI_DEMON_JAW_MASK_ID,
       EquipmentSlot.GAUNTLETS to KAI_TALON_GAUNTLETS_ID,
       EquipmentSlot.GREAVES to KAI_PHANTOM_GREAVES_ID,
-      EquipmentSlot.RING to KAI_OMNIVAULT_RING_ID
     )
     IRIS_ID -> linkedMapOf(EquipmentSlot.WEAPON to IRIS_IVORY_EBONY_SET_ID, EquipmentSlot.ARMOR to IRIS_RECON_FRAME_ID)
     SYVIAL_ID -> linkedMapOf(EquipmentSlot.WEAPON to SYVIAL_GODKILLER_ID, EquipmentSlot.ARMOR to SYVIAL_LUCIFER_ARMOR_ID)
@@ -502,38 +489,32 @@ state = GAME_STATE.read_text(encoding="utf-8")
 if '"head" to KAI_DEMON_JAW_MASK_ID' not in state:
     slot_anchor = '''    "weapon" to KAI_WHITE_WRAITH_ID,
     "armor" to KAI_BLACKBLOOD_ARMOR_ID,
-    "ring" to KAI_OMNIVAULT_RING_ID
 '''
     slot_new = '''    "weapon" to KAI_WHITE_WRAITH_ID,
     "armor" to KAI_BLACKBLOOD_ARMOR_ID,
     "head" to KAI_DEMON_JAW_MASK_ID,
     "gauntlets" to KAI_TALON_GAUNTLETS_ID,
     "greaves" to KAI_PHANTOM_GREAVES_ID,
-    "ring" to KAI_OMNIVAULT_RING_ID
 '''
     state = one(state, slot_anchor, slot_new, "Kai full equipment slots")
 
 if 'KAI_DEMON_JAW_MASK_ID -> "Demon Jaw Mask"' not in state:
     display_anchor = '''    KAI_BLACKBLOOD_ARMOR_ID -> ARMOR_NAME
-    KAI_OMNIVAULT_RING_ID -> RING_NAME
 '''
     display_new = '''    KAI_BLACKBLOOD_ARMOR_ID -> ARMOR_NAME
     KAI_DEMON_JAW_MASK_ID -> "Demon Jaw Mask"
     KAI_TALON_GAUNTLETS_ID -> "Talon Gauntlets"
     KAI_PHANTOM_GREAVES_ID -> "Phantom Greaves"
-    KAI_OMNIVAULT_RING_ID -> RING_NAME
 '''
     state = one(state, display_anchor, display_new, "Kai equipment display names")
 
 if 'key.contains("demon jaw")' not in state:
     slot_for_anchor = '''      key.contains("blackblood armor") || key.contains("black blood armor") -> "armor"
-      key.contains("omnivault ring") || key.contains("nhẫn omnivault") || key.contains("nhẫn vạn tàng") || key.contains("van tang") -> "ring"
 '''
     slot_for_new = '''      key.contains("blackblood armor") || key.contains("black blood armor") -> "armor"
       key.contains("demon jaw") -> "head"
       key.contains("talon gauntlet") -> "gauntlets"
       key.contains("phantom greave") -> "greaves"
-      key.contains("omnivault ring") || key.contains("nhẫn omnivault") || key.contains("nhẫn vạn tàng") || key.contains("van tang") -> "ring"
 '''
     state = one(state, slot_for_anchor, slot_for_new, "Kai equipment slot resolver")
 
@@ -1059,10 +1040,6 @@ class CharacterStatusEquipmentSystemTest {
     val twice = CharacterStatEngine.applyCompletedTurnRegen(once, "TURN_X"); assertEquals(54, twice.characters.getValue(KAI_ID).vitalState.currentHp)
     val zero = CharacterStatEngine.setCurrentHp(s, KAI_ID, 0); val after = CharacterStatEngine.applyCompletedTurnRegen(zero, "TURN_Z")
     assertEquals(0, after.characters.getValue(KAI_ID).vitalState.currentHp); assertEquals(CharacterCondition.DEFEATED, after.characters.getValue(KAI_ID).vitalState.condition)
-  }
-
-  @Test fun omnivaultMayHaveZeroCombatStatsWithAbilities() {
-    val d = EquipmentCatalog.definition(KAI_OMNIVAULT_RING_ID)!!; assertFalse(d.bonuses.any()); assertTrue(d.abilities.isNotEmpty())
   }
 
   @Test fun reconFrameHasNoForbiddenWeapons() {

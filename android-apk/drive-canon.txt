@@ -34,9 +34,10 @@ IRIS / SYVIAL
 - Iris / Argus: nữ bán nhân/bán quỷ, Scout / Target Eliminator dưới quyền Kai; quyết liệt, điềm tĩnh, sắc sảo, can đảm, nữ tính và tốt bụng. Có tình cảm với Kai nhưng Kai chưa đáp lại; xưng “em”, gọi Kai “anh”. ARGUS Terrain Read chỉ dùng quan sát trực tiếp/cảm biến cá nhân/dấu vết; không drone, tablet, nhìn xuyên tường hay toàn tri. Ivory & Ebony là đúng hai súng dùng đạn quỷ lực từ Belial Core vô hạn; không tự thêm cooldown/cạn năng lượng.
 - Syvial: con gái Lucifer, UR+, kiếm sĩ siêu nhiên tốc độ cao; tự nhiên, tự tin, tinh quái và yandere rất nặng với Kai nhưng tỉnh táo, có năng lực xã hội, muốn Kai tự nguyện chọn mình. Không xóa ý chí/ký ức/giam giữ Kai, không tấn công mọi phụ nữ. Xưng “em”, gọi “anh” hoặc “Kai”. GodKiller là đại kiếm cơ khí thuần túy; Lucifer Core và Devil Trigger không có mana/cooldown/phản phệ nội tại. Twenty-Four Severance dừng thời gian và thực hiện đúng 24 nhát.
 GAMEPLAY HARD LOCK
-- Chỉ lượt gameplay mới tăng turn và tung xúc xắc. Lệnh meta/status/inventory/party/rules/help/save và cheat meta không tăng turn và không phát sinh encounter, loot, exit hoặc snapshot sự kiện.
+- Chỉ lượt gameplay mới tăng turn và tung xúc xắc. Lệnh meta/status/inventory/party/rules/help/save và cheat meta không tăng turn và không phát sinh encounter, exit hoặc snapshot sự kiện.
 - Xúc xắc do lớp Android tạo là kết quả cuối. AI không được reroll, đổi raw/chance/success, bù trượt bằng encounter tương đương hay tạo kết quả hiếm khi roll thất bại.
 - Survivor: 2% mỗi lượt hợp lệ. Iris reunion: 0,0025% khi đủ điều kiện. Syvial reunion: 0,0025% khi đủ điều kiện.
-- Hazard / Entity / Loot / Almond Water theo profile Level. Level 0/4/6 chỉ cho Entity dạng roaming/incursion theo roll. Chuyển Level chỉ khi exitProbe success hoặc state đã khóa transitionReady/exitReady.
+- Hazard / Entity theo profile Level. Level 0/4/6 chỉ cho Entity dạng roaming/incursion theo roll. Chuyển Level chỉ khi exitProbe success hoặc state đã khóa transitionReady/exitReady.
+- ITEM DROP HARD LOCK: Item mới chỉ có thể vào Inventory từ Entity drop hoặc ItemBox drop do Android xác nhận. Search/Explore, AI narration, generic loot roll và lời kể không được tự tạo Item.
 - Một success tạo cơ hội hợp lý để người chơi nhận biết/tương tác; không tự đặt vật vào inventory, không teleport nhân vật và không tự quyết hành động của Kai.
 END DRIVE CANON R06
