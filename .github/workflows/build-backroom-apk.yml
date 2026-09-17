@@ -1,4 +1,4 @@
-name: Restore Kai and Entity overlay runtime
+name: Restore Overlay Runtime
 
 on:
   workflow_dispatch:
@@ -14,73 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Restore overlay runtime directly in Java source
+      - name: Patch Java source
+        run: python3 .github/scripts/restore-overlay-runtime.py
+      - name: Commit Java source
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          path = Path('android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java')
-          text = path.read_text(encoding='utf-8')
-
-          if 'function activeEntityKey()' not in text:
-              old_css = ".message.pending .text{color:#aeb7be}';\" +"
-              new_css = ".message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-character{position:absolute;right:-2%;bottom:-8%;width:62%;height:118%;object-fit:contain;object-position:right bottom;z-index:2;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{position:absolute;left:0;bottom:0;width:auto;max-width:55%;height:97%;object-fit:contain;object-position:left bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}';\" +"
-              if old_css not in text:
-                  raise SystemExit('CSS marker not found')
-              text = text.replace(old_css, new_css, 1)
-
-              old_render = "      \"function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>GEMINI SNAPSHOT</b><small>Chưa có ảnh của turn hiện tại.</small>';box.appendChild(p);}}\" +"
-              new_render = """      \"function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}\" +
-      \"var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];\" +
-      \"function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}\" +
-      \"function activeEntityKey(){try{var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||c.entityKey||c.enemyKey||c.entity||c.enemy||'');if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}\" +
-      \"function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey());}catch(e){return false;}}\" +
-      \"function appendSnapshotOverlay(box){var key=activeEntityKey(),img;if(key){img=document.createElement('img');img.className='snapshot-entity';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);return;}if(shouldShowKaiOverlay()){img=document.createElement('img');img.className='snapshot-character';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';box.appendChild(img);}}\" +
-      \"function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>GEMINI SNAPSHOT</b><small>Chưa có ảnh của turn hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}\" +"""
-              if old_render not in text:
-                  raise SystemExit('renderSnapshot marker not found')
-              text = text.replace(old_render, new_render, 1)
-
-          if 'ENTITY OVERLAY STATE CONTRACT:' not in text:
-              marker = '            "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +\n'
-              rule = '            "ENTITY OVERLAY STATE CONTRACT: flags.entityEncounterKey bắt buộc có ở mọi lượt AI. Nếu một Entity đang trực tiếp hiện diện hoặc đối đầu, đặt canonical key local tương ứng; nếu không còn Entity trực tiếp hiện diện thì đặt chuỗi rỗng. Canonical keys: hound, clump, duller, deathmoth, hostile_faceling, false_puddle, paintings, smiler, skin-stealer, predatory_window, biological_pipeline, wretch, cable_mimic, the_beast_of_level_5, hotel_corpse_lure, jeff_the_killer, jane_the_killer, slenderman, diep_minh. Không dùng đường dẫn, URL hoặc alias khác. " +\n'
-              if marker not in text:
-                  raise SystemExit('prompt marker not found')
-              text = text.replace(marker, marker + rule, 1)
-
-          if 'generatedFlags = generated.optJSONObject("flags")' not in text:
-              marker = '          if (!location.isEmpty()) state.put("location", location);\n'
-              block = '''          JSONObject generatedFlags = generated.optJSONObject("flags");
-          if (generatedFlags != null) {
-            JSONObject flags = state.optJSONObject("flags");
-            if (flags == null) flags = new JSONObject();
-            mergeObject(flags, generatedFlags);
-            if (!generatedFlags.has("entityEncounterKey")) flags.put("entityEncounterKey", "");
-            state.put("flags", flags);
-          }
-'''
-              if marker not in text:
-                  raise SystemExit('state merge marker not found')
-              text = text.replace(marker, marker + block, 1)
-
-          required = [
-              'function activeEntityKey()',
-              'function shouldShowKaiOverlay()',
-              "file:///android_asset/kai_snapshot_overlay.png",
-              "file:///android_asset/entity/",
-              'ENTITY OVERLAY STATE CONTRACT:',
-              'generatedFlags = generated.optJSONObject("flags")',
-              "className='snapshot-entity'",
-              "className='snapshot-character'",
-          ]
-          missing = [m for m in required if m not in text]
-          if missing:
-              raise SystemExit('Missing overlay runtime markers: ' + ', '.join(missing))
-
-          path.write_text(text, encoding='utf-8')
-          PY
-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
