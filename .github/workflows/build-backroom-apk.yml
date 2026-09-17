@@ -1,4 +1,5 @@
 name: Build Backroom APK
+# Clean-state verification trigger after retired gameplay cleanup.
 
 on:
   workflow_dispatch:
