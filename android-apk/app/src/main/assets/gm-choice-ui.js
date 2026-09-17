@@ -237,9 +237,11 @@
     var visualIndex = Number.isInteger(window.__combatVisualActorIndex) ? window.__combatVisualActorIndex : Number(combat.actorIndex || 0);
     var visualParticipant = Array.isArray(combat.participants) && combat.participants[visualIndex] ? combat.participants[visualIndex] : null;
     var visualActor = visualParticipant && (visualParticipant.name || visualParticipant.id) ? (visualParticipant.name || visualParticipant.id) : (combat.currentActor || 'Nhân vật');
-    label.appendChild(document.createTextNode('LƯỢT CHIẾN ĐẤU ' + (combat.round || 1) + ' · '));
+    var visualRound = Number.isInteger(window.__combatVisualActorIndex) && Number.isInteger(combat.resolvedRound) ? combat.resolvedRound : (combat.round || 1);
+    label.appendChild(document.createTextNode('LƯỢT CHIẾN ĐẤU ' + visualRound + ' · '));
     appendRichText(label, visualActor, entry, [{text:visualActor,type:'character'}]);
     box.appendChild(label);
+    if (window.__combatBusy && Number.isInteger(window.__combatVisualActorIndex)) { article.appendChild(box); return; }
     var choices = Array.isArray(combat.choices) ? combat.choices : [];
     choices.forEach(function(choice){
       var disabled = !!choice.disabled || window.__combatBusy;
