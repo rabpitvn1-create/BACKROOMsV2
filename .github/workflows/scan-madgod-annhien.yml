@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Repair one-shot script delimiters
+      - name: Repair one-shot cleanup transform
         shell: bash
         run: |
           set -euo pipefail
@@ -57,6 +57,16 @@ jobs:
               '# Progression/Snapshot patch keeps its level/cache/combat/healthbar duties only.',
               '# Build packaging must not require removed assets.',
           )
+
+          start = text.index('# Orchestrator: remove dedicated item/root/roll/state handling.')
+          end = text.index('# State-op hardening now carries only the unrelated conservative deletion rule.', start)
+          block = text[start:end]
+          needle = 'write(rel, text)\n'
+          extra = "text = text.replace(' MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory.', '')\n"
+          if extra not in block:
+              block = block.replace(needle, extra + needle, 1)
+          text = text[:start] + block + text[end:]
+
           p.write_text(text, encoding='utf-8')
           PY
           python3 -m py_compile .github/scripts/purge-retired-systems.py
