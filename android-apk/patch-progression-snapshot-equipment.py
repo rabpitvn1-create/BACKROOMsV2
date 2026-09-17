@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parent
 MAIN = ROOT / "app/src/main/java/com/rabpit/backroom/MainActivity.java"
@@ -140,18 +141,20 @@ if new_supported_followers not in equipment_system:
 equipment_system_path.write_text(equipment_system, encoding="utf-8")
 
 # Final CI guard: nested patch scripts must not recreate retired runtime code, tests or assets.
-retired_tokens = ("madgod", "an_nhien", "annhien", "an nhien", "an-nhien", "an nhiên")
+# Match retired names as identifiers/whole names. Substring matching would incorrectly flag normal
+# Vietnamese text such as "can nhiên liệu" because it contains the characters "an nhiên".
+retired_name = re.compile(r"(?<!\w)(?:mad\s*god|an(?:[_ -]?nhien|\s+nhiên))(?!\w)", re.IGNORECASE)
 app_src = ROOT / "app/src"
 for path in app_src.rglob("*"):
     if not path.is_file():
         continue
-    rel = str(path.relative_to(app_src)).lower()
-    if any(token in rel for token in retired_tokens):
+    rel = str(path.relative_to(app_src))
+    if retired_name.search(rel):
         raise RuntimeError(f"Retired runtime path recreated: {rel}")
     if path.suffix.lower() not in {".kt", ".java", ".html", ".json", ".txt", ".xml"}:
         continue
-    text = path.read_text(encoding="utf-8", errors="ignore").lower()
-    if any(token in text for token in retired_tokens):
+    text = path.read_text(encoding="utf-8", errors="ignore")
+    if retired_name.search(text):
         raise RuntimeError(f"Retired runtime content recreated in: {rel}")
 
 for marker in (
