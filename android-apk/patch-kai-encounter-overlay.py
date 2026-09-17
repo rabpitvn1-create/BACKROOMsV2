@@ -1,0 +1,72 @@
+from pathlib import Path
+import hashlib
+import struct
+
+ROOT = Path(__file__).resolve().parent
+MAIN = ROOT / 'app/src/main/java/com/rabpit/backroom/MainActivity.java'
+ASSETS = ROOT / 'app/src/main/assets'
+EXPLORE = ASSETS / 'kai_snapshot_overlay.png'
+ENCOUNTER = ASSETS / 'kai_entity_overlay.png'
+EXPECTED = {
+    EXPLORE: ('0d4a612a984e3b864d9220ea65d8032fd37a09160d8600ecd6ee0d4c24056589', (1024, 1536)),
+    ENCOUNTER: ('92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a', (1448, 1086)),
+}
+
+for path, (digest, dimensions) in EXPECTED.items():
+    raw = path.read_bytes()
+    if raw[:8] != b'\x89PNG\r\n\x1a\n':
+        raise RuntimeError(f'{path.name} is not a valid PNG')
+    width, height = struct.unpack('>II', raw[16:24])
+    if (width, height) != dimensions:
+        raise RuntimeError(f'{path.name}: expected {dimensions}, got {(width, height)}')
+    if hashlib.sha256(raw).hexdigest() != digest:
+        raise RuntimeError(f'{path.name}: SHA-256 mismatch')
+
+text = MAIN.read_text(encoding='utf-8')
+helper = (
+    "function kaiEntityActive(){try{"
+    "var c=state&&state.combat;"
+    "if(c&&typeof c.active==='boolean')return c.active===true&&!!String(c.entityKey||'').trim();"
+    "var f=state&&state.flags||{};"
+    "if(String(f.entityEncounterKey||'').trim())return true;"
+    "if(f.jeff&&f.jeff.present===true)return true;"
+    "if(f.jane&&f.jane.present===true)return true;"
+    "var ev=state&&state._snapshotEvent;"
+    "return !!(ev&&ev.shouldGenerate===true&&String(ev.kind||'').toUpperCase()==='ENTITY_CONFIRMED');"
+    "}catch(e){return false}}"
+    "function kaiDisplayOverlaySource(){"
+    "if(kaiEntityActive())return 'kai_entity_overlay.png';"
+    "return typeof kaiOverlaySource==='function'?kaiOverlaySource():'kai_snapshot_overlay.png';}"
+)
+
+if 'function kaiDisplayOverlaySource()' not in text:
+    anchor = 'function cachedSnapshot(){'
+    if text.count(anchor) != 1:
+        raise RuntimeError(f'Kai overlay helper anchor: expected 1, found {text.count(anchor)}')
+    text = text.replace(anchor, helper + anchor, 1)
+
+if "kai.src=kaiDisplayOverlaySource();" not in text:
+    candidates = [
+        "kai.src=kaiOverlaySource();",
+        "kai.src='kai_snapshot_overlay.png';",
+        "kai.src='file:///android_asset/kai_snapshot_overlay.png';",
+        "kai.src='kai_snapshot_overlay.webp';",
+        "kai.src='file:///android_asset/kai_snapshot_overlay.webp';",
+    ]
+    present = [candidate for candidate in candidates if candidate in text]
+    if len(present) != 1:
+        raise RuntimeError(f'Kai renderer source anchor: expected 1 variant, found {present}')
+    text = text.replace(present[0], "kai.src=kaiDisplayOverlaySource();", 1)
+
+for marker in (
+    'function kaiEntityActive()',
+    'function kaiDisplayOverlaySource()',
+    "return 'kai_entity_overlay.png'",
+    "'kai_snapshot_overlay.png'",
+    'kai.src=kaiDisplayOverlaySource();',
+):
+    if marker not in text:
+        raise RuntimeError('Kai encounter overlay contract missing: ' + marker)
+
+MAIN.write_text(text, encoding='utf-8')
+print('Kai explore/entity overlay routing installed.')
