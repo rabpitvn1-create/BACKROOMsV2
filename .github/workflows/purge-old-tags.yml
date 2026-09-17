@@ -1,0 +1,71 @@
+name: Purge Old Git Tags
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/purge-old-tags.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Delete every Git tag except v1.1.64
+        shell: bash
+        run: |
+          set -euo pipefail
+          keep='v1.1.64'
+          gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/" --jq '.[].ref' > /tmp/tag-refs.txt
+
+          deleted=0
+          while IFS= read -r ref; do
+            [ -n "${ref:-}" ] || continue
+            tag="${ref#refs/tags/}"
+            if [ "$tag" = "$keep" ]; then
+              echo "KEEP   $tag"
+              continue
+            fi
+            echo "DELETE $tag"
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$tag"
+            deleted=$((deleted + 1))
+          done < /tmp/tag-refs.txt
+
+          echo "Deleted $deleted tag(s); kept $keep."
+
+      - name: Verify only v1.1.64 remains
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t refs < <(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/" --jq '.[].ref')
+          printf '%s\n' "${refs[@]}"
+          [ "${#refs[@]}" -eq 1 ]
+          [ "${refs[0]}" = 'refs/tags/v1.1.64' ]
+
+      - name: Remove temporary branches created during cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          for branch in tmp-tag-purge-check tag-purge-safety-copy cleanup-temp-branches cleanup-temp-branches-2 cleanup-temp-branches-3 cleanup-temp-branches-4 cleanup-temp-branches-5; do
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$branch" >/dev/null 2>&1 || true
+          done
+
+      - name: Remove this temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/purge-old-tags.yml
+          git commit -m 'Remove old tag purge workflow'
+          git push origin HEAD:main
