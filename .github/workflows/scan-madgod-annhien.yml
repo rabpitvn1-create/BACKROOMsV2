@@ -62,8 +62,13 @@ jobs:
               '# Build packaging must not require removed assets.',
           )
 
+          state_start = text.index('# State-op hardening now carries only the unrelated conservative deletion rule.')
+          state_end = text.index('# Audit patches: remove the retired high-risk root and prompt clause only.', state_start)
+          state_rewrite = '''# State-op hardening became obsolete after the retired system was removed.\nrel = "android-apk/patch-state-op-hardening.py"\nwrite(rel, 'print("State-op hardening: no retired-system work remains.")\\n')\n\n'''
+          text = text[:state_start] + state_rewrite + text[state_end:]
+
           start = text.index('# Orchestrator: remove dedicated item/root/roll/state handling.')
-          end = text.index('# State-op hardening now carries only the unrelated conservative deletion rule.', start)
+          end = text.index('# State-op hardening became obsolete after the retired system was removed.', start)
           block = text[start:end]
           needle = 'write(rel, text)\n'
           extra = "text = text.replace(' MadGod roll success chỉ mở discovery route, không tự đưa set vào inventory.', '')\n"
