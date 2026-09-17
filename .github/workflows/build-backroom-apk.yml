@@ -76,6 +76,7 @@ jobs:
             echo "==> $script"
             python3 "android-apk/$script"
           done
+          python3 .github/scripts/patch-runtime-test-contracts.py
           git diff --check
 
           # Character Codex sync: current Drive source refs must reach the generated
