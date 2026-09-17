@@ -54,9 +54,11 @@ public final class GmChoiceContract {
     for (int i = 0; i < input.length() && output.length() < MAX_HIGHLIGHTS; i++) {
       Object raw = input.opt(i);
       String text;
+      String type = "";
       if (raw instanceof JSONObject) {
         JSONObject object = (JSONObject) raw;
         text = object.optString("text", object.optString("name", "")).trim();
+        type = sanitizeHighlightType(object.optString("type", object.optString("kind", "")));
       } else {
         text = raw == null ? "" : String.valueOf(raw).trim();
       }
@@ -64,10 +66,37 @@ public final class GmChoiceContract {
       if (text.length() > MAX_HIGHLIGHT_TEXT) text = text.substring(0, MAX_HIGHLIGHT_TEXT).trim();
       boolean duplicate = false;
       for (int j = 0; j < output.length(); j++) {
-        if (text.equalsIgnoreCase(output.optString(j, ""))) { duplicate = true; break; }
+        Object existing = output.opt(j);
+        String existingText = existing instanceof JSONObject
+          ? ((JSONObject) existing).optString("text", "")
+          : output.optString(j, "");
+        if (text.equalsIgnoreCase(existingText)) { duplicate = true; break; }
       }
-      if (!duplicate) output.put(text);
+      if (!duplicate) {
+        if (type.isEmpty()) output.put(text);
+        else output.put(new JSONObject().put("text", text).put("type", type));
+      }
     }
     return output;
+  }
+
+  private static String sanitizeHighlightType(String raw) {
+    String type = raw == null ? "" : raw.trim().toLowerCase();
+    if ("npc".equals(type) || "ally".equals(type) || "player".equals(type)) type = "character";
+    if ("enemy".equals(type) || "monster".equals(type)) type = "entity";
+    if ("level".equals(type) || "area".equals(type) || "zone".equals(type) || "place".equals(type)) type = "location";
+    if ("status".equals(type) || "buff".equals(type) || "debuff".equals(type)) type = "effect";
+    switch (type) {
+      case "character":
+      case "entity":
+      case "item":
+      case "skill":
+      case "effect":
+      case "location":
+      case "stat":
+        return type;
+      default:
+        return "";
+    }
   }
 }
