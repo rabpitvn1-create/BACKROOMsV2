@@ -51,6 +51,29 @@ public class CombatChoiceEngineTest {
     assertFalse(CombatChoiceEngine.isKnownEntity("not_a_real_entity"));
   }
 
+  @Test public void sub500EntityHpIsIncreasedByTwoHundredPercent() throws Exception {
+    String[] keys = {
+        "hound", "clump", "duller", "deathmoth", "hostile_faceling", "false_puddle",
+        "paintings", "smiler", "skin-stealer", "predatory_window", "biological_pipeline",
+        "wretch", "cable_mimic", "the_beast_of_level_5", "hotel_corpse_lure",
+        "jeff_the_killer", "jane_the_killer", "slenderman", "diep_minh"
+    };
+    int[] expectedHp = {
+        240, 315, 270, 195, 225, 285,
+        210, 255, 300, 345, 360,
+        255, 300, 435, 330,
+        360, 360, 480, 2000
+    };
+
+    for (int i = 0; i < keys.length; i++) {
+      JSONObject state = combatState(new JSONArray());
+      CombatChoiceEngine.start(state, keys[i], 0);
+      JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+      assertEquals(keys[i] + " maxHp", expectedHp[i], entity.getInt("maxHp"));
+      assertEquals(keys[i] + " hp", expectedHp[i], entity.getInt("hp"));
+    }
+  }
+
   @Test public void soloCombatRosterContainsOnlyKai() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
