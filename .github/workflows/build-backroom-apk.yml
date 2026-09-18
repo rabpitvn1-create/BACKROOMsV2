@@ -108,6 +108,15 @@ jobs:
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
+          jq -e '.version == 2 and .selectionPolicy == "generic_scene_only" and (.levels["0"].assets | length) == 3 and (.levels["1"].assets | length) == 2 and (.levels["2"].assets | length) == 2 and (.levels["3"].assets | length) == 5 and (.levels["4"].assets | length) == 1 and (.levels["5"].assets | length) == 1 and (.levels["6"].assets | length) == 0' android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json >/dev/null
+          for removed in \
+            level_0/04.webp level_0/05.webp level_0/06.webp \
+            level_1/03.webp level_1/04.webp \
+            level_2/03.webp level_2/04.webp level_2/05.webp level_2/06.webp level_2/07.webp level_2/08.webp level_2/09.webp level_2/10.webp \
+            level_3/06.webp level_3/07.webp level_3/08.webp level_3/09.webp level_3/10.webp \
+            level_5/02.webp level_5/03.webp level_6/01.webp; do
+            test ! -e "android-apk/app/src/main/assets/level_snapshots/wiki/$removed"
+          done
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -239,7 +248,9 @@ jobs:
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/entity_encounters.json'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/manifest.json'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_0/01.webp'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_5/01.webp'
+          ! unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
+          ! unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_2/10.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
