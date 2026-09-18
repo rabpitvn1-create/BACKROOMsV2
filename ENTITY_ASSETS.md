@@ -33,12 +33,13 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/assets/knowledge/entity_encounters.json`.
 
 - There is no shared spawn-rate pool.
-- Every current-canon auto-spawn Entity has its own fixed independent roll between **1.00% and 1.50%** on each eligible world-advancing gameplay turn.
-- Eligibility is constrained by the current Level according to the current `01_WORLD/entity.md` canon.
+- Every registered auto-spawn Entity has its own fixed independent roll between **1.00% and 1.50%** on each eligible world-advancing gameplay turn.
+- Every registered auto-spawn Entity is now **roaming on every valid Backrooms Level**. Original canon habitat/Level restrictions are reference metadata only and do not block runtime spawning.
+- Entity canon still governs behavior, capabilities and encounter portrayal after the Core has spawned it.
 - If an Entity encounter is already active, Core does not roll a replacement Entity.
 - If multiple independent rolls succeed on the same turn, Core selects one of those successful rolls because runtime supports one active encounter overlay at a time.
 - Gemini does not choose the spawned Entity and cannot replace `flags.entityEncounterKey`.
-- `jane_the_killer`, `slenderman` and `diep_minh` remain local overlay assets for legacy-save compatibility but are not auto-spawned because the current Entity canon does not define them as Level 0–6 encounter records.
+- `jane_the_killer`, `slenderman` and `diep_minh` remain local overlay assets for legacy-save compatibility. They are still not in the auto-spawn registry because no fixed encounter rate is defined for them; the roaming policy applies to every Entity that is actually registered for auto-spawn.
 
 Current fixed rates are stored only in `entity_encounters.json`; that file is the machine-readable encounter authority so documentation and runtime cannot quietly grow two different probability systems.
 
