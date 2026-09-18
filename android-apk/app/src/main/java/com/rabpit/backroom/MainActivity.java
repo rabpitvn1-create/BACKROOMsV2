@@ -37,10 +37,14 @@ public class MainActivity extends Activity {
   private final ExecutorService imageIo = Executors.newSingleThreadExecutor();
   private final AtomicInteger latestSnapshotTurn = new AtomicInteger(0);
   private GameCoreFacade gameCore;
+  private static final String HAIKU_MODEL = "claude-haiku-4-5-20251001";
+  private static final String HAIKU_ENDPOINT = "https://api.anthropic.com/v1/messages";
   private static final String GEMINI_MODEL = "gemini-3.6-flash";
   private static final String GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image";
   private static final int[] RETRYABLE = {408, 429, 500, 502, 503, 504};
   private static final int MAX_SNAPSHOT_BASE64 = 1_500_000;
+  private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
+  private static final long GEMINI_FALLBACK_BASE_DELAY_MS = 700L;
 
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
   @Override public void onCreate(Bundle savedInstanceState) {
@@ -176,8 +180,26 @@ public class MainActivity extends Activity {
     return new String[] {
       BuildConfig.GEMINI_API_KEY_1,
       BuildConfig.GEMINI_API_KEY_2,
-      BuildConfig.GEMINI_API_KEY_3
+      BuildConfig.GEMINI_API_KEY_3,
+      BuildConfig.GEMINI_API_KEY_4,
+      BuildConfig.GEMINI_API_KEY_5
     };
+  }
+
+  private void sleepQuietly(long delayMs) {
+    if (delayMs <= 0L) return;
+    try {
+      Thread.sleep(delayMs);
+    } catch (InterruptedException interrupted) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  private String providerFailureLabel(Exception error) {
+    if (error instanceof HttpError) return "HTTP " + ((HttpError) error).status;
+    String message = error == null || error.getMessage() == null ? "unknown error" : error.getMessage().trim();
+    if (message.length() > 120) message = message.substring(0, 120);
+    return message.isEmpty() ? "unknown error" : message;
   }
 
   private String postJson(String endpoint, String key, String authHeader, JSONObject payload) throws Exception {
@@ -210,53 +232,156 @@ public class MainActivity extends Activity {
     return body.toString();
   }
 
+  private String postAnthropicJson(JSONObject payload) throws Exception {
+    String key = BuildConfig.HAIKU_API == null ? "" : BuildConfig.HAIKU_API.trim();
+    if (key.isEmpty()) throw new Exception("HAIKU_API chưa được cấu hình.");
+
+    HttpURLConnection connection = (HttpURLConnection) new URL(HAIKU_ENDPOINT).openConnection();
+    connection.setRequestMethod("POST");
+    connection.setConnectTimeout(20000);
+    connection.setReadTimeout(60000);
+    connection.setDoOutput(true);
+    connection.setRequestProperty("Content-Type", "application/json");
+    connection.setRequestProperty("x-api-key", key);
+    connection.setRequestProperty("anthropic-version", "2023-06-01");
+    try (OutputStream output = connection.getOutputStream()) {
+      output.write(payload.toString().getBytes("UTF-8"));
+    }
+
+    int status = connection.getResponseCode();
+    InputStream stream = status >= 200 && status < 300 ? connection.getInputStream() : connection.getErrorStream();
+    StringBuilder body = new StringBuilder();
+    if (stream != null) {
+      try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+        String line;
+        while ((line = reader.readLine()) != null) body.append(line);
+      }
+    }
+    connection.disconnect();
+
+    if (status < 200 || status >= 300) {
+      String detail = body.length() > 220 ? body.substring(0, 220) : body.toString();
+      throw new HttpError(status, "Haiku HTTP " + status + (detail.isEmpty() ? "" : ": " + detail));
+    }
+    return body.toString();
+  }
+
+  private String haikuText(String prompt) throws Exception {
+    Exception last = null;
+    for (int attempt = 0; attempt < 2; attempt++) {
+      try {
+        JSONObject message = new JSONObject().put("role", "user").put("content", prompt);
+        JSONObject body = new JSONObject()
+            .put("model", HAIKU_MODEL)
+            .put("max_tokens", 2048)
+            .put("temperature", 0.8)
+            .put("messages", new JSONArray().put(message));
+        JSONObject result = new JSONObject(postAnthropicJson(body));
+        JSONArray content = result.optJSONArray("content");
+        StringBuilder text = new StringBuilder();
+        if (content != null) {
+          for (int i = 0; i < content.length(); i++) {
+            JSONObject part = content.optJSONObject(i);
+            String piece = part != null ? part.optString("text", "").trim() : "";
+            if (!piece.isEmpty()) {
+              if (text.length() > 0) text.append('\n');
+              text.append(piece);
+            }
+          }
+        }
+        if (text.length() == 0) throw new Exception("Haiku không trả nội dung.");
+        String output = text.toString();
+        parseModelJson(output);
+        return output;
+      } catch (Exception error) {
+        last = error;
+        int code = error instanceof HttpError ? ((HttpError) error).status : 0;
+        if (attempt == 0 && (code == 0 || retryable(code))) {
+          Log.w(TAG, "Haiku text attempt failed with " + providerFailureLabel(error) + "; retrying once.");
+          sleepQuietly(HAIKU_RETRY_DELAY_MS);
+          continue;
+        }
+        break;
+      }
+    }
+    throw last != null ? last : new Exception("Haiku không khả dụng.");
+  }
+
   private String geminiText(String prompt) throws Exception {
     Exception last = null;
-    for (String key : geminiKeys()) {
-      if (key == null || key.isEmpty()) continue;
-      for (int attempt = 0; attempt < 2; attempt++) {
-        try {
-          JSONObject part = new JSONObject().put("text", prompt);
-          JSONObject contents = new JSONObject().put("role", "user").put("parts", new JSONArray().put(part));
-          JSONObject config = new JSONObject().put("responseMimeType", "application/json").put("temperature", 0.8);
-          JSONObject body = new JSONObject().put("contents", new JSONArray().put(contents)).put("generationConfig", config);
-          JSONObject result = new JSONObject(postJson("https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent", key, "x-goog-api-key", body));
-          JSONArray candidates = result.optJSONArray("candidates");
-          StringBuilder text = new StringBuilder();
-          if (candidates != null) {
-            for (int c = 0; c < candidates.length(); c++) {
-              JSONObject candidate = candidates.optJSONObject(c);
-              JSONObject providerContent = candidate != null ? candidate.optJSONObject("content") : null;
-              JSONArray parts = providerContent != null ? providerContent.optJSONArray("parts") : null;
-              if (parts == null) continue;
-              for (int p = 0; p < parts.length(); p++) {
-                JSONObject responsePart = parts.optJSONObject(p);
-                String piece = responsePart != null ? responsePart.optString("text", "").trim() : "";
-                if (!piece.isEmpty()) {
-                  if (text.length() > 0) text.append('\n');
-                  text.append(piece);
-                }
+    String[] keys = geminiKeys();
+    int configuredKeys = 0;
+
+    for (int keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+      String key = keys[keyIndex];
+      if (key == null || key.trim().isEmpty()) continue;
+      configuredKeys++;
+      try {
+        JSONObject part = new JSONObject().put("text", prompt);
+        JSONObject contents = new JSONObject().put("role", "user").put("parts", new JSONArray().put(part));
+        JSONObject config = new JSONObject().put("responseMimeType", "application/json").put("temperature", 0.8);
+        JSONObject body = new JSONObject().put("contents", new JSONArray().put(contents)).put("generationConfig", config);
+        JSONObject result = new JSONObject(postJson(
+            "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent",
+            key, "x-goog-api-key", body));
+        JSONArray candidates = result.optJSONArray("candidates");
+        StringBuilder text = new StringBuilder();
+        if (candidates != null) {
+          for (int c = 0; c < candidates.length(); c++) {
+            JSONObject candidate = candidates.optJSONObject(c);
+            JSONObject providerContent = candidate != null ? candidate.optJSONObject("content") : null;
+            JSONArray parts = providerContent != null ? providerContent.optJSONArray("parts") : null;
+            if (parts == null) continue;
+            for (int p = 0; p < parts.length(); p++) {
+              JSONObject responsePart = parts.optJSONObject(p);
+              String piece = responsePart != null ? responsePart.optString("text", "").trim() : "";
+              if (!piece.isEmpty()) {
+                if (text.length() > 0) text.append('\n');
+                text.append(piece);
               }
             }
           }
-          if (text.length() == 0) throw new Exception("Gemini không trả nội dung.");
-          return text.toString();
-        } catch (Exception e) {
-          last = e;
-          int code = e instanceof HttpError ? ((HttpError)e).status : 0;
-          if (attempt == 0 && (code == 0 || retryable(code))) {
-            try { Thread.sleep(350); } catch (InterruptedException ignored) {}
-            continue;
-          }
-          break;
+        }
+        if (text.length() == 0) throw new Exception("Gemini K" + (keyIndex + 1) + " không trả nội dung.");
+        String output = text.toString();
+        parseModelJson(output);
+        return output;
+      } catch (Exception error) {
+        last = error;
+        int code = error instanceof HttpError ? ((HttpError) error).status : 0;
+        Log.w(TAG, "Gemini text K" + (keyIndex + 1) + " failed with " + providerFailureLabel(error) + "; trying next key.");
+        if (keyIndex < keys.length - 1) {
+          long delay = (code == 0 || retryable(code))
+              ? GEMINI_FALLBACK_BASE_DELAY_MS + (500L * keyIndex)
+              : 250L;
+          sleepQuietly(delay);
         }
       }
     }
-    throw last != null ? last : new Exception("Không có Gemini API key trong APK.");
+
+    if (configuredKeys == 0) throw new Exception("Không có Gemini API key trong APK.");
+    throw last != null ? last : new Exception("Toàn bộ Gemini API key đều không khả dụng.");
   }
 
   private String generateText(String prompt) throws Exception {
-    return geminiText(prompt);
+    Exception haikuError;
+    try {
+      return haikuText(prompt);
+    } catch (Exception error) {
+      haikuError = error;
+      Log.w(TAG, "Haiku primary failed with " + providerFailureLabel(error) + "; falling back to Gemini.");
+    }
+
+    sleepQuietly(650L);
+    try {
+      return geminiText(prompt);
+    } catch (Exception geminiError) {
+      throw new Exception(
+          "Haiku và toàn bộ Gemini fallback đều không khả dụng. Haiku: "
+              + providerFailureLabel(haikuError)
+              + "; Gemini: "
+              + providerFailureLabel(geminiError));
+    }
   }
 
   private JSONObject parseModelJson(String raw) throws Exception {
