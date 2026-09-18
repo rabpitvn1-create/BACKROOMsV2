@@ -113,6 +113,8 @@ jobs:
           grep -Fq 'applyLegacyFullscreenFlags()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'SOFT_INPUT_ADJUST_RESIZE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
