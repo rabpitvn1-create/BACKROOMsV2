@@ -79,8 +79,11 @@ public class MainActivity extends Activity {
       String snapshotUi = readAssetText("snapshot-ui.js");
       String gmChoiceUi = readAssetText("gm-choice-ui.js");
       String inventoryUi = readAssetText("inventory-ui.js");
+      String partyUi = readAssetText("party-ui.js");
       webView.evaluateJavascript(snapshotUi, ignored ->
-        webView.evaluateJavascript(gmChoiceUi, ignoredChoice -> webView.evaluateJavascript(inventoryUi, null)));
+        webView.evaluateJavascript(gmChoiceUi, ignoredChoice ->
+          webView.evaluateJavascript(inventoryUi, ignoredInventory ->
+            webView.evaluateJavascript(partyUi, null))));
     } catch (Exception e) {
       Log.e(TAG, "Unable to install WebView UI scripts", e);
     }
