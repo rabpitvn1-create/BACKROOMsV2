@@ -2,11 +2,6 @@ name: Purge Failed GitHub Actions Runs
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/purge-actions-history.yml'
 
 permissions:
   actions: write
@@ -16,63 +11,33 @@ jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete red, cancelled and pending workflow runs since yesterday
+      - name: Delete failed workflow runs only
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           CURRENT_RUN_ID: ${{ github.run_id }}
-          SINCE_UTC: '2026-09-16T17:00:00Z'
         shell: bash
         run: |
           set -euo pipefail
 
           echo "Current purge run: ${CURRENT_RUN_ID}"
-          echo "Deleting unsuccessful/pending runs created since ${SINCE_UTC}"
 
-          mapfile -t RUN_ROWS < <(
+          mapfile -t RUN_IDS < <(
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
-              "/repos/${REPO}/actions/runs?per_page=100" \
-              --jq ".workflow_runs[] | select(.created_at >= \"${SINCE_UTC}\") | [.id, .status, (.conclusion // \"\")] | @tsv"
+              "/repos/${REPO}/actions/runs?status=failure&per_page=100" \
+              --jq '.workflow_runs[].id'
           )
 
-          echo "Scanned ${#RUN_ROWS[@]} recent workflow runs."
+          echo "Found ${#RUN_IDS[@]} failed workflow runs."
 
           deleted=0
           failed=0
-          skipped=0
 
-          for row in "${RUN_ROWS[@]}"; do
-            IFS=$'\t' read -r run_id status conclusion <<< "${row}"
-
+          for run_id in "${RUN_IDS[@]}"; do
             [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
 
-            target=false
-            case "${status}" in
-              queued|in_progress|requested|waiting|pending) target=true ;;
-            esac
-            case "${conclusion}" in
-              failure|cancelled|timed_out|action_required|stale) target=true ;;
-            esac
-
-            if [[ "${target}" != "true" ]]; then
-              skipped=$((skipped + 1))
-              continue
-            fi
-
-            echo "Purging run ${run_id} (status=${status}, conclusion=${conclusion:-none})"
-
-            case "${status}" in
-              queued|in_progress|requested|waiting|pending)
-                gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
-                for _ in $(seq 1 30); do
-                  current_status="$(gh api "/repos/${REPO}/actions/runs/${run_id}" --jq '.status' 2>/dev/null || echo completed)"
-                  [[ "${current_status}" == "completed" ]] && break
-                  sleep 2
-                done
-                ;;
-            esac
-
+            echo "Deleting failed run ${run_id}"
             success=false
             for attempt in 1 2 3 4 5; do
               if gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}" >/dev/null 2>&1; then
@@ -90,9 +55,9 @@ jobs:
             fi
           done
 
-          echo "Deleted ${deleted} unsuccessful/pending workflow runs."
-          echo "Preserved ${skipped} successful/neutral/skipped workflow runs."
+          echo "Deleted ${deleted} failed workflow runs."
           echo "Failed deletions: ${failed}."
+          echo "Successful/cancelled runs are preserved."
 
           if [[ "${failed}" -ne 0 ]]; then
             exit 1
