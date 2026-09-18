@@ -129,7 +129,14 @@ jobs:
           grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
           grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
           grep -Fq 'Level "+level+" : ' android-apk/app/src/main/assets/index.html
-          grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
+          grep -Fq '.snapshot{height:clamp(320px,44vh,430px)' android-apk/app/src/main/assets/index.html
+          grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
+          grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
+          grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
+          grep -Fq 'player-action-ui.js' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq ".message.gm .role,.gm-choice{font-family:system-ui" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq ".semantic{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'VIRTUAL_GROUND_RATIO=0.92' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'function visibleAlphaBounds' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'function alignOverlayToGround' android-apk/app/src/main/assets/snapshot-ui.js
@@ -151,6 +158,7 @@ jobs:
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
+          node --check android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq "kai:'file:///android_asset/avatars/kai_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
@@ -196,6 +204,7 @@ jobs:
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/gm-choice-ui.js'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/inventory-ui.js'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/party-ui.js'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/player-action-ui.js'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/avatars/kai_avatar.jpg'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/lucia_entity_overlay.png'
