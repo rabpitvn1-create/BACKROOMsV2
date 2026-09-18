@@ -18,79 +18,73 @@ These seven legacy files were retrieved from the Escape the Backrooms Wiki CDN o
 
 ## Curated Backrooms Wikidot snapshot pool
 
-Imported on 2026-09-17 from the current Backrooms Wiki/Wikidot level pages. The pool is intentionally capped at 10 assets per level. Import validation required a decodable JPEG/PNG/WebP source of at least 400x270 pixels, then normalized it to stripped WebP at up to 1600x1600. Selection excluded images that were visibly watermarked or did not belong to the referenced level page.
+Imported on 2026-09-17 from the Backrooms Wiki/Wikidot level pages, then audited again on 2026-09-18 for actual in-game Snapshot use.
 
-Level 6 is special: the current Wikidot page describes complete darkness and provides a hand-drawn map as its usable official visual. The pool therefore stores that map instead of mixing in imagery from a different Backrooms canon.
+The runtime selects a local fallback image only from the current Level and turn number. It does **not** know whether the player is currently inside a special sub-area, historical location, blackout event, crate encounter, railway section, Boiler Room, Red Room, or other conditional scene. Because of that, the retained pool is intentionally stricter than the source wiki gallery: only broadly representative environmental scenes remain.
 
-### Level 0 — 6 assets
+Images that were valid illustrations on the wiki but misleading or visually unhelpful as an unconditional gameplay Snapshot were removed rather than replaced.
+
+### Level 0 — 3 retained assets
 
 Page: https://backrooms-wiki.wikidot.com/level-0
 
-- `wiki/level_0/01.webp` — https://backrooms-wiki.wikidot.com/local--files/level-0/OGLevel0.jpg
-- `wiki/level_0/02.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-0/2
-- `wiki/level_0/03.webp` — https://backrooms-wiki.wikidot.com/local--files/level-0/3
-- `wiki/level_0/04.webp` — https://backrooms-wiki.wikidot.com/local--files/level-0/4
-- `wiki/level_0/05.webp` — https://backrooms-wiki.wikidot.com/local--files/level-0/5
-- `wiki/level_0/06.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-0/6
+- `wiki/level_0/01.webp` — general Level 0 / original Backrooms scene.
+- `wiki/level_0/02.webp` — general architectural variation.
+- `wiki/level_0/03.webp` — general pillar/hall variation.
 
-### Level 1 — 4 assets
+Removed from the gameplay pool: the hole-grid, blackout-zone, and Red Room-specific visuals because the fallback selector cannot know that the player is currently in those conditions.
+
+### Level 1 — 2 retained assets
 
 Page: https://backrooms-wiki.wikidot.com/level-1
 
-- `wiki/level_1/01.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-1/artistdiesinme.jpg
-- `wiki/level_1/02.webp` — https://backrooms-sandbox-2.wdfiles.com/local--files/collab%3Alevel-1/int%C3%A9rieur
-- `wiki/level_1/03.webp` — https://praetor.wdfiles.com/local--files/level-1/flickering
-- `wiki/level_1/04.webp` — https://backrooms-sandbox-2.wdfiles.com/local--files/collab%3Alevel-1/caisse
+- `wiki/level_1/01.webp` — general Habitable Zone hall.
+- `wiki/level_1/02.webp` — general Habitable Zone interior.
 
-### Level 2 — 10 assets
+Removed: Flickering-event and crate-specific visuals. Those are conditional phenomena and were being shown on unrelated turns.
+
+### Level 2 — 2 retained assets
 
 Page: https://backrooms-wiki.wikidot.com/level-2
 
-- `wiki/level_2/01.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2first.jpg
-- `wiki/level_2/02.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2piping.jpg
-- `wiki/level_2/03.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent.jpg
-- `wiki/level_2/04.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2fluorescent2.jpg
-- `wiki/level_2/05.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2door.jpg
-- `wiki/level_2/06.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2macchinahome.jpg
-- `wiki/level_2/07.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2stragglersbase.jpg
-- `wiki/level_2/08.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2trainprogress.jpg
-- `wiki/level_2/09.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2track.jpg
-- `wiki/level_2/10.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-2/2dark.jpg
+- `wiki/level_2/01.webp` — representative utility tunnel.
+- `wiki/level_2/02.webp` — representative pipe-heavy corridor.
 
-### Level 3 — 10 assets
+Removed: close-ups of fluorescent fixtures/doors and historical or location-specific imagery tied to the Macchina, Aiding Stragglers, B.N.T.G. railway construction/tracks, and blackout state. Those images are valid article illustrations but poor unconditional scene snapshots.
+
+### Level 3 — 5 retained assets
 
 Page: https://backrooms-wiki.wikidot.com/level-3
 
-- `wiki/level_3/01.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3FirstPhoto
-- `wiki/level_3/02.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Thin
-- `wiki/level_3/03.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3SecondPhoto
-- `wiki/level_3/04.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Dark
-- `wiki/level_3/05.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/DarkLevel3
-- `wiki/level_3/06.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-5/Level3ElectricalRoom2
-- `wiki/level_3/07.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3AssemblyLine
-- `wiki/level_3/08.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-5/Level3AssemblyLine2
-- `wiki/level_3/09.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3BoilerRoom
-- `wiki/level_3/10.webp` — https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Sanctum
+- `wiki/level_3/01.webp`
+- `wiki/level_3/02.webp`
+- `wiki/level_3/03.webp`
+- `wiki/level_3/04.webp`
+- `wiki/level_3/05.webp`
 
-### Level 4 — 1 asset
+These are retained as general Electrical Station hallway/environment references.
+
+Removed: Electrical Room, Assembly Line, Boiler Room, and Sanctum-specific gallery images because they represent particular rooms that the fallback selector cannot infer from gameplay state.
+
+### Level 4 — 1 retained asset
 
 Page: https://backrooms-wiki.wikidot.com/level-4
 
-- `wiki/level_4/01.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-4/Level-4-new
+- `wiki/level_4/01.webp`
 
-### Level 5 — 3 assets
+### Level 5 — 1 retained asset
 
 Page: https://backrooms-wiki.wikidot.com/level-5
 
-- `wiki/level_5/01.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-1-cc.png
-- `wiki/level_5/02.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-2-cc.jpg
-- `wiki/level_5/03.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-3-cc.jpg
+- `wiki/level_5/01.webp` — Main Hall, the broadly representative Level 5 scene.
 
-### Level 6 — 1 visual
+Removed: both Boiler Room-specific images. The game can be in the Main Hall, Beverly Room, or elsewhere in Level 5, so rotating Boiler Room images unconditionally was misleading.
+
+### Level 6 — no retained local fallback image
 
 Page: https://backrooms-wiki.wikidot.com/level-6
 
-- `wiki/level_6/01.webp` — https://backrooms-wiki.wdfiles.com/local--files/level-6/level6map.jpg
+The hand-drawn map was removed from the Snapshot pool. It is useful as wiki documentation, but it is not a scene and therefore reads as meaningless when displayed as the game's current visual state. No replacement was added.
 
 ## Attribution and licensing
 
