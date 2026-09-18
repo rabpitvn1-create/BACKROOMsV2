@@ -454,6 +454,7 @@ public class MainActivity extends Activity {
               throw new Exception("Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.");
             }
             JSONObject resolved = CombatChoiceEngine.resolve(submitted, action);
+            resolved = new JSONObject(gameCore.normalizeState(resolved.toString()));
             emit("backroomCombatTurn", resolved.toString());
             return;
           }
@@ -461,6 +462,7 @@ public class MainActivity extends Activity {
           String existingEncounter = encounterKey(submitted);
           if (CombatChoiceEngine.isKnownEntity(existingEncounter)) {
             CombatChoiceEngine.start(submitted, existingEncounter, lastGmLogIndex(submitted));
+            submitted = new JSONObject(gameCore.normalizeState(submitted.toString()));
             emit("backroomCombatTurn", submitted.toString());
             return;
           }
