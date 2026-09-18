@@ -6,7 +6,8 @@
   var style = document.createElement('style');
   style.textContent = [
     "@font-face{font-family:'Play';font-style:normal;font-weight:700;src:url('file:///android_asset/fonts/Play-Bold.ttf') format('truetype');font-display:swap}",
-    ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play',system-ui,sans-serif;font-weight:700}",
+    ".message.gm .role,.gm-choice{font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:700}",
+    ".combat-turn-label{font-family:'Play',system-ui,sans-serif;font-weight:700}",
     ".semantic{font-family:'Play',system-ui,sans-serif;font-weight:700;text-decoration:none}",
     ".semantic-character{color:#67d5ff}",
     ".semantic-entity{color:#ff6b6b}",
