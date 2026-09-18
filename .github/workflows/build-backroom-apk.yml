@@ -107,7 +107,14 @@ jobs:
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
-          test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
+          test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          test -s android-apk/SNAPSHOT_SHA256SUMS.txt
+          grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
+          test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
+          test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
+          test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -237,9 +244,12 @@ jobs:
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/kai_entity_overlay.png'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/knowledge_db.json'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/entity_encounters.json'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/manifest.json'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_0/01.webp'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
+          test "$(unzip -l Backroom-1.1.69.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
+          ! unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/'
+          ! unzip -l Backroom-1.1.69.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
