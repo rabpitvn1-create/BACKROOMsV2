@@ -34,6 +34,9 @@ jobs:
       GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
       GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
       GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -127,6 +130,20 @@ jobs:
           grep -Fq 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'SOFT_INPUT_ADJUST_RESIZE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_4' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_5' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.HAIKU_API' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String haikuText(String prompt)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'claude-haiku-4-5-20251001' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private void sleepBeforeNextGeminiKey' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
+          grep -Fq 'buildConfigField "String", "HAIKU_BASE_URL"' android-apk/app/build.gradle
+          grep -Fq 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
+          grep -Fq 'function scrollLatestGmToStart()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'window.backroomScrollLatestGmToStart = scrollLatestGmToStart' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'logEl.scrollTop=logEl.scrollHeight' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq "renderSnapshot();scrollBottom();" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
@@ -192,9 +209,10 @@ jobs:
       - name: Validate Game Master configuration
         run: |
           set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
+          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5 HAIKU_API; do
             test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
           done
+          echo "Optional Haiku base/model overrides: ${HAIKU_BASE_URL:+configured} ${HAIKU_MODEL:+configured}"
 
       - uses: actions/setup-java@v5
         with:
