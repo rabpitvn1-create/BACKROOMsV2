@@ -108,6 +108,11 @@ jobs:
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'characterPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'applyImmersiveFullscreen()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'SOFT_INPUT_ADJUST_RESIZE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
           grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
