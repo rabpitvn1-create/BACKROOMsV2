@@ -26,6 +26,8 @@ public class CharacterDetailCoreTest {
     assertEquals("kai", kai.getString("id"));
     assertEquals(100, kai.getInt("currentHp"));
     assertEquals(100, kai.getInt("maxHp"));
+    assertEquals(30, kai.getJSONObject("stats").getInt("ATK"));
+    assertEquals(10, kai.getJSONObject("stats").getInt("DEF"));
 
     JSONObject physiology = kai.getJSONObject("physiology");
     assertEquals("NORMAL", physiology.getString("hunger"));

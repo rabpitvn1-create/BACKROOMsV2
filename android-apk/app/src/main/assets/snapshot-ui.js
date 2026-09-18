@@ -50,6 +50,7 @@
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={kai:'file:///android_asset/kai_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
+  var __combatCharacterLayouts={kai:{height:0.84,width:0.68},lucia:{height:0.84,width:0.46},iris:{height:0.84,width:0.46},syvial:{height:0.84,width:0.46}};
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
   function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}
@@ -57,11 +58,11 @@
   function chestPresent(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !!(s.flags&&s.flags.chestPresent===true);}catch(e){return false;}}
   function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey()||chestPresent());}catch(e){return false;}}
   function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('kai')>=0||k.indexOf('twilight')>=0)return 'kai';if(k.indexOf('lucia')>=0||k.indexOf('hứa thuý mai')>=0||k.indexOf('hua thuy mai')>=0)return 'lucia';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
-  function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx=Number.isInteger(window.__combatVisualActorIndex)?window.__combatVisualActorIndex:Number(c.actorIndex||0);if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
+  function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
   function appendCombatCharacter(box,participant){
-    var actor=participant||{id:'kai',name:'Kai Akechi'},id=normalizeActorId(actor.id||actor.name),src=__combatCharacterOverlays[id]||'';
+    var actor=participant||{id:'kai',name:'Kai Akechi'},id=normalizeActorId(actor.id||actor.name),src=__combatCharacterOverlays[id]||'',layout=__combatCharacterLayouts[id]||{height:0.84,width:0.46};
     if(src){
-      var img=document.createElement('img');img.className='snapshot-character snapshot-grounded snapshot-combat-character';img.src=src;img.alt=actor.name||actor.id||'Nhân vật';box.appendChild(img);alignOverlayToGround(img,'right',0.84,0.46);return img;
+      var img=document.createElement('img');img.className='snapshot-character snapshot-grounded snapshot-combat-character';img.src=src;img.alt=actor.name||actor.id||'Nhân vật';img.dataset.combatActor=id;box.appendChild(img);alignOverlayToGround(img,'right',layout.height,layout.width);return img;
     }
     var placeholder=document.createElement('div');placeholder.className='snapshot-character-placeholder snapshot-combat-character';placeholder.setAttribute('role','img');placeholder.setAttribute('aria-label',actor.name||actor.id||'Nhân vật');box.appendChild(placeholder);return placeholder;
   }

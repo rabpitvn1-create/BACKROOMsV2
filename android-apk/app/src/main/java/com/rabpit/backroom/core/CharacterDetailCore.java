@@ -97,6 +97,12 @@ final class CharacterDetailCore {
     copyStringIfPresent(source, previous, member, "energy");
     copyNumberIfPresent(source, previous, member, "hpRegen");
     copyObjectIfPresent(source, previous, member, "stats");
+    JSONObject visibleStats = member.optJSONObject("stats");
+    if (leader && (visibleStats == null || visibleStats.length() == 0)) {
+      member.put("stats", new JSONObject()
+          .put("ATK", CombatChoiceEngine.KAI_DEFAULT_ATTACK)
+          .put("DEF", CombatChoiceEngine.KAI_DEFAULT_DEFENSE));
+    }
     copyArrayIfPresent(source, previous, member, "injuries");
     copyArrayIfPresent(source, previous, member, "statuses");
     copyArrayIfPresent(source, previous, member, "effects");

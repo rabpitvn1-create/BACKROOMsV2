@@ -25,6 +25,8 @@ public final class CombatChoiceEngine {
   private static final int GUILTY_CROWN_DAMAGE_PER_SHOT = 10;
   private static final int GUILTY_CROWN_TOTAL_DAMAGE = GUILTY_CROWN_SHOTS * GUILTY_CROWN_DAMAGE_PER_SHOT;
   private static final int MAX_COMBAT_PARTICIPANTS = 4;
+  static final int KAI_DEFAULT_ATTACK = 30;
+  static final int KAI_DEFAULT_DEFENSE = 10;
 
   private static final class EntityProfile {
     final String key;
@@ -278,7 +280,7 @@ public final class CombatChoiceEngine {
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
     String playerName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
-    output.put(participant("kai", playerName, -1, player, 100, 30, 10));
+    output.put(participant("kai", playerName, -1, player, 100, KAI_DEFAULT_ATTACK, KAI_DEFAULT_DEFENSE));
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;

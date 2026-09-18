@@ -188,12 +188,6 @@
     return (META[id]&&META[id].equipment)||[];
   }
 
-  function inventoryFor(member,id){
-    if(Array.isArray(member&&member.inventory))return member.inventory;
-    if(id==='kai'&&Array.isArray(state&&state.inventory))return state.inventory;
-    return [];
-  }
-
   function tagsSection(title,items){
     var box=section(title),wrap=document.createElement('div');wrap.className='party-detail-tags';
     if(!items.length){var empty=document.createElement('span');empty.className='party-detail-tag';empty.textContent='Chưa có dữ liệu.';wrap.appendChild(empty);}
@@ -254,7 +248,6 @@
     effects=effects.filter(Boolean);
     if(effects.length)sections.appendChild(tagsSection('HIỆU ỨNG / THƯƠNG TÍCH',effects));
     sections.appendChild(tagsSection('TRANG BỊ',equipmentFor(member,id)));
-    sections.appendChild(tagsSection('INVENTORY',inventoryFor(member,id)));
     detail.appendChild(sections);
     detail.hidden=false;
   }
