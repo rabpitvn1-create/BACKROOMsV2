@@ -45,7 +45,7 @@ public class MainActivity extends Activity {
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    applyImmersiveFullscreen();
+    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     gameCore = GameCoreFacade.create(getApplicationContext(), BuildConfig.DEBUG);
     webView = new WebView(this);
     WebSettings settings = webView.getSettings();
@@ -60,35 +60,70 @@ public class MainActivity extends Activity {
     });
     webView.addJavascriptInterface(new GameBridge(), "Android");
     setContentView(webView);
+    safeApplyImmersiveFullscreen("onCreate");
     webView.loadUrl("file:///android_asset/index.html");
   }
 
   @Override protected void onResume() {
     super.onResume();
-    applyImmersiveFullscreen();
+    safeApplyImmersiveFullscreen("onResume");
   }
 
   @Override public void onWindowFocusChanged(boolean hasFocus) {
     super.onWindowFocusChanged(hasFocus);
-    if (hasFocus) applyImmersiveFullscreen();
+    if (hasFocus) safeApplyImmersiveFullscreen("onWindowFocusChanged");
+  }
+
+  private void safeApplyImmersiveFullscreen(String source) {
+    try {
+      applyImmersiveFullscreen();
+    } catch (Throwable error) {
+      Log.w(TAG, "Immersive fullscreen failed in " + source + "; keeping app alive.", error);
+      try {
+        applyLegacyFullscreenFlags();
+      } catch (Throwable fallbackError) {
+        Log.w(TAG, "Legacy fullscreen fallback also failed; continuing without immersive mode.", fallbackError);
+      }
+    }
   }
 
   private void applyImmersiveFullscreen() {
     Window window = getWindow();
-    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      window.setDecorFitsSystemWindows(false);
-      WindowInsetsController controller = window.getInsetsController();
-      if (controller != null) {
-        controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-        controller.setSystemBarsBehavior(
-            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+      WindowManager.LayoutParams attributes = window.getAttributes();
+      attributes.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+      window.setAttributes(attributes);
+
+      // Android 15+ with targetSdk 35 already enforces edge-to-edge. Re-applying the
+      // deprecated decor-fits path here has caused OEM launch crashes in this project before.
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        window.setDecorFitsSystemWindows(false);
       }
+
+      WindowInsetsController controller = window.getInsetsController();
+      if (controller == null) {
+        applyLegacyFullscreenFlags();
+        return;
+      }
+      controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+      controller.setSystemBarsBehavior(
+          WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
       return;
     }
 
-    window.getDecorView().setSystemUiVisibility(
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      WindowManager.LayoutParams attributes = window.getAttributes();
+      attributes.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+      window.setAttributes(attributes);
+    }
+    applyLegacyFullscreenFlags();
+  }
+
+  private void applyLegacyFullscreenFlags() {
+    getWindow().getDecorView().setSystemUiVisibility(
         View.SYSTEM_UI_FLAG_FULLSCREEN
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
