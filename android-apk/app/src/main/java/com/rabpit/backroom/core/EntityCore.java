@@ -37,7 +37,7 @@ final class EntityCore {
     int level = state.optInt("currentLevel", 0);
     List<EntityDefinition> hits = new ArrayList<>();
     for (EntityDefinition entity : entities.values()) {
-      if (!entity.allowedOn(level)) continue;
+      if (!roamingAllowedOn(level)) continue;
       double roll = ThreadLocalRandom.current().nextDouble(100.0);
       if (roll < entity.ratePercent) hits.add(entity);
     }
@@ -95,7 +95,8 @@ final class EntityCore {
     String activeKey = flags == null ? "" : flags.optString(ENCOUNTER_KEY, "").trim();
     if (activeKey.isEmpty()) {
       return "ENTITY CORE: no active Entity encounter this turn. Do not invent, summon or select an Entity. " +
-        "Encounter spawning is owned exclusively by Main Game Core independent fixed-rate rolls.";
+        "Encounter spawning is owned exclusively by Main Game Core independent fixed-rate rolls. " +
+        "All registered auto-spawn Entities are roaming and may roll on every valid Backrooms Level regardless of their original canon habitat.";
     }
 
     EntityDefinition entity = entities.get(activeKey);
@@ -106,8 +107,9 @@ final class EntityCore {
 
     return "ENTITY CORE ACTIVE ENCOUNTER: " + entity.name + " (key=" + entity.key + ").\n" +
       "FIXED INDEPENDENT SPAWN RATE: " + entity.ratePercent + "% per eligible world-advancing turn.\n" +
-      "ENTITY CANON: " + entity.canon + "\n" +
-      "Do not replace this Entity with another one. Continue the encounter according to state and canon. " +
+      "ROAMING POLICY: this registered Entity is valid on every Backrooms Level. Original canon habitat/location restrictions do not block its presence.\n" +
+      "ENTITY CANON (behavior/capabilities only): " + entity.canon + "\n" +
+      "Do not replace this Entity with another one. Continue the encounter according to state and behavioral canon. " +
       "Set flags.entityEncounterResolved=true only when the Entity is no longer directly present/engaged and the encounter has genuinely ended.";
   }
 
@@ -142,10 +144,9 @@ final class EntityCore {
         String key = record.optString("key", "").trim();
         String name = record.optString("name", key).trim();
         double rate = record.optDouble("ratePercent", 0.0);
-        JSONArray levels = record.optJSONArray("levels");
         String canon = record.optString("canon", "").trim();
-        if (key.isEmpty() || levels == null || rate < 1.0 || rate > 1.5) continue;
-        entities.put(key, new EntityDefinition(key, name, rate, levels, canon));
+        if (key.isEmpty() || rate < 1.0 || rate > 1.5) continue;
+        entities.put(key, new EntityDefinition(key, name, rate, canon));
       }
     } catch (Exception ignored) {}
   }
@@ -160,26 +161,21 @@ final class EntityCore {
     return text.toString();
   }
 
+  static boolean roamingAllowedOn(int level) {
+    return level >= 0;
+  }
+
   private static final class EntityDefinition {
     final String key;
     final String name;
     final double ratePercent;
-    final JSONArray levels;
     final String canon;
 
-    EntityDefinition(String key, String name, double ratePercent, JSONArray levels, String canon) {
+    EntityDefinition(String key, String name, double ratePercent, String canon) {
       this.key = key;
       this.name = name;
       this.ratePercent = ratePercent;
-      this.levels = levels;
       this.canon = canon;
-    }
-
-    boolean allowedOn(int level) {
-      for (int i = 0; i < levels.length(); i++) {
-        if (levels.optInt(i, -1) == level) return true;
-      }
-      return false;
     }
   }
 }
