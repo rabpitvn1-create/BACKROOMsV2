@@ -88,7 +88,7 @@ final class CharacterDetailCore {
 
     int previousMax = previous == null ? 0 : firstPositive(previous, 0, "maxHp", "maxHP", "hpMax");
     int maxHp = firstPositive(source, previousMax > 0 ? previousMax : 100, "maxHp", "maxHP", "hpMax");
-    int previousHp = previous == null ? 0 : firstNonNegative(previous, -1, "currentHp", "hp", "currentHP");
+    int previousHp = previous == null ? -1 : firstNonNegative(previous, -1, "currentHp", "hp", "currentHP");
     int hp = firstNonNegative(source, previousHp >= 0 ? previousHp : maxHp, "hp", "currentHp", "currentHP");
     hp = Math.max(0, Math.min(hp, maxHp));
     member.put("currentHp", hp).put("hp", hp).put("maxHp", maxHp);
