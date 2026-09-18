@@ -103,6 +103,7 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
@@ -132,7 +133,8 @@ jobs:
           grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
           grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
           grep -Fq 'Level "+level+" : ' android-apk/app/src/main/assets/index.html
-          grep -Fq '.snapshot{height:clamp(320px,44vh,430px)' android-apk/app/src/main/assets/index.html
+          grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
+          grep -Fq '.log{height:clamp(360px,55vh,620px)' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
           grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
@@ -154,7 +156,13 @@ jobs:
           grep -Fq 'MAX_COMBAT_PARTICIPANTS = 4' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'output.length() < MAX_COMBAT_PARTICIPANTS' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'feedbackEvents' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
+          jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and .rules.roamingAllLevels == true and .rules.canonLevelRestrictionsApplied == false and (.entities | length == 16) and ([.entities[].ratePercent | select(. < 1 or . > 1.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
+          grep -Fq 'static boolean roamingAllowedOn(int level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          grep -Fq 'width:38%;height:72%;' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "alignOverlayToGround(img,'right',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "alignOverlayToGround(img,'left',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
           node --check android-apk/app/src/main/assets/snapshot-ui.js

@@ -7,7 +7,10 @@
     "maximumRatePercent": 1.5,
     "sharedPool": false,
     "maxActiveEncounters": 1,
-    "legacyOverlayOnlyKeys": ["jane_the_killer", "slenderman", "diep_minh"]
+    "legacyOverlayOnlyKeys": ["jane_the_killer", "slenderman", "diep_minh"],
+    "roamingAllLevels": true,
+    "canonLevelRestrictionsApplied": false,
+    "levelMetadataMeaning": "reference_only_not_runtime_eligibility"
   },
   "entities": [
     {
