@@ -16,6 +16,13 @@ import java.util.Map;
  */
 final class CharacterDetailCore {
   static final int MAX_MEMBERS = 4;
+  // Gameplay-normalized Kai baseline migrated from rabpitvn1-create/BACKROOMS CharacterStatProfiles.
+  static final int KAI_BASE_STR = 82;
+  static final int KAI_BASE_DF = 78;
+  static final int KAI_BASE_AGI = 92;
+  static final int KAI_BASE_CRIT = 95;
+  static final int KAI_HP_REGEN_PER_COMPLETED_TURN = 4;
+  static final String KAI_ENERGY_DISPLAY = "∞";
   private static final long FOOD_CRITICAL_MINUTES = 72L * 60L;
   private static final long WATER_CRITICAL_MINUTES = 48L * 60L;
   private static final long REST_CRITICAL_MINUTES = 36L * 60L;
@@ -97,11 +104,15 @@ final class CharacterDetailCore {
     copyStringIfPresent(source, previous, member, "energy");
     copyNumberIfPresent(source, previous, member, "hpRegen");
     copyObjectIfPresent(source, previous, member, "stats");
-    JSONObject visibleStats = member.optJSONObject("stats");
-    if (leader && (visibleStats == null || visibleStats.length() == 0)) {
+    if (leader) {
+      // Keep Kai's legacy normalized character stats distinct from V2's attack/defense combat adapter.
+      member.put("energy", KAI_ENERGY_DISPLAY);
+      member.put("hpRegen", KAI_HP_REGEN_PER_COMPLETED_TURN);
       member.put("stats", new JSONObject()
-          .put("ATK", CombatChoiceEngine.KAI_DEFAULT_ATTACK)
-          .put("DEF", CombatChoiceEngine.KAI_DEFAULT_DEFENSE));
+          .put("STR", KAI_BASE_STR)
+          .put("DF", KAI_BASE_DF)
+          .put("AGI", KAI_BASE_AGI)
+          .put("CRIT", KAI_BASE_CRIT));
     }
     copyArrayIfPresent(source, previous, member, "injuries");
     copyArrayIfPresent(source, previous, member, "statuses");

@@ -200,7 +200,12 @@ jobs:
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq 'CombatChoiceEngine.KAI_DEFAULT_ATTACK' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_BASE_DF = 78' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_BASE_AGI = 92' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_BASE_CRIT = 95' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_HP_REGEN_PER_COMPLETED_TURN = 4' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'KAI_ENERGY_DISPLAY = "∞"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
