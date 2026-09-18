@@ -66,24 +66,24 @@ public final class CombatChoiceEngine {
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
 
   static {
-    entity("hound", "Hound", 80, 15, 2);
-    entity("clump", "Clump", 105, 17, 5);
-    entity("duller", "Duller", 90, 14, 3);
-    entity("deathmoth", "Deathmoth", 65, 13, 1);
-    entity("hostile_faceling", "Hostile Faceling", 75, 14, 2);
-    entity("false_puddle", "False Puddle", 95, 16, 4);
-    entity("paintings", "Paintings", 70, 12, 1);
-    entity("smiler", "Smiler", 85, 18, 2);
-    entity("skin-stealer", "Skin-Stealer", 100, 18, 4);
-    entity("predatory_window", "Predatory Window", 115, 17, 6);
-    entity("biological_pipeline", "Biological Pipeline", 120, 18, 7);
-    entity("wretch", "Wretch", 85, 16, 2);
-    entity("cable_mimic", "Cable Mimic", 100, 17, 5);
-    entity("the_beast_of_level_5", "The Beast of Level 5", 145, 22, 8);
-    entity("hotel_corpse_lure", "Hotel Corpse Lure", 110, 18, 5);
-    entity("jeff_the_killer", "Jeff", 120, 20, 4);
-    entity("jane_the_killer", "Jane", 120, 20, 4);
-    entity("slenderman", "Slenderman", 160, 23, 8);
+    entity("hound", "Hound", 240, 15, 2);
+    entity("clump", "Clump", 315, 17, 5);
+    entity("duller", "Duller", 270, 14, 3);
+    entity("deathmoth", "Deathmoth", 195, 13, 1);
+    entity("hostile_faceling", "Hostile Faceling", 225, 14, 2);
+    entity("false_puddle", "False Puddle", 285, 16, 4);
+    entity("paintings", "Paintings", 210, 12, 1);
+    entity("smiler", "Smiler", 255, 18, 2);
+    entity("skin-stealer", "Skin-Stealer", 300, 18, 4);
+    entity("predatory_window", "Predatory Window", 345, 17, 6);
+    entity("biological_pipeline", "Biological Pipeline", 360, 18, 7);
+    entity("wretch", "Wretch", 255, 16, 2);
+    entity("cable_mimic", "Cable Mimic", 300, 17, 5);
+    entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22, 8);
+    entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18, 5);
+    entity("jeff_the_killer", "Jeff", 360, 20, 4);
+    entity("jane_the_killer", "Jane", 360, 20, 4);
+    entity("slenderman", "Slenderman", 480, 23, 8);
     entity("diep_minh", "Diệp Minh", 2000, 42, 14);
 
     // Kai's combat skills are candidates for choice C. Pressing C still rolls the selected skill's
