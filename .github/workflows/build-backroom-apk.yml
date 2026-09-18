@@ -34,6 +34,7 @@ jobs:
       GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
       GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
       GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
 
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +98,15 @@ jobs:
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
+          grep -Fq 'private static final String HAIKU_MODEL = "claude-haiku-4-5-20251001"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String haikuText(String prompt)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'connection.setRequestProperty("x-api-key", key)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'connection.setRequestProperty("anthropic-version", "2023-06-01")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_4' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_5' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'return haikuText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'falling back to Gemini' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
@@ -192,7 +202,7 @@ jobs:
       - name: Validate Game Master configuration
         run: |
           set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
+          for name in HAIKU_API GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
             test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
           done
 
