@@ -22,6 +22,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private final EntityCore entityCore;
   private final ItemCore itemCore;
   private final CharacterEncounterCore characterEncounterCore;
+  private final CharacterDetailCore characterDetailCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
@@ -31,6 +32,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
+    this.characterDetailCore = new CharacterDetailCore();
   }
 
   public static GameCoreFacade create(Context context, boolean debugLogging) {
@@ -344,6 +346,13 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private void persist(JSONObject state) {
+    if (state != null) {
+      try {
+        characterDetailCore.projectState(state);
+      } catch (Exception e) {
+        debug("Character detail projection failed: " + e.getMessage());
+      }
+    }
     preferences.edit().putString(STATE_KEY, state == null ? "{}" : state.toString()).apply();
   }
 
