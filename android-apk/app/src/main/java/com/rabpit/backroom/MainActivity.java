@@ -2,12 +2,18 @@ package com.rabpit.backroom;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 import com.rabpit.backroom.core.CombatChoiceEngine;
 import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
@@ -39,6 +45,7 @@ public class MainActivity extends Activity {
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
   @Override public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    applyImmersiveFullscreen();
     gameCore = GameCoreFacade.create(getApplicationContext(), BuildConfig.DEBUG);
     webView = new WebView(this);
     WebSettings settings = webView.getSettings();
@@ -54,6 +61,40 @@ public class MainActivity extends Activity {
     webView.addJavascriptInterface(new GameBridge(), "Android");
     setContentView(webView);
     webView.loadUrl("file:///android_asset/index.html");
+  }
+
+  @Override protected void onResume() {
+    super.onResume();
+    applyImmersiveFullscreen();
+  }
+
+  @Override public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if (hasFocus) applyImmersiveFullscreen();
+  }
+
+  private void applyImmersiveFullscreen() {
+    Window window = getWindow();
+    window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(false);
+      WindowInsetsController controller = window.getInsetsController();
+      if (controller != null) {
+        controller.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+        controller.setSystemBarsBehavior(
+            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+      }
+      return;
+    }
+
+    window.getDecorView().setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
   }
 
   @Override protected void onDestroy() {
@@ -79,8 +120,11 @@ public class MainActivity extends Activity {
       String snapshotUi = readAssetText("snapshot-ui.js");
       String gmChoiceUi = readAssetText("gm-choice-ui.js");
       String inventoryUi = readAssetText("inventory-ui.js");
+      String partyUi = readAssetText("party-ui.js");
       webView.evaluateJavascript(snapshotUi, ignored ->
-        webView.evaluateJavascript(gmChoiceUi, ignoredChoice -> webView.evaluateJavascript(inventoryUi, null)));
+        webView.evaluateJavascript(gmChoiceUi, ignoredChoice ->
+          webView.evaluateJavascript(inventoryUi, ignoredInventory ->
+            webView.evaluateJavascript(partyUi, null))));
     } catch (Exception e) {
       Log.e(TAG, "Unable to install WebView UI scripts", e);
     }
