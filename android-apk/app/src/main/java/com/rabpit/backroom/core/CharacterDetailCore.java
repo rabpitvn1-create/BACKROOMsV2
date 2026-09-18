@@ -16,19 +16,18 @@ import java.util.Map;
  */
 final class CharacterDetailCore {
   static final int MAX_MEMBERS = 4;
-  // Gameplay-normalized Kai baseline migrated from rabpitvn1-create/BACKROOMS CharacterStatProfiles.
-  static final int KAI_BASE_STR = 82;
-  static final int KAI_BASE_DF = 78;
-  static final int KAI_BASE_AGI = 92;
-  static final int KAI_BASE_CRIT = 95;
-  static final int KAI_HP_REGEN_PER_COMPLETED_TURN = 4;
-  static final String KAI_ENERGY_DISPLAY = "∞";
   private static final long FOOD_CRITICAL_MINUTES = 72L * 60L;
   private static final long WATER_CRITICAL_MINUTES = 48L * 60L;
   private static final long REST_CRITICAL_MINUTES = 36L * 60L;
 
+  private final CharacterLevelCore characterLevelCore = new CharacterLevelCore();
+  private final EquipmentStatCore equipmentStatCore = new EquipmentStatCore();
+  private final CharacterStatCore characterStatCore = new CharacterStatCore();
+
   void projectState(JSONObject state) throws Exception {
     if (state == null) return;
+    characterLevelCore.normalizeState(state);
+    equipmentStatCore.normalizeState(state);
 
     JSONObject previousDetails = state.optJSONObject("partyDetails");
     Map<String, JSONObject> previousById = detailMembersById(previousDetails);
@@ -84,6 +83,7 @@ final class CharacterDetailCore {
         .put("name", nonEmpty(source.optString("name", ""), fallbackName))
         .put("presence", nonEmpty(source.optString("presence", ""), leader ? "ACTIVE" : "ACTIVE"))
         .put("isLeader", leader);
+    JSONObject rpgProjection = null;
 
     String avatar = firstString(source, previous, "avatar", "avatarRef");
     if (!avatar.isEmpty()) member.put("avatar", avatar);
@@ -105,14 +105,12 @@ final class CharacterDetailCore {
     copyNumberIfPresent(source, previous, member, "hpRegen");
     copyObjectIfPresent(source, previous, member, "stats");
     if (leader) {
-      // Keep Kai's legacy normalized character stats distinct from V2's attack/defense combat adapter.
-      member.put("energy", KAI_ENERGY_DISPLAY);
-      member.put("hpRegen", KAI_HP_REGEN_PER_COMPLETED_TURN);
-      member.put("stats", new JSONObject()
-          .put("STR", KAI_BASE_STR)
-          .put("DF", KAI_BASE_DF)
-          .put("AGI", KAI_BASE_AGI)
-          .put("CRIT", KAI_BASE_CRIT));
+      rpgProjection = characterStatCore.project(state, id, characterLevelCore, equipmentStatCore);
+      member.put("level", rpgProjection.getInt("level"));
+      member.put("energy", rpgProjection.getString("energy"));
+      member.put("hpRegen", rpgProjection.getInt("hpRegen"));
+      member.put("stats", new JSONObject(rpgProjection.getJSONObject("stats").toString()));
+      member.put("rpgStatSource", rpgProjection.getString("source"));
     }
     copyArrayIfPresent(source, previous, member, "injuries");
     copyArrayIfPresent(source, previous, member, "statuses");
@@ -137,7 +135,9 @@ final class CharacterDetailCore {
     if (inventory == null && previous != null) inventory = previous.optJSONArray("inventory");
     member.put("inventory", inventory == null ? new JSONArray() : new JSONArray(inventory.toString()));
 
-    Object equipment = source.opt("equipment");
+    Object equipment = leader && rpgProjection != null
+        ? rpgProjection.optJSONArray("equipment")
+        : source.opt("equipment");
     if (equipment == null && previous != null) equipment = previous.opt("equipment");
     if (equipment instanceof JSONObject) {
       member.put("equipment", new JSONObject(equipment.toString()));

@@ -26,12 +26,16 @@ public class CharacterDetailCoreTest {
     assertEquals("kai", kai.getString("id"));
     assertEquals(100, kai.getInt("currentHp"));
     assertEquals(100, kai.getInt("maxHp"));
+    assertEquals(1, kai.getInt("level"));
     assertEquals("∞", kai.getString("energy"));
     assertEquals(4, kai.getInt("hpRegen"));
-    assertEquals(82, kai.getJSONObject("stats").getInt("STR"));
-    assertEquals(78, kai.getJSONObject("stats").getInt("DF"));
-    assertEquals(92, kai.getJSONObject("stats").getInt("AGI"));
-    assertEquals(95, kai.getJSONObject("stats").getInt("CRIT"));
+    assertEquals(82, kai.getJSONObject("stats").getJSONObject("STR").getInt("base"));
+    assertEquals(25, kai.getJSONObject("stats").getJSONObject("STR").getInt("equipment"));
+    assertEquals(107, kai.getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+    assertEquals(109, kai.getJSONObject("stats").getJSONObject("DF").getInt("effective"));
+    assertEquals(112, kai.getJSONObject("stats").getJSONObject("AGI").getInt("effective"));
+    assertEquals(109, kai.getJSONObject("stats").getJSONObject("CRIT").getInt("effective"));
+    assertEquals(3, kai.getJSONArray("equipment").length());
 
     JSONObject physiology = kai.getJSONObject("physiology");
     assertEquals("NORMAL", physiology.getString("hunger"));

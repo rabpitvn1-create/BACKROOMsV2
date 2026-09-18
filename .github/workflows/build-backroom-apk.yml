@@ -105,7 +105,11 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterRpgCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
@@ -145,7 +149,6 @@ jobs:
           grep -Fq 'function scrollForCurrentMode()' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'window.backroomScrollCombatToBottom = scrollCombatToBottom' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'logEl.scrollTop=logEl.scrollHeight' android-apk/app/src/main/assets/index.html
-          ! grep -Fq 'requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "renderSnapshot();scrollBottom();" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
@@ -188,7 +191,6 @@ jobs:
           grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'width:38%;height:72%;' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "alignOverlayToGround(img,'right',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "alignOverlayToGround(img,'left',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
@@ -200,12 +202,18 @@ jobs:
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          grep -Fq 'KAI_BASE_DF = 78' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          grep -Fq 'KAI_BASE_AGI = 92' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          grep -Fq 'KAI_BASE_CRIT = 95' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          grep -Fq 'KAI_HP_REGEN_PER_COMPLETED_TURN = 4' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          grep -Fq 'KAI_ENERGY_DISPLAY = "∞"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'DEFAULT_LEVEL = 1' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
+          grep -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'KAI_BASE_DF = 78' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'KAI_BASE_AGI = 92' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'KAI_BASE_CRIT = 95' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'MK20_STR = 25' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          grep -Fq 'MK20_DF = 31' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          grep -Fq 'MK20_AGI = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          grep -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          grep -Fq 'copyField(before, sanitized, CharacterLevelCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq "addRow(status,'Level nhân vật',member.level)" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('EQ '" android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js

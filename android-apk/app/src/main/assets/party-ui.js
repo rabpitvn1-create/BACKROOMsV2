@@ -166,8 +166,13 @@
     function display(v){
       if(v&&typeof v==='object'){
         var effective=v.effective!==undefined?v.effective:(v.value!==undefined?v.value:undefined);
-        var equipment=Number(v.equipment||0);
-        if(effective!==undefined)return String(effective)+(equipment?(' ('+(equipment>0?'+':'')+equipment+')'):'');
+        var base=Number(v.base),levelBonus=Number(v.levelBonus||0),equipment=Number(v.equipment||0),parts=[];
+        if(effective!==undefined){
+          if(Number.isFinite(base))parts.push('Base '+base);
+          if(levelBonus)parts.push('Level '+(levelBonus>0?'+':'')+levelBonus);
+          if(equipment)parts.push('EQ '+(equipment>0?'+':'')+equipment);
+          return String(effective)+(parts.length?' ('+parts.join(' · ')+')':'');
+        }
       }
       return v;
     }
@@ -182,9 +187,16 @@
   }
 
   function equipmentFor(member,id){
+    function label(x){
+      if(typeof x==='string')return x;
+      if(!x||typeof x!=='object')return String(x||'');
+      var name=String(x.name||x.id||''),stats=x.stats&&typeof x.stats==='object'?x.stats:{},parts=[];
+      ['STR','DF','AGI','CRIT'].forEach(function(k){var v=Number(stats[k]||0);if(v)parts.push(k+' '+(v>0?'+':'')+v);});
+      return name+(parts.length?' · '+parts.join(' · '):'');
+    }
     var eq=member&&member.equipment;
-    if(Array.isArray(eq))return eq.map(function(x){return typeof x==='string'?x:(x&&x.name)||String(x);}).filter(Boolean);
-    if(eq&&typeof eq==='object')return Object.keys(eq).map(function(k){var v=eq[k];return typeof v==='string'?v:(v&&v.name)||k;}).filter(Boolean);
+    if(Array.isArray(eq))return eq.map(label).filter(Boolean);
+    if(eq&&typeof eq==='object')return Object.keys(eq).map(function(k){return label(eq[k]||k);}).filter(Boolean);
     return (META[id]&&META[id].equipment)||[];
   }
 
@@ -213,6 +225,7 @@
     var status=section('TRẠNG THÁI');
     addRow(status,'Hiện diện',member.presence||'ACTIVE');
     addRow(status,'Tình trạng',conditionFor(member));
+    if(member.level!==undefined)addRow(status,'Level nhân vật',member.level);
     var hp=member.currentHp!==undefined?member.currentHp:member.hp,maxHp=member.maxHp||member.maxHP;
     if(hp!==undefined)addRow(status,'HP',maxHp!==undefined?String(hp)+' / '+String(maxHp):hp);
     addRow(status,'Vai trò',meta.role||member.role);
