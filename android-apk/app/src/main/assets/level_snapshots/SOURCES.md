@@ -28,9 +28,9 @@ Images that were valid illustrations on the wiki but misleading or visually unhe
 
 Page: https://backrooms-wiki.wikidot.com/level-0
 
-- `wiki/level_0/01.webp` — general Level 0 / original Backrooms scene.
-- `wiki/level_0/02.webp` — general architectural variation.
-- `wiki/level_0/03.webp` — general pillar/hall variation.
+- `wiki/level_0/01.webp` — general Level 0 / original Backrooms scene. Source: https://backrooms-wiki.wikidot.com/local--files/level-0/OGLevel0.jpg
+- `wiki/level_0/02.webp` — general architectural variation. Source: https://backrooms-wiki.wdfiles.com/local--files/level-0/2
+- `wiki/level_0/03.webp` — general pillar/hall variation. Source: https://backrooms-wiki.wikidot.com/local--files/level-0/3
 
 Removed from the gameplay pool: the hole-grid, blackout-zone, and Red Room-specific visuals because the fallback selector cannot know that the player is currently in those conditions.
 
@@ -38,8 +38,8 @@ Removed from the gameplay pool: the hole-grid, blackout-zone, and Red Room-speci
 
 Page: https://backrooms-wiki.wikidot.com/level-1
 
-- `wiki/level_1/01.webp` — general Habitable Zone hall.
-- `wiki/level_1/02.webp` — general Habitable Zone interior.
+- `wiki/level_1/01.webp` — general Habitable Zone hall. Source: https://backrooms-wiki.wdfiles.com/local--files/level-1/artistdiesinme.jpg
+- `wiki/level_1/02.webp` — general Habitable Zone interior. Source: https://backrooms-sandbox-2.wdfiles.com/local--files/collab%3Alevel-1/int%C3%A9rieur
 
 Removed: Flickering-event and crate-specific visuals. Those are conditional phenomena and were being shown on unrelated turns.
 
@@ -47,8 +47,8 @@ Removed: Flickering-event and crate-specific visuals. Those are conditional phen
 
 Page: https://backrooms-wiki.wikidot.com/level-2
 
-- `wiki/level_2/01.webp` — representative utility tunnel.
-- `wiki/level_2/02.webp` — representative pipe-heavy corridor.
+- `wiki/level_2/01.webp` — representative utility tunnel. Source: https://backrooms-wiki.wdfiles.com/local--files/level-2/2first.jpg
+- `wiki/level_2/02.webp` — representative pipe-heavy corridor. Source: https://backrooms-wiki.wdfiles.com/local--files/level-2/2piping.jpg
 
 Removed: close-ups of fluorescent fixtures/doors and historical or location-specific imagery tied to the Macchina, Aiding Stragglers, B.N.T.G. railway construction/tracks, and blackout state. Those images are valid article illustrations but poor unconditional scene snapshots.
 
@@ -56,11 +56,11 @@ Removed: close-ups of fluorescent fixtures/doors and historical or location-spec
 
 Page: https://backrooms-wiki.wikidot.com/level-3
 
-- `wiki/level_3/01.webp`
-- `wiki/level_3/02.webp`
-- `wiki/level_3/03.webp`
-- `wiki/level_3/04.webp`
-- `wiki/level_3/05.webp`
+- `wiki/level_3/01.webp` — Source: https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3FirstPhoto
+- `wiki/level_3/02.webp` — Source: https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Thin
+- `wiki/level_3/03.webp` — Source: https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3SecondPhoto
+- `wiki/level_3/04.webp` — Source: https://natedagreat563.wdfiles.com/local--files/storage-unit-4/Level3Dark
+- `wiki/level_3/05.webp` — Source: https://natedagreat563.wdfiles.com/local--files/storage-unit-4/DarkLevel3
 
 These are retained as general Electrical Station hallway/environment references.
 
@@ -70,13 +70,13 @@ Removed: Electrical Room, Assembly Line, Boiler Room, and Sanctum-specific galle
 
 Page: https://backrooms-wiki.wikidot.com/level-4
 
-- `wiki/level_4/01.webp`
+- `wiki/level_4/01.webp` — Source: https://backrooms-wiki.wdfiles.com/local--files/level-4/Level-4-new
 
 ### Level 5 — 1 retained asset
 
 Page: https://backrooms-wiki.wikidot.com/level-5
 
-- `wiki/level_5/01.webp` — Main Hall, the broadly representative Level 5 scene.
+- `wiki/level_5/01.webp` — Main Hall, the broadly representative Level 5 scene. Source: https://backrooms-wiki.wdfiles.com/local--files/level-5/Level-5-1-cc.png
 
 Removed: both Boiler Room-specific images. The game can be in the Main Hall, Beverly Room, or elsewhere in Level 5, so rotating Boiler Room images unconditionally was misleading.
 
