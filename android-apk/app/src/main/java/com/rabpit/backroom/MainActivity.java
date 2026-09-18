@@ -89,8 +89,19 @@ public class MainActivity extends Activity {
 
   private void applyImmersiveFullscreen() {
     Window window = getWindow();
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      window.setDecorFitsSystemWindows(false);
+      WindowManager.LayoutParams attributes = window.getAttributes();
+      attributes.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+      window.setAttributes(attributes);
+
+      // Android 15+ with targetSdk 35 already enforces edge-to-edge. Re-applying the
+      // deprecated decor-fits path here has caused OEM launch crashes in this project before.
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        window.setDecorFitsSystemWindows(false);
+      }
+
       WindowInsetsController controller = window.getInsetsController();
       if (controller == null) {
         applyLegacyFullscreenFlags();
@@ -100,6 +111,13 @@ public class MainActivity extends Activity {
       controller.setSystemBarsBehavior(
           WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
       return;
+    }
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+      WindowManager.LayoutParams attributes = window.getAttributes();
+      attributes.layoutInDisplayCutoutMode =
+          WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+      window.setAttributes(attributes);
     }
     applyLegacyFullscreenFlags();
   }
