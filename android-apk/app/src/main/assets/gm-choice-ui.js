@@ -280,12 +280,14 @@
 
   function renderSemanticLog() {
     if (!log || !state || !Array.isArray(state.log)) return;
+    var previousScrollTop = log.scrollTop;
     log.textContent = '';
     state.log.forEach(function(entry, index){
       if (!entry) return;
       var article = document.createElement('article');
       var player = entry.role === 'player';
       article.className = 'message ' + (player ? 'player' : 'gm');
+      article.dataset.logIndex = String(index);
       var role = document.createElement('div');
       role.className = 'role';
       role.textContent = player ? 'BẠN' : 'GAME MASTER';
@@ -300,8 +302,25 @@
       }
       log.appendChild(article);
     });
-    requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });
+    requestAnimationFrame(function(){
+      log.scrollTop = Math.max(0, Math.min(previousScrollTop, log.scrollHeight - log.clientHeight));
+    });
   }
+
+  function scrollLatestGmToStart() {
+    if (!log) return;
+    requestAnimationFrame(function(){
+      var messages = log.querySelectorAll('.message.gm');
+      if (!messages.length) return;
+      var latest = messages[messages.length - 1];
+      var logRect = log.getBoundingClientRect();
+      var messageRect = latest.getBoundingClientRect();
+      var target = log.scrollTop + (messageRect.top - logRect.top);
+      log.scrollTop = Math.max(0, target);
+    });
+  }
+
+  window.backroomScrollLatestGmToStart = scrollLatestGmToStart;
 
   function syncComposer() {
     if (!form || !action || !submit) return;
@@ -342,6 +361,7 @@
     window.__combatBusy = false;
     if (typeof previousTurn === 'function') previousTurn(json);
     syncComposer();
+    scrollLatestGmToStart();
   };
 
   function playCombatPhase(events, phase) {
@@ -427,4 +447,5 @@
   };
 
   window.render();
+  scrollLatestGmToStart();
 })();
