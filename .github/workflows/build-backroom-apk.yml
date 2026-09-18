@@ -101,6 +101,9 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
+          grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
@@ -159,6 +162,11 @@ jobs:
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "kai:'file:///android_asset/avatars/kai_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
