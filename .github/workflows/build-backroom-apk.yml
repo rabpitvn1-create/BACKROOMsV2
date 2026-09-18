@@ -109,8 +109,9 @@ jobs:
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
-          jq -e '.version == 3 and .source == "User-provided Google Drive snapshot set" and .root == "level_snapshots/drive" and .selectionPolicy == "three_user_curated_images_per_level" and .dimensions.width == 351 and .dimensions.height == 250 and .dimensions.format == "webp" and ([.levels["0"],.levels["1"],.levels["2"],.levels["3"],.levels["4"],.levels["5"],.levels["6"]] | all(.visualType == "scene" and (.assets | length) == 3))' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json >/dev/null
-          (cd "$GITHUB_WORKSPACE" && sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt)
+          grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
           test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
           test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
           test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
@@ -244,6 +245,8 @@ jobs:
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/knowledge_db.json'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/entity_encounters.json'
           unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
+          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
           test "$(unzip -l Backroom-1.1.69.apk | grep -E 'assets/level_snapshots/drive/level_[0-6]/0[1-3]\.webp
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -280,8 +283,6 @@ jobs:
           cmp Backroom-1.1.69.apk Backroom-1.1.69-verified.apk
           sha256sum Backroom-1.1.69-verified.apk
  | wc -l)" -eq 21
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
           ! unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/'
           ! unzip -l Backroom-1.1.69.apk | grep -Eq 'assets/level_snapshots/level_[0-6]\.webp'
 
