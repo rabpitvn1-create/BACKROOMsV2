@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 8;
+  private static final int CURRENT_SAVE_VERSION = 9;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
