@@ -154,6 +154,7 @@ jobs:
             [[ "${branch}" =~ ^ci/(tmp|temp|action|actions)/ ]] ||
             [[ "${branch}" =~ ^bot/(tmp|temp|action|actions)/ ]] ||
             [[ "${branch}" =~ ^scratch/ ]] ||
+            [[ "${branch}" =~ ^massive-update(-.*)?$ ]] ||
             [[ "${branch}" =~ (^|/)(emulator-smoke|smoke-test)(/|$) ]]
           }
 
@@ -189,12 +190,20 @@ jobs:
             commit_date="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/commits/${branch_sha}" --jq '.commit.committer.date')"
             commit_epoch="$(date -u -d "${commit_date}" +%s)"
 
-            if (( commit_epoch < START_EPOCH || commit_epoch >= END_EPOCH )); then
-              echo "Preserving ${branch}: head commit ${commit_date} is outside cleanup window."
-              continue
+            if [[ "${branch}" =~ ^massive-update(-.*)?$ ]]; then
+              ahead_by="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/compare/main...${encoded_branch}" --jq '.ahead_by')"
+              if [[ "${ahead_by}" != "0" ]]; then
+                echo "Preserving ${branch}: branch still has ${ahead_by} commit(s) not in main."
+                continue
+              fi
+              echo "Deleting merged legacy branch ${branch} at ${branch_sha}"
+            else
+              if (( commit_epoch < START_EPOCH || commit_epoch >= END_EPOCH )); then
+                echo "Preserving ${branch}: head commit ${commit_date} is outside cleanup window."
+                continue
+              fi
+              echo "Deleting temporary branch ${branch} at ${branch_sha} (head date ${commit_date})"
             fi
-
-            echo "Deleting temporary branch ${branch} at ${branch_sha} (head date ${commit_date})"
 
             if gh api --method DELETE "/repos/${REPO}/git/refs/heads/${encoded_branch}" >/dev/null 2>&1; then
               deleted_branches=$((deleted_branches + 1))
