@@ -62,10 +62,10 @@ final class LevelCore {
     }
   }
 
-  LevelCore(String levelKnowledgeJson, IntRng rng) {
-    if (rng == null) throw new IllegalArgumentException("rng is required");
-    this.rng = rng;
-    loadLevelKnowledgeText(levelKnowledgeJson);
+  static LevelCore withKnowledge(String levelKnowledgeJson, IntRng rng) {
+    LevelCore core = new LevelCore((Context)null, rng);
+    core.loadLevelKnowledgeText(levelKnowledgeJson);
+    return core;
   }
 
   void normalizeState(JSONObject state) throws Exception {
