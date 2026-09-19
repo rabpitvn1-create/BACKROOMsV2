@@ -33,13 +33,16 @@ final class LevelCore {
   };
   private static final Pattern LEVEL_TOKEN =
       Pattern.compile("(?i)(?:^|\\b)level\\s*([0-6](?:\\.[0-9]+)?)");
-  private static final String KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
+  private static final String LEVEL_KNOWLEDGE_ASSET = "knowledge/level_knowledge.json";
+  private static final String LEGACY_KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
   private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/drive/manifest.json";
   private static final String INVALID_LEVEL_KEY = "__invalid__";
   private static final int LEVEL_MISMATCH = -2;
   private static final int ROUTE_ROLL_BOUND = 100;
 
-  private final Map<String, String> canonByLevelKey = new LinkedHashMap<>();
+  private final Map<String, JSONObject> knowledgeByLevelKey = new LinkedHashMap<>();
+  private final Map<String, String> legacyCanonByLevelKey = new LinkedHashMap<>();
+  private final JSONArray knowledgeSectionOrder = new JSONArray();
   private final Map<Integer, JSONArray> snapshotsByLevel = new LinkedHashMap<>();
   private final Map<Integer, String> visualTypeByLevel = new LinkedHashMap<>();
   private final IntRng rng;
@@ -53,9 +56,16 @@ final class LevelCore {
     if (rng == null) throw new IllegalArgumentException("rng is required");
     this.rng = rng;
     if (context != null) {
-      loadKnowledge(context);
+      loadLevelKnowledge(context);
+      if (knowledgeByLevelKey.isEmpty()) loadLegacyKnowledge(context);
       loadSnapshotManifest(context);
     }
+  }
+
+  LevelCore(String levelKnowledgeJson, IntRng rng) {
+    if (rng == null) throw new IllegalArgumentException("rng is required");
+    this.rng = rng;
+    loadLevelKnowledgeText(levelKnowledgeJson);
   }
 
   void normalizeState(JSONObject state) throws Exception {
@@ -167,7 +177,10 @@ final class LevelCore {
   String promptContext(JSONObject state) {
     String levelKey = resolveLevelKey(state);
     int level = parentLevel(levelKey);
-    String canon = canonByLevelKey.get(levelKey);
+    String canon = knowledgeContext(levelKey);
+    if (canon.trim().isEmpty()) {
+      canon = legacyCanonByLevelKey.get(levelKey);
+    }
     if (canon == null || canon.trim().isEmpty()) {
       canon = "Canon for " + displayName(levelKey) + " is unavailable.";
     }
@@ -235,7 +248,10 @@ final class LevelCore {
     return "CURRENT LEVEL NODE: " + displayName(levelKey) + "\n"
         + "CURRENT LEVEL KEY: " + levelKey + "\n"
         + "PARENT LEVEL NUMBER: " + level + "\n"
-        + "LEVEL CANON: " + canon + "\n"
+        + "LEVEL KNOWLEDGE BUNDLE:\n" + canon + "\n"
+        + "KNOWLEDGE RULE: environment canon is backstage truth, not automatic character knowledge. "
+        + "variationPool contains optional scene motifs, never guaranteed persistent objects. "
+        + "Entity spawning, item spawning, combat, stats and hidden route progress remain Core-owned.\n"
         + "VALID NEXT LEVEL TRANSITION: " + allowed + "\n"
         + transitionInstruction + "\n"
         + mutationInstruction + "\n"
@@ -497,9 +513,77 @@ final class LevelCore {
     return value;
   }
 
-  private void loadKnowledge(Context context) {
+  private void loadLevelKnowledge(Context context) {
     try {
-      JSONObject root = new JSONObject(readAsset(context, KNOWLEDGE_ASSET));
+      loadLevelKnowledgeText(readAsset(context, LEVEL_KNOWLEDGE_ASSET));
+    } catch (Exception ignored) {}
+  }
+
+  private void loadLevelKnowledgeText(String raw) {
+    if (raw == null || raw.trim().isEmpty()) return;
+    try {
+      JSONObject root = new JSONObject(raw);
+      if (root.optInt("schemaVersion", 0) < 2) return;
+
+      JSONArray order = root.optJSONArray("sectionOrder");
+      if (order != null) {
+        for (int i = 0; i < order.length(); i++) {
+          String section = order.optString(i, "").trim();
+          if (!section.isEmpty()) knowledgeSectionOrder.put(section);
+        }
+      }
+
+      JSONObject levels = root.optJSONObject("levels");
+      if (levels == null) return;
+      for (String key : new String[]{"0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms", "1", "2", "3", "4", "5", "6"}) {
+        JSONObject bundle = levels.optJSONObject(key);
+        if (bundle != null) knowledgeByLevelKey.put(key, new JSONObject(bundle.toString()));
+      }
+    } catch (Exception ignored) {}
+  }
+
+  private String knowledgeContext(String levelKey) {
+    JSONObject bundle = knowledgeByLevelKey.get(normalizeKey(levelKey));
+    if (bundle == null) return "";
+
+    StringBuilder out = new StringBuilder();
+    String name = bundle.optString("name", displayName(levelKey)).trim();
+    if (!name.isEmpty()) out.append("NAME: ").append(name).append('\n');
+
+    JSONArray order = knowledgeSectionOrder;
+    if (order.length() == 0) {
+      order = new JSONArray()
+          .put("identity").put("architecture").put("zones").put("sensory")
+          .put("anomalies").put("hazards").put("resources").put("entities")
+          .put("navigation").put("entrancesExits").put("gameplayOverride")
+          .put("gmConstraints").put("variationPool");
+    }
+
+    for (int i = 0; i < order.length(); i++) {
+      String section = order.optString(i, "").trim();
+      JSONArray values = bundle.optJSONArray(section);
+      if (values == null || values.length() == 0) continue;
+      if (out.length() > 0) out.append('\n');
+      out.append(sectionLabel(section)).append(":\n");
+      for (int j = 0; j < values.length(); j++) {
+        String value = values.optString(j, "").trim();
+        if (!value.isEmpty()) out.append("- ").append(value).append('\n');
+      }
+    }
+    return out.toString().trim();
+  }
+
+  private static String sectionLabel(String section) {
+    if ("entrancesExits".equals(section)) return "ENTRANCES / EXITS";
+    if ("gameplayOverride".equals(section)) return "BACKROOMSV2 OVERRIDES";
+    if ("gmConstraints".equals(section)) return "GM CONSTRAINTS";
+    if ("variationPool".equals(section)) return "VARIATION POOL";
+    return section == null ? "" : section.replace('_', ' ').toUpperCase(Locale.ROOT);
+  }
+
+  private void loadLegacyKnowledge(Context context) {
+    try {
+      JSONObject root = new JSONObject(readAsset(context, LEGACY_KNOWLEDGE_ASSET));
       JSONArray records = root.optJSONArray("records");
       if (records == null) return;
       for (int i = 0; i < records.length(); i++) {
@@ -508,7 +592,7 @@ final class LevelCore {
         String id = record.optString("id", "");
         if (!id.startsWith("LEVEL.")) continue;
         String levelKey = normalizeKnowledgeKey(id.substring("LEVEL.".length()));
-        if (isKnownLevelKey(levelKey)) canonByLevelKey.put(levelKey, record.optString("text", ""));
+        if (isKnownLevelKey(levelKey)) legacyCanonByLevelKey.put(levelKey, record.optString("text", ""));
       }
     } catch (Exception ignored) {}
   }
