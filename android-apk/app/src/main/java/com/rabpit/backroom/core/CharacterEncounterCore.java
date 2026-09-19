@@ -229,6 +229,7 @@ final class CharacterEncounterCore {
     member.remove("currentHP");
     member.remove("maxHp");
     member.remove("maxHP");
+    member.remove("equipment");
     return member;
   }
 
