@@ -193,7 +193,29 @@ jobs:
             ["identity","architecture","zones","sensory","anomalies","hazards","resources","entities","navigation","entrancesExits","gameplayOverride","gmConstraints","variationPool"] as $sections |
             all($keys[]; . as $k | all($sections[]; . as $s | ($root.levels[$k][$s] | type == "array" and length > 0)))
           ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          jq -e '
+            .levels["0"] as $l |
+            ($l.canonicalFacts | length >= 10) and
+            ($l.microLocations | length >= 20) and
+            ($l.environmentStates | length >= 10) and
+            ($l.environmentEvents | length >= 18) and
+            ($l.interactionRules | length >= 12) and
+            ($l.actionConsequences | length >= 10) and
+            ($l.persistenceRules | length >= 8) and
+            ($l.evidenceRules | length >= 8) and
+            ($l.navigationPatterns | length >= 8) and
+            ($l.routeProgressionCues | length >= 7) and
+            ($l.encounterStaging | length >= 7) and
+            ($l.hazardEscalation | length >= 5) and
+            ($l.quietTurnPatterns | length >= 8) and
+            ($l.narrativeGrammar | length >= 8) and
+            ($l.antiRepetition | length >= 10) and
+            ($l.forbiddenInventions | length >= 18) and
+            ($l.sceneSeeds | length >= 25)
+          ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          grep -Fq 'rotatingSectionLimit' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
+          grep -Fq 'structuredKnowledgeRotatesLargeScenePoolsByTurn' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
