@@ -208,7 +208,18 @@ public final class GmChoiceContract {
       Pattern pattern = Pattern.compile(
           "(?iu)(?<![\\p{L}\\p{N}_])" + Pattern.quote(term[0])
               + "(?![\\p{L}\\p{N}_])");
-      output = pattern.matcher(output).replaceAll(Matcher.quoteReplacement(term[1]));
+      Matcher matcher = pattern.matcher(output);
+      StringBuffer normalized = new StringBuffer();
+      while (matcher.find()) {
+        String replacement = term[1];
+        String matched = matcher.group();
+        if (!matched.isEmpty() && Character.isUpperCase(matched.codePointAt(0)) && !replacement.isEmpty()) {
+          replacement = replacement.substring(0, 1).toUpperCase(Locale.ROOT) + replacement.substring(1);
+        }
+        matcher.appendReplacement(normalized, Matcher.quoteReplacement(replacement));
+      }
+      matcher.appendTail(normalized);
+      output = normalized.toString();
     }
     return output;
   }
