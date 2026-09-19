@@ -157,11 +157,22 @@ jobs:
           jq -e '.version == 1 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
-          grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"version": 4' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"sublevelRoot": "level_snapshots/sublevels/level_0"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          jq -e '
+            (.sublevels["0.1"].assets | length == 4) and
+            (.sublevels["0.2"].assets | length == 4) and
+            (.sublevels["0.5"].assets | length == 4) and
+            (.sublevels["0.7"].assets | length == 4) and
+            (.sublevels.manila_room.assets | length == 4) and
+            (.sublevels.the_torment.assets | length == 5) and
+            (.sublevels.red_rooms.assets | length == 5)
+          ' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json >/dev/null
           sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
           test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
-          test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
+          test "$(find android-apk/app/src/main/assets/level_snapshots/sublevels/level_0 -type f -name '*.webp' | wc -l)" -eq 30
+          test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' ! -path '*/sublevels/level_0/*' -print -quit)"
           test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
