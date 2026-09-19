@@ -1,0 +1,994 @@
+{
+  "schemaVersion": 2,
+  "authority": "BACKROOMsV2_LEVEL_CANON",
+  "instruction": "This asset is the authoritative runtime environment knowledge for implemented gameplay Levels. LevelCore must load only the current node. Fields describe environment canon, not automatic character knowledge. Entity spawning, item spawning, stats, combat and hidden route progress remain Core-owned. variationPool contains permitted scene motifs, not guaranteed persistent objects.",
+  "sectionOrder": [
+    "identity",
+    "architecture",
+    "zones",
+    "sensory",
+    "anomalies",
+    "hazards",
+    "resources",
+    "entities",
+    "navigation",
+    "entrancesExits",
+    "gameplayOverride",
+    "gmConstraints",
+    "variationPool"
+  ],
+  "levels": {
+    "0": {
+      "name": "Level 0 — The Lobby",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 0/Threshold",
+        "status": "project-authoritative"
+      },
+      "identity": [
+        "Một mê cung phi tuyến gồm các căn phòng vàng nhạt giống khu hậu trường thương mại, giấy dán tường cũ, trần thả và thảm ẩm. Không có hai phòng hoàn toàn giống nhau dù bề mặt tạo cảm giác lặp vô tận.",
+        "Không gian chống lại việc lập bản đồ chi tiết. Khoảng cách, góc rẽ và quan hệ giữa các phòng có thể không bảo toàn theo hình học Euclid, nhưng GM không được biến điều đó thành dịch chuyển tức thời tùy tiện."
+      ],
+      "architecture": [
+        "Tường thạch cao/giấy dán tường vàng, chân tường đơn giản, trần ô vuông với đèn huỳnh quang và các hành lang nối bằng ô cửa không cửa.",
+        "Độ rộng phòng, chiều cao trần, vị trí cột và hành lang thay đổi vừa đủ để tạo landmark cục bộ nhưng không tạo bản đồ toàn cục ổn định.",
+        "Một số vùng có thể chuyển sang Blackout Zone: đèn tắt, bề mặt thô hơn, nền có thể trũng và đọng chất lỏng nông."
+      ],
+      "zones": [
+        "Yellow Rooms: dạng phổ biến nhất, ánh sáng huỳnh quang liên tục và thảm ẩm.",
+        "Blackout Zones: các cụm tối không ổn định, nguy hiểm chủ yếu do mất định hướng, bề mặt khó quan sát và suy giảm thông tin.",
+        "Memory Rooms: không gian có thể gợi lại, bóp méo hoặc phản chiếu ký ức; mọi nội dung ký ức chưa được xác minh phải được mô tả như hiện tượng nhận thức, không phải sự thật khách quan."
+      ],
+      "sensory": [
+        "Âm thanh nền chủ đạo là tiếng ù huỳnh quang đều, có thể thay đổi cường độ theo khu vực.",
+        "Thảm ẩm, mùi mốc nhẹ, không khí kín và hơi ấm tạo cảm giác kéo dài thời gian.",
+        "Âm thanh bước chân, giọng nói hoặc tiếng động xa có thể bị nghe sai; GM phải giữ mức độ bất định thay vì xác nhận Entity khi chưa có bằng chứng."
+      ],
+      "anomalies": [
+        "Fluorescent Pressure: ở lâu dưới đèn có thể gây đau đầu, khó ngủ, cáu gắt và nghe nhầm tiếng động.",
+        "Layout Resistance: dấu đánh dấu hoặc mô tả tuyến đường có thể mất giá trị khi quay lại, nhưng các thay đổi phải diễn ra hợp lý qua thời gian và hành động khám phá.",
+        "Isolation: gặp người khác là bất thường và không được tự tạo survivor/NPC chỉ để làm cảnh sống động."
+      ],
+      "hazards": [
+        "Khát, đói, kiệt sức, mất ngủ và mất phương hướng nguy hiểm hơn một cuộc tấn công trực tiếp.",
+        "Blackout Zones làm tăng rủi ro vấp ngã, kẹt đường, mất dấu landmark và suy giảm khả năng quan sát.",
+        "Không được gọi ảo giác hay cảm giác bị theo dõi là tổn thương tâm thần cố định nếu chưa có bằng chứng."
+      ],
+      "resources": [
+        "Tài nguyên tự nhiên không đáng tin cậy và không được xuất hiện chỉ vì người chơi cần chúng.",
+        "Consumable, rương và loot gameplay thuộc ItemCore; Level knowledge chỉ cho phép GM mô tả vật thể nền không thể tự cấp vào inventory."
+      ],
+      "entities": [
+        "Không có resident Entity được xác nhận trong canon của BACKROOMsV2 Level 0.",
+        "Dáng người, tiếng gọi hoặc chuyển động ở xa trước hết phải được xem là ảo giác, bản sao nhận thức, memory manifestation hoặc hiện tượng chưa phân loại.",
+        "Entity thực tế chỉ xuất hiện khi EntityCore đã đặt active encounter; GM không được tự spawn."
+      ],
+      "navigation": [
+        "Ưu tiên landmark cục bộ: vết ẩm, mẫu giấy tường, bóng đèn hỏng, cột hoặc thay đổi trần. Không biến chúng thành hệ GPS đáng tin cậy.",
+        "Route thành công nên cho thấy tiến triển vật lý nhỏ: vật liệu thay đổi, âm nền thay đổi hoặc kiến trúc bắt đầu khác biệt. Route thất bại nên loop hoặc trả về dấu hiệu quen thuộc."
+      ],
+      "entrancesExits": [
+        "Kai bắt đầu tại đây sau cổng không gian của SRU.",
+        "Trong BACKROOMsV2, Level 0 không được đi thẳng sang Level 1. Sau khi hoàn thành hidden route chain, điểm đến bắt buộc duy nhất là Level 0.1."
+      ],
+      "gameplayOverride": [
+        "Chuỗi bắt buộc: Level 0 -> Level 0.1. Không được skip.",
+        "Lucia chỉ có thể roll encounter ở Level 0 gốc, không phải các sub-level.",
+        "Hidden route streak là cơ chế Core và tuyệt đối không được kể ra trong lời GM."
+      ],
+      "gmConstraints": [
+        "Không tự tạo Entity, survivor, settlement, lối thoát hoặc tài nguyên.",
+        "Không giải thích nguồn gốc Backrooms, Async hay cơ chế phi Euclid như sự thật.",
+        "Không lặp cùng một mô tả phòng vàng ở mọi lượt; biến đổi landmark và sensory trong phạm vi canon."
+      ],
+      "variationPool": [
+        "Dãy phòng thấp với đèn sáng không đều và các mảng thảm khô/ẩm khác nhau.",
+        "Hành lang hẹp đột ngột mở ra một phòng rộng nhưng vẫn cùng vật liệu.",
+        "Một cụm bóng đèn nhấp nháy không đồng bộ với phần còn lại.",
+        "Giấy tường bong ở mép dưới, lộ lớp thạch cao tối màu nhưng không tạo lối bí mật.",
+        "Tiếng ù biến mất trong vài mét rồi quay lại ở hướng khó xác định.",
+        "Dấu chân hoặc vệt kéo chỉ xuất hiện như bằng chứng cần kiểm tra, không mặc định thuộc Entity."
+      ]
+    },
+    "1": {
+      "name": "Level 1 — Parking Zone",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 1 Habitable Zone",
+        "status": "project-name override"
+      },
+      "identity": [
+        "Một hệ hall bê tông khổng lồ gợi parking garage/warehouse, có cột, đường dốc, ống trên trần và các sector đủ khác nhau để tạo landmark.",
+        "Trong BACKROOMsV2 tên gameplay giữ là Parking Zone, dù nguồn Wiki hiện đại gọi Level 1 là Habitable Zone."
+      ],
+      "architecture": [
+        "The Halls rộng, bê tông xám, cột lớn, trần có ống; một số vùng giống bãi đỗ xe hơn warehouse.",
+        "The Corridors là mạng lối hẹp qua cửa push-door, hình học ổn định hơn halls và có nhiều phòng nhỏ vô dụng.",
+        "Xe hỏng có thể hiếm gặp theo project canon; không mặc định nhiên liệu hoặc chức năng."
+      ],
+      "zones": [
+        "Open Halls/Parking Sectors: không gian lớn, dễ quan sát hơn nhưng chịu Flickering và encounter.",
+        "Corridors: hẹp, labyrinthine nhưng hình học đáng tin hơn; phù hợp nghỉ hơn, tài nguyên ít.",
+        "Maintenance Halls: vùng có điện/hạ tầng tốt hơn tương đối nhưng không phải safe base tuyệt đối.",
+        "Luxury Lots: sạch hơn, sương lạnh hơn và có khả năng supplies cao hơn tương đối theo project canon."
+      ],
+      "sensory": [
+        "Âm bước chân và tiếng kim loại/ống vang xa trên bê tông.",
+        "Nhiệt độ phần lớn ấm hoặc trung tính nhưng có túi sương lạnh.",
+        "Ánh sáng công nghiệp có thể tắt đột ngột trong Flickering."
+      ],
+      "anomalies": [
+        "Non-Euclidean halls làm khoảng cách cảm nhận và tuyến nhìn không hoàn toàn đáng tin.",
+        "Flickering tắt toàn bộ đèn tự nhiên trong thời lượng không dự đoán được và làm encounter risk tăng.",
+        "Crate/resource behavior tồn tại trong source lore, nhưng BACKROOMsV2 ItemCore sở hữu spawn loot."
+      ],
+      "hazards": [
+        "Blackout/Flickering, mất phương hướng ở halls, con người thù địch nếu state có, và roaming Entity từ EntityCore.",
+        "Nước rò từ ống không mặc định uống được.",
+        "Corridor kín có nguy cơ smoke/thiếu thông gió nếu người chơi tạo lửa."
+      ],
+      "resources": [
+        "Project canon cho phép supply crates hiếm hơn/đậm hơn ở một số sector, nhưng spawn thực tế chỉ từ ItemCore.",
+        "Vật liệu môi trường như pallet, thùng, đồ nội thất có thể làm cover/barrier nếu hợp vật lý."
+      ],
+      "entities": [
+        "Entity active chỉ do EntityCore.",
+        "Flickering có thể làm tăng cảm giác nguy hiểm nhưng không được GM tự spawn creature."
+      ],
+      "navigation": [
+        "Halls: dùng cột, dốc, ống, biển/mark và thay đổi sector; đừng tin khoảng cách tuyệt đối.",
+        "Corridors: route có thể được retrace bằng mark vật lý tốt hơn.",
+        "BACKROOMsV2 transition sang Level 2 nên xuất hiện dần khi xe/cột giảm và pipes/machinery chiếm ưu thế."
+      ],
+      "entrancesExits": [
+        "Đến từ Red Rooms theo progression game.",
+        "Điểm đến chuẩn tiếp theo của route chính là Level 2; các exit phụ ngoài route không được tự mở."
+      ],
+      "gameplayOverride": [
+        "Giữ tên Parking Zone và project progression dù Wiki hiện đại dùng Habitable Zone.",
+        "Không tự tạo settlement hoặc Base Alpha nếu state chưa đưa vào campaign."
+      ],
+      "gmConstraints": [
+        "Không cho crate/item ngoài ItemCore.",
+        "Không biến corridors thành hoàn toàn safe nếu active encounter/state có danger.",
+        "Không cho player skip thẳng tới Level 3+."
+      ],
+      "variationPool": [
+        "Dãy cột bê tông mất hút trong sương lạnh cục bộ.",
+        "Một ramp xuống nhưng quay về cùng cao độ do topology.",
+        "Cửa đôi mở vào corridor nhỏ với phòng phụ trống.",
+        "Ống trần nhỏ giọt tạo puddle không uống được.",
+        "Một cụm đèn tắt tạo pocket darkness trước khi Flickering toàn khu.",
+        "Bãi xe hiếm với một thân xe không hoạt động và kính bám bụi."
+      ]
+    },
+    "2": {
+      "name": "Level 2 — Pipe Dreams",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 2 Abandoned Utility Halls",
+        "status": "project-name override"
+      },
+      "identity": [
+        "Mạng utility tunnel gần như vô tận, chủ yếu Euclidean nhưng cực kỳ phức tạp, hẹp và bị máy móc/ống dẫn chiếm không gian.",
+        "BACKROOMsV2 giữ tên Pipe Dreams và nhấn mạnh nhiệt, hơi nước, địa chấn cục bộ và rủi ro từ chất lỏng trong ống."
+      ],
+      "architecture": [
+        "Tường bê tông/bạch gạch cũ, bề mặt bột/chalky; corridor thường rẽ theo góc cứng và kích thước thay đổi từ vừa đủ đi đến rất chật.",
+        "Pipes, dây, machinery và electrical fixtures phủ tường/trần; nhiều máy không có chức năng phối hợp rõ.",
+        "Door rooms có thể là kho lớn, room nhỏ, office-like loops hoặc không gian tối bất thường; GM không được mở void room nếu không cần và không có state."
+      ],
+      "zones": [
+        "Narrow Pipe Corridors: chật, nóng, nhiều cạnh kim loại và âm máy.",
+        "Machinery Bays: phòng rộng hơn có thiết bị lớn, dây điện và vật tư công nghiệp.",
+        "Dark Circuits: cụm ánh sáng mất do hệ dây nối chuỗi hoặc hư hỏng.",
+        "Steam/Heat Sections: vùng ống nóng, hơi nước và thay đổi nhiệt mạnh theo project canon."
+      ],
+      "sensory": [
+        "Tiếng whir, rung, nước/chất lỏng chảy trong ống, fluorescent buzz và tiếng kim loại giãn nhiệt.",
+        "Không khí có thể nóng ẩm hoặc đổi đột ngột sang lạnh.",
+        "Bụi chalky bám tay/quần áo ở corridor sát tường."
+      ],
+      "anomalies": [
+        "Máy và pipes nối với nhau theo cách không có hệ thống chức năng rõ nhưng vẫn có điện/chất truyền bên trong.",
+        "Một lỗi dây có thể làm tối cả cụm đèn không dễ dự đoán.",
+        "Earthquake/collapse/ruptured pipes trong project canon có thể thay route nhưng phải để lại hậu quả vật lý."
+      ],
+      "hazards": [
+        "Nhiệt, steam, điện, machinery, corridor kẹp người, kính/kim loại vỡ và collapse.",
+        "Chất lỏng giống Almond Water trong pipe không được uống; có nguy cơ ô nhiễm sinh học/hóa học/anomaly.",
+        "Roaming entities chỉ qua EntityCore."
+      ],
+      "resources": [
+        "Toolboxes, scrap, parts và container có thể tồn tại làm scenery; item usable phải do Core.",
+        "Không tự cho Almond Water từ pipe dù màu/mùi tương tự."
+      ],
+      "entities": [
+        "Project canon liên hệ Level 2 với nhiều Entity types nhưng runtime vẫn do EntityCore.",
+        "Tiếng máy hoặc movement sau tường không tự là Biological Pipeline hay Entity khác."
+      ],
+      "navigation": [
+        "Pipe màu, loại máy, nhiệt độ, hướng steam và door style là landmark.",
+        "Transition sang Level 3 khi high-voltage infrastructure, transformer/cables và electrical rooms trở nên chủ đạo."
+      ],
+      "entrancesExits": [
+        "Route chính vào từ Level 1.",
+        "Route chính ra Level 3; các door exit khác của Wiki không tự kích hoạt."
+      ],
+      "gameplayOverride": [
+        "Giữ tên Pipe Dreams và transition project canon.",
+        "Không thay hệ route chính bằng lore exit hiện đại của Wiki."
+      ],
+      "gmConstraints": [
+        "Không cho đường ống tự cấp item.",
+        "Không dùng earthquake mỗi lượt.",
+        "Không làm máy móc 'có ý thức' nếu chưa có evidence."
+      ],
+      "variationPool": [
+        "Corridor vừa đủ vai người với pipe lớn ép sát một bên.",
+        "Dãy đèn trắng/cam lệch màu và một cụm tắt.",
+        "Van xả hơi làm mờ tầm nhìn trong vài giây.",
+        "Trolley cũ có scrap không phải loot tự động.",
+        "Door thép khóa với ô kính nhìn vào phòng tối.",
+        "Một đoạn pipe rung mạnh trước khi áp suất giảm."
+      ]
+    },
+    "3": {
+      "name": "Level 3 — The Electrical Station",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 3 Electrical Station",
+        "status": "active"
+      },
+      "identity": [
+        "Một facility điện công nghiệp cực nguy hiểm, dày đặc điện năng, máy móc và resources nhưng có risk cao.",
+        "Hành lang gạch/bê tông tối, fluorescent yếu, dây/cable/box và tiếng điện tạo nền âm thanh liên tục."
+      ],
+      "architecture": [
+        "Brick walls màu không đồng nhất, sàn bê tông bụi, corridor có thể thấp/hẹp bất thường.",
+        "Cables, conductors, electrical boxes, transformer, coils, fans và pipes phủ bề mặt.",
+        "Pipes chứa chất lỏng đen bí ẩn xuất hiện trong một số khu; không được chạm/uống khi chưa kiểm tra."
+      ],
+      "zones": [
+        "Generator Rooms: phòng lớn giàu thiết bị điện và tài nguyên nền.",
+        "Assembly Lines: khu công nghiệp rộng hơn với machine/workstation.",
+        "Boiler Rooms: heat/pipes và nguy cơ nhiệt.",
+        "Sanctums/blocked rooms: các phòng/khối kiến trúc khó tiếp cận; không tự cho rằng safe."
+      ],
+      "sensory": [
+        "Buzz, crackle, whir và rung điện chồng lên nhau; mùi ozone/kim loại nóng có thể xuất hiện khi có arcing.",
+        "Ánh sáng dim, vùng tối xen kẽ và flash từ thiết bị.",
+        "Heat thay đổi gần machinery; lower utility trong project canon có thể lạnh sâu."
+      ],
+      "anomalies": [
+        "Project canon có blackout làm route thay đổi khi điện trở lại.",
+        "Nguồn Wiki có các anomaly như black sludge/purpification/paranoia hotspots; chỉ dùng khi record/state cụ thể hỗ trợ, không nhồi tất cả trong mọi scene.",
+        "Các thanh chắn/khối inaccessible không được phá chỉ vì player mạnh nếu canon xác định anomaly chứ không phải vật liệu thường."
+      ],
+      "hazards": [
+        "Live electricity, arc, moving machinery, hot pipes, black liquid không rõ tính chất và corridor chật.",
+        "Lower Utility Tunnels theo project canon dưới mức đóng băng, có standing water bất thường và disappearance risk.",
+        "EntityCore sở hữu mọi combat encounter."
+      ],
+      "resources": [
+        "Thiết bị điện, parts, Almond Water/Firesalt trong một số room theo source lore có thể tồn tại, nhưng inventory mutation thuộc Core.",
+        "Không cho thiết bị tự hoạt động theo yêu cầu nếu state không xác nhận."
+      ],
+      "entities": [
+        "Source lore mô tả Level 3 có hostile entities đáng kể; runtime spawn vẫn chỉ EntityCore.",
+        "Không tự biến every blackout thành attack."
+      ],
+      "navigation": [
+        "Dùng generator noise, cable density, brick type, heat và signage công nghiệp làm landmark.",
+        "Transition route project canon sang Level 4 khi office-sector doors/elevators và kiến trúc hành chính tăng dần.",
+        "Một số dark passages có thể gợi Level 6 trong project lore nhưng route game không được skip nếu Core không cho."
+      ],
+      "entrancesExits": [
+        "Route chính vào từ Level 2.",
+        "Route chính ra Level 4; direct Level 6 chỉ nếu GameCoreRules/Core thật sự cho phép theo state."
+      ],
+      "gameplayOverride": [
+        "Project route/state có quyền cao hơn danh sách exit Wiki.",
+        "Không tự dựng Base Gamma hoặc community nếu campaign chưa encounter."
+      ],
+      "gmConstraints": [
+        "Không cho Kai hack toàn bộ facility chỉ từ một terminal.",
+        "Không giải thích nguồn điện tổng thể.",
+        "Không auto-spawn resource vì Level nổi tiếng giàu tài nguyên."
+      ],
+      "variationPool": [
+        "Generator room lớn với dây được tháo một phần và đèn emergency.",
+        "Corridor thấp buộc thay đổi tư thế di chuyển.",
+        "Pipe đen rung nhẹ với tiếng chất lỏng bên trong.",
+        "Một bộ contactor đóng cắt gây flash và tiếng nổ khô.",
+        "Bar chắn một phòng sáng phía sau nhưng không có gate.",
+        "Khu office nhỏ xen giữa machinery báo hiệu transition dần."
+      ]
+    },
+    "4": {
+      "name": "Level 4 — The Abandoned Office",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 4 Abandoned Office",
+        "status": "wiki-under-rewrite; project-authoritative"
+      },
+      "identity": [
+        "Mạng office/cubicle bỏ hoang có geometry ổn định hơn Level 0–3, ánh sáng một phần và nhiều vùng yên tĩnh.",
+        "Project canon coi đây là vùng nghỉ/salvage tương đối chứ không tuyệt đối an toàn."
+      ],
+      "architecture": [
+        "Phòng office, cubicle, hallway, meeting room và khu utility với ít đồ nội thất hơn một văn phòng hoạt động.",
+        "Windows phần lớn blacked out; những window hiển thị cảnh mưa hoặc view bất thường không được tự coi là đường ra.",
+        "Geometry tương đối ổn cho phép map cục bộ có giá trị."
+      ],
+      "zones": [
+        "Cubicle Fields: cụm bàn/vách ngăn và corridor office.",
+        "Window Corridors: dãy cửa sổ cần thận trọng, có thể là trap theo source lore.",
+        "Supply/Utility Rooms: water cooler/vending/fountain hoặc đồ văn phòng có thể hiện diện, nhưng Core sở hữu consumables.",
+        "Quiet Rest Areas: vùng ít anomaly/entity hơn, không bảo đảm an toàn dài hạn."
+      ],
+      "sensory": [
+        "Fluorescent hum nhẹ hơn các Level công nghiệp; điều hòa hoặc ventilation có thể chạy cục bộ.",
+        "Không khí khô hơn và ít mùi ẩm; mùi giấy, bụi và nhựa/vải văn phòng.",
+        "Cửa sổ có thể cho cảm giác mưa liên tục nhưng không cung cấp bằng chứng về outside world."
+      ],
+      "anomalies": [
+        "Một số windows là trap/không đáng tin.",
+        "Một khu đã clear hôm nay không được xem là vĩnh viễn clear; route/resources có thể drift theo world canon nhưng không reset tức thời."
+      ],
+      "hazards": [
+        "False safety làm người chơi giảm cảnh giác, windows nguy hiểm, resource không ổn định và incursion từ roaming Entity.",
+        "Large settlement không được tự dựng vì project canon tránh mặc định ổn định tài nguyên/boundary."
+      ],
+      "resources": [
+        "Almond Water có thể phổ biến hơn theo source lore, nhưng BACKROOMsV2 ItemCore quyết định item thực tế.",
+        "Office furniture và vật liệu có thể dùng làm cover/barrier tùy vật lý."
+      ],
+      "entities": [
+        "Project canon không xác nhận resident population ổn định.",
+        "Active encounter chỉ EntityCore; sightings ngoài Core phải được giữ là dấu hiệu chưa xác minh."
+      ],
+      "navigation": [
+        "Room numbering, cubicle pattern, carpet type và window placement có thể làm landmark đáng tin hơn Level 0.",
+        "Transition sang Level 5 nên diễn ra qua corridor ngày càng giống hotel: woodwork, carpet, brass, door proportions."
+      ],
+      "entrancesExits": [
+        "Route chính vào từ Level 3.",
+        "Route chính ra Level 5 theo progression game."
+      ],
+      "gameplayOverride": [
+        "Không dùng các base/community Wiki làm mặc định campaign.",
+        "Route game ưu tiên Level 5, không mở menu exit tự do."
+      ],
+      "gmConstraints": [
+        "Không tự cấp Almond Water dù có water cooler.",
+        "Không cho player bước qua window sang Frontrooms.",
+        "Không biến Level 4 thành safe hub tuyệt đối."
+      ],
+      "variationPool": [
+        "Cubicle row có vài ghế đổ nhưng mặt bàn gần như sạch.",
+        "Meeting room với bảng trắng cũ và đèn chỉ sáng một nửa.",
+        "Window corridor với kính tối hoàn toàn và mưa chỉ thấy ở một ô xa.",
+        "Vending machine có điện nhưng inventory không xác định.",
+        "Office carpet đổi dần sang pattern khách sạn ở vùng transition.",
+        "Một stairwell yên tĩnh nhưng door signage không khớp tầng."
+      ]
+    },
+    "5": {
+      "name": "Level 5 — Terror Hotel",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 5 Terror Hotel",
+        "status": "active"
+      },
+      "identity": [
+        "Một hotel complex phi Euclid vô tận với thẩm mỹ đầu thế kỷ 20, sạch đến mức bất tự nhiên và có cảm giác được duy trì dù bỏ hoang.",
+        "Horror đến từ sự sang trọng quá nguyên vẹn, âm thanh không có nguồn rõ, cảm giác bị quan sát và các khu chức năng chuyển nhau bất hợp lý."
+      ],
+      "architecture": [
+        "The Main Hall: wallpaper mahogany-red/gold, sàn gỗ/marble/carpet, furniture cổ, room doors với số không theo quy luật.",
+        "The Beverly Room/Eternal Ballroom: ballroom rộng với nhiều cửa, chandelier và một bàn nhỏ trung tâm.",
+        "The Boiler Room: machinery cổ, pipe đan dày, nóng và claustrophobic; pressure/leak là hazard.",
+        "Project canon cũng cho phép restaurant/pool/maintenance/hotel-room wings nếu giữ cùng thẩm mỹ."
+      ],
+      "zones": [
+        "Main Hall: khu phổ biến, furnished nhất và nhiều doors/elevators.",
+        "Beverly Room: hub-like ballroom, nhiều cửa nhưng không phải exit menu tự do.",
+        "Boiler/Maintenance: nóng, máy móc dày, route sang Level 6 theo project canon.",
+        "Guest Wings: room/corridor có thể furnished hoặc trống, dùng cho exploration và rest risk."
+      ],
+      "sensory": [
+        "Smooth jazz/vintage audio có thể phát không rõ nguồn và đổi bài bất chợt.",
+        "Party chatter sau tường, whisper, touch sensation hoặc cảm giác tranh đang nhìn đã được báo cáo nhưng không phải mọi thứ đều là Entity.",
+        "Hotel thường sạch, ít bụi; Boiler Room nóng, ồn và ẩm hơn."
+      ],
+      "anomalies": [
+        "Vết bẩn có thể biến mất sau một thời gian như thể level tự làm sạch.",
+        "Room numbers/elevator logic không theo quy luật Frontrooms.",
+        "Perceptual effects tăng khi ở lâu nhưng BACKROOMsV2 không biến thành sanity meter."
+      ],
+      "hazards": [
+        "Paranoia/sleep loss, wrong doors/elevators, Boiler heat/pressure và roaming Entity.",
+        "Không cho hallucination trực tiếp gây damage vật lý nếu chưa có causal evidence."
+      ],
+      "resources": [
+        "Furniture, hotel service objects và pipe contents có thể tồn tại; item gameplay vẫn qua Core.",
+        "Không tự cho đồ ăn/uống từ bàn ballroom hoặc hotel room là an toàn."
+      ],
+      "entities": [
+        "Source lore có nhiều Entities và Beast of Level 5; runtime spawn vẫn chỉ EntityCore.",
+        "Eyes/whispers/party noise không tự là Beast."
+      ],
+      "navigation": [
+        "Dùng wallpaper, flooring, room placards, elevator style và âm thanh để phân biệt wing.",
+        "Transition sang Level 6 qua Boiler/Maintenance: ánh sáng giảm, nhiệt có thể đổi, architecture trở nên trần trụi và tối."
+      ],
+      "entrancesExits": [
+        "Route chính vào từ Level 4.",
+        "Route chính ra Level 6; exit Wiki khác không tự mở."
+      ],
+      "gameplayOverride": [
+        "Project canon giữ psychological ambiguity, không áp sanity stat.",
+        "Không tự dựng Homely Hotel/M.E.G. outpost nếu state chưa xác nhận."
+      ],
+      "gmConstraints": [
+        "Không làm mọi painting thật sự có mắt sống.",
+        "Không cho elevator button tùy ý teleport qua các Level.",
+        "Không tự giải thích ai đang duy trì hotel."
+      ],
+      "variationPool": [
+        "Hall gỗ tối với brass lamp và room placard không tuần tự.",
+        "Một lounge sạch hoàn hảo dù ghế bọc vải đã rất cũ.",
+        "Jazz đổi bài khi không ai ở gần speaker.",
+        "Ballroom có cửa ở vị trí phi lý nhưng tất cả vẫn đóng.",
+        "Boiler corridor với valve rung và condensate.",
+        "Một guest room vừa đủ ở nhưng dấu hiệu cho thấy không nên ngủ quá lâu."
+      ]
+    },
+    "6": {
+      "name": "Level 6 — Lights Out",
+      "source": {
+        "basis": "BACKROOMsV2 canon + Backrooms Wiki Level 6 Lights Out",
+        "status": "wiki-outdated; project-authoritative"
+      },
+      "identity": [
+        "Một mạng hallway tối hoàn toàn, lạnh, im lặng và cô lập. Trong source lore, ánh sáng mang vào có thể không hoạt động.",
+        "BACKROOMsV2 nhấn mạnh danger từ bóng tối, lạnh, thiếu supplies, sleep deprivation, microsleep, hallucination và navigation failure."
+      ],
+      "architecture": [
+        "Hallway chật bằng vật liệu nhẵn lạnh, thường được suy đoán là concrete.",
+        "Vì không có ánh sáng đáng tin, topology phải được mô tả qua chạm, bước, luồng khí, âm vang hiếm và bề mặt.",
+        "Không dựng landmark thị giác nếu Kai không có nguồn quan sát hợp lệ."
+      ],
+      "zones": [
+        "Blind Corridors: dạng chủ đạo, không ánh sáng.",
+        "Cold Pockets: vùng nhiệt giảm sâu, có thể làm cơ thể mất nhiệt nhanh hơn.",
+        "Standing-Water Sections: nếu project state/scene đưa vào, nước phải được phát hiện bằng xúc giác/âm thanh chứ không nhìn thấy.",
+        "Boundary Zones: khu dấu hiệu về exit chỉ xuất hiện khi Core cho phép."
+      ],
+      "sensory": [
+        "Bóng tối tuyệt đối hoặc gần tuyệt đối; im lặng có thể giống phòng cách âm.",
+        "Bề mặt lạnh và luồng khí trở thành thông tin định hướng chính.",
+        "Auditory hallucination như breathing, whisper hoặc scuttling có thể xảy ra; không xác nhận nguồn khi chưa có evidence."
+      ],
+      "anomalies": [
+        "Light source có thể mất chức năng theo source lore; game không được tự cho night vision phá hoàn toàn tính chất Level nếu thiết bị chưa có canon tương tác.",
+        "Cảm giác 'thứ gì đó nhìn thấy mình trong khi mình không thấy nó' là report/perception, không bằng chứng resident Entity."
+      ],
+      "hazards": [
+        "Hypothermia, thiếu nước/thức ăn, sleep deprivation, microsleep, collision/fall và navigation failure.",
+        "No confirmed resident Entity không đồng nghĩa an toàn.",
+        "Nếu có external Entity từ EntityCore, không dùng source claim để xóa encounter đang active."
+      ],
+      "resources": [
+        "Resources rất hiếm; không tự tạo supply cache để cứu player.",
+        "Mọi item vẫn thuộc ItemCore."
+      ],
+      "entities": [
+        "Project canon không xác nhận resident Entity trong Level 6.",
+        "EntityCore roaming policy có thể tạo active encounter; nếu không active, tiếng động phải giữ uncertain."
+      ],
+      "navigation": [
+        "Đếm bước, bám tường, đánh dấu vật lý, luồng khí và gradient nhiệt có thể hỗ trợ nhưng không bảo đảm route.",
+        "Không mô tả bản đồ từ góc nhìn toàn tri; chỉ thông tin Kai cảm nhận được.",
+        "Route progression cần tinh tế vì visual cue gần như không tồn tại."
+      ],
+      "entrancesExits": [
+        "Route chính vào từ Level 5.",
+        "Game hiện chưa định nghĩa Level 7 trong LevelCore 0–6; không tự chuyển sang Level 7 chỉ vì source Wiki có exit đó."
+      ],
+      "gameplayOverride": [
+        "Level 6 là node cuối trong tập Level hiện được implement.",
+        "Mọi exit ngoài phạm vi Core phải bị khóa cho đến khi hệ Level được mở rộng."
+      ],
+      "gmConstraints": [
+        "Không spawn monster để giải thích every sound.",
+        "Không mô tả màu sắc/chi tiết nhìn thấy nếu không có cơ sở cảm nhận.",
+        "Không cho flashlight tự hoạt động như ở Level thường nếu điều đó phá canon ánh sáng."
+      ],
+      "variationPool": [
+        "Bức tường lạnh chuyển từ nhẵn sang có khe nối nhưng vẫn không nhìn thấy.",
+        "Luồng khí mỏng gợi một junction phía trước.",
+        "Một tiếng thở có vẻ gần rồi biến mất khi Kai dừng lại.",
+        "Nền thay đổi độ dốc rất nhẹ chỉ nhận ra qua bước chân.",
+        "Nước nông được phát hiện bởi tiếng chạm trước khi chân chạm vào.",
+        "Một đoạn hoàn toàn mất mọi âm vang khiến khoảng cách trở nên khó đánh giá."
+      ]
+    },
+    "0.1": {
+      "name": "Level 0.1 — Zenith Station",
+      "source": {
+        "basis": "Backrooms Wiki Level 0.1 — Zenith Station",
+        "status": "active"
+      },
+      "identity": [
+        "Một megastructure kim loại và kính khổng lồ bị nhúng bên trong Level 0, có kiến trúc tương lai nhưng đã xuống cấp nặng.",
+        "Cấu trúc được hiểu như một lớp vỏ hình cầu cực dày bao quanh khoang rỗng trung tâm; nhiều phần chưa được lập bản đồ."
+      ],
+      "architecture": [
+        "Vật liệu chủ đạo là kim loại, kính, panel kỹ thuật, cửa trượt tự động, dây điện lộ và thiết bị điện tử hỏng.",
+        "Các buồng chức năng có thể gồm phòng ngủ, bếp, phòng tập, khu sinh hoạt và nhà kính thủy canh, nhiều nơi hư hỏng hoặc bị bỏ mặc.",
+        "Từ một số cửa kính hoặc khoảng trống lớn có thể nhìn thấy các tầng Level 0 xếp chồng thành mạng lưới ở phía ngoài, một quan sát không thể tái tạo bằng cách xuyên trần Level 0 thông thường."
+      ],
+      "zones": [
+        "Central Cavity: khoang rỗng quy mô cực lớn dùng để định hướng tương đối cho cấu trúc tổng thể.",
+        "Residential/Utility Chambers: các phòng chức năng sáng hơn, nhiều cửa trượt và máy móc dân dụng.",
+        "Degraded Sectors: panel vỡ, dây điện hở, cửa kẹt, kính nứt và hệ thống môi trường hoạt động không ổn định.",
+        "Hydroponic Areas: nhà kính hoặc khu trồng cây trong nhiều trạng thái hư hỏng; không mặc định có thức ăn an toàn."
+      ],
+      "sensory": [
+        "Âm thanh thay đổi giữa tiếng quạt, relay, motor cửa, tiếng máy hoạt động rời rạc và những khoảng im lặng sâu.",
+        "Ánh sáng trắng sạch ở khu còn điện đối lập mạnh với vùng chập chờn hoặc tối.",
+        "Nhiệt độ có thể khác biệt đáng kể giữa các sector do hệ thống môi trường hỏng."
+      ],
+      "anomalies": [
+        "Một số automatons vẫn thực hiện tác vụ đơn giản như vệ sinh hoặc nấu nướng dù hệ thống xung quanh đã hư hỏng; không suy diễn chúng có ý thức nếu chưa có bằng chứng.",
+        "Quan hệ không gian giữa Zenith Station và Level 0 cho thấy hình học lớn hơn vẻ ngoài của Level 0, nhưng không được dùng làm cớ cho teleport tùy ý."
+      ],
+      "hazards": [
+        "Điện hở, kính vỡ, sàn/cầu nối hư hỏng, cửa tự động lỗi và chênh lệch nhiệt độ.",
+        "Khoang trung tâm và các vùng cao tạo nguy cơ rơi nếu người chơi đi vào mép hoặc cầu nối bị phá.",
+        "Thiết bị đang chạy không mặc định an toàn hoặc điều khiển được."
+      ],
+      "resources": [
+        "Có thể quan sát máy móc, đồ dùng dân dụng, linh kiện và cấu trúc thủy canh; việc biến chúng thành item gameplay phải do Core cho phép.",
+        "Không tự coi thực phẩm, nước hoặc máy móc còn hoạt động là tài nguyên sử dụng được chỉ vì hình thức gợi ý như vậy."
+      ],
+      "entities": [
+        "Zenith Station không tự cho phép GM spawn Entity. EntityCore vẫn là nguồn duy nhất xác nhận active encounter.",
+        "Automatons môi trường không được nâng thành hostile Entity nếu Core không định nghĩa chúng như vậy."
+      ],
+      "navigation": [
+        "Khoang trung tâm, dãy cửa kính, cụm phòng chức năng và trạng thái hư hỏng là landmark tốt hơn số phòng.",
+        "Tiến triển nên thể hiện qua thay đổi mật độ máy móc, độ nguyên vẹn và tầm nhìn vào cavity, không phải bằng hành lang vô nghĩa lặp lại."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 bắt buộc đi vào Zenith Station sau Level 0.",
+        "Sau khi hoàn thành route của Zenith Station, điểm đến duy nhất là Level 0.2."
+      ],
+      "gameplayOverride": [
+        "Zenith Station là một Level gameplay độc lập dù nguồn Wiki phân loại là sub-section.",
+        "Không cho phép quay tắt về Level 0 hoặc đi Level 1 bằng exit canon bên ngoài route game."
+      ],
+      "gmConstraints": [
+        "Không biến Zenith Station thành tàu vũ trụ đang vận hành hoàn chỉnh hoặc thuộc quyền kiểm soát của một faction nếu state chưa chứng minh.",
+        "Không tự tạo AI trung tâm, crew còn sống, bản đồ toàn cấu trúc hoặc lời giải nguồn gốc trạm.",
+        "Không mô tả Level 0.3."
+      ],
+      "variationPool": [
+        "Phòng sinh hoạt sáng lạnh với đồ nội thất cố định nhưng thiết bị hiển thị đã chết.",
+        "Cửa trượt mở chậm rồi dừng nửa chừng vì motor yếu.",
+        "Một hành lang kính nhìn vào cavity nhưng kính nhiều lớp làm méo chiều sâu.",
+        "Khu kỹ thuật có relay còn nhấp nháy trong khi toàn bộ màn hình tắt.",
+        "Nhà kính khô héo với ống dẫn và đèn trồng cây còn treo trên khung.",
+        "Một automaton lặp tác vụ vô hại, bỏ qua Kai trừ khi bị cản đường."
+      ]
+    },
+    "0.2": {
+      "name": "Level 0.2 — Remodeled Mess",
+      "source": {
+        "basis": "Backrooms Wiki Level 0.2 — Remodeled Mess",
+        "status": "active"
+      },
+      "identity": [
+        "Một bản 'cải tạo' của Level 0: thảm đỏ khô, tường trắng sơn lại, ổ điện và Wi‑Fi hoạt động ổn định hơn, đôi khi có phòng tắm.",
+        "Sự hoàn thiện chỉ là trạng thái mong manh. Khi có người bước vào, level có xu hướng bắt đầu một chuỗi sụp đổ khiến bề mặt hoàn thiện bong ra và để lộ cấu trúc giống công trình nhà đang xây."
+      ],
+      "architecture": [
+        "Bề mặt ban đầu sạch và có vẻ hợp lý hơn Level 0, với tường trắng, thảm đỏ và hạ tầng điện.",
+        "Sau khi chain reaction bắt đầu: tấm trần rơi, tường đổ, sàn sập, khung gỗ/kim loại và lớp xây thô lộ ra.",
+        "Sự phá hủy lan theo không gian chứ không xảy ra toàn bộ tức thời; GM phải thể hiện dấu hiệu, tiến triển và hậu quả vật lý."
+      ],
+      "zones": [
+        "Remodeled Rooms: phần còn nguyên, sáng, khô và có vẻ gần với nội thất thương mại hiện đại.",
+        "Active Collapse Front: vùng đang chuyển tiếp, nhiều bụi, vật liệu rơi và bề mặt mất ổn định.",
+        "Exposed Construction: phần đã sập, trông giống nhà/công trình chưa hoàn thiện với khung chịu lực lộ ra."
+      ],
+      "sensory": [
+        "Trước sập: tiếng điện nhẹ, thảm khô, không khí ít ẩm hơn Level 0.",
+        "Trong sập: tiếng nứt, vật liệu rơi, bụi xây dựng, rung cục bộ và tầm nhìn giảm.",
+        "Sau sập: mùi bụi thạch cao/gỗ, âm vang cứng hơn và nhiều bề mặt sắc cạnh."
+      ],
+      "anomalies": [
+        "Level có thể tự phục hồi khi quay lại theo canon nguồn; trong BACKROOMsV2 không dùng điều này để reset consequence ngay trong cùng encounter.",
+        "Hệ thống Wi‑Fi hoặc ổ điện hoạt động không đồng nghĩa có internet Frontrooms, định vị hay liên lạc SRU."
+      ],
+      "hazards": [
+        "Debris rơi, sàn yếu, bụi hô hấp, cạnh sắc, đường cũ bị chặn và nguy cơ bị kẹt.",
+        "Không để Kai đứng cạnh một điểm sập lớn mà không có dấu hiệu vật lý nào trước đó trừ khi state đã xác nhận biến cố đột ngột."
+      ],
+      "resources": [
+        "Ổ điện, phòng tắm hoặc hạ tầng có thể tồn tại như môi trường, nhưng nước/điện sử dụng được phải được kiểm chứng.",
+        "Loot gameplay vẫn do Core sở hữu; công trình đổ không tự sinh item."
+      ],
+      "entities": [
+        "Không có quyền spawn Entity từ Level knowledge. Active Entity vẫn chỉ từ EntityCore.",
+        "Tiếng nứt, bóng qua bụi và chuyển động do sập không được tự quy thành Entity."
+      ],
+      "navigation": [
+        "Route bị thay đổi thực tế bởi sập: cửa bị chặn, lỗ sàn mở, khung nhà tạo lối vòng.",
+        "Dùng ranh giới giữa khu còn hoàn thiện và khu đã sập làm landmark tiến triển."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào Level 0.2 từ Zenith Station.",
+        "Điểm đến bắt buộc duy nhất sau route là Level 0.5; không quay về Level 0 theo exit Wiki trong tuyến gameplay."
+      ],
+      "gameplayOverride": [
+        "Cơ chế tự phục hồi của nguồn canon không được dùng để hủy damage/consequence đã ghi trong state.",
+        "Level 0.3 bị loại khỏi game hoàn toàn."
+      ],
+      "gmConstraints": [
+        "Không biến level thành công trường có công nhân sống hoặc faction Remodeling Co. hiện diện nếu state không xác nhận.",
+        "Không cho Wi‑Fi giải quyết liên lạc với SRU.",
+        "Không dùng collapse như cutscene bắt buộc ở mọi lượt; nó là quá trình môi trường có thể được quan sát và phản ứng."
+      ],
+      "variationPool": [
+        "Một phòng trắng gần như hoàn chỉnh nhưng chân tường đã tách khỏi tường.",
+        "Ổ điện còn sáng đèn trong khi trần phía xa võng xuống.",
+        "Hành lang đỏ sạch kết thúc ở khung gỗ trần trụi.",
+        "Bụi mịn rơi trước khi một tấm trần rớt xuống.",
+        "Sàn nứt để lộ khoảng rỗng và dầm bên dưới.",
+        "Phòng tắm hoạt động về hình thức nhưng nguồn nước cần kiểm chứng."
+      ]
+    },
+    "0.5": {
+      "name": "Level 0.5 — Aquaclaustrophobic Infirmary",
+      "source": {
+        "basis": "Backrooms Wiki Level 0.5 — Aquaclaustrophobic Infirmary",
+        "status": "active-2026"
+      },
+      "identity": [
+        "Một sub-level mới được ghi nhận, gồm các hành lang ngập nước bẩn chuyển dần sang một bệnh viện/infirmary mục nát.",
+        "Horror của level đến từ sự bức bí, nước ô nhiễm, thiếu chỗ nghỉ khô, kiệt sức kéo dài và nguy cơ môi trường chứ không chỉ từ Entity."
+      ],
+      "architecture": [
+        "Waterlogged Passages: hành lang hẹp, giấy tường kem nhợt giống Level 0 nhưng bong dưới mực nước, nước thường ngang gối và đục đến mức không thấy đáy.",
+        "Đèn chữ nhật xanh treo bằng dây sờn có thể phát tia lửa phía trên nước.",
+        "Càng sâu, giấy tường nhường chỗ cho vách gỗ mục, trần thả và trolley; sau đó mở sang The Hospital với sàn bẩn dầu, gạch trần lệch, debris và phòng bệnh xuống cấp."
+      ],
+      "zones": [
+        "Waterlogged Passages: phần đầu ngập nước lạnh, thiếu chỗ ngồi/ngủ an toàn.",
+        "Transition Timber Halls: vùng chuyển tiếp với vách gỗ mục và cấu trúc giống bệnh viện xuất hiện dần.",
+        "The Hospital: hành lang/phòng bệnh với giường ẩm, debris và mùi phân hủy; khô hơn nhưng không an toàn.",
+        "Clear/Chlorinated Water Patches: hiện tượng hiếm, không được tự coi là exit hoặc nước uống nếu Core chưa mở route."
+      ],
+      "sensory": [
+        "Mùi quần áo mốc ướt trộn với mùi hóa chất, đôi khi nặng đến mức gây khó chịu đường hô hấp.",
+        "Tiếng nước bị chân khuấy và tiếng giọt vang xa thay cho tiếng buzz đều của Level 0.",
+        "The Hospital có mùi dầu, ẩm, mothball và phân hủy; âm vang thay đổi vì nhiều cửa/phòng kín."
+      ],
+      "anomalies": [
+        "Sự chuyển đổi từ hành lang ngập sang bệnh viện xảy ra dần theo kiến trúc, không phải teleport.",
+        "Nước có thể chứa sinh vật/vi khuẩn/chất ô nhiễm; GM không được chẩn đoán chính xác tác nhân nếu không có kiểm tra.",
+        "Drowned trong nguồn canon có khả năng theo đuổi dai dẳng, nhưng chỉ được hiện diện khi EntityCore/state xác nhận encounter tương ứng."
+      ],
+      "hazards": [
+        "Ngâm nước lâu gây mềm/mục da, phồng rộp, vết thương nhiễm trùng và mất nhiệt; nước uống vào có thể gây nôn và mất nước.",
+        "Ngủ trong Waterlogged Passages nguy hiểm vì đầu có thể chìm khi cơ thể trượt hoặc mất ý thức.",
+        "Dây điện, đèn chập và nước tạo rủi ro điện giật cần được mô tả bằng vị trí vật lý thực tế."
+      ],
+      "resources": [
+        "Trolley hoặc phòng bệnh có thể chứa đồ nền, nhưng Core quyết định vật phẩm có thể thu vào inventory.",
+        "Nước bẩn không phải nguồn uống; đồ ăn hoặc chai kín chỉ được coi an toàn sau khi quan sát/kiểm tra phù hợp."
+      ],
+      "entities": [
+        "Nguồn Wiki mô tả The Drowned như một mối đe dọa đặc trưng của Hospital; BACKROOMsV2 không tự spawn nó từ knowledge.",
+        "Nếu không có active encounter, tiếng gurgle hoặc chuyển động mặt nước phải giữ ở mức dấu hiệu chưa xác minh."
+      ],
+      "navigation": [
+        "Dùng mực nước, loại tường, kiểu đèn, trolley, ledge và mật độ debris để cho thấy tiến sâu.",
+        "Các loop nên trả người chơi về Waterlogged Passages hoặc khu bệnh viện quen thuộc bằng landmark vật lý, không đổi scene vô cớ."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào Level 0.5 từ Level 0.2.",
+        "Điểm đến duy nhất theo route game là Level 0.7, bất kể nguồn Wiki có các exit khác."
+      ],
+      "gameplayOverride": [
+        "Không cho phép exit sang Level 1 hoặc Level 37 trước Level 0.7.",
+        "Mọi damage, infection hoặc dehydration phải đi qua hệ stat/survival hiện có thay vì GM tự sửa số."
+      ],
+      "gmConstraints": [
+        "Không biến mọi lượt thành truy đuổi Drowned.",
+        "Không tự cho nước sạch, thuốc hay giường an toàn để giải khó khăn.",
+        "Không dùng gore quá mức; ưu tiên hậu quả vật lý quan sát được."
+      ],
+      "variationPool": [
+        "Nước nâu có váng dầu mỏng và giấy tường cuộn khỏi chân tường.",
+        "Một đèn xanh treo thấp hơn các đèn khác, dây điện rung theo chuyển động không khí.",
+        "Trolley kẹt ngang hành lang, bánh xe ngập nửa dưới.",
+        "Vách gỗ mục có lỗ sâu nhưng chưa đủ rộng thành passage.",
+        "Phòng bệnh với giường ẩm, rèm rách và trần lệch.",
+        "Một hành lang hospital quay lại ledge dẫn xuống vùng nước, tạo áp lực lựa chọn đường."
+      ]
+    },
+    "0.7": {
+      "name": "Level 0.7 — The Reminiscence District",
+      "source": {
+        "basis": "Backrooms Wiki Level 0.7 — The Reminiscence District",
+        "status": "active-2026"
+      },
+      "identity": [
+        "Một kho lưu giữ khổng lồ các biểu hiện lịch sử của Level 0, từ những hình thức cổ đại đến các phiên bản gần hiện đại.",
+        "Không gian hoạt động như các 'lớp lịch sử' của cùng một ý niệm Level 0 hơn là bảo tàng có trưng bày chủ động."
+      ],
+      "architecture": [
+        "Kiến trúc thay đổi theo vùng thời kỳ: vật liệu, nguồn sáng, kỹ thuật xây và đồ dùng phù hợp với giai đoạn được bảo tồn.",
+        "Ranh giới thời kỳ có thể xuất hiện dần qua vật liệu hoặc bố cục thay vì một cánh cửa ghi năm.",
+        "Một số lối ra bị khóa bởi hiện tượng thị giác giống static/no-signal, không được dùng như portal tùy tiện."
+      ],
+      "zones": [
+        "Ancient Remnants: các hình thức Level 0 cực cũ, vật liệu thô và ánh sáng phi hiện đại.",
+        "Pre-Industrial/Industrial Remnants: hành lang nến hoặc kiến trúc chuyển tiếp.",
+        "Early-to-Late 20th Century Remnants: nội thất, ánh sáng và vật liệu phản ánh các giai đoạn lịch sử gần hơn.",
+        "Recovered Outpost Traces: dấu tích tổ chức cũ có thể tồn tại như tài liệu hoặc kiến trúc bỏ hoang, không mặc định có cư dân hiện tại."
+      ],
+      "sensory": [
+        "Âm thanh và ánh sáng thay đổi theo thời kỳ: nến, nguồn điện cũ, tiếng vật liệu khác nhau dưới chân.",
+        "Cảm giác thời gian không đồng nghĩa time travel; đồ vật và cảnh chỉ là manifestation được bảo tồn.",
+        "Các khu bị block có thể nhấp nháy như màn hình nhiễu."
+      ],
+      "anomalies": [
+        "Level bảo tồn các phiên bản lịch sử không còn tồn tại của Level 0.",
+        "Thông tin lịch sử tìm thấy trong môi trường có thể sai, thiếu hoặc thuộc góc nhìn của người viết; GM không được biến tất cả tài liệu thành sự thật tuyệt đối."
+      ],
+      "hazards": [
+        "Nguồn thức ăn/nước không ổn định; đi quá sâu khi thiếu supplies là nguy cơ chính.",
+        "Ngủ ở vùng không che chắn và đi sâu vào các remnant nguy hiểm có thể tăng rủi ro theo canon nguồn.",
+        "Các blocked exit không được chạm/đi xuyên nếu route Core chưa mở."
+      ],
+      "resources": [
+        "Đồ vật lịch sử có thể xuất hiện làm scenery/evidence, nhưng inventory mutation thuộc ItemCore.",
+        "Tài liệu, biển hiệu hoặc công cụ cũ có thể cung cấp clue nhưng phải được đánh giá theo nguồn và tình trạng."
+      ],
+      "entities": [
+        "Nguồn 0.7 ghi nhận Entities ở các vùng sâu, nhưng BACKROOMsV2 chỉ cho Entity xuất hiện qua EntityCore.",
+        "Không tự sinh Entity 'cổ đại' chỉ vì cảnh đang ở thời kỳ cũ."
+      ],
+      "navigation": [
+        "Điều hướng theo thay đổi vật liệu và thời kỳ, không theo năm tuyệt đối nếu không có bằng chứng.",
+        "Tiến trình nên cho thấy các remnant thay đổi có logic; route thất bại có thể loop về một thời kỳ/landmark đã thấy."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào Level 0.7 từ Level 0.5.",
+        "Sau route, điểm đến duy nhất là Manila Room."
+      ],
+      "gameplayOverride": [
+        "Các exit nguồn Wiki bị vô hiệu hóa cho đến khi route game cho phép Manila Room.",
+        "Không cho phép 0.7 trở thành cổng chọn tự do sang các Level lịch sử khác."
+      ],
+      "gmConstraints": [
+        "Không khẳng định player đã du hành về quá khứ.",
+        "Không cho NPC lịch sử sống xuất hiện nếu Character/Entity Core không xác nhận.",
+        "Không dùng timeline lore để spoiler kiến thức mà Kai chưa thu thập."
+      ],
+      "variationPool": [
+        "Một đoạn hành lang chuyển từ vật liệu hiện đại sang tường thô và ánh nến qua vài phòng.",
+        "Một biển hiệu cũ có chữ mờ nhưng không đủ dữ liệu để xác định năm.",
+        "Dãy cửa bị phủ nhiễu thị giác như màn hình mất tín hiệu.",
+        "Một phòng có đồ nội thất thuộc thập niên cũ nhưng phủ bụi và không có người.",
+        "Một outpost cũ chỉ còn tủ hồ sơ, dây điện và vật liệu tháo dỡ.",
+        "Hai remnant thời kỳ khác nhau gặp nhau ở một góc kiến trúc không liền mạch."
+      ]
+    },
+    "manila_room": {
+      "name": "Manila Room",
+      "source": {
+        "basis": "Backrooms Wiki Manila Room (archived/current Level 0 lore)",
+        "status": "archived-source + project-override"
+      },
+      "identity": [
+        "Một không gian beige/manila ổn định hơn Level 0, nổi bật vì người ở bên trong có thể gặp và tương tác với nhau thay vì bị isolation tách rời.",
+        "Trong nguồn cổ điển, nó là một phòng nhỏ tĩnh với đồ đạc tối thiểu; BACKROOMsV2 mở rộng nó thành một Level gameplay nhưng giữ bản chất sanctuary/rendezvous."
+      ],
+      "architecture": [
+        "Wallpaper beige/manila, sàn gỗ hoặc vật liệu khô hơn Level 0, tường dày và bố cục ít biến đổi.",
+        "Motif trung tâm là bàn và vài ghế; số cửa có thể thay đổi trong source lore, nhưng game không dùng chúng làm exit tự do.",
+        "Phần mở rộng gameplay có thể gồm các phòng phụ nhỏ cùng vật liệu, kho tài liệu và lối nối hẹp, nhưng phải giữ quy mô kín và cảm giác tĩnh."
+      ],
+      "zones": [
+        "Central Room: bàn, ghế và điểm gặp chính.",
+        "Document Alcoves: khu lưu lại ghi chép, biển chỉ dẫn hoặc đồ do wanderer để lại; không mặc định mọi tài liệu đều đúng.",
+        "Quiet Extensions: các phòng phụ rất gần về thẩm mỹ dùng để tạo đủ không gian gameplay mà không biến thành hotel/office."
+      ],
+      "sensory": [
+        "Âm thanh yên hơn Level 0, ít buzz hơn và tiếng bước chân trên sàn khô rõ hơn.",
+        "Không khí bớt ẩm và ít gây áp lực hơn nhưng vẫn không phải Frontrooms.",
+        "Sự hiện diện của người khác nếu state có companion/NPC là điểm khác biệt lớn nhất."
+      ],
+      "anomalies": [
+        "Isolation của Level 0 yếu đi hoặc không áp dụng bên trong, cho phép nhiều người cùng hiện diện.",
+        "Tính ổn định tương đối không có nghĩa căn phòng miễn nhiễm mọi anomaly hoặc có vị trí Frontrooms xác định."
+      ],
+      "hazards": [
+        "Nguy hiểm môi trường thấp hơn các node trước, nhưng đói/khát/kiệt sức và hậu quả mang từ Level trước vẫn còn.",
+        "Tài liệu sai, vật phẩm bỏ lại không rõ nguồn và cửa không xác minh vẫn có thể gây rủi ro quyết định."
+      ],
+      "resources": [
+        "Có thể có tài liệu hoặc supplies do người trước để lại theo lore, nhưng loot thực tế phải do ItemCore.",
+        "Không tự cấp đồ chỉ vì Manila Room là safe point."
+      ],
+      "entities": [
+        "Không spawn hostile Entity từ knowledge.",
+        "Nếu EntityCore kích hoạt encounter, GM phải xử lý theo Core dù nguồn Manila Room thường được xem là an toàn hơn."
+      ],
+      "navigation": [
+        "Không gian ổn định hơn nên landmark có giá trị; bàn trung tâm, loại cửa và alcove có thể được dùng để quay lại.",
+        "Để duy trì gameplay nhiều lượt, mở rộng bằng các annex nhỏ cùng motif thay vì tạo mê cung vô hạn."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào Manila Room từ Level 0.7.",
+        "Không dùng exit nguồn canon sang Level 1. Điểm đến bắt buộc duy nhất sau route là The Torment."
+      ],
+      "gameplayOverride": [
+        "Manila Room là Level gameplay riêng.",
+        "Canon safe-room được giữ về tone, nhưng route sang The Torment là override bắt buộc của game."
+      ],
+      "gmConstraints": [
+        "Không tự triệu tập cộng đồng đông người, M.E.G. base hoặc vendor.",
+        "Không biến tài liệu thành exposition toàn tri.",
+        "Không cho Level 1 xuất hiện trước The Torment và Red Rooms."
+      ],
+      "variationPool": [
+        "Bàn trung tâm với dấu sử dụng cũ nhưng không có vật phẩm gameplay tự sinh.",
+        "Một cửa mở sang annex beige nhỏ chứa bảng ghim và giấy cũ.",
+        "Sàn gỗ kêu rõ dưới bước chân, tương phản với thảm ẩm của Level 0.",
+        "Một góc có ghế không đồng bộ kiểu dáng, gợi ý chúng được mang vào từ nhiều nơi.",
+        "Tường có dấu bút chì hoặc ghi chú không rõ tác giả.",
+        "Một passage ngắn quay về Central Room, củng cố tính ổn định."
+      ]
+    },
+    "the_torment": {
+      "name": "The Torment",
+      "source": {
+        "basis": "Backrooms Wiki The Torment",
+        "status": "active"
+      },
+      "identity": [
+        "Một anomaly/world greyscale từng xuất hiện trong Level 0: các vòng mộ đồng tâm bao quanh tượng đá hư hỏng của một người đàn ông trùm mũ.",
+        "Không khí của Level dựa trên sự bất định và dread, không phải jumpscare liên tục."
+      ],
+      "architecture": [
+        "Mộ đá xếp thành các vòng hình học quanh tượng trung tâm.",
+        "Cây chết cao khoảng người lớn hoặc hơn đứng gần một số mộ, lá mục phủ mặt đất.",
+        "Không gian ngoài trời tối, một mặt trăng đứng yên là nguồn sáng chính; sương xám dày giới hạn tầm nhìn rất ngắn."
+      ],
+      "zones": [
+        "Outer Fog Margin: ranh giới nơi màu vàng của Level trước bị rút bão hòa dần.",
+        "Grave Rings: các vòng mộ và cây chết, tầm nhìn ngắn.",
+        "Central Statue: landmark trung tâm có giá trị định hướng nhưng không được tự gán quyền năng/ý thức.",
+        "Gray Spread Front: bề mặt bị anomaly làm mất màu, là hazard cần tránh."
+      ],
+      "sensory": [
+        "Màu gần như biến mất; contrast ánh trăng/sương là tín hiệu thị giác chính.",
+        "Sương lạnh làm giảm tầm nhìn và tạo cảm giác rét.",
+        "Lá mục có thể phát tiếng rít/chói bất thường khi bị giẫm, phá sự im lặng."
+      ],
+      "anomalies": [
+        "Màu xám của anomaly có thể lan sang vật liệu lân cận.",
+        "Tiếp xúc trực tiếp với bề mặt anomaly đã được mô tả có thể làm vật thể, Entity hoặc người chuyển xám rồi tan thành tro; đây là hazard thật, không dùng tùy tiện để one-shot ngoài vị trí tiếp xúc.",
+        "Tên và ngày trên bia mộ không được mặc định là tiên tri, người quen hoặc tương lai của Kai."
+      ],
+      "hazards": [
+        "Gray spread/contact là hazard nghiêm trọng nhất.",
+        "Sương dày làm giảm quan sát, tăng nguy cơ bước nhầm vào bề mặt anomaly hoặc mất landmark.",
+        "Âm thanh bất thường từ lá có thể che tiếng tiếp cận khác nhưng không tự chứng minh Entity."
+      ],
+      "resources": [
+        "Không coi mộ, tượng hay đồ tùy táng là loot mặc định.",
+        "Không tự tạo nước/food/safe camp trong vùng trung tâm."
+      ],
+      "entities": [
+        "Không có Entity nào được tự spawn từ mô tả The Torment.",
+        "Tượng trùm đầu là vật thể/landmark cho đến khi state hoặc Core xác nhận khác."
+      ],
+      "navigation": [
+        "Dùng vòng mộ, vị trí tương đối với tượng và mật độ cây để điều hướng.",
+        "Sương khiến khoảng cách khó ước lượng nhưng không xóa bỏ vật lý; route progression nên cho thấy thay đổi số vòng/độ gần tượng."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào The Torment từ Manila Room.",
+        "Nguồn Wiki không có conventional route ổn định; game override mở route duy nhất sang Red Rooms sau khi Core cho phép."
+      ],
+      "gameplayOverride": [
+        "The Torment là Level độc lập và bắt buộc trong progression.",
+        "Connectivity sang Red Rooms là canon riêng của BACKROOMsV2."
+      ],
+      "gmConstraints": [
+        "Không giải thích tượng là ai, ai tạo mộ, hoặc The Torment là purgatory/afterlife.",
+        "Không đọc bia mộ thành spoiler về character nếu chưa có dữ kiện.",
+        "Không làm gray spread tự đuổi theo Kai như sinh vật nếu không có state."
+      ],
+      "variationPool": [
+        "Một vòng mộ biến mất vào sương chỉ vài mét phía trước.",
+        "Lá xám vụn dưới chân phát âm thanh bất tương xứng với kích thước.",
+        "Mặt trăng không thay đổi vị trí dù hướng di chuyển đổi.",
+        "Một mảng màu của vật liệu gần rìa bị rút dần bão hòa.",
+        "Tên trên bia không khớp bất kỳ hồ sơ Kai biết.",
+        "Bóng tượng trung tâm hiện rồi mất theo mật độ sương."
+      ]
+    },
+    "red_rooms": {
+      "name": "Red Rooms",
+      "source": {
+        "basis": "Backrooms Wiki Red Rooms",
+        "status": "active"
+      },
+      "identity": [
+        "Một nhánh Level 0 bị phủ sắc đỏ sâu: wallpaper đỏ thẫm, ánh sáng kiểu darkroom và cảm giác không gian bị tách khỏi phần còn lại.",
+        "Nguồn canon mô tả đây là dead end cực khó hoặc không thể thoát; BACKROOMsV2 cố ý override để nó trở thành cổng cuối trước Level 1."
+      ],
+      "architecture": [
+        "Bố cục vẫn gợi Level 0 nhưng màu, vật liệu và cảm giác bề mặt thay đổi rõ rệt.",
+        "Thảm thô và dính hơn thảm Level 0, góc tối có nấm và mốc đen.",
+        "Lối vào có thể đóng lại như thể bức tường luôn tồn tại, làm mất đường quay đầu."
+      ],
+      "zones": [
+        "Threshold Bleed: vùng màu vàng chuyển đỏ dần, là dấu hiệu cảnh báo.",
+        "Crimson Halls: phòng/hành lang đỏ với ánh sáng tối và thảm dính.",
+        "Mold Corners: khu ẩm tối có mốc/nấm, không mặc định là tài nguyên.",
+        "Deep Deadzone: vùng communications gần như tắt và landmark trở nên khó phân biệt."
+      ],
+      "sensory": [
+        "Ánh sáng đỏ làm giảm khả năng phân biệt màu và khoảng cách.",
+        "Buzz của đèn khác Level 0, có thể gắt và khó chịu hơn.",
+        "Bề mặt tường lạnh/ẩm và thảm thô tạo tương phản xúc giác mạnh."
+      ],
+      "anomalies": [
+        "Chất lượng radio giảm theo thời gian ở sâu trong Red Rooms và cuối cùng có thể mất hoàn toàn.",
+        "Cảm giác disgust, despair, paranoia và claustrophobia đã được báo cáo, nhưng GM phải mô tả như phản ứng/cảm nhận chứ không điều khiển ý chí Kai.",
+        "Đường vào có thể biến mất sau khi bước sâu vào."
+      ],
+      "hazards": [
+        "Mất liên lạc, không tìm được đường quay lại, mốc/nấm không an toàn và áp lực tâm lý môi trường.",
+        "Không có hostile resident Entity được xác nhận trong source canon; danger đến từ dead-end topology và suy kiệt."
+      ],
+      "resources": [
+        "Không có nguồn supplies đáng tin cậy.",
+        "Nấm/mốc không phải thực phẩm hoặc item nếu Core không xác nhận."
+      ],
+      "entities": [
+        "Source canon ghi nhận không có hostile Entities đặc trưng.",
+        "BACKROOMsV2 EntityCore vẫn có thể kích hoạt roaming encounter; nếu không có active encounter, GM không được thêm quái để 'tăng horror'."
+      ],
+      "navigation": [
+        "Dùng mức độ đỏ, chất lượng radio, thảm, mốc và kiểu ánh sáng làm progression cues.",
+        "Loop và sealed entrance là hợp canon nhưng phải tôn trọng hidden route state; khi Core mở exit, cảnh phải phát triển tự nhiên tới Level 1."
+      ],
+      "entrancesExits": [
+        "BACKROOMsV2 vào Red Rooms từ The Torment.",
+        "Đây là node cuối chuỗi Level 0. Chỉ sau khi route hoàn tất mới được sang Level 1."
+      ],
+      "gameplayOverride": [
+        "Override dead-end của source canon: Red Rooms có đúng một gameplay exit bắt buộc sang Level 1 khi Core mở.",
+        "Không được quay về The Torment hoặc skip sang Level khác."
+      ],
+      "gmConstraints": [
+        "Không thêm Smiler/Hound chỉ vì căn phòng tối.",
+        "Không biến paranoia thành mind control.",
+        "Không mở exit sớm dù người chơi mô tả 'tìm thấy cửa Level 1'."
+      ],
+      "variationPool": [
+        "Một góc tường vàng cũ còn sót rồi biến mất sau vài phòng.",
+        "Thảm dính kéo nhẹ đế giày và có vùng khô bất thường.",
+        "Nấm nhỏ mọc ở chân tường nhưng không có thuộc tính gameplay.",
+        "Radio từ nhiễu nhẹ chuyển sang tiếng vỡ rồi im hẳn.",
+        "Hành lang đỏ quay về một wallpaper mark quen thuộc dù đã rẽ khác hướng.",
+        "Khi exitAvailable, vật liệu có thể dần chuyển sang concrete lạnh và cột của Level 1."
+      ]
+    }
+  }
+}
