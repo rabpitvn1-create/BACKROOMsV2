@@ -69,10 +69,10 @@
     {
       "id": "STORY.MAIN.SEPARATION",
       "domain": "STORY", "kind": "baseline-continuity",
-      "text": "After the shared no-clip event, Kai, Iris and Syvial land apart. Direct links between the three, Black Blood/Command, Frontrooms, beacon and outside telemetry are initially offline. Kai does not know Iris's or Syvial's location/Level. Iris and Syvial exist in the campaign from the Prologue and are separated, not first-spawned by survivor RNG. Re-establishing contact or reunion requires continuity/geography/state support; rarity rolls never teleport them.",
-      "source": {"document": "05_TextGame/STORY/MAIN_STORY.md", "anchor": "2; 4; 5"},
+      "text": "In 2299, Kai, Iris and Syvial deliberately enter the same SRU spatial gate during the official investigation of Async and its still-unverified connection to the Backrooms. There is no accident or involuntary entry. The transition separates them, leaving Kai alone at Level 0 while Iris's and Syvial's locations remain unknown. All external SRU, command, backup and telemetry links are initially unavailable. Their separation does not prove any theory about Async. Iris and Syvial already exist in the campaign from the Prologue and are separated, not first-spawned by survivor RNG; reunion still requires continuity/geography/state support and rarity rolls never teleport them.",
+      "source": {"document": "android-apk/app/src/main/assets/index.html", "anchor": "6. PROLOGUE — MANDATORY NEW GAME OPENING"},
       "authority": "STORY_CANON", "mutability": "BASELINE", "priority": 38,
-      "tags": ["main campaign", "separated", "communication", "iris", "syvial"], "references": [], "affordances": []
+      "tags": ["main campaign", "sru", "async", "spatial gate", "separated", "communication", "iris", "syvial"], "references": [], "affordances": []
     },
 
     {

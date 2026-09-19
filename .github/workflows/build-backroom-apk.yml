@@ -209,6 +209,14 @@ jobs:
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq '6. PROLOGUE — MANDATORY NEW GAME OPENING' android-apk/app/src/main/assets/index.html
+          grep -Fq 'Theo đúng mệnh lệnh nhiệm vụ, Kai, Iris và Syvial chủ động bước qua cùng một cổng không gian.' android-apk/app/src/main/assets/index.html
+          grep -Fq 'Việc Kai xuất hiện trong Backrooms không tự động chứng minh bất kỳ giả thuyết nào về Async.' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'Bữa tối bắt đầu như bao lần khác.' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'oldPrologueSignature' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'sau no-clip' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'After the shared no-clip event' android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          grep -Fq 'deliberately enter the same SRU spatial gate' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
