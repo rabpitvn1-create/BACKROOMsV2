@@ -171,6 +171,11 @@ jobs:
           grep -Fq 'ROUTE_REQUIRED_STREAK = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String recentStoryContext(JSONObject state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'NARRATIVE VOICE:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Không kết mỗi reply bằng câu hỏi tu từ' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Kai' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'LEVEL TRANSITION: LOCKED' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'entityCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
