@@ -256,8 +256,7 @@ jobs:
           convert "$TORMENT_DIR/raw_03" -auto-orient -filter Lanczos -resize '1920x1080!' -quality 95             "$TORMENT_DIR/snapshot_level_0_sublevel_the-torment_03.webp"
 
           for i in 01 02 03; do
-            raw_index="$((10#$i))"
-            convert "$RED_DIR/raw_${raw_index}" -auto-orient -filter Lanczos -resize '1920x1080!' -quality 95               "$RED_DIR/snapshot_level_0_sublevel_red-rooms_${i}.webp"
+            convert "$RED_DIR/raw_${i}" -auto-orient -filter Lanczos -resize '1920x1080!' -quality 95               "$RED_DIR/snapshot_level_0_sublevel_red-rooms_${i}.webp"
           done
 
           rm "$TORMENT_DIR/raw_03" "$RED_DIR/raw_01" "$RED_DIR/raw_02" "$RED_DIR/raw_03"
