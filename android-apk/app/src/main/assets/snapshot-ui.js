@@ -47,7 +47,7 @@
     box.querySelectorAll('img.snapshot-grounded').forEach(function(img){alignOverlayToGround(img,img.dataset.groundSide||'left',Number(img.dataset.groundHeight||0.84),Number(img.dataset.groundWidth||0.46));});
   }
   function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}
-  function cachedSnapshot(){try{var r=JSON.parse(localStorage.getItem('backroom-apk-snapshot')||'null');return r&&Number(r.turn)===Number(state&&state.turn)&&r.dataUri?r:null;}catch(e){return null;}}
+  try{localStorage.removeItem('backroom-apk-snapshot');}catch(_){}
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={kai:'file:///android_asset/kai_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
@@ -78,7 +78,7 @@
       img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';img.dataset.groundOffsetPx='5';box.appendChild(img);alignOverlayToGround(img,'right',0.90,0.58);
     }
   }
-  function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt=(local.label||('Level '+local.level))+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh cho Level hiện tại.</small>';box.appendChild(p);}}appendSnapshotOverlay(box);}
+  function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt=(local.label||('Level '+local.level))+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh local cho Level hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}
   function combatTargetElement(target){var box=document.getElementById('snapshot');if(!box)return null;return target==='entity'?box.querySelector('.snapshot-entity'):box.querySelector('.snapshot-combat-character');}
   function targetAnchor(target){
     var box=document.getElementById('snapshot'),el=combatTargetElement(target);if(!box||!el)return null;
@@ -103,16 +103,9 @@
       floater.addEventListener('animationend',function(){floater.remove();},{once:true});setTimeout(function(){floater.remove();},1000);
     }catch(_){}
   };
-  function requestSnapshot(){if(!window.Android||typeof Android.requestSnapshot!=='function'){var s=document.getElementById('status');if(s)s.textContent='Không tìm thấy Android snapshot bridge.';return;}var s=document.getElementById('status');if(s)s.textContent='Gemini đang tạo snapshot…';Android.requestSnapshot(JSON.stringify(state));}
-  window.requestSnapshot=requestSnapshot;
-  var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){oldRender();renderSnapshot();};}
-  var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',requestSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}
-  var oldTurn=window.backroomTurn;window.backroomTurn=function(json){var before=Number(state&&state.turn||0);if(typeof oldTurn==='function')oldTurn(json);document.querySelectorAll('[data-pending="1"]').forEach(function(n){n.remove();});var s=document.getElementById('status');if(s)s.textContent='Turn '+state.turn+' đã lưu trên máy.';renderSnapshot();if(Number(state&&state.turn||0)!==before)requestSnapshot();};
-  var oldError=window.backroomError;window.backroomError=function(message){document.querySelectorAll('[data-pending="1"]').forEach(function(n){n.remove();});if(typeof oldError==='function')oldError(message);};
-  window.backroomSnapshot=function(payload){try{var r=JSON.parse(payload);if(!state||Number(r.turn)!==Number(state.turn))return;if(!r.dataUri)return;localStorage.setItem('backroom-apk-snapshot',JSON.stringify({turn:r.turn,model:r.model||'Gemini',dataUri:r.dataUri}));renderSnapshot();var s=document.getElementById('status');if(s)s.textContent='Snapshot Turn '+state.turn+' đã tạo bằng '+(r.model||'Gemini')+'.';}catch(e){var s=document.getElementById('status');if(s)s.textContent='Snapshot trả về không hợp lệ.';}};
-  window.backroomSnapshotError=function(payload){try{var r=JSON.parse(payload);if(state&&Number(r.turn)!==Number(state.turn))return;var s=document.getElementById('status');if(s)s.textContent='Snapshot lỗi: '+(r.message||'Không thể tạo ảnh.');}catch(e){var s=document.getElementById('status');if(s)s.textContent='Snapshot lỗi.';}};
+  var oldTurn=window.backroomTurn;window.backroomTurn=function(json){if(typeof oldTurn==='function')oldTurn(json);document.querySelectorAll('[data-pending="1"]').forEach(function(n){n.remove();});var s=document.getElementById('status');if(s)s.textContent='Turn '+state.turn+' đã lưu trên máy.';renderSnapshot();};
   var f=document.getElementById('form');if(f){f.addEventListener('submit',function(){if(state&&state.combat&&state.combat.active)return;var a=document.getElementById('action');var text=a?a.value.trim():'';if(!text)return;var l=document.getElementById('log');if(!l)return;var player=document.createElement('article');player.className='message player pending';player.setAttribute('data-pending','1');player.innerHTML='<div class="role">BẠN</div><div class="text"></div>';player.querySelector('.text').textContent=text;l.appendChild(player);var gm=document.createElement('article');gm.className='message pending';gm.setAttribute('data-pending','1');gm.innerHTML='<div class="role">GAME MASTER</div><div class="text">Đang xử lý lượt…</div>';l.appendChild(gm);scrollBottom();},true);}
   var __groundResizeTimer=0;
   window.addEventListener('resize',function(){clearTimeout(__groundResizeTimer);__groundResizeTimer=setTimeout(realignGroundedOverlays,80);});
-  renderSnapshot();if(typeof state!=='undefined'&&state&&!cachedSnapshot())setTimeout(requestSnapshot,700);
+  renderSnapshot();
 })();
