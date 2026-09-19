@@ -266,6 +266,38 @@ final class CharacterProgressionCore {
     profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
   }
 
+  int healCurrentHp(JSONObject state, String rawId, int amount) throws Exception {
+    String id = normalizeCharacterId(rawId);
+    JSONObject profile = ensureProfile(state, id);
+    int current = Math.max(0, profile.optInt("currentHp", 0));
+    int maxHp = Math.max(1, profile.optInt("maxHp", maxHpForExplorer(profile.optInt("explorer", 0))));
+    if (!"kai".equals(id) && current <= 0) {
+      throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ hồi sinh.");
+    }
+    int next = Math.min(maxHp, current + Math.max(0, amount));
+    profile.put("currentHp", next).put("maxHp", maxHp);
+    syncShadowHp(state, id, next, maxHp);
+    return next - current;
+  }
+
+  private void syncShadowHp(JSONObject state, String id, int hp, int maxHp) throws Exception {
+    if ("kai".equals(id)) {
+      JSONObject player = state.optJSONObject("player");
+      if (player != null) player.put("hp", hp).put("maxHp", maxHp);
+      return;
+    }
+    JSONArray party = state.optJSONArray("party");
+    if (party == null) return;
+    for (int i = 0; i < party.length(); i++) {
+      JSONObject member = party.optJSONObject(i);
+      if (member == null) continue;
+      String memberId = normalizeCharacterId(member.optString("id", member.optString("name", "")));
+      if (!id.equals(memberId)) continue;
+      member.put("hp", hp).put("maxHp", maxHp);
+      return;
+    }
+  }
+
   void protectFromCandidate(JSONObject before, JSONObject candidate) throws Exception {
     if (before == null || candidate == null) return;
     normalizeState(before);
