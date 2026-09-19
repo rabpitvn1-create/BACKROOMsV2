@@ -5,10 +5,11 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class CharacterDetailCoreTest {
-  @Test public void freshKaiProjectsHpExplorerExpStatsAndEquipment() throws Exception {
+  @Test public void freshKaiProjectsHpExplorerExpAndStatsWithoutEquipment() throws Exception {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Kai Akechi"))
         .put("party", new JSONArray())
@@ -28,8 +29,8 @@ public class CharacterDetailCoreTest {
     assertEquals(50, kai.getInt("requiredExp"));
     assertEquals(40, baseTotal(kai.getJSONObject("stats")));
     assertEquals(0, kai.getJSONObject("stats").getJSONObject("STR").getInt("explorer"));
-    assertEquals(0, kai.getJSONObject("stats").getJSONObject("STR").getInt("equipment"));
-    assertEquals(3, kai.getJSONArray("equipment").length());
+    assertFalse(kai.getJSONObject("stats").getJSONObject("STR").has("equipment"));
+    assertFalse(kai.has("equipment"));
     assertEquals("NORMAL", kai.getJSONObject("physiology").getString("hunger"));
     assertEquals(100, kai.getJSONObject("physiology").getInt("foodPercent"));
   }
