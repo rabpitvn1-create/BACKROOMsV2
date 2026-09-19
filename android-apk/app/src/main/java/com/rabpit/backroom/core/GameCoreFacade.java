@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 7;
+  private static final int CURRENT_SAVE_VERSION = 8;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -90,6 +90,7 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
+      levelCore.rollRouteForExplorerAction(legacy, text);
       itemCore.prepareExplorationLoot(legacy);
       entityCore.prepareEncounter(legacy);
       characterEncounterCore.rollForExplorerAction(legacy, text);

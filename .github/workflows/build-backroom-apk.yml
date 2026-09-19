@@ -116,6 +116,7 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
           ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
@@ -124,6 +125,8 @@ jobs:
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
+          test -s android-apk/app/src/main/assets/knowledge/gm_style_examples.json
+          jq -e '.version == 1 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
           grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
@@ -164,6 +167,21 @@ jobs:
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
           grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'ROUTE_SUCCESS_PERCENT = 60' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'ROUTE_TRIPLE_SUCCESS_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'ROUTE_TRIPLE_SUCCESS_INCREMENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'ROUTE_REQUIRED_STREAK = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String recentStoryContext(JSONObject state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String gmStyleExamplesContext()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'GM STYLE FEW-SHOT EXAMPLES:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'NARRATIVE VOICE:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Không kết mỗi reply bằng câu hỏi tu từ' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Kai' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'LEVEL TRANSITION: LOCKED' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'entityCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'levelPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java

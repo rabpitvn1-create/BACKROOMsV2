@@ -44,6 +44,8 @@ public class MainActivity extends Activity {
   private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
   private static final int[] RETRYABLE = {408, 429, 500, 502, 503, 504};
   private static final int MAX_SNAPSHOT_BASE64 = 1_500_000;
+  private static final String GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json";
+  private String gmStyleExamplesCache;
 
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
   @Override public void onCreate(Bundle savedInstanceState) {
@@ -151,6 +153,50 @@ public class MainActivity extends Activity {
       while ((line = reader.readLine()) != null) text.append(line).append('\n');
     }
     return text.toString();
+  }
+
+  private String gmStyleExamplesContext() {
+    if (gmStyleExamplesCache != null) return gmStyleExamplesCache;
+    try {
+      JSONObject root = new JSONObject(readAssetText(GM_STYLE_EXAMPLES_ASSET));
+      StringBuilder output = new StringBuilder("GM STYLE FEW-SHOT EXAMPLES:\n");
+      String instruction = root.optString("instruction", "").trim();
+      if (!instruction.isEmpty()) output.append(instruction).append("\n");
+
+      JSONArray examples = root.optJSONArray("goodExamples");
+      if (examples != null) {
+        for (int i = 0; i < examples.length(); i++) {
+          JSONObject example = examples.optJSONObject(i);
+          if (example == null) continue;
+          String player = example.optString("player", "").trim();
+          String gm = example.optString("gm", "").trim();
+          if (player.isEmpty() || gm.isEmpty()) continue;
+          output.append("\nGOOD EXAMPLE ").append(i + 1).append("\n");
+          output.append("PLAYER: ").append(player).append("\n");
+          output.append("GM: ").append(gm).append("\n");
+        }
+      }
+
+      JSONObject bad = root.optJSONObject("badExample");
+      if (bad != null) {
+        String player = bad.optString("player", "").trim();
+        String gm = bad.optString("gm", "").trim();
+        String why = bad.optString("why", "").trim();
+        if (!player.isEmpty() && !gm.isEmpty()) {
+          output.append("\nBAD EXAMPLE — DO NOT IMITATE\n");
+          output.append("PLAYER: ").append(player).append("\n");
+          output.append("GM: ").append(gm).append("\n");
+          if (!why.isEmpty()) output.append("WHY BAD: ").append(why).append("\n");
+        }
+      }
+
+      output.append("\nUse these examples only as style references. Never copy their wording, events, imagery, locations, conclusions, or hidden outcomes into the current turn unless current state independently supports them.\n");
+      gmStyleExamplesCache = output.toString();
+    } catch (Exception error) {
+      Log.w(TAG, "Unable to load GM style examples; using narrative contract only.", error);
+      gmStyleExamplesCache = "";
+    }
+    return gmStyleExamplesCache;
   }
 
   private void installUiScripts() {
@@ -552,6 +598,25 @@ public class MainActivity extends Activity {
     return text.length() > max ? text.substring(text.length() - max) : text;
   }
 
+  private String recentStoryContext(JSONObject state) {
+    JSONArray log = state == null ? null : state.optJSONArray("log");
+    if (log == null || log.length() == 0) return "(chưa có lượt trước)";
+
+    StringBuilder recent = new StringBuilder();
+    int start = Math.max(0, log.length() - 6);
+    for (int i = start; i < log.length(); i++) {
+      JSONObject entry = log.optJSONObject(i);
+      if (entry == null) continue;
+      String text = entry.optString("text", "").trim();
+      if (text.isEmpty()) continue;
+      if (recent.length() > 0) recent.append("\n");
+      boolean player = "player".equals(entry.optString("role", ""));
+      recent.append(player ? "PLAYER: " : "GM: ");
+      recent.append(clipped(text, 1400));
+    }
+    return recent.length() == 0 ? "(chưa có lượt trước)" : recent.toString();
+  }
+
   private String appendEncounterDialogue(String reply, JSONArray dialogue) {
     if (dialogue == null || dialogue.length() == 0) return reply;
     StringBuilder output = new StringBuilder(reply == null ? "" : reply.trim());
@@ -694,17 +759,30 @@ public class MainActivity extends Activity {
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String itemContext = gameCore.itemPromptContext(coreBeforeJson);
           String characterContext = gameCore.characterPromptContext(coreBeforeJson);
+          JSONObject promptState = new JSONObject(state.toString());
+          promptState.remove("levelRoute");
+          promptState.remove("log");
+          String recentStory = recentStoryContext(state);
+          String gmStyleExamples = gmStyleExamplesContext();
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
-            "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
+            "NARRATIVE VOICE: viết tiếng Việt tự nhiên, nghiêm túc, tiết chế và giàu quan sát, cùng kỷ luật văn phong với Prologue hiện tại nhưng không sao chép câu chữ của Prologue. Không viết như báo cáo trạng thái, checklist hay lời thuyết minh game. " +
+            "Mỗi reply phải phản ứng trực tiếp với hành động vừa nhập, giữ liên tục không gian với cảnh trước và ưu tiên chi tiết cụ thể có thể quan sát được: ánh sáng, âm thanh, vật liệu, khoảng cách, hình học, nhiệt độ, độ ẩm, mùi hoặc dấu vết khi chúng thực sự phù hợp. Không nhồi đủ mọi giác quan vào mọi lượt. " +
+            "Nhịp kể phải biến đổi tự nhiên: câu ngắn dùng để nhấn, câu dài dùng để mô tả; thông thường 2-5 đoạn ngắn là đủ, nhưng không ép mọi lượt theo cùng một khuôn. Một lượt yên tĩnh vẫn phải có quan sát, hệ quả hoặc thay đổi cụ thể thay vì câu rỗng kiểu 'không có gì xảy ra'. " +
+            "Giữ kỷ luật nhận thức: chỉ khẳng định điều Kai có thể quan sát hoặc điều canon/state đã xác nhận. Với nguyên nhân, Entity, ký ức, hiện tượng hoặc cấu trúc chưa được chứng minh, mô tả bằng dấu hiệu và bằng chứng chứ không tự giải thích bí ẩn. " +
+            "Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Kai ngoài hành động người chơi đã nhập và hệ quả trực tiếp cần thiết của nó. Người chơi chỉ điều khiển Kai Akechi. " +
+            "Tránh sáo ngữ và câu đệm lặp lại như 'một cảm giác bất an bao trùm', 'mọi thứ vẫn như cũ', 'Kai tiếp tục đi', 'không có gì xảy ra', 'bóng tối như nuốt chửng', hoặc các biến thể tương tự nếu không có chi tiết mới cụ thể. Không kết mỗi reply bằng câu hỏi tu từ hay 'Bạn sẽ làm gì tiếp?'. Không cường điệu mọi lượt thành biến cố lớn. " +
+            "Đối thoại phải ngắn, tự nhiên, đúng quan hệ nhân vật và không biến thành đoạn giải thích lore cho người chơi. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ.\n" +
+            gmStyleExamples +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
             "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
             "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
             "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
             "CHARACTER CORE CONTRACT: Gemini không được spawn character, thêm/xóa/sắp xếp lại Party hoặc sửa trạng thái joined. Party trong state là bất biến đối với Gemini. Nếu Character Core báo pending intro, viết đúng 2-5 lượt thoại ngắn trong encounterDialogue; không hỏi người chơi có nhận character hay không. Nếu không pending thì encounterDialogue phải là []. " +
-            "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
+            "LEVEL CORE CONTRACT: currentLevel và hidden route progression do Core sở hữu. Không bao giờ tiết lộ roll, streak, xác suất hay cơ chế ngầm cho người chơi. Chỉ được đổi currentLevel khi LEVEL CONTEXT nói LEVEL TRANSITION: AVAILABLE và hành động thực sự đi qua một boundary hợp lệ. Nếu LOCKED, giữ nguyên currentLevel và toàn bộ cảnh trong Level hiện tại; không kể trước kiến trúc của Level kế tiếp. " +
             levelContext + "\n" + entityContext + "\n" + itemContext + "\n" + characterContext + "\n" +
-            "State hiện tại: " + state.toString() + "\nHành động: " + action +
+            "RECENT STORY CONTEXT (chỉ dùng để giữ continuity, không được lặp lại nguyên văn):\n" + recentStory + "\n" +
+            "State hiện tại: " + promptState.toString() + "\nHành động: " + action +
             "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"flags\":{},\"encounterDialogue\":[],\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Đi tiếp\",\"highlights\":[{\"text\":\"Level 0\",\"type\":\"location\"}]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();

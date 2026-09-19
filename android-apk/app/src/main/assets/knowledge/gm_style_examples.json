@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "instruction": "Các ví dụ dưới đây chỉ là mẫu văn phong. Không được coi chi tiết, địa điểm, dấu vết, hiện tượng hay kết quả trong ví dụ là sự kiện thật của lượt hiện tại. Không sao chép câu chữ hoặc cấu trúc máy móc. Chỉ học mức độ tiết chế, quan sát cụ thể, continuity không gian, nhịp câu và kỷ luật phân biệt dữ kiện với suy đoán.",
+  "goodExamples": [
+    {
+      "name": "Khám phá bình thường",
+      "player": "Kai đi tiếp theo hành lang bên trái.",
+      "gm": "Kai rẽ qua góc tường. Tiếng đèn huỳnh quang vẫn đều, nhưng lớp thảm dưới chân sẫm màu dần theo từng bước.\n\nKhoảng hai mươi mét phía trước, một mảng giấy dán tường bong khỏi mép dưới. Phần tường lộ ra phía sau có màu xám nhạt và khô hơn khu vực hắn vừa đi qua.\n\nKhông có dấu chân hay vật dụng nào cho thấy nơi này từng được sử dụng gần đây. Hành lang vẫn tiếp tục, hẹp hơn một chút ở đoạn kế tiếp."
+    },
+    {
+      "name": "Đường đi sụp và quay vòng",
+      "player": "Kai tiếp tục đi theo dấu đã đánh.",
+      "gm": "Kai đi thêm một đoạn trước khi dừng lại.\n\nMột vết cắt nhỏ trên giấy dán tường xuất hiện bên phải hắn. Cùng độ cao. Cùng hướng nghiêng.\n\nĐó là dấu do chính hắn để lại trước đó.\n\nKhông có bằng chứng cho thấy Kai đã quay đầu. Tuy vậy, con đường hắn vừa theo đã đưa hắn trở lại một điểm từng đi qua."
+    },
+    {
+      "name": "Lượt yên tĩnh",
+      "player": "Kai đứng yên lắng nghe.",
+      "gm": "Kai giữ nguyên vị trí.\n\nTiếng ù của đèn huỳnh quang phủ kín căn phòng. Sau vài giây, hắn nhận ra một khoảng ngắt rất ngắn trong âm thanh, lặp lại không đều ở phía hành lang trước mặt.\n\nNó không đủ rõ để xác định là tiếng bước chân. Chưa có nguồn âm nào được nhìn thấy."
+    },
+    {
+      "name": "Hiện tượng chưa xác định",
+      "player": "Kai quan sát bóng người ở cuối hành lang.",
+      "gm": "Hình dáng ở cuối hành lang không tiến lại gần.\n\nKhoảng cách và ánh sáng khiến Kai chỉ xác định được một đường viền gần giống cơ thể người. Phần đầu và vai không đủ rõ để nhận diện, còn chân bị khuất sau góc tường.\n\nKhi một bóng đèn phía trên chớp tắt, đường viền đó biến mất khỏi tầm nhìn. Không có âm thanh chuyển động đi kèm.\n\nChừng đó chưa đủ để kết luận hắn vừa nhìn thấy một con người, một Entity hay một hiệu ứng thị giác của Level."
+    }
+  ],
+  "badExample": {
+    "player": "Kai đi tiếp.",
+    "gm": "Kai tiếp tục bước đi trong sự bất an. Bóng tối như nuốt chửng mọi thứ. Một cảm giác kỳ lạ bao trùm lấy hắn. Có lẽ nơi này đang theo dõi hắn. Kai quyết định phải nhanh chóng tìm đường thoát trước khi quá muộn. Bạn sẽ làm gì tiếp?",
+    "why": "Sai vì dùng sáo ngữ chung chung, tự khẳng định điều không có bằng chứng, tự quyết định ý định tiếp theo của Kai và kết bằng câu hỏi điều khiển người chơi."
+  }
+}

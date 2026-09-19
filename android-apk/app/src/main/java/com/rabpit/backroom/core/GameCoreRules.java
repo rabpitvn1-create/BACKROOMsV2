@@ -26,6 +26,15 @@ final class GameCoreRules {
   private static final Pattern LONG_REST = Pattern.compile("(?:ngủ|sleep)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern REST = Pattern.compile("(?:nghỉ|rest)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern MOVE = Pattern.compile("(?:đi|chạy|di chuyển|leo|bò|walk|run|move)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern ROUTE_EXPLORATION = Pattern.compile(
+      "(?:^|\\s|[.,;:!?])(?:"
+          + "đi|chạy|di\\s+chuyển|tiến|rẽ|leo|bò|"
+          + "khám\\s+phá|khảo\\s+sát|thăm\\s+dò|dò\\s+đường|"
+          + "tìm\\s+(?:đường|lối(?:\\s+ra)?)|"
+          + "theo\\s+(?:hướng|lối|hành\\s+lang|dấu)|men\\s+theo|"
+          + "tiếp\\s+tục(?:\\s+đi)?|walk|run|move|explore|follow"
+          + ")(?:\\s|$|[.,;:!?])",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern LEVEL_LOCATION = Pattern.compile("(?i)(?:^|\\b)level\\s*([0-6])(?:\\b|\\s|/|—|-)");
 
   private GameCoreRules() {}
@@ -50,6 +59,11 @@ final class GameCoreRules {
 
   static boolean isPartyQuery(String action) {
     return PARTY_QUERY.matcher(action == null ? "" : action).find();
+  }
+
+  static boolean isRouteExplorationAction(String action) {
+    String text = action == null ? "" : action.trim();
+    return !text.isEmpty() && ROUTE_EXPLORATION.matcher(text).find();
   }
 
   static int estimateMinutes(String action) {
