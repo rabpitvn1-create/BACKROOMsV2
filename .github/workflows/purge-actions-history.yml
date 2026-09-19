@@ -16,6 +16,39 @@ jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
+      - name: Delete merged massive-update legacy branches first
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for branch in \
+            massive-update \
+            massive-update-edit \
+            massive-update-finalwork \
+            massive-update-impl \
+            massive-update-safety \
+            massive-update-stage \
+            massive-update-temp \
+            massive-update-work
+          do
+            if ! gh api "/repos/${REPO}/branches/${branch}" >/dev/null 2>&1; then
+              echo "Already absent: ${branch}"
+              continue
+            fi
+
+            ahead_by="$(gh api "/repos/${REPO}/compare/main...${branch}" --jq '.ahead_by')"
+            if [[ "${ahead_by}" != "0" ]]; then
+              echo "::error::Refusing to delete ${branch}: ${ahead_by} commit(s) are not in main."
+              exit 1
+            fi
+
+            echo "Deleting merged legacy branch ${branch}"
+            gh api --method DELETE "/repos/${REPO}/git/refs/heads/${branch}"
+          done
+
       - name: Purge recent failed/cancelled/queued runs and temp branches
         env:
           GH_TOKEN: ${{ github.token }}
