@@ -21,7 +21,6 @@ final class CharacterDetailCore {
   private static final long REST_CRITICAL_MINUTES = 36L * 60L;
 
   private final CharacterProgressionCore characterProgressionCore = new CharacterProgressionCore();
-  private final EquipmentStatCore equipmentStatCore = new EquipmentStatCore();
   private final CharacterStatCore characterStatCore = new CharacterStatCore();
 
   void projectState(JSONObject state) throws Exception {
@@ -83,8 +82,7 @@ final class CharacterDetailCore {
         .put("presence", nonEmpty(source.optString("presence", ""), "ACTIVE"))
         .put("isLeader", leader);
 
-    JSONObject progression = characterStatCore.project(
-        state, id, characterProgressionCore, equipmentStatCore);
+    JSONObject progression = characterStatCore.project(state, id, characterProgressionCore);
 
     String avatar = firstString(source, previous, "avatar", "avatarRef");
     if (!avatar.isEmpty()) member.put("avatar", avatar);
@@ -126,15 +124,6 @@ final class CharacterDetailCore {
     if (inventory == null && previous != null) inventory = previous.optJSONArray("inventory");
     member.put("inventory", inventory == null ? new JSONArray() : new JSONArray(inventory.toString()));
 
-    JSONArray projectedEquipment = progression.optJSONArray("equipment");
-    Object equipment = projectedEquipment != null && projectedEquipment.length() > 0
-        ? projectedEquipment : source.opt("equipment");
-    if (equipment == null && previous != null) equipment = previous.opt("equipment");
-    if (equipment instanceof JSONObject) {
-      member.put("equipment", new JSONObject(equipment.toString()));
-    } else if (equipment instanceof JSONArray) {
-      member.put("equipment", new JSONArray(equipment.toString()));
-    }
     return member;
   }
 
