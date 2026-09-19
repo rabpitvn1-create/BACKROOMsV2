@@ -105,9 +105,7 @@ public final class GmChoiceContract {
       throws Exception {
     LinkedHashMap<String, JSONObject> output = new LinkedHashMap<>();
 
-    // Model metadata remains useful, but Core-owned typing can replace an untyped/generic duplicate.
-    addHighlightList(output, modelHighlights, text, false);
-
+    // Core-owned semantic typing always runs first. Model metadata can only supplement it.
     for (String[] term : FIXED_TERMS) addIfPresent(output, text, term[0], term[1], true);
     addCatalog(output, text, CombatChoiceEngine.semanticCatalog());
     addCatalog(output, text, ItemCore.semanticCatalog());
@@ -115,6 +113,7 @@ public final class GmChoiceContract {
     addPatternMatches(output, text, LEVEL_PATTERN, "location");
     addPatternMatches(output, text, HP_PAIR_PATTERN, "stat");
     addPatternMatches(output, text, SIGNED_STAT_PATTERN, "stat");
+    addHighlightList(output, modelHighlights, text, false);
 
     return toArray(output);
   }
