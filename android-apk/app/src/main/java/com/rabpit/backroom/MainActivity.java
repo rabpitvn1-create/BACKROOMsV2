@@ -44,6 +44,8 @@ public class MainActivity extends Activity {
   private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
   private static final int[] RETRYABLE = {408, 429, 500, 502, 503, 504};
   private static final int MAX_SNAPSHOT_BASE64 = 1_500_000;
+  private static final String GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json";
+  private String gmStyleExamplesCache;
 
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
   @Override public void onCreate(Bundle savedInstanceState) {
@@ -151,6 +153,50 @@ public class MainActivity extends Activity {
       while ((line = reader.readLine()) != null) text.append(line).append('\n');
     }
     return text.toString();
+  }
+
+  private String gmStyleExamplesContext() {
+    if (gmStyleExamplesCache != null) return gmStyleExamplesCache;
+    try {
+      JSONObject root = new JSONObject(readAssetText(GM_STYLE_EXAMPLES_ASSET));
+      StringBuilder output = new StringBuilder("GM STYLE FEW-SHOT EXAMPLES:\n");
+      String instruction = root.optString("instruction", "").trim();
+      if (!instruction.isEmpty()) output.append(instruction).append("\n");
+
+      JSONArray examples = root.optJSONArray("goodExamples");
+      if (examples != null) {
+        for (int i = 0; i < examples.length(); i++) {
+          JSONObject example = examples.optJSONObject(i);
+          if (example == null) continue;
+          String player = example.optString("player", "").trim();
+          String gm = example.optString("gm", "").trim();
+          if (player.isEmpty() || gm.isEmpty()) continue;
+          output.append("\nGOOD EXAMPLE ").append(i + 1).append("\n");
+          output.append("PLAYER: ").append(player).append("\n");
+          output.append("GM: ").append(gm).append("\n");
+        }
+      }
+
+      JSONObject bad = root.optJSONObject("badExample");
+      if (bad != null) {
+        String player = bad.optString("player", "").trim();
+        String gm = bad.optString("gm", "").trim();
+        String why = bad.optString("why", "").trim();
+        if (!player.isEmpty() && !gm.isEmpty()) {
+          output.append("\nBAD EXAMPLE — DO NOT IMITATE\n");
+          output.append("PLAYER: ").append(player).append("\n");
+          output.append("GM: ").append(gm).append("\n");
+          if (!why.isEmpty()) output.append("WHY BAD: ").append(why).append("\n");
+        }
+      }
+
+      output.append("\nUse these examples only as style references. Never copy their wording, events, imagery, locations, conclusions, or hidden outcomes into the current turn unless current state independently supports them.\n");
+      gmStyleExamplesCache = output.toString();
+    } catch (Exception error) {
+      Log.w(TAG, "Unable to load GM style examples; using narrative contract only.", error);
+      gmStyleExamplesCache = "";
+    }
+    return gmStyleExamplesCache;
   }
 
   private void installUiScripts() {
@@ -717,6 +763,7 @@ public class MainActivity extends Activity {
           promptState.remove("levelRoute");
           promptState.remove("log");
           String recentStory = recentStoryContext(state);
+          String gmStyleExamples = gmStyleExamplesContext();
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "NARRATIVE VOICE: viết tiếng Việt tự nhiên, nghiêm túc, tiết chế và giàu quan sát, cùng kỷ luật văn phong với Prologue hiện tại nhưng không sao chép câu chữ của Prologue. Không viết như báo cáo trạng thái, checklist hay lời thuyết minh game. " +
             "Mỗi reply phải phản ứng trực tiếp với hành động vừa nhập, giữ liên tục không gian với cảnh trước và ưu tiên chi tiết cụ thể có thể quan sát được: ánh sáng, âm thanh, vật liệu, khoảng cách, hình học, nhiệt độ, độ ẩm, mùi hoặc dấu vết khi chúng thực sự phù hợp. Không nhồi đủ mọi giác quan vào mọi lượt. " +
@@ -724,7 +771,8 @@ public class MainActivity extends Activity {
             "Giữ kỷ luật nhận thức: chỉ khẳng định điều Kai có thể quan sát hoặc điều canon/state đã xác nhận. Với nguyên nhân, Entity, ký ức, hiện tượng hoặc cấu trúc chưa được chứng minh, mô tả bằng dấu hiệu và bằng chứng chứ không tự giải thích bí ẩn. " +
             "Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Kai ngoài hành động người chơi đã nhập và hệ quả trực tiếp cần thiết của nó. Người chơi chỉ điều khiển Kai Akechi. " +
             "Tránh sáo ngữ và câu đệm lặp lại như 'một cảm giác bất an bao trùm', 'mọi thứ vẫn như cũ', 'Kai tiếp tục đi', 'không có gì xảy ra', 'bóng tối như nuốt chửng', hoặc các biến thể tương tự nếu không có chi tiết mới cụ thể. Không kết mỗi reply bằng câu hỏi tu từ hay 'Bạn sẽ làm gì tiếp?'. Không cường điệu mọi lượt thành biến cố lớn. " +
-            "Đối thoại phải ngắn, tự nhiên, đúng quan hệ nhân vật và không biến thành đoạn giải thích lore cho người chơi. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. " +
+            "Đối thoại phải ngắn, tự nhiên, đúng quan hệ nhân vật và không biến thành đoạn giải thích lore cho người chơi. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ.\n" +
+            gmStyleExamples +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
             "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
             "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
