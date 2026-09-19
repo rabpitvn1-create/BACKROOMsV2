@@ -42,7 +42,6 @@ public final class GmChoiceContract {
       {"AGI", "stat"},
       {"CRIT", "stat"},
       {"Base Stats", "stat"},
-      {"Equipment Stats", "stat"},
       {"Effective Stats", "stat"}
   };
 
