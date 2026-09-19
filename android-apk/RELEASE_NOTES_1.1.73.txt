@@ -1,0 +1,12 @@
+Backroom 1.1.73
+
+- Loại bỏ hoàn toàn Equipment system khỏi gameplay, stat projection và Party UI; giữ vũ khí/giáp đặc trưng chỉ như character kit/canon.
+- Thêm SurvivalCore làm nguồn dữ liệu duy nhất cho đói, khát và nghỉ dựa trên subjective game time.
+- Thêm 8 consumable đầu tiên: Almond Water, Băng Gạc Y Tế, Túi Sơ Cứu, Nước Suối Lavie, Nước Dừa, Bánh Mì Thịt, Sữa Đậu Nành Nóng và Cơm Tấm Sườn Bì Chả.
+- Healing item giờ sửa HP thật trong CharacterProgressionCore; đồ ăn và nước chỉ tác động survival, không hồi HP.
+- Companion HP 0 vẫn phải chờ đủ 10 Explorer Turn để hồi sinh; consumable không thể bypass luật này.
+- Tách loot hợp lý: Rương có thể chứa đủ consumable, Entity không rơi đồ ăn/nước đời thường của Sài Gòn.
+- GM semantic highlight được chuyển sang deterministic Core-owned tagging để tên Character, Entity, Item, Skill, Effect, Location và Stat tiếp tục dùng font Play ổn định.
+- Toàn bộ skill hiện tại của Kai, Iris, Syvial và Lucia được đặt 100% proc; bỏ nhánh miss riêng của M4A1 Joint Attack.
+- Save schema tăng lên 9 và migrate physiology cũ sang survival state mới.
+- Đã kiểm tra bằng Java unit tests, debug APK build và APK package verification trên GitHub Actions.
