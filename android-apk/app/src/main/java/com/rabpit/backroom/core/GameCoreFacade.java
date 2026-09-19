@@ -193,6 +193,8 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
