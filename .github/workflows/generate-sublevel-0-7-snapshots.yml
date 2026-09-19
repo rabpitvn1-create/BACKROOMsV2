@@ -1,0 +1,103 @@
+name: Generate Level 0.7 Snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-sublevel-0-7-snapshots.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-sublevel-0-7-snapshots
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-7
+      CANON_FILE: android-apk/app/src/main/assets/knowledge/level_knowledge.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate configuration and target
+        shell: bash
+        run: |
+          set -euo pipefail
+          for n in IMG_API IMG_MODEL IMG_BASE_URL; do test -n "${!n:-}" || { echo "::error::Missing $n"; exit 1; }; done
+          test -s "$CANON_FILE"
+          mkdir -p "$OUT_DIR"
+          test ! -e "$OUT_DIR/snapshot_level_0_sublevel_0-7_01.webp"
+          test ! -e "$OUT_DIR/snapshot_level_0_sublevel_0-7_02.webp"
+      - name: Generate two Level 0.7 backgrounds via configured image API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64,json,os,pathlib,urllib.request,urllib.error
+          api=os.environ['IMG_API'].strip(); model=os.environ['IMG_MODEL'].strip(); base=os.environ['IMG_BASE_URL'].strip().rstrip('/')
+          endpoint=base if base.endswith('/images/generations') else (base+'/images/generations' if base.endswith('/v1') else base+'/v1/images/generations')
+          out=pathlib.Path(os.environ['OUT_DIR']); out.mkdir(parents=True,exist_ok=True)
+          canon=json.loads(pathlib.Path(os.environ['CANON_FILE']).read_text(encoding='utf-8'))['levels']['0.7']
+          def take(field,n=6):
+            v=canon.get(field,[])
+            if isinstance(v,list): return ' '.join(str(x) for x in v[:n])
+            return str(v)
+          canon_text=' '.join([take('identity',4),take('architecture',6),take('zones',5),take('sensory',5),take('canonicalFacts',6),take('gmConstraints',4)])
+          common=("BACKROOMsV2 Level 0.7 — The Reminiscence District environmental background. Follow this project-authoritative canon exactly: "+canon_text+" No people, no characters, no entities unless the canon explicitly requires a visible environmental one, no readable text, no UI, no watermark. Photorealistic eerie liminal survival-horror game background, cinematic 16:9.")
+          prompts=[common+" Snapshot 1: wide establishing view emphasizing the primary architecture and spatial identity of this sub-level, strong depth, empty environment.", common+" Snapshot 2: clearly different viewpoint and composition, showing a different canon-valid zone or architectural motif of the same sub-level, still unmistakably the same place."]
+          for i,prompt in enumerate(prompts,1):
+            payload={'model':model,'prompt':prompt,'n':1,'response_format':'b64_json'}
+            req=urllib.request.Request(endpoint,data=json.dumps(payload).encode(),headers={'Authorization':f'Bearer {api}','Content-Type':'application/json','Accept':'application/json'},method='POST')
+            try:
+              with urllib.request.urlopen(req,timeout=240) as r: body=json.loads(r.read().decode())
+            except urllib.error.HTTPError as e:
+              raise SystemExit(f'Image API HTTP {e.code}: '+e.read().decode(errors='replace')[:2000])
+            d=body.get('data')
+            if not isinstance(d,list) or not d: raise SystemExit('Image API response has no data[0]')
+            item=d[0]
+            if item.get('b64_json'): raw=base64.b64decode(item['b64_json'])
+            elif item.get('url'):
+              with urllib.request.urlopen(urllib.request.Request(item['url'],headers={'User-Agent':'BACKROOMsV2-GitHub-Actions'}),timeout=240) as r: raw=r.read()
+            else: raise SystemExit('Image API response has neither b64_json nor url')
+            (out/f'raw_{i}').write_bytes(raw)
+          PY
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick webp
+          for i in 1 2; do
+            src="$OUT_DIR/raw_$i"
+            dst="$OUT_DIR/snapshot_level_0_sublevel_0-7_0${i}.webp"
+            convert "$src" -auto-orient -resize '1920x1080^' -gravity center -extent 1920x1080 -quality 92 "$dst"
+            rm "$src"
+          done
+      - name: Verify exactly two Full HD snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find "$OUT_DIR" -maxdepth 1 -type f -name 'snapshot_level_0_sublevel_0-7_*.webp' | sort)
+          test "${#files[@]}" -eq 2
+          for f in "${files[@]}"; do
+            test -s "$f"
+            dims="$(identify -format '%wx%h' "$f")"
+            test "$dims" = '1920x1080' || { echo "::error::$f is $dims"; exit 1; }
+            file "$f"
+            sha256sum "$f"
+          done
+          git status --short
+      - name: Commit snapshot assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR/snapshot_level_0_sublevel_0-7_01.webp" "$OUT_DIR/snapshot_level_0_sublevel_0-7_02.webp"
+          git diff --cached --quiet && { echo 'No snapshot changes.'; exit 0; }
+          git commit -m 'Add Level 0.7 snapshot backgrounds'
+          git push origin HEAD:main
