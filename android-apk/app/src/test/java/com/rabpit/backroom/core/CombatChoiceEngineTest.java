@@ -87,7 +87,7 @@ public class CombatChoiceEngineTest {
 
     CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
     JSONObject combat = state.getJSONObject("combat");
-    assertEquals("lucia", combat.getString("currentActor"));
+    assertEquals("Lucia Lục", combat.getString("currentActor"));
     int beforeHp = combat.getJSONObject("entity").getInt("hp");
 
     CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_C);
