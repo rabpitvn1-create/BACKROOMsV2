@@ -177,7 +177,8 @@ final class LevelCore {
   String promptContext(JSONObject state) {
     String levelKey = resolveLevelKey(state);
     int level = parentLevel(levelKey);
-    String canon = knowledgeContext(levelKey);
+    int turn = Math.max(1, state.optInt("turn", 1));
+    String canon = knowledgeContext(levelKey, turn);
     if (canon.trim().isEmpty()) {
       canon = legacyCanonByLevelKey.get(levelKey);
     }
@@ -206,7 +207,6 @@ final class LevelCore {
       route = new JSONObject();
     }
 
-    int turn = Math.max(1, state.optInt("turn", 1));
     boolean rolledThisTurn = route.optInt("lastRollTurn", -1) == turn;
     String result = rolledThisTurn ? route.optString("lastResult", "") : "";
     boolean exitAvailable = route.optBoolean("exitAvailable", false);
@@ -542,7 +542,7 @@ final class LevelCore {
     } catch (Exception ignored) {}
   }
 
-  private String knowledgeContext(String levelKey) {
+  private String knowledgeContext(String levelKey, int turn) {
     JSONObject bundle = knowledgeByLevelKey.get(normalizeKey(levelKey));
     if (bundle == null) return "";
 
@@ -565,12 +565,44 @@ final class LevelCore {
       if (values == null || values.length() == 0) continue;
       if (out.length() > 0) out.append('\n');
       out.append(sectionLabel(section)).append(":\n");
-      for (int j = 0; j < values.length(); j++) {
-        String value = values.optString(j, "").trim();
-        if (!value.isEmpty()) out.append("- ").append(value).append('\n');
+
+      int limit = rotatingSectionLimit(section);
+      if (limit > 0 && values.length() > limit) {
+        appendRotatingValues(out, values, section, turn, limit);
+      } else {
+        appendAllValues(out, values);
       }
     }
     return out.toString().trim();
+  }
+
+  private static void appendAllValues(StringBuilder out, JSONArray values) {
+    for (int i = 0; i < values.length(); i++) {
+      String value = values.optString(i, "").trim();
+      if (!value.isEmpty()) out.append("- ").append(value).append('\n');
+    }
+  }
+
+  private static void appendRotatingValues(
+      StringBuilder out, JSONArray values, String section, int turn, int limit) {
+    int size = values.length();
+    int start = Math.floorMod((Math.max(1, turn) - 1) * limit + section.hashCode(), size);
+    for (int i = 0; i < limit; i++) {
+      String value = values.optString((start + i) % size, "").trim();
+      if (!value.isEmpty()) out.append("- ").append(value).append('\n');
+    }
+  }
+
+  private static int rotatingSectionLimit(String section) {
+    if ("variationPool".equals(section)) return 6;
+    if ("microLocations".equals(section)) return 5;
+    if ("environmentEvents".equals(section)) return 5;
+    if ("actionConsequences".equals(section)) return 4;
+    if ("navigationPatterns".equals(section)) return 4;
+    if ("routeProgressionCues".equals(section)) return 4;
+    if ("quietTurnPatterns".equals(section)) return 4;
+    if ("sceneSeeds".equals(section)) return 6;
+    return 0;
   }
 
   private static String sectionLabel(String section) {
