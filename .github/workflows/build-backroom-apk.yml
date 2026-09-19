@@ -166,6 +166,8 @@ jobs:
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
           grep -Fq 'levelCore.validateAndApplyTransition' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ROUTE_SUCCESS_PERCENT = 60' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'ROUTE_TRIPLE_SUCCESS_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'ROUTE_TRIPLE_SUCCESS_INCREMENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ROUTE_REQUIRED_STREAK = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java

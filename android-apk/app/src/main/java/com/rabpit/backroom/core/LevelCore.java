@@ -18,6 +18,8 @@ final class LevelCore {
 
   static final String ROUTE_STATE = "levelRoute";
   static final int ROUTE_SUCCESS_PERCENT = 60;
+  static final int ROUTE_TRIPLE_SUCCESS_PERCENT = 5;
+  static final int ROUTE_TRIPLE_SUCCESS_INCREMENT = 3;
   static final int ROUTE_REQUIRED_STREAK = 10;
 
   private static final String KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
@@ -70,7 +72,10 @@ final class LevelCore {
     route.put("lastRollTurn", turn);
 
     if (roll < ROUTE_SUCCESS_PERCENT) {
-      streak = Math.min(ROUTE_REQUIRED_STREAK, streak + 1);
+      int increment = roll < ROUTE_TRIPLE_SUCCESS_PERCENT
+          ? ROUTE_TRIPLE_SUCCESS_INCREMENT
+          : 1;
+      streak = Math.min(ROUTE_REQUIRED_STREAK, streak + increment);
       route.put("streak", streak);
       route.remove("returnLocation");
       if (streak >= ROUTE_REQUIRED_STREAK) {
@@ -78,6 +83,7 @@ final class LevelCore {
         route.put("lastResult", "EXIT_AVAILABLE");
       } else {
         route.put("exitAvailable", false);
+        // Keep the +3 outcome invisible to the GM/player. Narratively it is still one successful route step.
         route.put("lastResult", "SUCCESS");
       }
     } else {

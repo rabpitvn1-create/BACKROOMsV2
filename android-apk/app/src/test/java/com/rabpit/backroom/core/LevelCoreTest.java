@@ -35,11 +35,22 @@ public class LevelCoreTest {
         .put("location", location);
   }
 
-  @Test public void routeRollUsesExactSixtyFortyBoundary() throws Exception {
-    LevelCore successCore = new LevelCore(null, new SequenceRng(59));
-    JSONObject success = state(1, "Level 0 / A");
-    successCore.rollRouteForExplorerAction(success, ROUTE_ACTION);
-    assertEquals(1, success.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
+  @Test public void routeRollUsesFiveFiftyFiveFortyDistributionBoundaries() throws Exception {
+    LevelCore tripleCore = new LevelCore(null, new SequenceRng(4));
+    JSONObject triple = state(1, "Level 0 / A");
+    tripleCore.rollRouteForExplorerAction(triple, ROUTE_ACTION);
+    assertEquals(3, triple.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
+    assertEquals("SUCCESS", triple.getJSONObject(LevelCore.ROUTE_STATE).getString("lastResult"));
+
+    LevelCore normalCore = new LevelCore(null, new SequenceRng(5));
+    JSONObject normal = state(1, "Level 0 / A");
+    normalCore.rollRouteForExplorerAction(normal, ROUTE_ACTION);
+    assertEquals(1, normal.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
+
+    LevelCore lastSuccessCore = new LevelCore(null, new SequenceRng(59));
+    JSONObject lastSuccess = state(1, "Level 0 / A");
+    lastSuccessCore.rollRouteForExplorerAction(lastSuccess, ROUTE_ACTION);
+    assertEquals(1, lastSuccess.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
 
     LevelCore failCore = new LevelCore(null, new SequenceRng(60));
     JSONObject failed = state(1, "Level 0 / A");
@@ -49,7 +60,7 @@ public class LevelCoreTest {
   }
 
   @Test public void tenConsecutiveSuccessesUnlockExit() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject state = state(1, "Level 0 / Start");
 
     for (int turn = 1; turn <= 10; turn++) {
@@ -63,8 +74,23 @@ public class LevelCoreTest {
     assertEquals("EXIT_AVAILABLE", route.getString("lastResult"));
   }
 
+  @Test public void tripleSuccessCountsAsThreeAndCanCompleteChain() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5,5,5,5,5,5,5,4));
+    JSONObject state = state(1, "Level 0 / Start");
+
+    for (int turn = 1; turn <= 8; turn++) {
+      state.put("turn", turn);
+      core.rollRouteForExplorerAction(state, ROUTE_ACTION);
+    }
+
+    JSONObject route = state.getJSONObject(LevelCore.ROUTE_STATE);
+    assertEquals(10, route.getInt("streak"));
+    assertTrue(route.getBoolean("exitAvailable"));
+    assertEquals("EXIT_AVAILABLE", route.getString("lastResult"));
+  }
+
   @Test public void oneFailureResetsNineSuccessesToZero() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0,0,0,0,0,0,0,0,0,99));
+    LevelCore core = new LevelCore(null, new SequenceRng(5,5,5,5,5,5,5,5,5,60));
     JSONObject state = state(1, "Level 0 / Start");
 
     for (int turn = 1; turn <= 10; turn++) {
@@ -79,7 +105,7 @@ public class LevelCoreTest {
   }
 
   @Test public void sameTurnCannotReroll() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0,99));
+    LevelCore core = new LevelCore(null, new SequenceRng(5,60));
     JSONObject state = state(4, "Level 0 / Start");
 
     core.rollRouteForExplorerAction(state, ROUTE_ACTION);
@@ -91,7 +117,7 @@ public class LevelCoreTest {
   }
 
   @Test public void nonRouteActionDoesNotRoll() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject state = state(1, "Level 0 / Start");
 
     core.rollRouteForExplorerAction(state, "Kai nghỉ tại đây");
@@ -102,7 +128,7 @@ public class LevelCoreTest {
   }
 
   @Test public void transitionIsRejectedBeforeChainCompletes() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject before = state(1, "Level 0 / Start");
     core.normalizeState(before);
 
@@ -119,7 +145,7 @@ public class LevelCoreTest {
   }
 
   @Test public void completedChainAllowsAdjacentTransitionAndResetsRoute() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject before = state(1, "Level 0 / Start");
     for (int turn = 1; turn <= 10; turn++) {
       before.put("turn", turn);
@@ -140,7 +166,7 @@ public class LevelCoreTest {
   }
 
   @Test public void failedRouteReturnsCandidateToChainOrigin() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0,99));
+    LevelCore core = new LevelCore(null, new SequenceRng(5,60));
     JSONObject before = state(1, "Level 0 / Origin");
 
     core.rollRouteForExplorerAction(before, ROUTE_ACTION);
@@ -158,7 +184,7 @@ public class LevelCoreTest {
   }
 
   @Test public void candidateCannotForgeHiddenRouteProgress() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject before = state(1, "Level 0 / Start");
     core.normalizeState(before);
 
