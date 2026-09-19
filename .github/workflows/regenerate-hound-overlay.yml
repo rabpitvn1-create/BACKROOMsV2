@@ -64,39 +64,34 @@ jobs:
           original = Image.open(target).convert("RGBA")
           target_size = original.size
 
-          source_b64 = base64.b64encode(target.read_bytes()).decode("ascii")
-          source_data_uri = f"data:image/png;base64,{source_b64}"
-
           api_key = os.environ["IMG_API"].strip()
           model = os.environ["IMG_MODEL"].strip()
           base_url = os.environ["IMG_BASE_URL"].strip().rstrip("/")
 
-          if base_url.endswith("/images/edits"):
+          if base_url.endswith("/images/generations"):
               endpoint = base_url
           elif base_url.endswith("/v1"):
-              endpoint = base_url + "/images/edits"
+              endpoint = base_url + "/images/generations"
           else:
-              endpoint = base_url + "/v1/images/edits"
+              endpoint = base_url + "/v1/images/generations"
 
           prompt = (
-              "Use the supplied Hound image as the PRIMARY visual reference and recreate the same Backrooms Hound "
-              "as a polished in-game entity overlay. Preserve its recognizable identity, anatomy, proportions, "
-              "pose direction, hostile expression, and overall silhouette rather than inventing a different monster. "
-              "Render the FULL BODY cleanly with no cropping. Keep the creature centered and grounded. "
-              "Place it on one perfectly flat, uniform chroma-key green background color #00FF00 with absolutely "
-              "no scenery, texture, gradient, fog, frame, text, watermark, props, or extra creatures. "
+              "Create a polished in-game entity overlay of a Backrooms Hound. "
+              "The Hound is a terrifying emaciated humanoid-canine creature moving on all fours, with unnaturally "
+              "long limbs, lean sinewy anatomy, dark gray to near-black skin or extremely short fur, sharp claws, "
+              "a snarling predatory mouth with visible teeth, and an aggressive hostile posture. "
+              "Show exactly ONE Hound, FULL BODY, completely visible with no cropping, centered and grounded, "
+              "with a strong readable silhouette suitable for a mobile game overlay. "
+              "Use detailed dark horror game art, not cute, not cartoon mascot, not photorealistic scenery. "
+              "Place it on one perfectly flat uniform chroma-key green background #00FF00 with absolutely no "
+              "scenery, texture, gradient, fog, frame, text, watermark, props, or extra creatures. "
               "Do not use green anywhere on the Hound. Add one soft neutral dark-gray contact shadow directly "
-              "under the Hound's feet/body so it looks planted on the ground; the shadow itself must contain no green. "
-              "High-detail game overlay asset, crisp silhouette, readable at mobile size."
+              "under the feet/body so the creature visibly touches the ground; the shadow must contain no green."
           )
 
           payload = {
               "model": model,
               "prompt": prompt,
-              "image": {
-                  "url": source_data_uri,
-                  "type": "image_url"
-              },
               "response_format": "url",
               "n": 1
           }
@@ -236,7 +231,7 @@ jobs:
               "output": target.as_posix(),
               "canvas": {"width": target_size[0], "height": target_size[1]},
               "requirements": [
-                  "current hound used as primary reference",
+                  "Backrooms Hound full-body entity overlay",
                   "transparent background",
                   "soft ground contact shadow",
                   "same output path and canvas size"
