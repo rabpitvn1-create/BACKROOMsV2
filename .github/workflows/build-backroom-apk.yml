@@ -118,13 +118,13 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
-          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
           ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
-          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
+          ! test -e android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityStatCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -271,7 +271,13 @@ jobs:
           grep -Fq "addRow(status,'Explorer',member.explorer)" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp))" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "parts.push('Explorer '+signed(explorer))" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "parts.push('EQ '+signed(equipment))" android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "parts.push('EQ '" android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "tagsSection('TRANG BỊ'" android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq 'equipment:' android-apk/app/src/main/assets/party-ui.js
+          ! grep -R -Fq 'EquipmentStatCore' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -Fq '.put("equipment"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'profile.remove("equipment")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'normalizationRemovesLegacyEquipmentState' android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
