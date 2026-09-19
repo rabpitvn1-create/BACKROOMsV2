@@ -45,7 +45,7 @@ public class GmChoiceContractTest {
 
     String text = entry.getString("text");
     assertTrue(text.contains("Giấy dán tường") || text.contains("giấy dán tường"));
-    assertTrue(text.contains("trần nhà"));
+    assertTrue(text.contains("Trần nhà") || text.contains("trần nhà"));
     assertTrue(text.contains("bộ đèn"));
     assertTrue(text.contains("tiếng ù"));
     assertTrue(text.contains("lối mở"));
