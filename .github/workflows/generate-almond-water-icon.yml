@@ -1,0 +1,174 @@
+name: Generate Almond Water Icon
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/generate-almond-water-icon.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-almond-water-icon-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate-icon:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate image API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub Secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Generate Pixel Almond Water icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android-apk/app/src/main/assets/items
+
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import pathlib
+          import urllib.request
+          import urllib.error
+
+          api_key = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base_url = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+
+          if base_url.endswith("/images/generations"):
+              endpoint = base_url
+          elif base_url.endswith("/v1"):
+              endpoint = base_url + "/images/generations"
+          else:
+              endpoint = base_url + "/v1/images/generations"
+
+          prompt = (
+              "A single simple Pixel Art inventory icon of Almond Water for a survival game. "
+              "Centered small bottle containing pale almond-colored water, recognizable almond symbol, "
+              "clean crisp retro game pixel art, limited palette, strong readable silhouette, square composition, "
+              "isolated object, no scenery, no characters, no hands, no extra items, no text, no watermark."
+          )
+
+          payload = {
+              "model": model,
+              "prompt": prompt,
+              "n": 1,
+              "response_format": "b64_json",
+          }
+
+          request = urllib.request.Request(
+              endpoint,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Authorization": f"Bearer {api_key}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+              },
+              method="POST",
+          )
+
+          try:
+              with urllib.request.urlopen(request, timeout=180) as response:
+                  body = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as exc:
+              detail = exc.read().decode("utf-8", errors="replace")
+              raise SystemExit(f"Image API HTTP {exc.code}: {detail[:2000]}")
+
+          data = body.get("data")
+          if not isinstance(data, list) or not data:
+              raise SystemExit("Image API response has no data[0]")
+
+          image = data[0]
+          raw = None
+
+          if image.get("b64_json"):
+              raw = base64.b64decode(image["b64_json"])
+          elif image.get("url"):
+              download = urllib.request.Request(
+                  image["url"],
+                  headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"},
+              )
+              with urllib.request.urlopen(download, timeout=180) as response:
+                  raw = response.read()
+          else:
+              raise SystemExit("Image API response has neither b64_json nor url")
+
+          if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+              ext = "png"
+          elif raw.startswith(b"\xff\xd8\xff"):
+              ext = "jpg"
+          elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+              ext = "webp"
+          else:
+              raise SystemExit("Unsupported image format returned by API")
+
+          out_dir = pathlib.Path("android-apk/app/src/main/assets/items")
+          for old_ext in ("png", "jpg", "jpeg", "webp"):
+              old = out_dir / f"almond_water.{old_ext}"
+              if old.exists():
+                  old.unlink()
+
+          output = out_dir / f"almond_water.{ext}"
+          output.write_bytes(raw)
+
+          meta = {
+              "model": model,
+              "asset": output.as_posix(),
+              "prompt": prompt,
+          }
+          (out_dir / "almond_water.generated.json").write_text(
+              json.dumps(meta, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          print(f"Generated {output} ({len(raw)} bytes)")
+          PY
+
+      - name: Verify generated icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          FILE="$(find android-apk/app/src/main/assets/items -maxdepth 1 -type f \
+            \( -name 'almond_water.png' -o -name 'almond_water.jpg' -o -name 'almond_water.webp' \) \
+            -print -quit)"
+          test -n "$FILE"
+          test -s "$FILE"
+          file "$FILE"
+          sha256sum "$FILE"
+
+      - name: Commit generated icon to repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/assets/items/almond_water.*
+          if git diff --cached --quiet; then
+            echo 'Almond Water icon is unchanged.'
+            exit 0
+          fi
+          git commit -m 'Generate Almond Water pixel icon'
+          git push origin HEAD:${GITHUB_REF_NAME}
