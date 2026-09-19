@@ -50,11 +50,15 @@ jobs:
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
               "/repos/${REPO}/actions/runs?per_page=100" \
-              --jq '.workflow_runs[] | [.id, .status, (.conclusion // ""), .created_at, .name] | @tsv'
+              --jq '.workflow_runs[] | {id, status, conclusion: (.conclusion // ""), created_at, name} | @json'
           )
 
           for row in "${RUN_ROWS[@]}"; do
-            IFS=$'\t' read -r run_id status conclusion created_at run_name <<< "${row}"
+            run_id="$(jq -r '.id' <<< "${row}")"
+            status="$(jq -r '.status' <<< "${row}")"
+            conclusion="$(jq -r '.conclusion' <<< "${row}")"
+            created_at="$(jq -r '.created_at' <<< "${row}")"
+            run_name="$(jq -r '.name' <<< "${row}")"
 
             [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
 
