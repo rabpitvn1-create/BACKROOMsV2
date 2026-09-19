@@ -52,6 +52,19 @@ final class CharacterProgressionCore {
     root.put(CHARACTERS_KEY, characters);
     state.put(ROOT_KEY, root);
     state.remove(LEGACY_ROOT_KEY);
+    state.remove("equipment");
+    stripLegacyEquipment(state.optJSONObject("player"));
+
+    JSONArray party = state.optJSONArray("party");
+    if (party != null) {
+      for (int i = 0; i < party.length(); i++) stripLegacyEquipment(party.optJSONObject(i));
+    }
+
+    JSONObject partyDetails = state.optJSONObject("partyDetails");
+    JSONArray detailMembers = partyDetails == null ? null : partyDetails.optJSONArray("members");
+    if (detailMembers != null) {
+      for (int i = 0; i < detailMembers.length(); i++) stripLegacyEquipment(detailMembers.optJSONObject(i));
+    }
   }
 
   JSONObject ensureProfile(JSONObject state, String rawId) throws Exception {
@@ -291,6 +304,7 @@ final class CharacterProgressionCore {
       profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
       profile.put("maxHp", maxHp);
     }
+    profile.remove("equipment");
     characters.put(id, profile);
     return profile;
   }
@@ -333,5 +347,10 @@ final class CharacterProgressionCore {
     character.remove("explorer");
     character.remove("exp");
     character.remove("level");
+    character.remove("equipment");
+  }
+
+  private static void stripLegacyEquipment(JSONObject character) {
+    if (character != null) character.remove("equipment");
   }
 }
