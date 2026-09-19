@@ -45,8 +45,11 @@ final class LevelCore {
   private final JSONArray knowledgeSectionOrder = new JSONArray();
   private final Map<Integer, JSONArray> snapshotsByLevel = new LinkedHashMap<>();
   private final Map<Integer, String> visualTypeByLevel = new LinkedHashMap<>();
+  private final Map<String, JSONArray> snapshotsByLevelKey = new LinkedHashMap<>();
+  private final Map<String, String> visualTypeByLevelKey = new LinkedHashMap<>();
   private final IntRng rng;
   private String snapshotRoot = "level_snapshots/wiki";
+  private String sublevelSnapshotRoot = "level_snapshots/sublevels/level_0";
 
   LevelCore(Context context) {
     this(context, bound -> ThreadLocalRandom.current().nextInt(bound));
@@ -266,17 +269,26 @@ final class LevelCore {
       output.put("level", level);
       output.put("levelKey", levelKey);
       output.put("label", displayName(levelKey));
-      output.put("visualType", visualTypeByLevel.containsKey(level) ? visualTypeByLevel.get(level) : "scene");
-      // Numbered main Levels keep their curated local snapshots. Sub-level nodes intentionally do not
-      // reuse Level 0 art because that would visually misrepresent places such as Red Rooms or The Torment.
+
+      JSONArray assets;
+      String root;
+      String visualType;
       if (isMainLevelKey(levelKey)) {
-        JSONArray assets = snapshotsByLevel.get(level);
-        if (assets != null && assets.length() > 0) {
-          int turn = Math.max(1, state.optInt("turn", 1));
-          int index = Math.floorMod(turn - 1, assets.length());
-          String relative = assets.optString(index, "");
-          if (!relative.isEmpty()) output.put("path", "file:///android_asset/" + snapshotRoot + "/" + relative);
-        }
+        assets = snapshotsByLevel.get(level);
+        root = snapshotRoot;
+        visualType = visualTypeByLevel.containsKey(level) ? visualTypeByLevel.get(level) : "scene";
+      } else {
+        assets = snapshotsByLevelKey.get(levelKey);
+        root = sublevelSnapshotRoot;
+        visualType = visualTypeByLevelKey.containsKey(levelKey) ? visualTypeByLevelKey.get(levelKey) : "scene";
+      }
+      output.put("visualType", visualType);
+
+      if (assets != null && assets.length() > 0) {
+        int turn = Math.max(1, state.optInt("turn", 1));
+        int index = Math.floorMod(turn - 1, assets.length());
+        String relative = assets.optString(index, "");
+        if (!relative.isEmpty()) output.put("path", "file:///android_asset/" + root + "/" + relative);
       }
     } catch (Exception ignored) {}
     return output.toString();
@@ -638,16 +650,41 @@ final class LevelCore {
 
   private void loadSnapshotManifest(Context context) {
     try {
-      JSONObject manifest = new JSONObject(readAsset(context, SNAPSHOT_MANIFEST_ASSET));
+      loadSnapshotManifestText(readAsset(context, SNAPSHOT_MANIFEST_ASSET));
+    } catch (Exception ignored) {}
+  }
+
+  void loadSnapshotManifestText(String manifestText) {
+    try {
+      JSONObject manifest = new JSONObject(manifestText);
       snapshotRoot = manifest.optString("root", snapshotRoot);
+      sublevelSnapshotRoot = manifest.optString("sublevelRoot", sublevelSnapshotRoot);
+
+      snapshotsByLevel.clear();
+      visualTypeByLevel.clear();
       JSONObject levels = manifest.optJSONObject("levels");
-      if (levels == null) return;
-      for (int level = 0; level <= 6; level++) {
-        JSONObject entry = levels.optJSONObject(String.valueOf(level));
-        if (entry == null) continue;
-        JSONArray assets = entry.optJSONArray("assets");
-        if (assets != null && assets.length() > 0) snapshotsByLevel.put(level, assets);
-        visualTypeByLevel.put(level, entry.optString("visualType", "scene"));
+      if (levels != null) {
+        for (int level = 0; level <= 6; level++) {
+          JSONObject entry = levels.optJSONObject(String.valueOf(level));
+          if (entry == null) continue;
+          JSONArray assets = entry.optJSONArray("assets");
+          if (assets != null && assets.length() > 0) snapshotsByLevel.put(level, assets);
+          visualTypeByLevel.put(level, entry.optString("visualType", "scene"));
+        }
+      }
+
+      snapshotsByLevelKey.clear();
+      visualTypeByLevelKey.clear();
+      JSONObject sublevels = manifest.optJSONObject("sublevels");
+      if (sublevels != null) {
+        for (String levelKey : LEVEL_ZERO_PROGRESSION) {
+          if (isMainLevelKey(levelKey)) continue;
+          JSONObject entry = sublevels.optJSONObject(levelKey);
+          if (entry == null) continue;
+          JSONArray assets = entry.optJSONArray("assets");
+          if (assets != null && assets.length() > 0) snapshotsByLevelKey.put(levelKey, assets);
+          visualTypeByLevelKey.put(levelKey, entry.optString("visualType", "scene"));
+        }
       }
     } catch (Exception ignored) {}
   }

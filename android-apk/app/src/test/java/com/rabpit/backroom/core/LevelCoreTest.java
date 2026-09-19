@@ -118,6 +118,61 @@ public class LevelCoreTest {
     assertFalse(prompt.contains("SHOULD_NOT_LOAD"));
   }
 
+  @Test public void sublevelSnapshotsRotateThroughManifestAssets() throws Exception {
+    JSONObject manifest = new JSONObject()
+        .put("root", "level_snapshots/drive")
+        .put("sublevelRoot", "level_snapshots/sublevels/level_0")
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("visualType", "scene")
+                .put("assets", new org.json.JSONArray().put("level_0/01.webp"))))
+        .put("sublevels", new JSONObject()
+            .put("0.1", new JSONObject()
+                .put("visualType", "scene")
+                .put("assets", new org.json.JSONArray()
+                    .put("sublevel_0-1/03.webp")
+                    .put("sublevel_0-1/04.webp"))));
+
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    core.loadSnapshotManifestText(manifest.toString());
+
+    JSONObject sublevel = state(1, "Level 0.1 / Zenith Station")
+        .put(LevelCore.LEVEL_KEY, "0.1");
+
+    JSONObject first = new JSONObject(core.snapshotDescriptor(sublevel));
+    assertEquals(
+        "file:///android_asset/level_snapshots/sublevels/level_0/sublevel_0-1/03.webp",
+        first.getString("path"));
+
+    sublevel.put("turn", 2);
+    JSONObject second = new JSONObject(core.snapshotDescriptor(sublevel));
+    assertEquals(
+        "file:///android_asset/level_snapshots/sublevels/level_0/sublevel_0-1/04.webp",
+        second.getString("path"));
+
+    sublevel.put("turn", 3);
+    JSONObject wrapped = new JSONObject(core.snapshotDescriptor(sublevel));
+    assertEquals(first.getString("path"), wrapped.getString("path"));
+  }
+
+  @Test public void mainLevelSnapshotRotationRemainsUnchanged() throws Exception {
+    JSONObject manifest = new JSONObject()
+        .put("root", "level_snapshots/drive")
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("visualType", "scene")
+                .put("assets", new org.json.JSONArray()
+                    .put("level_0/01.webp")
+                    .put("level_0/02.webp"))));
+
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    core.loadSnapshotManifestText(manifest.toString());
+
+    JSONObject main = state(2, "Level 0 / Start");
+    JSONObject descriptor = new JSONObject(core.snapshotDescriptor(main));
+    assertEquals("file:///android_asset/level_snapshots/drive/level_0/02.webp", descriptor.getString("path"));
+  }
+
   @Test public void routeRollUsesFiveFiftyFiveFortyDistributionBoundaries() throws Exception {
     LevelCore tripleCore = new LevelCore(null, new SequenceRng(4));
     JSONObject triple = state(1, "Level 0 / A");
