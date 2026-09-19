@@ -131,6 +131,18 @@ public final class CombatChoiceEngine {
     SKILLS.put(id, list);
   }
 
+  static Map<String, String> semanticCatalog() {
+    Map<String, String> output = new LinkedHashMap<>();
+    for (EntityProfile profile : ENTITIES.values()) output.put(profile.name, "entity");
+    for (List<Skill> pool : SKILLS.values()) {
+      for (Skill skill : pool) {
+        output.put(skill.name, "skill");
+        if (skill.effect != null && !skill.effect.trim().isEmpty()) output.put(skill.effect, "effect");
+      }
+    }
+    return output;
+  }
+
   public static boolean isKnownEntity(String key) {
     return key != null && ENTITIES.containsKey(key.trim().toLowerCase(Locale.ROOT));
   }

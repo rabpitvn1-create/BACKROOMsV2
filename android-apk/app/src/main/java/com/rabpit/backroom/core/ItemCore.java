@@ -3,7 +3,9 @@ package com.rabpit.backroom.core;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Core-owned loot and consumable item rules. AI is never allowed to create loot. */
@@ -129,6 +131,14 @@ final class ItemCore {
     }
     return "ITEM CORE: không có loot rời trong scene. Không tự sinh, nhặt, trao hoặc thêm item vào inventory. "
         + "Loot consumable chỉ đến từ Entity drop hoặc Rương do Core spawn.";
+  }
+
+  static Map<String, String> semanticCatalog() {
+    Map<String, String> output = new LinkedHashMap<>();
+    output.put(itemName(ALMOND_WATER_ID), "item");
+    output.put(itemName(BANDAGE_ID), "item");
+    output.put("Rương", "item");
+    return output;
   }
 
   static boolean shouldSpawnChest(int roll) {

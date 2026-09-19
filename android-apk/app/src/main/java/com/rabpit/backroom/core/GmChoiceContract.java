@@ -3,25 +3,72 @@ package com.rabpit.backroom.core;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/** Sanitizes the AI-only Explorer choice/highlight projection before it reaches the WebView. */
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/** Sanitizes and deterministically enriches Explorer choice/highlight projection before WebView. */
 public final class GmChoiceContract {
   private static final int MAX_CHOICES = 3;
   private static final int MAX_CHOICE_TEXT = 180;
   private static final int MAX_HIGHLIGHTS = 24;
   private static final int MAX_HIGHLIGHT_TEXT = 120;
 
+  private static final Pattern LEVEL_PATTERN =
+      Pattern.compile("(?iu)\\bLevel\\s+\\d+(?:\\s*[-–—/]\\s*[A-Za-zÀ-ỹ0-9 _]+)?");
+  private static final Pattern HP_PAIR_PATTERN =
+      Pattern.compile("(?iu)\\bHP\\s*\\d+\\s*/\\s*\\d+\\b");
+  private static final Pattern SIGNED_STAT_PATTERN =
+      Pattern.compile("(?iu)[+-]\\d+(?:\\.\\d+)?%?\\s*(?:HP|DEF)\\b");
+
+  private static final String[][] FIXED_TERMS = {
+      {"Kai Akechi", "character"},
+      {"Kai", "character"},
+      {"Iris", "character"},
+      {"Syvial", "character"},
+      {"Lucia Lục", "character"},
+      {"Hứa Thuý Mai", "character"},
+      {"Hứa Thúy Mai", "character"},
+      {"Backrooms", "location"},
+      {"Explorer", "stat"},
+      {"EXP", "stat"},
+      {"MaxHP", "stat"},
+      {"HP", "stat"},
+      {"STR", "stat"},
+      {"DF", "stat"},
+      {"DEF", "stat"},
+      {"AGI", "stat"},
+      {"CRIT", "stat"},
+      {"Base Stats", "stat"},
+      {"Equipment Stats", "stat"},
+      {"Effective Stats", "stat"}
+  };
+
   private GmChoiceContract() {}
 
   public static JSONObject gmEntry(String reply, JSONObject generated) throws Exception {
-    JSONObject entry = new JSONObject().put("role", "gm").put("text", reply == null ? "" : reply.trim());
-    JSONArray highlights = sanitizeHighlights(generated == null ? null : generated.optJSONArray("highlights"));
+    return gmEntry(reply, generated, null);
+  }
+
+  public static JSONObject gmEntry(String reply, JSONObject generated, JSONObject state) throws Exception {
+    String text = reply == null ? "" : reply.trim();
+    JSONObject entry = new JSONObject().put("role", "gm").put("text", text);
+    JSONArray highlights = deterministicHighlights(
+        text, state, generated == null ? null : generated.optJSONArray("highlights"));
     if (highlights.length() > 0) entry.put("highlights", highlights);
-    JSONArray choices = sanitizeChoices(generated == null ? null : generated.optJSONArray("choices"));
+    JSONArray choices = sanitizeChoices(
+        generated == null ? null : generated.optJSONArray("choices"), state);
     if (choices.length() > 0) entry.put("choices", choices);
     return entry;
   }
 
   public static JSONArray sanitizeChoices(JSONArray input) throws Exception {
+    return sanitizeChoices(input, null);
+  }
+
+  static JSONArray sanitizeChoices(JSONArray input, JSONObject state) throws Exception {
     JSONArray output = new JSONArray();
     if (input == null) return output;
     for (int i = 0; i < input.length() && output.length() < MAX_CHOICES; i++) {
@@ -38,10 +85,10 @@ public final class GmChoiceContract {
       if (text.isEmpty()) continue;
       if (text.length() > MAX_CHOICE_TEXT) text = text.substring(0, MAX_CHOICE_TEXT).trim();
       JSONObject choice = new JSONObject()
-        .put("id", String.valueOf((char)('A' + output.length())))
-        .put("text", text)
-        .put("action", text);
-      JSONArray highlights = sanitizeHighlights(rawHighlights);
+          .put("id", String.valueOf((char)('A' + output.length())))
+          .put("text", text)
+          .put("action", text);
+      JSONArray highlights = deterministicHighlights(text, state, rawHighlights);
       if (highlights.length() > 0) choice.put("highlights", highlights);
       output.put(choice);
     }
@@ -49,9 +96,104 @@ public final class GmChoiceContract {
   }
 
   public static JSONArray sanitizeHighlights(JSONArray input) throws Exception {
-    JSONArray output = new JSONArray();
-    if (input == null) return output;
-    for (int i = 0; i < input.length() && output.length() < MAX_HIGHLIGHTS; i++) {
+    LinkedHashMap<String, JSONObject> output = new LinkedHashMap<>();
+    addHighlightList(output, input, null, false);
+    return toArray(output);
+  }
+
+  private static JSONArray deterministicHighlights(String text, JSONObject state, JSONArray modelHighlights)
+      throws Exception {
+    LinkedHashMap<String, JSONObject> output = new LinkedHashMap<>();
+
+    // Model metadata remains useful, but Core-owned typing can replace an untyped/generic duplicate.
+    addHighlightList(output, modelHighlights, text, false);
+
+    for (String[] term : FIXED_TERMS) addIfPresent(output, text, term[0], term[1], true);
+    addCatalog(output, text, CombatChoiceEngine.semanticCatalog());
+    addCatalog(output, text, ItemCore.semanticCatalog());
+    addStateTerms(output, text, state);
+    addPatternMatches(output, text, LEVEL_PATTERN, "location");
+    addPatternMatches(output, text, HP_PAIR_PATTERN, "stat");
+    addPatternMatches(output, text, SIGNED_STAT_PATTERN, "stat");
+
+    return toArray(output);
+  }
+
+  private static void addCatalog(LinkedHashMap<String, JSONObject> output, String source,
+                                 Map<String, String> catalog) throws Exception {
+    for (Map.Entry<String, String> entry : catalog.entrySet()) {
+      addIfPresent(output, source, entry.getKey(), entry.getValue(), true);
+    }
+  }
+
+  private static void addStateTerms(LinkedHashMap<String, JSONObject> output, String source, JSONObject state)
+      throws Exception {
+    if (state == null) return;
+
+    JSONObject player = state.optJSONObject("player");
+    if (player != null) addIfPresent(output, source, player.optString("name", ""), "character", true);
+
+    JSONArray party = state.optJSONArray("party");
+    if (party != null) {
+      for (int i = 0; i < party.length(); i++) {
+        JSONObject member = party.optJSONObject(i);
+        if (member != null) {
+          addIfPresent(output, source,
+              member.optString("name", member.optString("id", "")), "character", true);
+        }
+      }
+    }
+
+    JSONArray inventory = state.optJSONArray("inventory");
+    if (inventory != null) {
+      for (int i = 0; i < inventory.length(); i++) {
+        JSONObject stack = inventory.optJSONObject(i);
+        if (stack != null) addIfPresent(output, source, stack.optString("name", ""), "item", true);
+      }
+    }
+
+    String location = state.optString("location", "").trim();
+    if (!location.isEmpty()) {
+      String head = location.split("—", 2)[0].trim();
+      if (!head.isEmpty()) addIfPresent(output, source, head, "location", true);
+    }
+
+    JSONObject combat = state.optJSONObject("combat");
+    if (combat != null) {
+      addIfPresent(output, source, combat.optString("currentActor", ""), "character", true);
+      JSONObject entity = combat.optJSONObject("entity");
+      if (entity != null) addIfPresent(output, source, entity.optString("name", ""), "entity", true);
+      JSONObject skill = combat.optJSONObject("currentSkill");
+      if (skill != null) addIfPresent(output, source, skill.optString("name", ""), "skill", true);
+    }
+  }
+
+  private static void addPatternMatches(LinkedHashMap<String, JSONObject> output, String source,
+                                        Pattern pattern, String type) throws Exception {
+    Matcher matcher = pattern.matcher(source == null ? "" : source);
+    while (matcher.find() && output.size() < MAX_HIGHLIGHTS) {
+      putHighlight(output, matcher.group(), type, true);
+    }
+  }
+
+  private static void addIfPresent(LinkedHashMap<String, JSONObject> output, String source,
+                                   String term, String type, boolean replaceGeneric) throws Exception {
+    String value = term == null ? "" : term.trim();
+    if (value.length() < 2 || !containsWholeTerm(source, value)) return;
+    putHighlight(output, value, type, replaceGeneric);
+  }
+
+  private static boolean containsWholeTerm(String source, String term) {
+    if (source == null || source.isEmpty() || term == null || term.isEmpty()) return false;
+    Pattern pattern = Pattern.compile(
+        "(?iu)(?<![\\p{L}\\p{N}_])" + Pattern.quote(term) + "(?![\\p{L}\\p{N}_])");
+    return pattern.matcher(source).find();
+  }
+
+  private static void addHighlightList(LinkedHashMap<String, JSONObject> output, JSONArray input,
+                                       String source, boolean replaceGeneric) throws Exception {
+    if (input == null) return;
+    for (int i = 0; i < input.length() && output.size() < MAX_HIGHLIGHTS; i++) {
       Object raw = input.opt(i);
       String text;
       String type = "";
@@ -63,25 +205,40 @@ public final class GmChoiceContract {
         text = raw == null ? "" : String.valueOf(raw).trim();
       }
       if (text.length() < 2) continue;
-      if (text.length() > MAX_HIGHLIGHT_TEXT) text = text.substring(0, MAX_HIGHLIGHT_TEXT).trim();
-      boolean duplicate = false;
-      for (int j = 0; j < output.length(); j++) {
-        Object existing = output.opt(j);
-        String existingText = existing instanceof JSONObject
-          ? ((JSONObject) existing).optString("text", "")
-          : output.optString(j, "");
-        if (text.equalsIgnoreCase(existingText)) { duplicate = true; break; }
-      }
-      if (!duplicate) {
-        if (type.isEmpty()) output.put(text);
-        else output.put(new JSONObject().put("text", text).put("type", type));
-      }
+      if (source != null && !containsWholeTerm(source, text)) continue;
+      putHighlight(output, text, type, replaceGeneric);
     }
+  }
+
+  private static void putHighlight(LinkedHashMap<String, JSONObject> output, String text,
+                                   String type, boolean replaceGeneric) throws Exception {
+    if (text == null) return;
+    String value = text.trim();
+    if (value.length() < 2) return;
+    if (value.length() > MAX_HIGHLIGHT_TEXT) value = value.substring(0, MAX_HIGHLIGHT_TEXT).trim();
+
+    String normalizedType = sanitizeHighlightType(type);
+    String key = value.toLowerCase(Locale.ROOT);
+    JSONObject previous = output.get(key);
+    if (previous != null) {
+      String previousType = previous.optString("type", "");
+      if (!replaceGeneric || normalizedType.isEmpty() || !previousType.isEmpty()) return;
+    }
+    if (output.size() >= MAX_HIGHLIGHTS && previous == null) return;
+
+    JSONObject highlight = new JSONObject().put("text", value);
+    if (!normalizedType.isEmpty()) highlight.put("type", normalizedType);
+    output.put(key, highlight);
+  }
+
+  private static JSONArray toArray(LinkedHashMap<String, JSONObject> map) {
+    JSONArray output = new JSONArray();
+    for (JSONObject value : map.values()) output.put(value);
     return output;
   }
 
   private static String sanitizeHighlightType(String raw) {
-    String type = raw == null ? "" : raw.trim().toLowerCase();
+    String type = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if ("npc".equals(type) || "ally".equals(type) || "player".equals(type)) type = "character";
     if ("enemy".equals(type) || "monster".equals(type)) type = "entity";
     if ("level".equals(type) || "area".equals(type) || "zone".equals(type) || "place".equals(type)) type = "location";
