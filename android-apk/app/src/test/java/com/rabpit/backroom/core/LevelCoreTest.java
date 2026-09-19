@@ -68,6 +68,42 @@ public class LevelCoreTest {
     assertFalse(prompt.contains("YELLOW_VARIATION"));
   }
 
+  @Test public void structuredKnowledgeRotatesLargeScenePoolsByTurn() throws Exception {
+    org.json.JSONArray seeds = new org.json.JSONArray();
+    for (int i = 0; i < 10; i++) seeds.put("SEED_" + i);
+
+    String knowledge = new JSONObject()
+        .put("schemaVersion", 2)
+        .put("sectionOrder", new org.json.JSONArray().put("identity").put("sceneSeeds"))
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("name", "Level 0")
+                .put("identity", new org.json.JSONArray().put("STATIC_RULE"))
+                .put("sceneSeeds", seeds)))
+        .toString();
+
+    LevelCore core = LevelCore.withKnowledge(knowledge, new SequenceRng(5));
+    JSONObject turnOne = state(1, "Level 0 / Start");
+    JSONObject turnTwo = state(2, "Level 0 / Start");
+
+    String first = core.promptContext(turnOne);
+    String second = core.promptContext(turnTwo);
+
+    assertTrue(first.contains("STATIC_RULE"));
+    assertTrue(second.contains("STATIC_RULE"));
+    assertTrue(first.contains("SCENESEEDS") || first.contains("SCENE SEEDS"));
+    assertFalse(first.equals(second));
+
+    int firstSeedCount = 0;
+    int secondSeedCount = 0;
+    for (int i = 0; i < 10; i++) {
+      if (first.contains("SEED_" + i)) firstSeedCount++;
+      if (second.contains("SEED_" + i)) secondSeedCount++;
+    }
+    assertEquals(6, firstSeedCount);
+    assertEquals(6, secondSeedCount);
+  }
+
   @Test public void structuredKnowledgeRejectsLegacySchemaAsAuthoritativeBundle() throws Exception {
     String legacy = new JSONObject()
         .put("schemaVersion", 1)
