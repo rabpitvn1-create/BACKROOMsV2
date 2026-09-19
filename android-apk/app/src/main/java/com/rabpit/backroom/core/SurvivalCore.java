@@ -94,7 +94,7 @@ final class SurvivalCore {
     JSONObject before = projectPhysiology(state, rawId);
     JSONObject profile = ensureProfile(state, rawId);
     long elapsed = elapsedMinutes(state);
-    long current = Math.max(0L, Math.min(elapsed, profile.optLong(key, elapsed)));
+    long current = Math.min(elapsed, profile.optLong(key, elapsed));
     long restoreMinutes = criticalMinutes * Math.max(0, percentPoints) / 100L;
     profile.put(key, Math.min(elapsed, current + restoreMinutes));
     JSONObject after = projectPhysiology(state, rawId);
@@ -106,7 +106,18 @@ final class SurvivalCore {
     JSONObject profile = characters.optJSONObject(id);
     long elapsed = elapsedMinutes(state);
     long initial = Math.max(0L, Math.min(elapsed, initialMinute));
-    if (profile == null) profile = new JSONObject();
+    if (profile == null) {
+      profile = new JSONObject();
+      JSONObject legacy = legacyPhysiology(state, id);
+      if (legacy != null) {
+        profile.put("lastFoodMinute",
+            minuteForRemainingPercent(elapsed, FOOD_CRITICAL_MINUTES, legacy.optInt("foodPercent", -1), initial));
+        profile.put("lastWaterMinute",
+            minuteForRemainingPercent(elapsed, WATER_CRITICAL_MINUTES, legacy.optInt("waterPercent", -1), initial));
+        profile.put("lastRestMinute",
+            minuteForRemainingPercent(elapsed, REST_CRITICAL_MINUTES, legacy.optInt("restPercent", -1), initial));
+      }
+    }
     profile.put("lastFoodMinute", clampMinute(profile.optLong("lastFoodMinute", initial), elapsed));
     profile.put("lastWaterMinute", clampMinute(profile.optLong("lastWaterMinute", initial), elapsed));
     profile.put("lastRestMinute", clampMinute(profile.optLong("lastRestMinute", initial), elapsed));
@@ -114,8 +125,30 @@ final class SurvivalCore {
     return profile;
   }
 
+  private static JSONObject legacyPhysiology(JSONObject state, String id) {
+    JSONObject details = state == null ? null : state.optJSONObject("partyDetails");
+    JSONArray members = details == null ? null : details.optJSONArray("members");
+    if (members == null) return null;
+    for (int i = 0; i < members.length(); i++) {
+      JSONObject member = members.optJSONObject(i);
+      if (member == null) continue;
+      String memberId = CharacterProgressionCore.normalizeCharacterId(
+          member.optString("id", member.optString("name", "")));
+      if (!id.equals(memberId)) continue;
+      JSONObject physiology = member.optJSONObject("physiology");
+      if (physiology != null) return physiology;
+    }
+    return null;
+  }
+
+  private static long minuteForRemainingPercent(long elapsed, long criticalMinutes, int percent, long fallback) {
+    if (percent < 0 || percent > 100 || criticalMinutes <= 0L) return fallback;
+    long minutesSince = criticalMinutes * (100L - percent) / 100L;
+    return elapsed - minutesSince;
+  }
+
   private static long clampMinute(long value, long elapsed) {
-    return Math.max(0L, Math.min(Math.max(0L, elapsed), value));
+    return Math.min(Math.max(0L, elapsed), value);
   }
 
   private static void putPhysiology(JSONObject result, String bandKey, long minutes,
