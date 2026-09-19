@@ -1,17 +1,22 @@
-name: Purge Failed GitHub Actions Runs
+name: Purge Recent Actions and Temp Branches
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/purge-actions-history.yml'
 
 permissions:
   actions: write
-  contents: read
+  contents: write
 
 jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete failed workflow runs only
+      - name: Purge recent failed/cancelled/queued runs and temp branches
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -20,45 +25,163 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Current purge run: ${CURRENT_RUN_ID}"
+          read -r START_EPOCH END_EPOCH START_LABEL END_LABEL < <(
+            python3 - <<'PY'
+          from datetime import datetime, time, timedelta
+          from zoneinfo import ZoneInfo
 
-          mapfile -t RUN_IDS < <(
-            gh api --paginate \
-              -H 'Accept: application/vnd.github+json' \
-              "/repos/${REPO}/actions/runs?status=failure&per_page=100" \
-              --jq '.workflow_runs[].id'
+          tz = ZoneInfo("Asia/Ho_Chi_Minh")
+          today = datetime.now(tz).date()
+          start_day = today - timedelta(days=1)
+          end_day = today + timedelta(days=1)
+          start = datetime.combine(start_day, time.min, tzinfo=tz)
+          end = datetime.combine(end_day, time.min, tzinfo=tz)
+          print(int(start.timestamp()), int(end.timestamp()), start_day.isoformat(), today.isoformat())
+          PY
           )
 
-          echo "Found ${#RUN_IDS[@]} failed workflow runs."
+          echo "Cleanup window (Asia/Ho_Chi_Minh): ${START_LABEL} through ${END_LABEL}"
+          echo "Current purge run: ${CURRENT_RUN_ID}"
 
-          deleted=0
-          failed=0
+          deleted_runs=0
+          failed_run_deletions=0
 
-          for run_id in "${RUN_IDS[@]}"; do
+          mapfile -t RUN_ROWS < <(
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${REPO}/actions/runs?per_page=100" \
+              --jq '.workflow_runs[] | [.id, .status, (.conclusion // ""), .created_at, .name] | @tsv'
+          )
+
+          for row in "${RUN_ROWS[@]}"; do
+            IFS=$'\t' read -r run_id status conclusion created_at run_name <<< "${row}"
+
             [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
 
-            echo "Deleting failed run ${run_id}"
+            created_epoch="$(date -u -d "${created_at}" +%s)"
+            if (( created_epoch < START_EPOCH || created_epoch >= END_EPOCH )); then
+              continue
+            fi
+
+            delete=false
+            if [[ "${status}" == "queued" ]]; then
+              delete=true
+            elif [[ "${status}" == "completed" ]]; then
+              case "${conclusion}" in
+                failure|cancelled|timed_out|action_required|startup_failure|stale)
+                  delete=true
+                  ;;
+              esac
+            fi
+
+            [[ "${delete}" != "true" ]] && continue
+
+            echo "Deleting run ${run_id}: ${run_name} [status=${status}, conclusion=${conclusion:-none}, created=${created_at}]"
+
             success=false
             for attempt in 1 2 3 4 5; do
               if gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}" >/dev/null 2>&1; then
                 success=true
                 break
               fi
+
+              if [[ "${status}" == "queued" ]]; then
+                gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
+              fi
               sleep 2
             done
 
             if [[ "${success}" == "true" ]]; then
-              deleted=$((deleted + 1))
+              deleted_runs=$((deleted_runs + 1))
             else
-              echo "Failed to delete run ${run_id}" >&2
-              failed=$((failed + 1))
+              echo "::warning::Failed to delete run ${run_id}"
+              failed_run_deletions=$((failed_run_deletions + 1))
             fi
           done
 
-          echo "Deleted ${deleted} failed workflow runs."
-          echo "Failed deletions: ${failed}."
-          echo "Successful/cancelled runs are preserved."
+          OWNER="${REPO%%/*}"
 
-          if [[ "${failed}" -ne 0 ]]; then
+          mapfile -t OPEN_PR_HEADS < <(
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${REPO}/pulls?state=open&per_page=100" \
+              --jq '.[].head.ref'
+          )
+
+          has_open_pr() {
+            local branch="$1"
+            local ref
+            for ref in "${OPEN_PR_HEADS[@]}"; do
+              [[ "${ref}" == "${branch}" ]] && return 0
+            done
+            return 1
+          }
+
+          is_temp_branch() {
+            local branch="$1"
+            [[ "${branch}" =~ ^tmp/ ]] ||
+            [[ "${branch}" =~ ^temp/ ]] ||
+            [[ "${branch}" =~ ^temporary/ ]] ||
+            [[ "${branch}" =~ ^actions?/ ]] ||
+            [[ "${branch}" =~ ^ci/(tmp|temp|action|actions)/ ]] ||
+            [[ "${branch}" =~ ^bot/(tmp|temp|action|actions)/ ]] ||
+            [[ "${branch}" =~ ^scratch/ ]] ||
+            [[ "${branch}" =~ (^|/)(emulator-smoke|smoke-test)(/|$) ]]
+          }
+
+          deleted_branches=0
+          failed_branch_deletions=0
+
+          mapfile -t BRANCHES < <(
+            gh api --paginate \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${REPO}/branches?per_page=100" \
+              --jq '.[].name'
+          )
+
+          for branch in "${BRANCHES[@]}"; do
+            [[ "${branch}" == "main" ]] && continue
+            is_temp_branch "${branch}" || continue
+
+            if has_open_pr "${branch}"; then
+              echo "Preserving ${branch}: open PR exists."
+              continue
+            fi
+
+            encoded_branch="$(
+              python3 - "${branch}" <<'PY'
+          import sys
+          from urllib.parse import quote
+          print(quote(sys.argv[1], safe=""))
+          PY
+            )"
+
+            branch_json="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/branches/${encoded_branch}")"
+            branch_sha="$(jq -r '.commit.sha' <<< "${branch_json}")"
+            commit_date="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/commits/${branch_sha}" --jq '.commit.committer.date')"
+            commit_epoch="$(date -u -d "${commit_date}" +%s)"
+
+            if (( commit_epoch < START_EPOCH || commit_epoch >= END_EPOCH )); then
+              echo "Preserving ${branch}: head commit ${commit_date} is outside cleanup window."
+              continue
+            fi
+
+            echo "Deleting temporary branch ${branch} at ${branch_sha} (head date ${commit_date})"
+
+            if gh api --method DELETE "/repos/${REPO}/git/refs/heads/${encoded_branch}" >/dev/null 2>&1; then
+              deleted_branches=$((deleted_branches + 1))
+            else
+              echo "::warning::Failed to delete branch ${branch}"
+              failed_branch_deletions=$((failed_branch_deletions + 1))
+            fi
+          done
+
+          echo "Deleted workflow runs: ${deleted_runs}"
+          echo "Failed run deletions: ${failed_run_deletions}"
+          echo "Deleted temporary branches: ${deleted_branches}"
+          echo "Failed branch deletions: ${failed_branch_deletions}"
+          echo "Successful runs and non-temporary branches were preserved."
+
+          if (( failed_run_deletions != 0 || failed_branch_deletions != 0 )); then
             exit 1
           fi
