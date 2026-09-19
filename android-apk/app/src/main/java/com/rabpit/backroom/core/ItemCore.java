@@ -192,6 +192,7 @@ final class ItemCore {
   static Map<String, String> semanticCatalog() {
     Map<String, String> output = new LinkedHashMap<>();
     for (String id : CHEST_POOL) output.put(itemName(id), "item");
+    output.put("Bandage", "item");
     output.put("Rương", "item");
     return output;
   }
