@@ -219,17 +219,16 @@ final class CharacterEncounterCore {
     member.put("joined", true);
     member.put("present", true);
     member.put("joinConfirmed", true);
-    if ("lucia".equals(id)) {
-      if (!member.has("hp")) member.put("hp", 100);
-      if (!member.has("maxHp")) member.put("maxHp", 100);
-      JSONObject stats = member.optJSONObject("stats");
-      if (stats == null) stats = new JSONObject();
-      if (!stats.has("STR")) stats.put("STR", 7);
-      if (!stats.has("DF")) stats.put("DF", 7);
-      if (!stats.has("AGI")) stats.put("AGI", 8);
-      if (!stats.has("CRIT")) stats.put("CRIT", 7);
-      member.put("stats", stats);
-    }
+    member.remove("level");
+    member.remove("explorer");
+    member.remove("exp");
+    member.remove("baseStats");
+    member.remove("stats");
+    member.remove("hp");
+    member.remove("currentHp");
+    member.remove("currentHP");
+    member.remove("maxHp");
+    member.remove("maxHP");
     return member;
   }
 
