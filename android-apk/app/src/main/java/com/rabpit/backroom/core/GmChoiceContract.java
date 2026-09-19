@@ -45,6 +45,112 @@ public final class GmChoiceContract {
       {"Effective Stats", "stat"}
   };
 
+  // Last-resort player-facing glossary. Prompt/canon should already produce natural Vietnamese,
+  // but these replacements prevent common backstage English environment words from leaking into UI.
+  private static final String[][] VIETNAMESE_ENVIRONMENT_TERMS = {
+      {"blackout zones", "các vùng mất sáng"},
+      {"blackout zone", "vùng mất sáng"},
+      {"pillar rooms", "các phòng cột"},
+      {"pillar room", "phòng cột"},
+      {"arch rooms", "các phòng vòm"},
+      {"arch room", "phòng vòm"},
+      {"hole fields", "các bãi hố"},
+      {"hole field", "bãi hố"},
+      {"transition chambers", "các khoang chuyển tiếp"},
+      {"transition chamber", "khoang chuyển tiếp"},
+      {"dead ends", "các ngõ cụt"},
+      {"dead end", "ngõ cụt"},
+      {"floor recesses", "các chỗ trũng trên sàn"},
+      {"floor recess", "chỗ trũng trên sàn"},
+      {"noise spikes", "các đợt tăng tiếng ồn"},
+      {"noise spike", "đợt tăng tiếng ồn"},
+      {"stable pockets", "các vùng ổn định"},
+      {"stable pocket", "vùng ổn định"},
+      {"dry patches", "các mảng khô"},
+      {"dry patch", "mảng khô"},
+      {"synthetic carpet", "thảm sợi tổng hợp"},
+      {"supernatural voice", "giọng nói siêu nhiên"},
+      {"layout shift", "biến đổi bố cục"},
+      {"wallpaper", "giấy dán tường"},
+      {"ceilings", "trần nhà"},
+      {"ceiling", "trần nhà"},
+      {"fixtures", "các bộ đèn"},
+      {"fixture", "bộ đèn"},
+      {"openings", "các lối mở"},
+      {"opening", "lối mở"},
+      {"corridors", "các hành lang"},
+      {"corridor", "hành lang"},
+      {"junctions", "các giao lộ"},
+      {"junction", "giao lộ"},
+      {"landmarks", "các mốc định hướng"},
+      {"landmark", "mốc định hướng"},
+      {"carpet", "thảm"},
+      {"fluids", "các chất lỏng"},
+      {"fluid", "chất lỏng"},
+      {"layouts", "các bố cục"},
+      {"layout", "bố cục"},
+      {"grids", "các lưới"},
+      {"grid", "lưới"},
+      {"mildew", "nấm mốc"},
+      {"footwear", "giày"},
+      {"echoes", "các tiếng vọng"},
+      {"echo", "tiếng vọng"},
+      {"volume", "âm lượng"},
+      {"pitch", "cao độ"},
+      {"buzz", "tiếng ù"},
+      {"cues", "các dấu hiệu"},
+      {"cue", "dấu hiệu"},
+      {"topology", "cấu trúc không gian"},
+      {"geometry", "hình học"},
+      {"navigation", "định hướng"},
+      {"environmental", "môi trường"},
+      {"structural", "cấu trúc"},
+      {"contamination", "ô nhiễm"},
+      {"uncertainty", "sự bất định"},
+      {"progression", "tiến trình"},
+      {"continuity", "tính liên tục"},
+      {"unverified", "chưa xác minh"},
+      {"fluorescent", "huỳnh quang"},
+      {"scratching", "tiếng cào"},
+      {"whisper", "tiếng thì thầm"},
+      {"footprints", "các dấu chân"},
+      {"footprint", "dấu chân"},
+      {"airflow", "luồng khí"},
+      {"exposure", "phơi nhiễm"},
+      {"equipment", "trang bị"},
+      {"supplies", "nhu yếu phẩm"},
+      {"evidence", "bằng chứng"},
+      {"encounter", "cuộc chạm trán"},
+      {"hazards", "các nguy cơ"},
+      {"hazard", "nguy cơ"},
+      {"landmark", "mốc định hướng"},
+      {"marking", "dấu đánh dấu"},
+      {"heading", "hướng di chuyển"},
+      {"region", "khu vực"},
+      {"cluster", "cụm"},
+      {"pattern", "kiểu mẫu"},
+      {"texture", "bề mặt"},
+      {"direction", "hướng"},
+      {"route", "lộ trình"},
+      {"player", "người chơi"},
+      {"state", "trạng thái"},
+      {"active", "đang hoạt động"},
+      {"stable", "ổn định"},
+      {"global", "toàn cục"},
+      {"local", "cục bộ"},
+      {"success", "thành công"},
+      {"reset", "đặt lại"},
+      {"outlet", "ổ điện"},
+      {"flicker", "chớp tắt"},
+      {"narration", "lời kể"},
+      {"reply", "phản hồi"},
+      {"voice", "giọng nói"},
+      {"fatigue", "mệt mỏi"},
+      {"exit", "lối ra"},
+      {"pit", "hố"},
+      {"wall", "tường"}
+  };
+
   private GmChoiceContract() {}
 
   public static JSONObject gmEntry(String reply, JSONObject generated) throws Exception {
@@ -52,7 +158,7 @@ public final class GmChoiceContract {
   }
 
   public static JSONObject gmEntry(String reply, JSONObject generated, JSONObject state) throws Exception {
-    String text = reply == null ? "" : reply.trim();
+    String text = normalizePlayerFacingVietnamese(reply);
     JSONObject entry = new JSONObject().put("role", "gm").put("text", text);
     JSONArray highlights = deterministicHighlights(
         text, state, generated == null ? null : generated.optJSONArray("highlights"));
@@ -81,6 +187,7 @@ public final class GmChoiceContract {
       } else if (raw != null) {
         text = String.valueOf(raw).trim();
       }
+      text = normalizePlayerFacingVietnamese(text);
       if (text.isEmpty()) continue;
       if (text.length() > MAX_CHOICE_TEXT) text = text.substring(0, MAX_CHOICE_TEXT).trim();
       JSONObject choice = new JSONObject()
@@ -90,6 +197,29 @@ public final class GmChoiceContract {
       JSONArray highlights = deterministicHighlights(text, state, rawHighlights);
       if (highlights.length() > 0) choice.put("highlights", highlights);
       output.put(choice);
+    }
+    return output;
+  }
+
+  public static String normalizePlayerFacingVietnamese(String input) {
+    String output = input == null ? "" : input.trim();
+    if (output.isEmpty()) return output;
+    for (String[] term : VIETNAMESE_ENVIRONMENT_TERMS) {
+      Pattern pattern = Pattern.compile(
+          "(?iu)(?<![\\p{L}\\p{N}_])" + Pattern.quote(term[0])
+              + "(?![\\p{L}\\p{N}_])");
+      Matcher matcher = pattern.matcher(output);
+      StringBuffer normalized = new StringBuffer();
+      while (matcher.find()) {
+        String replacement = term[1];
+        String matched = matcher.group();
+        if (!matched.isEmpty() && Character.isUpperCase(matched.codePointAt(0)) && !replacement.isEmpty()) {
+          replacement = replacement.substring(0, 1).toUpperCase(Locale.ROOT) + replacement.substring(1);
+        }
+        matcher.appendReplacement(normalized, Matcher.quoteReplacement(replacement));
+      }
+      matcher.appendTail(normalized);
+      output = normalized.toString();
     }
     return output;
   }
