@@ -47,6 +47,7 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(legacy);
       characterProgressionCore.normalizeState(legacy);
       characterEncounterCore.normalizeState(legacy);
+      CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
@@ -205,6 +206,7 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
+      CombatChoiceEngine.normalizeTerminalEncounter(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
     } catch (Exception e) {

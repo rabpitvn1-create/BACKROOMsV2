@@ -111,6 +111,33 @@ public class CombatChoiceEngineTest {
     assertEquals("syvial", participants.getJSONObject(2).getString("id"));
   }
 
+  @Test public void defeatConsumesEncounterAndDoesNotLeaveRestartFlag() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "clump", 0);
+
+    JSONObject combat = state.getJSONObject("combat");
+    combat.getJSONArray("participants").getJSONObject(0).put("hp", 1);
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+
+    assertFalse(state.getJSONObject("combat").getBoolean("active"));
+    assertEquals("defeat", state.getJSONObject("combat").getString("outcome"));
+    assertEquals("", state.getJSONObject("flags").getString("entityEncounterKey"));
+    assertEquals(0, state.getJSONObject("characterProgression")
+        .getJSONObject("characters").getJSONObject("kai").getInt("currentHp"));
+  }
+
+  @Test public void terminalDefeatNormalizationClearsLegacyRestartFlag() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    state.put("combat", new JSONObject()
+        .put("active", false)
+        .put("outcome", "defeat"));
+    state.getJSONObject("flags").put("entityEncounterKey", "clump");
+
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+
+    assertEquals("", state.getJSONObject("flags").getString("entityEncounterKey"));
+  }
+
   @Test public void houndKillRewardsExpExactlyOnce() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);

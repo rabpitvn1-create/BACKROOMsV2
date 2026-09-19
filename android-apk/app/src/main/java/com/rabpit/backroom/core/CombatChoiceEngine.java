@@ -274,8 +274,7 @@ public final class CombatChoiceEngine {
       return state;
     }
     if (!hasLivingParticipant(participants)) {
-      combat.put("active", false).put("outcome", "defeat").put("choices", new JSONArray());
-      appendBattleLine(state, combat, "Party không còn nhân vật có thể chiến đấu.", "Party");
+      finishDefeat(state, combat);
       return state;
     }
 
@@ -688,6 +687,24 @@ public final class CombatChoiceEngine {
         state, entity.optString("key", ""), combat.optJSONArray("participants"), combat);
 
     combat.put("active", false).put("outcome", "victory").put("choices", new JSONArray());
+    clearEncounterFlag(state);
+  }
+
+  private static void finishDefeat(JSONObject state, JSONObject combat) throws Exception {
+    combat.put("active", false).put("outcome", "defeat").put("choices", new JSONArray());
+    appendBattleLine(state, combat, "Party không còn nhân vật có thể chiến đấu.", "Party");
+    clearEncounterFlag(state);
+  }
+
+  static void normalizeTerminalEncounter(JSONObject state) throws Exception {
+    if (state == null) return;
+    JSONObject combat = state.optJSONObject("combat");
+    if (combat == null || combat.optBoolean("active", false)) return;
+    String outcome = combat.optString("outcome", "");
+    if ("victory".equals(outcome) || "defeat".equals(outcome)) clearEncounterFlag(state);
+  }
+
+  private static void clearEncounterFlag(JSONObject state) throws Exception {
     JSONObject flags = state.optJSONObject("flags");
     if (flags != null) flags.put("entityEncounterKey", "");
   }
