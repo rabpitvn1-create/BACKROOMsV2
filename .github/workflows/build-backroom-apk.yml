@@ -137,9 +137,16 @@ jobs:
           grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
-          test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
-          test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
-          test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
+          snapshot_count="$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l | tr -d '[:space:]')"
+          echo "snapshot_count=$snapshot_count"
+          test "$snapshot_count" -eq 21
+          stray_snapshot="$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
+          echo "stray_snapshot=$stray_snapshot"
+          test -z "$stray_snapshot"
+          if test -e android-apk/app/src/main/assets/level_snapshots/wiki; then
+            echo "unexpected legacy snapshot directory: android-apk/app/src/main/assets/level_snapshots/wiki"
+            exit 1
+          fi
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
