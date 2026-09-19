@@ -12,7 +12,7 @@ import java.util.Map;
 
 final class LevelCore {
   private static final String KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
-  private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/wiki/manifest.json";
+  private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/drive/manifest.json";
   private static final int LEVEL_MISMATCH = -2;
 
   private final Map<Integer, String> canonByLevel = new LinkedHashMap<>();

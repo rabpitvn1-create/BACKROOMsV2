@@ -42,14 +42,13 @@ public class CharacterEncounterCoreTest {
     SequenceRng rng = new SequenceRng(0, 0, 0);
     CharacterEncounterCore core = new CharacterEncounterCore(rng);
     JSONObject state = state(0, 7);
-
-    CharacterEncounterCore.EncounterResult result = core.rollForExplorerAction(state, "Kai quan sát hành lang");
+    CharacterEncounterCore.EncounterResult result =
+        core.rollForExplorerAction(state, "Kai quan sát hành lang");
     assertTrue(result.joinedAny());
     assertEquals(3, state.getJSONArray("party").length());
     assertEquals("lucia", state.getJSONArray("party").getJSONObject(0).getString("id"));
     assertEquals("iris", state.getJSONArray("party").getJSONObject(1).getString("id"));
     assertEquals("syvial", state.getJSONArray("party").getJSONObject(2).getString("id"));
-
     core.rollForExplorerAction(state, "Gemini retry");
     state.put("turn", 8);
     core.rollForExplorerAction(state, "Kai đi tiếp");
@@ -61,26 +60,26 @@ public class CharacterEncounterCoreTest {
     JSONObject state = state(0, 3);
     CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999, 3999));
     core.rollForExplorerAction(state, "Kai mở cửa");
-
     JSONObject savedAfterFailure = new JSONObject(state.toString());
     core.normalizeState(savedAfterFailure);
     assertEquals("lucia", savedAfterFailure.getJSONArray("party").getJSONObject(0).getString("id"));
     assertEquals("lucia", savedAfterFailure.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
-
     try {
-      core.validateAndApply(savedAfterFailure, new JSONObject(savedAfterFailure.toString()), new JSONArray());
+      core.validateAndApply(savedAfterFailure,
+          new JSONObject(savedAfterFailure.toString()), new JSONArray());
       fail("Pending encounter must require 2-5 dialogue lines");
     } catch (IllegalArgumentException expected) {
       assertEquals(1, savedAfterFailure.getJSONArray("party").length());
     }
   }
 
-  @Test public void legacySaveMigrationRemovesKaiAndDuplicatesButPreservesStatsMetadata() throws Exception {
+  @Test public void legacySaveMigrationRemovesKaiDuplicatesAndShadowProgression() throws Exception {
     JSONObject lucia = new JSONObject()
         .put("name", "Hứa Thuý Mai")
         .put("hp", 61)
         .put("stats", new JSONObject().put("STR", 11))
+        .put("level", 7)
         .put("customMetadata", "keep-me");
     JSONObject state = state(0, 12);
     state.put("party", new JSONArray()
@@ -94,8 +93,9 @@ public class CharacterEncounterCoreTest {
     JSONArray party = state.getJSONArray("party");
     assertEquals(CharacterEncounterCore.MAX_COMPANIONS, party.length());
     assertEquals("lucia", party.getJSONObject(0).getString("id"));
-    assertEquals(61, party.getJSONObject(0).getInt("hp"));
-    assertEquals(11, party.getJSONObject(0).getJSONObject("stats").getInt("STR"));
+    assertFalse(party.getJSONObject(0).has("hp"));
+    assertFalse(party.getJSONObject(0).has("stats"));
+    assertFalse(party.getJSONObject(0).has("level"));
     assertEquals("keep-me", party.getJSONObject(0).getString("customMetadata"));
     assertTrue(party.getJSONObject(0).getBoolean("joined"));
     assertEquals("iris", party.getJSONObject(1).getString("id"));
@@ -115,7 +115,6 @@ public class CharacterEncounterCoreTest {
     core.normalizeState(before);
     JSONObject candidate = new JSONObject(before.toString()).put("party", new JSONArray()
         .put(new JSONObject().put("id", "syvial").put("name", "Syvial").put("joined", true)));
-
     core.validateAndApply(before, candidate, new JSONArray());
     assertEquals(1, candidate.getJSONArray("party").length());
     assertEquals("lucia", candidate.getJSONArray("party").getJSONObject(0).getString("id"));
@@ -134,11 +133,9 @@ public class CharacterEncounterCoreTest {
   private static final class SequenceRng implements CharacterEncounterCore.IntRng {
     final Queue<Integer> values = new ArrayDeque<>();
     int calls;
-
     SequenceRng(int... values) {
       for (int value : values) this.values.add(value);
     }
-
     @Override public int nextInt(int bound) {
       calls++;
       if (values.isEmpty()) throw new AssertionError("Unexpected RNG call for bound " + bound);

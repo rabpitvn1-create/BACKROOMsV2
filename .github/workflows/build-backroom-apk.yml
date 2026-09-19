@@ -34,6 +34,9 @@ jobs:
       GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
       GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
       GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
 
     steps:
       - uses: actions/checkout@v4
@@ -63,9 +66,9 @@ jobs:
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 71' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.69'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.69.txt
+          grep -Fq 'versionCode 73' android-apk/app/build.gradle
+          grep -Fq "versionName '1.1.71'" android-apk/app/build.gradle
+          test -s android-apk/RELEASE_NOTES_1.1.71.txt
           test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
           test -z "$(find android-apk -type f -name '*.py' -print -quit)"
           test ! -d android-apk/ml
@@ -102,12 +105,27 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityStatCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
-          test -s android-apk/app/src/main/assets/level_snapshots/wiki/manifest.json
+          test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          test -s android-apk/SNAPSHOT_SHA256SUMS.txt
+          grep -Fq '"version": 3' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
+          test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
+          test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' -print -quit)"
+          test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
           grep -Fq 'new LevelCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new EntityCore(appContext)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'new CharacterEncounterCore()' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -120,6 +138,22 @@ jobs:
           grep -Fq 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'SOFT_INPUT_ADJUST_RESIZE' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_4' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.GEMINI_API_KEY_5' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'BuildConfig.HAIKU_API' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String haikuText(String prompt)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'claude-haiku-4-5-20251001' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private void sleepBeforeNextGeminiKey' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'buildConfigField "String", "HAIKU_API"' android-apk/app/build.gradle
+          grep -Fq 'buildConfigField "String", "HAIKU_BASE_URL"' android-apk/app/build.gradle
+          grep -Fq 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
+          grep -Fq 'function scrollLatestGmToStart()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'window.backroomScrollLatestGmToStart = scrollLatestGmToStart' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function scrollCombatToBottom()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function scrollForCurrentMode()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'window.backroomScrollCombatToBottom = scrollCombatToBottom' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'logEl.scrollTop=logEl.scrollHeight' android-apk/app/src/main/assets/index.html
+          ! grep -Fq "renderSnapshot();scrollBottom();" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
@@ -161,7 +195,6 @@ jobs:
           grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'width:38%;height:72%;' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "alignOverlayToGround(img,'right',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "alignOverlayToGround(img,'left',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
@@ -172,12 +205,34 @@ jobs:
           node --check android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'ROOT_KEY = "characterProgression"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_STAT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'FEATURED_BONUS_POOL = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BONUS_POOL = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HP_PER_EXPLORER = 15' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HOUND_BASE_EXP = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'LUCIA_REFERENCE_PERCENT = 93' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          grep -Fq 'CRITICAL_DAMAGE_MULTIPLIER = 3.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          ! grep -R -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK20_STR = 25' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'levelGrowthConfigured' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'Level nhân vật' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'Explorer',member.explorer)" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('Explorer '+signed(explorer))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('EQ '+signed(equipment))" android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "kai:'file:///android_asset/avatars/kai_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "kai:{height:0.84,width:0.68}" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
           test "$(sha256sum android-apk/app/src/main/assets/avatars/kai_avatar.jpg | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
           test "$(sha256sum android-apk/app/src/main/assets/avatars/lucia_avatar.jpg | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
           test "$(sha256sum android-apk/app/src/main/assets/lucia_entity_overlay.png | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
@@ -185,9 +240,10 @@ jobs:
       - name: Validate Game Master configuration
         run: |
           set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
+          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5 HAIKU_API; do
             test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
           done
+          echo "Optional Haiku base/model overrides: ${HAIKU_BASE_URL:+configured} ${HAIKU_MODEL:+configured}"
 
       - uses: actions/setup-java@v5
         with:
@@ -203,66 +259,69 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.69.apk
+        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.71.apk
 
       - name: Verify packaged APK
         run: |
           set -euo pipefail
-          test -s Backroom-1.1.69.apk
+          test -s Backroom-1.1.71.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.69.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.69.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='71' versionName='1.1.69'" <<<"$BADGING"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.71.apk
+          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.71.apk)
+          grep -q "package: name='com.rabpit.backroom' versionCode='73' versionName='1.1.71'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.69.apk
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/snapshot-ui.js'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/gm-choice-ui.js'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/inventory-ui.js'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/party-ui.js'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/player-action-ui.js'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/avatars/kai_avatar.jpg'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/lucia_entity_overlay.png'
-          test "$(unzip -p Backroom-1.1.69.apk assets/avatars/kai_avatar.jpg | sha256sum | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
-          test "$(unzip -p Backroom-1.1.69.apk assets/avatars/lucia_avatar.jpg | sha256sum | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
-          test "$(unzip -p Backroom-1.1.69.apk assets/lucia_entity_overlay.png | sha256sum | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/chest_overlay.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/fonts/Play-Bold.ttf'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/fonts/OFL-Play.txt'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/kai_entity_overlay.png'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/knowledge_db.json'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/knowledge/entity_encounters.json'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/manifest.json'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_0/01.webp'
-          unzip -l Backroom-1.1.69.apk | grep -q 'assets/level_snapshots/wiki/level_6/01.webp'
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.71.apk
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/snapshot-ui.js'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/inventory-ui.js'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/party-ui.js'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/player-action-ui.js'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/avatars/kai_avatar.jpg'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/lucia_entity_overlay.png'
+          test "$(unzip -p Backroom-1.1.71.apk assets/avatars/kai_avatar.jpg | sha256sum | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
+          test "$(unzip -p Backroom-1.1.71.apk assets/avatars/lucia_avatar.jpg | sha256sum | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
+          test "$(unzip -p Backroom-1.1.71.apk assets/lucia_entity_overlay.png | sha256sum | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/chest_overlay.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/fonts/OFL-Play.txt'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/entity/hound.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/entity/slenderman.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/entity/diep_minh.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/kai_snapshot_overlay.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/knowledge/knowledge_db.json'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/knowledge/entity_encounters.json'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
+          unzip -l Backroom-1.1.71.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
+          test "$(unzip -l Backroom-1.1.71.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
+          ! unzip -l Backroom-1.1.71.apk | grep -q 'assets/level_snapshots/wiki/'
+          ! unzip -l Backroom-1.1.71.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Backroom-1.1.69-debug-apk
-          path: Backroom-1.1.69.apk
+          name: Backroom-1.1.71-debug-apk
+          path: Backroom-1.1.71.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish GitHub Release v1.1.69
+      - name: Publish GitHub Release v1.1.71
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='v1.1.69'
-          TITLE='Backroom 1.1.69 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.69.txt)
+          TAG='v1.1.71'
+          TITLE='Backroom 1.1.71 Debug'
+          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.71.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.69.apk --clobber
+            gh release upload "$TAG" Backroom-1.1.71.apk --clobber
           else
-            gh release create "$TAG" Backroom-1.1.69.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" Backroom-1.1.71.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
           fi
 
       - name: Verify published APK
@@ -271,7 +330,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download v1.1.69 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.69.apk' --output Backroom-1.1.69-verified.apk
-          test -s Backroom-1.1.69-verified.apk
-          cmp Backroom-1.1.69.apk Backroom-1.1.69-verified.apk
-          sha256sum Backroom-1.1.69-verified.apk
+          gh release download v1.1.71 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.71.apk' --output Backroom-1.1.71-verified.apk
+          test -s Backroom-1.1.71-verified.apk
+          cmp Backroom-1.1.71.apk Backroom-1.1.71-verified.apk
+          sha256sum Backroom-1.1.71-verified.apk
