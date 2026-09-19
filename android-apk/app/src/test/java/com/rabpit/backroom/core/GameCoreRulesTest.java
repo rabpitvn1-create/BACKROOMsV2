@@ -24,6 +24,15 @@ public class GameCoreRulesTest {
     assertFalse(GameCoreRules.inventoryMutationLocked("Kai kiểm tra hành lang phía trước"));
   }
 
+  @Test public void routeExplorationActionsAreDetected() {
+    assertTrue(GameCoreRules.isRouteExplorationAction("Kai đi tiếp theo hành lang"));
+    assertTrue(GameCoreRules.isRouteExplorationAction("rẽ sang trái"));
+    assertTrue(GameCoreRules.isRouteExplorationAction("khảo sát lối đi phía trước"));
+    assertTrue(GameCoreRules.isRouteExplorationAction("tìm đường ra"));
+    assertFalse(GameCoreRules.isRouteExplorationAction("Kai nghỉ tại đây"));
+    assertFalse(GameCoreRules.isRouteExplorationAction("kiểm tra Inventory"));
+  }
+
   @Test public void timeCostIsDeterministic() {
     assertEquals(30, GameCoreRules.estimateMinutes("Kai ngủ một lúc"));
     assertEquals(10, GameCoreRules.estimateMinutes("Kai nghỉ tại đây"));

@@ -694,6 +694,8 @@ public class MainActivity extends Activity {
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String itemContext = gameCore.itemPromptContext(coreBeforeJson);
           String characterContext = gameCore.characterPromptContext(coreBeforeJson);
+          JSONObject promptState = new JSONObject(state.toString());
+          promptState.remove("levelRoute");
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
@@ -702,9 +704,9 @@ public class MainActivity extends Activity {
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
             "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
             "CHARACTER CORE CONTRACT: Gemini không được spawn character, thêm/xóa/sắp xếp lại Party hoặc sửa trạng thái joined. Party trong state là bất biến đối với Gemini. Nếu Character Core báo pending intro, viết đúng 2-5 lượt thoại ngắn trong encounterDialogue; không hỏi người chơi có nhận character hay không. Nếu không pending thì encounterDialogue phải là []. " +
-            "LEVEL CORE CONTRACT: currentLevel bắt buộc là số nguyên 0-6. Nếu chưa thực sự đi qua một route/boundary hợp lệ thì giữ nguyên currentLevel. Không được teleport sang Level không kết nối. " +
+            "LEVEL CORE CONTRACT: currentLevel và hidden route progression do Core sở hữu. Không bao giờ tiết lộ roll, streak, xác suất hay cơ chế ngầm cho người chơi. Chỉ được đổi currentLevel khi LEVEL CONTEXT nói LEVEL TRANSITION: AVAILABLE và hành động thực sự đi qua một boundary hợp lệ. Nếu LOCKED, giữ nguyên currentLevel và toàn bộ cảnh trong Level hiện tại; không kể trước kiến trúc của Level kế tiếp. " +
             levelContext + "\n" + entityContext + "\n" + itemContext + "\n" + characterContext + "\n" +
-            "State hiện tại: " + state.toString() + "\nHành động: " + action +
+            "State hiện tại: " + promptState.toString() + "\nHành động: " + action +
             "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"flags\":{},\"encounterDialogue\":[],\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Đi tiếp\",\"highlights\":[{\"text\":\"Level 0\",\"type\":\"location\"}]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
