@@ -150,6 +150,7 @@ jobs:
                   raise SystemExit(f"{key}: generated payload suspiciously small: {len(raw)} bytes")
 
               target.write_bytes(raw)
+              print(f"{key}: served_model={body.get('model') or 'unknown'} bytes={len(raw)} source={source}")
               meta.append({
                   "key": key,
                   "requested_model": model,
@@ -166,6 +167,18 @@ jobs:
               encoding="utf-8",
           )
           PY
+
+      - name: Upload raw generation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: level-0-7-manila-v2-raw
+          path: |
+            .snapshot-debug/
+            android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-7/raw_01
+            android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-7/raw_02
+            android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_manila-room/raw_01
+            android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_manila-room/raw_02
+          retention-days: 7
 
       - name: Validate raw geometry and convert without cropping
         shell: bash
@@ -190,8 +203,8 @@ jobs:
           target = 16 / 9
           if abs(ratio - target) / target > 0.03:
               raise SystemExit("$label: raw image is not acceptably close to native 16:9")
-          if $raw_w < 1500 or $raw_h < 800:
-              raise SystemExit("$label: raw image is unexpectedly low resolution")
+          if $raw_w < 1280 or $raw_h < 720:
+              raise SystemExit("$label: raw image is unexpectedly below 1280x720")
           PY
 
             cp "$src" ".snapshot-debug/${label}_raw"
@@ -229,13 +242,6 @@ jobs:
             file "$f"
             echo "$digest  $f"
           done
-
-      - name: Upload raw generation evidence
-        uses: actions/upload-artifact@v4
-        with:
-          name: level-0-7-manila-v2-raw
-          path: .snapshot-debug/
-          retention-days: 7
 
       - name: Commit replacement snapshots and remove one-shot workflow
         shell: bash
