@@ -1,0 +1,100 @@
+name: Generate Level 0.1 Snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-sublevel-0-1-snapshots.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-sublevel-0-1-snapshots
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+
+      - name: Generate two Level 0.1 backgrounds
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          mkdir -p android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.request, urllib.error
+
+          api_key=os.environ['IMG_API'].strip(); model=os.environ['IMG_MODEL'].strip(); base=os.environ['IMG_BASE_URL'].strip().rstrip('/')
+          endpoint = base if base.endswith('/images/generations') else (base + '/images/generations' if base.endswith('/v1') else base + '/v1/images/generations')
+          out=pathlib.Path('android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1')
+          prompts=[
+            'BACKROOMsV2 Level 0.1 — Zenith Station. Full-screen environmental background only, eerie liminal transit-station-like industrial interior derived from Level 0, dim unstable fluorescent lighting, aged yellow-beige surfaces transitioning into harsher station architecture, empty corridors and platform-like spatial rhythm, oppressive isolation, realistic game environment, wide cinematic composition, no people, no entities, no UI, no text, no signs with readable words, no watermark, 16:9.',
+            'BACKROOMsV2 Level 0.1 — Zenith Station. Alternate environmental view: deep perspective through an empty liminal station concourse/corridor, worn industrial geometry, muted yellow-beige legacy Level 0 tones mixed with darker metallic station features, flickering fluorescent pools of light and shadow, unsettling abandoned atmosphere, realistic game background, clearly different camera angle from a straight corridor shot, no people, no entities, no UI, no text, no readable signage, no watermark, 16:9.'
+          ]
+          for i,prompt in enumerate(prompts,1):
+            payload={'model':model,'prompt':prompt,'n':1,'response_format':'b64_json'}
+            req=urllib.request.Request(endpoint,data=json.dumps(payload).encode(),headers={'Authorization':f'Bearer {api_key}','Content-Type':'application/json','Accept':'application/json'},method='POST')
+            try:
+              with urllib.request.urlopen(req,timeout=240) as r: body=json.loads(r.read().decode())
+            except urllib.error.HTTPError as e:
+              raise SystemExit(f'Image API HTTP {e.code}: '+e.read().decode(errors='replace')[:2000])
+            data=body.get('data'); image=data[0] if isinstance(data,list) and data else None
+            if not image: raise SystemExit('Image API returned no image')
+            if image.get('b64_json'): raw=base64.b64decode(image['b64_json'])
+            elif image.get('url'):
+              with urllib.request.urlopen(urllib.request.Request(image['url'],headers={'User-Agent':'BACKROOMsV2-GitHub-Actions'}),timeout=240) as r: raw=r.read()
+            else: raise SystemExit('Image API response has neither b64_json nor url')
+            tmp=out/f'.source_{i}'
+            tmp.write_bytes(raw)
+          PY
+          for i in 1 2; do
+            src="android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1/.source_${i}"
+            dst="android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1/snapshot_level_0_sublevel_0-1_0${i}.webp"
+            convert "$src" -auto-orient -resize '1920x1080^' -gravity center -extent 1920x1080 -quality 92 "$dst"
+            rm "$src"
+          done
+
+      - name: Verify snapshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir='android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1'
+          for i in 01 02; do
+            f="$dir/snapshot_level_0_sublevel_0-1_${i}.webp"
+            test -s "$f"
+            dims="$(identify -format '%wx%h' "$f")"
+            test "$dims" = '1920x1080' || { echo "::error::$f is $dims"; exit 1; }
+            file "$f"
+            sha256sum "$f"
+          done
+
+      - name: Commit snapshots and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/generate-sublevel-0-1-snapshots.yml
+          git add android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_0-1/
+          git commit -m 'Add Level 0.1 background snapshots'
+          git push origin HEAD:main
