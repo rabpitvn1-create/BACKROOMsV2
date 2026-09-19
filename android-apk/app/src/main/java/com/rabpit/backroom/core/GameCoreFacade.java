@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 8;
+  private static final int CURRENT_SAVE_VERSION = 9;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -23,6 +23,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private final ItemCore itemCore;
   private final CharacterEncounterCore characterEncounterCore;
   private final CharacterProgressionCore characterProgressionCore;
+  private final SurvivalCore survivalCore;
   private final CharacterDetailCore characterDetailCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
@@ -34,6 +35,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
     this.characterProgressionCore = new CharacterProgressionCore();
+    this.survivalCore = new SurvivalCore();
     this.characterDetailCore = new CharacterDetailCore();
   }
 
@@ -46,6 +48,8 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       levelCore.normalizeState(legacy);
       characterProgressionCore.normalizeState(legacy);
+      survivalCore.normalizeState(legacy);
+      itemCore.normalizeInventory(legacy);
       characterEncounterCore.normalizeState(legacy);
       CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
@@ -113,12 +117,15 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       levelCore.normalizeState(before);
       characterProgressionCore.normalizeState(before);
+      survivalCore.normalizeState(before);
+      itemCore.normalizeInventory(before);
       characterEncounterCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
-      // Loot and character progression are Core-owned. Gemini/Haiku never mutate them directly.
+      // Loot, survival and character progression are Core-owned. Gemini/Haiku never mutate them directly.
       copyField(before, sanitized, "inventory");
+      copyField(before, sanitized, SurvivalCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
       levelCore.validateAndApplyTransition(before, sanitized);
@@ -128,6 +135,8 @@ public final class GameCoreFacade implements AutoCloseable {
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
       characterProgressionCore.applyExplorerTurnRecovery(sanitized);
+      survivalCore.normalizeState(sanitized);
+      itemCore.normalizeInventory(sanitized);
 
       persist(sanitized);
       return response(true, sanitized, null, "gemini_delta_committed", null);
@@ -184,6 +193,8 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
@@ -209,6 +220,8 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       CombatChoiceEngine.normalizeTerminalEncounter(state);
       characterProgressionCore.applyExplorerTurnRecovery(state);
@@ -364,6 +377,8 @@ public final class GameCoreFacade implements AutoCloseable {
     if (state != null) {
       try {
         characterProgressionCore.normalizeState(state);
+        survivalCore.normalizeState(state);
+        itemCore.normalizeInventory(state);
         characterDetailCore.projectState(state);
       } catch (Exception e) {
         debug("Character detail projection failed: " + e.getMessage());

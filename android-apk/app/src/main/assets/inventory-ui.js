@@ -34,8 +34,8 @@
   function effectText(item){
     var e=item&&item.effects||{};
     var parts=[];
-    if(Number(e.hunger||0)>0)parts.push('Hunger +'+e.hunger);
-    if(Number(e.thirst||0)>0)parts.push('Thirsty +'+e.thirst);
+    if(Number(e.hunger||0)>0)parts.push('Đói +'+e.hunger);
+    if(Number(e.thirst||0)>0)parts.push('Khát +'+e.thirst);
     if(Number(e.hp||0)>0)parts.push('HP +'+e.hp);
     return parts.join(' · ')||'Không có hiệu ứng tiêu hao.';
   }

@@ -16,17 +16,14 @@ import java.util.Map;
  */
 final class CharacterDetailCore {
   static final int MAX_MEMBERS = 4;
-  private static final long FOOD_CRITICAL_MINUTES = 72L * 60L;
-  private static final long WATER_CRITICAL_MINUTES = 48L * 60L;
-  private static final long REST_CRITICAL_MINUTES = 36L * 60L;
-
   private final CharacterProgressionCore characterProgressionCore = new CharacterProgressionCore();
-  private final EquipmentStatCore equipmentStatCore = new EquipmentStatCore();
+  private final SurvivalCore survivalCore = new SurvivalCore();
   private final CharacterStatCore characterStatCore = new CharacterStatCore();
 
   void projectState(JSONObject state) throws Exception {
     if (state == null) return;
     characterProgressionCore.normalizeState(state);
+    survivalCore.normalizeState(state);
 
     JSONObject previousDetails = state.optJSONObject("partyDetails");
     Map<String, JSONObject> previousById = detailMembersById(previousDetails);
@@ -61,17 +58,7 @@ final class CharacterDetailCore {
 
   static JSONObject derivePhysiology(long minutesSinceFood, long minutesSinceWater, long minutesAwake)
       throws Exception {
-    JSONObject result = new JSONObject();
-    putPhysiology(result, "hunger", minutesSinceFood, 12L * 60L, 24L * 60L, 48L * 60L,
-        FOOD_CRITICAL_MINUTES, "foodPercent");
-    putPhysiology(result, "thirst", minutesSinceWater, 6L * 60L, 12L * 60L, 24L * 60L,
-        WATER_CRITICAL_MINUTES, "waterPercent");
-    putPhysiology(result, "sleepDeprivation", minutesAwake, 16L * 60L, 20L * 60L, 24L * 60L,
-        REST_CRITICAL_MINUTES, "restPercent");
-    result.put("minutesSinceFood", Math.max(0L, minutesSinceFood));
-    result.put("minutesSinceWater", Math.max(0L, minutesSinceWater));
-    result.put("minutesAwake", Math.max(0L, minutesAwake));
-    return result;
+    return SurvivalCore.derivePhysiology(minutesSinceFood, minutesSinceWater, minutesAwake);
   }
 
   private JSONObject projectMember(JSONObject state, JSONObject source, JSONObject previous,
@@ -83,8 +70,7 @@ final class CharacterDetailCore {
         .put("presence", nonEmpty(source.optString("presence", ""), "ACTIVE"))
         .put("isLeader", leader);
 
-    JSONObject progression = characterStatCore.project(
-        state, id, characterProgressionCore, equipmentStatCore);
+    JSONObject progression = characterStatCore.project(state, id, characterProgressionCore);
 
     String avatar = firstString(source, previous, "avatar", "avatarRef");
     if (!avatar.isEmpty()) member.put("avatar", avatar);
@@ -108,33 +94,13 @@ final class CharacterDetailCore {
     copyArrayIfPresent(source, previous, member, "statuses");
     copyArrayIfPresent(source, previous, member, "effects");
 
-    JSONObject physiology = source.optJSONObject("physiology");
-    if (physiology == null && previous != null) physiology = previous.optJSONObject("physiology");
-    if (physiology != null) {
-      member.put("physiology", new JSONObject(physiology.toString()));
-    } else if (leader) {
-      member.put("physiology", derivePhysiology(elapsed, elapsed, elapsed));
-    } else {
-      member.put("physiology", new JSONObject()
-          .put("hunger", "UNKNOWN")
-          .put("thirst", "UNKNOWN")
-          .put("sleepDeprivation", "UNKNOWN"));
-    }
+    member.put("physiology", survivalCore.projectPhysiology(state, id));
 
     JSONArray inventory = source.optJSONArray("inventory");
     if (inventory == null && leader) inventory = state.optJSONArray("inventory");
     if (inventory == null && previous != null) inventory = previous.optJSONArray("inventory");
     member.put("inventory", inventory == null ? new JSONArray() : new JSONArray(inventory.toString()));
 
-    JSONArray projectedEquipment = progression.optJSONArray("equipment");
-    Object equipment = projectedEquipment != null && projectedEquipment.length() > 0
-        ? projectedEquipment : source.opt("equipment");
-    if (equipment == null && previous != null) equipment = previous.opt("equipment");
-    if (equipment instanceof JSONObject) {
-      member.put("equipment", new JSONObject(equipment.toString()));
-    } else if (equipment instanceof JSONArray) {
-      member.put("equipment", new JSONArray(equipment.toString()));
-    }
     return member;
   }
 
@@ -154,28 +120,6 @@ final class CharacterDetailCore {
   private static long elapsedMinutes(JSONObject state) {
     JSONObject time = state == null ? null : state.optJSONObject("gameTime");
     return time == null ? 0L : Math.max(0L, time.optLong("elapsedSubjectiveMinutes", 0L));
-  }
-
-  private static void putPhysiology(JSONObject result, String bandKey, long minutes,
-                                    long mildAt, long moderateAt, long severeAt, long criticalAt,
-                                    String percentKey) throws Exception {
-    result.put(bandKey, band(minutes, mildAt, moderateAt, severeAt, criticalAt));
-    result.put(percentKey, remainingPercent(minutes, criticalAt));
-  }
-
-  private static String band(long minutes, long mildAt, long moderateAt, long severeAt, long criticalAt) {
-    if (minutes < 0L) return "UNKNOWN";
-    if (minutes >= criticalAt) return "CRITICAL";
-    if (minutes >= severeAt) return "SEVERE";
-    if (minutes >= moderateAt) return "MODERATE";
-    if (minutes >= mildAt) return "MILD";
-    return "NORMAL";
-  }
-
-  private static int remainingPercent(long minutes, long emptyAt) {
-    if (minutes < 0L || emptyAt <= 0L) return 0;
-    long remaining = Math.max(0L, Math.min(emptyAt, emptyAt - minutes));
-    return (int)Math.max(0L, Math.min(100L, remaining * 100L / emptyAt));
   }
 
   private static String characterId(JSONObject member) {

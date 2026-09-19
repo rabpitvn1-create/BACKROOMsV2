@@ -9,10 +9,10 @@
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
   var META={
-    kai:{name:'Kai Akechi',role:'Đội trưởng SRU',equipment:['SRU Assault Rifle MK19','SRU-MK20 Powered Armor','Omnivault Ring / Nhẫn Vạn Tàng']},
-    lucia:{name:'Lucia Lục',role:'Tactical Riflewoman',equipment:['M4A1','Combat dagger','Military navigation watch']},
-    iris:{name:'Iris',role:'Scout / Target Eliminator',equipment:['SRU Recon Frame R03','Ivory & Ebony']},
-    syvial:{name:'Syvial',role:'Đội phó SRU',equipment:['Lucifer Armor','GodKiller']}
+    kai:{name:'Kai Akechi',role:'Đội trưởng SRU'},
+    lucia:{name:'Lucia Lục',role:'Tactical Riflewoman'},
+    iris:{name:'Iris',role:'Scout / Target Eliminator'},
+    syvial:{name:'Syvial',role:'Đội phó SRU'}
   };
   var BAND_LABELS={UNKNOWN:'Chưa xác định',NORMAL:'Bình thường',MILD:'Nhẹ',MODERATE:'Vừa',SEVERE:'Nặng',CRITICAL:'Nguy kịch'};
 
@@ -166,12 +166,11 @@
     function display(v){
       if(v&&typeof v==='object'){
         var effective=v.effective!==undefined?v.effective:(v.value!==undefined?v.value:undefined);
-        var base=Number(v.base),explorer=Number(v.explorer||0),equipment=Number(v.equipment||0),parts=[];
+        var base=Number(v.base),explorer=Number(v.explorer||0),parts=[];
         function signed(n){return (n>0?'+':'')+String(n);}
         if(effective!==undefined){
           if(Number.isFinite(base))parts.push('Base '+base);
           parts.push('Explorer '+signed(explorer));
-          parts.push('EQ '+signed(equipment));
           return String(effective)+(parts.length?' ('+parts.join(' · ')+')':'');
         }
       }
@@ -185,20 +184,6 @@
       if(member.defense!==undefined)add('DEF',member.defense);
     }
     return result;
-  }
-
-  function equipmentFor(member,id){
-    function label(x){
-      if(typeof x==='string')return x;
-      if(!x||typeof x!=='object')return String(x||'');
-      var name=String(x.name||x.id||''),stats=x.stats&&typeof x.stats==='object'?x.stats:{},parts=[];
-      ['STR','DF','AGI','CRIT'].forEach(function(k){var v=Number(stats[k]||0);if(v)parts.push(k+' '+(v>0?'+':'')+v);});
-      return name+(parts.length?' · '+parts.join(' · '):'');
-    }
-    var eq=member&&member.equipment;
-    if(Array.isArray(eq))return eq.map(label).filter(Boolean);
-    if(eq&&typeof eq==='object')return Object.keys(eq).map(function(k){return label(eq[k]||k);}).filter(Boolean);
-    return (META[id]&&META[id].equipment)||[];
   }
 
   function tagsSection(title,items){
@@ -264,7 +249,6 @@
     });
     effects=effects.filter(Boolean);
     if(effects.length)sections.appendChild(tagsSection('HIỆU ỨNG / THƯƠNG TÍCH',effects));
-    sections.appendChild(tagsSection('TRANG BỊ',equipmentFor(member,id)));
     detail.appendChild(sections);
     detail.hidden=false;
   }

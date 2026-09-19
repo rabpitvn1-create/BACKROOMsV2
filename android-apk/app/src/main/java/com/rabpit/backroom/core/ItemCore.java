@@ -14,11 +14,57 @@ final class ItemCore {
   static final int ENTITY_DROP_MIN_PERCENT = 10;
   static final int ENTITY_DROP_MAX_PERCENT = 20;
   static final String OPEN_CHEST_ACTION = "__loot:open_chest";
+
   static final String ALMOND_WATER_ID = "almond-water";
   static final String BANDAGE_ID = "bandage";
+  static final String FIRST_AID_KIT_ID = "first-aid-kit";
+  static final String LAVIE_WATER_ID = "lavie-water";
+  static final String COCONUT_WATER_ID = "coconut-water";
+  static final String BANH_MI_THIT_ID = "banh-mi-thit";
+  static final String HOT_SOY_MILK_ID = "hot-soy-milk";
+  static final String COM_TAM_SUON_BI_CHA_ID = "com-tam-suon-bi-cha";
+
+  private static final String[] CHEST_POOL = {
+      ALMOND_WATER_ID,
+      BANDAGE_ID,
+      FIRST_AID_KIT_ID,
+      LAVIE_WATER_ID,
+      COCONUT_WATER_ID,
+      BANH_MI_THIT_ID,
+      HOT_SOY_MILK_ID,
+      COM_TAM_SUON_BI_CHA_ID
+  };
+
+  private static final String[] ENTITY_POOL = {
+      ALMOND_WATER_ID,
+      BANDAGE_ID
+  };
 
   private static final String CHEST_PRESENT = "chestPresent";
   private static final String CHEST_SOURCE = "core_exploration_roll";
+
+  private final CharacterProgressionCore progressionCore = new CharacterProgressionCore();
+  private final SurvivalCore survivalCore = new SurvivalCore();
+
+  void normalizeInventory(JSONObject state) throws Exception {
+    if (state == null) return;
+    JSONArray inventory = state.optJSONArray("inventory");
+    if (inventory == null) return;
+    for (int i = 0; i < inventory.length(); i++) {
+      JSONObject item = inventory.optJSONObject(i);
+      if (item == null) continue;
+      String id = normalizedItemId(item);
+      if (!isConsumable(id)) continue;
+      JSONObject definition = itemDefinition(id, Math.max(1, item.optInt("quantity", 1)));
+      item.put("id", id);
+      item.put("name", definition.getString("name"));
+      item.put("kind", "consumable");
+      item.put("category", definition.getString("category"));
+      item.put("stackable", true);
+      item.put("effects", definition.getJSONObject("effects"));
+      item.put("quantity", definition.getInt("quantity"));
+    }
+  }
 
   void prepareExplorationLoot(JSONObject state) throws Exception {
     JSONObject flags = flags(state);
@@ -62,7 +108,7 @@ final class ItemCore {
     if (!flags.optBoolean(CHEST_PRESENT, false)) {
       throw new IllegalStateException("Không có rương để mở.");
     }
-    String itemName = grantLootItem(state, ThreadLocalRandom.current().nextInt(100));
+    String itemName = grantChestLootItem(state, ThreadLocalRandom.current().nextInt(100));
     flags.put(CHEST_PRESENT, false);
     flags.put("lastChestOpenedTurn", Math.max(1, state.optInt("turn", 1)));
     flags.remove("chestSource");
@@ -74,6 +120,10 @@ final class ItemCore {
 
   String applyItemAction(JSONObject state, String itemId, String operation, String targetId, int requestedQuantity)
       throws Exception {
+    normalizeInventory(state);
+    progressionCore.normalizeState(state);
+    survivalCore.normalizeState(state);
+
     String op = operation == null ? "" : operation.trim().toLowerCase(Locale.ROOT);
     JSONArray inventory = state.optJSONArray("inventory");
     if (inventory == null) throw new IllegalArgumentException("Inventory đang trống.");
@@ -96,24 +146,30 @@ final class ItemCore {
       throw new IllegalArgumentException(name + " không phải vật phẩm tiêu hao.");
     }
 
-    JSONObject target;
+    String targetCharacterId;
     String targetName;
     if ("share".equals(op)) {
-      target = findPartyMember(state.optJSONArray("party"), targetId);
-      if (target == null) throw new IllegalArgumentException("Không tìm thấy nhân vật trong party.");
+      JSONObject target = findPartyMember(state.optJSONArray("party"), targetId);
+      if (target == null || !CharacterEncounterCore.isJoinedMember(target)) {
+        throw new IllegalArgumentException("Không tìm thấy nhân vật trong party.");
+      }
+      targetCharacterId = CharacterProgressionCore.normalizeCharacterId(
+          target.optString("id", target.optString("name", "")));
       targetName = target.optString("name", target.optString("id", "Đồng đội"));
     } else if ("use".equals(op)) {
-      target = state.optJSONObject("player");
-      if (target == null) {
-        target = new JSONObject().put("name", "Kai Akechi");
-        state.put("player", target);
-      }
-      targetName = target.optString("name", "Kai Akechi");
+      targetCharacterId = "kai";
+      JSONObject player = state.optJSONObject("player");
+      targetName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
     } else {
       throw new IllegalArgumentException("Hành động vật phẩm không hợp lệ.");
     }
 
-    String effectText = applyEffects(target, normalizedId, quantity);
+    JSONObject targetProfile = progressionCore.profile(state, targetCharacterId);
+    if (!"kai".equals(targetCharacterId) && targetProfile.optInt("currentHp", 0) <= 0) {
+      throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ đủ 10 Explorer Turn để hồi sinh.");
+    }
+
+    String effectText = applyEffects(state, targetCharacterId, normalizedId, quantity);
     consumeStack(inventory, index, quantity);
     state.put("inventory", inventory);
     if ("share".equals(op)) {
@@ -130,13 +186,13 @@ final class ItemCore {
           + "không tự cho vật phẩm và không sửa inventory. UI/Core sẽ xử lý Mở Rương; rương luôn có vật phẩm 100%.";
     }
     return "ITEM CORE: không có loot rời trong scene. Không tự sinh, nhặt, trao hoặc thêm item vào inventory. "
-        + "Loot consumable chỉ đến từ Entity drop hoặc Rương do Core spawn.";
+        + "Đồ ăn/nước/y tế Frontrooms chỉ đến từ Rương/nguồn môi trường do Core xác nhận; Entity không rơi đồ ăn đời thường.";
   }
 
   static Map<String, String> semanticCatalog() {
     Map<String, String> output = new LinkedHashMap<>();
-    output.put(itemName(ALMOND_WATER_ID), "item");
-    output.put(itemName(BANDAGE_ID), "item");
+    for (String id : CHEST_POOL) output.put(itemName(id), "item");
+    output.put("Bandage", "item");
     output.put("Rương", "item");
     return output;
   }
@@ -164,39 +220,83 @@ final class ItemCore {
       if ("thirst".equals(key)) return 100;
     }
     if (BANDAGE_ID.equals(id) && "hp".equals(key)) return 15;
+    if (FIRST_AID_KIT_ID.equals(id) && "hp".equals(key)) return 35;
+    if (LAVIE_WATER_ID.equals(id) && "thirst".equals(key)) return 50;
+    if (COCONUT_WATER_ID.equals(id)) {
+      if ("hunger".equals(key)) return 10;
+      if ("thirst".equals(key)) return 70;
+    }
+    if (BANH_MI_THIT_ID.equals(id) && "hunger".equals(key)) return 45;
+    if (HOT_SOY_MILK_ID.equals(id)) {
+      if ("hunger".equals(key)) return 25;
+      if ("thirst".equals(key)) return 30;
+    }
+    if (COM_TAM_SUON_BI_CHA_ID.equals(id) && "hunger".equals(key)) return 80;
     return 0;
   }
 
-  static String grantLootItem(JSONObject state, int selector) throws Exception {
-    String id = Math.floorMod(selector, 100) < 50 ? ALMOND_WATER_ID : BANDAGE_ID;
+  static String grantChestLootItem(JSONObject state, int selector) throws Exception {
+    String id = CHEST_POOL[Math.floorMod(selector, CHEST_POOL.length)];
     addItem(state, id, 1);
     return itemName(id);
   }
 
+  static String grantEntityLootItem(JSONObject state, int selector) throws Exception {
+    String id = ENTITY_POOL[Math.floorMod(selector, ENTITY_POOL.length)];
+    addItem(state, id, 1);
+    return itemName(id);
+  }
+
+  static String grantLootItem(JSONObject state, int selector) throws Exception {
+    return grantChestLootItem(state, selector);
+  }
+
   private static boolean isConsumable(String id) {
-    return ALMOND_WATER_ID.equals(id) || BANDAGE_ID.equals(id);
+    for (String known : CHEST_POOL) {
+      if (known.equals(id)) return true;
+    }
+    return false;
   }
 
   private static String itemName(String id) {
     if (ALMOND_WATER_ID.equals(id)) return "Almond Water";
-    if (BANDAGE_ID.equals(id)) return "Bandage";
+    if (BANDAGE_ID.equals(id)) return "Băng Gạc Y Tế";
+    if (FIRST_AID_KIT_ID.equals(id)) return "Túi Sơ Cứu";
+    if (LAVIE_WATER_ID.equals(id)) return "Nước Suối Lavie";
+    if (COCONUT_WATER_ID.equals(id)) return "Nước Dừa";
+    if (BANH_MI_THIT_ID.equals(id)) return "Bánh Mì Thịt";
+    if (HOT_SOY_MILK_ID.equals(id)) return "Sữa Đậu Nành Nóng";
+    if (COM_TAM_SUON_BI_CHA_ID.equals(id)) return "Cơm Tấm Sườn Bì Chả";
     return id == null || id.isEmpty() ? "Vật phẩm" : id;
   }
 
-  private static JSONObject itemDefinition(String id, int quantity) throws Exception {
+  private static String itemCategory(String id) {
+    if (BANDAGE_ID.equals(id) || FIRST_AID_KIT_ID.equals(id)) return "HEALING";
+    if (LAVIE_WATER_ID.equals(id)) return "DRINK";
+    if (BANH_MI_THIT_ID.equals(id) || COM_TAM_SUON_BI_CHA_ID.equals(id)) return "FOOD";
+    return "FOOD_DRINK";
+  }
+
+  private static JSONObject itemEffects(String id) throws Exception {
     JSONObject effects = new JSONObject();
-    if (ALMOND_WATER_ID.equals(id)) {
-      effects.put("hunger", 50).put("thirst", 100);
-    } else if (BANDAGE_ID.equals(id)) {
-      effects.put("hp", 15);
-    }
+    int hunger = itemEffectValue(id, "hunger");
+    int thirst = itemEffectValue(id, "thirst");
+    int hp = itemEffectValue(id, "hp");
+    if (hunger > 0) effects.put("hunger", hunger);
+    if (thirst > 0) effects.put("thirst", thirst);
+    if (hp > 0) effects.put("hp", hp);
+    return effects;
+  }
+
+  private static JSONObject itemDefinition(String id, int quantity) throws Exception {
     return new JSONObject()
         .put("id", id)
         .put("name", itemName(id))
         .put("quantity", Math.max(1, quantity))
         .put("kind", "consumable")
+        .put("category", itemCategory(id))
         .put("stackable", true)
-        .put("effects", effects);
+        .put("effects", itemEffects(id));
   }
 
   private static void addItem(JSONObject state, String id, int quantity) throws Exception {
@@ -205,11 +305,13 @@ final class ItemCore {
     for (int i = 0; i < inventory.length(); i++) {
       JSONObject item = inventory.optJSONObject(i);
       if (item == null || !id.equals(normalizedItemId(item))) continue;
+      JSONObject definition = itemDefinition(id, 1);
       item.put("id", id);
-      item.put("name", itemName(id));
+      item.put("name", definition.getString("name"));
       item.put("kind", "consumable");
+      item.put("category", definition.getString("category"));
       item.put("stackable", true);
-      item.put("effects", itemDefinition(id, 1).getJSONObject("effects"));
+      item.put("effects", definition.getJSONObject("effects"));
       item.put("quantity", Math.max(1, item.optInt("quantity", 1)) + Math.max(1, quantity));
       state.put("inventory", inventory);
       return;
@@ -256,27 +358,26 @@ final class ItemCore {
     return null;
   }
 
-  private static String applyEffects(JSONObject target, String itemId, int quantity) throws Exception {
-    if (ALMOND_WATER_ID.equals(itemId)) {
-      int hunger = itemEffectValue(itemId, "hunger") * quantity;
-      int thirst = itemEffectValue(itemId, "thirst") * quantity;
-      increase(target, "hunger", "maxHunger", hunger, 100, false);
-      increase(target, "thirst", "maxThirst", thirst, 100, false);
-      return "Hunger +" + hunger + ", Thirsty +" + thirst + ".";
-    }
-    int heal = itemEffectValue(itemId, "hp") * quantity;
-    increase(target, "hp", "maxHp", heal, 100, true);
-    return "HP +" + heal + ".";
-  }
+  private String applyEffects(JSONObject state, String targetId, String itemId, int quantity) throws Exception {
+    int hunger = survivalCore.restoreFood(
+        state, targetId, itemEffectValue(itemId, "hunger") * quantity);
+    int thirst = survivalCore.restoreWater(
+        state, targetId, itemEffectValue(itemId, "thirst") * quantity);
+    int hp = progressionCore.healCurrentHp(
+        state, targetId, itemEffectValue(itemId, "hp") * quantity);
 
-  private static void increase(JSONObject target, String valueKey, String maxKey, int amount, int fallbackMax,
-                               boolean missingStartsFull) throws Exception {
-    int max = Math.max(1, target.optInt(maxKey, fallbackMax));
-    int current = target.has(valueKey)
-        ? Math.max(0, target.optInt(valueKey, 0))
-        : (missingStartsFull ? max : 0);
-    target.put(maxKey, max);
-    target.put(valueKey, Math.min(max, current + Math.max(0, amount)));
+    StringBuilder result = new StringBuilder();
+    if (hunger > 0) result.append("Đói +").append(hunger);
+    if (thirst > 0) {
+      if (result.length() > 0) result.append(", ");
+      result.append("Khát +").append(thirst);
+    }
+    if (hp > 0) {
+      if (result.length() > 0) result.append(", ");
+      result.append("HP +").append(hp);
+    }
+    if (result.length() == 0) return "Không có chỉ số nào thay đổi.";
+    return result.append('.').toString();
   }
 
   private JSONObject flags(JSONObject state) throws Exception {

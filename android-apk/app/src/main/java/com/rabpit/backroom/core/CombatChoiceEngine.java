@@ -693,7 +693,7 @@ public final class CombatChoiceEngine {
       int dropRoll = nextRoll(combat, "loot-drop:" + entityKey);
       combat.put("entityLootRatePercent", rate).put("entityLootRoll", dropRoll);
       if (ItemCore.shouldDropEntityLoot(dropRoll, rate)) {
-        String itemName = ItemCore.grantLootItem(state, nextRoll(combat, "loot-item:" + entityKey));
+        String itemName = ItemCore.grantEntityLootItem(state, nextRoll(combat, "loot-item:" + entityKey));
         appendBattleLine(state, combat, entityName + " rơi " + itemName + " x1.", entityName, itemName);
         combat.put("droppedItem", itemName);
       }
