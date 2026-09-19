@@ -88,7 +88,6 @@ jobs:
           ! grep -Fq '@JavascriptInterface public void requestSnapshot' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "img.dataset.groundOffsetPx='5'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
@@ -280,8 +279,6 @@ jobs:
           grep -Fq ".message.gm .role,.gm-choice{font-family:system-ui" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq ".semantic{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'VIRTUAL_GROUND_RATIO=0.92' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq 'function visibleAlphaBounds' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'function alignOverlayToGround' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'snapshot-grounded' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/kai_entity_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
@@ -298,8 +295,6 @@ jobs:
           grep -Fq 'static boolean roamingAllowedOn(int level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
-          grep -Fq 'width:38%;height:72%;' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "alignOverlayToGround(img,'left',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
           node --check android-apk/app/src/main/assets/snapshot-ui.js
@@ -365,7 +360,6 @@ jobs:
           grep -Fq "kai:'file:///android_asset/avatars/kai_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "kai:{height:0.84,width:0.68}" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
           test "$(sha256sum android-apk/app/src/main/assets/avatars/kai_avatar.jpg | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
           test "$(sha256sum android-apk/app/src/main/assets/avatars/lucia_avatar.jpg | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
@@ -387,6 +381,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
+
+      - name: Test snapshot overlay geometry
+        run: node --test android-apk/tests/snapshot-layout.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
