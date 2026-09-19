@@ -55,7 +55,7 @@ public class LevelCoreTest {
                 .put("variationPool", new org.json.JSONArray().put("ZENITH_VARIATION"))))
         .toString();
 
-    LevelCore core = new LevelCore(knowledge, new SequenceRng(5));
+    LevelCore core = LevelCore.withKnowledge(knowledge, new SequenceRng(5));
     JSONObject state = state(1, "Level 0.1 / Zenith Station").put(LevelCore.LEVEL_KEY, "0.1");
     String prompt = core.promptContext(state);
 
@@ -76,7 +76,7 @@ public class LevelCoreTest {
                 .put("identity", new org.json.JSONArray().put("SHOULD_NOT_LOAD"))))
         .toString();
 
-    LevelCore core = new LevelCore(legacy, new SequenceRng(5));
+    LevelCore core = LevelCore.withKnowledge(legacy, new SequenceRng(5));
     String prompt = core.promptContext(state(1, "Level 0 / Start"));
     assertTrue(prompt.contains("Canon for Level 0"));
     assertFalse(prompt.contains("SHOULD_NOT_LOAD"));
