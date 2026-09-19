@@ -75,6 +75,17 @@ jobs:
           test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
           ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
           grep -Fq 'function activeEntityKey()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function fallbackExplorerChoices()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'if (latest && !choices.length' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Quan sát kỹ khu vực xung quanh' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.levelSnapshot' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "localStorage.removeItem('backroom-apk-snapshot')" android-apk/app/src/main/assets/snapshot-ui.js
+          ! grep -Fq 'Android.requestSnapshot' android-apk/app/src/main/assets/snapshot-ui.js
+          ! grep -Fq 'function requestSnapshot' android-apk/app/src/main/assets/snapshot-ui.js
+          ! grep -Fq 'window.backroomSnapshot' android-apk/app/src/main/assets/snapshot-ui.js
+          ! grep -Fq 'GEMINI_IMAGE_MODEL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'requestSnapshotInternal' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq '@JavascriptInterface public void requestSnapshot' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "img.dataset.groundOffsetPx='5'" android-apk/app/src/main/assets/snapshot-ui.js
