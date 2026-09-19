@@ -68,7 +68,8 @@ public class CharacterDetailCoreTest {
     assertEquals(50, projectedLucia.getInt("currentHp"));
     assertEquals(50, projectedLucia.getInt("maxHp"));
     assertEquals(30, baseTotal(projectedLucia.getJSONObject("stats")));
-    assertEquals("UNKNOWN", projectedLucia.getJSONObject("physiology").getString("hunger"));
+    assertEquals("NORMAL", projectedLucia.getJSONObject("physiology").getString("hunger"));
+    assertEquals(100, projectedLucia.getJSONObject("physiology").getInt("foodPercent"));
   }
 
   @Test public void existingPerCharacterPhysiologySurvivesProjection() throws Exception {
