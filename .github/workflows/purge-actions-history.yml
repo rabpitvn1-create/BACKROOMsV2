@@ -45,6 +45,7 @@ jobs:
 
           deleted_runs=0
           failed_run_deletions=0
+          orphaned_queued_runs=0
 
           mapfile -t RUN_ROWS < <(
             gh api --paginate \
@@ -112,6 +113,15 @@ jobs:
             if [[ "${success}" == "true" ]]; then
               deleted_runs=$((deleted_runs + 1))
             else
+              if [[ "${status}" == "queued" ]]; then
+                job_count="$(gh api "/repos/${REPO}/actions/runs/${run_id}/jobs" --jq '.total_count // (.jobs | length)' 2>/dev/null || echo unknown)"
+                if [[ "${job_count}" == "0" ]]; then
+                  echo "::warning::Run ${run_id} is an orphaned queued record with zero jobs. GitHub currently refuses cancel/force-cancel/delete; leaving it for GitHub reconciliation or deletion after it ages past the platform limit."
+                  orphaned_queued_runs=$((orphaned_queued_runs + 1))
+                  continue
+                fi
+              fi
+
               echo "::warning::Failed to delete run ${run_id}"
               failed_run_deletions=$((failed_run_deletions + 1))
             fi
@@ -196,6 +206,7 @@ jobs:
 
           echo "Deleted workflow runs: ${deleted_runs}"
           echo "Failed run deletions: ${failed_run_deletions}"
+          echo "Orphaned queued runs left by GitHub control plane: ${orphaned_queued_runs}"
           echo "Deleted temporary branches: ${deleted_branches}"
           echo "Failed branch deletions: ${failed_branch_deletions}"
           echo "Successful runs and non-temporary branches were preserved."
