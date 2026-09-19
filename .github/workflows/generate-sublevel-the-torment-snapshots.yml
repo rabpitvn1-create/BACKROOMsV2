@@ -1,0 +1,153 @@
+name: Generate The Torment Snapshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-sublevel-the-torment-snapshots.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-sublevel-the-torment-snapshots
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/level_snapshots/sublevels/level_0/sublevel_the-torment
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate configuration and target
+        shell: bash
+        run: |
+          set -euo pipefail
+          for n in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!n:-}" || { echo "::error::Missing $n"; exit 1; }
+          done
+          mkdir -p "$OUT_DIR"
+          test ! -e "$OUT_DIR/snapshot_level_0_sublevel_the-torment_01.webp"
+          test ! -e "$OUT_DIR/snapshot_level_0_sublevel_the-torment_02.webp"
+
+      - name: Generate two The Torment backgrounds via configured image API
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.error, urllib.request
+
+          api = os.environ['IMG_API'].strip()
+          model = os.environ['IMG_MODEL'].strip()
+          base = os.environ['IMG_BASE_URL'].strip().rstrip('/')
+          endpoint = base if base.endswith('/images/generations') else (base + '/images/generations' if base.endswith('/v1') else base + '/v1/images/generations')
+          out = pathlib.Path(os.environ['OUT_DIR'])
+          out.mkdir(parents=True, exist_ok=True)
+
+          prompts = [
+            'BACKROOMsV2 The Torment environmental background. Photorealistic monochrome greyscale outdoor liminal graveyard at night, concentric geometric rings of weathered stone graves surrounding a distant damaged stone statue of a hooded man, dead leafless trees among some graves, decayed leaves covering the ground, thick cold grey fog limiting visibility to only a few metres, a fixed pale moon as the main light source, deep quiet dread, realistic stone and dead vegetation, wide establishing viewpoint from the outer grave rings looking inward. No people, no living creatures, no readable gravestone names or dates, no signs, no typography, no UI, no watermark. Scene only, cinematic survival-horror game background, 16:9.',
+            'BACKROOMsV2 The Torment environmental background from a clearly different viewpoint. Photorealistic monochrome greyscale night scene from within the grave rings near the central area, weathered graves curving away in concentric arcs through dense grey fog, several tall dead trees, decayed leaves on the ground, the damaged hooded-man stone statue partly obscured off-centre by fog, pale unmoving moonlight, a subtle boundary patch where nearby material is losing saturation into ash-grey without showing a creature, oppressive uncertainty and cold silence. No people, no living creatures, no readable gravestone names or dates, no signs, no typography, no UI, no watermark. Scene only, cinematic survival-horror game background, 16:9.'
+          ]
+
+          for i, prompt in enumerate(prompts, 1):
+            payload = {
+              'model': model,
+              'prompt': prompt,
+              'n': 1,
+              'response_format': 'b64_json',
+              'aspect_ratio': '16:9',
+              'resolution': '2k'
+            }
+            req = urllib.request.Request(
+              endpoint,
+              data=json.dumps(payload).encode('utf-8'),
+              headers={'Authorization': f'Bearer {api}', 'Content-Type': 'application/json', 'Accept': 'application/json'},
+              method='POST'
+            )
+            try:
+              with urllib.request.urlopen(req, timeout=300) as r:
+                body = json.loads(r.read().decode('utf-8'))
+            except urllib.error.HTTPError as e:
+              raise SystemExit(f'Image API HTTP {e.code}: ' + e.read().decode(errors='replace')[:2000])
+
+            data = body.get('data')
+            if not isinstance(data, list) or not data:
+              raise SystemExit('Image API response has no data[0]')
+            item = data[0]
+            if item.get('b64_json'):
+              raw = base64.b64decode(item['b64_json'])
+            elif item.get('url'):
+              with urllib.request.urlopen(urllib.request.Request(item['url'], headers={'User-Agent': 'BACKROOMsV2-GitHub-Actions'}), timeout=300) as r:
+                raw = r.read()
+            else:
+              raise SystemExit('Image API response has neither b64_json nor url')
+            if len(raw) < 50000:
+              raise SystemExit(f'Generated image {i} is suspiciously small: {len(raw)} bytes')
+            (out / f'raw_{i}').write_bytes(raw)
+          PY
+
+      - name: Verify raw images and convert to Full HD WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick webp
+
+          declare -A raw_hashes
+          for i in 1 2; do
+            src="$OUT_DIR/raw_$i"
+            test -s "$src"
+            w="$(identify -format '%w' "$src")"
+            h="$(identify -format '%h' "$src")"
+            ratio_ok="$(python3 - <<PY
+          w=$w; h=$h
+          print('yes' if h > 0 and abs((w/h)-(16/9))/(16/9) <= 0.03 else 'no')
+          PY
+          )"
+            test "$ratio_ok" = yes || { echo "::error::raw_$i is not native 16:9: ${w}x${h}"; exit 1; }
+            digest="$(sha256sum "$src" | awk '{print $1}')"
+            test -z "${raw_hashes[$digest]:-}" || { echo "::error::Duplicate raw images"; exit 1; }
+            raw_hashes[$digest]=1
+            dst="$OUT_DIR/snapshot_level_0_sublevel_the-torment_0${i}.webp"
+            convert "$src" -auto-orient -filter Lanczos -resize '1920x1080!' -quality 95 "$dst"
+            rm "$src"
+          done
+
+      - name: Verify exactly two final snapshots and no unrelated changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find "$OUT_DIR" -maxdepth 1 -type f -name 'snapshot_level_0_sublevel_the-torment_*.webp' | sort)
+          test "${#files[@]}" -eq 2
+          declare -A seen
+          for f in "${files[@]}"; do
+            test -s "$f"
+            dims="$(identify -format '%wx%h' "$f")"
+            test "$dims" = '1920x1080' || { echo "::error::$f is $dims"; exit 1; }
+            digest="$(sha256sum "$f" | awk '{print $1}')"
+            test -z "${seen[$digest]:-}" || { echo "::error::Duplicate final snapshots"; exit 1; }
+            seen[$digest]=1
+            file "$f"
+            sha256sum "$f"
+          done
+          unexpected="$(git status --porcelain | awk -v out="$OUT_DIR/" '$2 !~ "^"out {print}')"
+          test -z "$unexpected" || { echo "::error::Unrelated changes detected"; printf '%s\n' "$unexpected"; exit 1; }
+
+      - name: Commit snapshot assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR/snapshot_level_0_sublevel_the-torment_01.webp" "$OUT_DIR/snapshot_level_0_sublevel_the-torment_02.webp"
+          git diff --cached --quiet && { echo 'No snapshot changes.'; exit 0; }
+          git commit -m 'Add The Torment snapshot backgrounds'
+          git push origin HEAD:main
