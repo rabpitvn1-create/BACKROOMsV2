@@ -194,6 +194,39 @@ jobs:
           grep -Fq 'ROUTE_TRIPLE_SUCCESS_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ROUTE_TRIPLE_SUCCESS_INCREMENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ROUTE_REQUIRED_STREAK = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          test -s android-apk/app/src/main/assets/knowledge/level_knowledge.json
+          grep -Fq 'LEVEL_KNOWLEDGE_ASSET = "knowledge/level_knowledge.json"' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'LEVEL KNOWLEDGE BUNDLE:' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          jq -e '.schemaVersion == 2 and (.levels | keys | length == 14) and (.levels | has("0.3") | not)' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          jq -e '
+            . as $root |
+            ["0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms","1","2","3","4","5","6"] as $keys |
+            ["identity","architecture","zones","sensory","anomalies","hazards","resources","entities","navigation","entrancesExits","gameplayOverride","gmConstraints","variationPool"] as $sections |
+            all($keys[]; . as $k | all($sections[]; . as $s | ($root.levels[$k][$s] | type == "array" and length > 0)))
+          ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          jq -e '
+            .levels["0"] as $l |
+            ($l.canonicalFacts | length >= 10) and
+            ($l.microLocations | length >= 20) and
+            ($l.environmentStates | length >= 10) and
+            ($l.environmentEvents | length >= 18) and
+            ($l.interactionRules | length >= 12) and
+            ($l.actionConsequences | length >= 10) and
+            ($l.persistenceRules | length >= 8) and
+            ($l.evidenceRules | length >= 8) and
+            ($l.navigationPatterns | length >= 8) and
+            ($l.routeProgressionCues | length >= 7) and
+            ($l.encounterStaging | length >= 7) and
+            ($l.hazardEscalation | length >= 5) and
+            ($l.quietTurnPatterns | length >= 8) and
+            ($l.narrativeGrammar | length >= 8) and
+            ($l.antiRepetition | length >= 10) and
+            ($l.forbiddenInventions | length >= 18) and
+            ($l.sceneSeeds | length >= 25)
+          ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          grep -Fq 'rotatingSectionLimit' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
+          grep -Fq 'structuredKnowledgeRotatesLargeScenePoolsByTurn' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
@@ -213,7 +246,8 @@ jobs:
           grep -Fq 'currentLevel' android-apk/app/src/main/assets/index.html
           grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
           grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
-          grep -Fq 'Level "+level+" : ' android-apk/app/src/main/assets/index.html
+          grep -Fq 'const LEVEL_NODE_TITLES=' android-apk/app/src/main/assets/index.html
+          grep -Fq 's.currentLevelKey=inferLevelKey(s)' android-apk/app/src/main/assets/index.html
           grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
           grep -Fq '.log{height:clamp(360px,55vh,620px)' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html

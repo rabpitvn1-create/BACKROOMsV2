@@ -327,6 +327,56 @@
       "tags": ["level 0", "the lobby"], "references": [], "affordances": ["trace_analysis"]
     },
     {
+      "id": "LEVEL.0.1", "domain": "LEVEL", "kind": "level",
+      "text": "Level 0.1 / Zenith Station: an enormous damaged metal-and-glass megastructure embedded within Level 0, built in a smooth futuristic style with exposed wiring, broken electronics, automated doors and scattered functional machinery. Lighting and temperature vary sharply with damage, including dark, dangerously hot or cold sections. It retains Level 0's isolation and perceptual irregularities. In BACKROOMsV2 progression it is the mandatory destination after Level 0 and before Level 0.2.",
+      "source": {"document": "Backrooms Wiki", "anchor": "Level 0.1 — Zenith Station"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["level 0.1", "zenith station"], "references": [], "affordances": ["trace_analysis"]
+    },
+    {
+      "id": "LEVEL.0.2", "domain": "LEVEL", "kind": "level",
+      "text": "Level 0.2 / Remodeled Mess: a remodeled-looking variation of Level 0 with dry red carpet, white walls, working outlets and Wi-Fi, and occasional bathrooms. Entry or interaction can trigger a dangerous chain reaction in which ceilings, walls and floors collapse into an unfinished-house-like ruin, creating debris and dust hazards. In BACKROOMsV2 progression it follows Level 0.1 and leads only to Level 0.5.",
+      "source": {"document": "Backrooms Wiki", "anchor": "Level 0.2 — Remodeled Mess"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["level 0.2", "remodeled mess"], "references": [], "affordances": ["trace_analysis", "direct_threat"]
+    },
+    {
+      "id": "LEVEL.0.5", "domain": "LEVEL", "kind": "level",
+      "text": "Level 0.5 / Aquaclaustrophobic Infirmary: a recently documented flooded and claustrophobic sub-level associated with Level 0, dominated by dirty standing water, oppressive corridors and a ruined hospital/infirmary sector. Environmental danger is severe and some hostile presence is documented. BACKROOMsV2 treats it as a full gameplay Level after Level 0.2 and before Level 0.7.",
+      "source": {"document": "Backrooms Wiki", "anchor": "Level 0.5 — Aquaclaustrophobic Infirmary"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["level 0.5", "aquaclaustrophobic infirmary"], "references": [], "affordances": ["trace_analysis", "direct_threat"]
+    },
+    {
+      "id": "LEVEL.0.7", "domain": "LEVEL", "kind": "level",
+      "text": "Level 0.7 / The Reminiscence District: a vast preserved collection of historical manifestations of Level 0, with sections reflecting forms of the level from ancient periods through the modern era. Architecture can differ radically between preserved periods, sustaining supplies are unreliable, and blocked or anomalous exits are part of its documented hazards. In BACKROOMsV2 it follows Level 0.5 and leads only to Manila Room.",
+      "source": {"document": "Backrooms Wiki", "anchor": "Level 0.7 — The Reminiscence District"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["level 0.7", "reminiscence district"], "references": [], "affordances": ["trace_analysis"]
+    },
+    {
+      "id": "LEVEL.MANILA_ROOM", "domain": "LEVEL", "kind": "level",
+      "text": "Manila Room: a small static beige/manila-walled room within Level 0 with wooden floorboards, an octagonal table, chairs and wooden doors. Level 0's isolation effect weakens around it, allowing wanderers to perceive and meet one another; documents and donated supplies may be present. Source canon places a Level 1 exit nearby, but BACKROOMsV2 overrides that connection for gameplay: Manila Room is a mandatory standalone Level after Level 0.7 and can progress only to The Torment.",
+      "source": {"document": "Backrooms Wiki", "anchor": "The Manila Room"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["manila room", "level 0"], "references": [], "affordances": ["trace_analysis"]
+    },
+    {
+      "id": "LEVEL.THE_TORMENT", "domain": "LEVEL", "kind": "level",
+      "text": "The Torment: an anomalous greyscale region associated with Level 0, described with concentric graves, dead trees, a deteriorated hooded statue, a stationary moon, dense gray fog and an overwhelming sense of dread. Contact with its anomalous spread has been described as turning matter gray before disintegration. Source canon has no confirmed conventional entrance or exit; BACKROOMsV2 deliberately overrides connectivity and makes The Torment a mandatory standalone Level after Manila Room and before Red Rooms.",
+      "source": {"document": "Backrooms Wiki", "anchor": "The Torment"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["the torment", "level 0"], "references": [], "affordances": ["trace_analysis", "direct_threat"]
+    },
+    {
+      "id": "LEVEL.RED_ROOMS", "domain": "LEVEL", "kind": "level",
+      "text": "Red Rooms: a deep-red Level 0-like environment with crimson walls, darkroom-like lighting, coarse sticky carpet, mushrooms and black mold. Communications degrade with time; no hostile Entities are documented there, but the environment is deeply distressing and source canon describes it as effectively a dead end. BACKROOMsV2 deliberately overrides that exit rule: Red Rooms is the final mandatory standalone Level in the Level 0 chain and only after clearing it may the player enter Level 1.",
+      "source": {"document": "Backrooms Wiki", "anchor": "Red Rooms"},
+      "authority": "WORLD_CANON", "mutability": "IMMUTABLE", "priority": 34,
+      "tags": ["red rooms", "level 0"], "references": [], "affordances": ["trace_analysis"]
+    },
+
+    {
       "id": "LEVEL.01", "domain": "LEVEL", "kind": "level",
       "text": "Level 1 / Parking Zone: vast concrete parking/garage network with columns, ramps, rare disabled cars, heat and local cold fog; blackouts may last minutes to days and make mobile light both useful and revealing. Maintenance Halls can retain power but are not long-term safety; Luxury Lots are cleaner/foggier with unreliable electrical sources and relatively more supply crates, still scarce. Gradual transition toward Level 2 appears as vehicles vanish, space narrows into pipes/hot humid machinery corridors.",
       "source": {"document": "01_WORLD/level.md", "anchor": "2 LEVEL 1 — PARKING ZONE"},

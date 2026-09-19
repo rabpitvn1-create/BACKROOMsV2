@@ -47,8 +47,9 @@ public class GameCoreRulesTest {
   }
 
   @Test public void levelTransitionsFollowConnectedGraph() {
-    assertTrue(GameCoreRules.levelTransitionAllowed(0, 1));
-    assertTrue(GameCoreRules.levelTransitionAllowed(1, 0));
+    assertFalse(GameCoreRules.levelTransitionAllowed(0, 1));
+    assertFalse(GameCoreRules.levelTransitionAllowed(1, 0));
+    assertTrue(GameCoreRules.levelTransitionAllowed(1, 2));
     assertTrue(GameCoreRules.levelTransitionAllowed(3, 6));
     assertTrue(GameCoreRules.levelTransitionAllowed(5, 6));
     assertTrue(GameCoreRules.levelTransitionAllowed(4, 4));

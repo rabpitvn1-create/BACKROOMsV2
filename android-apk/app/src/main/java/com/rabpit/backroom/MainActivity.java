@@ -651,11 +651,11 @@ public class MainActivity extends Activity {
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
             "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
             "CHARACTER CORE CONTRACT: Gemini không được spawn character, thêm/xóa/sắp xếp lại Party hoặc sửa trạng thái joined. Party trong state là bất biến đối với Gemini. Nếu Character Core báo pending intro, viết đúng 2-5 lượt thoại ngắn trong encounterDialogue; không hỏi người chơi có nhận character hay không. Nếu không pending thì encounterDialogue phải là []. " +
-            "LEVEL CORE CONTRACT: currentLevel và hidden route progression do Core sở hữu. Không bao giờ tiết lộ roll, streak, xác suất hay cơ chế ngầm cho người chơi. Chỉ được đổi currentLevel khi LEVEL CONTEXT nói LEVEL TRANSITION: AVAILABLE và hành động thực sự đi qua một boundary hợp lệ. Nếu LOCKED, giữ nguyên currentLevel và toàn bộ cảnh trong Level hiện tại; không kể trước kiến trúc của Level kế tiếp. " +
+            "LEVEL CORE CONTRACT: currentLevel, currentLevelKey và hidden route progression do Core sở hữu. Không bao giờ tiết lộ roll, streak, xác suất hay cơ chế ngầm cho người chơi. Chỉ được đổi Level khi LEVEL CONTEXT nói LEVEL TRANSITION: AVAILABLE và hành động thực sự đi qua boundary hợp lệ. Nếu LOCKED, giữ nguyên currentLevel/currentLevelKey và toàn bộ cảnh trong Level hiện tại; không kể trước kiến trúc của Level kế tiếp. Level 0.3 không tồn tại trong route game và không được sử dụng. " +
             levelContext + "\n" + entityContext + "\n" + itemContext + "\n" + characterContext + "\n" +
             "RECENT STORY CONTEXT (chỉ dùng để giữ continuity, không được lặp lại nguyên văn):\n" + recentStory + "\n" +
             "State hiện tại: " + promptState.toString() + "\nHành động: " + action +
-            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"location\":\"vị trí sau lượt\",\"flags\":{},\"encounterDialogue\":[],\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"},{\"text\":\"Level 0\",\"type\":\"location\"}],\"choices\":[{\"text\":\"Đi tiếp\",\"highlights\":[{\"text\":\"Level 0\",\"type\":\"location\"}]}]}";
+            "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"currentLevel\":" + state.optInt("currentLevel", 0) + ",\"currentLevelKey\":\"" + state.optString("currentLevelKey", String.valueOf(state.optInt("currentLevel", 0))) + "\",\"location\":\"vị trí sau lượt\",\"flags\":{},\"encounterDialogue\":[],\"highlights\":[{\"text\":\"Kai Akechi\",\"type\":\"character\"}],\"choices\":[{\"text\":\"Đi tiếp\",\"highlights\":[]}]}";
           JSONObject generated = parseModelJson(generateText(prompt));
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
@@ -667,6 +667,9 @@ public class MainActivity extends Activity {
           String location = generated.optString("location", "").trim();
           if (!title.isEmpty()) state.put("title", title);
           if (generated.has("currentLevel")) state.put("currentLevel", generated.optInt("currentLevel", state.optInt("currentLevel", 0)));
+          if (generated.has("currentLevelKey")) {
+            state.put("currentLevelKey", generated.optString("currentLevelKey", state.optString("currentLevelKey", "0")));
+          }
           if (!location.isEmpty()) state.put("location", location);
           JSONObject generatedFlags = generated.optJSONObject("flags");
           if (generatedFlags != null) {

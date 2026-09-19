@@ -96,8 +96,9 @@ final class CharacterEncounterCore {
     JSONArray party = state.getJSONArray("party");
     List<String> hits = new ArrayList<>();
 
-    if (!containsPartyId(party, "lucia") && state.optInt("currentLevel", 0) == 0
-        && shouldEncounterLucia(0, nextRoll(100))) {
+    String currentLevelKey = state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)));
+    if (!containsPartyId(party, "lucia") && "0".equals(currentLevelKey)
+        && shouldEncounterLucia(currentLevelKey, nextRoll(100))) {
       hits.add("lucia");
     }
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
@@ -174,8 +175,9 @@ final class CharacterEncounterCore {
     }
   }
 
-  static boolean shouldEncounterLucia(int level, int roll) {
-    return level == 0 && roll >= 0 && roll < LUCIA_RATE_PERCENT;
+  static boolean shouldEncounterLucia(String levelKey, int roll) {
+    return "0".equals(levelKey == null ? "" : levelKey.trim())
+        && roll >= 0 && roll < LUCIA_RATE_PERCENT;
   }
 
   static boolean shouldEncounterRare(int roll) {

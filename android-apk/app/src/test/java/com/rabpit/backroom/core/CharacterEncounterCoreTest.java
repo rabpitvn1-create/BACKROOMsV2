@@ -14,10 +14,12 @@ import static org.junit.Assert.fail;
 
 public class CharacterEncounterCoreTest {
   @Test public void luciaRollsOnlyOnLevelZeroAndUsesExactTenPercentBoundary() throws Exception {
-    assertTrue(CharacterEncounterCore.shouldEncounterLucia(0, 0));
-    assertTrue(CharacterEncounterCore.shouldEncounterLucia(0, 9));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia(0, 10));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia(1, 0));
+    assertTrue(CharacterEncounterCore.shouldEncounterLucia("0", 0));
+    assertTrue(CharacterEncounterCore.shouldEncounterLucia("0", 9));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucia("0", 10));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucia("1", 0));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucia("0.1", 0));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucia("red_rooms", 0));
 
     SequenceRng levelZeroRng = new SequenceRng(9, 3999, 3999);
     JSONObject levelZero = state(0, 1);
@@ -30,6 +32,14 @@ public class CharacterEncounterCoreTest {
     new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Kai đi tiếp");
     assertEquals(0, levelOne.getJSONArray("party").length());
     assertEquals(2, levelOneRng.calls);
+  }
+
+  @Test public void luciaDoesNotRollInsideLevelZeroSublevels() throws Exception {
+    SequenceRng rng = new SequenceRng(3999, 3999);
+    JSONObject sublevel = state(0, 1).put(LevelCore.LEVEL_KEY, "0.1");
+    new CharacterEncounterCore(rng).rollForExplorerAction(sublevel, "Kai đi tiếp");
+    assertEquals(0, sublevel.getJSONArray("party").length());
+    assertEquals(2, rng.calls);
   }
 
   @Test public void irisAndSyvialUseExactOneInFourThousandBoundary() {
