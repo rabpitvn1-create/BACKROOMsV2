@@ -182,6 +182,30 @@ public class CharacterProgressionCoreTest {
     assertEquals(0, state.getJSONArray("party").length());
   }
 
+  @Test public void normalizationRemovesLegacyEquipmentState() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject()
+        .put("player", new JSONObject().put("name", "Kai Akechi")
+            .put("equipment", new JSONArray().put("legacy")))
+        .put("party", new JSONArray().put(new JSONObject()
+            .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
+            .put("equipment", new JSONArray().put("legacy"))))
+        .put("partyDetails", new JSONObject().put("members", new JSONArray().put(
+            new JSONObject().put("id", "kai").put("equipment", new JSONArray().put("legacy")))))
+        .put("equipment", new JSONObject().put("legacy", true));
+
+    core.normalizeState(state);
+    core.profile(state, "kai").put("equipment", new JSONArray().put("legacy"));
+    core.normalizeState(state);
+
+    assertFalse(state.has("equipment"));
+    assertFalse(state.getJSONObject("player").has("equipment"));
+    assertFalse(state.getJSONArray("party").getJSONObject(0).has("equipment"));
+    assertFalse(state.getJSONObject("partyDetails").getJSONArray("members")
+        .getJSONObject(0).has("equipment"));
+    assertFalse(core.profile(state, "kai").has("equipment"));
+  }
+
   @Test public void candidateCannotMutateBaseExplorerOrExp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject before = new JSONObject();
