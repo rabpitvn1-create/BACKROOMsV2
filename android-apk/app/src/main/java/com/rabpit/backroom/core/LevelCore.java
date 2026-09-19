@@ -21,6 +21,8 @@ final class LevelCore {
   static final int ROUTE_TRIPLE_SUCCESS_PERCENT = 5;
   static final int ROUTE_TRIPLE_SUCCESS_INCREMENT = 3;
   static final int ROUTE_REQUIRED_STREAK = 10;
+  static final String LEVEL_ZERO_START_LOCATION =
+      "Level 0 / The Lobby — khu phòng vàng ban đầu sau khi đi qua cổng không gian";
 
   private static final String KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
   private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/drive/manifest.json";
@@ -96,6 +98,13 @@ final class LevelCore {
     }
 
     state.put(ROUTE_STATE, route);
+  }
+
+  static void resetToLevelZeroStart(JSONObject state) throws Exception {
+    if (state == null) return;
+    state.put("currentLevel", 0);
+    state.put("location", LEVEL_ZERO_START_LOCATION);
+    state.put(ROUTE_STATE, newRouteState(0));
   }
 
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {

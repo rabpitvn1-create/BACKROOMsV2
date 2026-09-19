@@ -95,6 +95,79 @@ public class CharacterProgressionCoreTest {
     assertEquals(95, profile.getInt("maxHp"));
   }
 
+  @Test public void kaiDeathHalvesExplorerAndExpAndRespawnsAtNewFullHp() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject()
+        .put("turn", 20)
+        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("party", new JSONArray());
+    core.normalizeState(state);
+
+    JSONObject kai = core.profile(state, "kai");
+    kai.put("explorer", 10).put("exp", 240).put("currentHp", 0).put("maxHp", 200);
+
+    core.applyKaiDeathPenalty(state);
+
+    assertEquals(5, kai.getInt("explorer"));
+    assertEquals(120, kai.getInt("exp"));
+    assertEquals(125, kai.getInt("maxHp"));
+    assertEquals(125, kai.getInt("currentHp"));
+    assertEquals("Ổn định", state.getJSONObject("player").getString("condition"));
+  }
+
+  @Test public void kaiDeathRoundsOddExplorerDown() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject().put("player", new JSONObject()).put("party", new JSONArray());
+    core.normalizeState(state);
+    JSONObject kai = core.profile(state, "kai");
+    kai.put("explorer", 9).put("exp", 101).put("currentHp", 0);
+
+    core.applyKaiDeathPenalty(state);
+
+    assertEquals(4, kai.getInt("explorer"));
+    assertEquals(50, kai.getInt("exp"));
+  }
+
+  @Test public void downedCompanionRevivesAfterExactlyTenExplorerTurnsAtOneHp() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject()
+        .put("turn", 4)
+        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("party", new JSONArray().put(
+            new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
+    core.normalizeState(state);
+
+    core.markCompanionDown(state, "lucia");
+    assertEquals(0, core.profile(state, "lucia").getInt("currentHp"));
+
+    for (int turn = 5; turn <= 13; turn++) {
+      state.put("turn", turn);
+      core.applyExplorerTurnRecovery(state);
+      assertEquals(0, core.profile(state, "lucia").getInt("currentHp"));
+    }
+
+    state.put("turn", 14);
+    core.applyExplorerTurnRecovery(state);
+    assertEquals(1, core.profile(state, "lucia").getInt("currentHp"));
+    assertEquals(1, state.getJSONArray("party").getJSONObject(0).getInt("hp"));
+    assertFalse(state.getJSONArray("party").getJSONObject(0).has("reviveTurnsRemaining"));
+  }
+
+  @Test public void combatTurnsDoNotAdvanceCompanionReviveTimer() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject()
+        .put("turn", 7)
+        .put("party", new JSONArray().put(
+            new JSONObject().put("id", "iris").put("name", "Iris").put("joined", true)));
+    core.normalizeState(state);
+    core.markCompanionDown(state, "iris");
+
+    for (int i = 0; i < 20; i++) core.applyExplorerTurnRecovery(state);
+
+    assertEquals(0, core.profile(state, "iris").getInt("currentHp"));
+    assertEquals(10, state.getJSONArray("party").getJSONObject(0).getInt("reviveTurnsRemaining"));
+  }
+
   @Test public void maxHpFormulaIsFiftyPlusFifteenPerExplorer() {
     assertEquals(50, CharacterProgressionCore.maxHpForExplorer(0));
     assertEquals(65, CharacterProgressionCore.maxHpForExplorer(1));

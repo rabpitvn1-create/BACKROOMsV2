@@ -47,6 +47,7 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(legacy);
       characterProgressionCore.normalizeState(legacy);
       characterEncounterCore.normalizeState(legacy);
+      CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
@@ -55,6 +56,7 @@ public final class GameCoreFacade implements AutoCloseable {
         String itemName = itemCore.openChest(result);
         incrementTurn(result);
         advanceGameTime(result, text);
+        characterProgressionCore.applyExplorerTurnRecovery(result);
         String reply = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory.";
         appendLog(result, "Mở Rương", reply);
         persist(result);
@@ -74,6 +76,7 @@ public final class GameCoreFacade implements AutoCloseable {
         JSONObject result = deepCopy(legacy);
         incrementTurn(result);
         advanceGameTime(result, text);
+        characterProgressionCore.applyExplorerTurnRecovery(result);
         String reply = inventoryReply(result.optJSONArray("inventory"));
         appendLog(result, text, reply);
         persist(result);
@@ -84,6 +87,7 @@ public final class GameCoreFacade implements AutoCloseable {
         JSONObject result = deepCopy(legacy);
         incrementTurn(result);
         advanceGameTime(result, text);
+        characterProgressionCore.applyExplorerTurnRecovery(result);
         String reply = partyReply(result.optJSONArray("party"));
         appendLog(result, text, reply);
         persist(result);
@@ -123,6 +127,7 @@ public final class GameCoreFacade implements AutoCloseable {
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
+      characterProgressionCore.applyExplorerTurnRecovery(sanitized);
 
       persist(sanitized);
       return response(true, sanitized, null, "gemini_delta_committed", null);
@@ -205,6 +210,8 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
+      CombatChoiceEngine.normalizeTerminalEncounter(state);
+      characterProgressionCore.applyExplorerTurnRecovery(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
     } catch (Exception e) {
