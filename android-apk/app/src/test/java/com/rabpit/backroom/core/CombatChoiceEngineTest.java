@@ -42,10 +42,61 @@ public class CombatChoiceEngineTest {
     assertEquals(3.5d, CombatChoiceEngine.CRITICAL_DAMAGE_MULTIPLIER, 0.0d);
   }
 
-  @Test public void guiltyCrownOverrideUsesFortyPercentProcAndExactDamage() {
-    assertEquals(40, CombatChoiceEngine.configuredProcPercent("kai", "Guilty Crown Override"));
+  @Test public void allConfiguredSkillsUseOneHundredPercentProc() {
+    String[][] skills = {
+        {"kai", "The Last Requiem"},
+        {"kai", "Silent Lullaby"},
+        {"kai", "Salvation"},
+        {"kai", "Quick Step"},
+        {"kai", "Guilty Crown Override"},
+        {"iris", "Twosome Time"},
+        {"iris", "Rain Storm"},
+        {"iris", "Honeycomb Fire"},
+        {"iris", "Charged Shot"},
+        {"syvial", "Rift Sever"},
+        {"syvial", "Crimson Guillotine"},
+        {"syvial", "Lucifer Breaker"},
+        {"syvial", "Spatial Dominion"},
+        {"lucia", "M4A1 Joint Attack"}
+    };
+    for (String[] skill : skills) {
+      assertEquals(skill[0] + " / " + skill[1], 100,
+          CombatChoiceEngine.configuredProcPercent(skill[0], skill[1]));
+    }
     assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Guilty Crown Override"));
     assertEquals(0, CombatChoiceEngine.exactDamageForSkill("The Last Requiem"));
+  }
+
+  @Test public void kaiSkillChoiceAlwaysActivates() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_C);
+
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
+    String text = battleLog == null ? "" : battleLog.toString();
+    assertFalse(text.contains("không kích hoạt"));
+    assertFalse(text.contains("Trượt."));
+  }
+
+  @Test public void luciaSkillChoiceAlwaysHitsEntity() throws Exception {
+    JSONArray party = new JSONArray()
+        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true));
+    JSONObject state = combatState(party);
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+    JSONObject combat = state.getJSONObject("combat");
+    assertEquals("Lucia Lục", combat.getString("currentActor"));
+    int beforeHp = combat.getJSONObject("entity").getInt("hp");
+
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_C);
+
+    int afterHp = state.getJSONObject("combat").getJSONObject("entity").getInt("hp");
+    assertTrue(afterHp < beforeHp);
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
+    String text = battleLog == null ? "" : battleLog.toString();
+    assertFalse(text.contains("Trượt."));
   }
 
   @Test public void knownEntityCatalogPreservesLegacyProfiles() throws Exception {

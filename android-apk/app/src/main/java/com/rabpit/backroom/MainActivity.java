@@ -816,7 +816,7 @@ public class MainActivity extends Activity {
           JSONArray log = state.optJSONArray("log");
           if (log == null) log = new JSONArray();
           log.put(new JSONObject().put("role", "player").put("text", action));
-          JSONObject gmEntry = GmChoiceContract.gmEntry(reply, generated);
+          JSONObject gmEntry = GmChoiceContract.gmEntry(reply, generated, state);
           log.put(gmEntry);
           state.put("log", log);
 
