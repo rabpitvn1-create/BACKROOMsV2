@@ -160,13 +160,29 @@ const CURRENT_CHARACTER_CANON={
   lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia can only be encountered through CharacterEncounterCore's Level 0 Explorer roll and is not part of the initial SRU group (Kai/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Kai remain OPEN."
 };
 
-const LEVEL_TITLES={0:"The Lobby",1:"Parking Zone",2:"Pipe Dreams",3:"The Electrical Station",4:"The Abandoned Office",5:"Terror Hotel",6:"Lights Out"};
+const LEVEL_NODE_TITLES={
+  "0":"Level 0 : The Lobby",
+  "0.1":"Level 0.1 : Zenith Station",
+  "0.2":"Level 0.2 : Remodeled Mess",
+  "0.5":"Level 0.5 : Aquaclaustrophobic Infirmary",
+  "0.7":"Level 0.7 : The Reminiscence District",
+  "manila_room":"Manila Room",
+  "the_torment":"The Torment",
+  "red_rooms":"Red Rooms",
+  "1":"Level 1 : Parking Zone",
+  "2":"Level 2 : Pipe Dreams",
+  "3":"Level 3 : The Electrical Station",
+  "4":"Level 4 : The Abandoned Office",
+  "5":"Level 5 : Terror Hotel",
+  "6":"Level 6 : Lights Out"
+};
 
 const initial={
   title:"Level 0 : The Lobby",
   turn:1,
   mode:"local APK",
   currentLevel:0,
+  currentLevelKey:"0",
   location:"Level 0 / The Lobby — khu phòng vàng ban đầu sau khi đi qua cổng không gian",
   player:{name:"Kai Akechi",condition:"Ổn định"},
   party:[],
@@ -189,7 +205,25 @@ function normalizeCoreState(value){try{return window.Android&&typeof Android.nor
 let state=normalizeCoreState(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial);
 let busy=false;
 
-function ensureCurrentLevel(s){if(!Number.isInteger(s?.currentLevel)||s.currentLevel<0||s.currentLevel>6){const m=String(s?.location||"").match(/\bLevel\s*([0-6])\b/i);s.currentLevel=m?Number(m[1]):0}return s}
+function inferLevelKey(s){
+  const existing=String(s?.currentLevelKey||"").trim();
+  if(existing)return existing;
+  const location=String(s?.location||"").toLowerCase();
+  if(location.includes("manila room"))return "manila_room";
+  if(location.includes("the torment")||/\btorment\b/.test(location))return "the_torment";
+  if(location.includes("red rooms")||location.includes("red room"))return "red_rooms";
+  const m=String(s?.location||"").match(/\bLevel\s*([0-6](?:\.[0-9]+)?)\b/i);
+  if(m)return m[1];
+  return String(Number.isInteger(s?.currentLevel)?s.currentLevel:0);
+}
+function ensureCurrentLevel(s){
+  if(!Number.isInteger(s?.currentLevel)||s.currentLevel<0||s.currentLevel>6){
+    const m=String(s?.location||"").match(/\bLevel\s*([0-6])\b/i);
+    s.currentLevel=m?Number(m[1]):0;
+  }
+  s.currentLevelKey=inferLevelKey(s);
+  return s;
+}
 ensureCurrentLevel(state);
 state.characterCanon=CURRENT_CHARACTER_CANON;
 if(state.turn===1){
@@ -211,7 +245,7 @@ localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
-function levelTitle(){const level=Number.isInteger(state?.currentLevel)?state.currentLevel:0;return "Level "+level+" : "+(LEVEL_TITLES[level]||"Unknown")}
+function levelTitle(){const key=String(state?.currentLevelKey||state?.currentLevel||0);return LEVEL_NODE_TITLES[key]||("Level "+key)}
 function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{if(!x)return;const name=typeof x==="string"?x:String(x.name||x.id||"").trim();if(!name)return;const key=name.toLocaleLowerCase("vi");if(seen.has(key))return;seen.add(key);result.push(typeof x==="string"?{name}:x)};add(state?.player||{name:"Kai Akechi"});(Array.isArray(state?.party)?state.party:[]).filter(x=>x&&x.joined===true).forEach(add);return result}
 function render(){titleEl.textContent=levelTitle();turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Kai Akechi";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");statusEl.textContent="Save được lưu riêng trên thiết bị này."}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
@@ -219,7 +253,7 @@ function load(){state=normalizeCoreState(ensureCurrentLevel(JSON.parse(localStor
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="GAME MASTER đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
-window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" · Level "+state.currentLevel+" đã lưu trên máy.";render()};
+window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" · "+levelTitle()+" đã lưu trên máy.";render()};
 window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi AI: "+message};
 window.backroomCommittedError=json=>{const payload=JSON.parse(json);state=ensureCurrentLevel(payload.state||state);state.characterCanon=CURRENT_CHARACTER_CANON;busy=false;submitEl.disabled=false;save();render();const pending=Array.isArray(state?.characterEncounter?.pendingIntro)&&state.characterEncounter.pendingIntro.length>0;statusEl.textContent="Lỗi AI: "+String(payload.message||"Không thể xử lý lượt.")+(pending?" Character encounter đã được lưu và hội thoại đang chờ thử lại.":" Trạng thái Core trước lần gọi AI đã được giữ nguyên.")};
 render();
