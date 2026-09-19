@@ -35,6 +35,53 @@ public class LevelCoreTest {
         .put("location", location);
   }
 
+  @Test public void structuredKnowledgeLoadsOnlyCurrentLevelBundle() throws Exception {
+    String knowledge = new JSONObject()
+        .put("schemaVersion", 2)
+        .put("sectionOrder", new org.json.JSONArray()
+            .put("identity").put("architecture").put("gmConstraints").put("variationPool"))
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("name", "Level 0 — Test")
+                .put("identity", new org.json.JSONArray().put("YELLOW_IDENTITY"))
+                .put("architecture", new org.json.JSONArray().put("YELLOW_ARCH"))
+                .put("gmConstraints", new org.json.JSONArray().put("YELLOW_RULE"))
+                .put("variationPool", new org.json.JSONArray().put("YELLOW_VARIATION")))
+            .put("0.1", new JSONObject()
+                .put("name", "Level 0.1 — Test")
+                .put("identity", new org.json.JSONArray().put("ZENITH_IDENTITY"))
+                .put("architecture", new org.json.JSONArray().put("ZENITH_ARCH"))
+                .put("gmConstraints", new org.json.JSONArray().put("ZENITH_RULE"))
+                .put("variationPool", new org.json.JSONArray().put("ZENITH_VARIATION"))))
+        .toString();
+
+    LevelCore core = new LevelCore(knowledge, new SequenceRng(5));
+    JSONObject state = state(1, "Level 0.1 / Zenith Station").put(LevelCore.LEVEL_KEY, "0.1");
+    String prompt = core.promptContext(state);
+
+    assertTrue(prompt.contains("LEVEL KNOWLEDGE BUNDLE:"));
+    assertTrue(prompt.contains("ZENITH_IDENTITY"));
+    assertTrue(prompt.contains("ZENITH_ARCH"));
+    assertTrue(prompt.contains("GM CONSTRAINTS"));
+    assertTrue(prompt.contains("VARIATION POOL"));
+    assertFalse(prompt.contains("YELLOW_IDENTITY"));
+    assertFalse(prompt.contains("YELLOW_VARIATION"));
+  }
+
+  @Test public void structuredKnowledgeRejectsLegacySchemaAsAuthoritativeBundle() throws Exception {
+    String legacy = new JSONObject()
+        .put("schemaVersion", 1)
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("identity", new org.json.JSONArray().put("SHOULD_NOT_LOAD"))))
+        .toString();
+
+    LevelCore core = new LevelCore(legacy, new SequenceRng(5));
+    String prompt = core.promptContext(state(1, "Level 0 / Start"));
+    assertTrue(prompt.contains("Canon for Level 0"));
+    assertFalse(prompt.contains("SHOULD_NOT_LOAD"));
+  }
+
   @Test public void routeRollUsesFiveFiftyFiveFortyDistributionBoundaries() throws Exception {
     LevelCore tripleCore = new LevelCore(null, new SequenceRng(4));
     JSONObject triple = state(1, "Level 0 / A");
