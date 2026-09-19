@@ -320,7 +320,19 @@
     });
   }
 
+  function scrollCombatToBottom() {
+    if (!log) return;
+    requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });
+  }
+
+  function scrollForCurrentMode() {
+    if (state && state.combat && state.combat.active) scrollCombatToBottom();
+    else scrollLatestGmToStart();
+  }
+
   window.backroomScrollLatestGmToStart = scrollLatestGmToStart;
+  window.backroomScrollCombatToBottom = scrollCombatToBottom;
+  window.backroomScrollForCurrentMode = scrollForCurrentMode;
 
   function syncComposer() {
     if (!form || !action || !submit) return;
@@ -343,6 +355,7 @@
     if (typeof previousRender === 'function') previousRender();
     renderSemanticLog();
     syncComposer();
+    if (state && state.combat && state.combat.active) scrollCombatToBottom();
   };
 
   if (form) {
@@ -361,7 +374,7 @@
     window.__combatBusy = false;
     if (typeof previousTurn === 'function') previousTurn(json);
     syncComposer();
-    scrollLatestGmToStart();
+    scrollForCurrentMode();
   };
 
   function playCombatPhase(events, phase) {
@@ -379,6 +392,7 @@
     if (typeof busy !== 'undefined') busy = false;
     if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
     if (typeof window.render === 'function') window.render();
+    scrollCombatToBottom();
     if (status) {
       status.textContent = state.combat && state.combat.active
         ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
@@ -403,6 +417,7 @@
         if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
         if (typeof window.render === 'function') window.render();
         syncComposer();
+        scrollCombatToBottom();
         return;
       }
 
@@ -415,6 +430,7 @@
       }
       if (typeof window.render === 'function') window.render();
       syncComposer();
+      scrollCombatToBottom();
       if (status) status.textContent = 'Đang xử lý lượt của ' + (combat.resolvedActorName || 'nhân vật') + '…';
 
       playCombatPhase(events, 'actor');
@@ -447,5 +463,5 @@
   };
 
   window.render();
-  scrollLatestGmToStart();
+  scrollForCurrentMode();
 })();

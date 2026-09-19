@@ -22,6 +22,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private final EntityCore entityCore;
   private final ItemCore itemCore;
   private final CharacterEncounterCore characterEncounterCore;
+  private final CharacterProgressionCore characterProgressionCore;
   private final CharacterDetailCore characterDetailCore;
 
   private GameCoreFacade(Context context, boolean debugLogging) {
@@ -32,6 +33,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
+    this.characterProgressionCore = new CharacterProgressionCore();
     this.characterDetailCore = new CharacterDetailCore();
   }
 
@@ -43,6 +45,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject legacy = parseState(legacyStateJson);
     try {
       levelCore.normalizeState(legacy);
+      characterProgressionCore.normalizeState(legacy);
       characterEncounterCore.normalizeState(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
@@ -104,12 +107,14 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject before = parseState(beforeJson);
     try {
       levelCore.normalizeState(before);
+      characterProgressionCore.normalizeState(before);
       characterEncounterCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
-      // Loot and consumable inventory are Core-owned. Gemini never mutates inventory directly.
+      // Loot and character progression are Core-owned. Gemini/Haiku never mutate them directly.
       copyField(before, sanitized, "inventory");
+      characterProgressionCore.protectFromCandidate(before, sanitized);
 
       levelCore.validateAndApplyTransition(before, sanitized);
       entityCore.validateAndApply(before, sanitized);
@@ -172,6 +177,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
@@ -196,6 +202,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -348,6 +355,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private void persist(JSONObject state) {
     if (state != null) {
       try {
+        characterProgressionCore.normalizeState(state);
         characterDetailCore.projectState(state);
       } catch (Exception e) {
         debug("Character detail projection failed: " + e.getMessage());

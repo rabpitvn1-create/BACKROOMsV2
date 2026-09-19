@@ -105,7 +105,15 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityStatCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
@@ -141,8 +149,10 @@ jobs:
           grep -Fq 'buildConfigField "String", "HAIKU_MODEL"' android-apk/app/build.gradle
           grep -Fq 'function scrollLatestGmToStart()' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'window.backroomScrollLatestGmToStart = scrollLatestGmToStart' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function scrollCombatToBottom()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function scrollForCurrentMode()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'window.backroomScrollCombatToBottom = scrollCombatToBottom' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'logEl.scrollTop=logEl.scrollHeight' android-apk/app/src/main/assets/index.html
-          ! grep -Fq 'requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "renderSnapshot();scrollBottom();" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq '<item name="android:windowFullscreen">true</item>' android-apk/app/src/main/res/values/styles.xml
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
@@ -185,7 +195,6 @@ jobs:
           grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'width:38%;height:72%;' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "alignOverlayToGround(img,'right',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "alignOverlayToGround(img,'left',0.84,0.46)" android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'shared roaming Entity pool' ENTITY_ASSETS.md
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
@@ -196,12 +205,34 @@ jobs:
           node --check android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'ROOT_KEY = "characterProgression"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_STAT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'FEATURED_BONUS_POOL = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BONUS_POOL = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HP_PER_EXPLORER = 15' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HOUND_BASE_EXP = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'LUCIA_REFERENCE_PERCENT = 93' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          grep -Fq 'CRITICAL_DAMAGE_MULTIPLIER = 3.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          ! grep -R -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK20_STR = 25' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'levelGrowthConfigured' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'Level nhân vật' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'Explorer',member.explorer)" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('Explorer '+signed(explorer))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('EQ '+signed(equipment))" android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "kai:'file:///android_asset/avatars/kai_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "kai:{height:0.84,width:0.68}" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
           test "$(sha256sum android-apk/app/src/main/assets/avatars/kai_avatar.jpg | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
           test "$(sha256sum android-apk/app/src/main/assets/avatars/lucia_avatar.jpg | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
           test "$(sha256sum android-apk/app/src/main/assets/lucia_entity_overlay.png | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
