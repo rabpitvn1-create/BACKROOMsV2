@@ -396,7 +396,11 @@ final class LevelCore {
 
     if (candidate.has("currentLevel")) {
       int numeric = candidate.optInt("currentLevel", -1);
-      if (numeric < 0 || numeric > 6 || numeric != parentLevel(requested)) return INVALID_LEVEL_KEY;
+      int requestedParent = parentLevel(requested);
+      int fallbackParent = parentLevel(fallback);
+      if (numeric < 0 || numeric > 6 || (numeric != requestedParent && numeric != fallbackParent)) {
+        return INVALID_LEVEL_KEY;
+      }
     }
 
     return isKnownLevelKey(requested) ? requested : INVALID_LEVEL_KEY;
