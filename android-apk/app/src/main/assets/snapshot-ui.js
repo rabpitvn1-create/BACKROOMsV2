@@ -33,7 +33,8 @@
         var groundY=bh*VIRTUAL_GROUND_RATIO,margin=bw*VIRTUAL_GROUND_SIDE_MARGIN;
         img.style.width=(Math.max(1,img.naturalWidth)*scale)+'px';
         img.style.height=(Math.max(1,img.naturalHeight)*scale)+'px';
-        img.style.top=(groundY-bounds.bottom*scale)+'px';
+        var groundOffsetPx=Number(img.dataset.groundOffsetPx||0);
+        img.style.top=(groundY-bounds.bottom*scale+groundOffsetPx)+'px';
         img.style.left=(side==='right'?bw-margin-bounds.right*scale:margin-bounds.left*scale)+'px';
         img.dataset.groundSide=side;img.dataset.groundHeight=String(visibleHeightRatio);img.dataset.groundWidth=String(maxWidthRatio);
         img.dataset.visibleLeftPx=String(bounds.left*scale);img.dataset.visibleTopPx=String(bounds.top*scale);img.dataset.visibleRightPx=String(bounds.right*scale);img.dataset.visibleBottomPx=String(bounds.bottom*scale);
@@ -74,7 +75,7 @@
     }
     if(chestPresent()){img=document.createElement('img');img.className='snapshot-chest';img.src='file:///android_asset/chest_overlay.png';img.alt='Rương';box.appendChild(img);return;}
     if(shouldShowKaiOverlay()){
-      img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';box.appendChild(img);alignOverlayToGround(img,'right',0.90,0.58);
+      img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/kai_snapshot_overlay.png';img.alt='Kai Akechi';img.dataset.groundOffsetPx='5';box.appendChild(img);alignOverlayToGround(img,'right',0.90,0.58);
     }
   }
   function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var r=cachedSnapshot();if(r){var img=document.createElement('img');img.className='snapshot-bg';img.src=r.dataUri;img.alt='Snapshot Turn '+(state.turn||'');box.appendChild(img);}else{var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh cho Level hiện tại.</small>';box.appendChild(p);}}appendSnapshotOverlay(box);}

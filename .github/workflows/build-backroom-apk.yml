@@ -77,6 +77,7 @@ jobs:
           grep -Fq 'function activeEntityKey()' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "img.dataset.groundOffsetPx='5'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
