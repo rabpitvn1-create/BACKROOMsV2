@@ -280,12 +280,14 @@
 
   function renderSemanticLog() {
     if (!log || !state || !Array.isArray(state.log)) return;
+    var previousScrollTop = log.scrollTop;
     log.textContent = '';
     state.log.forEach(function(entry, index){
       if (!entry) return;
       var article = document.createElement('article');
       var player = entry.role === 'player';
       article.className = 'message ' + (player ? 'player' : 'gm');
+      article.dataset.logIndex = String(index);
       var role = document.createElement('div');
       role.className = 'role';
       role.textContent = player ? 'BẠN' : 'GAME MASTER';
@@ -300,8 +302,37 @@
       }
       log.appendChild(article);
     });
+    requestAnimationFrame(function(){
+      log.scrollTop = Math.max(0, Math.min(previousScrollTop, log.scrollHeight - log.clientHeight));
+    });
+  }
+
+  function scrollLatestGmToStart() {
+    if (!log) return;
+    requestAnimationFrame(function(){
+      var messages = log.querySelectorAll('.message.gm');
+      if (!messages.length) return;
+      var latest = messages[messages.length - 1];
+      var logRect = log.getBoundingClientRect();
+      var messageRect = latest.getBoundingClientRect();
+      var target = log.scrollTop + (messageRect.top - logRect.top);
+      log.scrollTop = Math.max(0, target);
+    });
+  }
+
+  function scrollCombatToBottom() {
+    if (!log) return;
     requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });
   }
+
+  function scrollForCurrentMode() {
+    if (state && state.combat && state.combat.active) scrollCombatToBottom();
+    else scrollLatestGmToStart();
+  }
+
+  window.backroomScrollLatestGmToStart = scrollLatestGmToStart;
+  window.backroomScrollCombatToBottom = scrollCombatToBottom;
+  window.backroomScrollForCurrentMode = scrollForCurrentMode;
 
   function syncComposer() {
     if (!form || !action || !submit) return;
@@ -324,6 +355,7 @@
     if (typeof previousRender === 'function') previousRender();
     renderSemanticLog();
     syncComposer();
+    if (state && state.combat && state.combat.active) scrollCombatToBottom();
   };
 
   if (form) {
@@ -342,6 +374,7 @@
     window.__combatBusy = false;
     if (typeof previousTurn === 'function') previousTurn(json);
     syncComposer();
+    scrollForCurrentMode();
   };
 
   function playCombatPhase(events, phase) {
@@ -359,6 +392,7 @@
     if (typeof busy !== 'undefined') busy = false;
     if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
     if (typeof window.render === 'function') window.render();
+    scrollCombatToBottom();
     if (status) {
       status.textContent = state.combat && state.combat.active
         ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
@@ -383,6 +417,7 @@
         if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
         if (typeof window.render === 'function') window.render();
         syncComposer();
+        scrollCombatToBottom();
         return;
       }
 
@@ -395,6 +430,7 @@
       }
       if (typeof window.render === 'function') window.render();
       syncComposer();
+      scrollCombatToBottom();
       if (status) status.textContent = 'Đang xử lý lượt của ' + (combat.resolvedActorName || 'nhân vật') + '…';
 
       playCombatPhase(events, 'actor');
@@ -427,4 +463,5 @@
   };
 
   window.render();
+  scrollForCurrentMode();
 })();

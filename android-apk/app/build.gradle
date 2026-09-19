@@ -33,14 +33,16 @@ android {
     applicationId 'com.rabpit.backroom'
     minSdk 24
     targetSdk 35
-    versionCode 72
-    versionName '1.1.70'
+    versionCode 73
+    versionName '1.1.71'
     buildConfigField "String", "GEMINI_API_KEY_1", "\"" + secret("GEMINI_API_KEY_1") + "\""
     buildConfigField "String", "GEMINI_API_KEY_2", "\"" + secret("GEMINI_API_KEY_2") + "\""
     buildConfigField "String", "GEMINI_API_KEY_3", "\"" + secret("GEMINI_API_KEY_3") + "\""
     buildConfigField "String", "GEMINI_API_KEY_4", "\"" + secret("GEMINI_API_KEY_4") + "\""
     buildConfigField "String", "GEMINI_API_KEY_5", "\"" + secret("GEMINI_API_KEY_5") + "\""
     buildConfigField "String", "HAIKU_API", "\"" + secret("HAIKU_API") + "\""
+    buildConfigField "String", "HAIKU_BASE_URL", "\"" + secret("HAIKU_BASE_URL") + "\""
+    buildConfigField "String", "HAIKU_MODEL", "\"" + secret("HAIKU_MODEL") + "\""
   }
 
   buildTypes {

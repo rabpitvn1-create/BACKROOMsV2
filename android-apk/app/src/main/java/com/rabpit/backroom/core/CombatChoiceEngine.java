@@ -25,6 +25,9 @@ public final class CombatChoiceEngine {
   private static final int GUILTY_CROWN_DAMAGE_PER_SHOT = 10;
   private static final int GUILTY_CROWN_TOTAL_DAMAGE = GUILTY_CROWN_SHOTS * GUILTY_CROWN_DAMAGE_PER_SHOT;
   private static final int MAX_COMBAT_PARTICIPANTS = 4;
+  static final int KAI_DEFAULT_ATTACK = 30;
+  static final int KAI_DEFAULT_DEFENSE = 10;
+  static final double CRITICAL_DAMAGE_MULTIPLIER = 3.5d;
 
   private static final class EntityProfile {
     final String key;
@@ -66,24 +69,24 @@ public final class CombatChoiceEngine {
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
 
   static {
-    entity("hound", "Hound", 80, 15, 2);
-    entity("clump", "Clump", 105, 17, 5);
-    entity("duller", "Duller", 90, 14, 3);
-    entity("deathmoth", "Deathmoth", 65, 13, 1);
-    entity("hostile_faceling", "Hostile Faceling", 75, 14, 2);
-    entity("false_puddle", "False Puddle", 95, 16, 4);
-    entity("paintings", "Paintings", 70, 12, 1);
-    entity("smiler", "Smiler", 85, 18, 2);
-    entity("skin-stealer", "Skin-Stealer", 100, 18, 4);
-    entity("predatory_window", "Predatory Window", 115, 17, 6);
-    entity("biological_pipeline", "Biological Pipeline", 120, 18, 7);
-    entity("wretch", "Wretch", 85, 16, 2);
-    entity("cable_mimic", "Cable Mimic", 100, 17, 5);
-    entity("the_beast_of_level_5", "The Beast of Level 5", 145, 22, 8);
-    entity("hotel_corpse_lure", "Hotel Corpse Lure", 110, 18, 5);
-    entity("jeff_the_killer", "Jeff", 120, 20, 4);
-    entity("jane_the_killer", "Jane", 120, 20, 4);
-    entity("slenderman", "Slenderman", 160, 23, 8);
+    entity("hound", "Hound", 240, 15, 2);
+    entity("clump", "Clump", 315, 17, 5);
+    entity("duller", "Duller", 270, 14, 3);
+    entity("deathmoth", "Deathmoth", 195, 13, 1);
+    entity("hostile_faceling", "Hostile Faceling", 225, 14, 2);
+    entity("false_puddle", "False Puddle", 285, 16, 4);
+    entity("paintings", "Paintings", 210, 12, 1);
+    entity("smiler", "Smiler", 255, 18, 2);
+    entity("skin-stealer", "Skin-Stealer", 300, 18, 4);
+    entity("predatory_window", "Predatory Window", 345, 17, 6);
+    entity("biological_pipeline", "Biological Pipeline", 360, 18, 7);
+    entity("wretch", "Wretch", 255, 16, 2);
+    entity("cable_mimic", "Cable Mimic", 300, 17, 5);
+    entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22, 8);
+    entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18, 5);
+    entity("jeff_the_killer", "Jeff", 360, 20, 4);
+    entity("jane_the_killer", "Jane", 360, 20, 4);
+    entity("slenderman", "Slenderman", 480, 23, 8);
     entity("diep_minh", "Diệp Minh", 2000, 42, 14);
 
     // Kai's combat skills are candidates for choice C. Pressing C still rolls the selected skill's
@@ -180,7 +183,9 @@ public final class CombatChoiceEngine {
     if (profile == null) return state;
     if (isActive(state)) return state;
 
-    JSONArray participants = buildParticipants(state);
+    CharacterProgressionCore progressionCore = new CharacterProgressionCore();
+    progressionCore.normalizeState(state);
+    JSONArray participants = buildParticipants(state, progressionCore);
     if (participants.length() == 0) return state;
 
     JSONObject combat = new JSONObject();
@@ -191,7 +196,8 @@ public final class CombatChoiceEngine {
     combat.put("seed", stableSeed(state, normalized, participants));
     combat.put("logIndex", Math.max(0, gmLogIndex));
     combat.put("participants", participants);
-    combat.put("entity", new JSONObject()
+
+    JSONObject entityState = new JSONObject()
       .put("key", profile.key)
       .put("name", profile.name)
       .put("hp", profile.maxHp)
@@ -202,7 +208,12 @@ public final class CombatChoiceEngine {
       .put("bleedPercent", 0)
       .put("stunTurns", 0)
       .put("armorBreakTurns", 0)
-      .put("armorBreakPercent", 0));
+      .put("armorBreakPercent", 0);
+    JSONObject statProfile = new EntityStatCore().profile(state, normalized, progressionCore);
+    entityState.put("statBaseline", statProfile.getJSONObject("baseline"));
+    entityState.put("statModifier", statProfile.getJSONObject("modifier"));
+    combat.put("entity", entityState);
+
     state.put("combat", combat);
     prepareCurrentTurn(combat);
     return state;
@@ -274,33 +285,38 @@ public final class CombatChoiceEngine {
     return state;
   }
 
-  private static JSONArray buildParticipants(JSONObject state) throws Exception {
+  private static JSONArray buildParticipants(JSONObject state, CharacterProgressionCore progressionCore)
+      throws Exception {
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
     String playerName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
-    output.put(participant("kai", playerName, -1, player, 100, 30, 10));
+    JSONObject kaiProfile = progressionCore.profile(state, "kai");
+    output.put(participant("kai", playerName, -1, player,
+        kaiProfile.getInt("currentHp"), kaiProfile.getInt("maxHp"),
+        KAI_DEFAULT_ATTACK, KAI_DEFAULT_DEFENSE));
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;
     for (int i = 0; i < party.length() && output.length() < MAX_COMBAT_PARTICIPANTS; i++) {
       JSONObject member = party.optJSONObject(i);
-      if (member == null) continue;
-      if (!CharacterEncounterCore.isJoinedMember(member)) continue;
+      if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
       String name = member.optString("name", member.optString("id", "")).trim();
       if (name.isEmpty() || normalizeCharacterId(name).equals("kai")) continue;
       String id = normalizeCharacterId(member.optString("id", name));
       int defaultAttack = "syvial".equals(id) ? 32 : "iris".equals(id) ? 28 : "lucia".equals(id) ? 24 : 24;
       int defaultDefense = "syvial".equals(id) ? 10 : "iris".equals(id) ? 8 : "lucia".equals(id) ? 7 : 7;
-      output.put(participant(id, name, i, member, 100, defaultAttack, defaultDefense));
+      JSONObject profile = progressionCore.profile(state, id);
+      output.put(participant(id, name, i, member,
+          profile.getInt("currentHp"), profile.getInt("maxHp"), defaultAttack, defaultDefense));
     }
     return output;
   }
 
   private static JSONObject participant(String id, String name, int sourceIndex, JSONObject source,
-                                        int fallbackHp, int fallbackAttack, int fallbackDefense) throws Exception {
-    int maxHp = firstPositive(source, fallbackHp, "maxHp", "maxHP", "hpMax");
-    int hp = firstPositive(source, maxHp, "hp", "currentHp", "currentHP");
-    hp = Math.min(hp, maxHp);
+                                        int currentHp, int maxHp, int fallbackAttack, int fallbackDefense)
+      throws Exception {
+    int normalizedMaxHp = Math.max(1, maxHp);
+    int hp = Math.max(0, Math.min(currentHp, normalizedMaxHp));
     int attack = firstPositive(source, fallbackAttack, "attackMax", "attack", "ATK", "str", "STR");
     int defense = firstPositive(source, fallbackDefense, "defense", "DEF", "df", "DF");
     return new JSONObject()
@@ -308,7 +324,7 @@ public final class CombatChoiceEngine {
       .put("name", name)
       .put("sourceIndex", sourceIndex)
       .put("hp", hp)
-      .put("maxHp", maxHp)
+      .put("maxHp", normalizedMaxHp)
       .put("attack", attack)
       .put("defense", defense)
       .put("evasionBonus", 0)
@@ -667,18 +683,28 @@ public final class CombatChoiceEngine {
       }
       combat.put("lootResolved", true);
     }
+
+    new CharacterProgressionCore().grantEntityKillExp(
+        state, entity.optString("key", ""), combat.optJSONArray("participants"), combat);
+
     combat.put("active", false).put("outcome", "victory").put("choices", new JSONArray());
     JSONObject flags = state.optJSONObject("flags");
     if (flags != null) flags.put("entityEncounterKey", "");
   }
 
   private static void syncParticipants(JSONObject state, JSONArray participants) throws Exception {
+    CharacterProgressionCore progressionCore = new CharacterProgressionCore();
+    progressionCore.normalizeState(state);
     JSONArray party = state.optJSONArray("party");
     for (int i = 0; i < participants.length(); i++) {
       JSONObject participant = participants.optJSONObject(i);
       if (participant == null) continue;
-      int hp = participant.optInt("hp", 0);
-      int maxHp = participant.optInt("maxHp", Math.max(1, hp));
+      String id = normalizeCharacterId(
+          participant.optString("id", participant.optString("name", "")));
+      progressionCore.setCurrentHp(state, id, participant.optInt("hp", 0));
+      JSONObject profile = progressionCore.profile(state, id);
+      int hp = profile.getInt("currentHp");
+      int maxHp = profile.getInt("maxHp");
       int sourceIndex = participant.optInt("sourceIndex", -1);
       if (sourceIndex < 0) {
         JSONObject player = state.optJSONObject("player");

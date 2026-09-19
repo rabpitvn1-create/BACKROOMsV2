@@ -38,25 +38,63 @@ public class CombatChoiceEngineTest {
     assertFalse(CombatChoiceEngine.isCombatAction("Kai chạy sang trái"));
   }
 
+  @Test public void criticalDamageContractIsThreePointFiveTimesBase() {
+    assertEquals(3.5d, CombatChoiceEngine.CRITICAL_DAMAGE_MULTIPLIER, 0.0d);
+  }
+
   @Test public void guiltyCrownOverrideUsesFortyPercentProcAndExactDamage() {
     assertEquals(40, CombatChoiceEngine.configuredProcPercent("kai", "Guilty Crown Override"));
     assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Guilty Crown Override"));
     assertEquals(0, CombatChoiceEngine.exactDamageForSkill("The Last Requiem"));
   }
 
-  @Test public void knownEntityCatalogPreservesLegacyProfiles() {
+  @Test public void knownEntityCatalogPreservesLegacyProfiles() throws Exception {
     assertTrue(CombatChoiceEngine.isKnownEntity("hound"));
     assertTrue(CombatChoiceEngine.isKnownEntity("jeff_the_killer"));
     assertTrue(CombatChoiceEngine.isKnownEntity("slenderman"));
     assertFalse(CombatChoiceEngine.isKnownEntity("not_a_real_entity"));
+
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+    assertEquals(240, entity.getInt("maxHp"));
+    assertEquals(15, entity.getInt("attack"));
+    assertEquals(2, entity.getInt("defense"));
+    assertTrue(entity.has("statBaseline"));
+    assertTrue(entity.has("statModifier"));
   }
 
-  @Test public void soloCombatRosterContainsOnlyKai() throws Exception {
+  @Test public void sub500EntityHpIsIncreasedByTwoHundredPercent() throws Exception {
+    String[] keys = {
+        "hound", "clump", "duller", "deathmoth", "hostile_faceling", "false_puddle",
+        "paintings", "smiler", "skin-stealer", "predatory_window", "biological_pipeline",
+        "wretch", "cable_mimic", "the_beast_of_level_5", "hotel_corpse_lure",
+        "jeff_the_killer", "jane_the_killer", "slenderman", "diep_minh"
+    };
+    int[] expectedHp = {
+        240, 315, 270, 195, 225, 285,
+        210, 255, 300, 345, 360,
+        255, 300, 435, 330,
+        360, 360, 480, 2000
+    };
+
+    for (int i = 0; i < keys.length; i++) {
+      JSONObject state = combatState(new JSONArray());
+      CombatChoiceEngine.start(state, keys[i], 0);
+      JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+      assertEquals(keys[i] + " maxHp", expectedHp[i], entity.getInt("maxHp"));
+      assertEquals(keys[i] + " hp", expectedHp[i], entity.getInt("hp"));
+    }
+  }
+
+  @Test public void soloCombatRosterContainsOnlyKaiAndUsesProgressionHp() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
     JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
     assertEquals(1, participants.length());
     assertEquals("kai", participants.getJSONObject(0).getString("id"));
+    assertEquals(50, participants.getJSONObject(0).getInt("hp"));
+    assertEquals(50, participants.getJSONObject(0).getInt("maxHp"));
   }
 
   @Test public void onlyJoinedPartyCharactersEnterCombatInCanonicalOrder() throws Exception {
@@ -73,12 +111,28 @@ public class CombatChoiceEngineTest {
     assertEquals("syvial", participants.getJSONObject(2).getString("id"));
   }
 
+  @Test public void houndKillRewardsExpExactlyOnce() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    state.getJSONObject("combat").getJSONObject("entity").put("hp", 1);
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+
+    JSONObject kai = state.getJSONObject("characterProgression")
+        .getJSONObject("characters").getJSONObject("kai");
+    assertEquals(10, kai.getInt("exp"));
+    assertTrue(state.getJSONObject("combat").getBoolean("expResolved"));
+
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+    assertEquals(10, kai.getInt("exp"));
+  }
+
   private static JSONObject combatState(JSONArray party) throws Exception {
     return new JSONObject()
         .put("turn", 4)
         .put("player", new JSONObject().put("name", "Kai Akechi"))
         .put("party", party)
         .put("flags", new JSONObject().put("entityEncounterKey", "hound"))
-        .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Hound xuất hiện")));
+        .put("log", new JSONArray().put(
+            new JSONObject().put("role", "gm").put("text", "Hound xuất hiện")));
   }
 }
