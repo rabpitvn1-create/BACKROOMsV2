@@ -1,0 +1,272 @@
+name: Regenerate Hound Overlay
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/regenerate-hound-overlay.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: regenerate-hound-overlay-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  regenerate-hound:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate image API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub Secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Install image tooling
+        run: python3 -m pip install --disable-pip-version-check pillow
+
+      - name: Regenerate Hound overlay from current asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import io
+          import json
+          import math
+          import os
+          import pathlib
+          import urllib.error
+          import urllib.request
+
+          from PIL import Image
+
+          target = pathlib.Path("android-apk/app/src/main/assets/entity/hound.png")
+          original = Image.open(target).convert("RGBA")
+          target_size = original.size
+
+          source_b64 = base64.b64encode(target.read_bytes()).decode("ascii")
+          source_data_uri = f"data:image/png;base64,{source_b64}"
+
+          api_key = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base_url = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+
+          if base_url.endswith("/images/edits"):
+              endpoint = base_url
+          elif base_url.endswith("/v1"):
+              endpoint = base_url + "/images/edits"
+          else:
+              endpoint = base_url + "/v1/images/edits"
+
+          prompt = (
+              "Use the supplied Hound image as the PRIMARY visual reference and recreate the same Backrooms Hound "
+              "as a polished in-game entity overlay. Preserve its recognizable identity, anatomy, proportions, "
+              "pose direction, hostile expression, and overall silhouette rather than inventing a different monster. "
+              "Render the FULL BODY cleanly with no cropping. Keep the creature centered and grounded. "
+              "Place it on one perfectly flat, uniform chroma-key green background color #00FF00 with absolutely "
+              "no scenery, texture, gradient, fog, frame, text, watermark, props, or extra creatures. "
+              "Do not use green anywhere on the Hound. Add one soft neutral dark-gray contact shadow directly "
+              "under the Hound's feet/body so it looks planted on the ground; the shadow itself must contain no green. "
+              "High-detail game overlay asset, crisp silhouette, readable at mobile size."
+          )
+
+          payload = {
+              "model": model,
+              "prompt": prompt,
+              "image": {
+                  "url": source_data_uri,
+                  "type": "image_url"
+              },
+              "response_format": "url",
+              "n": 1
+          }
+
+          req = urllib.request.Request(
+              endpoint,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Authorization": f"Bearer {api_key}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/json"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=300) as response:
+                  body = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as exc:
+              detail = exc.read().decode("utf-8", errors="replace")
+              raise SystemExit(f"Image API HTTP {exc.code}: {detail[:2000]}")
+
+          data = body.get("data")
+          if not isinstance(data, list) or not data:
+              raise SystemExit("Image API response has no data[0]")
+
+          item = data[0]
+          if item.get("b64_json"):
+              generated_bytes = base64.b64decode(item["b64_json"])
+          elif item.get("url"):
+              download = urllib.request.Request(
+                  item["url"],
+                  headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"}
+              )
+              with urllib.request.urlopen(download, timeout=300) as response:
+                  generated_bytes = response.read()
+          else:
+              raise SystemExit("Image API response has neither b64_json nor url")
+
+          generated = Image.open(io.BytesIO(generated_bytes)).convert("RGBA")
+
+          # Remove the deliberately requested chroma-green background while preserving
+          # the neutral ground shadow. A feathered alpha edge avoids a harsh halo.
+          src = generated.load()
+          keyed = Image.new("RGBA", generated.size, (0, 0, 0, 0))
+          dst = keyed.load()
+
+          transparent_pixels = 0
+          for y in range(generated.height):
+              for x in range(generated.width):
+                  r, g, b, a = src[x, y]
+                  green_strength = g - max(r, b)
+                  if g >= 95 and green_strength >= 24:
+                      # Stronger green means more transparent. Also suppress green spill
+                      # on partially transparent antialiased boundary pixels.
+                      t = min(1.0, max(0.0, (green_strength - 24.0) / 90.0))
+                      new_a = int(a * (1.0 - t))
+                      if new_a <= 6:
+                          new_a = 0
+                          transparent_pixels += 1
+                      if new_a:
+                          spill = int(g * (1.0 - t))
+                          g = min(spill, max(r, b) + 12)
+                      dst[x, y] = (r, g, b, new_a)
+                  else:
+                      dst[x, y] = (r, g, b, a)
+
+          if transparent_pixels < (generated.width * generated.height * 0.15):
+              raise SystemExit(
+                  "Generated image did not contain enough removable chroma background; refusing to replace hound.png"
+              )
+
+          alpha = keyed.getchannel("A")
+          bbox = alpha.getbbox()
+          if not bbox:
+              raise SystemExit("Chroma removal produced an empty image")
+
+          cropped = keyed.crop(bbox)
+
+          # Preserve the exact old canvas size so existing overlay layout remains stable.
+          margin_x = max(2, round(target_size[0] * 0.04))
+          margin_top = max(2, round(target_size[1] * 0.03))
+          margin_bottom = max(2, round(target_size[1] * 0.02))
+          available_w = max(1, target_size[0] - 2 * margin_x)
+          available_h = max(1, target_size[1] - margin_top - margin_bottom)
+
+          scale = min(available_w / cropped.width, available_h / cropped.height)
+          new_size = (
+              max(1, round(cropped.width * scale)),
+              max(1, round(cropped.height * scale))
+          )
+          resized = cropped.resize(new_size, Image.Resampling.LANCZOS)
+
+          canvas = Image.new("RGBA", target_size, (0, 0, 0, 0))
+          x = (target_size[0] - resized.width) // 2
+          y = target_size[1] - margin_bottom - resized.height
+          canvas.alpha_composite(resized, (x, y))
+
+          final_alpha = canvas.getchannel("A")
+          extrema = final_alpha.getextrema()
+          if extrema[0] != 0 or extrema[1] != 255:
+              # Some alpha is expected, but we also want at least some fully opaque
+              # creature pixels for a clean overlay.
+              if extrema[0] != 0:
+                  raise SystemExit("Final PNG is not transparent")
+          opaque_count = sum(1 for px in final_alpha.getdata() if px >= 245)
+          transparent_count = sum(1 for px in final_alpha.getdata() if px == 0)
+          total = target_size[0] * target_size[1]
+          if opaque_count < total * 0.03:
+              raise SystemExit("Final Hound subject is unexpectedly faint")
+          if transparent_count < total * 0.15:
+              raise SystemExit("Final Hound PNG lacks sufficient transparent background")
+
+          canvas.save(target, "PNG", optimize=True)
+
+          meta = {
+              "model": model,
+              "source": "android-apk/app/src/main/assets/entity/hound.png",
+              "output": target.as_posix(),
+              "canvas": {"width": target_size[0], "height": target_size[1]},
+              "requirements": [
+                  "current hound used as primary reference",
+                  "transparent background",
+                  "soft ground contact shadow",
+                  "same output path and canvas size"
+              ]
+          }
+          pathlib.Path(".github/hound-overlay-generation.json").write_text(
+              json.dumps(meta, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8"
+          )
+
+          print(f"Recreated Hound overlay at {target} using canvas {target_size[0]}x{target_size[1]}")
+          print(f"Transparent pixels: {transparent_count}/{total}")
+          print(f"Opaque subject pixels: {opaque_count}/{total}")
+          PY
+
+      - name: Verify replacement PNG
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s android-apk/app/src/main/assets/entity/hound.png
+          python3 - <<'PY'
+          from PIL import Image
+          path = "android-apk/app/src/main/assets/entity/hound.png"
+          image = Image.open(path)
+          if image.format != "PNG":
+              raise SystemExit("hound.png is not PNG")
+          if image.mode not in ("RGBA", "LA", "P"):
+              raise SystemExit(f"hound.png has no alpha-capable mode: {image.mode}")
+          rgba = image.convert("RGBA")
+          alpha = rgba.getchannel("A")
+          lo, hi = alpha.getextrema()
+          if lo != 0:
+              raise SystemExit("hound.png has no fully transparent pixels")
+          if hi < 245:
+              raise SystemExit("hound.png has no solid subject pixels")
+          print(f"Verified PNG {image.width}x{image.height}, alpha range {lo}..{hi}")
+          PY
+          sha256sum android-apk/app/src/main/assets/entity/hound.png
+
+      - name: Commit replacement Hound overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/assets/entity/hound.png .github/hound-overlay-generation.json
+          if git diff --cached --quiet; then
+            echo 'Hound overlay is unchanged.'
+            exit 0
+          fi
+          git commit -m 'Regenerate Hound overlay'
+          git push origin HEAD:${GITHUB_REF_NAME}
