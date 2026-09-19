@@ -83,17 +83,31 @@ jobs:
             echo "Deleting run ${run_id}: ${run_name} [status=${status}, conclusion=${conclusion:-none}, created=${created_at}]"
 
             success=false
-            for attempt in 1 2 3 4 5; do
-              if gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}" >/dev/null 2>&1; then
-                success=true
-                break
-              fi
 
-              if [[ "${status}" == "queued" ]]; then
-                gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
-              fi
-              sleep 2
-            done
+            if [[ "${status}" == "queued" ]]; then
+              gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
+              gh api --method POST "/repos/${REPO}/actions/runs/${run_id}/force-cancel" >/dev/null 2>&1 || true
+
+              for wait_attempt in 1 2 3 4 5 6 7 8 9 10; do
+                current_status="$(gh api "/repos/${REPO}/actions/runs/${run_id}" --jq '.status' 2>/dev/null || echo missing)"
+                if [[ "${current_status}" == "missing" ]]; then
+                  success=true
+                  break
+                fi
+                [[ "${current_status}" == "completed" ]] && break
+                sleep 3
+              done
+            fi
+
+            if [[ "${success}" != "true" ]]; then
+              for attempt in 1 2 3 4 5; do
+                if gh api --method DELETE "/repos/${REPO}/actions/runs/${run_id}" >/dev/null 2>&1; then
+                  success=true
+                  break
+                fi
+                sleep 2
+              done
+            fi
 
             if [[ "${success}" == "true" ]]; then
               deleted_runs=$((deleted_runs + 1))
