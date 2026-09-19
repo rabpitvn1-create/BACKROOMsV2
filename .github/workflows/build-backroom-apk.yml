@@ -65,7 +65,7 @@ jobs:
 
       - name: Verify Java-only baseline
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           grep -Fq 'versionCode 75' android-apk/app/build.gradle
           grep -Fq "versionName '1.1.73'" android-apk/app/build.gradle
           test -s android-apk/RELEASE_NOTES_1.1.73.txt
@@ -210,7 +210,7 @@ jobs:
           grep -Fq 'function partyDisplayItems()' android-apk/app/src/main/assets/index.html
           grep -Fq 'function levelTitle()' android-apk/app/src/main/assets/index.html
           grep -Fq 'const LEVEL_NODE_TITLES=' android-apk/app/src/main/assets/index.html
-          grep -Fq 'state.currentLevelKey=inferLevelKey(s)' android-apk/app/src/main/assets/index.html
+          grep -Fq 's.currentLevelKey=inferLevelKey(s)' android-apk/app/src/main/assets/index.html
           grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
           grep -Fq '.log{height:clamp(360px,55vh,620px)' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
