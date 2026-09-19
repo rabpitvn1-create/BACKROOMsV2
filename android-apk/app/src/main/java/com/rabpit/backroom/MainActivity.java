@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
   private static final String GEMINI_IMAGE_MODEL = "gemini-3.1-flash-image";
   private static final String HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages";
   private static final String HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001";
+  private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
   private static final int[] RETRYABLE = {408, 429, 500, 502, 503, 504};
   private static final int MAX_SNAPSHOT_BASE64 = 1_500_000;
 
@@ -397,8 +398,7 @@ public class MainActivity extends Activity {
     return status == 400 || status == 404 || status == 405 || status == 415 || status == 422;
   }
 
-  private String haikuText(String prompt) throws Exception {
-    if (!haikuConfigured()) throw new Exception("HAIKU_API chưa được cấu hình.");
+  private String haikuTextOnce(String prompt) throws Exception {
     String base = haikuBaseUrl();
     String output;
     if (base.endsWith("/chat/completions")) {
@@ -417,6 +417,30 @@ public class MainActivity extends Activity {
     return output;
   }
 
+  private String haikuText(String prompt) throws Exception {
+    if (!haikuConfigured()) throw new Exception("HAIKU_API chưa được cấu hình.");
+    Exception last = null;
+    for (int attempt = 0; attempt < 2; attempt++) {
+      try {
+        return haikuTextOnce(prompt);
+      } catch (Exception error) {
+        last = error;
+        int status = error instanceof HttpError ? ((HttpError)error).status : 0;
+        if (attempt == 0 && (status == 0 || retryable(status))) {
+          Log.w(TAG, "Haiku text attempt failed; retrying once.");
+          try {
+            Thread.sleep(HAIKU_RETRY_DELAY_MS);
+          } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+          }
+          continue;
+        }
+        break;
+      }
+    }
+    throw last != null ? last : new Exception("Haiku không khả dụng.");
+  }
+
   private String providerErrorSummary(Exception error) {
     if (error == null) return "không xác định";
     String message = error.getMessage();
@@ -425,24 +449,23 @@ public class MainActivity extends Activity {
   }
 
   private String generateText(String prompt) throws Exception {
-    Exception geminiError;
+    Exception haikuError;
+    try {
+      return haikuText(prompt);
+    } catch (Exception error) {
+      haikuError = error;
+      Log.w(TAG, "Haiku primary failed; falling back to Gemini.");
+    }
+
     try {
       return geminiText(prompt);
-    } catch (Exception error) {
-      geminiError = error;
+    } catch (Exception geminiError) {
+      throw new Exception(
+          "Haiku và toàn bộ Gemini fallback đều không khả dụng. Haiku: "
+              + providerErrorSummary(haikuError)
+              + " | Gemini: "
+              + providerErrorSummary(geminiError));
     }
-
-    if (haikuConfigured()) {
-      try {
-        return haikuText(prompt);
-      } catch (Exception haikuError) {
-        throw new Exception(
-            "Gemini và Haiku đều không khả dụng. Gemini: " + providerErrorSummary(geminiError) +
-            " | Haiku: " + providerErrorSummary(haikuError));
-      }
-    }
-
-    throw geminiError;
   }
 
   private JSONObject parseModelJson(String raw) throws Exception {

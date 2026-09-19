@@ -100,6 +100,11 @@ jobs:
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'HAIKU_RETRY_DELAY_MS = 1_200L' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'private String haikuTextOnce(String prompt)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Haiku primary failed; falling back to Gemini.' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'return haikuText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'return geminiText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
