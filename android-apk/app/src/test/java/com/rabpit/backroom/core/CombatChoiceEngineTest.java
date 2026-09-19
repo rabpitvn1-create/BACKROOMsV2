@@ -122,8 +122,36 @@ public class CombatChoiceEngineTest {
     assertFalse(state.getJSONObject("combat").getBoolean("active"));
     assertEquals("defeat", state.getJSONObject("combat").getString("outcome"));
     assertEquals("", state.getJSONObject("flags").getString("entityEncounterKey"));
-    assertEquals(0, state.getJSONObject("characterProgression")
+    assertTrue(state.getJSONObject("combat").getBoolean("deathRecoveryApplied"));
+    assertEquals(0, state.getInt("currentLevel"));
+    assertEquals(LevelCore.LEVEL_ZERO_START_LOCATION, state.getString("location"));
+    assertEquals(50, state.getJSONObject("characterProgression")
         .getJSONObject("characters").getJSONObject("kai").getInt("currentHp"));
+  }
+
+  @Test public void kaiDeathImmediatelyRespawnsAtLevelZeroAndHalvesProgression() throws Exception {
+    JSONObject state = combatState(new JSONArray())
+        .put("currentLevel", 5)
+        .put("location", "Level 5 / Terror Hotel");
+    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    progression.normalizeState(state);
+    JSONObject kai = progression.profile(state, "kai");
+    kai.put("explorer", 10).put("exp", 200).put("currentHp", 50).put("maxHp", 200);
+
+    CombatChoiceEngine.start(state, "clump", 0);
+    state.getJSONObject("combat").getJSONArray("participants").getJSONObject(0).put("hp", 1);
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+
+    JSONObject after = state.getJSONObject("characterProgression")
+        .getJSONObject("characters").getJSONObject("kai");
+    assertFalse(state.getJSONObject("combat").getBoolean("active"));
+    assertEquals("defeat", state.getJSONObject("combat").getString("outcome"));
+    assertEquals(0, state.getInt("currentLevel"));
+    assertEquals(LevelCore.LEVEL_ZERO_START_LOCATION, state.getString("location"));
+    assertEquals(5, after.getInt("explorer"));
+    assertEquals(100, after.getInt("exp"));
+    assertEquals(125, after.getInt("currentHp"));
+    assertEquals(125, after.getInt("maxHp"));
   }
 
   @Test public void terminalDefeatNormalizationClearsLegacyRestartFlag() throws Exception {
@@ -156,6 +184,8 @@ public class CombatChoiceEngineTest {
   private static JSONObject combatState(JSONArray party) throws Exception {
     return new JSONObject()
         .put("turn", 4)
+        .put("currentLevel", 0)
+        .put("location", LevelCore.LEVEL_ZERO_START_LOCATION)
         .put("player", new JSONObject().put("name", "Kai Akechi"))
         .put("party", party)
         .put("flags", new JSONObject().put("entityEncounterKey", "hound"))

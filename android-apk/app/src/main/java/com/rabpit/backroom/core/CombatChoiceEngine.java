@@ -269,6 +269,11 @@ public final class CombatChoiceEngine {
     resolveEntityResponse(state, combat, actor, entity, defending);
     syncParticipants(state, participants);
 
+    if (isKaiDown(participants)) {
+      finishPlayerDefeat(state, combat);
+      return state;
+    }
+
     if (entity.optInt("hp", 0) <= 0) {
       finishVictory(state, combat, entity);
       return state;
@@ -553,6 +558,17 @@ public final class CombatChoiceEngine {
     if (accuracyTurns > 0) entity.put("accuracyPenaltyTurns", accuracyTurns - 1);
   }
 
+  private static boolean isKaiDown(JSONArray participants) {
+    for (int i = 0; i < participants.length(); i++) {
+      JSONObject participant = participants.optJSONObject(i);
+      if (participant == null) continue;
+      String id = normalizeCharacterId(
+          participant.optString("id", participant.optString("name", "")));
+      if ("kai".equals(id)) return participant.optInt("hp", 0) <= 0;
+    }
+    return false;
+  }
+
   private static boolean hasLivingParticipant(JSONArray participants) {
     for (int i = 0; i < participants.length(); i++) {
       JSONObject participant = participants.optJSONObject(i);
@@ -691,8 +707,20 @@ public final class CombatChoiceEngine {
   }
 
   private static void finishDefeat(JSONObject state, JSONObject combat) throws Exception {
+    finishPlayerDefeat(state, combat);
+  }
+
+  private static void finishPlayerDefeat(JSONObject state, JSONObject combat) throws Exception {
     combat.put("active", false).put("outcome", "defeat").put("choices", new JSONArray());
-    appendBattleLine(state, combat, "Party không còn nhân vật có thể chiến đấu.", "Party");
+    if (!combat.optBoolean("deathRecoveryApplied", false)) {
+      CharacterProgressionCore progressionCore = new CharacterProgressionCore();
+      progressionCore.applyKaiDeathPenalty(state);
+      LevelCore.resetToLevelZeroStart(state);
+      combat.put("deathRecoveryApplied", true);
+      combat.put("playerRespawned", true);
+      appendBattleLine(state, combat,
+          "Kai bị hạ. Kai trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Kai Akechi");
+    }
     clearEncounterFlag(state);
   }
 
@@ -701,6 +729,10 @@ public final class CombatChoiceEngine {
     JSONObject combat = state.optJSONObject("combat");
     if (combat == null || combat.optBoolean("active", false)) return;
     String outcome = combat.optString("outcome", "");
+    if ("defeat".equals(outcome) && !combat.optBoolean("deathRecoveryApplied", false)) {
+      finishPlayerDefeat(state, combat);
+      return;
+    }
     if ("victory".equals(outcome) || "defeat".equals(outcome)) clearEncounterFlag(state);
   }
 
@@ -719,6 +751,9 @@ public final class CombatChoiceEngine {
       String id = normalizeCharacterId(
           participant.optString("id", participant.optString("name", "")));
       progressionCore.setCurrentHp(state, id, participant.optInt("hp", 0));
+      if (!"kai".equals(id) && participant.optInt("hp", 0) <= 0) {
+        progressionCore.markCompanionDown(state, id);
+      }
       JSONObject profile = progressionCore.profile(state, id);
       int hp = profile.getInt("currentHp");
       int maxHp = profile.getInt("maxHp");

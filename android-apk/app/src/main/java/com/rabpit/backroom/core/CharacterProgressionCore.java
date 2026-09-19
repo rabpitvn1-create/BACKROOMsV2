@@ -20,6 +20,7 @@ final class CharacterProgressionCore {
   static final int BASE_MAX_HP = 50;
   static final int HP_PER_EXPLORER = 15;
   static final int HOUND_BASE_EXP = 10;
+  static final int COMPANION_REVIVE_EXPLORER_TURNS = 10;
 
   interface IntRng {
     int nextInt(int bound);
@@ -153,6 +154,95 @@ final class CharacterProgressionCore {
       combat.put("baseExp", baseExp);
       combat.put("expAwards", awards);
       combat.put("expResolved", true);
+    }
+  }
+
+  void applyKaiDeathPenalty(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject kai = profile(state, "kai");
+    int explorer = Math.max(0, kai.optInt("explorer", 0));
+    int exp = Math.max(0, kai.optInt("exp", 0));
+    int reducedExplorer = explorer / 2;
+    int reducedExp = exp / 2;
+    int maxHp = maxHpForExplorer(reducedExplorer);
+
+    kai.put("explorer", reducedExplorer);
+    kai.put("exp", reducedExp);
+    kai.put("maxHp", maxHp);
+    kai.put("currentHp", maxHp);
+    kai.remove("downedAtTurn");
+    kai.remove("reviveAtTurn");
+
+    JSONObject player = state.optJSONObject("player");
+    if (player != null) {
+      player.put("hp", maxHp);
+      player.put("maxHp", maxHp);
+      player.put("condition", "Ổn định");
+    }
+  }
+
+  void markCompanionDown(JSONObject state, String rawId) throws Exception {
+    normalizeState(state);
+    String id = normalizeCharacterId(rawId);
+    if (id.isEmpty() || "kai".equals(id)) return;
+
+    JSONObject profile = profile(state, id);
+    profile.put("currentHp", 0);
+    int turn = Math.max(1, state.optInt("turn", 1));
+    if (!profile.has("reviveAtTurn")) {
+      profile.put("downedAtTurn", turn);
+      profile.put("reviveAtTurn", turn + COMPANION_REVIVE_EXPLORER_TURNS);
+    }
+    syncPartyRecoveryState(state, id, profile, turn);
+  }
+
+  void applyExplorerTurnRecovery(JSONObject state) throws Exception {
+    normalizeState(state);
+    int turn = Math.max(1, state.optInt("turn", 1));
+    JSONArray party = state.optJSONArray("party");
+    if (party == null) return;
+
+    for (int i = 0; i < party.length(); i++) {
+      JSONObject member = party.optJSONObject(i);
+      if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
+      String id = normalizeCharacterId(member.optString("id", member.optString("name", "")));
+      if (id.isEmpty() || "kai".equals(id)) continue;
+
+      JSONObject profile = profile(state, id);
+      int hp = Math.max(0, profile.optInt("currentHp", 0));
+      int reviveAtTurn = profile.optInt("reviveAtTurn", -1);
+
+      if (hp <= 0 && reviveAtTurn > 0 && turn >= reviveAtTurn) {
+        profile.put("currentHp", 1);
+        profile.remove("downedAtTurn");
+        profile.remove("reviveAtTurn");
+      }
+      syncPartyRecoveryState(state, id, profile, turn);
+    }
+  }
+
+  private void syncPartyRecoveryState(JSONObject state, String id, JSONObject profile, int turn)
+      throws Exception {
+    JSONArray party = state.optJSONArray("party");
+    if (party == null) return;
+    for (int i = 0; i < party.length(); i++) {
+      JSONObject member = party.optJSONObject(i);
+      if (member == null) continue;
+      String memberId = normalizeCharacterId(member.optString("id", member.optString("name", "")));
+      if (!id.equals(memberId)) continue;
+
+      int hp = Math.max(0, profile.optInt("currentHp", 0));
+      int maxHp = Math.max(1, profile.optInt("maxHp", BASE_MAX_HP));
+      member.put("hp", hp).put("maxHp", maxHp);
+      if (hp <= 0) {
+        int reviveAtTurn = profile.optInt("reviveAtTurn", turn + COMPANION_REVIVE_EXPLORER_TURNS);
+        member.put("condition", "Bị hạ");
+        member.put("reviveTurnsRemaining", Math.max(0, reviveAtTurn - turn));
+      } else {
+        member.remove("reviveTurnsRemaining");
+        if ("Bị hạ".equals(member.optString("condition", ""))) member.put("condition", "Ổn định");
+      }
+      return;
     }
   }
 
