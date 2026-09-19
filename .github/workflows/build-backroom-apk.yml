@@ -117,6 +117,18 @@ jobs:
           grep -Fq 'CombatChoiceEngine.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'ItemCore.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'gmEntryAddsCoreOwnedSemanticHighlightsWithoutModelMetadata' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
+          grep -Fq 'NGÔN NGỮ HIỂN THỊ:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'normalizePlayerFacingVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
+          grep -Fq 'gmEntryNormalizesLeakedEnglishEnvironmentTerms' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
+          jq -e '
+            .levels["0"] as $l |
+            ([ $l.identity[], $l.architecture[], $l.zones[], $l.sensory[], $l.anomalies[],
+               $l.hazards[], $l.resources[], $l.entities[], $l.navigation[],
+               $l.entrancesExits[], $l.gameplayOverride[], $l.gmConstraints[],
+               $l.variationPool[], $l.narrativeGrammar[], $l.microLocations[], $l.sceneSeeds[] ]
+             | join(" ")
+             | test("(?i)\\b(wallpaper|ceiling|fixture|opening|buzz|corridor|junction)\\b") | not)
+          ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
           grep -Fq 'HAIKU_RETRY_DELAY_MS = 1_200L' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'private String haikuTextOnce(String prompt)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'Haiku primary failed; falling back to Gemini.' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
