@@ -166,11 +166,12 @@
     function display(v){
       if(v&&typeof v==='object'){
         var effective=v.effective!==undefined?v.effective:(v.value!==undefined?v.value:undefined);
-        var base=Number(v.base),levelBonus=Number(v.levelBonus||0),equipment=Number(v.equipment||0),parts=[];
+        var base=Number(v.base),explorer=Number(v.explorer||0),equipment=Number(v.equipment||0),parts=[];
+        function signed(n){return (n>0?'+':'')+String(n);}
         if(effective!==undefined){
           if(Number.isFinite(base))parts.push('Base '+base);
-          if(levelBonus)parts.push('Level '+(levelBonus>0?'+':'')+levelBonus);
-          if(equipment)parts.push('EQ '+(equipment>0?'+':'')+equipment);
+          parts.push('Explorer '+signed(explorer));
+          parts.push('EQ '+signed(equipment));
           return String(effective)+(parts.length?' ('+parts.join(' · ')+')':'');
         }
       }
@@ -225,9 +226,12 @@
     var status=section('TRẠNG THÁI');
     addRow(status,'Hiện diện',member.presence||'ACTIVE');
     addRow(status,'Tình trạng',conditionFor(member));
-    if(member.level!==undefined)addRow(status,'Level nhân vật',member.level);
     var hp=member.currentHp!==undefined?member.currentHp:member.hp,maxHp=member.maxHp||member.maxHP;
     if(hp!==undefined)addRow(status,'HP',maxHp!==undefined?String(hp)+' / '+String(maxHp):hp);
+    if(member.explorer!==undefined)addRow(status,'Explorer',member.explorer);
+    if(member.exp!==undefined&&member.requiredExp!==undefined){
+      addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp));
+    }
     addRow(status,'Vai trò',meta.role||member.role);
     if(member.energy!==undefined)addRow(status,'Năng lượng',member.energy);
     if(member.hpRegen!==undefined)addRow(status,'Hồi HP',Number(member.hpRegen)>0?'+'+member.hpRegen+' / lượt':member.hpRegen);

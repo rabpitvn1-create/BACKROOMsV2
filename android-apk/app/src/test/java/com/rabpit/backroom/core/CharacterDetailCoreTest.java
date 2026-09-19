@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class CharacterDetailCoreTest {
-  @Test public void freshKaiGetsRestoredSurvivalProjection() throws Exception {
+  @Test public void freshKaiProjectsHpExplorerExpStatsAndEquipment() throws Exception {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Kai Akechi"))
         .put("party", new JSONArray())
@@ -20,35 +20,23 @@ public class CharacterDetailCoreTest {
     JSONObject details = state.getJSONObject("partyDetails");
     assertEquals("kai", details.getString("leaderId"));
     assertEquals(4, details.getInt("maxMembers"));
-    assertEquals(1, details.getJSONArray("members").length());
-
     JSONObject kai = details.getJSONArray("members").getJSONObject(0);
-    assertEquals("kai", kai.getString("id"));
-    assertEquals(100, kai.getInt("currentHp"));
-    assertEquals(100, kai.getInt("maxHp"));
-    assertEquals(1, kai.getInt("level"));
-    assertEquals("∞", kai.getString("energy"));
-    assertEquals(4, kai.getInt("hpRegen"));
-    assertEquals(82, kai.getJSONObject("stats").getJSONObject("STR").getInt("base"));
-    assertEquals(25, kai.getJSONObject("stats").getJSONObject("STR").getInt("equipment"));
-    assertEquals(107, kai.getJSONObject("stats").getJSONObject("STR").getInt("effective"));
-    assertEquals(109, kai.getJSONObject("stats").getJSONObject("DF").getInt("effective"));
-    assertEquals(112, kai.getJSONObject("stats").getJSONObject("AGI").getInt("effective"));
-    assertEquals(109, kai.getJSONObject("stats").getJSONObject("CRIT").getInt("effective"));
+    assertEquals(50, kai.getInt("currentHp"));
+    assertEquals(50, kai.getInt("maxHp"));
+    assertEquals(0, kai.getInt("explorer"));
+    assertEquals(0, kai.getInt("exp"));
+    assertEquals(50, kai.getInt("requiredExp"));
+    assertEquals(40, baseTotal(kai.getJSONObject("stats")));
+    assertEquals(0, kai.getJSONObject("stats").getJSONObject("STR").getInt("explorer"));
+    assertEquals(0, kai.getJSONObject("stats").getJSONObject("STR").getInt("equipment"));
     assertEquals(3, kai.getJSONArray("equipment").length());
-
-    JSONObject physiology = kai.getJSONObject("physiology");
-    assertEquals("NORMAL", physiology.getString("hunger"));
-    assertEquals("NORMAL", physiology.getString("thirst"));
-    assertEquals("NORMAL", physiology.getString("sleepDeprivation"));
-    assertEquals(100, physiology.getInt("foodPercent"));
-    assertEquals(100, physiology.getInt("waterPercent"));
-    assertEquals(100, physiology.getInt("restPercent"));
+    assertEquals("NORMAL", kai.getJSONObject("physiology").getString("hunger"));
+    assertEquals(100, kai.getJSONObject("physiology").getInt("foodPercent"));
   }
 
   @Test public void legacyThresholdsAndPercentagesMatchPreviousRuntime() throws Exception {
-    JSONObject physiology = CharacterDetailCore.derivePhysiology(12L * 60L, 12L * 60L, 12L * 60L);
-
+    JSONObject physiology = CharacterDetailCore.derivePhysiology(
+        12L * 60L, 12L * 60L, 12L * 60L);
     assertEquals("MILD", physiology.getString("hunger"));
     assertEquals("MODERATE", physiology.getString("thirst"));
     assertEquals("NORMAL", physiology.getString("sleepDeprivation"));
@@ -57,19 +45,13 @@ public class CharacterDetailCoreTest {
     assertEquals(66, physiology.getInt("restPercent"));
   }
 
-  @Test public void projectionIncludesOnlyJoinedCompanionsAndPreservesLuciaStats() throws Exception {
+  @Test public void projectionIncludesOnlyJoinedCompanionsAndUsesProgressionStats() throws Exception {
     JSONObject lucia = new JSONObject()
-        .put("id", "lucia")
-        .put("name", "Lucia Lục")
-        .put("joined", true)
-        .put("present", true)
-        .put("hp", 76)
-        .put("maxHp", 100)
-        .put("stats", new JSONObject().put("STR", 7).put("DF", 7).put("AGI", 8).put("CRIT", 7));
+        .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
+        .put("stats", new JSONObject().put("STR", 999))
+        .put("hp", 999).put("maxHp", 999);
     JSONObject notJoined = new JSONObject()
-        .put("id", "iris")
-        .put("name", "Iris")
-        .put("joined", false);
+        .put("id", "iris").put("name", "Iris").put("joined", false);
 
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Kai Akechi"))
@@ -82,9 +64,9 @@ public class CharacterDetailCoreTest {
     assertEquals(2, members.length());
     JSONObject projectedLucia = members.getJSONObject(1);
     assertEquals("lucia", projectedLucia.getString("id"));
-    assertEquals(76, projectedLucia.getInt("currentHp"));
-    assertEquals(100, projectedLucia.getInt("maxHp"));
-    assertEquals(7, projectedLucia.getJSONObject("stats").getInt("STR"));
+    assertEquals(50, projectedLucia.getInt("currentHp"));
+    assertEquals(50, projectedLucia.getInt("maxHp"));
+    assertEquals(30, baseTotal(projectedLucia.getJSONObject("stats")));
     assertEquals("UNKNOWN", projectedLucia.getJSONObject("physiology").getString("hunger"));
   }
 
@@ -98,7 +80,6 @@ public class CharacterDetailCoreTest {
             .put("foodPercent", 72)
             .put("waterPercent", 88)
             .put("restPercent", 41));
-
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Kai Akechi"))
         .put("party", new JSONArray().put(new JSONObject()
@@ -107,7 +88,6 @@ public class CharacterDetailCoreTest {
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 90));
 
     new CharacterDetailCore().projectState(state);
-
     JSONObject lucia = state.getJSONObject("partyDetails").getJSONArray("members").getJSONObject(1);
     JSONObject physiology = lucia.getJSONObject("physiology");
     assertEquals("MILD", physiology.getString("hunger"));
@@ -115,5 +95,12 @@ public class CharacterDetailCoreTest {
     assertEquals(72, physiology.getInt("foodPercent"));
     assertEquals(41, physiology.getInt("restPercent"));
     assertNotNull(lucia.getJSONArray("inventory"));
+  }
+
+  private static int baseTotal(JSONObject stats) throws Exception {
+    return stats.getJSONObject("STR").optInt("base", 0)
+        + stats.getJSONObject("DF").optInt("base", 0)
+        + stats.getJSONObject("AGI").optInt("base", 0)
+        + stats.getJSONObject("CRIT").optInt("base", 0);
   }
 }

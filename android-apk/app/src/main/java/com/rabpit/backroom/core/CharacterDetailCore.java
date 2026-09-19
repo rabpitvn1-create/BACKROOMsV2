@@ -20,14 +20,13 @@ final class CharacterDetailCore {
   private static final long WATER_CRITICAL_MINUTES = 48L * 60L;
   private static final long REST_CRITICAL_MINUTES = 36L * 60L;
 
-  private final CharacterLevelCore characterLevelCore = new CharacterLevelCore();
+  private final CharacterProgressionCore characterProgressionCore = new CharacterProgressionCore();
   private final EquipmentStatCore equipmentStatCore = new EquipmentStatCore();
   private final CharacterStatCore characterStatCore = new CharacterStatCore();
 
   void projectState(JSONObject state) throws Exception {
     if (state == null) return;
-    characterLevelCore.normalizeState(state);
-    equipmentStatCore.normalizeState(state);
+    characterProgressionCore.normalizeState(state);
 
     JSONObject previousDetails = state.optJSONObject("partyDetails");
     Map<String, JSONObject> previousById = detailMembersById(previousDetails);
@@ -81,9 +80,11 @@ final class CharacterDetailCore {
     JSONObject member = new JSONObject()
         .put("id", id)
         .put("name", nonEmpty(source.optString("name", ""), fallbackName))
-        .put("presence", nonEmpty(source.optString("presence", ""), leader ? "ACTIVE" : "ACTIVE"))
+        .put("presence", nonEmpty(source.optString("presence", ""), "ACTIVE"))
         .put("isLeader", leader);
-    JSONObject rpgProjection = null;
+
+    JSONObject progression = characterStatCore.project(
+        state, id, characterProgressionCore, equipmentStatCore);
 
     String avatar = firstString(source, previous, "avatar", "avatarRef");
     if (!avatar.isEmpty()) member.put("avatar", avatar);
@@ -93,25 +94,16 @@ final class CharacterDetailCore {
     String condition = firstString(source, previous, "condition", "healthState");
     if (!condition.isEmpty()) member.put("condition", condition);
 
-    int previousMax = previous == null ? 0 : firstPositive(previous, 0, "maxHp", "maxHP", "hpMax");
-    int maxHp = firstPositive(source, previousMax > 0 ? previousMax : 100, "maxHp", "maxHP", "hpMax");
-    int previousHp = previous == null ? -1 : firstNonNegative(previous, -1, "currentHp", "hp", "currentHP");
-    int hp = firstNonNegative(source, previousHp >= 0 ? previousHp : maxHp, "hp", "currentHp", "currentHP");
-    hp = Math.max(0, Math.min(hp, maxHp));
+    int hp = progression.getInt("currentHp");
+    int maxHp = progression.getInt("maxHp");
     member.put("currentHp", hp).put("hp", hp).put("maxHp", maxHp);
+    member.put("explorer", progression.getInt("explorer"));
+    member.put("exp", progression.getInt("exp"));
+    member.put("requiredExp", progression.getInt("requiredExp"));
+    member.put("stats", new JSONObject(progression.getJSONObject("stats").toString()));
+    member.put("progressionSource", progression.getString("source"));
 
     copyStringIfPresent(source, previous, member, "role");
-    copyStringIfPresent(source, previous, member, "energy");
-    copyNumberIfPresent(source, previous, member, "hpRegen");
-    copyObjectIfPresent(source, previous, member, "stats");
-    if (leader) {
-      rpgProjection = characterStatCore.project(state, id, characterLevelCore, equipmentStatCore);
-      member.put("level", rpgProjection.getInt("level"));
-      member.put("energy", rpgProjection.getString("energy"));
-      member.put("hpRegen", rpgProjection.getInt("hpRegen"));
-      member.put("stats", new JSONObject(rpgProjection.getJSONObject("stats").toString()));
-      member.put("rpgStatSource", rpgProjection.getString("source"));
-    }
     copyArrayIfPresent(source, previous, member, "injuries");
     copyArrayIfPresent(source, previous, member, "statuses");
     copyArrayIfPresent(source, previous, member, "effects");
@@ -123,11 +115,10 @@ final class CharacterDetailCore {
     } else if (leader) {
       member.put("physiology", derivePhysiology(elapsed, elapsed, elapsed));
     } else {
-      JSONObject unknown = new JSONObject()
+      member.put("physiology", new JSONObject()
           .put("hunger", "UNKNOWN")
           .put("thirst", "UNKNOWN")
-          .put("sleepDeprivation", "UNKNOWN");
-      member.put("physiology", unknown);
+          .put("sleepDeprivation", "UNKNOWN"));
     }
 
     JSONArray inventory = source.optJSONArray("inventory");
@@ -135,16 +126,15 @@ final class CharacterDetailCore {
     if (inventory == null && previous != null) inventory = previous.optJSONArray("inventory");
     member.put("inventory", inventory == null ? new JSONArray() : new JSONArray(inventory.toString()));
 
-    Object equipment = leader && rpgProjection != null
-        ? rpgProjection.optJSONArray("equipment")
-        : source.opt("equipment");
+    JSONArray projectedEquipment = progression.optJSONArray("equipment");
+    Object equipment = projectedEquipment != null && projectedEquipment.length() > 0
+        ? projectedEquipment : source.opt("equipment");
     if (equipment == null && previous != null) equipment = previous.opt("equipment");
     if (equipment instanceof JSONObject) {
       member.put("equipment", new JSONObject(equipment.toString()));
     } else if (equipment instanceof JSONArray) {
       member.put("equipment", new JSONArray(equipment.toString()));
     }
-
     return member;
   }
 

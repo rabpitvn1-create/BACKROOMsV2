@@ -3,52 +3,44 @@ package com.rabpit.backroom.core;
 import org.json.JSONObject;
 
 /**
- * Independent character RPG stat projection.
+ * Read-only character stat projection.
  *
- * This subsystem does not drive CombatChoiceEngine. It exists for character progression/status UI
- * and can be integrated into combat later through an explicit adapter rather than silently changing
- * the current damage model.
+ * Effective STR/DF/AGI/CRIT = Base + Explorer growth + Equipment. Explorer stat growth and
+ * equipment bonuses are intentionally zero until their formulas are explicitly approved.
  */
 final class CharacterStatCore {
-  static final int KAI_BASE_MAX_HP = 100;
-  static final int KAI_BASE_STR = 82;
-  static final int KAI_BASE_DF = 78;
-  static final int KAI_BASE_AGI = 92;
-  static final int KAI_BASE_CRIT = 95;
-  static final int KAI_HP_REGEN_PER_COMPLETED_TURN = 4;
-  static final String KAI_ENERGY_DISPLAY = "∞";
+  static final int EXPLORER_STAT_GROWTH = 0;
 
-  JSONObject project(JSONObject state, String characterId, CharacterLevelCore levelCore,
+  JSONObject project(JSONObject state, String characterId, CharacterProgressionCore progressionCore,
                      EquipmentStatCore equipmentCore) throws Exception {
-    if (!CharacterLevelCore.KAI_ID.equals(characterId)) return new JSONObject();
-
-    int level = levelCore.levelFor(state, characterId);
+    JSONObject profile = progressionCore.profile(state, characterId);
+    JSONObject base = profile.getJSONObject("baseStats");
     EquipmentStatCore.Bonus equipment = equipmentCore.aggregate(state, characterId);
 
-    // No level-growth formula exists yet. Keep an explicit zero levelBonus so the projection schema
-    // is stable when progression rules are added later.
     JSONObject stats = new JSONObject()
-        .put("STR", line(KAI_BASE_STR, 0, equipment.str))
-        .put("DF", line(KAI_BASE_DF, 0, equipment.df))
-        .put("AGI", line(KAI_BASE_AGI, 0, equipment.agi))
-        .put("CRIT", line(KAI_BASE_CRIT, 0, equipment.crit));
+        .put("STR", line(base.optInt("STR", CharacterProgressionCore.BASE_STAT), 0, equipment.str))
+        .put("DF", line(base.optInt("DF", CharacterProgressionCore.BASE_STAT), 0, equipment.df))
+        .put("AGI", line(base.optInt("AGI", CharacterProgressionCore.BASE_STAT), 0, equipment.agi))
+        .put("CRIT", line(base.optInt("CRIT", CharacterProgressionCore.BASE_STAT), 0, equipment.crit));
 
+    int explorer = profile.optInt("explorer", 0);
+    int exp = profile.optInt("exp", 0);
     return new JSONObject()
-        .put("level", level)
-        .put("baseMaxHp", KAI_BASE_MAX_HP)
-        .put("energy", KAI_ENERGY_DISPLAY)
-        .put("hpRegen", KAI_HP_REGEN_PER_COMPLETED_TURN)
+        .put("explorer", explorer)
+        .put("exp", exp)
+        .put("requiredExp", CharacterProgressionCore.requiredExp(explorer))
+        .put("currentHp", profile.optInt("currentHp", CharacterProgressionCore.BASE_MAX_HP))
+        .put("maxHp", profile.optInt("maxHp", CharacterProgressionCore.maxHpForExplorer(explorer)))
         .put("stats", stats)
         .put("equipment", equipmentCore.projection(state, characterId))
-        .put("levelGrowthConfigured", false)
-        .put("source", "gameplay_normalized_v2");
+        .put("source", CharacterProgressionCore.ROOT_KEY);
   }
 
-  private JSONObject line(int base, int levelBonus, int equipment) throws Exception {
+  private JSONObject line(int base, int explorerGrowth, int equipment) throws Exception {
     return new JSONObject()
         .put("base", base)
-        .put("levelBonus", levelBonus)
+        .put("explorer", explorerGrowth)
         .put("equipment", equipment)
-        .put("effective", base + levelBonus + equipment);
+        .put("effective", base + explorerGrowth + equipment);
   }
 }

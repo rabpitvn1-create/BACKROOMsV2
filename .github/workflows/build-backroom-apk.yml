@@ -105,11 +105,15 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
-          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          ! test -e android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterDetailCoreTest.java
-          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterRpgCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EquipmentStatCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityStatCoreTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/EntityCoreTest.java
           grep -Fq 'characterDetailCore.projectState(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
@@ -202,18 +206,25 @@ jobs:
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'state.partyDetails' android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq 'DEFAULT_LEVEL = 1' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterLevelCore.java
-          grep -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
-          grep -Fq 'KAI_BASE_DF = 78' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
-          grep -Fq 'KAI_BASE_AGI = 92' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
-          grep -Fq 'KAI_BASE_CRIT = 95' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
-          grep -Fq 'MK20_STR = 25' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
-          grep -Fq 'MK20_DF = 31' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
-          grep -Fq 'MK20_AGI = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
-          grep -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java/com/rabpit/backroom/core/EquipmentStatCore.java
-          grep -Fq 'copyField(before, sanitized, CharacterLevelCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq "addRow(status,'Level nhân vật',member.level)" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "parts.push('EQ '" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq 'ROOT_KEY = "characterProgression"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_STAT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'FEATURED_BONUS_POOL = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BONUS_POOL = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HP_PER_EXPLORER = 15' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'HOUND_BASE_EXP = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'LUCIA_REFERENCE_PERCENT = 93' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          grep -Fq 'CRITICAL_DAMAGE_MULTIPLIER = 3.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          ! grep -R -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK20_STR = 25' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'levelGrowthConfigured' android-apk/app/src/main/java android-apk/app/src/test/java
+          ! grep -R -Fq 'Level nhân vật' android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'Explorer',member.explorer)" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('Explorer '+signed(explorer))" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "parts.push('EQ '+signed(equipment))" android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
