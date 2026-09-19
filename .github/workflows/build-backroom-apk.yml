@@ -183,6 +183,16 @@ jobs:
           grep -Fq 'ROUTE_TRIPLE_SUCCESS_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ROUTE_TRIPLE_SUCCESS_INCREMENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ROUTE_REQUIRED_STREAK = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          test -s android-apk/app/src/main/assets/knowledge/level_knowledge.json
+          grep -Fq 'LEVEL_KNOWLEDGE_ASSET = "knowledge/level_knowledge.json"' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'LEVEL KNOWLEDGE BUNDLE:' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          jq -e '.schemaVersion == 2 and (.levels | keys | length == 14) and (.levels | has("0.3") | not)' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          jq -e '
+            ["0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms","1","2","3","4","5","6"] as $keys |
+            ["identity","architecture","zones","sensory","anomalies","hazards","resources","entities","navigation","entrancesExits","gameplayOverride","gmConstraints","variationPool"] as $sections |
+            all($keys[]; . as $k | all($sections[]; . as $s | (.levels[$k][$s] | type == "array" and length > 0)))
+          ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
+          grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
