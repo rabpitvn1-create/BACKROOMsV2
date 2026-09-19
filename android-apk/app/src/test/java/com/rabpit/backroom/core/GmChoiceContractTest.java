@@ -32,6 +32,53 @@ public class GmChoiceContractTest {
     assertHighlight(highlights, "EXP", "stat");
   }
 
+  @Test public void gmEntryNormalizesLeakedEnglishEnvironmentTerms() throws Exception {
+    JSONObject generated = new JSONObject().put("choices",
+        new JSONArray().put(new JSONObject().put("text",
+            "Quan sát opening bên corridor và nghe buzz từ fixture")));
+
+    JSONObject entry = GmChoiceContract.gmEntry(
+        "Wallpaper vàng bong khỏi wall. Ceiling thấp, fixture phát buzz đều. "
+            + "Một opening dẫn sang corridor có junction ở cuối.",
+        generated,
+        new JSONObject());
+
+    String text = entry.getString("text");
+    assertTrue(text.contains("Giấy dán tường") || text.contains("giấy dán tường"));
+    assertTrue(text.contains("trần nhà"));
+    assertTrue(text.contains("bộ đèn"));
+    assertTrue(text.contains("tiếng ù"));
+    assertTrue(text.contains("lối mở"));
+    assertTrue(text.contains("hành lang"));
+    assertTrue(text.contains("giao lộ"));
+    assertTrue(text.contains("tường"));
+
+    String lower = text.toLowerCase();
+    assertFalse(lower.contains("wallpaper"));
+    assertFalse(lower.contains("ceiling"));
+    assertFalse(lower.contains("fixture"));
+    assertFalse(lower.contains("buzz"));
+    assertFalse(lower.contains("opening"));
+    assertFalse(lower.contains("corridor"));
+    assertFalse(lower.contains("junction"));
+
+    String choice = entry.getJSONArray("choices").getJSONObject(0).getString("text");
+    assertTrue(choice.contains("lối mở"));
+    assertTrue(choice.contains("hành lang"));
+    assertTrue(choice.contains("tiếng ù"));
+    assertTrue(choice.contains("bộ đèn"));
+  }
+
+  @Test public void vietnameseNormalizerPreservesOfficialNamesAndStats() {
+    String normalized = GmChoiceContract.normalizePlayerFacingVietnamese(
+        "Kai Akechi ở Level 0, còn Almond Water và Quick Step. corridor phía trước tối.");
+    assertTrue(normalized.contains("Kai Akechi"));
+    assertTrue(normalized.contains("Level 0"));
+    assertTrue(normalized.contains("Almond Water"));
+    assertTrue(normalized.contains("Quick Step"));
+    assertTrue(normalized.contains("hành lang"));
+  }
+
   @Test public void deterministicTypeReplacesUntypedModelDuplicate() throws Exception {
     JSONObject generated = new JSONObject().put("highlights",
         new JSONArray().put("Clump").put(new JSONObject().put("text", "vệt đen").put("type", "effect")));
