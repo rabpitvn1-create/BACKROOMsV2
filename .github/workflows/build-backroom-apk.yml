@@ -259,6 +259,9 @@ jobs:
           grep -Fq 'HOUND_BASE_EXP = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'LUCIA_REFERENCE_PERCENT = 93' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
           grep -Fq 'CRITICAL_DAMAGE_MULTIPLIER = 3.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'allConfiguredSkillsUseOneHundredPercentProc' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
+          ! grep -Fq 'lucia-hit' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          ! grep -Fq 'Guilty Crown Override", 40' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           ! grep -R -Fq 'KAI_BASE_STR = 82' android-apk/app/src/main/java android-apk/app/src/test/java
           ! grep -R -Fq 'MK20_STR = 25' android-apk/app/src/main/java android-apk/app/src/test/java

@@ -89,28 +89,26 @@ public final class CombatChoiceEngine {
     entity("slenderman", "Slenderman", 480, 23, 8);
     entity("diep_minh", "Diệp Minh", 2000, 42, 14);
 
-    // Kai's combat skills are candidates for choice C. Pressing C still rolls the selected skill's
-    // proc gate. Guilty Crown Override is now a 40% proc while preserving its exact 24 x 10 HP contract.
+    // Choice C skills are guaranteed to activate. Damage/effects remain unchanged.
     skills("kai",
-      skill("The Last Requiem", 30, 170, "Chảy máu", 3, 5, true),
-      skill("Silent Lullaby", 20, 130, "Choáng", 1, 0, true),
-      skill("Salvation", 20, 147, "", 0, 0, true),
-      skill("Quick Step", 30, 0, "Né tránh", 3, 50, false),
-      skill("Guilty Crown Override", 40, 0, "", 0, 0, true));
+      skill("The Last Requiem", 100, 170, "Chảy máu", 3, 5, true),
+      skill("Silent Lullaby", 100, 130, "Choáng", 1, 0, true),
+      skill("Salvation", 100, 147, "", 0, 0, true),
+      skill("Quick Step", 100, 0, "Né tránh", 3, 50, false),
+      skill("Guilty Crown Override", 100, 0, "", 0, 0, true));
 
     skills("iris",
-      skill("Twosome Time", 30, 155, "", 0, 0, true),
-      skill("Rain Storm", 20, 145, "", 0, 0, true),
-      skill("Honeycomb Fire", 20, 185, "Phá giáp", 2, 20, true),
-      skill("Charged Shot", 25, 175, "", 0, 0, true));
+      skill("Twosome Time", 100, 155, "", 0, 0, true),
+      skill("Rain Storm", 100, 145, "", 0, 0, true),
+      skill("Honeycomb Fire", 100, 185, "Phá giáp", 2, 20, true),
+      skill("Charged Shot", 100, 175, "", 0, 0, true));
 
     skills("syvial",
-      skill("Rift Sever", 30, 175, "", 0, 0, true),
-      skill("Crimson Guillotine", 20, 190, "Chảy máu", 3, 4, true),
-      skill("Lucifer Breaker", 20, 155, "Choáng", 1, 0, true),
-      skill("Spatial Dominion", 20, 210, "Mất phương hướng", 2, 25, true));
+      skill("Rift Sever", 100, 175, "", 0, 0, true),
+      skill("Crimson Guillotine", 100, 190, "Chảy máu", 3, 4, true),
+      skill("Lucifer Breaker", 100, 155, "Choáng", 1, 0, true),
+      skill("Spatial Dominion", 100, 210, "Mất phương hướng", 2, 25, true));
 
-    // Lucia has one established command skill. It remains eligible for C, but the Entity can evade it.
     skills("lucia",
       skill("M4A1 Joint Attack", 100, 150, "", 0, 0, true));
   }
@@ -417,15 +415,6 @@ public final class CombatChoiceEngine {
       return;
     }
     if (offensive) {
-      // Lucia's command historically still passes through Entity evasion. Other former AUTO proc skills
-      // retain their old proc as the gate, so we do not add a second accuracy penalty to them.
-      if ("M4A1 Joint Attack".equals(skillName) && nextRoll(combat, "lucia-hit") >= 80) {
-        appendBattleLine(state, combat,
-          actorName + " dùng " + skillName + " lên " + entityName + ". Trượt.",
-          actorName, skillName, entityName);
-        addFeedback(combat, "actor", "entity", "miss", "MISS", false);
-        return;
-      }
       int raw = Math.max(1, actor.optInt("attack", 30) * selected.optInt("damagePercent", 100) / 100);
       int damage = Math.max(1, raw - effectiveEntityDefense(entity));
       int hp = Math.max(0, entity.optInt("hp", 0) - damage);

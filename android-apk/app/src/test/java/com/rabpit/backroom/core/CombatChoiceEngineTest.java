@@ -42,8 +42,27 @@ public class CombatChoiceEngineTest {
     assertEquals(3.5d, CombatChoiceEngine.CRITICAL_DAMAGE_MULTIPLIER, 0.0d);
   }
 
-  @Test public void guiltyCrownOverrideUsesFortyPercentProcAndExactDamage() {
-    assertEquals(40, CombatChoiceEngine.configuredProcPercent("kai", "Guilty Crown Override"));
+  @Test public void allConfiguredSkillsUseOneHundredPercentProc() {
+    String[][] skills = {
+        {"kai", "The Last Requiem"},
+        {"kai", "Silent Lullaby"},
+        {"kai", "Salvation"},
+        {"kai", "Quick Step"},
+        {"kai", "Guilty Crown Override"},
+        {"iris", "Twosome Time"},
+        {"iris", "Rain Storm"},
+        {"iris", "Honeycomb Fire"},
+        {"iris", "Charged Shot"},
+        {"syvial", "Rift Sever"},
+        {"syvial", "Crimson Guillotine"},
+        {"syvial", "Lucifer Breaker"},
+        {"syvial", "Spatial Dominion"},
+        {"lucia", "M4A1 Joint Attack"}
+    };
+    for (String[] skill : skills) {
+      assertEquals(skill[0] + " / " + skill[1], 100,
+          CombatChoiceEngine.configuredProcPercent(skill[0], skill[1]));
+    }
     assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Guilty Crown Override"));
     assertEquals(0, CombatChoiceEngine.exactDamageForSkill("The Last Requiem"));
   }
