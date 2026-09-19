@@ -174,6 +174,16 @@
     try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
   }
 
+  function fallbackExplorerChoices() {
+    var level = Number.isInteger(state && state.currentLevel) ? state.currentLevel : 0;
+    var levelText = 'Level ' + level;
+    return [
+      {text:'Quan sát kỹ khu vực xung quanh',action:'Quan sát kỹ khu vực xung quanh'},
+      {text:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất',action:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất'},
+      {text:'Tiếp tục khám phá ' + levelText,action:'Tiếp tục khám phá ' + levelText,highlights:[{text:levelText,type:'location'}]}
+    ];
+  }
+
   function submitChestChoice() {
     if (!chestPresent() || window.__combatBusy || (state.combat && state.combat.active)) return;
     if (!window.Android || typeof Android.submitTurn !== 'function') {
@@ -259,6 +269,9 @@
     var latest = index === lastGmIndex();
     var hasChest = latest && chestPresent();
     var choices = Array.isArray(entry.choices) ? entry.choices : [];
+    if (latest && !choices.length && !(state.combat && state.combat.active)) {
+      choices = fallbackExplorerChoices();
+    }
     if (!hasChest && !choices.length) return;
     var actionable = latest && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
