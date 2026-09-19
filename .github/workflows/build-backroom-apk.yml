@@ -188,9 +188,10 @@ jobs:
           grep -Fq 'LEVEL KNOWLEDGE BUNDLE:' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           jq -e '.schemaVersion == 2 and (.levels | keys | length == 14) and (.levels | has("0.3") | not)' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
           jq -e '
+            . as $root |
             ["0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms","1","2","3","4","5","6"] as $keys |
             ["identity","architecture","zones","sensory","anomalies","hazards","resources","entities","navigation","entrancesExits","gameplayOverride","gmConstraints","variationPool"] as $sections |
-            all($keys[]; . as $k | all($sections[]; . as $s | (.levels[$k][$s] | type == "array" and length > 0)))
+            all($keys[]; . as $k | all($sections[]; . as $s | ($root.levels[$k][$s] | type == "array" and length > 0)))
           ' android-apk/app/src/main/assets/knowledge/level_knowledge.json >/dev/null
           grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
