@@ -2,7 +2,7 @@ package com.rabpit.backroom.core;
 
 import org.json.JSONObject;
 
-/** Read-only character stat projection. Equipment is not part of gameplay progression. */
+/** Read-only character stat projection. */
 final class CharacterStatCore {
   static final int EXPLORER_STAT_GROWTH = 0;
 
