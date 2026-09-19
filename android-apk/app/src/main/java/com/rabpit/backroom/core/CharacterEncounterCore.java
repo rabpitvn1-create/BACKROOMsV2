@@ -97,7 +97,8 @@ final class CharacterEncounterCore {
     List<String> hits = new ArrayList<>();
 
     String currentLevelKey = state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)));
-    if (!containsPartyId(party, "lucia") && shouldEncounterLucia(currentLevelKey, nextRoll(100))) {
+    if (!containsPartyId(party, "lucia") && "0".equals(currentLevelKey)
+        && shouldEncounterLucia(currentLevelKey, nextRoll(100))) {
       hits.add("lucia");
     }
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
