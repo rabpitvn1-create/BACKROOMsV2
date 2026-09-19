@@ -133,8 +133,9 @@ public class LevelCoreTest {
     core.normalizeState(before);
 
     JSONObject candidate = new JSONObject(before.toString())
-        .put("currentLevel", 1)
-        .put("location", "Level 1 / Parking Zone");
+        .put("currentLevel", 0)
+        .put(LevelCore.LEVEL_KEY, "0.1")
+        .put("location", "Level 0.1 / Zenith Station");
 
     try {
       core.validateAndApplyTransition(before, candidate);
@@ -144,7 +145,31 @@ public class LevelCoreTest {
     }
   }
 
-  @Test public void completedChainAllowsAdjacentTransitionAndResetsRoute() throws Exception {
+  @Test public void completedChainAllowsOnlyNextSublevelAndResetsRoute() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject before = state(1, "Level 0 / Start");
+    for (int turn = 1; turn <= 10; turn++) {
+      before.put("turn", turn);
+      core.rollRouteForExplorerAction(before, ROUTE_ACTION);
+    }
+
+    JSONObject candidate = new JSONObject(before.toString())
+        .put("currentLevel", 0)
+        .put(LevelCore.LEVEL_KEY, "0.1")
+        .put("location", "Level 0.1 / Zenith Station");
+
+    core.validateAndApplyTransition(before, candidate);
+
+    assertEquals(0, candidate.getInt("currentLevel"));
+    assertEquals("0.1", candidate.getString(LevelCore.LEVEL_KEY));
+    JSONObject route = candidate.getJSONObject(LevelCore.ROUTE_STATE);
+    assertEquals(0, route.getInt("level"));
+    assertEquals("0.1", route.getString("levelKey"));
+    assertEquals(0, route.getInt("streak"));
+    assertFalse(route.getBoolean("exitAvailable"));
+  }
+
+  @Test public void completedLevelZeroCannotSkipDirectlyToLevelOne() throws Exception {
     LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject before = state(1, "Level 0 / Start");
     for (int turn = 1; turn <= 10; turn++) {
@@ -154,15 +179,64 @@ public class LevelCoreTest {
 
     JSONObject candidate = new JSONObject(before.toString())
         .put("currentLevel", 1)
+        .put(LevelCore.LEVEL_KEY, "1")
         .put("location", "Level 1 / Parking Zone");
 
-    core.validateAndApplyTransition(before, candidate);
+    try {
+      core.validateAndApplyTransition(before, candidate);
+      fail("Expected Level 0 -> Level 1 skip to be rejected");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("Invalid Level transition"));
+    }
+  }
 
-    assertEquals(1, candidate.getInt("currentLevel"));
-    JSONObject route = candidate.getJSONObject(LevelCore.ROUTE_STATE);
-    assertEquals(1, route.getInt("level"));
-    assertEquals(0, route.getInt("streak"));
-    assertFalse(route.getBoolean("exitAvailable"));
+  @Test public void fullMandatorySublevelSequenceEndsAtLevelOne() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    String[] progression = LevelCore.levelZeroProgressionKeys();
+    JSONObject current = state(1, LevelCore.defaultLocation(progression[0]));
+    current.put(LevelCore.LEVEL_KEY, progression[0]);
+    int turn = 1;
+
+    for (int i = 0; i < progression.length - 1; i++) {
+      for (int step = 0; step < LevelCore.ROUTE_REQUIRED_STREAK; step++) {
+        current.put("turn", turn++);
+        core.rollRouteForExplorerAction(current, ROUTE_ACTION);
+      }
+
+      String next = progression[i + 1];
+      JSONObject candidate = new JSONObject(current.toString())
+          .put("currentLevel", "1".equals(next) ? 1 : 0)
+          .put(LevelCore.LEVEL_KEY, next)
+          .put("location", LevelCore.defaultLocation(next));
+      core.validateAndApplyTransition(current, candidate);
+      assertEquals(next, candidate.getString(LevelCore.LEVEL_KEY));
+      current = candidate;
+    }
+
+    assertEquals("1", current.getString(LevelCore.LEVEL_KEY));
+    assertEquals(1, current.getInt("currentLevel"));
+  }
+
+  @Test public void levelZeroPointThreeIsNotPartOfTheGameRoute() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject before = state(1, "Level 0.2 / Remodeled Mess")
+        .put(LevelCore.LEVEL_KEY, "0.2");
+    for (int turn = 1; turn <= 10; turn++) {
+      before.put("turn", turn);
+      core.rollRouteForExplorerAction(before, ROUTE_ACTION);
+    }
+
+    JSONObject candidate = new JSONObject(before.toString())
+        .put("currentLevel", 0)
+        .put(LevelCore.LEVEL_KEY, "0.3")
+        .put("location", "Level 0.3 / The Icy Rooms");
+
+    try {
+      core.validateAndApplyTransition(before, candidate);
+      fail("Level 0.3 must be rejected");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("Unsupported"));
+    }
   }
 
   @Test public void failedRouteReturnsCandidateToChainOrigin() throws Exception {
