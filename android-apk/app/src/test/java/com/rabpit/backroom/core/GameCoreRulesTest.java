@@ -12,8 +12,8 @@ public class GameCoreRulesTest {
     assertTrue(GameCoreRules.isDirectPlayerPickupAction("take the key"));
   }
 
-  @Test public void vạn tàng giớiWithdrawalIsNotTreatedAsPickup() {
-    assertFalse(GameCoreRules.isDirectPlayerPickupAction("lấy W.W Magnum ra khỏi Vạn Tàng Giới"));
+  @Test public void vanTangGioiWithdrawalIsNotTreatedAsPickup() {
+    assertFalse(GameCoreRules.isDirectPlayerPickupAction("lấy Huyết Ma Kiếm ra khỏi Vạn Tàng Giới"));
   }
 
   @Test public void restoreLocksInventoryMutation() {
