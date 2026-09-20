@@ -107,7 +107,13 @@ final class CharacterProgressionCore {
   }
 
   static int baseExpForEntity(String entityKey) {
-    return "hound".equals(normalizeEntityKey(entityKey)) ? HOUND_BASE_EXP : 0;
+    return normalizeEntityKey(entityKey).isEmpty() ? 0 : HOUND_BASE_EXP;
+  }
+
+  static int baseExpForEntity(String entityKey, int entityMaxHp) {
+    if (normalizeEntityKey(entityKey).isEmpty()) return 0;
+    if (entityMaxHp <= 0) return HOUND_BASE_EXP;
+    return Math.max(HOUND_BASE_EXP, (int)Math.round(entityMaxHp / 24.0d));
   }
 
   static int rewardExp(int baseExp, int explorer) {
@@ -136,11 +142,18 @@ final class CharacterProgressionCore {
 
   void grantEntityKillExp(JSONObject state, String entityKey, JSONArray participants, JSONObject combat)
       throws Exception {
+    int entityMaxHp = combat == null || combat.optJSONObject("entity") == null
+        ? 0 : combat.optJSONObject("entity").optInt("maxHp", 0);
+    grantEntityKillExp(state, entityKey, entityMaxHp, participants, combat);
+  }
+
+  void grantEntityKillExp(JSONObject state, String entityKey, int entityMaxHp,
+                          JSONArray participants, JSONObject combat) throws Exception {
     if (state == null) return;
     if (combat != null && combat.optBoolean("expResolved", false)) return;
     normalizeState(state);
 
-    int baseExp = baseExpForEntity(entityKey);
+    int baseExp = baseExpForEntity(entityKey, entityMaxHp);
     JSONArray awards = new JSONArray();
     Set<String> seen = new LinkedHashSet<>();
     if (participants != null) {
@@ -156,6 +169,7 @@ final class CharacterProgressionCore {
         int gained = applyExp(profile, reward);
         awards.put(new JSONObject()
             .put("id", id)
+            .put("name", participant.optString("name", id))
             .put("rewardExp", reward)
             .put("explorerBefore", explorerBefore)
             .put("explorerAfter", profile.getInt("explorer"))
