@@ -24,9 +24,9 @@ Iris/Syvial currently have silhouette placeholders, not registered sprite assets
 
 ## New geometry
 
-- Measure original pixels once per source; cache only measured bounds, not size-dependent placement.
+- Generate bounds and SHA-256 hashes from original bundled PNGs with Java ImageIO. Embed them in the renderer so `file:///android_asset/` never requires canvas readback. CI rejects stale metadata.
 - Logical/body bounds use alpha > 128 to exclude faint padding/shadows. Paint bounds use alpha > 8 to retain translucent details. An entirely translucent sprite falls back to its paint bounds; an empty sprite has no layout.
-- All registered Character sprites share one envelope: maximum paint width, head extent and shadow extent relative to logical height. Preload these sprites before the first placement so load order cannot cause scale jumps.
+- All bundled Character sprites share one synchronous metadata envelope: maximum paint width, head extent and shadow extent relative to logical height. No detached preloads or shared load barrier.
 - Target logical height is 84% of snapshot height. Fit the shared envelope inside 2.5% side margins and 2% vertical safe edges. At unusually narrow aspect ratios the entire Character family reduces together. The pose's individual width never shrinks that pose alone.
 - Place logical bottom at 92% of snapshot height: `top = ground - logicalBottom * scale`. Transparent lower padding changes the image element's top, not its feet. Preserve the original aspect ratio. Paint bounds determine side placement and combat feedback anchors.
 - Entity retains its own 46% width lane and 84% maximum height, with no dependency on human proportions.
@@ -54,4 +54,27 @@ Verified: 36 combinations (six snapshot sizes × standing, aiming/action, Lucia,
 
 ## Limits
 
-Chromium is not a physical Android WebView; on-device confirmation remains necessary. Alpha bounds are a reproducible visual-body approximation, not skeletal anatomy: a future crouched/flying pose or opaque shadow extending below the feet may need intentional logical anchors. Unsupported canvas access leaves that sprite hidden with a console diagnostic rather than silently using padding-dependent canvas size. All current bundled PNGs were measurable. Artwork, background dimensions, combat/gameplay logic and version are unchanged.
+Chromium is not a physical Android WebView; on-device confirmation remains necessary. Alpha bounds are a reproducible visual-body approximation, not skeletal anatomy: a future crouched/flying pose or opaque shadow extending below the feet may need intentional logical anchors. Unknown/unregistered sprites fall back to visible canvas-sized bounds if alpha readback is blocked; only this exceptional fallback loses padding normalization. All 22 current bundled PNGs use generated exact bounds. Artwork, background dimensions, combat/gameplay logic and version are unchanged.
+
+
+## File-origin visibility regression (1.1.78)
+
+The initial test served assets over HTTP; production loads `file:///android_asset/index.html`. On a file origin, Chromium rejects canvas `getImageData` with `SecurityError`. The original `spriteMetric` returned null and left `visibility:hidden` permanently set. This was reproduced against the unmodified 1.1.78 renderer with actual local PNGs, not only an injected exception.
+
+The fix removes hidden-by-default CSS, uses synchronous generated metadata for all 22 bundled overlays and supplies a visible fallback for unregistered images when canvas throws or has no context. No WebView file-access/security settings are relaxed.
+
+Regenerate or validate metadata from the repository root:
+
+```
+java android-apk/tools/GenerateOverlayMetrics.java
+java android-apk/tools/GenerateOverlayMetrics.java --check
+node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs
+```
+
+Ten Node tests pass, including denied canvas access, unavailable context, late image load and complete bundled-asset coverage. The real file-origin browser regression is:
+
+```
+node android-apk/tests/snapshot-file-origin.cjs
+```
+
+It fails on the previous renderer (loaded Kai remains hidden after network idle) and passes on this fix for standing Kai, combat Kai, Lucia, Deathmoth and Hound, with **zero canvas pixel reads**. It uses file URLs and does not enable `--allow-file-access-from-files`. Physical Android-device testing remains unverified.

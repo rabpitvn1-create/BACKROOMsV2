@@ -383,7 +383,9 @@ jobs:
           gradle-version: '8.10.2'
 
       - name: Test snapshot overlay geometry
-        run: node --test android-apk/tests/snapshot-layout.test.cjs
+        run: |
+          java android-apk/tools/GenerateOverlayMetrics.java --check
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
