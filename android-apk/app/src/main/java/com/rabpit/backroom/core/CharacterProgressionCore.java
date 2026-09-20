@@ -19,7 +19,7 @@ final class CharacterProgressionCore {
   static final int DEFAULT_BONUS_POOL = 10;
   static final int BASE_MAX_HP = 50;
   static final int HP_PER_EXPLORER = 15;
-  static final int HOUND_BASE_EXP = 10;
+  static final int MIN_ENTITY_BASE_EXP = 10;
   static final int COMPANION_REVIVE_EXPLORER_TURNS = 10;
 
   interface IntRng {
@@ -107,13 +107,13 @@ final class CharacterProgressionCore {
   }
 
   static int baseExpForEntity(String entityKey) {
-    return normalizeEntityKey(entityKey).isEmpty() ? 0 : HOUND_BASE_EXP;
+    return normalizeEntityKey(entityKey).isEmpty() ? 0 : MIN_ENTITY_BASE_EXP;
   }
 
   static int baseExpForEntity(String entityKey, int entityMaxHp) {
     if (normalizeEntityKey(entityKey).isEmpty()) return 0;
-    if (entityMaxHp <= 0) return HOUND_BASE_EXP;
-    return Math.max(HOUND_BASE_EXP, (int)Math.round(entityMaxHp / 24.0d));
+    if (entityMaxHp <= 0) return MIN_ENTITY_BASE_EXP;
+    return Math.max(MIN_ENTITY_BASE_EXP, (int)Math.round(entityMaxHp / 24.0d));
   }
 
   static int rewardExp(int baseExp, int explorer) {
