@@ -359,7 +359,7 @@ jobs:
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
-          test "$(sha256sum android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
+          test "$(sha256sum android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           test "$(sha256sum android-apk/app/src/main/assets/avatars/lucia_avatar.jpg | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
           test "$(sha256sum android-apk/app/src/main/assets/lucia_entity_overlay.png | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
 
@@ -411,7 +411,7 @@ jobs:
           unzip -l Backroom-1.1.80.apk | grep -q 'assets/avatars/cao_minh_avatar.jpg'
           unzip -l Backroom-1.1.80.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
           unzip -l Backroom-1.1.80.apk | grep -q 'assets/lucia_entity_overlay.png'
-          test "$(unzip -p Backroom-1.1.80.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
+          test "$(unzip -p Backroom-1.1.80.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           test "$(unzip -p Backroom-1.1.80.apk assets/avatars/lucia_avatar.jpg | sha256sum | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
           test "$(unzip -p Backroom-1.1.80.apk assets/lucia_entity_overlay.png | sha256sum | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
           unzip -l Backroom-1.1.80.apk | grep -q 'assets/chest_overlay.png'

@@ -14,13 +14,13 @@ Bounds below are exclusive right/bottom, measured at full resolution with alpha 
 
 | Asset | Canvas | Paint bounds (left, top, right, bottom) |
 |---|---|---|
-| Cao Minh standing | 1024×1536 | 46, 7, 1007, 1518 |
-| Cao Minh aiming/action | 1448×1086 | 163, 0, 1301, 1077 |
+| Cao Minh Explorer idle | 1122×1402 | 54, 16, 1020, 1389 |
+| Cao Minh Entity encounter | 1122×1402 | 1, 0, 1122, 1386 |
 | Lucia combat | 1086×1448 | 20, 0, 1085, 1413 |
 | Deathmoth | 1536×1024 | 11, 42, 1526, 985 |
 | Hound | 128×128 | 3, 10, 126, 118 |
 
-Iris/Syvial currently have silhouette placeholders, not registered sprite assets. Cao Minh actions/skills reuse the aiming asset. Each current Entity has one registered sprite.
+Iris/Syvial currently have silhouette placeholders, not registered sprite assets. Cao Minh Explorer dùng ảnh idle; combat/Entity encounter dùng ảnh encounter riêng. Each current Entity has one registered sprite.
 
 ## New geometry
 
