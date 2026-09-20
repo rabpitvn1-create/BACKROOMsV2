@@ -218,7 +218,7 @@ final class LevelCore {
     if ("RESET".equals(result)) {
       String returnLocation = route.optString("returnLocation", state.optString("location", ""));
       routeInstruction =
-          "HIDDEN ROUTE OUTCOME THIS TURN: RESET. Narrate naturally that the attempted route folds, loops, or returns Kai toward familiar ground"
+          "HIDDEN ROUTE OUTCOME THIS TURN: RESET. Narrate naturally that the attempted route folds, loops, or returns Cao Minh toward familiar ground"
               + (returnLocation.trim().isEmpty() ? "." : " near: " + returnLocation + ".")
               + " Never mention a roll, streak, probability, reset counter, or hidden system.";
     } else if ("EXIT_AVAILABLE".equals(result) || exitAvailable) {
