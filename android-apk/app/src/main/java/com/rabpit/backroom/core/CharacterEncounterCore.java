@@ -61,7 +61,7 @@ final class CharacterEncounterCore {
         Object raw = source.opt(i);
         JSONObject member = raw instanceof JSONObject ? (JSONObject) raw : legacyStringMember(raw);
         String id = characterId(member);
-        if (id.isEmpty() || "kai".equals(id) || byId.containsKey(id) || !isEncounterCharacter(id)) continue;
+        if (id.isEmpty() || "cao_minh".equals(id) || byId.containsKey(id) || !isEncounterCharacter(id)) continue;
         byId.put(id, normalizedMember(id, member));
       }
     }
@@ -177,10 +177,10 @@ final class CharacterEncounterCore {
           "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter rolls and Party membership. Never spawn a character, add/remove/reorder Party, or change joined state. " +
-          "Joined characters may be treated as already accompanying Kai. Pending-intro characters are NOT yet accompanying Kai at the start of this turn. " +
+          "Joined characters may be treated as already accompanying Cao Minh. Pending-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "A pending character encounter has triggered. The reply must depict the FIRST CONTACT in the current location before any dialogue, without implying that the character was already walking with Kai, already in his Party, or present in earlier turns. Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. After this validated first-contact scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
+              : "A pending character encounter has triggered. The reply must depict the FIRST CONTACT in the current location before any dialogue, without implying that the character was already walking with Cao Minh, already in his Party, or present in earlier turns. Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. After this validated first-contact scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
@@ -307,7 +307,7 @@ final class CharacterEncounterCore {
   private static String characterId(JSONObject member) {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
-    if (raw.contains("kai") || raw.contains("twilight")) return "kai";
+    if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai") || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
