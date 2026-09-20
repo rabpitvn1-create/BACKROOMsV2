@@ -319,7 +319,7 @@ jobs:
           ! grep -Fq 'oldPrologueSignature' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'sau no-clip' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'After the shared no-clip event' android-apk/app/src/main/assets/knowledge/knowledge_db.json
-          grep -Fq '"id": "STORY.MAIN.ENTRY"' android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          grep -Fq '"id": "STORY.MAIN.CAO_MINH_ENTRY"' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'Cao Minh' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           ! grep -Fq 'deliberately enter the same SRU spatial gate' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
