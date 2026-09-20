@@ -7,13 +7,13 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public class SurvivalCoreTest {
-  @Test public void kaiPreservesLegacyElapsedSurvivalBaseline() throws Exception {
+  @Test public void caoMinhPreservesLegacyElapsedSurvivalBaseline() throws Exception {
     SurvivalCore core = new SurvivalCore();
     JSONObject state = new JSONObject()
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 12L * 60L))
         .put("party", new JSONArray());
 
-    JSONObject physiology = core.projectPhysiology(state, "kai");
+    JSONObject physiology = core.projectPhysiology(state, "cao_minh");
 
     assertEquals("MILD", physiology.getString("hunger"));
     assertEquals("MODERATE", physiology.getString("thirst"));
@@ -26,9 +26,9 @@ public class SurvivalCoreTest {
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 24L * 60L))
         .put("party", new JSONArray());
 
-    int foodGain = core.restoreFood(state, "kai", 45);
-    int waterGain = core.restoreWater(state, "kai", 50);
-    JSONObject physiology = core.projectPhysiology(state, "kai");
+    int foodGain = core.restoreFood(state, "cao_minh", 45);
+    int waterGain = core.restoreWater(state, "cao_minh", 50);
+    JSONObject physiology = core.projectPhysiology(state, "cao_minh");
 
     assertEquals(34, foodGain);
     assertEquals(50, waterGain);

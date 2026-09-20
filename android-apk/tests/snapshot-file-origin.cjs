@@ -14,7 +14,7 @@ const {chromium}=require('playwright');
   page.on('console',m=>{if(m.type()==='warning')console.log(m.text());});
   await page.goto(pathToFileURL(fixture).href);
   await page.evaluate(background=>{
-   window.state={flags:{},combat:{active:false,participants:[{id:'kai'},{id:'lucia'}]}};
+   window.state={flags:{},combat:{active:false,participants:[{id:'cao_minh'},{id:'lucia'}]}};
    window.Android={levelSnapshot:()=>JSON.stringify({path:background,level:0})};
    window.pixelReadAttempts=0;
    const original=CanvasRenderingContext2D.prototype.getImageData;
@@ -23,7 +23,7 @@ const {chromium}=require('playwright');
   const source=fs.readFileSync(process.env.OVERLAY_SCRIPT||path.join(assets,'snapshot-ui.js'),'utf8');
   await page.addScriptTag({content:source.replaceAll('file:///android_asset/',pathToFileURL(assets+'/').href)});
   await page.waitForLoadState('networkidle');
-  for(const mode of ['standing','kai','lucia','hound']) {
+  for(const mode of ['standing','cao_minh','lucia','hound']) {
    if(mode!=='standing')await page.evaluate(mode=>{state.combat.active=true;backroomSetCombatVisualActor(mode==='lucia'?1:0,mode==='hound'?'hound':'deathmoth');},mode);
    await page.waitForFunction(()=>[...document.querySelectorAll('img')].every(i=>i.complete&&i.naturalWidth));
    const overlays=await page.locator('.snapshot-grounded').evaluateAll(images=>images.map(i=>({src:i.src,visibility:getComputedStyle(i).visibility,width:i.getBoundingClientRect().width,height:i.getBoundingClientRect().height})));
@@ -36,6 +36,6 @@ const {chromium}=require('playwright');
   await page.evaluate(()=>document.querySelector('#snapshot').style.width='240px');
   await page.waitForFunction(()=>{const i=document.querySelector('.snapshot-character');return parseFloat(i.style.left)<240;});
   assert.deepEqual(errors,[]);
-  console.log('PASS: file:// standing, Kai, Lucia, Deathmoth, Hound; zero canvas reads. Evidence:',output);
+  console.log('PASS: file:// standing, Cao Minh, Lucia, Deathmoth, Hound; zero canvas reads. Evidence:',output);
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -189,7 +189,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processItemAction(String stateJson, String itemId, String operation,
                                                String targetId, int quantity) {
-    return processItemAction(stateJson, "kai", itemId, operation, targetId, quantity);
+    return processItemAction(stateJson, "cao_minh", itemId, operation, targetId, quantity);
   }
 
   public synchronized String processItemAction(String stateJson, String ownerId, String itemId,

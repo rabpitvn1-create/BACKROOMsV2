@@ -86,7 +86,7 @@ jobs:
           ! grep -Fq 'GEMINI_IMAGE_MODEL' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -Fq 'requestSnapshotInternal' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -Fq '@JavascriptInterface public void requestSnapshot' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          ! grep -Fq 'function shouldShowKaiOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'function shouldShowCaoMinhOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
@@ -94,6 +94,7 @@ jobs:
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
+          grep -Fq "selectedOwnerId='cao_minh'" android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'CHEST_SPAWN_RATE_PERCENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           grep -Fq 'ENTITY_DROP_MIN_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           grep -Fq 'ENTITY_DROP_MAX_PERCENT = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
@@ -153,7 +154,7 @@ jobs:
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/knowledge/gm_style_examples.json
-          jq -e '.version == 1 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
+          jq -e '.version == 2 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
           grep -Fq '"version": 4' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
@@ -206,7 +207,9 @@ jobs:
           grep -Fq 'finishDefeat(state, combat)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'clearEncounterFlag(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'COMPANION_REVIVE_EXPLORER_TURNS = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'applyKaiDeathPenalty(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq '.put("leaderId", "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
+          grep -Fq 'ensureProfileObject(characters, "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'applyCaoMinhDeathPenalty(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'LevelCore.resetToLevelZeroStart(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.applyExplorerTurnRecovery(sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'CombatChoiceEngine.normalizeTerminalEncounter(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -259,6 +262,9 @@ jobs:
           grep -Fq 'NARRATIVE VOICE:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'Không kết mỗi reply bằng câu hỏi tu từ' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Cao Minh' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CaoMinhVoiceContract.java
+          grep -Fq 'CAO MINH VOICE CONTRACT' android-apk/app/src/main/java/com/rabpit/backroom/core/CaoMinhVoiceContract.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CaoMinhVoiceContractTest.java
           grep -Fq 'LEVEL TRANSITION: LOCKED' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'entityCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -312,7 +318,7 @@ jobs:
           ! grep -Fq 'oldPrologueSignature' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'sau no-clip' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'After the shared no-clip event' android-apk/app/src/main/assets/knowledge/knowledge_db.json
-          grep -Fq '"id": "STORY.MAIN.ENTRY"' android-apk/app/src/main/assets/knowledge/knowledge_db.json
+          grep -Fq '"id": "STORY.MAIN.CAO_MINH_ENTRY"' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'Cao Minh' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           ! grep -Fq 'deliberately enter the same SRU spatial gate' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
@@ -363,11 +369,11 @@ jobs:
           ! grep -Fq "parts.push('Thirsty +" android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "kai:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'}" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "kai:'file:///android_asset/avatars/cao_minh_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'}" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq 'kai_avatar' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "kai:'file:///android_asset/cao_minh_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "cao_minh:'file:///android_asset/cao_minh_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/cao_minh_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
@@ -433,6 +439,10 @@ jobs:
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/inventory-ui.js'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/party-ui.js'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/player-action-ui.js'
+          unzip -l Backroom-1.1.81.apk | grep -q 'assets/avatars/cao_minh_avatar.jpg'
+          unzip -l Backroom-1.1.81.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
+          unzip -l Backroom-1.1.81.apk | grep -q 'assets/cao_minh_entity_overlay.png'
+          test "$(unzip -p Backroom-1.1.81.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           ! unzip -l Backroom-1.1.81.apk | grep -q 'assets/avatars/kai_avatar.jpg'
           ! unzip -l Backroom-1.1.81.apk | grep -q 'assets/avatars/kai_avatar.png'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/avatars/lucia_avatar.jpg'

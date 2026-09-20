@@ -19,7 +19,7 @@ final class SurvivalCore {
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);
     if (characters == null) characters = new JSONObject();
 
-    ensureProfileObject(state, characters, "kai", 0L);
+    ensureProfileObject(state, characters, "cao_minh", 0L);
 
     JSONArray party = state.optJSONArray("party");
     if (party != null) {
@@ -29,7 +29,7 @@ final class SurvivalCore {
         if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
         String id = CharacterProgressionCore.normalizeCharacterId(
             member.optString("id", member.optString("name", "")));
-        if (id.isEmpty() || "kai".equals(id)) continue;
+        if (id.isEmpty() || "cao_minh".equals(id)) continue;
         ensureProfileObject(state, characters, id, elapsed);
       }
     }
@@ -64,7 +64,7 @@ final class SurvivalCore {
     String id = CharacterProgressionCore.normalizeCharacterId(rawId);
     if (id.isEmpty()) throw new IllegalArgumentException("character id is required");
     JSONObject characters = state.getJSONObject(ROOT_KEY).getJSONObject(CHARACTERS_KEY);
-    long initial = "kai".equals(id) ? 0L : elapsedMinutes(state);
+    long initial = "cao_minh".equals(id) ? 0L : elapsedMinutes(state);
     return ensureProfileObject(state, characters, id, initial);
   }
 

@@ -6,7 +6,7 @@ Base inspected: `25d71f09b614bd9438766faf6deda8fb6489014e` (1.1.77).
 
 `MainActivity.installUiScripts()` injects `snapshot-ui.js` after the HTML UI loads. `LevelCore.snapshotDescriptor()` supplies the background through `Android.levelSnapshot()`. `renderSnapshot()` creates the background and overlays; `backroomSetCombatVisualActor()` selects the combat participant. No native scale transformation is applied. `index.html` supplies the 250px snapshot height; the overlay stylesheet overrides the generic image rule. Background `object-fit:cover`/map `contain` remain unchanged.
 
-The old layout measured alpha on a thumbnail at most 192px wide/high, then used `min(height budget / visible height, actor width budget / visible width)`. Standing Kai used 90% height, 58% width and a +5px foot offset. Aiming Kai used 84%/68%; Lucia used 84%/46%. Wide poses therefore had different effective heights even after padding normalization. Entry translation also briefly shifted sprites horizontally.
+The old layout measured alpha on a thumbnail at most 192px wide/high, then used `min(height budget / visible height, actor width budget / visible width)`. Standing Cao Minh used 90% height, 58% width and a +5px foot offset. Aiming Cao Minh used 84%/68%; Lucia used 84%/46%. Wide poses therefore had different effective heights even after padding normalization. Entry translation also briefly shifted sprites horizontally.
 
 ## Asset inspection
 
@@ -14,13 +14,13 @@ Bounds below are exclusive right/bottom, measured at full resolution with alpha 
 
 | Asset | Canvas | Paint bounds (left, top, right, bottom) |
 |---|---|---|
-| Kai standing | 1024×1536 | 46, 7, 1007, 1518 |
-| Kai aiming/action | 1448×1086 | 163, 0, 1301, 1077 |
+| Cao Minh Explorer idle | 1122×1402 | 54, 16, 1020, 1389 |
+| Cao Minh Entity encounter | 1122×1402 | 1, 0, 1122, 1386 |
 | Lucia combat | 1086×1448 | 20, 0, 1085, 1413 |
 | Deathmoth | 1536×1024 | 11, 42, 1526, 985 |
 | Hound | 128×128 | 3, 10, 126, 118 |
 
-Iris/Syvial currently have silhouette placeholders, not registered sprite assets. Kai actions/skills reuse the aiming asset. Each current Entity has one registered sprite.
+Iris/Syvial currently have silhouette placeholders, not registered sprite assets. Cao Minh Explorer dùng ảnh idle; combat/Entity encounter dùng ảnh encounter riêng. Each current Entity has one registered sprite.
 
 ## New geometry
 
@@ -77,4 +77,4 @@ Ten Node tests pass, including denied canvas access, unavailable context, late i
 node android-apk/tests/snapshot-file-origin.cjs
 ```
 
-It fails on the previous renderer (loaded Kai remains hidden after network idle) and passes on this fix for standing Kai, combat Kai, Lucia, Deathmoth and Hound, with **zero canvas pixel reads**. It uses file URLs and does not enable `--allow-file-access-from-files`. Physical Android-device testing remains unverified.
+It fails on the previous renderer (loaded Cao Minh remains hidden after network idle) and passes on this fix for standing Cao Minh, combat Cao Minh, Lucia, Deathmoth and Hound, with **zero canvas pixel reads**. It uses file URLs and does not enable `--allow-file-access-from-files`. Physical Android-device testing remains unverified.

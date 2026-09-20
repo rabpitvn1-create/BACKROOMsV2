@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class LevelCoreTest {
-  private static final String ROUTE_ACTION = "Kai đi tiếp theo hành lang";
+  private static final String ROUTE_ACTION = "Cao Minh đi tiếp theo hành lang";
 
   private static final class SequenceRng implements LevelCore.IntRng {
     private final int[] values;
@@ -258,7 +258,7 @@ public class LevelCoreTest {
     LevelCore core = new LevelCore(null, new SequenceRng(5));
     JSONObject state = state(1, "Level 0 / Start");
 
-    core.rollRouteForExplorerAction(state, "Kai nghỉ tại đây");
+    core.rollRouteForExplorerAction(state, "Cao Minh nghỉ tại đây");
 
     JSONObject route = state.getJSONObject(LevelCore.ROUTE_STATE);
     assertEquals(0, route.getInt("streak"));

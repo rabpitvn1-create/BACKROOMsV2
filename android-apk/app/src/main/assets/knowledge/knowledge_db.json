@@ -5,7 +5,7 @@
       "id": "GAME.TEXT.CORE",
       "domain": "GAME_RULE",
       "kind": "hard-lock",
-      "text": "Text Game authority: user instruction, Text Game rules, GM rules, live save/campaign state, then on-demand canon. Player controls Kai's intentional actions; GM controls world, Entity, survivor/NPC and consequences. Do not nerf canon abilities, invent facts, reset consequences, cheat dice, or fill UNKNOWN. Gameplay normally retrieves only needed canon rather than scanning the whole corpus.",
+      "text": "Text Game authority: user instruction, Text Game rules, GM rules, live save/campaign state, then on-demand canon. Player controls Cao Minh's intentional actions; GM controls world, Entity, survivor/NPC and consequences. Do not nerf canon abilities, invent facts, reset consequences, cheat dice, or fill UNKNOWN. Gameplay normally retrieves only needed canon rather than scanning the whole corpus.",
       "source": {
         "document": "05_TextGame/RULES/TEXT_GAME_RULES.md",
         "anchor": "1-12"
@@ -47,7 +47,7 @@
       "id": "WRITING.PLAYER_AGENCY",
       "domain": "WRITING",
       "kind": "hard-lock",
-      "text": "Do not choose Kai's intentional action for the player. Resolve what Kai can perceive from the chosen action before asking for the next choice. Menus are suggestions, not rails; free-form methods are valid, but the player cannot declare an unconfirmed result as already true.",
+      "text": "Do not choose Cao Minh's intentional action for the player. Resolve what Cao Minh can perceive from the chosen action before asking for the next choice. Menus are suggestions, not rails; free-form methods are valid, but the player cannot declare an unconfirmed result as already true.",
       "source": {
         "document": "05_TextGame/RULES/TEXT_GAME_RULES.md + 05_TextGame/RULES/GAME_MASTER_RULES.md",
         "anchor": "TEXT_GAME_RULES 4; GM_RULES 2"
@@ -151,52 +151,60 @@
     },
     {
       "id": "STORY.MAIN.OBJECTIVE",
-      "text": "Cao Minh's current first priority is to investigate the nature and rules of Backrooms through evidence gathered in play. Finding a route back to his original world remains a real but secondary objective. Do not reinterpret that priority as abandoning his original world permanently.",
+      "domain": "STORY",
+      "kind": "baseline-objective",
+      "text": "Initial long-term objective for Cao Minh: explore Backrooms because it is an unknown world whose rules he cannot immediately explain. Observe, test and remember local rules; investigate how deep the structure goes, what sustains it, and what Entities are. Returning to his original world is secondary rather than an urgent opening objective.",
       "source": {
-        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-BACKROOMS-01 / 19.3"
+        "document": "05_TextGame/STORY/MAIN_STORY.md",
+        "anchor": "3 PLAYER & MAIN OBJECTIVE"
       },
+      "authority": "STORY_CANON",
+      "mutability": "BASELINE",
+      "priority": 42,
       "tags": [
         "objective",
         "main campaign",
-        "cao minh",
-        "backrooms",
-        "return"
+        "exploration",
+        "backrooms"
       ],
       "references": [],
-      "affordances": [
-        "trace_analysis"
-      ]
+      "affordances": []
     },
     {
-      "id": "STORY.MAIN.ENTRY",
-      "text": "Immediately before entry, Cao Minh was on Ma Sơn with Huyết Ma Kiếm beside him and was drinking spirit wine. The ground beneath him vanished without a formation, recognized spatial turbulence or warning, and he fell into a yellow corridor environment. He does not initially know the name, number or rules of the area. He tests the space with thần thức and a ma ấn; the mark remains but no longer matches the route where it should be, showing that local spatial relations differ from his familiar reference frame.",
+      "id": "STORY.MAIN.CAO_MINH_ENTRY",
+      "domain": "STORY",
+      "kind": "baseline-continuity",
+      "text": "Cao Minh had already reached the summit of cultivation in his original world and was sitting bored on Ma Sơn when the ground beneath him vanished without a recognizable formation or spatial fluctuation. He fell directly into Level 0 alone. He does not know Backrooms terminology, Level rules or Entity rules in advance. Instead of urgently seeking an exit, he chooses to explore because the place presents unknown laws he cannot immediately explain.",
       "source": {
         "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-BACKROOMS-01 / 19.1-19.4"
+        "anchor": "CAO-BACKROOMS-01"
       },
+      "authority": "STORY_CANON",
+      "mutability": "BASELINE",
+      "priority": 38,
       "tags": [
         "main campaign",
         "cao minh",
-        "ma sơn",
         "backrooms",
-        "entry",
-        "knowledge lock"
+        "level 0",
+        "exploration",
+        "knowledge boundary"
       ],
-      "references": [
-        "STORY.MAIN.OBJECTIVE"
-      ],
-      "affordances": [
-        "trace_analysis"
-      ]
+      "references": [],
+      "affordances": []
     },
     {
       "id": "CHAR.CAO_MINH.RUNTIME_CORE",
-      "text": "Cao Minh / Vạn Giới Ma Tôn is a Ma Đạo Kiếm Tu who had already become the strongest cultivator of his original world. He remains fully himself while using ma nguyên or Vạn Quỷ Ma Thân. He is often relaxed, lazy and sarcastic outside serious danger, but reacts quickly and precisely when danger becomes real. He does not intentionally harm innocents and does not use righteous/demonic labels as a substitute for judgment.",
+      "domain": "CHARACTER",
+      "kind": "runtime-card",
+      "text": "Cao Minh / Vạn Giới Ma Tôn is a pure tiên-hiệp/ma-đạo sword cultivator who had already reached the summit of his original world before falling into Backrooms. He has no modern/future military identity, no firearm loadout, and no pre-existing relationship with Iris or Syvial. He is relaxed, bored and lightly mocking when nothing matters, but becomes precise and decisive in real danger. He does not know Backrooms rules in advance.",
       "source": {
         "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-ID-01; CAO-OVERVIEW-01; CAO-PER-01; CAO-CODE-01"
+        "anchor": "CAO-QUICK-01; CAO-PER-01; CAO-BACKROOMS-01"
       },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 20,
       "tags": [
         "cao minh",
         "vạn giới ma tôn",
@@ -207,24 +215,490 @@
       "affordances": []
     },
     {
-      "id": "CHAR.CAO_MINH.POWER_CORE",
-      "text": "Vạn Quỷ Ma Tâm is Cao Minh's Đạo Cơ, Ma Hải and central source of ma nguyên. Current canon sets no intrinsic depletion ceiling and does not permit arbitrary mana limits, cooldowns, corruption or berserk loss of control. Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới are bound artifacts. Huyết Ma Nhị Thập Tứ Trảm is exactly 24 strikes while external time is completely stopped.",
+      "id": "CHAR.CAO_MINH.VAN_QUY_MA_TAM",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Vạn Quỷ Ma Tâm is Cao Minh's Đạo Cơ/Ma Hải and an effectively inexhaustible source of ma nguyên. Do not invent a mana bar, intrinsic cooldown, corruption, berserk loss of control or technological power system merely to balance him. It supports regeneration and restoration of his bound equipment. Infinite ma nguyên does not grant omniscience or automatic success against information, geometry or protected-person constraints.",
       "source": {
         "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-CORE-VQM-01; CAO-VQMS-01; CAO-ULT-HUYETMA24-01"
+        "anchor": "CAO-CORE-VQM-01"
       },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 44,
       "tags": [
         "cao minh",
         "vạn quỷ ma tâm",
-        "huyết ma kiếm",
-        "combat"
+        "ma nguyên"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.CAO_MINH.VAN_QUY_MA_THAN",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Vạn Quỷ Ma Thân is Cao Minh's full-release state. It greatly amplifies his physical ability, thần niệm, recovery and ma-đạo sword power without creating a second personality, corruption state, loss of reason or invented intrinsic duration/cooldown.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-VQMT-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "cao minh",
+        "vạn quỷ ma thân"
       ],
       "references": [
-        "CHAR.CAO_MINH.RUNTIME_CORE"
+        "CHAR.CAO_MINH.VAN_QUY_MA_TAM"
       ],
       "affordances": [
-        "direct_threat",
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.CAO_MINH.HUYET_MA_KIEM",
+      "domain": "CHARACTER",
+      "kind": "equipment",
+      "text": "Huyết Ma Kiếm is Cao Minh's bound straight broad greatsword. It is a real physical sword enhanced by ma nguyên and can be used directly, release Huyết Sát Ma Khí, or be controlled through ngự kiếm/thần niệm. It is not a firearm, gunblade or technological weapon.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-EQP-HUYET-MA-KIEM-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "cao minh",
+        "huyết ma kiếm",
+        "sword",
+        "ngự kiếm"
+      ],
+      "references": [
+        "CHAR.CAO_MINH.VAN_QUY_MA_TAM"
+      ],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.CAO_MINH.HUYET_MA_CHIEN_KHAI",
+      "domain": "CHARACTER",
+      "kind": "equipment",
+      "text": "Huyết Ma Chiến Khải is Cao Minh's bound ma-khải formed from Ma Kim, ma văn, tinh huyết and ma nguyên. Its black/gunmetal and blood-red appearance may look mechanical, but canonically it is not powered armor, electronics or machinery. It can regenerate through Vạn Quỷ Ma Tâm.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-EQP-HUYET-MA-KHAI-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 50,
+      "tags": [
+        "cao minh",
+        "huyết ma chiến khải",
+        "ma khải"
+      ],
+      "references": [
+        "CHAR.CAO_MINH.VAN_QUY_MA_TAM"
+      ],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.CAO_MINH.VAN_TANG_GIOI",
+      "domain": "CHARACTER",
+      "kind": "equipment",
+      "text": "Vạn Tàng Giới is a bound storage artifact containing an inner space for inanimate objects. Phản Bổn can restore an existing object toward the best state that same object previously possessed. It does not scan/copy/create living beings, fabricate new items, or operate as a technological device.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-EQP-VAN-TANG-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 46,
+      "tags": [
+        "cao minh",
+        "vạn tàng giới",
+        "phản bổn",
+        "storage"
+      ],
+      "references": [],
+      "affordances": [
+        "item_manipulation"
+      ]
+    },
+    {
+      "id": "CHAR.CAO_MINH.HUYET_MA_24",
+      "domain": "CHARACTER",
+      "kind": "ultimate",
+      "text": "Huyết Ma Nhị Thập Tứ Trảm always resolves as exactly 24 strikes while external time is completely stopped. Gameplay projection is 10 HP per strike, 240 HP total. Do not turn it into gunfire, change the count, or downgrade full time-stop into generic slow motion without explicit retcon.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-ULT-HUYETMA24-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 54,
+      "tags": [
+        "cao minh",
+        "huyết ma nhị thập tứ trảm",
+        "24 trảm",
+        "time stop"
+      ],
+      "references": [
+        "CHAR.CAO_MINH.VAN_QUY_MA_THAN",
+        "CHAR.CAO_MINH.HUYET_MA_KIEM"
+      ],
+      "affordances": [
         "high_tier_target"
+      ]
+    },
+    {
+      "id": "REL.CAO_MINH.DIEP_MINH.OPEN",
+      "domain": "RELATIONSHIP",
+      "kind": "open-edge",
+      "text": "Cao Minh and Diệp Minh have an established enmity, but its cause, history, responsibility, balance of victories and eventual outcome are OPEN. Do not invent betrayal, murdered relatives, former brotherhood, reincarnation or any other explanation until explicitly retconned.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-REL-DIEP-MINH-OPEN-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "OPEN",
+      "priority": 32,
+      "tags": [
+        "cao minh",
+        "diệp minh",
+        "enmity",
+        "open"
+      ],
+      "references": [],
+      "affordances": [
+        "dialogue",
+        "high_tier_target"
+      ]
+    },
+    {
+      "id": "REL.CAO_MINH.IRIS.NONE",
+      "domain": "RELATIONSHIP",
+      "kind": "hard-lock",
+      "text": "Cao Minh and Iris have no pre-existing relationship at campaign start. If they meet, treat it as first contact unless later live campaign continuity explicitly changes that state.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-CANON-CLEANUP-R15"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "BASELINE",
+      "priority": 25,
+      "tags": [
+        "cao minh",
+        "iris",
+        "first contact"
+      ],
+      "references": [],
+      "affordances": [
+        "dialogue"
+      ]
+    },
+    {
+      "id": "REL.CAO_MINH.SYVIAL.NONE",
+      "domain": "RELATIONSHIP",
+      "kind": "hard-lock",
+      "text": "Cao Minh and Syvial have no pre-existing relationship at campaign start. If they meet, treat it as first contact unless later live campaign continuity explicitly changes that state.",
+      "source": {
+        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
+        "anchor": "CAO-CANON-CLEANUP-R15"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "BASELINE",
+      "priority": 25,
+      "tags": [
+        "cao minh",
+        "syvial",
+        "first contact"
+      ],
+      "references": [],
+      "affordances": [
+        "dialogue"
+      ]
+    },
+    {
+      "id": "CHAR.IRIS.RUNTIME_CORE",
+      "domain": "CHARACTER",
+      "kind": "runtime-card",
+      "text": "Iris remains an independent character governed by her own current source. Her established ranged-combat abilities, ARGUS Terrain Read and equipment remain hers. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; if encountered, the first meeting is first contact unless live campaign continuity later establishes otherwise.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "IRIS-QUICK-01; IRIS-PER-01; IRIS-CANON-GATE-01; IRIS-UNKNOWN-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 22,
+      "tags": [
+        "iris",
+        "argus",
+        "present core",
+        "voice"
+      ],
+      "references": [],
+      "affordances": []
+    },
+    {
+      "id": "CHAR.IRIS.ARGUS",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "ARGUS Terrain Read combines Iris's direct observation, Recon Frame sensors and analysis of terrain, landmarks, approach/escape routes, lines of sight, cover, ambush points and abnormal traces. It is not omniscience, wall vision, remote-camera generation or automatic supernatural true-form detection. Distorted geometry and bad sensor data can mislead it, so confidence/evidence still matter.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "IRIS-SCOUT-TERRAIN-01; IRIS-SCOUT-GROUND-01; IRIS-SCOUT-TARGET-01; IRIS-CANON-GATE-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 40,
+      "tags": [
+        "iris",
+        "argus",
+        "terrain read",
+        "trace",
+        "route",
+        "cover"
+      ],
+      "references": [],
+      "affordances": [
+        "trace_analysis"
+      ]
+    },
+    {
+      "id": "CHAR.IRIS.THOUSANDFOLD",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Thousandfold Cognition accelerates Iris's reception, analysis and information processing up to 1:1000. It does not automatically accelerate her body 1000 times. Knowing the right response does not guarantee her body can physically execute it in time.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "IRIS-THOUSANDFOLD-01; IRIS-WEAK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "iris",
+        "thousandfold",
+        "cognition"
+      ],
+      "references": [],
+      "affordances": [
+        "trace_analysis",
+        "target_analysis"
+      ]
+    },
+    {
+      "id": "CHAR.IRIS.IVORY_EBONY",
+      "domain": "CHARACTER",
+      "kind": "equipment",
+      "text": "Ivory & Ebony are Iris's two signature mechanical pistols, synchronized with Belial Core. Each shot forms directly from Iris's demon power, so carried ammunition quantity is not the limiting factor. Infinite source does not imply infinite rate of fire, weapon durability, per-shot damage or guaranteed hits; projectiles do not self-target or automatically distinguish manifestation from true body.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "IRIS-COMBAT-TWIN-01; IRIS-AMMO-DEMONIC-01; IRIS-CANON-GATE-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "iris",
+        "ivory",
+        "ebony",
+        "gunslinger"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.IRIS.SUPPORT",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Iris has Field Galley and Field MedNet support skills. Field MedNet is battlefield medical capability, not magical healing. Field Galley is field cooking/logistics skill and does not create matter or conjure food.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "FIELD GALLEY; FIELD MEDNET; IRIS-CANON-GATE-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "iris",
+        "field mednet",
+        "field galley",
+        "medical",
+        "food"
+      ],
+      "references": [],
+      "affordances": [
+        "field_medical",
+        "field_food"
+      ]
+    },
+    {
+      "id": "REL.IRIS.SYVIAL.BASELINE",
+      "domain": "RELATIONSHIP",
+      "kind": "baseline-edge",
+      "text": "Iris and Syvial may retain the friendship/teammate relationship established by their own sources. That relationship does not create any pre-existing relationship between either of them and Cao Minh. Exact Iris<->Syvial address remains governed by their own current canon.",
+      "source": {
+        "document": "02_CHARACTERS/Iris_Codex.docx",
+        "anchor": "IRIS-REL-SYVIAL-01; IRIS-UNKNOWN-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "BASELINE",
+      "priority": 30,
+      "tags": [
+        "iris",
+        "syvial",
+        "relationship",
+        "unknown address"
+      ],
+      "references": [],
+      "affordances": [
+        "dialogue"
+      ]
+    },
+    {
+      "id": "CHAR.SYVIAL.RUNTIME_CORE",
+      "domain": "CHARACTER",
+      "kind": "runtime-card",
+      "text": "Syvial remains an independent high-tier supernatural swordswoman governed by her own current source. Her Lucifer Core, Devil Trigger, GodKiller and other established abilities remain hers. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; if encountered, the first meeting is first contact unless live campaign continuity later establishes otherwise.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-QUICK-01; SYVIAL-OVERVIEW-01; SYVIAL-YANDERE-01; SYVIAL-ACTION-LOCK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 22,
+      "tags": [
+        "syvial",
+        "present core",
+        "ur+",
+        "voice"
+      ],
+      "references": [],
+      "affordances": []
+    },
+    {
+      "id": "CHAR.SYVIAL.LUCIFER_CORE",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Lucifer Core provides Syvial infinite demon power. Current canon does not supply an intrinsic energy cap/cooldown merely for balance. Infinite power does not erase problems created by incomplete information, protected people, environment, space or an opponent strong enough to matter.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-CORE-LUCIFER-01; SYVIAL-WEAK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 44,
+      "tags": [
+        "syvial",
+        "lucifer core",
+        "demon power"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.SYVIAL.DEVIL_TRIGGER",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Syvial's Devil Trigger does not create a second personality, remove control, force corruption or have an invented intrinsic duration/cooldown absent from codex. She remains herself and tactically competent while using it.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-DT-01; SYVIAL-ACTION-LOCK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "syvial",
+        "devil trigger"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.SYVIAL.GODKILLER",
+      "domain": "CHARACTER",
+      "kind": "equipment",
+      "text": "GodKiller is Syvial's enormous purely mechanical greatsword. Do not convert it into a gun or gunblade. Its reach and mass support space control at medium distance; in very tight space Syvial can shorten her sword work and use close combat/Spatial Shift rather than pretending the weapon never matters. She does not forget combat ability if disarmed and can call the sword back under codex capability.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-EQP-GODKILLER-01; SYVIAL-STYLE-COMBAT-01; SYVIAL-ACTION-LOCK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "syvial",
+        "godkiller",
+        "greatsword"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.SYVIAL.GODKILLER_OVERRIDE",
+      "domain": "CHARACTER",
+      "kind": "ultimate",
+      "text": "GodKiller Override / Twenty-Four Severance performs exactly 24 cuts during completely stopped external time under current canon. Do not change the count, turn it into a gun attack, or add an invented cooldown/energy bar without retcon.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-ULT-GKO-01; SYVIAL-ACTION-LOCK-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 54,
+      "tags": [
+        "syvial",
+        "godkiller override",
+        "twenty-four severance"
+      ],
+      "references": [
+        "CHAR.SYVIAL.GODKILLER",
+        "CHAR.SYVIAL.DEVIL_TRIGGER"
+      ],
+      "affordances": [
+        "high_tier_target"
+      ]
+    },
+    {
+      "id": "CHAR.SYVIAL.COMBAT",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Syvial is a high-tier supernatural swordswoman for assault, suppression, counterattack and finishing high-level targets. She controls space with GodKiller, adapts at close range, handles multiple targets by positioning rather than blind spinning, and gathers enough information before escalating against high-tier targets. She remains tactically autonomous and competent.",
+      "source": {
+        "document": "02_CHARACTERS/Syvial_Codex.docx",
+        "anchor": "SYVIAL-COMBAT-01; SYVIAL-STYLE-COMBAT-01"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 40,
+      "tags": [
+        "syvial",
+        "combat",
+        "ur+",
+        "sword"
+      ],
+      "references": [
+        "CHAR.SYVIAL.GODKILLER"
+      ],
+      "affordances": [
+        "direct_threat"
       ]
     },
     {

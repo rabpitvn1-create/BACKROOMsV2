@@ -78,57 +78,28 @@ Cao Minh **không được mặc định biết** tên/số Level, Entity, quy l
 ### Hội thoại — CAO-DLG-01
 
 Cao Minh nói tự nhiên, đủ ý, hay dùng hài hước/châm chọc; không cần liên tục xưng “bổn tọa”, không nói như cổ thư biết đi và không dùng câu tối nghĩa chỉ để tỏ ra thâm sâu. Với **Diệp Minh**, chỉ khóa việc hai người có một mối thù đã được xác lập; nguyên nhân, quá khứ, diễn tiến, mức độ, cán cân thắng bại và kết cục vẫn **OPEN**.
-## Iris / ARGUS — R07
 
-Tên chính thức hiện hành là **Iris**, chưa khóa họ. `ARGUS` là callsign chiến đấu SRU. Iris là **Scout / Target Eliminator** trong đội của Kai và là ranged combatant/Gunslinger thực thụ, không phải một trạm tình báo đứng sau tuyến. Kai là đội trưởng, Syvial là đội phó.
+## Campaign relationship override — Cao Minh R15
 
-Iris là bán nhân/bán quỷ, con gái của Belial và một người mẹ loài người đã qua đời. Danh tính/nghề nghiệp/xuất thân/nguyên nhân qua đời của mẹ vẫn UNKNOWN. Năm sinh và niên đại xuất thân của Iris vẫn UNKNOWN. Không tự suy ra Iris là UR+ chỉ vì Kai hoặc Syvial ở cấp đó. Kai là người đầu tiên của SRU phát hiện Iris; sau đó SRU chuẩn hóa hệ Project 07.
+Cao Minh không có quan hệ có sẵn với Iris hoặc Syvial. Mọi lần gặp trong campaign phải là first contact trừ khi live state về sau xác lập khác. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
 
-**Belial Core** cung cấp quỷ lực vô hạn cho các chức năng đã khóa của Iris nhưng không phải trí tuệ thứ hai. **Thousandfold Cognition** gia tốc tiếp nhận và xử lý thông tin tối đa 1:1000; không tự làm cơ thể, tay chân hay cơ cấu súng nhanh hơn 1000 lần.
+## Iris
 
-**ARGUS Terrain Read** thay thế hoàn toàn hệ drone EYE∞ cũ. Iris phải trực tiếp quan sát hoặc dùng cảm biến ở cùng khu vực để phân tích địa hình, đường tiếp cận/rút lui, đường ngắm, vật che, điểm phục kích và dấu vết bất thường. ARGUS không toàn tri, không nhìn xuyên tường, không tạo camera từ xa và không tự nhận diện bản thể siêu nhiên nếu thiếu bằng chứng.
+Iris giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Iris và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-Trang bị hiện hành gồm **SRU Recon Frame R03** và hai súng cơ khí **Ivory & Ebony**. Đạn của Ivory & Ebony được hình thành trực tiếp từ quỷ lực Iris, không dựa vào băng vật lý thông thường làm nguồn chính. Nguồn năng lượng vô hạn không có nghĩa tốc độ bắn, độ bền, sát thương từng viên, độ chính xác hay nhận dạng mục tiêu là vô hạn.
+## Syvial
 
-Field MedNet là năng lực y tế chiến trường, không phải phép hồi phục. Field Galley là kỹ năng nấu ăn/hậu cần dã chiến, không tạo vật chất.
+Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Syvial và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-Iris có tình cảm với Kai; Kai biết nhưng canon hiện hành chưa khóa rằng Kai đáp lại. Iris dùng hệ xưng hô `anh–em` với Kai. Iris và Syvial là bạn bè/đồng đội tin cậy có cạnh tranh tình cảm, không phải kẻ thù; xưng hô Iris ↔ Syvial vẫn UNKNOWN.
+## Hứa Thuý Mai / Lucia Lục
 
-## Syvial — current Drive canon
-
-Syvial là con gái bán quỷ của Lucifer và một người mẹ loài người chưa khóa danh tính. Cô đến từ năm 2299, đây là niên đại xuất thân chứ không phải năm sinh; tuổi thật chưa biết. Syvial là UR+, cùng tầng sức mạnh tổng thể với Kai. Tổ chức hiện hành là SRU thuộc lực lượng Cảnh Sát chống hiện tượng dị thường, và Syvial giữ chức **Đội phó** đội Kai Akechi / Twilight.
-
-Ngoài chiến đấu, Syvial tự nhiên, giao tiếp bình thường, thích đồ ăn ngon, biết lười, càm ràm và trêu người. Khi nguy hiểm thật sự, cô tập trung và chính xác. Syvial là yandere rất nặng đối với Kai nhưng vẫn tỉnh táo, thông minh và có năng lực xã hội. Điều cô muốn là Kai tự nguyện chọn cô; không biến đặc điểm này thành giấy phép cho giết người ngẫu nhiên, phá nhiệm vụ, tẩy ký ức, điều khiển tinh thần hay giam giữ Kai để cưỡng ép kết quả.
-
-**Lucifer Core** cung cấp quỷ lực vô hạn, tăng cường thể chất/phản xạ/nhận thức/hồi phục, cấp năng lượng cho Lucifer Armor và đồng bộ GodKiller. Core không phải trí tuệ thứ hai. Devil Trigger không làm Syvial mất kiểm soát và không có cooldown/trần thời lượng nội tại do người viết tự bịa.
-
-**GodKiller** là đại kiếm cơ khí thuần túy, không phải súng hoặc gunblade. Nó liên kết với Syvial và có thể được gọi trở lại trừ khi một cơ chế đủ mạnh trực tiếp phong tỏa liên kết đó.
-
-**Lucifer Armor** là giáp mecha/high-tech toàn thân đen/gunmetal/bạc với điểm sáng magenta. Các module nhọn quanh đầu là bộ phận cơ khí/cảm biến, không phải sừng sinh học. Giáp rất bền và tự sửa rất nhanh nhưng không bị khóa là bất hoại tuyệt đối.
-
-**GodKiller Override / Twenty-Four Severance**: đúng 24 nhát chém trong khi thời gian ngoại giới dừng hoàn toàn.
-
-## Hứa Thuý Mai / Lucia Lục — R03
-
-Tên thật/pháp lý là **Hứa Thuý Mai**. `Lucia Lục` là biệt danh/callsign dùng trong môi trường quân đội. Lucia là nữ, 19 tuổi, **con người**, quốc tịch Việt Nam, xuất thân Hoa Kiều và là chít nội Gia tộc Họ Hứa. Cô đã tham gia quân ngũ một năm theo chương trình huấn luyện tại Việt Nam kết hợp Hoa Kỳ, kỳ thi đầu vào đạt loại xuất sắc. Đây là một quân nhân trẻ có nền tảng tốt trong phạm vi con người, không phải chiến lực siêu nhiên/UR+.
-
-Lucia chỉ có thể xuất hiện qua roll Explorer tại Level 0 do **CharacterEncounterCore** sở hữu. Gemini không được tự tạo cô ở nơi thuận tiện và không được sửa Party. Lucia không thuộc Prologue của Cao Minh. Nếu Lucia xuất hiện, encounter phải do CharacterEncounterCore/continuity hiện hành xác nhận, không được suy từ opening cũ. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
-
-Gameplay baseline hiện hành: `HP 100`, `STR 7`, `DF 7`, `AGI 8`, `CRIT 7`; hồi `+2 HP` sau mỗi 3 lượt hoàn tất riêng biệt và trạng thái này phải tồn tại qua save/load.
-
-Vũ khí chính là **M4A1 cá nhân hóa** với đạn vật lý. Baseline đạn: 60 viên trong các băng chính + 90 viên dự trữ = 150 viên. Lucia còn có dao chiến đấu và đồng hồ điều hướng quân sự. Ảnh R03 cho thấy một súng ngắn đen ở holster đùi, nhưng model/đạn/cơ chế gameplay chính xác của súng này vẫn OPEN. Inventory hiện hành: tối đa 8 loại vật phẩm, 100 đơn vị mỗi loại; Equipment quản lý tách khỏi Inventory.
-
-Khóa thị giác R03: gương mặt nữ trẻ trưởng thành, tóc đen dài buộc đuôi ngựa cao, mắt nâu ấm, trang bị camouflage/tactical hiện đại, không đội helmet, M4A1 có báng chỉnh, rail, optic, foregrip, suppressor, light/laser theo hình tham chiếu. Chiều cao và số đo cơ thể vẫn OPEN. Quan hệ và xưng hô với Kai vẫn OPEN.
+Lucia chỉ xuất hiện qua encounter do **CharacterEncounterCore** sở hữu. Gemini không được tự spawn hoặc mutate Party. Quan hệ và xưng hô với Cao Minh vẫn OPEN cho đến khi continuity trong campaign xác lập.
 
 ## Runtime contract
 
-File máy đọc tương ứng: `app/src/main/assets/knowledge/characters_current.json`.
-
-Khi prompt/game state chứa bản canon này:
-
-1. Canon Drive hiện hành thắng dữ kiện character legacy trong save/log cũ nếu có xung đột.
-2. Không tự biến KNOWLEDGE_LOCK thành kiến thức của nhân vật.
-3. Không tự điền UNKNOWN/OPEN.
-4. Lucia không được auto-spawn chỉ vì model biết cô tồn tại; chỉ CharacterEncounterCore được roll và auto-join.
-5. Baseline nhân vật chính hiện hành là Cao Minh với Huyết Ma Kiếm, Huyết Ma Chiến Khải và Vạn Tàng Giới; loadout Kai/SRU cũ không còn là canon của protagonist.
-6. Omnivault không còn Scan/Copy/Create/Marked/Upgrade.
+1. Người chơi chỉ quyết định hành động có chủ ý của Cao Minh.
+2. Gemini không được tự spawn character hoặc sửa Party.
+3. Cao Minh không tự biết Level/Entity/quy luật Backrooms trước khi quan sát hoặc kiểm chứng.
+4. Gameplay stat như HP, EXP, Accuracy, Evasion, combat turn là lớp runtime; không được viết như tri thức diegetic của Cao Minh.
+5. Set mặc định của Cao Minh là Huyết Ma Kiếm + Huyết Ma Chiến Khải + Vạn Tàng Giới.
+6. Không khôi phục bất kỳ tên kỹ năng, vật phẩm, trang bị, thân phận hoặc quan hệ player-character đã bị R15 thay thế.

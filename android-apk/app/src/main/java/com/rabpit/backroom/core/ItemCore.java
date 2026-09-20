@@ -131,7 +131,7 @@ final class ItemCore {
 
   String applyItemAction(JSONObject state, String itemId, String operation, String targetId,
                          int requestedQuantity) throws Exception {
-    return applyItemAction(state, "kai", itemId, operation, targetId, requestedQuantity);
+    return applyItemAction(state, "cao_minh", itemId, operation, targetId, requestedQuantity);
   }
 
   String applyItemAction(JSONObject state, String ownerId, String itemId, String operation,
@@ -141,7 +141,7 @@ final class ItemCore {
     survivalCore.normalizeState(state);
 
     String ownerCharacterId = CharacterProgressionCore.normalizeCharacterId(ownerId);
-    if (ownerCharacterId.isEmpty()) ownerCharacterId = "kai";
+    if (ownerCharacterId.isEmpty()) ownerCharacterId = "cao_minh";
     JSONArray inventory = inventoryFor(state, ownerCharacterId, false);
     if (inventory == null || inventory.length() == 0) {
       throw new IllegalArgumentException("Inventory của nhân vật đang trống.");
@@ -170,7 +170,7 @@ final class ItemCore {
     String targetName;
     if ("share".equals(op)) {
       targetCharacterId = CharacterProgressionCore.normalizeCharacterId(targetId);
-      if ("kai".equals(targetCharacterId)) {
+      if ("cao_minh".equals(targetCharacterId)) {
         JSONObject player = state.optJSONObject("player");
         targetName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
       } else {
@@ -193,7 +193,7 @@ final class ItemCore {
     }
 
     JSONObject targetProfile = progressionCore.profile(state, targetCharacterId);
-    if (!"kai".equals(targetCharacterId) && targetProfile.optInt("currentHp", 0) <= 0) {
+    if (!"cao_minh".equals(targetCharacterId) && targetProfile.optInt("currentHp", 0) <= 0) {
       throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ đủ 10 Explorer Turn để hồi sinh.");
     }
 
@@ -352,7 +352,7 @@ final class ItemCore {
   private static JSONArray inventoryFor(JSONObject state, String rawOwnerId, boolean create)
       throws Exception {
     String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
-    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+    if (ownerId.isEmpty() || "cao_minh".equals(ownerId)) {
       JSONArray inventory = state.optJSONArray("inventory");
       if (inventory == null && create) {
         inventory = new JSONArray();
@@ -376,7 +376,7 @@ final class ItemCore {
   private static void setInventoryFor(JSONObject state, String rawOwnerId, JSONArray inventory)
       throws Exception {
     String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
-    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+    if (ownerId.isEmpty() || "cao_minh".equals(ownerId)) {
       state.put("inventory", inventory == null ? new JSONArray() : inventory);
       return;
     }
@@ -389,7 +389,7 @@ final class ItemCore {
 
   private static String inventoryOwnerName(JSONObject state, String rawOwnerId) {
     String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
-    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+    if (ownerId.isEmpty() || "cao_minh".equals(ownerId)) {
       JSONObject player = state == null ? null : state.optJSONObject("player");
       return player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
     }

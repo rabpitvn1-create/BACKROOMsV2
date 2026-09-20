@@ -9,7 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class CharacterDetailCoreTest {
-  @Test public void freshKaiProjectsHpExplorerExpAndStatsWithoutEquipment() throws Exception {
+  @Test public void freshCaoMinhProjectsHpExplorerExpAndStatsWithoutEquipment() throws Exception {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
@@ -19,20 +19,20 @@ public class CharacterDetailCoreTest {
     new CharacterDetailCore().projectState(state);
 
     JSONObject details = state.getJSONObject("partyDetails");
-    assertEquals("kai", details.getString("leaderId"));
+    assertEquals("cao_minh", details.getString("leaderId"));
     assertEquals(4, details.getInt("maxMembers"));
-    JSONObject kai = details.getJSONArray("members").getJSONObject(0);
-    assertEquals(50, kai.getInt("currentHp"));
-    assertEquals(50, kai.getInt("maxHp"));
-    assertEquals(0, kai.getInt("explorer"));
-    assertEquals(0, kai.getInt("exp"));
-    assertEquals(50, kai.getInt("requiredExp"));
-    assertEquals(40, baseTotal(kai.getJSONObject("stats")));
-    assertEquals(0, kai.getJSONObject("stats").getJSONObject("STR").getInt("explorer"));
-    assertFalse(kai.getJSONObject("stats").getJSONObject("STR").has("equipment"));
-    assertFalse(kai.has("equipment"));
-    assertEquals("NORMAL", kai.getJSONObject("physiology").getString("hunger"));
-    assertEquals(100, kai.getJSONObject("physiology").getInt("foodPercent"));
+    JSONObject cao_minh = details.getJSONArray("members").getJSONObject(0);
+    assertEquals(50, cao_minh.getInt("currentHp"));
+    assertEquals(50, cao_minh.getInt("maxHp"));
+    assertEquals(0, cao_minh.getInt("explorer"));
+    assertEquals(0, cao_minh.getInt("exp"));
+    assertEquals(50, cao_minh.getInt("requiredExp"));
+    assertEquals(40, baseTotal(cao_minh.getJSONObject("stats")));
+    assertEquals(0, cao_minh.getJSONObject("stats").getJSONObject("STR").getInt("explorer"));
+    assertFalse(cao_minh.getJSONObject("stats").getJSONObject("STR").has("equipment"));
+    assertFalse(cao_minh.has("equipment"));
+    assertEquals("NORMAL", cao_minh.getJSONObject("physiology").getString("hunger"));
+    assertEquals(100, cao_minh.getJSONObject("physiology").getInt("foodPercent"));
   }
 
   @Test public void legacyThresholdsAndPercentagesMatchPreviousRuntime() throws Exception {

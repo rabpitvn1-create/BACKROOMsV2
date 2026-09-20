@@ -24,7 +24,7 @@ public class CharacterEncounterCoreTest {
     SequenceRng levelZeroRng = new SequenceRng(9, 3999, 3999);
     JSONObject levelZero = state(0, 1);
     CharacterEncounterCore levelZeroCore = new CharacterEncounterCore(levelZeroRng);
-    levelZeroCore.rollForExplorerAction(levelZero, "Kai đi tiếp");
+    levelZeroCore.rollForExplorerAction(levelZero, "Cao Minh đi tiếp");
     assertEquals(0, levelZero.getJSONArray("party").length());
     assertEquals("lucia", levelZero.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
@@ -36,7 +36,7 @@ public class CharacterEncounterCoreTest {
 
     SequenceRng levelOneRng = new SequenceRng(3999, 3999);
     JSONObject levelOne = state(1, 1);
-    new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Kai đi tiếp");
+    new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Cao Minh đi tiếp");
     assertEquals(0, levelOne.getJSONArray("party").length());
     assertEquals(2, levelOneRng.calls);
   }
@@ -44,7 +44,7 @@ public class CharacterEncounterCoreTest {
   @Test public void luciaDoesNotRollInsideLevelZeroSublevels() throws Exception {
     SequenceRng rng = new SequenceRng(3999, 3999);
     JSONObject sublevel = state(0, 1).put(LevelCore.LEVEL_KEY, "0.1");
-    new CharacterEncounterCore(rng).rollForExplorerAction(sublevel, "Kai đi tiếp");
+    new CharacterEncounterCore(rng).rollForExplorerAction(sublevel, "Cao Minh đi tiếp");
     assertEquals(0, sublevel.getJSONArray("party").length());
     assertEquals(2, rng.calls);
   }
@@ -60,7 +60,7 @@ public class CharacterEncounterCoreTest {
     CharacterEncounterCore core = new CharacterEncounterCore(rng);
     JSONObject state = state(0, 7);
     CharacterEncounterCore.EncounterResult result =
-        core.rollForExplorerAction(state, "Kai quan sát hành lang");
+        core.rollForExplorerAction(state, "Cao Minh quan sát hành lang");
     assertTrue(result.joinedAny());
     assertEquals(0, state.getJSONArray("party").length());
     assertEquals(3, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
@@ -75,7 +75,7 @@ public class CharacterEncounterCoreTest {
 
     core.rollForExplorerAction(candidate, "Gemini retry");
     candidate.put("turn", 8);
-    core.rollForExplorerAction(candidate, "Kai đi tiếp");
+    core.rollForExplorerAction(candidate, "Cao Minh đi tiếp");
     assertEquals(3, rng.calls);
     assertEquals(3, candidate.getJSONArray("party").length());
   }
@@ -83,7 +83,7 @@ public class CharacterEncounterCoreTest {
   @Test public void geminiFailureKeepsFirstContactPendingWithoutPrematureJoin() throws Exception {
     JSONObject state = state(0, 3);
     CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999, 3999));
-    core.rollForExplorerAction(state, "Kai mở cửa");
+    core.rollForExplorerAction(state, "Cao Minh mở cửa");
     JSONObject savedAfterFailure = new JSONObject(state.toString());
     core.normalizeState(savedAfterFailure);
     assertEquals(0, savedAfterFailure.getJSONArray("party").length());
@@ -98,7 +98,7 @@ public class CharacterEncounterCoreTest {
     }
   }
 
-  @Test public void legacySaveMigrationRemovesKaiDuplicatesAndShadowProgression() throws Exception {
+  @Test public void legacySaveMigrationRemovesCaoMinhDuplicatesAndShadowProgression() throws Exception {
     JSONObject lucia = new JSONObject()
         .put("name", "Hứa Thuý Mai")
         .put("hp", 61)
@@ -107,7 +107,7 @@ public class CharacterEncounterCoreTest {
         .put("customMetadata", "keep-me");
     JSONObject state = state(0, 12);
     state.put("party", new JSONArray()
-        .put(new JSONObject().put("id", "kai").put("name", "Kai Akechi"))
+        .put(new JSONObject().put("id", "cao_minh").put("name", "Cao Minh"))
         .put(lucia)
         .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục"))
         .put("Iris")
@@ -151,7 +151,7 @@ public class CharacterEncounterCoreTest {
     return new JSONObject()
         .put("currentLevel", level)
         .put("turn", turn)
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("flags", new JSONObject())
         .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Test")));

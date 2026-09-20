@@ -21,7 +21,7 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject();
     core.normalizeState(state);
-    for (String id : new String[]{"kai", "iris", "syvial"}) {
+    for (String id : new String[]{"cao_minh", "iris", "syvial"}) {
       assertEquals(40, CharacterProgressionCore.sumBaseStats(
           core.profile(state, id).getJSONObject("baseStats")));
     }
@@ -53,11 +53,11 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject();
     core.normalizeState(state);
-    JSONObject kai = core.profile(state, "kai");
-    assertEquals(50, kai.getInt("currentHp"));
-    assertEquals(50, kai.getInt("maxHp"));
-    assertEquals(0, kai.getInt("explorer"));
-    assertEquals(0, kai.getInt("exp"));
+    JSONObject cao_minh = core.profile(state, "cao_minh");
+    assertEquals(50, cao_minh.getInt("currentHp"));
+    assertEquals(50, cao_minh.getInt("maxHp"));
+    assertEquals(0, cao_minh.getInt("explorer"));
+    assertEquals(0, cao_minh.getInt("exp"));
   }
 
   @Test public void explorerRequirementsAreFiftyPerNextExplorerIndex() {
@@ -98,44 +98,44 @@ public class CharacterProgressionCoreTest {
     assertEquals(95, profile.getInt("maxHp"));
   }
 
-  @Test public void kaiDeathHalvesExplorerAndExpAndRespawnsAtNewFullHp() throws Exception {
+  @Test public void caoMinhDeathHalvesExplorerAndExpAndRespawnsAtNewFullHp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject()
         .put("turn", 20)
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray());
     core.normalizeState(state);
 
-    JSONObject kai = core.profile(state, "kai");
-    kai.put("explorer", 10).put("exp", 240).put("currentHp", 0).put("maxHp", 200);
+    JSONObject cao_minh = core.profile(state, "cao_minh");
+    cao_minh.put("explorer", 10).put("exp", 240).put("currentHp", 0).put("maxHp", 200);
 
-    core.applyKaiDeathPenalty(state);
+    core.applyCaoMinhDeathPenalty(state);
 
-    assertEquals(5, kai.getInt("explorer"));
-    assertEquals(120, kai.getInt("exp"));
-    assertEquals(125, kai.getInt("maxHp"));
-    assertEquals(125, kai.getInt("currentHp"));
+    assertEquals(5, cao_minh.getInt("explorer"));
+    assertEquals(120, cao_minh.getInt("exp"));
+    assertEquals(125, cao_minh.getInt("maxHp"));
+    assertEquals(125, cao_minh.getInt("currentHp"));
     assertEquals("Ổn định", state.getJSONObject("player").getString("condition"));
   }
 
-  @Test public void kaiDeathRoundsOddExplorerDown() throws Exception {
+  @Test public void caoMinhDeathRoundsOddExplorerDown() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject().put("player", new JSONObject()).put("party", new JSONArray());
     core.normalizeState(state);
-    JSONObject kai = core.profile(state, "kai");
-    kai.put("explorer", 9).put("exp", 101).put("currentHp", 0);
+    JSONObject cao_minh = core.profile(state, "cao_minh");
+    cao_minh.put("explorer", 9).put("exp", 101).put("currentHp", 0);
 
-    core.applyKaiDeathPenalty(state);
+    core.applyCaoMinhDeathPenalty(state);
 
-    assertEquals(4, kai.getInt("explorer"));
-    assertEquals(50, kai.getInt("exp"));
+    assertEquals(4, cao_minh.getInt("explorer"));
+    assertEquals(50, cao_minh.getInt("exp"));
   }
 
   @Test public void downedCompanionRevivesAfterExactlyTenExplorerTurnsAtOneHp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject()
         .put("turn", 4)
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(
             new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
     core.normalizeState(state);
@@ -188,17 +188,17 @@ public class CharacterProgressionCoreTest {
   @Test public void normalizationRemovesLegacyEquipmentState() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi")
+        .put("player", new JSONObject().put("name", "Cao Minh")
             .put("equipment", new JSONArray().put("legacy")))
         .put("party", new JSONArray().put(new JSONObject()
             .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
             .put("equipment", new JSONArray().put("legacy"))))
         .put("partyDetails", new JSONObject().put("members", new JSONArray().put(
-            new JSONObject().put("id", "kai").put("equipment", new JSONArray().put("legacy")))))
+            new JSONObject().put("id", "cao_minh").put("equipment", new JSONArray().put("legacy")))))
         .put("equipment", new JSONObject().put("legacy", true));
 
     core.normalizeState(state);
-    core.profile(state, "kai").put("equipment", new JSONArray().put("legacy"));
+    core.profile(state, "cao_minh").put("equipment", new JSONArray().put("legacy"));
     core.normalizeState(state);
 
     assertFalse(state.has("equipment"));
@@ -206,18 +206,18 @@ public class CharacterProgressionCoreTest {
     assertFalse(state.getJSONArray("party").getJSONObject(0).has("equipment"));
     assertFalse(state.getJSONObject("partyDetails").getJSONArray("members")
         .getJSONObject(0).has("equipment"));
-    assertFalse(core.profile(state, "kai").has("equipment"));
+    assertFalse(core.profile(state, "cao_minh").has("equipment"));
   }
 
   @Test public void candidateCannotMutateBaseExplorerOrExp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore(bound -> 0);
     JSONObject before = new JSONObject();
     core.normalizeState(before);
-    JSONObject expected = new JSONObject(core.profile(before, "kai").toString());
+    JSONObject expected = new JSONObject(core.profile(before, "cao_minh").toString());
 
     JSONObject candidate = new JSONObject(before.toString());
     JSONObject forged = candidate.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("kai");
+        .getJSONObject("characters").getJSONObject("cao_minh");
     forged.getJSONObject("baseStats").put("STR", 999);
     forged.put("explorer", 99).put("exp", 9999);
     candidate.put("characterRpg", new JSONObject().put("characters", new JSONObject()));
@@ -225,7 +225,7 @@ public class CharacterProgressionCoreTest {
 
     core.protectFromCandidate(before, candidate);
     JSONObject actual = candidate.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("kai");
+        .getJSONObject("characters").getJSONObject("cao_minh");
     assertEquals(expected.getJSONObject("baseStats").toString(),
         actual.getJSONObject("baseStats").toString());
     assertEquals(expected.getInt("explorer"), actual.getInt("explorer"));

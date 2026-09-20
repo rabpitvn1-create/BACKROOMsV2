@@ -61,7 +61,7 @@ final class CharacterEncounterCore {
         Object raw = source.opt(i);
         JSONObject member = raw instanceof JSONObject ? (JSONObject) raw : legacyStringMember(raw);
         String id = characterId(member);
-        if (id.isEmpty() || "kai".equals(id) || byId.containsKey(id) || !isEncounterCharacter(id)) continue;
+        if (id.isEmpty() || "cao_minh".equals(id) || byId.containsKey(id) || !isEncounterCharacter(id)) continue;
         byId.put(id, normalizedMember(id, member));
       }
     }
@@ -307,7 +307,7 @@ final class CharacterEncounterCore {
   private static String characterId(JSONObject member) {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
-    if (raw.contains("cao minh") || raw.contains("vạn giới ma tôn") || raw.contains("kai") || raw.contains("twilight")) return "kai";
+    if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai") || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
