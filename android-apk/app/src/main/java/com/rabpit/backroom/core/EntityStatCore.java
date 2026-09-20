@@ -12,7 +12,18 @@ final class EntityStatCore {
   JSONObject profile(JSONObject state, String entityKey, CharacterProgressionCore progressionCore)
       throws Exception {
     JSONObject baseline = baseline(state, progressionCore);
-    return profile(state, entityKey, progressionCore, baseline.getInt("maxHp"));
+    JSONObject modifier = new JSONObject()
+        .put("STR", 0)
+        .put("DF", 0)
+        .put("AGI", 0)
+        .put("CRIT", 0)
+        .put("maxHp", 0);
+    return new JSONObject()
+        .put("entityKey", entityKey == null ? "" : entityKey)
+        .put("reference", "luciaProgression")
+        .put("baseline", baseline)
+        .put("modifier", modifier)
+        .put("effective", new JSONObject(baseline.toString()));
   }
 
   JSONObject profile(JSONObject state, String entityKey, CharacterProgressionCore progressionCore,
