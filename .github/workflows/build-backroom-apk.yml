@@ -66,7 +66,6 @@ jobs:
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
-          set -x
           grep -Fq 'versionCode 81' android-apk/app/build.gradle
           grep -Fq "versionName '1.1.81'" android-apk/app/build.gradle
           test -s android-apk/RELEASE_NOTES_1.1.81.txt
@@ -155,7 +154,7 @@ jobs:
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/knowledge/gm_style_examples.json
-          jq -e '.version == 1 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
+          jq -e '.version == 2 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
           grep -Fq '"version": 4' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
