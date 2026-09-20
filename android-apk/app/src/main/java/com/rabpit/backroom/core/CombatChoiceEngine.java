@@ -21,12 +21,12 @@ public final class CombatChoiceEngine {
   public static final String ACTION_A = "__combat:A";
   public static final String ACTION_B = "__combat:B";
   public static final String ACTION_C = "__combat:C";
-  private static final int GUILTY_CROWN_SHOTS = 24;
-  private static final int GUILTY_CROWN_DAMAGE_PER_SHOT = 10;
-  private static final int GUILTY_CROWN_TOTAL_DAMAGE = GUILTY_CROWN_SHOTS * GUILTY_CROWN_DAMAGE_PER_SHOT;
+  private static final int HUYET_MA_24_STRIKES = 24;
+  private static final int HUYET_MA_24_DAMAGE_PER_STRIKE = 10;
+  private static final int HUYET_MA_24_TOTAL_DAMAGE = HUYET_MA_24_STRIKES * HUYET_MA_24_DAMAGE_PER_STRIKE;
   private static final int MAX_COMBAT_PARTICIPANTS = 4;
-  static final int KAI_DEFAULT_ATTACK = 30;
-  static final int KAI_DEFAULT_DEFENSE = 10;
+  static final int CAO_MINH_DEFAULT_ATTACK = 30;
+  static final int CAO_MINH_DEFAULT_DEFENSE = 10;
   static final double CRITICAL_DAMAGE_MULTIPLIER = 3.5d;
 
   private static final class EntityProfile {
@@ -47,6 +47,7 @@ public final class CombatChoiceEngine {
 
   private static final class Skill {
     final String name;
+    final String description;
     final int procPercent;
     final int damagePercent;
     final String effect;
@@ -54,8 +55,9 @@ public final class CombatChoiceEngine {
     final int effectValue;
     final boolean offensive;
 
-    Skill(String name, int procPercent, int damagePercent, String effect, int effectTurns, int effectValue, boolean offensive) {
+    Skill(String name, String description, int procPercent, int damagePercent, String effect, int effectTurns, int effectValue, boolean offensive) {
       this.name = name;
+      this.description = description;
       this.procPercent = procPercent;
       this.damagePercent = damagePercent;
       this.effect = effect;
@@ -90,12 +92,12 @@ public final class CombatChoiceEngine {
     entity("diep_minh", "Diệp Minh", 2000, 42, 14);
 
     // Choice C skills are guaranteed to activate. Damage/effects remain unchanged.
-    skills("kai",
-      skill("The Last Requiem", 100, 170, "Chảy máu", 3, 5, true),
-      skill("Silent Lullaby", 100, 130, "Choáng", 1, 0, true),
-      skill("Salvation", 100, 147, "", 0, 0, true),
-      skill("Quick Step", 100, 0, "Né tránh", 3, 50, false),
-      skill("Guilty Crown Override", 100, 0, "", 0, 0, true));
+    skills("cao_minh",
+      skill("Huyết Ma Tứ Liên", "Bốn trảm liên hoàn: phá thế, phá khí, phá thể rồi lưu Huyết Sát Kiếm Ý; tổng 170% weapon damage và Chảy máu 3 lượt, mỗi lượt 5% Max HP.", 100, 170, "Chảy máu", 3, 5, true),
+      skill("Ma Tâm Trấn Hồn", "Ma uy từ Vạn Quỷ Ma Tâm trấn áp thần hồn rồi Huyết Ma Kiếm giáng xuống; tổng 130% weapon damage và Choáng 1 lượt.", 100, 130, "Choáng", 1, 0, true),
+      skill("Huyết Ảnh Ma Độn", "Ngự Huyết Ma Kiếm lao qua mục tiêu, hóa huyết ảnh dịch chuyển tới vị trí kiếm rồi chém đúng hai kiếm; tổng 147% weapon damage.", 100, 147, "", 0, 0, true),
+      skill("Thiên Ma Bộ", "Lấy ma nguyên làm điểm tựa trong hư không để đổi hướng tức thời; nhận +50 điểm phần trăm Né tránh trong 3 lượt.", 100, 0, "Né tránh", 3, 50, false),
+      skill("Huyết Ma Nhị Thập Tứ Trảm", "Vạn Quỷ Ma Thân giải phóng; ngoại giới dừng hoàn toàn và Cao Minh hoàn tất đúng 24 trảm, mỗi trảm 10 HP trong gameplay hiện tại.", 100, 0, "", 0, 0, true));
 
     skills("iris",
       skill("Twosome Time", 100, 155, "", 0, 0, true),
@@ -119,8 +121,8 @@ public final class CombatChoiceEngine {
     ENTITIES.put(key, new EntityProfile(key, name, hp, attack, defense));
   }
 
-  private static Skill skill(String name, int proc, int damage, String effect, int turns, int value, boolean offensive) {
-    return new Skill(name, proc, damage, effect, turns, value, offensive);
+  private static Skill skill(String name, String description, int proc, int damage, String effect, int turns, int value, boolean offensive) {
+    return new Skill(name, description, proc, damage, effect, turns, value, offensive);
   }
 
   private static void skills(String id, Skill... definitions) {
@@ -179,7 +181,7 @@ public final class CombatChoiceEngine {
   }
 
   static int exactDamageForSkill(String skillName) {
-    return "Guilty Crown Override".equals(skillName) ? GUILTY_CROWN_TOTAL_DAMAGE : 0;
+    return "Huyết Ma Nhị Thập Tứ Trảm".equals(skillName) ? HUYET_MA_24_TOTAL_DAMAGE : 0;
   }
 
   static int maxCombatParticipants() {
@@ -282,7 +284,7 @@ public final class CombatChoiceEngine {
     resolveEntityResponse(state, combat, actor, entity, defending);
     syncParticipants(state, participants);
 
-    if (isKaiDown(participants)) {
+    if (isCaoMinhDown(participants)) {
       finishPlayerDefeat(state, combat);
       return state;
     }
@@ -306,11 +308,11 @@ public final class CombatChoiceEngine {
       throws Exception {
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
-    String playerName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
-    JSONObject kaiProfile = progressionCore.profile(state, "kai");
-    output.put(participant("kai", playerName, -1, player,
-        kaiProfile.getInt("currentHp"), kaiProfile.getInt("maxHp"),
-        KAI_DEFAULT_ATTACK, KAI_DEFAULT_DEFENSE));
+    String playerName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
+    JSONObject caoMinhProfile = progressionCore.profile(state, "cao_minh");
+    output.put(participant("cao_minh", playerName, -1, player,
+        caoMinhProfile.getInt("currentHp"), caoMinhProfile.getInt("maxHp"),
+        CAO_MINH_DEFAULT_ATTACK, CAO_MINH_DEFAULT_DEFENSE));
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;
@@ -318,7 +320,7 @@ public final class CombatChoiceEngine {
       JSONObject member = party.optJSONObject(i);
       if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
       String name = member.optString("name", member.optString("id", "")).trim();
-      if (name.isEmpty() || normalizeCharacterId(name).equals("kai")) continue;
+      if (name.isEmpty() || normalizeCharacterId(name).equals("cao_minh")) continue;
       String id = normalizeCharacterId(member.optString("id", name));
       int defaultAttack = "syvial".equals(id) ? 32 : "iris".equals(id) ? 28 : "lucia".equals(id) ? 24 : 24;
       int defaultDefense = "syvial".equals(id) ? 10 : "iris".equals(id) ? 8 : "lucia".equals(id) ? 7 : 7;
@@ -411,8 +413,8 @@ public final class CombatChoiceEngine {
       String damageText = "-" + exactDamage + " HP";
       String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
       appendBattleLine(state, combat,
-        actorName + " dùng " + skillName + ": " + GUILTY_CROWN_SHOTS + "/" + GUILTY_CROWN_SHOTS +
-          " phát trúng khi ngoại giới dừng thời gian. " + damageText + " (" + hpText + ")",
+        actorName + " dùng " + skillName + ": hoàn tất đúng " + HUYET_MA_24_STRIKES +
+          " trảm khi ngoại giới dừng hoàn toàn. " + damageText + " (" + hpText + ")",
         actorName, skillName, entityName, damageText, hpText);
       addFeedback(combat, "actor", "entity", "damage", damageText, true);
       return;
@@ -562,13 +564,13 @@ public final class CombatChoiceEngine {
     if (accuracyTurns > 0) entity.put("accuracyPenaltyTurns", accuracyTurns - 1);
   }
 
-  private static boolean isKaiDown(JSONArray participants) {
+  private static boolean isCaoMinhDown(JSONArray participants) {
     for (int i = 0; i < participants.length(); i++) {
       JSONObject participant = participants.optJSONObject(i);
       if (participant == null) continue;
       String id = normalizeCharacterId(
           participant.optString("id", participant.optString("name", "")));
-      if ("kai".equals(id)) return participant.optInt("hp", 0) <= 0;
+      if ("cao_minh".equals(id)) return participant.optInt("hp", 0) <= 0;
     }
     return false;
   }
@@ -620,7 +622,9 @@ public final class CombatChoiceEngine {
     if (selected != null) {
       JSONObject skillJson = skillJson(selected);
       combat.put("currentSkill", skillJson);
-      choices.put(choice("C", selected.name, false));
+      JSONObject skillChoice = choice("C", selected.name, false);
+      skillChoice.put("description", selected.description);
+      choices.put(skillChoice);
     } else {
       combat.remove("currentSkill");
       choices.put(choice("C", "Không có kỹ năng", true));
@@ -636,6 +640,7 @@ public final class CombatChoiceEngine {
   private static JSONObject skillJson(Skill skill) throws Exception {
     return new JSONObject()
       .put("name", skill.name)
+      .put("description", skill.description)
       .put("procPercent", skill.procPercent)
       .put("damagePercent", skill.damagePercent)
       .put("effect", skill.effect)
@@ -736,12 +741,12 @@ public final class CombatChoiceEngine {
     combat.put("active", false).put("outcome", "defeat").put("choices", new JSONArray());
     if (!combat.optBoolean("deathRecoveryApplied", false)) {
       CharacterProgressionCore progressionCore = new CharacterProgressionCore();
-      progressionCore.applyKaiDeathPenalty(state);
+      progressionCore.applyCaoMinhDeathPenalty(state);
       LevelCore.resetToLevelZeroStart(state);
       combat.put("deathRecoveryApplied", true);
       combat.put("playerRespawned", true);
       appendBattleLine(state, combat,
-          "Kai bị hạ. Kai trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Kai Akechi");
+          "Cao Minh bị hạ. Cao Minh trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Cao Minh");
     }
     clearEncounterFlag(state);
   }
@@ -773,7 +778,7 @@ public final class CombatChoiceEngine {
       String id = normalizeCharacterId(
           participant.optString("id", participant.optString("name", "")));
       progressionCore.setCurrentHp(state, id, participant.optInt("hp", 0));
-      if (!"kai".equals(id) && participant.optInt("hp", 0) <= 0) {
+      if (!"cao_minh".equals(id) && participant.optInt("hp", 0) <= 0) {
         progressionCore.markCompanionDown(state, id);
       }
       JSONObject profile = progressionCore.profile(state, id);
@@ -795,7 +800,7 @@ public final class CombatChoiceEngine {
 
   private static String normalizeCharacterId(String raw) {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-    if (value.contains("kai") || value.contains("twilight")) return "kai";
+    if (value.contains("cao_minh") ) return "cao_minh";
     if (value.contains("iris") || value.contains("argus")) return "iris";
     if (value.contains("syvial")) return "syvial";
     if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hua thuy mai")) return "lucia";
