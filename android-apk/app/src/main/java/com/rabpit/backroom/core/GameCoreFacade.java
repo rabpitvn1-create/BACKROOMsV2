@@ -189,7 +189,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processItemAction(String stateJson, String itemId, String operation,
                                                String targetId, int quantity) {
-    return processItemAction(stateJson, "kai", itemId, operation, targetId, quantity);
+    return processItemAction(stateJson, "cao_minh", itemId, operation, targetId, quantity);
   }
 
   public synchronized String processItemAction(String stateJson, String ownerId, String itemId,
@@ -358,8 +358,8 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private String partyReply(JSONArray party) {
-    if (party == null || party.length() == 0) return "Kai hiện không có đồng đội trong party.";
-    StringBuilder reply = new StringBuilder("Party hiện có Kai");
+    if (party == null || party.length() == 0) return "Cao Minh hiện không có đồng đội trong party.";
+    StringBuilder reply = new StringBuilder("Party hiện có Cao Minh");
     for (int i = 0; i < party.length(); i++) {
       JSONObject member = party.optJSONObject(i);
       if (member == null) continue;
