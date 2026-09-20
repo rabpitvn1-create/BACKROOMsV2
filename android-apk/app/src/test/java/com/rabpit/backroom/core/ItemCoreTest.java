@@ -122,6 +122,32 @@ public class ItemCoreTest {
     assertTrue(waterReply.contains("Khát +50"));
   }
 
+  @Test public void selectedCompanionUsesOwnInventoryWithoutTouchingKaiInventory() throws Exception {
+    JSONObject lucia = new JSONObject()
+        .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
+        .put("inventory", new JSONArray().put(new JSONObject()
+            .put("id", ItemCore.BANDAGE_ID).put("name", "Băng Gạc Y Tế").put("quantity", 1)));
+    JSONObject state = new JSONObject()
+        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("inventory", new JSONArray().put(new JSONObject()
+            .put("id", ItemCore.ALMOND_WATER_ID).put("name", "Almond Water").put("quantity", 1)))
+        .put("party", new JSONArray().put(lucia));
+
+    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    progression.normalizeState(state);
+    progression.setCurrentHp(state, "lucia", 10);
+
+    String reply = new ItemCore().applyItemAction(
+        state, "lucia", ItemCore.BANDAGE_ID, "use", "", 1);
+
+    assertEquals(25, progression.profile(state, "lucia").getInt("currentHp"));
+    assertTrue(reply.contains("Lucia Lục"));
+    assertEquals(0, lucia.getJSONArray("inventory").length());
+    assertEquals(1, state.getJSONArray("inventory").length());
+    assertEquals(ItemCore.ALMOND_WATER_ID,
+        state.getJSONArray("inventory").getJSONObject(0).getString("id"));
+  }
+
   @Test public void downedCompanionCannotBypassTenTurnReviveWithHealingItem() throws Exception {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Kai Akechi"))
