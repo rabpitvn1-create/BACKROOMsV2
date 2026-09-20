@@ -358,8 +358,8 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private String partyReply(JSONArray party) {
-    if (party == null || party.length() == 0) return "Kai hiện không có đồng đội trong party.";
-    StringBuilder reply = new StringBuilder("Party hiện có Kai");
+    if (party == null || party.length() == 0) return "Cao Minh hiện không có đồng đội trong party.";
+    StringBuilder reply = new StringBuilder("Party hiện có Cao Minh");
     for (int i = 0; i < party.length(); i++) {
       JSONObject member = party.optJSONObject(i);
       if (member == null) continue;
