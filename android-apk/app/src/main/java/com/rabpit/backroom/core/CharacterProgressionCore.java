@@ -45,7 +45,7 @@ final class CharacterProgressionCore {
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);
     if (characters == null) characters = new JSONObject();
 
-    ensureProfileObject(characters, "kai");
+    ensureProfileObject(characters, "cao_minh");
     ensureProfileObject(characters, "lucia");
     ensureProfileObject(characters, "iris");
     ensureProfileObject(characters, "syvial");
@@ -185,21 +185,21 @@ final class CharacterProgressionCore {
     }
   }
 
-  void applyKaiDeathPenalty(JSONObject state) throws Exception {
+  void applyCaoMinhDeathPenalty(JSONObject state) throws Exception {
     normalizeState(state);
-    JSONObject kai = profile(state, "kai");
-    int explorer = Math.max(0, kai.optInt("explorer", 0));
-    int exp = Math.max(0, kai.optInt("exp", 0));
+    JSONObject cao_minh = profile(state, "cao_minh");
+    int explorer = Math.max(0, cao_minh.optInt("explorer", 0));
+    int exp = Math.max(0, cao_minh.optInt("exp", 0));
     int reducedExplorer = explorer / 2;
     int reducedExp = exp / 2;
     int maxHp = maxHpForExplorer(reducedExplorer);
 
-    kai.put("explorer", reducedExplorer);
-    kai.put("exp", reducedExp);
-    kai.put("maxHp", maxHp);
-    kai.put("currentHp", maxHp);
-    kai.remove("downedAtTurn");
-    kai.remove("reviveAtTurn");
+    cao_minh.put("explorer", reducedExplorer);
+    cao_minh.put("exp", reducedExp);
+    cao_minh.put("maxHp", maxHp);
+    cao_minh.put("currentHp", maxHp);
+    cao_minh.remove("downedAtTurn");
+    cao_minh.remove("reviveAtTurn");
 
     JSONObject player = state.optJSONObject("player");
     if (player != null) {
@@ -212,7 +212,7 @@ final class CharacterProgressionCore {
   void markCompanionDown(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
     String id = normalizeCharacterId(rawId);
-    if (id.isEmpty() || "kai".equals(id)) return;
+    if (id.isEmpty() || "cao_minh".equals(id)) return;
 
     JSONObject profile = profile(state, id);
     profile.put("currentHp", 0);
@@ -234,7 +234,7 @@ final class CharacterProgressionCore {
       JSONObject member = party.optJSONObject(i);
       if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
       String id = normalizeCharacterId(member.optString("id", member.optString("name", "")));
-      if (id.isEmpty() || "kai".equals(id)) continue;
+      if (id.isEmpty() || "cao_minh".equals(id)) continue;
 
       JSONObject profile = profile(state, id);
       int hp = Math.max(0, profile.optInt("currentHp", 0));
@@ -286,7 +286,7 @@ final class CharacterProgressionCore {
     JSONObject profile = ensureProfile(state, id);
     int current = Math.max(0, profile.optInt("currentHp", 0));
     int maxHp = Math.max(1, profile.optInt("maxHp", maxHpForExplorer(profile.optInt("explorer", 0))));
-    if (!"kai".equals(id) && current <= 0) {
+    if (!"cao_minh".equals(id) && current <= 0) {
       throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ hồi sinh.");
     }
     int next = Math.min(maxHp, current + Math.max(0, amount));
@@ -296,7 +296,7 @@ final class CharacterProgressionCore {
   }
 
   private void syncShadowHp(JSONObject state, String id, int hp, int maxHp) throws Exception {
-    if ("kai".equals(id)) {
+    if ("cao_minh".equals(id)) {
       JSONObject player = state.optJSONObject("player");
       if (player != null) player.put("hp", hp).put("maxHp", maxHp);
       return;
@@ -364,7 +364,7 @@ final class CharacterProgressionCore {
   }
 
   private static int bonusPoolFor(String id) {
-    return "kai".equals(id) || "iris".equals(id) || "syvial".equals(id)
+    return "cao_minh".equals(id) || "iris".equals(id) || "syvial".equals(id)
         ? FEATURED_BONUS_POOL : DEFAULT_BONUS_POOL;
   }
 
@@ -376,7 +376,7 @@ final class CharacterProgressionCore {
 
   static String normalizeCharacterId(String raw) {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-    if (value.contains("kai") || value.contains("twilight")) return "kai";
+    if (value.contains("cao_minh") ) return "cao_minh";
     if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hứa thúy mai")
         || value.contains("hua thuy mai")) return "lucia";
     if (value.contains("iris") || value.contains("argus")) return "iris";
