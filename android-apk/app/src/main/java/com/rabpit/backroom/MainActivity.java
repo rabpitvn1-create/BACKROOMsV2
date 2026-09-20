@@ -719,8 +719,8 @@ public class MainActivity extends Activity {
       });
     }
 
-    @JavascriptInterface public void itemAction(String stateJson, String itemId, String operation,
-                                                String targetId, int quantity) {
+    @JavascriptInterface public void itemAction(String stateJson, String ownerId, String itemId,
+                                                String operation, String targetId, int quantity) {
       io.execute(() -> {
         try {
           JSONObject submitted = new JSONObject(stateJson);
@@ -733,7 +733,8 @@ public class MainActivity extends Activity {
             emit("backroomItemAction", rejected.toString());
             return;
           }
-          emit("backroomItemAction", gameCore.processItemAction(stateJson, itemId, operation, targetId, quantity));
+          emit("backroomItemAction",
+              gameCore.processItemAction(stateJson, ownerId, itemId, operation, targetId, quantity));
         } catch (Exception e) {
           JSONObject rejected = new JSONObject();
           try {
