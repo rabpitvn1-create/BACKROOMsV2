@@ -1,30 +1,30 @@
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-17.
+Đồng bộ: 2026-09-20.
 
 Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu.
 
-- Kai: `Kai_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
+- Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
 - Lucia: `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ`
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
 
-## Kai Akechi / Twilight — R12
+## Cao Minh / Vạn Giới Ma Tôn — R15
 
-Kai hiện là Đội trưởng SRU thuộc lực lượng Cảnh Sát chống hiện tượng dị thường. Continuity tổ chức Black Blood/Vatican cũ không còn là tổ chức hiện hành của Kai. Hồ sơ SRU công khai phân loại Kai là con người. KNOWLEDGE_LOCK: Kai thật sự là bán nhân/bán quỷ, con của Sparda và Eve; nhân vật khác không được tự suy ra bí mật này chỉ từ biểu hiện sức mạnh. Niên đại xuất thân là 2299, không phải năm sinh; tuổi thật chưa khóa. Cấp chiến lực UR+.
+Cao Minh là **Vạn Giới Ma Tôn**, một Ma Đạo Kiếm Tu đã trở thành đệ nhất cường giả của thế giới nguyên sinh trước khi rơi vào Backrooms. Tên thế giới nguyên sinh, niên đại chi tiết và hệ thống cảnh giới vẫn OPEN.
 
-Sparda Core cung cấp quỷ lực vô hạn và không có giới hạn nội tại kiểu mana, pin, cooldown, tha hóa, berserk hay phản phệ. Core tăng cường thể chất/nhận thức/hồi phục và cấp năng lượng cũng như tự sửa chữa cho mọi vật phẩm Kai đang trang bị. Devil Trigger không có trần thời lượng/cooldown nội tại và không làm Kai mất quyền kiểm soát.
+Đạo thống của Cao Minh lấy Ma Đạo làm căn, Kiếm Đạo làm phong, thần niệm làm mắt và **Huyết Ma Kiếm** làm bản mệnh binh khí. **Vạn Quỷ Ma Tâm** là Đạo Cơ, Ma Hải và nguồn ma nguyên trung tâm; canon hiện hành không đặt trần nội tại, cooldown, phản phệ hay cơ chế mất kiểm soát tùy tiện. **Vạn Quỷ Ma Thân** là trạng thái giải phóng bản nguyên nhưng Cao Minh vẫn giữ nguyên ý thức, ký ức và phán đoán.
 
-Vũ khí đặc trưng hiện hành là **SRU Assault Rifle MK19**, không còn White Wraith Magnum. Đạn vật lý: 5.56×45 mm NATO, băng tháo rời 30 viên, 700–950 viên/phút, nòng 368 mm, chiều dài 838 mm khi kéo báng / 756 mm khi thu báng, tầm hiệu quả khoảng 500–600 m. Đạn vật lý là tài nguyên hữu hạn. MK19 đồng thời có thể khai hỏa đạn quỷ lực Sparda 5.56×45 mm hình thành trực tiếp từ Sparda Core, không tiêu hao kho đạn vật lý và có sát thương vật lý được mô tả là mạnh hơn đạn thường hàng chục lần; không tự khóa hệ số nhân chính xác.
+Trang bị bản mệnh hiện hành gồm **Huyết Ma Kiếm**, **Huyết Ma Chiến Khải** và **Vạn Tàng Giới**. Huyết Ma Kiếm có thể được sử dụng trực tiếp, ngự kiếm bằng thần niệm và gia cường bằng Huyết Sát Ma Khí. Vạn Tàng Giới chỉ lưu trữ vật vô tri; Phản Bổn chỉ phục hồi chính pháp bảo hiện hữu về trạng thái tốt nhất mà nó từng thật sự đạt tới, không tạo bản sao hay sinh linh.
 
-**Guilty Crown Override**: Kai ở Devil Trigger, thời gian ngoại giới dừng hoàn toàn, MK19 khai hỏa đúng 24 viên đạn quỷ lực Sparda 5.56×45 mm và chuỗi kết thúc chính xác sau viên thứ 24.
+**Huyết Ma Nhị Thập Tứ Trảm** luôn là đúng 24 trảm trong thời gian ngoại giới bị đình chỉ hoàn toàn.
 
-Giáp hiện hành là **SRU-MK20 Powered Armor**, phối đen/gunmetal + trắng ngà, điểm vàng đồng nhỏ; cấu hình R12 để lộ đầu và mặt, tóc bạc trắng cực dài buộc đuôi ngựa cao. Các chức năng tay/chân legacy đã được tích hợp vào hệ giáp hiện hành. Mọi trang bị Kai đang mang được Sparda Core tự sửa chữa.
+Trước biến cố, Cao Minh ở trên Ma Sơn, có Huyết Ma Kiếm bên cạnh và đang uống linh tửu. Mặt đất dưới chân biến mất mà không có trận pháp truyền tống, hư không loạn lưu hay dấu hiệu Cao Minh nhận biết được. Hắn rơi vào một hành lang vàng nhạt, mở thần thức và thử ma ấn để kiểm chứng không gian. Ma ấn vẫn tồn tại nhưng vị trí không còn khớp với lộ tuyến đã đi.
 
-**Omnivault Ring** hiện chỉ còn hai nhóm chức năng: kho vô hạn cho vật vô tri (lưu/lấy vật đã cất) và **Hoàn nguyên** chính trang bị hiện hữu về trạng thái tốt nhất từng tồn tại của món đó. Mỗi món có cooldown Hoàn nguyên 24 giờ sau một lần dùng thành công. Omnivault không tác động lên sinh vật sống. Các cơ chế cũ **Quét / Sao chép / tạo vật phẩm / Marked / Nâng cấp** đã bị loại khỏi canon hiện hành.
+Cao Minh **không có tri thức mặc định về tên Level, Entity, quy luật hay nguồn gốc Backrooms**. Mục tiêu hiện tại là khảo sát, kiểm chứng và tìm hiểu bản chất Backrooms; tìm đường trở lại thế giới nguyên sinh là mục tiêu thứ hai. KNOWLEDGE_LOCK về huyết thống bán nhân/bán ma và truyền thừa gắn với Vạn Quỷ Ma Tôn không được tự biến thành kiến thức của nhân vật khác.
 
 ## Iris / ARGUS — R07
 
@@ -60,7 +60,7 @@ Ngoài chiến đấu, Syvial tự nhiên, giao tiếp bình thường, thích �
 
 Tên thật/pháp lý là **Hứa Thuý Mai**. `Lucia Lục` là biệt danh/callsign dùng trong môi trường quân đội. Lucia là nữ, 19 tuổi, **con người**, quốc tịch Việt Nam, xuất thân Hoa Kiều và là chít nội Gia tộc Họ Hứa. Cô đã tham gia quân ngũ một năm theo chương trình huấn luyện tại Việt Nam kết hợp Hoa Kỳ, kỳ thi đầu vào đạt loại xuất sắc. Đây là một quân nhân trẻ có nền tảng tốt trong phạm vi con người, không phải chiến lực siêu nhiên/UR+.
 
-Lucia chỉ có thể xuất hiện qua roll Explorer tại Level 0 do **CharacterEncounterCore** sở hữu. Gemini không được tự tạo cô ở nơi thuận tiện và không được sửa Party. Lucia không thuộc nhóm SRU ban đầu đi qua sự kiện Async; nhóm ban đầu là Kai, Iris và Syvial. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
+Lucia chỉ có thể xuất hiện qua roll Explorer tại Level 0 do **CharacterEncounterCore** sở hữu. Gemini không được tự tạo cô ở nơi thuận tiện và không được sửa Party. Lucia không thuộc Prologue của Cao Minh. Nếu Lucia xuất hiện, encounter phải do CharacterEncounterCore/continuity hiện hành xác nhận, không được suy từ opening cũ. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
 
 Gameplay baseline hiện hành: `HP 100`, `STR 7`, `DF 7`, `AGI 8`, `CRIT 7`; hồi `+2 HP` sau mỗi 3 lượt hoàn tất riêng biệt và trạng thái này phải tồn tại qua save/load.
 
@@ -78,5 +78,5 @@ Khi prompt/game state chứa bản canon này:
 2. Không tự biến KNOWLEDGE_LOCK thành kiến thức của nhân vật.
 3. Không tự điền UNKNOWN/OPEN.
 4. Lucia không được auto-spawn chỉ vì model biết cô tồn tại; chỉ CharacterEncounterCore được roll và auto-join.
-5. Kai không còn dùng White Wraith/Blackblood Armor như loadout hiện hành; baseline mới là SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring.
+5. Baseline nhân vật chính hiện hành là Cao Minh với Huyết Ma Kiếm, Huyết Ma Chiến Khải và Vạn Tàng Giới; loadout Kai/SRU cũ không còn là canon của protagonist.
 6. Omnivault không còn Scan/Copy/Create/Marked/Upgrade.
