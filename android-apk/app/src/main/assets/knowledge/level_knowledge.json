@@ -46,7 +46,7 @@
         "note": "BACKROOMsV2 preserves its mandatory Level 0 -> Level 0.1 lộ trình and separates Red Rooms into a later standalone Level."
       },
       "identity": [
-        "Level 0 là điểm khởi đầu chủ đạo của Backrooms và trong BACKROOMsV2 là nơi Kai xuất hiện sau khi đi qua spatial gate của SRU.",
+        "Level 0 là điểm khởi đầu chủ đạo của Backrooms và trong BACKROOMsV2 là môi trường Cao Minh xuất hiện sau khi mặt đất dưới chân biến mất và hắn rơi khỏi thế giới nguyên sinh.",
         "Không gian giống các khu hậu trường của văn phòng hoặc cửa hàng: vàng bệnh, trống trải, vô tận về cảm giác, lặp lại nhưng không hoàn toàn giống nhau.",
         "Bản sắc kinh dị của Level 0 đến từ sự cô lập, đơn điệu kéo dài, hình học thay đổi khi không được quan sát, thiếu tài nguyên và sự bất định về những gì nghe hoặc thấy ở xa.",
         "Level 0 không phải tutorial an toàn. Người không chuẩn bị có thể chết vì mất nước, đói, kiệt sức, nhiễm bẩn, ngã hoặc mất phương hướng dù không gặp Entity."
@@ -78,7 +78,7 @@
       ],
       "zones": [
         "Yellow Rooms: nền kiến trúc mặc định, vàng/beige, thảm ẩm, tiếng ù huỳnh quang và cấu trúc không gian phân đoạn.",
-        "các phòng vòm: khu tương đối ổn định, có vòm tường và dead-end/transition hình học; có thể cho Kai nghỉ ngắn trên mép khô nếu điều kiện vật lý cho phép.",
+        "các phòng vòm: khu tương đối ổn định, có vòm tường và dead-end/transition hình học; có thể cho Cao Minh nghỉ ngắn trên mép khô nếu điều kiện vật lý cho phép.",
         "các phòng cột: hall rất lớn với lưới cột, dễ giữ một hướng di chuyển nhưng khó đánh giá khoảng cách; backtracking đặc biệt không đáng tin.",
         "các bãi hố: vùng có hố lưới, yêu cầu chú ý footing; cực nguy hiểm khi kiệt sức, bị thương hoặc thiếu sáng.",
         "các vùng mất sáng: vùng tối hoàn toàn hoặc gần hoàn toàn, không còn tiếng ù cục bộ, tường thô và chất lỏng nông có thể hiện diện.",
@@ -96,13 +96,13 @@
         "đợt tăng tiếng ồn của đèn phải được kể như hiện tượng âm thanh vật lý, không mặc định là attack hay giọng nói siêu nhiên."
       ],
       "anomalies": [
-        "Peripheral Shift: bố cục có thể thay đổi khi nằm ngoài direct observation. Không dùng nó để dịch chuyển Kai hoặc đồ vật đang được nhìn thấy.",
+        "Peripheral Shift: bố cục có thể thay đổi khi nằm ngoài direct observation. Không dùng nó để dịch chuyển Cao Minh hoặc đồ vật đang được nhìn thấy.",
         "Isolation Effect: người cùng vào Level 0 có thể bị tách khỏi nhau; liên lạc trực tiếp và dấu vết gửi cho nhau không đáng tin.",
         "Anomalous Audio: tiếng thì thầm, familiar giọng nói, tiếng cào hoặc tiếng bước chân có thể tồn tại mà không có nguồn xác định.",
         "huỳnh quang Pressure: phơi nhiễm kéo dài với tiếng ù/ánh sáng có thể gây đau đầu, mất ngủ, khó chịu hoặc suy giảm tập trung; không phải mind control.",
         "Memory Rooms: nếu dùng, chỉ được mô tả bằng dấu hiệu gợi nhớ/nhận thức và không được retroactively viết lại lịch sử nhân vật.",
         "bố cục Resistance: mapping chi tiết suy giảm giá trị theo thời gian vì Peripheral Shift, nhưng các vùng ổn định vẫn cho phép cục bộ định hướng có ích.",
-        "Không được biến anomaly thành hệ thống có ý thức, đang 'chơi đùa' với Kai hoặc cố tình chống lại Kai nếu không có bằng chứng."
+        "Không được biến anomaly thành hệ thống có ý thức, đang 'chơi đùa' với Cao Minh hoặc cố tình chống lại Cao Minh nếu không có bằng chứng."
       ],
       "hazards": [
         "Dehydration và starvation là nguy cơ lâu dài chính; Level không đảm bảo nhu yếu phẩm.",
@@ -111,14 +111,14 @@
         "các bãi hố có nguy cơ rơi chết hoặc mất tích; mệt mỏi/dehydration làm nguy cơ này tăng mạnh.",
         "các vùng mất sáng gây mất phương hướng, vấp/ngã, chất lỏng phơi nhiễm và khó thoát vì biến đổi bố cục.",
         "các đợt tăng tiếng ồn có thể gây đau tai; phơi nhiễm kéo dài mới được mô tả có nguy cơ thính giác, không gây hư hại tức thì tùy tiện.",
-        "Sleep deprivation, microsleep và cognitive mệt mỏi làm định hướng/error risk tăng nhưng không dùng như cớ để ép Kai hành động ngu ngốc.",
+        "Sleep deprivation, microsleep và cognitive mệt mỏi làm định hướng/error risk tăng nhưng không dùng như cớ để ép Cao Minh hành động ngu ngốc.",
         "Mold hoặc mùi ẩm có thể gây khó chịu đường hô hấp; không tự chẩn đoán infection nếu chưa có symptom/bằng chứng."
       ],
       "resources": [
         "Không có resource ecology ổn định. nhu yếu phẩm không xuất hiện vì cốt truyện cần cứu người chơi.",
         "ItemCore là authority tuyệt đối cho consumable, chest và loot; Level knowledge không được tự mutate inventory.",
         "Arch ledges hoặc vùng thảm nông có thể cung cấp chỗ nghỉ tương đối khô hơn nhưng không phải safe camp tuyệt đối.",
-        "Electrical outlets, ánh sáng các bộ đèn hoặc vật liệu tường có thể tồn tại như scenery/interactable nhưng không đảm bảo điện sử dụng được cho thiết bị của Kai.",
+        "Electrical outlets, ánh sáng các bộ đèn hoặc vật liệu tường có thể tồn tại như scenery/interactable nhưng không đảm bảo điện sử dụng được cho thiết bị của Cao Minh.",
         "thảm chất lỏng không phải nguồn Almond Water hợp lệ dù sample có thể chứa thành phần tương tự.",
         "Nếu ItemCore cấp một item trong Level 0, GM nên đặt nó vào bối cảnh vật lý hợp lý thay vì mô tả nó xuất hiện từ hư không."
       ],
@@ -131,7 +131,7 @@
       ],
       "navigation": [
         "cục bộ mốc định hướng có giá trị: arch hình học, pillar khoảng cách, thảm độ sâu, tường hư hại, nhịp tiếng ù, trần nhà tile defect và vùng ổn định.",
-        "toàn cục bản đồ không đáng tin vì Peripheral Shift; GM không được cho Kai đạt độ chắc chắn tuyệt đối chỉ bằng việc vẽ sơ đồ.",
+        "toàn cục bản đồ không đáng tin vì Peripheral Shift; GM không được cho Cao Minh đạt độ chắc chắn tuyệt đối chỉ bằng việc vẽ sơ đồ.",
         "Trong các phòng cột, chọn một hướng di chuyển nhất quán là chiến lược hợp lý hơn cố backtrack.",
         "Trong các phòng vòm, hình học ổn định hơn nên mốc định hướng có thể tồn tại qua nhiều lượt.",
         "Trong các vùng mất sáng, tiếng ù từ vùng sáng, luồng khí, tường-following và floor bề mặt có thể trở thành dấu hiệu; hướng vẫn không chắc chắn.",
@@ -139,7 +139,7 @@
         "lộ trình thành công/failure thuộc Core. Lore chỉ cung cấp cách biểu hiện tiến triển hoặc vòng lặp."
       ],
       "entrancesExits": [
-        "Kai bắt đầu Level 0 sau khi spatial gate của SRU đưa anh vào Backrooms.",
+        "Cao Minh bắt đầu trong môi trường tương ứng Level 0 sau khi rơi khỏi thế giới nguyên sinh; bản thân Cao Minh không mặc định biết tên hoặc số thứ tự Level này.",
         "Nguồn Wiki hiện hành có lối ra sang Level 1 qua flickering tường; BACKROOMsV2 cố ý override lộ trình này.",
         "Trong BACKROOMsV2, Level 0 chỉ được chuyển sang Level 0.1 khi LevelCore mở transition.",
         "Không cho Manila Room, Red Rooms, Level 1 hoặc bất kỳ Level nào khác xuất hiện như lối ra sớm từ Level 0."
@@ -156,10 +156,10 @@
         "Không tự spawn Entity, survivor, NPC, faction, base, settlement hoặc rescue signal.",
         "Không tự cấp item, chest, Almond Water, food, medical nhu yếu phẩm hay usable trang bị.",
         "Không dùng Red Rooms hoặc Manila Room như scene ở Level 0.",
-        "Không cho Kai nhìn thấy Level 0.1 trước khi lộ trình tiến trình hợp lý và Core mở lối ra.",
+        "Không cho Cao Minh nhìn thấy Level 0.1 trước khi lộ trình tiến trình hợp lý và Core mở lối ra.",
         "Không giải thích nguồn gốc Backrooms, Isolation Effect, Peripheral Shift, thảm chất lỏng hoặc familiar voices như fact.",
-        "Không biến Level thành chủ thể có ý thức, nói chuyện hoặc cố tình thử thách Kai.",
-        "Không ép Kai hoảng loạn, bỏ chạy, mất ý chí hoặc tin một ảo giác; chỉ mô tả stimuli và phản ứng cơ thể trực tiếp hợp lý.",
+        "Không biến Level thành chủ thể có ý thức, nói chuyện hoặc cố tình thử thách Cao Minh.",
+        "Không ép Cao Minh hoảng loạn, bỏ chạy, mất ý chí hoặc tin một ảo giác; chỉ mô tả stimuli và phản ứng cơ thể trực tiếp hợp lý.",
         "Không lặp nguyên cùng một room bố cục/phrase hai lượt liên tiếp nếu không phải tính liên tục cố ý.",
         "Không tự đặt lại dấu vết, injury, resource usage hoặc hậu quả người chơi tạo ra chỉ vì biến đổi bố cục.",
         "Không dùng biến đổi bố cục để phủ nhận thành công đã được Core/trạng thái xác nhận.",
@@ -190,7 +190,7 @@
         "Blackout ngưỡng nơi tiếng ù và ánh sáng giảm qua vài room thay vì cắt tức thì.",
         "Blackout hành lang với tường thô và ankle-deep chất lỏng.",
         "phòng vòm nhỏ tương đối ổn định đủ để kiểm tra trang bị hoặc nghỉ ngắn.",
-        "Pillar lưới bị lệch sau khi Kai quay đầu, biểu hiện Peripheral Shift.",
+        "Pillar lưới bị lệch sau khi Cao Minh quay đầu, biểu hiện Peripheral Shift.",
         "Một staircase ngắn chỉ nối hai độ cao trong cùng Level, không phải lối ra.",
         "Một tường lối mở quá thấp, buộc cúi người nhưng không phải crawlspace dài.",
         "Một hành lang dài có cùng kiểu mẫu nhưng khoảng cách giữa đèn thay đổi dần.",
@@ -236,35 +236,35 @@
       ],
       "stateTransitions": [
         "BASELINE -> NOISE_SPIKE khi một cụm ánh sáng trở nên quá lớn; sau một thời gian/di chuyển đủ xa -> BASELINE.",
-        "BASELINE -> BLACKOUT_APPROACH phải có warning sensory; BLACKOUT_APPROACH -> BLACKOUT_DEEP nếu Kai tiếp tục vào vùng tối.",
-        "BLACKOUT_DEEP -> BASELINE khi Kai thật sự đến vùng sáng; không teleport khỏi darkness.",
+        "BASELINE -> BLACKOUT_APPROACH phải có warning sensory; BLACKOUT_APPROACH -> BLACKOUT_DEEP nếu Cao Minh tiếp tục vào vùng tối.",
+        "BLACKOUT_DEEP -> BASELINE khi Cao Minh thật sự đến vùng sáng; không teleport khỏi darkness.",
         "BASELINE -> PILLAR_NAVIGATION khi room mở rộng và lưới cột xuất hiện dần.",
         "BASELINE -> HOLE_HAZARD khi hố đầu tiên có thể quan sát/kiểm tra trước khi dense field xuất hiện.",
         "BASELINE -> ARCH_REST qua transition room/ngõ cụt có arch mô-típ.",
-        "Bất kỳ visible khu vực -> SHIFT_ACTIVE chỉ sau khi khu vực không còn direct observation; shift phải ảnh hưởng cấu trúc không gian phía sau/chỗ cũ, không rewrite vật đang được Kai nhìn.",
+        "Bất kỳ visible khu vực -> SHIFT_ACTIVE chỉ sau khi khu vực không còn direct observation; shift phải ảnh hưởng cấu trúc không gian phía sau/chỗ cũ, không rewrite vật đang được Cao Minh nhìn.",
         "SHIFT_ACTIVE -> STABLE_POCKET nếu lộ trình đi vào arch/ổn định khu vực hoặc kiểu mẫu duy trì qua nhiều lượt.",
         "Bất kỳ trạng thái -> ROUTE_EMERGENCE chỉ khi LevelCore báo LEVEL TRANSITION: AVAILABLE.",
         "ROUTE_EMERGENCE không được dùng để bỏ qua hành động crossing boundary; người chơi vẫn phải thực sự đi qua transition."
       ],
       "environmentEvents": [
-        "huỳnh quang âm lượng Surge: tiếng ù tăng dần đến mức đau tai; Kai có thể che tai, rời vùng hoặc chịu phơi nhiễm lâu hơn.",
+        "huỳnh quang âm lượng Surge: tiếng ù tăng dần đến mức đau tai; Cao Minh có thể che tai, rời vùng hoặc chịu phơi nhiễm lâu hơn.",
         "Single-ánh sáng Failure: một bộ đèn tắt hoặc chập, thay đổi cục bộ shadow nhưng không tạo vùng mất sáng ngay.",
         "cụm chớp tắt: vài đèn chớp tắt không đồng bộ; chỉ là môi trường dấu hiệu nếu Core chưa mở lối ra.",
-        "Peripheral Rearrangement: sau khi Kai rời một giao lộ và quay lại, một hành lang phía sau đổi chiều dài/góc/connection.",
+        "Peripheral Rearrangement: sau khi Cao Minh rời một giao lộ và quay lại, một hành lang phía sau đổi chiều dài/góc/connection.",
         "Mark Displacement: dấu đánh dấu cũ vẫn tồn tại nhưng vị trí tương đối với giao lộ đã đổi, chứng minh mapping toàn cục không đáng tin.",
         "Arch Stability: một phòng vòm vẫn giữ nguyên qua revisit, cung cấp bằng chứng rằng shift không đồng đều.",
         "Pillar Misalignment: lưới phía sau trở nên asymmetric sau khi không được quan sát.",
         "thảm Saturation Change: vùng thảm dần ướt hơn/khô hơn theo vài room, ảnh hưởng footing và comfort.",
         "Unknown chất lỏng mùi: thảm phát mùi salt/chemical/formalin-like; chỉ là dấu hiệu tránh tiếp xúc, không xác định chính xác mẫu nếu không test.",
-        "Familiar giọng nói sự kiện: giọng quen gọi mơ hồ từ xa; không trả lời thay Kai và không xác nhận người nói.",
+        "Familiar giọng nói sự kiện: giọng quen gọi mơ hồ từ xa; không trả lời thay Cao Minh và không xác nhận người nói.",
         "tường tiếng cào sự kiện: tiếng cào đi song song một đoạn rồi dừng; không cho nguồn lộ diện nếu không EntityCore.",
-        "False Footstep tiếng vọng: bước chân dường như trễ/không khớp cadence của Kai, nguyên nhân không xác minh.",
+        "False Footstep tiếng vọng: bước chân dường như trễ/không khớp cadence của Cao Minh, nguyên nhân không xác minh.",
         "luồng khí vùng nhỏ: luồng khí qua trần nhà/tường seam gợi hình học phía sau nhưng không tự tạo lối ra.",
         "Blackout Silence: tiếng ù biến mất khi đi sâu vào dark khu vực, làm mọi tiếng nước/bước chân nổi bật.",
         "Shallow chất lỏng Contact: chân chạm chất lỏng trong chỗ trũng trên sàn, tạo ô nhiễm concern nhưng không hư hại tức thời tự động.",
         "Hole Discovery: hố đầu tiên được nhận biết qua visibility/edge/luồng khí; cho người chơi cơ hội phản ứng.",
         "Long-Hall mệt mỏi: hall cực dài gây cảm giác tiến độ thấp; phải gắn với physical distance, không chỉ prose lặp.",
-        "ổn định mốc định hướng Return: Kai gặp lại một arch/defect thật sự còn nguyên, củng cố tính liên tục thay vì mọi thứ luôn đổi.",
+        "ổn định mốc định hướng Return: Cao Minh gặp lại một arch/defect thật sự còn nguyên, củng cố tính liên tục thay vì mọi thứ luôn đổi.",
         "bằng chứng Without nguyên nhân: dấu chân, smear, dent hoặc scrape xuất hiện nhưng không đủ dữ liệu để kết luận Entity/human.",
         "Quiet Nothing-Major sự kiện: không có anomaly lớn, nhưng một chi tiết vật lý mới phải thay đổi hiểu biết cục bộ bản đồ hoặc nguy cơ."
       ],
@@ -293,7 +293,7 @@
         "Nghỉ ở phòng vòm: giảm narrative pressure và cho cơ hội kiểm tra trạng thái/trang bị, nhưng không spawn nhu yếu phẩm.",
         "Đi vào blackout: mất visual detail, tăng tactile/audio lời kể và định hướng sự bất định.",
         "Đi qua phòng cột: tiến trình nên đo bằng row/lưới/mốc định hướng thay vì mô tả 'đi mãi'.",
-        "Tiếp cận bãi hố khi mệt: lời kể phải nhấn footing và decision space thay vì tự làm Kai rơi.",
+        "Tiếp cận bãi hố khi mệt: lời kể phải nhấn footing và decision space thay vì tự làm Cao Minh rơi.",
         "Chạm thảm chất lỏng bằng da/vết thương: mô tả phơi nhiễm concern; actual injury/infection cần system/bằng chứng.",
         "Đi theo anomalous giọng nói: scene có thể dẫn đến vòng lặp/bằng chứng/quiet disappearance, không bắt buộc Entity reveal.",
         "Bịt tai/rời đợt tăng tiếng ồn: giảm phơi nhiễm hợp lý khi distance tăng.",
@@ -302,10 +302,10 @@
       "persistenceRules": [
         "Injury, ướt clothing, used item, mệt mỏi và consequences đã được trạng thái ghi phải tồn tại qua room change.",
         "người chơi-created physical mark không tự biến mất; Peripheral Shift chỉ thay đổi spatial relation hoặc khiến lộ trình không quay lại được mark.",
-        "Vật bị Kai di chuyển trong cùng observed/ổn định room phải giữ vị trí cho đến khi có nguyên nhân thay đổi.",
+        "Vật bị Cao Minh di chuyển trong cùng observed/ổn định room phải giữ vị trí cho đến khi có nguyên nhân thay đổi.",
         "Một room đã được mô tả là arch/ổn định không nên đổi hoàn toàn ngay lượt kế tiếp khi vẫn đang được quan sát.",
         "Blackout khu vực không tự sáng lại chỉ vì phản hồi mới; cần movement/sự kiện/nguyên nhân.",
-        "bãi hố đã phát hiện vẫn là nguy cơ nếu Kai còn ở cùng khu vực.",
+        "bãi hố đã phát hiện vẫn là nguy cơ nếu Cao Minh còn ở cùng khu vực.",
         "Anomalous sound có thể biến mất mà không reveal nguyên nhân, nhưng không được retroactively nói nó chưa từng xảy ra.",
         "bằng chứng như dấu chân/smear/hư hại phải giữ sự bất định label; lượt sau không được tự upgrade thành fact.",
         "Level transition không xóa trạng thái sinh tồn, party, inventory hoặc combat consequence.",
@@ -316,7 +316,7 @@
         "STRONG INFERENCE: hướng luồng khí, room stability qua revisit, ô nhiễm risk từ mùi/appearance; vẫn không phải độ chắc chắn.",
         "chưa xác minh: giọng nói, tiếng cào, dark figure, dấu chân không rõ nguồn, feeling watched, familiar sound.",
         "CORE-CONFIRMED: Entity cuộc chạm trán, item, party member, currentLevelKey, lộ trình availability và stat consequences.",
-        "BACKSTAGE CANON không tự trở thành kiến thức của Kai. GM được dùng để giữ thế giới đúng nhưng không cho Kai biết tên 'Peripheral Shift' hoặc 'Isolation Effect' nếu anh chưa có nguồn in-world hợp lệ.",
+        "BACKSTAGE CANON không tự trở thành kiến thức của Cao Minh. GM được dùng để giữ thế giới đúng nhưng không cho Cao Minh biết tên 'Peripheral Shift' hoặc 'Isolation Effect' nếu anh chưa có nguồn in-world hợp lệ.",
         "Một dark figure thoáng qua không được tự biến thành Entity ID.",
         "Một chất lỏng giống Almond Water không được gọi là Almond Water an toàn.",
         "Một flickering tường không được gọi là lối ra nếu LevelCore đang LOCKED.",
@@ -349,7 +349,7 @@
         "Nếu EntityCore không đang hoạt động: môi trường tension phải tự đứng vững, không thêm creature.",
         "Nếu EntityCore đang hoạt động trong standard rooms: dùng corner, narrow lối mở, line-of-sight break và ướt thảm làm terrain thực tế.",
         "Nếu EntityCore đang hoạt động trong phòng cột: cột tạo cover/occlusion nhưng không teleport Entity.",
-        "Nếu EntityCore đang hoạt động gần bãi hố: hố là shared nguy cơ cho cả Kai/Entity; không tự one-shot đối thủ bằng hố.",
+        "Nếu EntityCore đang hoạt động gần bãi hố: hố là shared nguy cơ cho cả Cao Minh/Entity; không tự one-shot đối thủ bằng hố.",
         "Nếu EntityCore đang hoạt động trong blackout: visibility ràng buộc áp dụng cho lời kể; không cho GM biết chính xác vị trí Entity nếu trạng thái không cung cấp.",
         "Nếu đang hoạt động cuộc chạm trán có feedbackEvents từ Combat Core, terrain chỉ contextualize animation/hư hại, không sửa kết quả combat.",
         "Isolation Effect không được dùng để loại companion đã joined hoặc đang hoạt động Entity đã được Core đưa vào trạng thái.",
@@ -380,8 +380,8 @@
         "Khi cấu trúc không gian shift, mô tả bằng contradiction cụ thể: giao lộ thiếu một nhánh, mark ở sai relation, row cột lệch; tránh câu mơ hồ 'mọi thứ thay đổi'.",
         "Khi quiet, cho người chơi thông tin usable về room/nguy cơ/định hướng thay vì prose trống.",
         "Khi anomalous sound xuất hiện, giữ khoảng cách/ngữ nghĩa mơ hồ và không reveal nguyên nhân.",
-        "Khi mệt mỏi quan trọng, mô tả hậu quả cơ thể trực tiếp như chân đau, giày ướt, khó tập trung; không kể nội tâm thay Kai.",
-        "Không gọi tên mechanic backstage như Peripheral Shift/Isolation Effect trong lời kể nếu Kai chưa học thuật ngữ.",
+        "Khi mệt mỏi quan trọng, mô tả hậu quả cơ thể trực tiếp như chân đau, giày ướt, khó tập trung; không kể nội tâm thay Cao Minh.",
+        "Không gọi tên mechanic backstage như Peripheral Shift/Isolation Effect trong lời kể nếu Cao Minh chưa học thuật ngữ.",
         "Không dùng 'vô tận' trong mọi lượt; biểu đạt scale qua sightline, repetition, travel time và mốc định hướng scarcity.",
         "Không kết thúc phản hồi bằng cliffhanger giả tạo nếu không có sự kiện thật."
       ],
@@ -411,14 +411,14 @@
         "Security camera đang có người theo dõi nếu trạng thái không chứng minh.",
         "ổ điện cấp điện tương thích chắc chắn với trang bị.",
         "Bản đồ toàn cục chính xác.",
-        "Kai tự biết thuật ngữ lore chỉ vì GM biết.",
+        "Cao Minh tự biết thuật ngữ lore chỉ vì GM biết.",
         "Peripheral Shift thay đổi room đang được nhìn trực tiếp.",
         "Isolation Effect tự xóa party member đã joined.",
         "Memory Room chứng minh ký ức sai/đúng hoặc thay đổi backstory.",
         "Familiar giọng nói chắc chắn là người quen thật.",
         "Dấu vết chắc chắn do Entity/human tạo.",
         "Break tường hoặc break ánh sáng bypass lộ trình.",
-        "Spatial gate SRU tự xuất hiện lại để giải cứu."
+        "Một lối trở về thế giới nguyên sinh tự xuất hiện lại để giải cứu."
       ],
       "sceneSeeds": [
         "Một giao lộ bình thường trở nên đáng nhớ vì một ổ điện bị cháy sém và thảm khô bất thường quanh nó.",
@@ -426,8 +426,8 @@
         "Pillar hall có một cột nứt ngang ở tầm vai làm anchor hướng di chuyển.",
         "bãi hố thưa bắt đầu bằng một hố đơn, rồi lưới chỉ rõ sau khi người chơi tiến thêm.",
         "Blackout ngưỡng được báo trước bởi ba bộ đèn liên tiếp phát tiếng ù yếu dần.",
-        "Trong blackout, một strip tường thô hơn giúp Kai biết mình chưa quay về yellow room.",
-        "Một tường mark do Kai tạo vẫn tồn tại nhưng hành lang bên cạnh nó từ hai nhánh thành một.",
+        "Trong blackout, một strip tường thô hơn giúp Cao Minh biết mình chưa quay về yellow room.",
+        "Một tường mark do Cao Minh tạo vẫn tồn tại nhưng hành lang bên cạnh nó từ hai nhánh thành một.",
         "Một arch anchor giữ nguyên qua revisit, chứng minh không phải mọi khu vực đều shift.",
         "Một đợt tăng tiếng ồn buộc người chơi cân nhắc che tai/rời vùng nhưng không có creature.",
         "Một familiar giọng nói dùng đúng nhịp/âm sắc quen thuộc nhưng từ quá xa để nhận chữ.",
@@ -443,12 +443,12 @@
         "Một hole lưới có safe path rõ nhưng yêu cầu đi vòng xa hơn.",
         "Một nấm mốc cụm làm mùi thay đổi trước khi hình học thay đổi, dùng sensory dấu hiệu thay visual.",
         "Một lối mở thấp dẫn sang room cùng mô-típ, tạo posture ràng buộc không cần anomaly.",
-        "Một wide chamber có tiếng vọng khiến anomalous footstep khó phân biệt với chính Kai.",
+        "Một wide chamber có tiếng vọng khiến anomalous footstep khó phân biệt với chính Cao Minh.",
         "Một mark chain cho thấy hai mark còn đúng nhưng mark thứ ba nằm sai relation, bằng chứng shift từng phần.",
         "Một quiet room không có anomaly nhưng cho thấy thảm độ sâu giảm, giúp người chơi suy luận đang gần pillar-type khu vực.",
         "Khi lộ trình gần hoàn tất, một seam kim loại vô hại xuất hiện trong tường nhưng chưa đủ xác định Zenith Station.",
         "Khi exitAvailable, machine hum khác hẳn huỳnh quang tiếng ù trở thành dấu hiệu bền vững qua nhiều room.",
-        "Transition cuối chỉ hoàn thành khi Kai thực sự crossing boundary sang cấu trúc kim loại/kính của Level 0.1."
+        "Transition cuối chỉ hoàn thành khi Cao Minh thực sự crossing boundary sang cấu trúc kim loại/kính của Level 0.1."
       ]
     },
     "1": {
@@ -650,7 +650,7 @@
         "Không tự dựng Base Gamma hoặc community nếu campaign chưa encounter."
       ],
       "gmConstraints": [
-        "Không cho Kai hack toàn bộ facility chỉ từ một terminal.",
+        "Không cho Cao Minh hack toàn bộ facility chỉ từ một terminal.",
         "Không giải thích nguồn điện tổng thể.",
         "Không auto-spawn resource vì Level nổi tiếng giàu tài nguyên."
       ],
@@ -814,7 +814,7 @@
       "architecture": [
         "Hallway chật bằng vật liệu nhẵn lạnh, thường được suy đoán là concrete.",
         "Vì không có ánh sáng đáng tin, topology phải được mô tả qua chạm, bước, luồng khí, âm vang hiếm và bề mặt.",
-        "Không dựng landmark thị giác nếu Kai không có nguồn quan sát hợp lệ."
+        "Không dựng landmark thị giác nếu Cao Minh không có nguồn quan sát hợp lệ."
       ],
       "zones": [
         "Blind Corridors: dạng chủ đạo, không ánh sáng.",
@@ -846,7 +846,7 @@
       ],
       "navigation": [
         "Đếm bước, bám tường, đánh dấu vật lý, luồng khí và gradient nhiệt có thể hỗ trợ nhưng không bảo đảm route.",
-        "Không mô tả bản đồ từ góc nhìn toàn tri; chỉ thông tin Kai cảm nhận được.",
+        "Không mô tả bản đồ từ góc nhìn toàn tri; chỉ thông tin Cao Minh cảm nhận được.",
         "Route progression cần tinh tế vì visual cue gần như không tồn tại."
       ],
       "entrancesExits": [
@@ -865,7 +865,7 @@
       "variationPool": [
         "Bức tường lạnh chuyển từ nhẵn sang có khe nối nhưng vẫn không nhìn thấy.",
         "Luồng khí mỏng gợi một junction phía trước.",
-        "Một tiếng thở có vẻ gần rồi biến mất khi Kai dừng lại.",
+        "Một tiếng thở có vẻ gần rồi biến mất khi Cao Minh dừng lại.",
         "Nền thay đổi độ dốc rất nhẹ chỉ nhận ra qua bước chân.",
         "Nước nông được phát hiện bởi tiếng chạm trước khi chân chạm vào.",
         "Một đoạn hoàn toàn mất mọi âm vang khiến khoảng cách trở nên khó đánh giá."
@@ -937,7 +937,7 @@
         "Một hành lang kính nhìn vào cavity nhưng kính nhiều lớp làm méo chiều sâu.",
         "Khu kỹ thuật có relay còn nhấp nháy trong khi toàn bộ màn hình tắt.",
         "Nhà kính khô héo với ống dẫn và đèn trồng cây còn treo trên khung.",
-        "Một automaton lặp tác vụ vô hại, bỏ qua Kai trừ khi bị cản đường."
+        "Một automaton lặp tác vụ vô hại, bỏ qua Cao Minh trừ khi bị cản đường."
       ]
     },
     "0.2": {
@@ -967,11 +967,11 @@
       ],
       "anomalies": [
         "Level có thể tự phục hồi khi quay lại theo canon nguồn; trong BACKROOMsV2 không dùng điều này để reset consequence ngay trong cùng encounter.",
-        "Hệ thống Wi‑Fi hoặc ổ điện hoạt động không đồng nghĩa có internet Frontrooms, định vị hay liên lạc SRU."
+        "Hệ thống Wi‑Fi hoặc ổ điện hoạt động không đồng nghĩa có internet về thế giới nguyên sinh, định vị ngoại giới hay một đường liên lạc ổn định."
       ],
       "hazards": [
         "Debris rơi, sàn yếu, bụi hô hấp, cạnh sắc, đường cũ bị chặn và nguy cơ bị kẹt.",
-        "Không để Kai đứng cạnh một điểm sập lớn mà không có dấu hiệu vật lý nào trước đó trừ khi state đã xác nhận biến cố đột ngột."
+        "Không để Cao Minh đứng cạnh một điểm sập lớn mà không có dấu hiệu vật lý nào trước đó trừ khi state đã xác nhận biến cố đột ngột."
       ],
       "resources": [
         "Ổ điện, phòng tắm hoặc hạ tầng có thể tồn tại như môi trường, nhưng nước/điện sử dụng được phải được kiểm chứng.",
@@ -1135,7 +1135,7 @@
       "gmConstraints": [
         "Không khẳng định player đã du hành về quá khứ.",
         "Không cho NPC lịch sử sống xuất hiện nếu Character/Entity Core không xác nhận.",
-        "Không dùng timeline lore để spoiler kiến thức mà Kai chưa thu thập."
+        "Không dùng timeline lore để spoiler kiến thức mà Cao Minh chưa thu thập."
       ],
       "variationPool": [
         "Một đoạn hành lang chuyển từ vật liệu hiện đại sang tường thô và ánh nến qua vài phòng.",
@@ -1242,7 +1242,7 @@
       "anomalies": [
         "Màu xám của anomaly có thể lan sang vật liệu lân cận.",
         "Tiếp xúc trực tiếp với bề mặt anomaly đã được mô tả có thể làm vật thể, Entity hoặc người chuyển xám rồi tan thành tro; đây là hazard thật, không dùng tùy tiện để one-shot ngoài vị trí tiếp xúc.",
-        "Tên và ngày trên bia mộ không được mặc định là tiên tri, người quen hoặc tương lai của Kai."
+        "Tên và ngày trên bia mộ không được mặc định là tiên tri, người quen hoặc tương lai của Cao Minh."
       ],
       "hazards": [
         "Gray spread/contact là hazard nghiêm trọng nhất.",
@@ -1272,14 +1272,14 @@
       "gmConstraints": [
         "Không giải thích tượng là ai, ai tạo mộ, hoặc The Torment là purgatory/afterlife.",
         "Không đọc bia mộ thành spoiler về character nếu chưa có dữ kiện.",
-        "Không làm gray spread tự đuổi theo Kai như sinh vật nếu không có state."
+        "Không làm gray spread tự đuổi theo Cao Minh như sinh vật nếu không có state."
       ],
       "variationPool": [
         "Một vòng mộ biến mất vào sương chỉ vài mét phía trước.",
         "Lá xám vụn dưới chân phát âm thanh bất tương xứng với kích thước.",
         "Mặt trăng không thay đổi vị trí dù hướng di chuyển đổi.",
         "Một mảng màu của vật liệu gần rìa bị rút dần bão hòa.",
-        "Tên trên bia không khớp bất kỳ hồ sơ Kai biết.",
+        "Tên trên bia không khớp bất kỳ hồ sơ Cao Minh biết.",
         "Bóng tượng trung tâm hiện rồi mất theo mật độ sương."
       ]
     },
@@ -1311,7 +1311,7 @@
       ],
       "anomalies": [
         "Chất lượng radio giảm theo thời gian ở sâu trong Red Rooms và cuối cùng có thể mất hoàn toàn.",
-        "Cảm giác disgust, despair, paranoia và claustrophobia đã được báo cáo, nhưng GM phải mô tả như phản ứng/cảm nhận chứ không điều khiển ý chí Kai.",
+        "Cảm giác disgust, despair, paranoia và claustrophobia đã được báo cáo, nhưng GM phải mô tả như phản ứng/cảm nhận chứ không điều khiển ý chí Cao Minh.",
         "Đường vào có thể biến mất sau khi bước sâu vào."
       ],
       "hazards": [
