@@ -23,8 +23,15 @@ public class CharacterEncounterCoreTest {
 
     SequenceRng levelZeroRng = new SequenceRng(9, 3999, 3999);
     JSONObject levelZero = state(0, 1);
-    new CharacterEncounterCore(levelZeroRng).rollForExplorerAction(levelZero, "Kai đi tiếp");
-    assertEquals("lucia", levelZero.getJSONArray("party").getJSONObject(0).getString("id"));
+    CharacterEncounterCore levelZeroCore = new CharacterEncounterCore(levelZeroRng);
+    levelZeroCore.rollForExplorerAction(levelZero, "Kai đi tiếp");
+    assertEquals(0, levelZero.getJSONArray("party").length());
+    assertEquals("lucia", levelZero.getJSONObject("characterEncounter")
+        .getJSONArray("pendingIntro").getString(0));
+    JSONObject committed = new JSONObject(levelZero.toString());
+    levelZeroCore.validateAndApply(levelZero, committed,
+        new JSONArray().put("Ai đó?").put("Bình tĩnh. Tôi là Lucia."));
+    assertEquals("lucia", committed.getJSONArray("party").getJSONObject(0).getString("id"));
     assertEquals(3, levelZeroRng.calls);
 
     SequenceRng levelOneRng = new SequenceRng(3999, 3999);
@@ -48,31 +55,38 @@ public class CharacterEncounterCoreTest {
     assertFalse(CharacterEncounterCore.shouldEncounterRare(3999));
   }
 
-  @Test public void oneExplorerRollAutoJoinsAllHitsWithoutDuplicatesOrRerolls() throws Exception {
+  @Test public void oneExplorerRollQueuesAllHitsThenJoinsAfterFirstContact() throws Exception {
     SequenceRng rng = new SequenceRng(0, 0, 0);
     CharacterEncounterCore core = new CharacterEncounterCore(rng);
     JSONObject state = state(0, 7);
     CharacterEncounterCore.EncounterResult result =
         core.rollForExplorerAction(state, "Kai quan sát hành lang");
     assertTrue(result.joinedAny());
-    assertEquals(3, state.getJSONArray("party").length());
-    assertEquals("lucia", state.getJSONArray("party").getJSONObject(0).getString("id"));
-    assertEquals("iris", state.getJSONArray("party").getJSONObject(1).getString("id"));
-    assertEquals("syvial", state.getJSONArray("party").getJSONObject(2).getString("id"));
-    core.rollForExplorerAction(state, "Gemini retry");
-    state.put("turn", 8);
-    core.rollForExplorerAction(state, "Kai đi tiếp");
+    assertEquals(0, state.getJSONArray("party").length());
+    assertEquals(3, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
+
+    JSONObject candidate = new JSONObject(state.toString());
+    core.validateAndApply(state, candidate,
+        new JSONArray().put("Đứng lại.").put("Tôi không có ý gây sự.").put("Nói sau, ra khỏi chỗ này trước."));
+    assertEquals(3, candidate.getJSONArray("party").length());
+    assertEquals("lucia", candidate.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("iris", candidate.getJSONArray("party").getJSONObject(1).getString("id"));
+    assertEquals("syvial", candidate.getJSONArray("party").getJSONObject(2).getString("id"));
+
+    core.rollForExplorerAction(candidate, "Gemini retry");
+    candidate.put("turn", 8);
+    core.rollForExplorerAction(candidate, "Kai đi tiếp");
     assertEquals(3, rng.calls);
-    assertEquals(3, state.getJSONArray("party").length());
+    assertEquals(3, candidate.getJSONArray("party").length());
   }
 
-  @Test public void geminiFailureDoesNotRollbackJoinedPartyAndLeavesIntroPending() throws Exception {
+  @Test public void geminiFailureKeepsFirstContactPendingWithoutPrematureJoin() throws Exception {
     JSONObject state = state(0, 3);
     CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999, 3999));
     core.rollForExplorerAction(state, "Kai mở cửa");
     JSONObject savedAfterFailure = new JSONObject(state.toString());
     core.normalizeState(savedAfterFailure);
-    assertEquals("lucia", savedAfterFailure.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals(0, savedAfterFailure.getJSONArray("party").length());
     assertEquals("lucia", savedAfterFailure.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
     try {
@@ -80,7 +94,7 @@ public class CharacterEncounterCoreTest {
           new JSONObject(savedAfterFailure.toString()), new JSONArray());
       fail("Pending encounter must require 2-5 dialogue lines");
     } catch (IllegalArgumentException expected) {
-      assertEquals(1, savedAfterFailure.getJSONArray("party").length());
+      assertEquals(0, savedAfterFailure.getJSONArray("party").length());
     }
   }
 
@@ -110,6 +124,9 @@ public class CharacterEncounterCoreTest {
     assertTrue(party.getJSONObject(0).getBoolean("joined"));
     assertEquals("iris", party.getJSONObject(1).getString("id"));
     assertEquals("syvial", party.getJSONObject(2).getString("id"));
+    assertTrue(party.getJSONObject(0).getJSONArray("inventory").length() >= 3);
+    assertTrue(party.getJSONObject(1).getJSONArray("inventory").length() >= 2);
+    assertTrue(party.getJSONObject(2).getJSONArray("inventory").length() >= 2);
   }
 
   @Test public void emptyLegacyPartyMigratesWithoutCrash() throws Exception {
