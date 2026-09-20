@@ -48,7 +48,18 @@ final class ItemCore {
 
   void normalizeInventory(JSONObject state) throws Exception {
     if (state == null) return;
-    JSONArray inventory = state.optJSONArray("inventory");
+    normalizeInventoryArray(state.optJSONArray("inventory"));
+
+    JSONArray party = state.optJSONArray("party");
+    if (party == null) return;
+    for (int i = 0; i < party.length(); i++) {
+      JSONObject member = party.optJSONObject(i);
+      if (member == null) continue;
+      normalizeInventoryArray(member.optJSONArray("inventory"));
+    }
+  }
+
+  private void normalizeInventoryArray(JSONArray inventory) throws Exception {
     if (inventory == null) return;
     for (int i = 0; i < inventory.length(); i++) {
       JSONObject item = inventory.optJSONObject(i);
@@ -118,18 +129,27 @@ final class ItemCore {
     return itemName;
   }
 
-  String applyItemAction(JSONObject state, String itemId, String operation, String targetId, int requestedQuantity)
-      throws Exception {
+  String applyItemAction(JSONObject state, String itemId, String operation, String targetId,
+                         int requestedQuantity) throws Exception {
+    return applyItemAction(state, "kai", itemId, operation, targetId, requestedQuantity);
+  }
+
+  String applyItemAction(JSONObject state, String ownerId, String itemId, String operation,
+                         String targetId, int requestedQuantity) throws Exception {
     normalizeInventory(state);
     progressionCore.normalizeState(state);
     survivalCore.normalizeState(state);
 
-    String op = operation == null ? "" : operation.trim().toLowerCase(Locale.ROOT);
-    JSONArray inventory = state.optJSONArray("inventory");
-    if (inventory == null) throw new IllegalArgumentException("Inventory đang trống.");
+    String ownerCharacterId = CharacterProgressionCore.normalizeCharacterId(ownerId);
+    if (ownerCharacterId.isEmpty()) ownerCharacterId = "kai";
+    JSONArray inventory = inventoryFor(state, ownerCharacterId, false);
+    if (inventory == null || inventory.length() == 0) {
+      throw new IllegalArgumentException("Inventory của nhân vật đang trống.");
+    }
 
+    String op = operation == null ? "" : operation.trim().toLowerCase(Locale.ROOT);
     int index = findItemIndex(inventory, itemId);
-    if (index < 0) throw new IllegalArgumentException("Không tìm thấy vật phẩm.");
+    if (index < 0) throw new IllegalArgumentException("Không tìm thấy vật phẩm trong Inventory của nhân vật.");
     JSONObject stack = inventory.getJSONObject(index);
     String normalizedId = normalizedItemId(stack);
     int available = Math.max(1, stack.optInt("quantity", 1));
@@ -138,7 +158,7 @@ final class ItemCore {
 
     if ("discard".equals(op)) {
       consumeStack(inventory, index, quantity);
-      state.put("inventory", inventory);
+      setInventoryFor(state, ownerCharacterId, inventory);
       return "Đã vứt bỏ " + name + " x" + quantity + ".";
     }
 
@@ -149,17 +169,25 @@ final class ItemCore {
     String targetCharacterId;
     String targetName;
     if ("share".equals(op)) {
-      JSONObject target = findPartyMember(state.optJSONArray("party"), targetId);
-      if (target == null || !CharacterEncounterCore.isJoinedMember(target)) {
-        throw new IllegalArgumentException("Không tìm thấy nhân vật trong party.");
+      targetCharacterId = CharacterProgressionCore.normalizeCharacterId(targetId);
+      if ("kai".equals(targetCharacterId)) {
+        JSONObject player = state.optJSONObject("player");
+        targetName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+      } else {
+        JSONObject target = findPartyMember(state.optJSONArray("party"), targetId);
+        if (target == null || !CharacterEncounterCore.isJoinedMember(target)) {
+          throw new IllegalArgumentException("Không tìm thấy nhân vật trong party.");
+        }
+        targetCharacterId = CharacterProgressionCore.normalizeCharacterId(
+            target.optString("id", target.optString("name", "")));
+        targetName = target.optString("name", target.optString("id", "Đồng đội"));
       }
-      targetCharacterId = CharacterProgressionCore.normalizeCharacterId(
-          target.optString("id", target.optString("name", "")));
-      targetName = target.optString("name", target.optString("id", "Đồng đội"));
+      if (targetCharacterId.equals(ownerCharacterId)) {
+        throw new IllegalArgumentException("Nhân vật đang chọn chính là người giữ vật phẩm.");
+      }
     } else if ("use".equals(op)) {
-      targetCharacterId = "kai";
-      JSONObject player = state.optJSONObject("player");
-      targetName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+      targetCharacterId = ownerCharacterId;
+      targetName = inventoryOwnerName(state, ownerCharacterId);
     } else {
       throw new IllegalArgumentException("Hành động vật phẩm không hợp lệ.");
     }
@@ -171,9 +199,10 @@ final class ItemCore {
 
     String effectText = applyEffects(state, targetCharacterId, normalizedId, quantity);
     consumeStack(inventory, index, quantity);
-    state.put("inventory", inventory);
+    setInventoryFor(state, ownerCharacterId, inventory);
     if ("share".equals(op)) {
-      return "Đã chia sẻ " + name + " x" + quantity + " cho " + targetName + ". " + effectText;
+      return inventoryOwnerName(state, ownerCharacterId) + " dùng " + name + " x" + quantity
+          + " cho " + targetName + ". " + effectText;
     }
     return targetName + " sử dụng " + name + " x" + quantity + ". " + effectText;
   }
@@ -318,6 +347,54 @@ final class ItemCore {
     }
     inventory.put(itemDefinition(id, quantity));
     state.put("inventory", inventory);
+  }
+
+  private static JSONArray inventoryFor(JSONObject state, String rawOwnerId, boolean create)
+      throws Exception {
+    String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
+    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+      JSONArray inventory = state.optJSONArray("inventory");
+      if (inventory == null && create) {
+        inventory = new JSONArray();
+        state.put("inventory", inventory);
+      }
+      return inventory;
+    }
+
+    JSONObject owner = findPartyMember(state.optJSONArray("party"), ownerId);
+    if (owner == null || !CharacterEncounterCore.isJoinedMember(owner)) {
+      throw new IllegalArgumentException("Nhân vật không có trong party.");
+    }
+    JSONArray inventory = owner.optJSONArray("inventory");
+    if (inventory == null && create) {
+      inventory = new JSONArray();
+      owner.put("inventory", inventory);
+    }
+    return inventory;
+  }
+
+  private static void setInventoryFor(JSONObject state, String rawOwnerId, JSONArray inventory)
+      throws Exception {
+    String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
+    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+      state.put("inventory", inventory == null ? new JSONArray() : inventory);
+      return;
+    }
+    JSONObject owner = findPartyMember(state.optJSONArray("party"), ownerId);
+    if (owner == null || !CharacterEncounterCore.isJoinedMember(owner)) {
+      throw new IllegalArgumentException("Nhân vật không có trong party.");
+    }
+    owner.put("inventory", inventory == null ? new JSONArray() : inventory);
+  }
+
+  private static String inventoryOwnerName(JSONObject state, String rawOwnerId) {
+    String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
+    if (ownerId.isEmpty() || "kai".equals(ownerId)) {
+      JSONObject player = state == null ? null : state.optJSONObject("player");
+      return player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+    }
+    JSONObject owner = findPartyMember(state == null ? null : state.optJSONArray("party"), ownerId);
+    return owner == null ? ownerId : owner.optString("name", ownerId);
   }
 
   private static int findItemIndex(JSONArray inventory, String itemId) {
