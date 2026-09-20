@@ -3,13 +3,13 @@
   window.__backroomPartyUi=true;
 
   var AVATARS={
-    kai:'file:///android_asset/avatars/kai_avatar.jpg',
+    kai:'',
     lucia:'file:///android_asset/avatars/lucia_avatar.jpg',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
   var META={
-    kai:{name:'Kai Akechi',role:'Đội trưởng SRU'},
+    kai:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'},
     lucia:{name:'Lucia Lục',role:'Tactical Riflewoman'},
     iris:{name:'Iris',role:'Scout / Target Eliminator'},
     syvial:{name:'Syvial',role:'Đội phó SRU'}
@@ -38,7 +38,7 @@
 
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
-    if(value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
+    if(value.indexOf('cao minh')>=0||value.indexOf('vạn giới ma tôn')>=0||value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
     if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
@@ -50,7 +50,7 @@
     var result={};
     Object.keys(p).forEach(function(k){result[k]=p[k];});
     result.id='kai';
-    result.name=result.name||'Kai Akechi';
+    result.name=result.name||'Cao Minh';
     result.joined=true;
     result.__player=true;
     return result;
