@@ -79,56 +79,56 @@ public class ItemCoreTest {
 
   @Test public void firstAidKitHealsAuthoritativeProgressionHp() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray());
     CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
     progression.normalizeState(state);
-    progression.setCurrentHp(state, "kai", 10);
+    progression.setCurrentHp(state, "cao_minh", 10);
     ItemCore.grantChestLootItem(state, 2);
 
     String reply = new ItemCore().applyItemAction(state, ItemCore.FIRST_AID_KIT_ID, "use", "", 1);
 
-    assertEquals(45, progression.profile(state, "kai").getInt("currentHp"));
+    assertEquals(45, progression.profile(state, "cao_minh").getInt("currentHp"));
     assertTrue(reply.contains("HP +35"));
     assertEquals(0, state.getJSONArray("inventory").length());
   }
 
   @Test public void banhMiAndLavieUpdateAuthoritativeSurvivalState() throws Exception {
     JSONObject foodState = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 48L * 60L));
     ItemCore.grantChestLootItem(foodState, 5);
     SurvivalCore survival = new SurvivalCore();
-    assertEquals(33, survival.projectPhysiology(foodState, "kai").getInt("foodPercent"));
+    assertEquals(33, survival.projectPhysiology(foodState, "cao_minh").getInt("foodPercent"));
 
     String foodReply = new ItemCore().applyItemAction(
         foodState, ItemCore.BANH_MI_THIT_ID, "use", "", 1);
 
-    assertEquals(78, survival.projectPhysiology(foodState, "kai").getInt("foodPercent"));
+    assertEquals(78, survival.projectPhysiology(foodState, "cao_minh").getInt("foodPercent"));
     assertTrue(foodReply.contains("Đói +45"));
 
     JSONObject waterState = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 24L * 60L));
     ItemCore.grantChestLootItem(waterState, 3);
-    assertEquals(50, survival.projectPhysiology(waterState, "kai").getInt("waterPercent"));
+    assertEquals(50, survival.projectPhysiology(waterState, "cao_minh").getInt("waterPercent"));
 
     String waterReply = new ItemCore().applyItemAction(
         waterState, ItemCore.LAVIE_WATER_ID, "use", "", 1);
 
-    assertEquals(100, survival.projectPhysiology(waterState, "kai").getInt("waterPercent"));
+    assertEquals(100, survival.projectPhysiology(waterState, "cao_minh").getInt("waterPercent"));
     assertTrue(waterReply.contains("Khát +50"));
   }
 
-  @Test public void selectedCompanionUsesOwnInventoryWithoutTouchingKaiInventory() throws Exception {
+  @Test public void selectedCompanionUsesOwnInventoryWithoutTouchingCaoMinhInventory() throws Exception {
     JSONObject lucia = new JSONObject()
         .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.BANDAGE_ID).put("name", "Băng Gạc Y Tế").put("quantity", 1)));
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.ALMOND_WATER_ID).put("name", "Almond Water").put("quantity", 1)))
         .put("party", new JSONArray().put(lucia));
@@ -150,7 +150,7 @@ public class ItemCoreTest {
 
   @Test public void downedCompanionCannotBypassTenTurnReviveWithHealingItem() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
             .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
     CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
