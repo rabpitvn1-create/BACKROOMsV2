@@ -3,13 +3,13 @@
   window.__backroomPartyUi=true;
 
   var AVATARS={
-    kai:'file:///android_asset/avatars/kai_avatar.jpg',
+    cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg',
     lucia:'file:///android_asset/avatars/lucia_avatar.jpg',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
   var META={
-    kai:{name:'Kai Akechi',role:'Đội trưởng SRU'},
+    cao_minh:{name:'Cao Minh',role:'Đội trưởng SRU'},
     lucia:{name:'Lucia Lục',role:'Tactical Riflewoman'},
     iris:{name:'Iris',role:'Scout / Target Eliminator'},
     syvial:{name:'Syvial',role:'Đội phó SRU'}
@@ -32,13 +32,13 @@
   var selectedId='';
 
   function publishSelection(){
-    var id=selectedId||'kai';
+    var id=selectedId||'cao_minh';
     if(typeof window.backroomInventoryOwnerChanged==='function')window.backroomInventoryOwnerChanged(id);
   }
 
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
-    if(value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
+    if(value.indexOf('cao_minh')>=0||value.indexOf('cao minh')>=0)return 'cao_minh';
     if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
@@ -49,8 +49,8 @@
     var p=(state&&state.player)||{};
     var result={};
     Object.keys(p).forEach(function(k){result[k]=p[k];});
-    result.id='kai';
-    result.name=result.name||'Kai Akechi';
+    result.id='cao_minh';
+    result.name=result.name||'Cao Minh';
     result.joined=true;
     result.__player=true;
     return result;
@@ -80,11 +80,11 @@
 
   function members(){
     var out=[mergeDetail(clonePlayer())];
-    var seen={kai:true};
+    var seen={cao_minh:true};
     (Array.isArray(state&&state.party)?state.party:[]).forEach(function(member){
       if(!member||member.joined!==true)return;
       var id=norm(member.id||member.name);
-      if(!id||id==='kai'||seen[id])return;
+      if(!id||id==='cao_minh'||seen[id])return;
       seen[id]=true;
       out.push(mergeDetail(member));
     });
