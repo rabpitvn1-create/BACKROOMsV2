@@ -77,8 +77,8 @@ final class CharacterEncounterCore {
     JSONArray joined = new JSONArray();
     for (String id : CANONICAL_ORDER) if (containsPartyId(party, id)) joined.put(id);
     encounter.put("joined", joined);
-    encounter.put(PENDING_INTRO, filterIds(encounter.optJSONArray(PENDING_INTRO), party));
-    encounter.put(JUST_ENCOUNTERED, filterIds(encounter.optJSONArray(JUST_ENCOUNTERED), party));
+    encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO)));
+    encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED)));
     state.put(ENCOUNTER_STATE, encounter);
   }
 
@@ -117,11 +117,9 @@ final class CharacterEncounterCore {
     }
 
     encounter.remove("lastCapacityRejected");
-    for (String id : hits) party.put(normalizedMember(id, null));
     JSONArray encountered = new JSONArray(hits);
     encounter.put(JUST_ENCOUNTERED, encountered);
     encounter.put(PENDING_INTRO, new JSONArray(hits));
-    state.put("party", party);
     state.put(ENCOUNTER_STATE, encounter);
     normalizeState(state);
     return new EncounterResult(hits, false);
@@ -139,6 +137,19 @@ final class CharacterEncounterCore {
     JSONArray pending = candidate.getJSONObject(ENCOUNTER_STATE).optJSONArray(PENDING_INTRO);
     if (pending == null || pending.length() == 0) return;
     validateIntroDialogue(introDialogue);
+
+    JSONArray party = candidate.getJSONArray("party");
+    for (int i = 0; i < pending.length(); i++) {
+      String id = pending.optString(i, "").trim().toLowerCase(Locale.ROOT);
+      if (id.isEmpty() || containsPartyId(party, id)) continue;
+      if (party.length() >= MAX_COMPANIONS) {
+        throw new IllegalStateException("Party đã đầy trước khi hoàn tất character encounter.");
+      }
+      party.put(normalizedMember(id, null));
+    }
+    candidate.put("party", party);
+    normalizeState(candidate);
+
     JSONObject encounter = candidate.getJSONObject(ENCOUNTER_STATE);
     encounter.put("lastIntroduced", new JSONArray(pending.toString()));
     encounter.put("lastIntroducedTurn", Math.max(1, candidate.optInt("turn", 1)));
@@ -166,10 +177,10 @@ final class CharacterEncounterCore {
           "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter rolls and Party membership. Never spawn a character, add/remove/reorder Party, or change joined state. " +
-          "Only describe a character as present when joined. " +
+          "Joined characters may be treated as already accompanying Kai. Pending-intro characters are NOT yet accompanying Kai at the start of this turn. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "These characters already auto-joined before this Gemini call. Return encounterDialogue with 2-5 short Vietnamese dialogue lines total, canon-accurate, without asking the player to accept them. Do not advance an extra Explorer Turn.");
+              : "A pending character encounter has triggered. The reply must depict the FIRST CONTACT in the current location before any dialogue, without implying that the character was already walking with Kai, already in his Party, or present in earlier turns. Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. After this validated first-contact scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
@@ -221,6 +232,7 @@ final class CharacterEncounterCore {
     member.put("joined", true);
     member.put("present", true);
     member.put("joinConfirmed", true);
+    if (!member.has("inventory")) member.put("inventory", defaultInventory(id));
     member.remove("level");
     member.remove("explorer");
     member.remove("exp");
@@ -233,6 +245,31 @@ final class CharacterEncounterCore {
     member.remove("maxHP");
     member.remove("equipment");
     return member;
+  }
+
+  private static JSONArray defaultInventory(String id) throws Exception {
+    JSONArray inventory = new JSONArray();
+    if ("lucia".equals(id)) {
+      inventory.put(new JSONObject().put("name", "M4A1 cá nhân hóa"));
+      inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
+      inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
+    } else if ("iris".equals(id)) {
+      inventory.put(new JSONObject().put("name", "SRU Recon Frame R03"));
+      inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
+    } else if ("syvial".equals(id)) {
+      inventory.put(new JSONObject().put("name", "GodKiller"));
+      inventory.put(new JSONObject().put("name", "Lucifer Armor"));
+    }
+    return inventory;
+  }
+
+  private static JSONArray filterEncounterIds(JSONArray ids) {
+    JSONArray result = new JSONArray();
+    if (ids == null) return result;
+    for (String id : CANONICAL_ORDER) {
+      if (containsString(ids, id)) result.put(id);
+    }
+    return result;
   }
 
   private static JSONObject encounterState(JSONObject state) throws Exception {
