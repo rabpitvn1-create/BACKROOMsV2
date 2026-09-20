@@ -995,7 +995,7 @@
       ],
       "gmConstraints": [
         "Không biến level thành công trường có công nhân sống hoặc faction Remodeling Co. hiện diện nếu state không xác nhận.",
-        "Không cho Wi‑Fi giải quyết liên lạc với SRU.",
+        "Không cho Wi‑Fi tự tạo đường liên lạc ổn định với thế giới nguyên sinh.",
         "Không dùng collapse như cutscene bắt buộc ở mọi lượt; nó là quá trình môi trường có thể được quan sát và phản ứng."
       ],
       "variationPool": [
