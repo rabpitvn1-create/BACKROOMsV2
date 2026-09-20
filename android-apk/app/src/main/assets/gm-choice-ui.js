@@ -83,7 +83,7 @@
 
   function entryHighlights(entry) {
     var map = new Map();
-    ['Cao Minh','Cao Minh','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
+    ['Cao Minh','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
     knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
     knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
 
