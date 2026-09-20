@@ -1,82 +1,59 @@
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
-Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-17.
+Nguồn nhân vật hiện hành được đồng bộ từ Google Drive. Khi runtime, save cũ, log cũ hoặc local mirror mâu thuẫn với tài liệu này, canon hiện hành thắng.
 
-Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu.
+## Nguồn Drive
 
-- Kai: `Kai_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
-- Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
-- Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
-- Lucia: `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ`
+- Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
+- Iris: `Iris_Codex.docx`.
+- Syvial: `Syvial_Codex.docx`.
+- Hứa Thuý Mai / Lucia Lục: `Lucia_Codex.docx`.
 
-`UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
+## Cao Minh / Vạn Giới Ma Tôn — R15
 
-## Kai Akechi / Twilight — R12
+Cao Minh là Ma Đạo Kiếm Tu thuần tiên hiệp, tôn hiệu **Vạn Giới Ma Tôn**. Hắn đã đứng ở đỉnh cao thế giới nguyên sinh trước khi vô tình rơi vào Backrooms. Không có nguồn gốc quân sự/công nghệ hiện đại hoặc tương lai, không mang thân phận sĩ quan và không dùng súng.
 
-Kai hiện là Đội trưởng SRU thuộc lực lượng Cảnh Sát chống hiện tượng dị thường. Continuity tổ chức Black Blood/Vatican cũ không còn là tổ chức hiện hành của Kai. Hồ sơ SRU công khai phân loại Kai là con người. KNOWLEDGE_LOCK: Kai thật sự là bán nhân/bán quỷ, con của Sparda và Eve; nhân vật khác không được tự suy ra bí mật này chỉ từ biểu hiện sức mạnh. Niên đại xuất thân là 2299, không phải năm sinh; tuổi thật chưa khóa. Cấp chiến lực UR+.
+Cao Minh vào Backrooms một mình sau khi mặt đất dưới chân biến mất mà không có trận pháp hay dao động không gian hắn nhận ra. Hắn không biết trước Level, Entity hay quy luật Backrooms. Vì đã quá chán sau nhiều năm đứng ở đỉnh cao, hắn chủ động chọn khám phá nơi này thay vì lập tức coi việc thoát ra là mục tiêu số một.
 
-Sparda Core cung cấp quỷ lực vô hạn và không có giới hạn nội tại kiểu mana, pin, cooldown, tha hóa, berserk hay phản phệ. Core tăng cường thể chất/nhận thức/hồi phục và cấp năng lượng cũng như tự sửa chữa cho mọi vật phẩm Kai đang trang bị. Devil Trigger không có trần thời lượng/cooldown nội tại và không làm Kai mất quyền kiểm soát.
+### Năng lực
 
-Vũ khí đặc trưng hiện hành là **SRU Assault Rifle MK19**, không còn White Wraith Magnum. Đạn vật lý: 5.56×45 mm NATO, băng tháo rời 30 viên, 700–950 viên/phút, nòng 368 mm, chiều dài 838 mm khi kéo báng / 756 mm khi thu báng, tầm hiệu quả khoảng 500–600 m. Đạn vật lý là tài nguyên hữu hạn. MK19 đồng thời có thể khai hỏa đạn quỷ lực Sparda 5.56×45 mm hình thành trực tiếp từ Sparda Core, không tiêu hao kho đạn vật lý và có sát thương vật lý được mô tả là mạnh hơn đạn thường hàng chục lần; không tự khóa hệ số nhân chính xác.
+- **Vạn Quỷ Ma Tâm**: Đạo Cơ / Ma Hải và nguồn ma nguyên gần như vô tận; hỗ trợ hồi phục và tự phục hồi trang bị bản mệnh. Không tự thêm mana bar, cooldown nội tại, tha hóa hoặc mất kiểm soát.
+- **Vạn Quỷ Ma Thân**: trạng thái giải phóng toàn diện, tăng mạnh thể chất, thần niệm, hồi phục và Ma Đạo Kiếm Ý; không tạo nhân cách thứ hai.
+- **Huyết Ma Tứ Liên**: tổng 170% weapon damage, Chảy máu 3 lượt, mỗi lượt 5% Max HP.
+- **Ma Tâm Trấn Hồn**: tổng 130% weapon damage, Choáng 1 lượt.
+- **Huyết Ảnh Ma Độn**: tổng 147% weapon damage bằng ngự kiếm + ma độn.
+- **Thiên Ma Bộ**: +50 điểm phần trăm Né tránh trong 3 lượt.
+- **Huyết Ma Nhị Thập Tứ Trảm**: đúng 24 trảm khi ngoại giới dừng hoàn toàn; gameplay hiện hành tính 10 HP mỗi trảm, tổng 240 HP.
 
-**Guilty Crown Override**: Kai ở Devil Trigger, thời gian ngoại giới dừng hoàn toàn, MK19 khai hỏa đúng 24 viên đạn quỷ lực Sparda 5.56×45 mm và chuỗi kết thúc chính xác sau viên thứ 24.
+### Set trang bị — Vạn Giới Ma Tôn
 
-Giáp hiện hành là **SRU-MK20 Powered Armor**, phối đen/gunmetal + trắng ngà, điểm vàng đồng nhỏ; cấu hình R12 để lộ đầu và mặt, tóc bạc trắng cực dài buộc đuôi ngựa cao. Các chức năng tay/chân legacy đã được tích hợp vào hệ giáp hiện hành. Mọi trang bị Kai đang mang được Sparda Core tự sửa chữa.
+- **Huyết Ma Kiếm**: bản mệnh đại kiếm thân thẳng bản rộng; dùng kiếm thể, Huyết Sát Ma Khí và ngự kiếm.
+- **Huyết Ma Chiến Khải**: bản mệnh ma khải từ Ma Kim, ma văn, tinh huyết và ma nguyên; không phải powered armor hay thiết bị điện tử.
+- **Vạn Tàng Giới**: giới chỉ chứa tiểu không gian dành cho vật vô tri. **Phản Bổn** phục hồi chính vật đã tồn tại về trạng thái tốt nhất từng có; không sao chép, tạo vật mới hoặc tác động lên sinh linh.
 
-**Omnivault Ring** hiện chỉ còn hai nhóm chức năng: kho vô hạn cho vật vô tri (lưu/lấy vật đã cất) và **Hoàn nguyên** chính trang bị hiện hữu về trạng thái tốt nhất từng tồn tại của món đó. Mỗi món có cooldown Hoàn nguyên 24 giờ sau một lần dùng thành công. Omnivault không tác động lên sinh vật sống. Các cơ chế cũ **Quét / Sao chép / tạo vật phẩm / Marked / Nâng cấp** đã bị loại khỏi canon hiện hành.
+### Quan hệ
 
-## Iris / ARGUS — R07
+Cao Minh **không có quan hệ có sẵn với Iris hoặc Syvial**. Nếu CharacterEncounterCore đưa họ vào campaign, lần gặp đầu tiên là first contact trừ khi live state về sau xác lập khác.
 
-Tên chính thức hiện hành là **Iris**, chưa khóa họ. `ARGUS` là callsign chiến đấu SRU. Iris là **Scout / Target Eliminator** trong đội của Kai và là ranged combatant/Gunslinger thực thụ, không phải một trạm tình báo đứng sau tuyến. Kai là đội trưởng, Syvial là đội phó.
+Cao Minh có mối thù với **Diệp Minh**, nhưng nguyên nhân, quá khứ, trách nhiệm, cán cân thắng bại và kết cục đều **OPEN**. Không tự điền.
 
-Iris là bán nhân/bán quỷ, con gái của Belial và một người mẹ loài người đã qua đời. Danh tính/nghề nghiệp/xuất thân/nguyên nhân qua đời của mẹ vẫn UNKNOWN. Năm sinh và niên đại xuất thân của Iris vẫn UNKNOWN. Không tự suy ra Iris là UR+ chỉ vì Kai hoặc Syvial ở cấp đó. Kai là người đầu tiên của SRU phát hiện Iris; sau đó SRU chuẩn hóa hệ Project 07.
+## Iris
 
-**Belial Core** cung cấp quỷ lực vô hạn cho các chức năng đã khóa của Iris nhưng không phải trí tuệ thứ hai. **Thousandfold Cognition** gia tốc tiếp nhận và xử lý thông tin tối đa 1:1000; không tự làm cơ thể, tay chân hay cơ cấu súng nhanh hơn 1000 lần.
+Iris giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Iris và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-**ARGUS Terrain Read** thay thế hoàn toàn hệ drone EYE∞ cũ. Iris phải trực tiếp quan sát hoặc dùng cảm biến ở cùng khu vực để phân tích địa hình, đường tiếp cận/rút lui, đường ngắm, vật che, điểm phục kích và dấu vết bất thường. ARGUS không toàn tri, không nhìn xuyên tường, không tạo camera từ xa và không tự nhận diện bản thể siêu nhiên nếu thiếu bằng chứng.
+## Syvial
 
-Trang bị hiện hành gồm **SRU Recon Frame R03** và hai súng cơ khí **Ivory & Ebony**. Đạn của Ivory & Ebony được hình thành trực tiếp từ quỷ lực Iris, không dựa vào băng vật lý thông thường làm nguồn chính. Nguồn năng lượng vô hạn không có nghĩa tốc độ bắn, độ bền, sát thương từng viên, độ chính xác hay nhận dạng mục tiêu là vô hạn.
+Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Syvial và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-Field MedNet là năng lực y tế chiến trường, không phải phép hồi phục. Field Galley là kỹ năng nấu ăn/hậu cần dã chiến, không tạo vật chất.
+## Hứa Thuý Mai / Lucia Lục
 
-Iris có tình cảm với Kai; Kai biết nhưng canon hiện hành chưa khóa rằng Kai đáp lại. Iris dùng hệ xưng hô `anh–em` với Kai. Iris và Syvial là bạn bè/đồng đội tin cậy có cạnh tranh tình cảm, không phải kẻ thù; xưng hô Iris ↔ Syvial vẫn UNKNOWN.
-
-## Syvial — current Drive canon
-
-Syvial là con gái bán quỷ của Lucifer và một người mẹ loài người chưa khóa danh tính. Cô đến từ năm 2299, đây là niên đại xuất thân chứ không phải năm sinh; tuổi thật chưa biết. Syvial là UR+, cùng tầng sức mạnh tổng thể với Kai. Tổ chức hiện hành là SRU thuộc lực lượng Cảnh Sát chống hiện tượng dị thường, và Syvial giữ chức **Đội phó** đội Kai Akechi / Twilight.
-
-Ngoài chiến đấu, Syvial tự nhiên, giao tiếp bình thường, thích đồ ăn ngon, biết lười, càm ràm và trêu người. Khi nguy hiểm thật sự, cô tập trung và chính xác. Syvial là yandere rất nặng đối với Kai nhưng vẫn tỉnh táo, thông minh và có năng lực xã hội. Điều cô muốn là Kai tự nguyện chọn cô; không biến đặc điểm này thành giấy phép cho giết người ngẫu nhiên, phá nhiệm vụ, tẩy ký ức, điều khiển tinh thần hay giam giữ Kai để cưỡng ép kết quả.
-
-**Lucifer Core** cung cấp quỷ lực vô hạn, tăng cường thể chất/phản xạ/nhận thức/hồi phục, cấp năng lượng cho Lucifer Armor và đồng bộ GodKiller. Core không phải trí tuệ thứ hai. Devil Trigger không làm Syvial mất kiểm soát và không có cooldown/trần thời lượng nội tại do người viết tự bịa.
-
-**GodKiller** là đại kiếm cơ khí thuần túy, không phải súng hoặc gunblade. Nó liên kết với Syvial và có thể được gọi trở lại trừ khi một cơ chế đủ mạnh trực tiếp phong tỏa liên kết đó.
-
-**Lucifer Armor** là giáp mecha/high-tech toàn thân đen/gunmetal/bạc với điểm sáng magenta. Các module nhọn quanh đầu là bộ phận cơ khí/cảm biến, không phải sừng sinh học. Giáp rất bền và tự sửa rất nhanh nhưng không bị khóa là bất hoại tuyệt đối.
-
-**GodKiller Override / Twenty-Four Severance**: đúng 24 nhát chém trong khi thời gian ngoại giới dừng hoàn toàn.
-
-## Hứa Thuý Mai / Lucia Lục — R03
-
-Tên thật/pháp lý là **Hứa Thuý Mai**. `Lucia Lục` là biệt danh/callsign dùng trong môi trường quân đội. Lucia là nữ, 19 tuổi, **con người**, quốc tịch Việt Nam, xuất thân Hoa Kiều và là chít nội Gia tộc Họ Hứa. Cô đã tham gia quân ngũ một năm theo chương trình huấn luyện tại Việt Nam kết hợp Hoa Kỳ, kỳ thi đầu vào đạt loại xuất sắc. Đây là một quân nhân trẻ có nền tảng tốt trong phạm vi con người, không phải chiến lực siêu nhiên/UR+.
-
-Lucia chỉ có thể xuất hiện qua roll Explorer tại Level 0 do **CharacterEncounterCore** sở hữu. Gemini không được tự tạo cô ở nơi thuận tiện và không được sửa Party. Lucia không thuộc nhóm SRU ban đầu đi qua sự kiện Async; nhóm ban đầu là Kai, Iris và Syvial. Mục tiêu Level 0 ban đầu của Lucia là tìm đường sang Level 1.
-
-Gameplay baseline hiện hành: `HP 100`, `STR 7`, `DF 7`, `AGI 8`, `CRIT 7`; hồi `+2 HP` sau mỗi 3 lượt hoàn tất riêng biệt và trạng thái này phải tồn tại qua save/load.
-
-Vũ khí chính là **M4A1 cá nhân hóa** với đạn vật lý. Baseline đạn: 60 viên trong các băng chính + 90 viên dự trữ = 150 viên. Lucia còn có dao chiến đấu và đồng hồ điều hướng quân sự. Ảnh R03 cho thấy một súng ngắn đen ở holster đùi, nhưng model/đạn/cơ chế gameplay chính xác của súng này vẫn OPEN. Inventory hiện hành: tối đa 8 loại vật phẩm, 100 đơn vị mỗi loại; Equipment quản lý tách khỏi Inventory.
-
-Khóa thị giác R03: gương mặt nữ trẻ trưởng thành, tóc đen dài buộc đuôi ngựa cao, mắt nâu ấm, trang bị camouflage/tactical hiện đại, không đội helmet, M4A1 có báng chỉnh, rail, optic, foregrip, suppressor, light/laser theo hình tham chiếu. Chiều cao và số đo cơ thể vẫn OPEN. Quan hệ và xưng hô với Kai vẫn OPEN.
+Lucia chỉ xuất hiện qua encounter do **CharacterEncounterCore** sở hữu. Gemini không được tự spawn hoặc mutate Party. Quan hệ và xưng hô với Cao Minh vẫn OPEN cho đến khi continuity trong campaign xác lập.
 
 ## Runtime contract
 
-File máy đọc tương ứng: `app/src/main/assets/knowledge/characters_current.json`.
-
-Khi prompt/game state chứa bản canon này:
-
-1. Canon Drive hiện hành thắng dữ kiện character legacy trong save/log cũ nếu có xung đột.
-2. Không tự biến KNOWLEDGE_LOCK thành kiến thức của nhân vật.
-3. Không tự điền UNKNOWN/OPEN.
-4. Lucia không được auto-spawn chỉ vì model biết cô tồn tại; chỉ CharacterEncounterCore được roll và auto-join.
-5. Kai không còn dùng White Wraith/Blackblood Armor như loadout hiện hành; baseline mới là SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring.
-6. Omnivault không còn Scan/Copy/Create/Marked/Upgrade.
+1. Người chơi chỉ quyết định hành động có chủ ý của Cao Minh.
+2. Gemini không được tự spawn character hoặc sửa Party.
+3. Cao Minh không tự biết Level/Entity/quy luật Backrooms trước khi quan sát hoặc kiểm chứng.
+4. Gameplay stat như HP, EXP, Accuracy, Evasion, combat turn là lớp runtime; không được viết như tri thức diegetic của Cao Minh.
+5. Set mặc định của Cao Minh là Huyết Ma Kiếm + Huyết Ma Chiến Khải + Vạn Tàng Giới.
+6. Không khôi phục bất kỳ tên kỹ năng, vật phẩm, trang bị, thân phận hoặc quan hệ player-character đã bị R15 thay thế.
