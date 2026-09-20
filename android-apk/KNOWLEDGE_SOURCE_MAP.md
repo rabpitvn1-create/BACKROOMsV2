@@ -30,22 +30,25 @@ Current game state embeds the compact current character canon so the Java-only G
 
 Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
 
-- `Kai_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — current revision R12.
+- `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — current revision R15.
 - `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k` — current revision R07.
 - `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY` — current Drive canon.
 - `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ` — current revision R03.
 
-### Kai source map
+### Cao Minh source map
 
-| Runtime concept | Source anchor | Current lock |
-| --- | --- | --- |
-| Identity / organization | `KAI-ID-01`, quick lock | Kai Akechi / Twilight; SRU Captain in anti-anomalous police. Legacy Black Blood/Vatican organization continuity is not current. Public SRU classification is human; half-human/half-demon son of Sparda and Eve is KNOWLEDGE_LOCK. Origin era 2299 is not birth year; true age unknown. |
-| Sparda Core | `KAI-CORE-SPARDA-01` | Infinite demon power; no intrinsic depletion/cooldown/corruption/berserk. Powers regeneration and self-repair of all currently equipped gear. |
-| Devil Trigger | `KAI-DT-01` | No intrinsic duration cap/cooldown/backlash/control loss. |
-| Guilty Crown Override | `KAI-ULT-GCO-01` | Exactly 24 Sparda demonic 5.56×45 mm shots through SRU Assault Rifle MK19 while external time is fully stopped. |
-| SRU Assault Rifle MK19 | `KAI-EQP-SRU-AR-MK19-01` | Current signature weapon. Physical 5.56×45 NATO, 30-round physical magazine, 700–950 rpm, 368 mm barrel, effective range about 500–600 m; physical ammo finite. Sparda demonic 5.56×45 forms directly from Core and does not consume physical ammo. |
-| SRU-MK20 | `KAI-EQP-SRU-MK20-01` | Current powered armor. R12 visual lock: black/gunmetal + ivory, small brass/gold accents, head/face exposed, very long silver-white high ponytail. |
-| Omnivault | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | Infinite storage/retrieval for inanimate objects + Restore of the same existing equipment. 24h per-item Restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed. |
+| Area | Drive anchors | Current lock |
+|---|---|---|
+| Identity / position | `CAO-ID-01`, `CAO-OVERVIEW-01` | Cao Minh / Vạn Giới Ma Tôn; Ma Đạo Kiếm Tu; đệ nhất cường giả của thế giới nguyên sinh trước khi rơi vào Backrooms. |
+| Personality / code | `CAO-PER-01`, `CAO-CODE-01` | Phóng túng, hay châm chọc, không tự xem mình là anh hùng; không chủ động hại người vô tội; phản ứng rất nhanh khi nguy hiểm thật. |
+| Vạn Quỷ Ma Tâm | `CAO-CORE-VQM-01` | Đạo Cơ / Ma Hải / nguồn ma nguyên trung tâm; không tự bịa trần nội tại, cooldown, phản phệ hoặc mất kiểm soát. |
+| Vạn Quỷ Ma Thân | `CAO-VQMS-01` | Giải phóng bản nguyên nhưng giữ nguyên ý thức, ký ức, tính cách và phán đoán. |
+| Huyết Ma Kiếm | `CAO-EQP-HUYET-MA-KIEM-01` | Bản mệnh đại kiếm ma đạo; kiếm thể, ngự kiếm, Huyết Sát Ma Khí. |
+| Huyết Ma Chiến Khải | `CAO-EQP-HUYET-MA-KHAI-01` | Bản mệnh Ma Khải đen–đỏ, liên kết trực tiếp với ma nguyên. |
+| Vạn Tàng Giới | `CAO-EQP-VANTANG-01` | Lưu trữ vật vô tri; Phản Bổn chính pháp bảo hiện hữu, không tạo bản sao/sinh linh. |
+| Huyết Ma Nhị Thập Tứ Trảm | `CAO-ULT-HUYETMA24-01` | Đúng 24 trảm trong thời gian ngoại giới dừng hoàn toàn. |
+| Backrooms entry | `CAO-BACKROOMS-01` | Từ Ma Sơn rơi khỏi thế giới nguyên sinh; không biết trước tên Level/Entity/quy luật; ưu tiên khám phá và kiểm chứng, đường về là mục tiêu thứ hai. |
+| Secret origin | `CAO-SECRET-01` | Huyết thống bán nhân/bán ma và truyền thừa Vạn Quỷ Ma Tôn là KNOWLEDGE_LOCK. |
 
 ### Iris source map
 
@@ -79,7 +82,7 @@ Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
 | --- | --- | --- |
 | Identity | R03 identity / quick lock | Legal name Hứa Thuý Mai. Lucia Lục is military nickname/callsign. Human Vietnamese woman, age 19, Hoa Kiều, great-great-granddaughter of the Hứa family. |
 | Background | R03 quick lock | One year military service/training via Vietnam + USA; entrance result excellent. Skilled human tactical riflewoman, not supernatural/UR+. |
-| Story ownership | Level 0 encounter lock | Fixed story-owned Level 0 encounter; not random/quest spawn and not model-created on demand. Not part of the initial SRU Async group; initial group is Kai/Iris/Syvial. |
+| Story ownership | Level 0 encounter lock | Fixed story-owned Level 0 encounter; not random/quest spawn and not model-created on demand. Not part of the Cao Minh Prologue; old SRU/Async initial-group continuity is retired. |
 | Gameplay stats | R03 gameplay lock | HP 100, STR 7, DF 7, AGI 8, CRIT 7; +2 HP after every 3 separately completed turns with save/load persistence. |
 | Equipment | R03 equipment sections | Personalized M4A1, combat dagger, military navigation watch. Baseline M4A1 physical ammo: 60 in main magazines + 90 reserve = 150. Black handgun visible in thigh holster but exact model/ammo/gameplay remain OPEN. |
 | Inventory | R03 gameplay lock | 8 item types, maximum 100 units each; Equipment separate from Inventory. |
@@ -137,4 +140,4 @@ Rules:
 3. KNOWLEDGE_LOCK never becomes character knowledge automatically.
 4. UNKNOWN/OPEN stays unknown.
 5. Lucia's codex is knowledge that she exists in the setting; it is not permission to spawn her outside her fixed Level 0 story encounter.
-6. New Turn 1 baseline uses SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring. Untouched Turn 1 saves with the old White Wraith baseline are migrated; progressed campaigns are not blindly rewritten.
+6. New Turn 1 baseline uses Cao Minh with Huyết Ma Kiếm + Huyết Ma Chiến Khải + Vạn Tàng Giới. Untouched Turn 1 saves from the Kai/SRU opening are migrated; progressed saves are not blindly rewritten.
