@@ -11,20 +11,20 @@ import org.junit.Test;
 public class GmChoiceContractTest {
   @Test public void gmEntryAddsCoreOwnedSemanticHighlightsWithoutModelMetadata() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("location", "Level 0 / The Lobby — hành lang phía đông")
         .put("party", new JSONArray().put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục")))
         .put("inventory", new JSONArray().put(new JSONObject().put("id", "almond-water").put("name", "Almond Water")));
 
-    String reply = "Kai Akechi gặp Clump tại Level 0. Lucia Lục dùng Quick Step trong khi "
+    String reply = "Cao Minh gặp Clump tại Level 0. Lucia Lục dùng Thiên Ma Bộ trong khi "
         + "Almond Water vẫn còn. HP 50/50, EXP 10 và trạng thái Chảy máu xuất hiện.";
     JSONObject entry = GmChoiceContract.gmEntry(reply, new JSONObject(), state);
     JSONArray highlights = entry.getJSONArray("highlights");
 
-    assertHighlight(highlights, "Kai Akechi", "character");
+    assertHighlight(highlights, "Cao Minh", "character");
     assertHighlight(highlights, "Lucia Lục", "character");
     assertHighlight(highlights, "Clump", "entity");
-    assertHighlight(highlights, "Quick Step", "skill");
+    assertHighlight(highlights, "Thiên Ma Bộ", "skill");
     assertHighlight(highlights, "Chảy máu", "effect");
     assertHighlight(highlights, "Almond Water", "item");
     assertHighlight(highlights, "Level 0", "location");
@@ -71,11 +71,11 @@ public class GmChoiceContractTest {
 
   @Test public void vietnameseNormalizerPreservesOfficialNamesAndStats() {
     String normalized = GmChoiceContract.normalizePlayerFacingVietnamese(
-        "Kai Akechi ở Level 0, còn Almond Water và Quick Step. corridor phía trước tối.");
-    assertTrue(normalized.contains("Kai Akechi"));
+        "Cao Minh ở Level 0, còn Almond Water và Thiên Ma Bộ. corridor phía trước tối.");
+    assertTrue(normalized.contains("Cao Minh"));
     assertTrue(normalized.contains("Level 0"));
     assertTrue(normalized.contains("Almond Water"));
-    assertTrue(normalized.contains("Quick Step"));
+    assertTrue(normalized.contains("Thiên Ma Bộ"));
     assertTrue(normalized.contains("hành lang"));
   }
 
