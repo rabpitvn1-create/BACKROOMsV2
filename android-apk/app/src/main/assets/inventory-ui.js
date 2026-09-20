@@ -29,11 +29,11 @@
   var status=document.getElementById('status');
   var inventoryTitle=inventory&&inventory.closest?inventory.closest('.card')&&inventory.closest('.card').querySelector('h2'):null;
   var selectedItem=null;
-  var selectedOwnerId='kai';
+  var selectedOwnerId='cao_minh';
 
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
-    if(value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
+    if(value.indexOf('cao_minh')>=0||value.indexOf('cao minh')>=0)return 'cao_minh';
     if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
@@ -49,19 +49,25 @@
   }
   function ownerName(id){
     var key=norm(id);
-    if(key==='kai')return String(state&&state.player&&state.player.name||'Kai Akechi');
+    if(key==='cao_minh')return String(state&&state.player&&state.player.name||'Cao Minh');
     var member=partyMember(key);
     return String(member&&member.name||key||'Nhân vật');
   }
   function ownerInventory(id){
     var key=norm(id);
-    if(key==='kai')return Array.isArray(state&&state.inventory)?state.inventory:[];
+    if(key==='cao_minh')return Array.isArray(state&&state.inventory)?state.inventory:[];
     var member=partyMember(key);
     return Array.isArray(member&&member.inventory)?member.inventory:[];
   }
   function itemId(item){return String(item&&item.id||item&&item.name||'').trim()}
   function qty(item){return Math.max(1,Number(item&&item.quantity||1)||1)}
   function effectText(item){
+    if(item&&item.kind==='equipment'){
+      var parts=[];
+      if(item.set)parts.push('Set: '+item.set);
+      if(item.description)parts.push(String(item.description));
+      return parts.join(' · ')||'Trang bị của Cao Minh.';
+    }
     var e=item&&item.effects||{};
     var parts=[];
     if(Number(e.hunger||0)>0)parts.push('Đói +'+e.hunger);
@@ -113,7 +119,7 @@
     actions.appendChild(drop);
     sheet.appendChild(actions);
 
-    var targets=[{id:'kai',name:String(state&&state.player&&state.player.name||'Kai Akechi')}];
+    var targets=[{id:'cao_minh',name:String(state&&state.player&&state.player.name||'Cao Minh')}];
     (Array.isArray(state&&state.party)?state.party:[]).forEach(function(member){
       if(member&&member.joined===true)targets.push({id:String(member.id||member.name||''),name:String(member.name||member.id||'Đồng đội')});
     });
@@ -138,7 +144,7 @@
 
   function renderInventory(){
     if(!inventory)return;
-    if(selectedOwnerId!=='kai'&&!partyMember(selectedOwnerId))selectedOwnerId='kai';
+    if(selectedOwnerId!=='cao_minh'&&!partyMember(selectedOwnerId))selectedOwnerId='cao_minh';
     inventory.className='inventory-grid';
     inventory.textContent='';
     if(inventoryTitle)inventoryTitle.textContent='Inventory · '+ownerName(selectedOwnerId);
@@ -168,8 +174,8 @@
   }
 
   window.backroomInventoryOwnerChanged=function(rawId){
-    var next=norm(rawId)||'kai';
-    if(next!=='kai'&&!partyMember(next))next='kai';
+    var next=norm(rawId)||'cao_minh';
+    if(next!=='cao_minh'&&!partyMember(next))next='cao_minh';
     selectedOwnerId=next;
     closeSheet();
     renderInventory();
