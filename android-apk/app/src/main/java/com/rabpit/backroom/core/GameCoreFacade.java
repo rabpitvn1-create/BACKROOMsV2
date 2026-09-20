@@ -189,6 +189,11 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processItemAction(String stateJson, String itemId, String operation,
                                                String targetId, int quantity) {
+    return processItemAction(stateJson, "kai", itemId, operation, targetId, quantity);
+  }
+
+  public synchronized String processItemAction(String stateJson, String ownerId, String itemId,
+                                               String operation, String targetId, int quantity) {
     JSONObject state = parseState(stateJson);
     try {
       levelCore.normalizeState(state);
@@ -196,7 +201,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
-      String reply = itemCore.applyItemAction(state, itemId, operation, targetId, quantity);
+      String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
       return response(true, state, null, "item_action_committed", reply);
