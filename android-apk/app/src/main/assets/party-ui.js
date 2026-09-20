@@ -3,6 +3,7 @@
   window.__backroomPartyUi=true;
 
   var AVATARS={
+    kai:'file:///android_asset/avatars/cao_minh_avatar.jpg',
     lucia:'file:///android_asset/avatars/lucia_avatar.jpg',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
@@ -97,6 +98,7 @@
 
   function avatarFor(member){
     var id=norm(member&&((member.id||'')+' '+(member.name||'')));
+    if(id==='kai')return AVATARS.kai||'';
     var custom=member&&(member.avatar||member.avatarRef);
     return custom?String(custom):AVATARS[id]||'';
   }

@@ -5,6 +5,8 @@ var SnapshotOverlayLayout = (function(){
   var ENTITY_LANE_WIDTH=0.46;
   // BEGIN GENERATED OVERLAY METRICS
   var bundledMetrics={
+    "cao_minh_entity_overlay.png":{"width":1122,"height":1402,"paint":{"left":1,"top":0,"right":1122,"bottom":1386},"body":{"left":2,"top":3,"right":1122,"bottom":1376},"sha256":"980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47"},
+    "cao_minh_snapshot_overlay.png":{"width":1122,"height":1402,"paint":{"left":54,"top":16,"right":1020,"bottom":1389},"body":{"left":54,"top":17,"right":1017,"bottom":1385},"sha256":"e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e"},
     "entity/biological_pipeline.png":{"width":1086,"height":1448,"paint":{"left":112,"top":14,"right":973,"bottom":1434},"body":{"left":113,"top":14,"right":972,"bottom":1433},"sha256":"0474fa10a7ff4f06089df8c5b937576278a11951ae73f24cd2c1afd5cb78f413"},
     "entity/cable_mimic.png":{"width":1254,"height":1254,"paint":{"left":339,"top":19,"right":963,"bottom":1237},"body":{"left":340,"top":21,"right":961,"bottom":1237},"sha256":"15ccdd6a14c0e80e0acec072090aaeb134c6c6b66570cc4e05c9041017399fdb"},
     "entity/clump.png":{"width":1254,"height":1254,"paint":{"left":1,"top":10,"right":1254,"bottom":1227},"body":{"left":3,"top":10,"right":1250,"bottom":1226},"sha256":"a7776f353412753875d4742498135ea7053f60512a82fdf48c350c1e03135b21"},
@@ -138,12 +140,13 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   try{localStorage.removeItem('backroom-apk-snapshot');}catch(_){}
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];
-  var __combatCharacterOverlays={lucia:'file:///android_asset/lucia_entity_overlay.png'};
+  var __combatCharacterOverlays={kai:'file:///android_asset/cao_minh_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
   function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}
   function activeEntityKey(){try{var forced=normalizeEntityKey(window.__combatVisualEntityKey||'');if(forced)return forced;var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var combatKey=c.active?((c.entity&&c.entity.key)||c.entityKey||c.enemyKey||c.enemy||''):'';var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||combatKey);if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}
   function chestPresent(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !!(s.flags&&s.flags.chestPresent===true);}catch(e){return false;}}
+  function shouldShowProtagonistOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey()||chestPresent());}catch(e){return false;}}
   function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('cao minh')>=0||k.indexOf('vạn giới ma tôn')>=0||k.indexOf('kai')>=0||k.indexOf('twilight')>=0)return 'kai';if(k.indexOf('lucia')>=0||k.indexOf('hứa thuý mai')>=0||k.indexOf('hua thuy mai')>=0)return 'lucia';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
   function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
   function appendCombatCharacter(box,participant){
@@ -160,6 +163,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
       img=document.createElement('img');img.className='snapshot-entity snapshot-grounded';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);alignOverlayToGround(img,'left','entity');return;
     }
     if(chestPresent()){img=document.createElement('img');img.className='snapshot-chest';img.src='file:///android_asset/chest_overlay.png';img.alt='Rương';box.appendChild(img);return;}
+    if(shouldShowProtagonistOverlay()){img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/cao_minh_snapshot_overlay.png';img.alt='Cao Minh';box.appendChild(img);alignOverlayToGround(img,'right','character');return;}
   }
   function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh local cho Level hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}
   function combatTargetElement(target){var box=document.getElementById('snapshot');if(!box)return null;return target==='entity'?box.querySelector('.snapshot-entity'):box.querySelector('.snapshot-combat-character');}

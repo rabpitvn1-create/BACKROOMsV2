@@ -364,8 +364,11 @@ jobs:
           grep -Fq 'waterPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'restPercent' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "kai:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'}" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "kai:'file:///android_asset/avatars/cao_minh_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq 'kai_avatar' android-apk/app/src/main/assets/party-ui.js
           grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "kai:'file:///android_asset/cao_minh_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq 'file:///android_asset/cao_minh_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
           test ! -e android-apk/app/src/main/assets/avatars/kai_avatar.jpg
@@ -376,6 +379,12 @@ jobs:
           test ! -e android-apk/kai_snapshot_overlay_hd.webp
           test ! -e android-apk/kai-codex.txt
           test ! -e android-apk/kai-gun-skills.txt
+          test -s android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg
+          test -s android-apk/app/src/main/assets/cao_minh_snapshot_overlay.png
+          test -s android-apk/app/src/main/assets/cao_minh_entity_overlay.png
+          test "$(sha256sum android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
+          test "$(sha256sum android-apk/app/src/main/assets/cao_minh_snapshot_overlay.png | awk '{print $1}')" = 'e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e'
+          test "$(sha256sum android-apk/app/src/main/assets/cao_minh_entity_overlay.png | awk '{print $1}')" = '980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47'
           test "$(sha256sum android-apk/app/src/main/assets/avatars/lucia_avatar.jpg | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
           test "$(sha256sum android-apk/app/src/main/assets/lucia_entity_overlay.png | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
 
