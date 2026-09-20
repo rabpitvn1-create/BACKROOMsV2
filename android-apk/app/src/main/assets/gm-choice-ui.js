@@ -27,7 +27,7 @@
     ".combat-turn-label{font-size:12px;letter-spacing:.08em;color:#b5bec6;margin:2px 0 1px}",
     ".gm-choice{width:100%;text-align:left;padding:11px 12px;background:#171d22;border:1px solid #39424a;color:#f0f3f5;line-height:1.35}",
     ".gm-choice:disabled{background:#111519;color:#747d85;border-color:#272e34;opacity:.75}",
-    ".gm-choice.selected{border-color:#7a858e;background:#20272d}",
+    ".gm-choice.selected{border-color:#7a858e;background:#20272d}",\n    ".combat-skill-description{display:block;margin-top:5px;color:#9fa8af;font-size:11px;font-weight:400;line-height:1.4}",
     ".composer.battle-locked textarea{background:#101316;color:#697178;border-color:#262d33}",
     ".composer.battle-locked #submit{background:#24282c;color:#777e84;border-color:#30353a;opacity:.7}",
     ".message.gm{border-left-color:#59646d}",
@@ -47,7 +47,7 @@
 
   var semanticPriority = {generic:0,location:1,item:2,effect:3,skill:4,character:5,entity:6};
   var knownSkills = [
-    'The Last Requiem','Silent Lullaby','Salvation','Quick Step','Guilty Crown Override',
+    'Huyết Ma Tứ Liên','Ma Tâm Trấn Hồn','Huyết Ảnh Ma Độn','Thiên Ma Bộ','Huyết Ma Nhị Thập Tứ Trảm',
     'Twosome Time','Rain Storm','Honeycomb Fire','Charged Shot',
     'Rift Sever','Crimson Guillotine','Lucifer Breaker','Spatial Dominion','M4A1 Joint Attack'
   ];
@@ -83,7 +83,7 @@
 
   function entryHighlights(entry) {
     var map = new Map();
-    ['Kai','Kai Akechi','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
+    ['Cao Minh','Cao Minh','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
     knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
     knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
 
@@ -256,9 +256,16 @@
     var choices = Array.isArray(combat.choices) ? combat.choices : [];
     choices.forEach(function(choice){
       var disabled = !!choice.disabled || window.__combatBusy;
-      box.appendChild(makeChoiceButton(choice.id || '?', choice.text || '', entry,
+      var button=makeChoiceButton(choice.id || '?', choice.text || '', entry,
         combat.currentSkill ? [combat.currentSkill.name] : [], disabled, false,
-        function(){ submitCombatChoice(choice); }));
+        function(){ submitCombatChoice(choice); });
+      if(choice.description){
+        var detail=document.createElement('div');
+        detail.className='combat-skill-description';
+        detail.textContent=String(choice.description);
+        button.appendChild(detail);
+      }
+      box.appendChild(button);
     });
     article.appendChild(box);
   }
@@ -358,7 +365,7 @@
       action.placeholder = 'Đang chiến đấu — hãy chọn A, B hoặc C trong khung GAME MASTER.';
       submit.disabled = true;
     } else {
-      action.placeholder = defaultPlaceholder || 'Kai làm gì trong Turn hiện tại?';
+      action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';
       submit.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && !!busy);
     }
   }
