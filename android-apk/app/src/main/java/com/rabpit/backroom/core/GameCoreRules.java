@@ -5,8 +5,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class GameCoreRules {
-  private static final Pattern OMNIVAULT_WITHDRAW = Pattern.compile(
-      "(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:omnivault|nhẫn|kho)",
+  private static final Pattern VAN_TANG_WITHDRAW = Pattern.compile(
+      "(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:vạn\\s+tàng|giới\\s+chỉ|nhẫn|kho)",
       Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern DIRECT_PICKUP = Pattern.compile(
       "(?:^|\\s)(?:nhặt|lượm|cầm\\s+lên|lấy(?:\\s+lên)?|thu\\s+hồi|tịch\\s+thu|nhận(?:\\s+lấy)?|pick\\s+up|take|receive)(?:\\s|$)",
@@ -41,7 +41,7 @@ final class GameCoreRules {
 
   static boolean isDirectPlayerPickupAction(String action) {
     String text = action == null ? "" : action.trim();
-    if (text.isEmpty() || OMNIVAULT_WITHDRAW.matcher(text).find()) return false;
+    if (text.isEmpty() || VAN_TANG_WITHDRAW.matcher(text).find()) return false;
     return DIRECT_PICKUP.matcher(text).find() || INVENTORY_ASSERTION.matcher(text).find();
   }
 
