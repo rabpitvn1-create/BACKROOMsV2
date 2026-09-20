@@ -25,6 +25,7 @@ public final class GmChoiceContract {
 
   private static final String[][] FIXED_TERMS = {
       {"Cao Minh", "character"},
+      {"Vạn Giới Ma Tôn", "character"},
       {"Iris", "character"},
       {"Syvial", "character"},
       {"Lucia Lục", "character"},

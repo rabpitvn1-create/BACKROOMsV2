@@ -46,7 +46,7 @@
         "note": "BACKROOMsV2 preserves its mandatory Level 0 -> Level 0.1 lộ trình and separates Red Rooms into a later standalone Level."
       },
       "identity": [
-        "Level 0 là điểm khởi đầu chủ đạo của Backrooms và trong BACKROOMsV2 là nơi Cao Minh xuất hiện sau cú rơi không gian không rõ nguyên nhân từ thế giới nguyên sinh của hắn.",
+        "Level 0 là điểm khởi đầu chủ đạo của Backrooms và trong BACKROOMsV2 là môi trường Cao Minh xuất hiện sau khi mặt đất dưới chân biến mất và hắn rơi khỏi thế giới nguyên sinh.",
         "Không gian giống các khu hậu trường của văn phòng hoặc cửa hàng: vàng bệnh, trống trải, vô tận về cảm giác, lặp lại nhưng không hoàn toàn giống nhau.",
         "Bản sắc kinh dị của Level 0 đến từ sự cô lập, đơn điệu kéo dài, hình học thay đổi khi không được quan sát, thiếu tài nguyên và sự bất định về những gì nghe hoặc thấy ở xa.",
         "Level 0 không phải tutorial an toàn. Người không chuẩn bị có thể chết vì mất nước, đói, kiệt sức, nhiễm bẩn, ngã hoặc mất phương hướng dù không gặp Entity."
@@ -118,7 +118,7 @@
         "Không có resource ecology ổn định. nhu yếu phẩm không xuất hiện vì cốt truyện cần cứu người chơi.",
         "ItemCore là authority tuyệt đối cho consumable, chest và loot; Level knowledge không được tự mutate inventory.",
         "Arch ledges hoặc vùng thảm nông có thể cung cấp chỗ nghỉ tương đối khô hơn nhưng không phải safe camp tuyệt đối.",
-        "Electrical outlets, ánh sáng các bộ đèn hoặc vật liệu tường có thể tồn tại như scenery/interactable nhưng không đảm bảo nguồn điện thực sự hoạt động hoặc an toàn.",
+        "Electrical outlets, ánh sáng các bộ đèn hoặc vật liệu tường có thể tồn tại như scenery/interactable nhưng không đảm bảo điện sử dụng được cho thiết bị của Cao Minh.",
         "thảm chất lỏng không phải nguồn Almond Water hợp lệ dù sample có thể chứa thành phần tương tự.",
         "Nếu ItemCore cấp một item trong Level 0, GM nên đặt nó vào bối cảnh vật lý hợp lý thay vì mô tả nó xuất hiện từ hư không."
       ],
@@ -139,7 +139,7 @@
         "lộ trình thành công/failure thuộc Core. Lore chỉ cung cấp cách biểu hiện tiến triển hoặc vòng lặp."
       ],
       "entrancesExits": [
-        "Cao Minh bắt đầu Level 0 sau khi bất ngờ rơi khỏi thế giới nguyên sinh vào Backrooms mà không nhận ra trận pháp hay cơ chế truyền tống quen thuộc.",
+        "Cao Minh bắt đầu trong môi trường tương ứng Level 0 sau khi rơi khỏi thế giới nguyên sinh; bản thân Cao Minh không mặc định biết tên hoặc số thứ tự Level này.",
         "Nguồn Wiki hiện hành có lối ra sang Level 1 qua flickering tường; BACKROOMsV2 cố ý override lộ trình này.",
         "Trong BACKROOMsV2, Level 0 chỉ được chuyển sang Level 0.1 khi LevelCore mở transition.",
         "Không cho Manila Room, Red Rooms, Level 1 hoặc bất kỳ Level nào khác xuất hiện như lối ra sớm từ Level 0."
@@ -418,7 +418,7 @@
         "Familiar giọng nói chắc chắn là người quen thật.",
         "Dấu vết chắc chắn do Entity/human tạo.",
         "Break tường hoặc break ánh sáng bypass lộ trình.",
-        "Spatial gate SRU tự xuất hiện lại để giải cứu."
+        "Một lối trở về thế giới nguyên sinh tự xuất hiện lại để giải cứu."
       ],
       "sceneSeeds": [
         "Một giao lộ bình thường trở nên đáng nhớ vì một ổ điện bị cháy sém và thảm khô bất thường quanh nó.",
@@ -967,7 +967,7 @@
       ],
       "anomalies": [
         "Level có thể tự phục hồi khi quay lại theo canon nguồn; trong BACKROOMsV2 không dùng điều này để reset consequence ngay trong cùng encounter.",
-        "Hệ thống Wi‑Fi hoặc ổ điện hoạt động không đồng nghĩa có internet Frontrooms, định vị hay liên lạc SRU."
+        "Hệ thống Wi‑Fi hoặc ổ điện hoạt động không đồng nghĩa có internet về thế giới nguyên sinh, định vị ngoại giới hay một đường liên lạc ổn định."
       ],
       "hazards": [
         "Debris rơi, sàn yếu, bụi hô hấp, cạnh sắc, đường cũ bị chặn và nguy cơ bị kẹt.",
@@ -995,7 +995,7 @@
       ],
       "gmConstraints": [
         "Không biến level thành công trường có công nhân sống hoặc faction Remodeling Co. hiện diện nếu state không xác nhận.",
-        "Không cho Wi‑Fi giải quyết liên lạc với SRU.",
+        "Không cho Wi‑Fi tự tạo đường liên lạc ổn định với thế giới nguyên sinh.",
         "Không dùng collapse như cutscene bắt buộc ở mọi lượt; nó là quá trình môi trường có thể được quan sát và phản ứng."
       ],
       "variationPool": [
