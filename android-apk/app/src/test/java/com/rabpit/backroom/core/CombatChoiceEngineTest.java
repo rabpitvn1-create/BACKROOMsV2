@@ -35,7 +35,7 @@ public class CombatChoiceEngineTest {
     assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_A));
     assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_B));
     assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_C));
-    assertFalse(CombatChoiceEngine.isCombatAction("Kai chạy sang trái"));
+    assertFalse(CombatChoiceEngine.isCombatAction("Cao Minh chạy sang trái"));
   }
 
   @Test public void criticalDamageContractIsThreePointFiveTimesBase() {
@@ -44,11 +44,11 @@ public class CombatChoiceEngineTest {
 
   @Test public void allConfiguredSkillsUseOneHundredPercentProc() {
     String[][] skills = {
-        {"kai", "The Last Requiem"},
-        {"kai", "Silent Lullaby"},
-        {"kai", "Salvation"},
-        {"kai", "Quick Step"},
-        {"kai", "Guilty Crown Override"},
+        {"kai", "Huyết Ma Tứ Liên"},
+        {"kai", "Ma Tâm Trấn Hồn"},
+        {"kai", "Huyết Ảnh Ma Độn"},
+        {"kai", "Thiên Ma Bộ"},
+        {"kai", "Huyết Ma Nhị Thập Tứ Trảm"},
         {"iris", "Twosome Time"},
         {"iris", "Rain Storm"},
         {"iris", "Honeycomb Fire"},
@@ -63,8 +63,8 @@ public class CombatChoiceEngineTest {
       assertEquals(skill[0] + " / " + skill[1], 100,
           CombatChoiceEngine.configuredProcPercent(skill[0], skill[1]));
     }
-    assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Guilty Crown Override"));
-    assertEquals(0, CombatChoiceEngine.exactDamageForSkill("The Last Requiem"));
+    assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Huyết Ma Nhị Thập Tứ Trảm"));
+    assertEquals(0, CombatChoiceEngine.exactDamageForSkill("Huyết Ma Tứ Liên"));
   }
 
   @Test public void kaiSkillChoiceAlwaysActivates() throws Exception {
@@ -266,7 +266,7 @@ public class CombatChoiceEngineTest {
         .put("turn", 4)
         .put("currentLevel", 0)
         .put("location", LevelCore.LEVEL_ZERO_START_LOCATION)
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", party)
         .put("flags", new JSONObject().put("entityEncounterKey", "hound"))
         .put("log", new JSONArray().put(
