@@ -562,7 +562,7 @@ public class MainActivity extends Activity {
     for (int i = 0; i < dialogue.length(); i++) {
       String line = dialogue.optString(i, "").trim();
       if (line.isEmpty()) continue;
-      if (output.length() > 0) output.append('\n');
+      if (output.length() > 0) output.append("\n\n");
       output.append(line);
     }
     return output.toString();
