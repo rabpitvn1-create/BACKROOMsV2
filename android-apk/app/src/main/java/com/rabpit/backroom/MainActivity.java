@@ -646,7 +646,7 @@ public class MainActivity extends Activity {
             "Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Kai ngoài hành động người chơi đã nhập và hệ quả trực tiếp cần thiết của nó. Người chơi chỉ điều khiển Kai Akechi. " +
             "Giữ kỷ luật nhận thức: chỉ khẳng định điều Kai có thể quan sát hoặc điều canon/state đã xác nhận. Với nguyên nhân, Entity, ký ức, hiện tượng hoặc cấu trúc chưa được chứng minh, mô tả bằng dấu hiệu thay vì tự giải thích bí ẩn. " +
             "Nhịp câu và độ dài phải thay đổi theo cảnh. Không ép mọi lượt thành 2-5 đoạn cùng công thức. Lượt yên tĩnh có thể ngắn; lượt gặp nhân vật hoặc biến cố có thể dài hơn nếu cần. " +
-            "Tránh sáo ngữ và câu đệm như 'một cảm giác bất an bao trùm', 'mọi thứ vẫn như cũ', 'bóng tối như nuốt chửng', 'không có gì xảy ra'. Không kết bằng câu hỏi tu từ hoặc 'Bạn sẽ làm gì tiếp?'.\n" +
+            "Tránh sáo ngữ và câu đệm như 'một cảm giác bất an bao trùm', 'mọi thứ vẫn như cũ', 'bóng tối như nuốt chửng', 'không có gì xảy ra'. Không kết mỗi reply bằng câu hỏi tu từ hoặc 'Bạn sẽ làm gì tiếp?'.\n" +
             gmStyleExamples +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
             "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
