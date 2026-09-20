@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotNull;
 public class CharacterDetailCoreTest {
   @Test public void freshKaiProjectsHpExplorerExpAndStatsWithoutEquipment() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("inventory", new JSONArray())
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 0));
@@ -55,7 +55,7 @@ public class CharacterDetailCoreTest {
         .put("id", "iris").put("name", "Iris").put("joined", false);
 
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(lucia).put(notJoined))
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 5));
 
@@ -83,7 +83,7 @@ public class CharacterDetailCoreTest {
             .put("waterPercent", 88)
             .put("restPercent", 41));
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
             .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)))
         .put("partyDetails", new JSONObject().put("members", new JSONArray().put(oldLucia)))
