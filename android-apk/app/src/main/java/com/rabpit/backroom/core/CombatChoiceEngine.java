@@ -91,11 +91,11 @@ public final class CombatChoiceEngine {
 
     // Choice C skills are guaranteed to activate. Damage/effects remain unchanged.
     skills("kai",
-      skill("The Last Requiem", 100, 170, "Chảy máu", 3, 5, true),
-      skill("Silent Lullaby", 100, 130, "Choáng", 1, 0, true),
-      skill("Salvation", 100, 147, "", 0, 0, true),
-      skill("Quick Step", 100, 0, "Né tránh", 3, 50, false),
-      skill("Guilty Crown Override", 100, 0, "", 0, 0, true));
+      skill("Huyết Ma Tứ Liên", 100, 170, "Chảy máu", 3, 5, true),
+      skill("Ma Tâm Trấn Hồn", 100, 130, "Choáng", 1, 0, true),
+      skill("Huyết Ảnh Ma Độn", 100, 147, "", 0, 0, true),
+      skill("Thiên Ma Bộ", 100, 0, "Né tránh", 3, 50, false),
+      skill("Huyết Ma Nhị Thập Tứ Trảm", 100, 0, "", 0, 0, true));
 
     skills("iris",
       skill("Twosome Time", 100, 155, "", 0, 0, true),
@@ -179,7 +179,7 @@ public final class CombatChoiceEngine {
   }
 
   static int exactDamageForSkill(String skillName) {
-    return "Guilty Crown Override".equals(skillName) ? GUILTY_CROWN_TOTAL_DAMAGE : 0;
+    return "Huyết Ma Nhị Thập Tứ Trảm".equals(skillName) ? GUILTY_CROWN_TOTAL_DAMAGE : 0;
   }
 
   static int maxCombatParticipants() {
@@ -306,7 +306,7 @@ public final class CombatChoiceEngine {
       throws Exception {
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
-    String playerName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+    String playerName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
     JSONObject kaiProfile = progressionCore.profile(state, "kai");
     output.put(participant("kai", playerName, -1, player,
         kaiProfile.getInt("currentHp"), kaiProfile.getInt("maxHp"),
@@ -741,7 +741,7 @@ public final class CombatChoiceEngine {
       combat.put("deathRecoveryApplied", true);
       combat.put("playerRespawned", true);
       appendBattleLine(state, combat,
-          "Kai bị hạ. Kai trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Kai Akechi");
+          "Cao Minh bị hạ. Cao Minh trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Cao Minh");
     }
     clearEncounterFlag(state);
   }
@@ -795,7 +795,7 @@ public final class CombatChoiceEngine {
 
   private static String normalizeCharacterId(String raw) {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-    if (value.contains("kai") || value.contains("twilight")) return "kai";
+    if (value.contains("cao minh") || value.contains("vạn giới ma tôn") || value.contains("kai") || value.contains("twilight")) return "kai";
     if (value.contains("iris") || value.contains("argus")) return "iris";
     if (value.contains("syvial")) return "syvial";
     if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hua thuy mai")) return "lucia";
