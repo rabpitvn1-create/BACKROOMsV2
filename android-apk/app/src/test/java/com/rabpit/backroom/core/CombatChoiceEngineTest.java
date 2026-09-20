@@ -138,6 +138,21 @@ public class CombatChoiceEngineTest {
     }
   }
 
+  @Test public void entityHpScalesWithLuciaExplorerProgression() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    progression.normalizeState(state);
+    progression.profile(state, "lucia").put("explorer", 3);
+    progression.normalizeState(state);
+
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+    assertEquals(449, entity.getInt("maxHp"));
+    assertEquals(449, entity.getInt("hp"));
+    assertEquals(449, entity.getJSONObject("statEffective").getInt("maxHp"));
+  }
+
   @Test public void soloCombatRosterContainsOnlyKaiAndUsesProgressionHp() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
@@ -230,6 +245,20 @@ public class CombatChoiceEngineTest {
 
     CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
     assertEquals(10, kai.getInt("exp"));
+  }
+
+  @Test public void nonHoundKillAlsoRewardsExpAndLogsIt() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "deathmoth", 0);
+    state.getJSONObject("combat").getJSONObject("entity").put("hp", 1);
+
+    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+
+    JSONObject kai = state.getJSONObject("characterProgression")
+        .getJSONObject("characters").getJSONObject("kai");
+    assertTrue(kai.getInt("exp") > 0);
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
+    assertTrue(battleLog != null && battleLog.toString().contains("EXP"));
   }
 
   private static JSONObject combatState(JSONArray party) throws Exception {
