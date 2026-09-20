@@ -66,9 +66,9 @@ jobs:
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 78' android-apk/app/build.gradle
-          grep -Fq "versionName '1.1.78'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_1.1.78.txt
+          grep -Fq 'versionCode 79' android-apk/app/build.gradle
+          grep -Fq "versionName '1.1.79'" android-apk/app/build.gradle
+          test -s android-apk/RELEASE_NOTES_1.1.79.txt
           test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
           test -z "$(find android-apk -type f -name '*.py' -print -quit)"
           test ! -d android-apk/ml
@@ -392,69 +392,69 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.78.apk
+        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk Backroom-1.1.79.apk
 
       - name: Verify packaged APK
         run: |
           set -euo pipefail
-          test -s Backroom-1.1.78.apk
+          test -s Backroom-1.1.79.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.78.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.78.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='78' versionName='1.1.78'" <<<"$BADGING"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs Backroom-1.1.79.apk
+          BADGING=$("$BUILD_TOOLS/aapt" dump badging Backroom-1.1.79.apk)
+          grep -q "package: name='com.rabpit.backroom' versionCode='79' versionName='1.1.79'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.78.apk
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/index.html'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/snapshot-ui.js'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/gm-choice-ui.js'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/inventory-ui.js'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/party-ui.js'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/player-action-ui.js'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/avatars/kai_avatar.jpg'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/lucia_entity_overlay.png'
-          test "$(unzip -p Backroom-1.1.78.apk assets/avatars/kai_avatar.jpg | sha256sum | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
-          test "$(unzip -p Backroom-1.1.78.apk assets/avatars/lucia_avatar.jpg | sha256sum | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
-          test "$(unzip -p Backroom-1.1.78.apk assets/lucia_entity_overlay.png | sha256sum | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/chest_overlay.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/fonts/Play-Bold.ttf'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/fonts/OFL-Play.txt'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/entity/slenderman.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/kai_entity_overlay.png'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/knowledge/knowledge_db.json'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/knowledge/entity_encounters.json'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
-          unzip -l Backroom-1.1.78.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
-          test "$(unzip -l Backroom-1.1.78.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
-          ! unzip -l Backroom-1.1.78.apk | grep -q 'assets/level_snapshots/wiki/'
-          ! unzip -l Backroom-1.1.78.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.79.apk
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/snapshot-ui.js'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/inventory-ui.js'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/party-ui.js'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/player-action-ui.js'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/avatars/kai_avatar.jpg'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/avatars/lucia_avatar.jpg'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/lucia_entity_overlay.png'
+          test "$(unzip -p Backroom-1.1.79.apk assets/avatars/kai_avatar.jpg | sha256sum | awk '{print $1}')" = '18d07e33799f10bf727d2d80aa8be0b0d47d76b40323c1257fcea61e37706a03'
+          test "$(unzip -p Backroom-1.1.79.apk assets/avatars/lucia_avatar.jpg | sha256sum | awk '{print $1}')" = 'c6145cde037c6128f50f0e8c8820ee2febcc66cb840e260c6f1801c9725b403e'
+          test "$(unzip -p Backroom-1.1.79.apk assets/lucia_entity_overlay.png | sha256sum | awk '{print $1}')" = 'c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/chest_overlay.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/fonts/OFL-Play.txt'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/entity/hound.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/entity/slenderman.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/entity/diep_minh.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/kai_snapshot_overlay.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/knowledge/knowledge_db.json'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/knowledge/entity_encounters.json'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
+          unzip -l Backroom-1.1.79.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
+          test "$(unzip -l Backroom-1.1.79.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
+          ! unzip -l Backroom-1.1.79.apk | grep -q 'assets/level_snapshots/wiki/'
+          ! unzip -l Backroom-1.1.79.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Backroom-1.1.78-debug-apk
-          path: Backroom-1.1.78.apk
+          name: Backroom-1.1.79-debug-apk
+          path: Backroom-1.1.79.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish GitHub Release v1.1.78
+      - name: Publish GitHub Release v1.1.79
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='v1.1.78'
-          TITLE='Backroom 1.1.78 Debug'
-          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.78.txt)
+          TAG='v1.1.79'
+          TITLE='Backroom 1.1.79 Debug'
+          NOTES=$(cat android-apk/RELEASE_NOTES_1.1.79.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" Backroom-1.1.78.apk --clobber
+            gh release upload "$TAG" Backroom-1.1.79.apk --clobber
           else
-            gh release create "$TAG" Backroom-1.1.78.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" Backroom-1.1.79.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
           fi
 
       - name: Verify published APK
@@ -463,7 +463,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download v1.1.78 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.78.apk' --output Backroom-1.1.78-verified.apk
-          test -s Backroom-1.1.78-verified.apk
-          cmp Backroom-1.1.78.apk Backroom-1.1.78-verified.apk
-          sha256sum Backroom-1.1.78-verified.apk
+          gh release download v1.1.79 --repo "$GITHUB_REPOSITORY" --pattern 'Backroom-1.1.79.apk' --output Backroom-1.1.79-verified.apk
+          test -s Backroom-1.1.79-verified.apk
+          cmp Backroom-1.1.79.apk Backroom-1.1.79-verified.apk
+          sha256sum Backroom-1.1.79-verified.apk

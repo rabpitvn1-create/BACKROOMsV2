@@ -1,0 +1,11 @@
+Backroom 1.1.79
+
+- Sửa regression khiến Character/Entity overlay có thể biến mất hoàn toàn trên Android WebView dùng file:///android_asset/.
+- Thay runtime canvas alpha readback của 22 sprite bundled bằng metadata bounds được generate trước kèm SHA-256, tránh SecurityError do tainted canvas trên file origin.
+- Giữ nguyên hệ scale/baseline đã chuẩn hoá ở 1.1.78 nhưng xây Character envelope đồng bộ ngay từ metadata, không còn phụ thuộc preload ảnh rời.
+- Bỏ trạng thái visibility:hidden mặc định; asset chưa đăng ký vẫn có fallback geometry để luôn hiển thị nếu canvas không đọc được.
+- Không nới lỏng WebView file-origin security settings và không thay artwork, combat logic hoặc gameplay logic.
+- Bổ sung kiểm tra CI để metadata overlay không bị stale khi PNG thay đổi.
+- Thêm regression tests cho SecurityError, canvas context unavailable, delayed image load và coverage toàn bộ bundled overlay PNG.
+- File-origin Chromium regression đã xác minh Kai standing, Kai combat, Lucia, Deathmoth và Hound đều hiển thị mà không cần canvas pixel readback.
+- Build Backroom APK của PR sửa lỗi đã pass trước khi squash merge; kiểm tra trên thiết bị Android vật lý vẫn là bước xác nhận cuối.
