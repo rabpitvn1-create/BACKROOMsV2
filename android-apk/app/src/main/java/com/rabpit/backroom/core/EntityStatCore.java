@@ -3,8 +3,8 @@ package com.rabpit.backroom.core;
 import org.json.JSONObject;
 
 /**
- * Independent Entity stat reference. CombatChoiceEngine keeps its legacy HP/attack/defense adapter
- * until STR/DF/AGI/CRIT combat formulas are explicitly approved.
+ * Entity stat reference derived from Lucia. Combat uses the scaled HP immediately while
+ * attack/defense keep their existing species values until STR/DF/AGI/CRIT formulas are approved.
  */
 final class EntityStatCore {
   static final int LUCIA_REFERENCE_PERCENT = 93;
