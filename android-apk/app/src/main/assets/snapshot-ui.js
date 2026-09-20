@@ -140,17 +140,17 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   try{localStorage.removeItem('backroom-apk-snapshot');}catch(_){}
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','jane_the_killer','slenderman','diep_minh'];
-  var __combatCharacterOverlays={kai:'file:///android_asset/kai_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
+  var __combatCharacterOverlays={lucia:'file:///android_asset/lucia_entity_overlay.png'};
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
   function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}
   function activeEntityKey(){try{var forced=normalizeEntityKey(window.__combatVisualEntityKey||'');if(forced)return forced;var s=(typeof state!=='undefined'&&state)?state:{};var f=s.flags||{},c=s.combat||{};var combatKey=c.active?((c.entity&&c.entity.key)||c.entityKey||c.enemyKey||c.enemy||''):'';var k=normalizeEntityKey(f.entityEncounterKey||f.currentEntityKey||s.entityEncounterKey||s.currentEntityKey||combatKey);if(k)return k;if(f.jeff&&(f.jeff.present===true||f.jeff.spawned===true))return 'jeff_the_killer';if(f.jane&&(f.jane.present===true||f.jane.spawned===true))return 'jane_the_killer';return '';}catch(e){return '';}}
   function chestPresent(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !!(s.flags&&s.flags.chestPresent===true);}catch(e){return false;}}
-  function shouldShowKaiOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey()||chestPresent());}catch(e){return false;}}
-  function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('kai')>=0||k.indexOf('twilight')>=0)return 'kai';if(k.indexOf('lucia')>=0||k.indexOf('hứa thuý mai')>=0||k.indexOf('hua thuy mai')>=0)return 'lucia';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
+  function shouldShowKaiOverlay(){return false;}
+  function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('cao minh')>=0||k.indexOf('vạn giới ma tôn')>=0||k.indexOf('kai')>=0||k.indexOf('twilight')>=0)return 'kai';if(k.indexOf('lucia')>=0||k.indexOf('hứa thuý mai')>=0||k.indexOf('hua thuy mai')>=0)return 'lucia';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
   function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
   function appendCombatCharacter(box,participant){
-    var actor=participant||{id:'kai',name:'Kai Akechi'},id=normalizeActorId(actor.id||actor.name),src=__combatCharacterOverlays[id]||'';
+    var actor=participant||{id:'kai',name:'Cao Minh'},id=normalizeActorId(actor.id||actor.name),src=__combatCharacterOverlays[id]||'';
     if(src){
       var img=document.createElement('img');img.className='snapshot-character snapshot-grounded snapshot-combat-character';img.src=src;img.alt=actor.name||actor.id||'Nhân vật';img.dataset.combatActor=id;box.appendChild(img);alignOverlayToGround(img,'right','character');return img;
     }
