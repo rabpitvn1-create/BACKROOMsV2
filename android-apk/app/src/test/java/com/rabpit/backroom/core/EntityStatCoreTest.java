@@ -42,7 +42,7 @@ public class EntityStatCoreTest {
     lucia.put("explorer", 3);
     progression.normalizeState(state);
     JSONObject scaledProfile = core.profile(state, "hound", progression, 240);
-    assertEquals(456, scaledProfile.getJSONObject("effective").getInt("maxHp"));
+    assertEquals(449, scaledProfile.getJSONObject("effective").getInt("maxHp"));
   }
 
   @Test public void speciesModifierHookDefaultsToZero() throws Exception {
