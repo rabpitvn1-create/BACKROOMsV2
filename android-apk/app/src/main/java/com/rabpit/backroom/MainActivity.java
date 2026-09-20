@@ -14,6 +14,7 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import com.rabpit.backroom.core.CaoMinhVoiceContract;
 import com.rabpit.backroom.core.CombatChoiceEngine;
 import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
@@ -636,6 +637,7 @@ public class MainActivity extends Activity {
           promptState.remove("log");
           String recentStory = recentStoryContext(state);
           String gmStyleExamples = gmStyleExamplesContext();
+          String caoMinhVoice = CaoMinhVoiceContract.promptContext();
           String prompt = "Bạn là Game Master của text game Backrooms. Xử lý đúng một Explorer Turn và trả DUY NHẤT JSON hợp lệ, không markdown. " +
             "NGÔN NGỮ HIỂN THỊ: toàn bộ nội dung người chơi nhìn thấy trong reply, title, location, encounterDialogue và choices phải viết bằng tiếng Việt tự nhiên. Chỉ giữ nguyên tiếng Anh đối với tên riêng hoặc tên chính thức đã tồn tại trong Core như Cao Minh, Backrooms, Level, Entity, Item hoặc Skill. Mọi từ mô tả thông thường lấy từ knowledge/context phải dịch sang tiếng Việt trước khi đưa vào nội dung hiển thị; tuyệt đối không bê nguyên các từ kỹ thuật nội bộ như wallpaper, ceiling, fixture, opening, buzz, corridor, junction, hall, carpet, fluid, cue, layout, landmark. Không trộn Anh-Việt trong cùng câu chỉ vì knowledge dùng thuật ngữ tiếng Anh. " +
             "NARRATIVE VOICE: viết như một cảnh truyện đã được biên tập, không như báo cáo hệ thống, biên bản nhiệm vụ hay văn mẫu AI. Ưu tiên diễn biến và nhịp cảnh trước việc cố mô tả cho đủ. " +
@@ -643,6 +645,7 @@ public class MainActivity extends Activity {
             "Continuity là hard lock: không được viết lại, đảo thứ tự hoặc tái dựng những gì RECENT STORY đã xác nhận. Nhân vật chưa xuất hiện ở các lượt trước không được bỗng nhiên thành người đã đi sau Cao Minh, đã trò chuyện với Cao Minh hoặc đã đồng hành từ trước. " +
             "Không tự bịa tiểu sử, kinh nghiệm chiến đấu, suy nghĩ, mức hoảng loạn, nét mặt hay động cơ của nhân vật nếu canon/state không xác nhận hoặc hành vi hiện tại không cho thấy trực tiếp. Tránh các câu máy móc kiểu 'không có dấu hiệu hoảng loạn', 'ánh mắt quét khắp không gian', 'ghi nhớ rồi bước nhẹ hơn'. " +
             "Đối thoại phải nghe như người thật đang nói trong đúng hoàn cảnh: có mục đích, xưng hô đúng quan hệ, không hỏi-đáp cụt như form kiểm tra trừ khi cảnh thực sự là trao đổi chiến thuật khẩn cấp. Không dùng thoại để đọc lại lore hoặc hồ sơ nhân vật. " +
+            caoMinhVoice +
             "Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Cao Minh ngoài hành động người chơi đã nhập và hệ quả trực tiếp cần thiết của nó. Người chơi chỉ điều khiển Cao Minh. " +
             "Giữ kỷ luật nhận thức: chỉ khẳng định điều Cao Minh có thể quan sát hoặc điều canon/state đã xác nhận. Với nguyên nhân, Entity, ký ức, hiện tượng hoặc cấu trúc chưa được chứng minh, mô tả bằng dấu hiệu thay vì tự giải thích bí ẩn. " +
             "Nhịp câu và độ dài phải thay đổi theo cảnh. Không ép mọi lượt thành 2-5 đoạn cùng công thức. Lượt yên tĩnh có thể ngắn; lượt gặp nhân vật hoặc biến cố có thể dài hơn nếu cần. " +
