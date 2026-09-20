@@ -11,7 +11,7 @@ import java.util.Map;
  * Read-only character detail projection for the WebView Party UI.
  *
  * Restores the legacy partyDetails contract without giving Gemini ownership of character state.
- * Existing legacy detail data is preserved when present. Kai's survival counters are derived from
+ * Existing legacy detail data is preserved when present. the protagonist's survival counters are derived from
  * authoritative subjective game time when no explicit physiology data exists.
  */
 final class CharacterDetailCore {
@@ -36,8 +36,8 @@ final class CharacterDetailCore {
 
     JSONArray members = new JSONArray();
     JSONObject player = state.optJSONObject("player");
-    if (player == null) player = new JSONObject().put("name", "Kai Akechi");
-    members.put(projectMember(state, player, previousById.get("kai"), "kai", "Kai Akechi", true, elapsed));
+    if (player == null) player = new JSONObject().put("name", "Cao Minh");
+    members.put(projectMember(state, player, previousById.get("kai"), "kai", "Cao Minh", true, elapsed));
 
     JSONArray party = state.optJSONArray("party");
     if (party != null) {
@@ -126,7 +126,7 @@ final class CharacterDetailCore {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", ""))
         .trim().toLowerCase(Locale.ROOT);
-    if (raw.contains("kai") || raw.contains("twilight")) return "kai";
+    if (raw.contains("cao minh") || raw.contains("vạn giới ma tôn") || raw.contains("kai") || raw.contains("twilight")) return "kai";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
         || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
@@ -138,7 +138,7 @@ final class CharacterDetailCore {
     if ("lucia".equals(id)) return "Lucia Lục";
     if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
-    return "Kai Akechi";
+    return "Cao Minh";
   }
 
   private static String nonEmpty(String value, String fallback) {
