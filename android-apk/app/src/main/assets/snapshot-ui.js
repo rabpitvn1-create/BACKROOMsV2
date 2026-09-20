@@ -5,6 +5,8 @@ var SnapshotOverlayLayout = (function(){
   var ENTITY_LANE_WIDTH=0.46;
   // BEGIN GENERATED OVERLAY METRICS
   var bundledMetrics={
+    "cao_minh_entity_overlay.png":{"width":1448,"height":1086,"paint":{"left":163,"top":0,"right":1301,"bottom":1077},"body":{"left":165,"top":2,"right":1300,"bottom":1076},"sha256":"92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a"},
+    "cao_minh_snapshot_overlay.png":{"width":1024,"height":1536,"paint":{"left":46,"top":7,"right":1007,"bottom":1518},"body":{"left":47,"top":8,"right":1001,"bottom":1516},"sha256":"0d4a612a984e3b864d9220ea65d8032fd37a09160d8600ecd6ee0d4c24056589"},
     "entity/biological_pipeline.png":{"width":1086,"height":1448,"paint":{"left":112,"top":14,"right":973,"bottom":1434},"body":{"left":113,"top":14,"right":972,"bottom":1433},"sha256":"0474fa10a7ff4f06089df8c5b937576278a11951ae73f24cd2c1afd5cb78f413"},
     "entity/cable_mimic.png":{"width":1254,"height":1254,"paint":{"left":339,"top":19,"right":963,"bottom":1237},"body":{"left":340,"top":21,"right":961,"bottom":1237},"sha256":"15ccdd6a14c0e80e0acec072090aaeb134c6c6b66570cc4e05c9041017399fdb"},
     "entity/clump.png":{"width":1254,"height":1254,"paint":{"left":1,"top":10,"right":1254,"bottom":1227},"body":{"left":3,"top":10,"right":1250,"bottom":1226},"sha256":"a7776f353412753875d4742498135ea7053f60512a82fdf48c350c1e03135b21"},
@@ -24,8 +26,6 @@ var SnapshotOverlayLayout = (function(){
     "entity/smiler.png":{"width":1254,"height":1254,"paint":{"left":88,"top":47,"right":1192,"bottom":1212},"body":{"left":89,"top":47,"right":1191,"bottom":1211},"sha256":"9cd8eccba8d8524466cedeed932470f97da794ab8612c0337c6e751f6ac1c18b"},
     "entity/the_beast_of_level_5.png":{"width":1122,"height":1402,"paint":{"left":271,"top":14,"right":846,"bottom":1391},"body":{"left":274,"top":14,"right":845,"bottom":1391},"sha256":"2286b0b113b5ab7131402c093d3cadae048ad5c34595cdd1096ff8fc1872ae04"},
     "entity/wretch.png":{"width":1024,"height":1536,"paint":{"left":27,"top":5,"right":1006,"bottom":1528},"body":{"left":28,"top":6,"right":1005,"bottom":1527},"sha256":"6716b4bee87b5dcc80f1f4fa25ab37baecb44165aa84e632c98dc2f13b82449a"},
-    "cao_minh_entity_overlay.png":{"width":1448,"height":1086,"paint":{"left":163,"top":0,"right":1301,"bottom":1077},"body":{"left":165,"top":2,"right":1300,"bottom":1076},"sha256":"92e664409f2b1f4ab668e15ad9c372792ef8069c5dbc9a36056815fd47929d1a"},
-    "cao_minh_snapshot_overlay.png":{"width":1024,"height":1536,"paint":{"left":46,"top":7,"right":1007,"bottom":1518},"body":{"left":47,"top":8,"right":1001,"bottom":1516},"sha256":"0d4a612a984e3b864d9220ea65d8032fd37a09160d8600ecd6ee0d4c24056589"},
     "lucia_entity_overlay.png":{"width":1086,"height":1448,"paint":{"left":20,"top":0,"right":1085,"bottom":1413},"body":{"left":21,"top":4,"right":1064,"bottom":1412},"sha256":"c1077f762254555b92232a18a50d930dfe8d572bfc1327da3ddeb8859d63029d"}
   };
   // END GENERATED OVERLAY METRICS
