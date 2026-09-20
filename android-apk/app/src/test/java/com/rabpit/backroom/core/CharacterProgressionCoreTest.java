@@ -66,9 +66,12 @@ public class CharacterProgressionCoreTest {
     assertEquals(150, CharacterProgressionCore.requiredExp(2));
   }
 
-  @Test public void houndBaseAndExplorerScaledExpAreCoreOwned() {
+  @Test public void everyKnownEntityCanRewardCoreOwnedExp() {
     assertEquals(10, CharacterProgressionCore.baseExpForEntity("hound"));
-    assertEquals(0, CharacterProgressionCore.baseExpForEntity("smiler"));
+    assertEquals(10, CharacterProgressionCore.baseExpForEntity("smiler"));
+    assertEquals(10, CharacterProgressionCore.baseExpForEntity("deathmoth", 195));
+    assertEquals(83, CharacterProgressionCore.baseExpForEntity("diep_minh", 2000));
+    assertEquals(0, CharacterProgressionCore.baseExpForEntity(""));
     assertEquals(10, CharacterProgressionCore.rewardExp(10, 0));
     assertEquals(12, CharacterProgressionCore.rewardExp(10, 1));
     assertEquals(14, CharacterProgressionCore.rewardExp(10, 2));

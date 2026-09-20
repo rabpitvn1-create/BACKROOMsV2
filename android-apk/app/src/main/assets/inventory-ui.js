@@ -27,8 +27,38 @@
   var inventory=document.getElementById('inventory');
   var player=document.getElementById('player');
   var status=document.getElementById('status');
+  var inventoryTitle=inventory&&inventory.closest?inventory.closest('.card')&&inventory.closest('.card').querySelector('h2'):null;
   var selectedItem=null;
+  var selectedOwnerId='kai';
 
+  function norm(raw){
+    var value=String(raw||'').trim().toLowerCase();
+    if(value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
+    if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
+    if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
+    if(value.indexOf('syvial')>=0)return 'syvial';
+    return value.replace(/\s+/g,'_');
+  }
+  function partyMember(id){
+    var key=norm(id),party=Array.isArray(state&&state.party)?state.party:[];
+    for(var i=0;i<party.length;i++){
+      var member=party[i];
+      if(member&&member.joined===true&&norm((member.id||'')+' '+(member.name||''))===key)return member;
+    }
+    return null;
+  }
+  function ownerName(id){
+    var key=norm(id);
+    if(key==='kai')return String(state&&state.player&&state.player.name||'Kai Akechi');
+    var member=partyMember(key);
+    return String(member&&member.name||key||'Nhân vật');
+  }
+  function ownerInventory(id){
+    var key=norm(id);
+    if(key==='kai')return Array.isArray(state&&state.inventory)?state.inventory:[];
+    var member=partyMember(key);
+    return Array.isArray(member&&member.inventory)?member.inventory:[];
+  }
   function itemId(item){return String(item&&item.id||item&&item.name||'').trim()}
   function qty(item){return Math.max(1,Number(item&&item.quantity||1)||1)}
   function effectText(item){
@@ -52,7 +82,7 @@
     if(!selectedItem||!window.Android||typeof Android.itemAction!=='function')return;
     if(state&&state.combat&&state.combat.active){if(status)status.textContent='Không thể quản lý vật phẩm trong chiến đấu.';return}
     var q=Math.max(1,Math.min(qty(selectedItem),Number(quantity)||1));
-    Android.itemAction(JSON.stringify(state),itemId(selectedItem),operation,String(target||''),q);
+    Android.itemAction(JSON.stringify(state),selectedOwnerId,itemId(selectedItem),operation,String(target||''),q);
     if(status)status.textContent='Đang xử lý vật phẩm…';
   }
   function openSheet(item){
@@ -75,7 +105,7 @@
 
     var actions=document.createElement('div');actions.className='inventory-sheet-actions';
     var use=document.createElement('button');use.type='button';use.textContent='SỬ DỤNG';use.disabled=locked||!isConsumable(item);
-    use.addEventListener('click',function(){send('use','player',qinput.value)});
+    use.addEventListener('click',function(){send('use','self',qinput.value)});
     actions.appendChild(use);
 
     var drop=document.createElement('button');drop.type='button';drop.className='inventory-drop';drop.textContent='VỨT BỎ';drop.disabled=locked;
@@ -83,18 +113,21 @@
     actions.appendChild(drop);
     sheet.appendChild(actions);
 
-    var party=Array.isArray(state&&state.party)?state.party:[];
-    if(party.length&&isConsumable(item)){
+    var targets=[{id:'kai',name:String(state&&state.player&&state.player.name||'Kai Akechi')}];
+    (Array.isArray(state&&state.party)?state.party:[]).forEach(function(member){
+      if(member&&member.joined===true)targets.push({id:String(member.id||member.name||''),name:String(member.name||member.id||'Đồng đội')});
+    });
+    targets=targets.filter(function(target){return norm(target.id)!==selectedOwnerId;});
+    if(targets.length&&isConsumable(item)){
       var share=document.createElement('div');share.className='inventory-share';
       var select=document.createElement('select');
-      party.forEach(function(member,index){
-        if(!member)return;
+      targets.forEach(function(target){
         var option=document.createElement('option');
-        option.value=String(member.id||member.name||index);
-        option.textContent=String(member.name||member.id||('Character '+(index+2)));
+        option.value=String(target.id);
+        option.textContent=String(target.name);
         select.appendChild(option);
       });
-      var shareButton=document.createElement('button');shareButton.type='button';shareButton.textContent='CHIA SẺ';shareButton.disabled=locked||!select.options.length;
+      var shareButton=document.createElement('button');shareButton.type='button';shareButton.textContent='DÙNG CHO';shareButton.disabled=locked||!select.options.length;
       shareButton.addEventListener('click',function(){send('share',select.value,qinput.value)});
       share.appendChild(select);share.appendChild(shareButton);sheet.appendChild(share);
     }
@@ -105,9 +138,11 @@
 
   function renderInventory(){
     if(!inventory)return;
+    if(selectedOwnerId!=='kai'&&!partyMember(selectedOwnerId))selectedOwnerId='kai';
     inventory.className='inventory-grid';
     inventory.textContent='';
-    var items=Array.isArray(state&&state.inventory)?state.inventory:[];
+    if(inventoryTitle)inventoryTitle.textContent='Inventory · '+ownerName(selectedOwnerId);
+    var items=ownerInventory(selectedOwnerId);
     if(!items.length){var empty=document.createElement('span');empty.textContent='Trống.';inventory.appendChild(empty);return}
     items.forEach(function(item){
       if(!item)return;
@@ -131,6 +166,14 @@
     var line=document.createElement('div');line.id='playerVitals';line.className='vitals-inline';line.textContent=values.join(' · ');
     player.parentNode.appendChild(line);
   }
+
+  window.backroomInventoryOwnerChanged=function(rawId){
+    var next=norm(rawId)||'kai';
+    if(next!=='kai'&&!partyMember(next))next='kai';
+    selectedOwnerId=next;
+    closeSheet();
+    renderInventory();
+  };
 
   var previousRender=window.render;
   window.render=function(){

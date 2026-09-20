@@ -1,31 +1,31 @@
 {
   "version": 1,
-  "instruction": "Các ví dụ dưới đây chỉ là mẫu văn phong. Không được coi chi tiết, địa điểm, dấu vết, hiện tượng hay kết quả trong ví dụ là sự kiện thật của lượt hiện tại. Không sao chép câu chữ hoặc cấu trúc máy móc. Chỉ học mức độ tiết chế, quan sát cụ thể, continuity không gian, nhịp câu và kỷ luật phân biệt dữ kiện với suy đoán.",
+  "instruction": "Các ví dụ chỉ dạy nhịp kể và cách giữ continuity. Không được sao chép sự kiện, địa điểm, câu chữ, kết luận hay nhân vật từ ví dụ vào lượt thật. Văn phong cần tự nhiên như truyện đã biên tập: mỗi cảnh có trọng tâm, chi tiết được chọn lọc, đối thoại có mục đích và không biến mô tả thành checklist giác quan.",
   "goodExamples": [
     {
-      "name": "Khám phá bình thường",
-      "player": "Kai đi tiếp theo hành lang bên trái.",
-      "gm": "Kai rẽ qua góc tường. Tiếng đèn huỳnh quang vẫn đều, nhưng lớp thảm dưới chân sẫm màu dần theo từng bước.\n\nKhoảng hai mươi mét phía trước, một mảng giấy dán tường bong khỏi mép dưới. Phần tường lộ ra phía sau có màu xám nhạt và khô hơn khu vực hắn vừa đi qua.\n\nKhông có dấu chân hay vật dụng nào cho thấy nơi này từng được sử dụng gần đây. Hành lang vẫn tiếp tục, hẹp hơn một chút ở đoạn kế tiếp."
+      "name": "Lượt yên tĩnh, viết ngắn",
+      "player": "Kai đứng lại nghe ngóng.",
+      "gm": "Kai dừng ở chỗ giao nhau.\n\nTiếng đèn vẫn rền trên trần. Xen giữa nó có một tiếng cộc rất khẽ từ hành lang bên phải, rồi im. Kai chờ thêm vài giây nhưng âm thanh không lặp lại."
     },
     {
-      "name": "Đường đi sụp và quay vòng",
-      "player": "Kai tiếp tục đi theo dấu đã đánh.",
-      "gm": "Kai đi thêm một đoạn trước khi dừng lại.\n\nMột vết cắt nhỏ trên giấy dán tường xuất hiện bên phải hắn. Cùng độ cao. Cùng hướng nghiêng.\n\nĐó là dấu do chính hắn để lại trước đó.\n\nKhông có bằng chứng cho thấy Kai đã quay đầu. Tuy vậy, con đường hắn vừa theo đã đưa hắn trở lại một điểm từng đi qua."
+      "name": "Hành động có hệ quả cụ thể",
+      "player": "Kai kéo thử cánh cửa kim loại.",
+      "gm": "Cánh cửa nhúc nhích được vài phân rồi kẹt cứng. Mép dưới cào qua nền, để lại một vệt sáng trên lớp bụi.\n\nQua khe hở chỉ thấy một khoảng tối hẹp. Không có luồng gió hay tiếng động nào từ bên trong."
     },
     {
-      "name": "Lượt yên tĩnh",
-      "player": "Kai đứng yên lắng nghe.",
-      "gm": "Kai giữ nguyên vị trí.\n\nTiếng ù của đèn huỳnh quang phủ kín căn phòng. Sau vài giây, hắn nhận ra một khoảng ngắt rất ngắn trong âm thanh, lặp lại không đều ở phía hành lang trước mặt.\n\nNó không đủ rõ để xác định là tiếng bước chân. Chưa có nguồn âm nào được nhìn thấy."
+      "name": "First contact phải được dựng thành cảnh",
+      "player": "Kai đi tiếp.",
+      "gm": "Vừa qua góc tường, Kai thấy một người đứng ở cuối đoạn hành lang. Người kia cũng khựng lại khi nhận ra anh; khẩu súng đang cầm hạ xuống một chút nhưng chưa rời tay.\n\nKhoảng cách giữa hai người còn hơn mười mét. Trước khoảnh khắc này, không có dấu hiệu nào cho thấy họ đã đi cùng nhau."
     },
     {
-      "name": "Hiện tượng chưa xác định",
-      "player": "Kai quan sát bóng người ở cuối hành lang.",
-      "gm": "Hình dáng ở cuối hành lang không tiến lại gần.\n\nKhoảng cách và ánh sáng khiến Kai chỉ xác định được một đường viền gần giống cơ thể người. Phần đầu và vai không đủ rõ để nhận diện, còn chân bị khuất sau góc tường.\n\nKhi một bóng đèn phía trên chớp tắt, đường viền đó biến mất khỏi tầm nhìn. Không có âm thanh chuyển động đi kèm.\n\nChừng đó chưa đủ để kết luận hắn vừa nhìn thấy một con người, một Entity hay một hiệu ứng thị giác của Level."
+      "name": "Đối thoại tự nhiên, không đọc lore",
+      "player": "Kai hỏi người vừa gặp có bị thương không.",
+      "gm": "Người kia nhìn nhanh xuống cánh tay áo bị rách rồi lắc đầu.\n\n\"Chỉ sượt qua thôi.\"\n\nCô nghiêng người nhường khỏi lối đi, mắt vẫn để ý đoạn hành lang phía sau."
     }
   ],
   "badExample": {
     "player": "Kai đi tiếp.",
-    "gm": "Kai tiếp tục bước đi trong sự bất an. Bóng tối như nuốt chửng mọi thứ. Một cảm giác kỳ lạ bao trùm lấy hắn. Có lẽ nơi này đang theo dõi hắn. Kai quyết định phải nhanh chóng tìm đường thoát trước khi quá muộn. Bạn sẽ làm gì tiếp?",
-    "why": "Sai vì dùng sáo ngữ chung chung, tự khẳng định điều không có bằng chứng, tự quyết định ý định tiếp theo của Kai và kết bằng câu hỏi điều khiển người chơi."
+    "gm": "Kai tiếp tục bước đi trong hành lang. Ánh sáng vàng nhợt, thảm ẩm mềm, mùi nấm mốc nồng nặc và tiếng đèn huỳnh quang ù đều bao quanh anh. Cô gái phía sau không có dấu hiệu hoảng loạn, ánh mắt quét khắp không gian với sự cảnh giác của một người được huấn luyện bài bản nhưng chưa từng bước vào chiến đấu thực sự. Cô ghi nhớ lời Kai rồi bước nhẹ hơn. Bạn sẽ làm gì tiếp?",
+    "why": "Sai vì liệt kê giác quan theo công thức, tự bịa quá khứ và trạng thái tâm lý, tự biến một nhân vật mới thành người đã đi cùng Kai từ trước, tự quyết định hành động của NPC theo văn mẫu và kết bằng câu hỏi máy móc."
   }
 }
