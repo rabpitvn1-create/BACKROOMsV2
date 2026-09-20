@@ -3,7 +3,6 @@
   window.__backroomPartyUi=true;
 
   var AVATARS={
-    kai:'',
     lucia:'file:///android_asset/avatars/lucia_avatar.jpg',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
