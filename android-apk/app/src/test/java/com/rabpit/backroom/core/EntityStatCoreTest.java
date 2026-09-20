@@ -20,13 +20,29 @@ public class EntityStatCoreTest {
     assertEquals(7, baseline.getInt("DF"));
     assertEquals(9, baseline.getInt("AGI"));
     assertEquals(11, baseline.getInt("CRIT"));
-    assertEquals(47, baseline.getInt("maxHp"));
+    assertEquals(172, baseline.getInt("maxHp"));
   }
 
   @Test public void roundingUsesHalfUpRule() {
     assertEquals(7, EntityStatCore.scaleFromLuciaBase(7));
     assertEquals(7, EntityStatCore.scaleFromLuciaBase(8));
     assertEquals(47, EntityStatCore.scaleFromLuciaBase(50));
+  }
+
+  @Test public void speciesHpPreservesBaselineRatioAndScalesWithLuciaProgression() throws Exception {
+    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    JSONObject state = new JSONObject();
+    progression.normalizeState(state);
+    JSONObject lucia = progression.profile(state, "lucia");
+
+    EntityStatCore core = new EntityStatCore();
+    JSONObject baseProfile = core.profile(state, "hound", progression, 240);
+    assertEquals(240, baseProfile.getJSONObject("effective").getInt("maxHp"));
+
+    lucia.put("explorer", 3);
+    progression.normalizeState(state);
+    JSONObject scaledProfile = core.profile(state, "hound", progression, 240);
+    assertEquals(456, scaledProfile.getJSONObject("effective").getInt("maxHp"));
   }
 
   @Test public void speciesModifierHookDefaultsToZero() throws Exception {
