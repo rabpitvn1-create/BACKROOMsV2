@@ -1,0 +1,11 @@
+Backroom 1.1.80
+
+- Sửa continuity của Character encounter: Lucia, Iris và Syvial phải có first-contact scene hợp lệ trước khi Core auto-join Party; không còn xuất hiện như thể đã đi cùng Kai từ trước.
+- Siết lại narrative contract và GM style examples để giảm văn checklist, hội thoại máy móc, tự bịa lore/tâm lý và các đoạn văn mang cảm giác AI.
+- Inventory giờ thuộc từng Character. Chọn Kai/Lucia/Iris/Syvial sẽ hiển thị đúng Inventory của nhân vật đó; use/discard/use-for cũng xử lý đúng owner thay vì luôn dùng kho của Kai.
+- Giữ tương thích save cũ: state.inventory của Kai được giữ nguyên; companion inventory hiện có được giữ lại và chỉ tạo đồ mặc định khi chưa có.
+- Mọi Entity hợp lệ khi bị hạ đều trả EXP; reward dựa trên HP Entity và được hiển thị rõ trong battle log.
+- HP Entity trong combat giờ scale theo progression hiện tại của Lucia, đồng thời vẫn giữ tỷ lệ HP riêng của từng species. Ở Lucia Explorer 0, baseline HP hiện tại của Entity được giữ nguyên.
+- Không thay đổi attack/defense formula, artwork hoặc combat input contract.
+- Regression tests đã bổ sung cho deferred first-contact join, companion inventory ownership, non-Hound EXP rewards và Lucia-driven Entity HP scaling.
+- Build Backroom APK của PR #86 đã pass đầy đủ trước khi squash merge.
