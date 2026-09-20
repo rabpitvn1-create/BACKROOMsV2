@@ -93,10 +93,10 @@ public class GmChoiceContractTest {
 
   @Test public void knownTermsNotPresentInReplyAreNotInjected() throws Exception {
     JSONObject entry = GmChoiceContract.gmEntry(
-        "Kai đứng yên.", new JSONObject(), new JSONObject());
+        "Cao Minh đứng yên.", new JSONObject(), new JSONObject());
     JSONArray highlights = entry.getJSONArray("highlights");
 
-    assertHighlight(highlights, "Kai", "character");
+    assertHighlight(highlights, "Cao Minh", "character");
     assertFalse(hasHighlight(highlights, "Clump"));
     assertFalse(hasHighlight(highlights, "Almond Water"));
   }
