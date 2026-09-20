@@ -207,11 +207,14 @@ public final class CombatChoiceEngine {
     combat.put("logIndex", Math.max(0, gmLogIndex));
     combat.put("participants", participants);
 
+    JSONObject statProfile = new EntityStatCore().profile(
+        state, normalized, progressionCore, profile.maxHp);
+    int scaledMaxHp = statProfile.getJSONObject("effective").getInt("maxHp");
     JSONObject entityState = new JSONObject()
       .put("key", profile.key)
       .put("name", profile.name)
-      .put("hp", profile.maxHp)
-      .put("maxHp", profile.maxHp)
+      .put("hp", scaledMaxHp)
+      .put("maxHp", scaledMaxHp)
       .put("attack", profile.attack)
       .put("defense", profile.defense)
       .put("bleedTurns", 0)
@@ -219,9 +222,9 @@ public final class CombatChoiceEngine {
       .put("stunTurns", 0)
       .put("armorBreakTurns", 0)
       .put("armorBreakPercent", 0);
-    JSONObject statProfile = new EntityStatCore().profile(state, normalized, progressionCore);
     entityState.put("statBaseline", statProfile.getJSONObject("baseline"));
     entityState.put("statModifier", statProfile.getJSONObject("modifier"));
+    entityState.put("statEffective", statProfile.getJSONObject("effective"));
     combat.put("entity", entityState);
 
     state.put("combat", combat);
@@ -700,8 +703,26 @@ public final class CombatChoiceEngine {
       combat.put("lootResolved", true);
     }
 
+    boolean expAlreadyResolved = combat.optBoolean("expResolved", false);
     new CharacterProgressionCore().grantEntityKillExp(
-        state, entity.optString("key", ""), combat.optJSONArray("participants"), combat);
+        state, entity.optString("key", ""), entity.optInt("maxHp", 0),
+        combat.optJSONArray("participants"), combat);
+    if (!expAlreadyResolved) {
+      JSONArray awards = combat.optJSONArray("expAwards");
+      if (awards != null) {
+        for (int i = 0; i < awards.length(); i++) {
+          JSONObject award = awards.optJSONObject(i);
+          if (award == null) continue;
+          int reward = Math.max(0, award.optInt("rewardExp", 0));
+          if (reward <= 0) continue;
+          String name = award.optString("name", award.optString("id", "Nhân vật"));
+          int explorerGained = Math.max(0, award.optInt("explorerGained", 0));
+          String line = name + " nhận +" + reward + " EXP."
+              + (explorerGained > 0 ? " Explorer +" + explorerGained + "." : "");
+          appendBattleLine(state, combat, line, name, "+" + reward + " EXP");
+        }
+      }
+    }
 
     combat.put("active", false).put("outcome", "victory").put("choices", new JSONArray());
     clearEncounterFlag(state);
