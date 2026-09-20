@@ -20,8 +20,8 @@
   <section class="player-action-sheet" role="dialog" aria-modal="true" aria-labelledby="playerActionTitle">
     <div class="player-action-head"><h2 id="playerActionTitle">PLAYER ACTION</h2><button class="player-action-close" id="playerActionClose" type="button" aria-label="Đóng">×</button></div>
     <form class="composer" id="form">
-      <label for="action">Kai sẽ làm gì?</label>
-      <textarea id="action" placeholder="Nhập hành động của Kai…" rows="5"></textarea>
+      <label for="action">Cao Minh sẽ làm gì?</label>
+      <textarea id="action" placeholder="Nhập hành động của Cao Minh…" rows="5"></textarea>
       <div class="composer-actions"><button id="playerActionCancel" type="button">HỦY</button><button id="submit" type="submit">THỰC HIỆN</button></div>
     </form>
   </section>
@@ -37,127 +37,202 @@
 </main>
 <script>
 // 6. PROLOGUE — MANDATORY NEW GAME OPENING
-const prologue=`Năm 2299.
+const prologue=`Ma Sơn.
 
-Khu tập kết của SRU không mang dáng vẻ của một nơi chuẩn bị cho chuyến đi một chiều.
+Không có đại chiến.
 
-Toàn bộ thiết bị đo đạc đã hoàn tất kiểm tra. Hệ thống liên lạc nội bộ vẫn hoạt động ổn định. Phía trước đội, cổng không gian duy trì trạng thái cân bằng trong giới hạn mà bộ phận kỹ thuật xác nhận là đủ an toàn để triển khai.
+Không có thiên kiếp.
 
-Đây không phải một chuyến thám hiểm được tổ chức vì tò mò.
+Cũng không có bất kỳ biến cố nào báo trước rằng thế giới sắp làm một chuyện vô lý.
 
-Async đã trở thành đối tượng của một cuộc điều tra chính thức. Những cổng không gian cùng mối liên hệ chưa được xác minh giữa chúng và Backrooms là trọng tâm mà SRU cần làm rõ bằng dữ liệu thực địa.
+Cao Minh ngồi bên vách đá, Huyết Ma Kiếm dựng cạnh người. Phía dưới là biển mây trải đến tận chân trời. Trong tay hắn là một vò linh tửu đã cất đủ lâu để phần lớn tu sĩ ngoài kia sẵn sàng tranh nhau đến đỏ mắt.
 
-Không giả thuyết nào được phép thay thế bằng chứng.
+Hắn chỉ thấy rượu hôm nay uống được.
 
-Kai kiểm tra trang bị lần cuối.
+Những năm gần đây, phần lớn mọi chuyện cũng chỉ còn đến thế.
 
-Iris đứng bên trái hắn. Syvial ở phía còn lại.
+Các tông môn từng khiến thiên hạ kính sợ, những bí cảnh được truyền tụng qua hàng nghìn năm, những cấm địa mà vô số người vào rồi không trở ra... Cao Minh đã thấy quá nhiều.
 
-Cả ba đã nhận cùng một bản tóm tắt nhiệm vụ, cùng nắm rõ mục tiêu và cùng hiểu giới hạn quan trọng nhất của chiến dịch: SRU vẫn chưa xác định được nguồn gốc của Backrooms, cũng chưa có đủ bằng chứng để kết luận Async thực sự đóng vai trò gì trong hiện tượng này.
+Có nơi hắn từng đánh qua.
 
-Không ai bị kéo đi ngoài ý muốn.
+Có nơi hắn từng đi qua.
 
-Không có tai nạn.
+Có nơi chỉ cần nhìn một lần là đủ hiểu chẳng còn thứ gì đáng để hắn mất thêm thời gian.
 
-Không có sự cố ngoài kế hoạch.
+Đứng trên đỉnh quá lâu không khiến thế giới rộng hơn.
 
-Theo đúng mệnh lệnh nhiệm vụ, Kai, Iris và Syvial chủ động bước qua cùng một cổng không gian.
+Chỉ khiến những thứ từng được gọi là kỳ ngộ dần trở nên quen thuộc.
 
-Quá trình chuyển tiếp diễn ra gần như tức thời.
+Cao Minh nâng vò rượu lên.
 
-Trong khoảnh khắc ngắn ngủi giữa hai phía của cổng, Kai không thể thiết lập bất kỳ hệ tọa độ nào có ý nghĩa. Không có phương hướng. Không có điểm tham chiếu ổn định. Chỉ có cảm giác không gian quanh cơ thể bị kéo giãn trong một tích tắc trước khi trọng lực đột ngột xuất hiện trở lại.
+Ngay lúc ấy, mặt đất dưới chân biến mất.
 
-Kai tiếp đất trên một bề mặt mềm và ẩm.
+Không nứt.
 
-Theo phản xạ huấn luyện, hắn lập tức hạ trọng tâm, giữ thăng bằng rồi kiểm tra các góc khuất trước khi tìm kiếm đồng đội.
+Không sụp.
 
-Không có Iris.
+Không có trận văn sáng lên.
 
-Không có Syvial.
+Không có linh lực dao động.
 
-Cả ba đã đi qua cùng một điểm vào, nhưng bằng một cơ chế chưa xác định, họ không xuất hiện tại cùng một vị trí ở phía bên kia.
+Thậm chí không có lấy một khoảnh khắc báo trước.
 
-Kai ngẩng lên quan sát.
+Vách đá, mặt đất và cả cảm giác về phương hướng đơn giản biến mất khỏi nhận thức của hắn.
 
-Ánh sáng huỳnh quang trắng nhợt phủ lên những căn phòng màu vàng kéo dài trước mắt. Tường giấy lặp lại cùng một kiểu hoa văn. Tấm thảm dưới chân giữ một lớp ẩm khó chịu. Trần thả nối tiếp nhau qua những hành lang và ô cửa gần như giống hệt.
+Cơ thể Cao Minh rơi xuống.
 
-Tiếng ù đều đều của hệ thống chiếu sáng vọng khắp không gian.
+Ánh mắt hắn lập tức lạnh đi.
 
-Không có dấu hiệu nhận dạng.
+Huyết Ma Kiếm rời khỏi mặt đất cùng lúc với chủ nhân, lơ lửng sát bên người dưới sự điều khiển của thần niệm. Vò linh tửu biến mất vào Vạn Tàng Giới trước khi một giọt nào kịp đổ ra ngoài.
 
-Không có thiết bị định vị của SRU.
+Trong khoảng không đang nuốt lấy hắn, Cao Minh mở rộng thần thức.
 
-Không có bất kỳ bằng chứng nào cho thấy khu vực này từng nằm dưới sự kiểm soát của con người.
+Không có trận pháp truyền tống.
 
-Kai kích hoạt kênh liên lạc trực tiếp của đội.
+Không có dấu vết của hư không loạn lưu.
 
-Không phản hồi.
+Không có kết cấu tiểu thế giới hay bí cảnh mà hắn từng biết.
 
-Hắn chuyển sang kênh của lực lượng SRU.
+Không có gì để khóa lại.
 
-Im lặng.
+Rồi trọng lực đổi hướng.
 
-Kênh chỉ huy.
+Cao Minh chạm đất.
 
-Không thể thiết lập kết nối.
+Hắn tiếp đất bằng hai chân, gần như không phát ra tiếng động.
 
-Kênh dự phòng.
+Huyết Ma Kiếm dừng giữa không trung bên cạnh vai hắn.
 
-Không có tín hiệu đáp lại.
+Trước mắt không còn Ma Sơn.
 
-Hệ thống truyền dữ liệu đo xa cũng không thể kết nối với bên ngoài.
+Một hành lang vàng nhạt kéo dài qua những góc rẽ vuông vức. Ánh sáng trắng lạnh từ những dãy đèn trên trần phủ xuống lớp giấy tường đã ngả màu. Dưới chân là một loại thảm mềm, giữ hơi ẩm và tỏa ra thứ mùi cũ kỹ khó gọi tên.
 
-Kai không vội kết luận thiết bị đã hỏng. Mất liên lạc không đồng nghĩa với lỗi phần cứng, và một giả định chưa được kiểm chứng vẫn chỉ là giả định.
+Tiếng ù của đèn vang đều trong không gian.
 
-Những gì hắn thực sự biết lúc này chỉ có vài điểm.
+Không có gió.
 
-Mọi tuyến liên lạc với bên ngoài đều không thể thiết lập.
+Không có tiếng người.
 
-Iris và Syvial không xuất hiện tại vị trí của hắn.
+Không có linh khí vận hành theo bất kỳ cấu trúc tự nhiên nào hắn quen thuộc.
 
-Môi trường xung quanh phù hợp với những mô tả đã được SRU thu thập về Backrooms.
+Cao Minh đứng yên vài giây.
 
-Ngoài ra, chưa có gì được xác nhận.
+Không phải vì sợ.
 
-Nhiệm vụ Async vẫn còn hiệu lực.
+Hắn đang nghe.
 
-Vị trí Iris: CHƯA XÁC ĐỊNH.
+Thần thức lan ra.
 
-Vị trí Syvial: CHƯA XÁC ĐỊNH.
+Qua căn phòng đầu tiên.
 
-Liên lạc với SRU: MẤT KẾT NỐI.
+Qua hành lang kế tiếp.
 
-Việc Kai xuất hiện trong Backrooms không tự động chứng minh bất kỳ giả thuyết nào về Async. Chưa có dữ liệu nào đủ để xác định nguyên nhân, cơ chế hay mối liên hệ thực sự đứng sau những gì vừa xảy ra.
+Qua thêm những khoảng không có bố cục gần như lặp lại.
 
-Vì vậy, nhiệm vụ không thay đổi.
+Nhưng khoảng cách mà thần thức cảm nhận được không khớp hoàn toàn với những gì mắt hắn nhìn thấy.
 
-Kai bắt đầu tại Level 0 — The Lobby.
+Một bức tường đáng lẽ phải nằm ở đó lại cho cảm giác xa hơn.
 
-Một mình.
+Một hành lang nhìn như kéo thẳng về phía trước lại không tạo ra phương hướng ổn định trong cảm nhận.
 
-Mất liên lạc.
+Không gian tồn tại.
 
-Hai thành viên trong đội mất dấu.
+Nhưng nó không chịu cư xử theo cách không gian nên cư xử.
 
-Trước khi có thể tìm Iris, Syvial hay bất kỳ câu trả lời nào khác, hắn phải làm điều căn bản nhất mà một đặc vụ SRU được huấn luyện để thực hiện khi tiến vào một môi trường chưa xác định:
+Cao Minh khẽ nhướng mày.
 
-Quan sát.
+Lần đầu tiên sau rất lâu, hắn không lập tức có câu trả lời.
 
-Thu thập bằng chứng.
+Hắn bước tới.
 
-Sống sót.
+Ở một góc tường, Cao Minh để lại một ma ấn.
 
-Duy trì khả năng quay lại những khu vực đã xác nhận an toàn bất cứ khi nào có thể.
+Dấu ấn ổn định.
 
-Và trên hết, không bao giờ biến điều chưa biết thành một câu trả lời chỉ vì nó thuận tiện.`;
+Không có dấu hiệu bị phá hủy hay can thiệp.
+
+Hắn tiếp tục đi.
+
+Một hành lang.
+
+Hai lần rẽ.
+
+Ba căn phòng gần như giống hệt nhau.
+
+Cao Minh ghi nhớ từng đoạn đường, từng góc chuyển hướng và từng thay đổi nhỏ trong môi trường. Khi đã đi đủ xa, hắn quay lại theo chính lộ tuyến vừa qua.
+
+Ma ấn vẫn còn đó.
+
+Nhưng nó không còn nằm ở nơi nó phải nằm.
+
+Cao Minh dừng lại trước dấu ấn.
+
+Hắn nhìn nó một lúc lâu.
+
+Không gian xung quanh vẫn im lặng như thể chẳng có chuyện gì xảy ra.
+
+Huyết Ma Kiếm lơ lửng phía sau hắn, huyết văn trên thân kiếm chỉ phát ra một lớp sáng đỏ rất mỏng.
+
+Cao Minh không phá tường.
+
+Không chém thử hành lang.
+
+Cũng không lập tức dùng sức mạnh để cưỡng ép một thứ mà hắn còn chưa hiểu.
+
+Nếu ma ấn không dịch chuyển, nhưng vị trí của nó lại không còn tương ứng với lộ tuyến đã đi, vấn đề không nằm ở dấu ấn.
+
+Ít nhất, đó là giả thuyết đầu tiên đáng để kiểm chứng.
+
+Hắn quay đầu nhìn dãy hành lang vàng kéo dài trước mặt.
+
+Một nơi không giống động phủ.
+
+Không giống bí cảnh.
+
+Không giống tiểu thế giới.
+
+Cũng không vận hành theo những quy luật không gian mà hắn từng biết.
+
+Cao Minh im lặng một lúc.
+
+Rồi khóe miệng hắn hơi nhếch lên.
+
+Đã rất lâu rồi hắn mới gặp một thứ không chịu đưa ra đáp án ngay từ cái nhìn đầu tiên.
+
+Việc trở về thế giới cũ vẫn cần được giải quyết.
+
+Nhưng chưa phải lúc này.
+
+Trước hết, hắn muốn biết nơi này là gì.
+
+Không gian ở đây vận hành theo quy luật nào.
+
+Những hành lang này có điểm cuối hay không.
+
+Và nếu trong nơi này tồn tại thứ gì khác ngoài hắn...
+
+Chúng tuân theo loại pháp tắc nào.
+
+Cao Minh giơ tay.
+
+Huyết Ma Kiếm lặng lẽ bay đến, dừng bên cạnh người như thể đã hiểu ý chủ nhân.
+
+Hắn bước tiếp vào hành lang.
+
+Không bản đồ.
+
+Không tên gọi.
+
+Không một lời giải thích.
+
+Chỉ có một thế giới chưa biết đang mở ra trước mắt.
+
+Và lần đầu tiên sau rất nhiều năm, Vạn Giới Ma Tôn cảm thấy chuyến đi phía trước có lẽ sẽ không nhàm chán.`;
 
 const CURRENT_CHARACTER_CANON={
-  version:"drive-characters-2026-09-17",
-  instruction:"Current Google Drive character canon. This overrides conflicting legacy character facts in old logs/local mirrors. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN must remain unknown. Character encounters and Party joins are owned exclusively by CharacterEncounterCore; Gemini must never spawn a character or mutate Party.",
-  kai:"Kai Akechi / Twilight is current SRU captain in the anti-anomalous police force, UR+, origin era 2299 but true age unknown. Public SRU record says human; KNOWLEDGE_LOCK: half-human/half-demon son of Sparda and Eve. Sparda Core gives infinite demon power with no intrinsic depletion/cooldown/corruption/berserk and self-repairs all currently equipped items. Current signature weapon is SRU Assault Rifle MK19: physical 5.56x45 NATO, 30-round physical mags, 700-950 rpm, ~500-600 m effective; physical ammo is finite. It also fires Sparda demonic 5.56x45 formed directly from Core, no physical ammo use. SRU-MK20 is current powered armor. Devil Trigger has no intrinsic cap. Guilty Crown Override is a 40% combat proc; on proc it fires exactly 24 MK19 demonic shots while external time is fully stopped, dealing exactly 10 HP per shot (240 HP total). Omnivault now ONLY stores/retrieves inanimate objects and Restores the same existing equipment, with 24h per-item restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed.",
-  iris:"Iris / ARGUS is SRU Scout / Target Eliminator in Kai's team, a real ranged Gunslinger. No surname locked. Half-human/half-demon daughter of Belial and a deceased human mother; mother details, birth era and exact combat tier remain UNKNOWN. Belial Core provides infinite demon power for established functions. ARGUS Terrain Read uses direct observation plus local Recon Frame sensors for terrain/routes/LOS/cover/ambush/traces; no omniscience, wall vision, remote cameras or automatic true-form detection. Thousandfold Cognition is up to 1:1000 information processing, not body speed. Current gear: SRU Recon Frame R03 and Ivory & Ebony, whose bullets form from Iris's demon power. Iris loves Kai; Kai knows but reciprocation is not canonically established. Iris uses anh-em with Kai; Iris and Syvial are trusted friends/teammates with romantic rivalry, not enemies.",
-  syvial:"Syvial is half-human/half-demon daughter of Lucifer, origin era 2299, true age unknown, UR+ and same overall tier as Kai. Current organization: SRU anti-anomalous police; deputy leader of Kai's team. Lucifer Core supplies infinite demon power; Devil Trigger does not remove control or have an invented intrinsic cap/cooldown. GodKiller is a massive purely mechanical greatsword, never a gun/gunblade. Lucifer Armor is mobile black/gunmetal/silver mecha armor with magenta accents; pointed head modules are mechanical, not biological horns; very durable/fast self-repairing but not absolutely indestructible. GodKiller Override / Twenty-Four Severance = exactly 24 cuts while external time is fully stopped. Syvial is intensely yandere toward Kai but lucid and socially/tactically competent; she values Kai's voluntary choice and does not randomly murder, sabotage missions, erase memory or mind-control him.",
-  lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia can only be encountered through CharacterEncounterCore's Level 0 Explorer roll and is not part of the initial SRU group (Kai/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Kai remain OPEN."
+  version:"cao-minh-r15-2026-09-20",
+  instruction:"Cao Minh R15 is the current protagonist canon and overrides conflicting Kai/SRU/Async protagonist legacy. Cao Minh does not know Backrooms level names, entity identities, rules or origin by default. KNOWLEDGE_LOCK remains backstage knowledge only; OPEN fields must stay open.",
+  caoMinh:"Cao Minh / Vạn Giới Ma Tôn is a Ma Đạo Kiếm Tu and the strongest known cultivator of his original world before falling into Backrooms. He was on Ma Sơn drinking spirit wine with Huyết Ma Kiếm beside him when the ground vanished without a recognized formation, spatial turbulence or warning. He falls into the yellow Backrooms environment involuntarily and begins by testing it with thần thức and ma ấn. Backrooms interests him because its rules are unfamiliar; understanding its nature is his current first priority, while returning to his original world is second. He does not possess default knowledge of Backrooms levels or entities. Vạn Quỷ Ma Tâm is his central Đạo Cơ/Ma Hải and vast source of ma nguyên; Vạn Quỷ Ma Thân does not inherently remove control, impose a duration cap or cause backlash. Current bound equipment: Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới. Huyết Ma Nhị Thập Tứ Trảm is exactly 24 strikes while external time is fully stopped. His hidden bloodline and inheritance linked to Vạn Quỷ Ma Tôn are KNOWLEDGE_LOCK and must not be exposed without valid in-story evidence."
 };
 
 const LEVEL_NODE_TITLES={
@@ -183,19 +258,19 @@ const initial={
   mode:"local APK",
   currentLevel:0,
   currentLevelKey:"0",
-  location:"Level 0 / The Lobby — khu phòng vàng ban đầu sau khi đi qua cổng không gian",
-  player:{name:"Kai Akechi",condition:"Ổn định"},
+  location:"Hành lang vàng nhạt — khu vực chưa xác định",
+  player:{name:"Cao Minh",condition:"Ổn định"},
   party:[],
   inventory:[
-    {name:"SRU Assault Rifle MK19"},
-    {name:"SRU-MK20 Powered Armor"},
-    {name:"Omnivault Ring / Nhẫn Vạn Tàng"}
+    {name:"Huyết Ma Kiếm"},
+    {name:"Huyết Ma Chiến Khải"},
+    {name:"Vạn Tàng Giới"}
   ],
-  flags:{communication:{sru:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
+  flags:{},
   characterCanon:CURRENT_CHARACTER_CANON,
   log:[
     {role:"gm",text:"MỞ ĐẦU\n\n"+prologue},
-    {role:"gm",text:"LƯỢT 1\n\nKhông có liên lạc với Iris, Syvial hay SRU. Bạn điều khiển Kai từ đây."}
+    {role:"gm",text:"LƯỢT 1\n\nBạn điều khiển Cao Minh từ đây."}
   ]
 };
 
@@ -228,26 +303,28 @@ ensureCurrentLevel(state);
 state.characterCanon=CURRENT_CHARACTER_CANON;
 if(state.turn===1){
   const currentOpening=String(state.log?.[0]?.text||"");
-  const oldInventory=Array.isArray(state.inventory)&&state.inventory.some(x=>String(x?.name||"").includes("White Wraith"));
-  if(oldInventory) state.inventory=JSON.parse(JSON.stringify(initial.inventory));
-  if(state.flags?.communication?.blackBlood!==undefined){
-    delete state.flags.communication.blackBlood;
-    state.flags.communication.sru="OFFLINE";
+  const playerName=String(state.player?.name||"").trim().toLowerCase();
+  const legacyOpening=currentOpening!==initial.log[0].text||playerName.includes("kai")||playerName.includes("twilight");
+  if(legacyOpening){
+    state.title=initial.title;
+    state.currentLevel=initial.currentLevel;
+    state.currentLevelKey=initial.currentLevelKey;
+    state.location=initial.location;
+    state.player=JSON.parse(JSON.stringify(initial.player));
+    state.party=[];
+    state.inventory=JSON.parse(JSON.stringify(initial.inventory));
+    state.flags={};
+    state.log=JSON.parse(JSON.stringify(initial.log));
+    state.characterCanon=CURRENT_CHARACTER_CANON;
   }
-  if(currentOpening!==initial.log[0].text){
-    if(!Array.isArray(state.log)) state.log=[];
-    state.log[0]=initial.log[0];
-    if(state.log[1]) state.log[1]=initial.log[1];
-  }
-  state.location=initial.location;
 }
 localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
 function levelTitle(){const key=String(state?.currentLevelKey||state?.currentLevel||0);return LEVEL_NODE_TITLES[key]||("Level "+key)}
-function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{if(!x)return;const name=typeof x==="string"?x:String(x.name||x.id||"").trim();if(!name)return;const key=name.toLocaleLowerCase("vi");if(seen.has(key))return;seen.add(key);result.push(typeof x==="string"?{name}:x)};add(state?.player||{name:"Kai Akechi"});(Array.isArray(state?.party)?state.party:[]).filter(x=>x&&x.joined===true).forEach(add);return result}
-function render(){titleEl.textContent=levelTitle();turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Kai Akechi";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");statusEl.textContent="Save được lưu riêng trên thiết bị này."}
+function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{if(!x)return;const name=typeof x==="string"?x:String(x.name||x.id||"").trim();if(!name)return;const key=name.toLocaleLowerCase("vi");if(seen.has(key))return;seen.add(key);result.push(typeof x==="string"?{name}:x)};add(state?.player||{name:"Cao Minh"});(Array.isArray(state?.party)?state.party:[]).filter(x=>x&&x.joined===true).forEach(add);return result}
+function render(){titleEl.textContent=levelTitle();turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");statusEl.textContent="Save được lưu riêng trên thiết bị này."}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
 function load(){state=normalizeCoreState(ensureCurrentLevel(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial));state.characterCanon=CURRENT_CHARACTER_CANON;save();render()}
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
