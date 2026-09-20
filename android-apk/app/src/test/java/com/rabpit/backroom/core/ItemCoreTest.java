@@ -79,7 +79,7 @@ public class ItemCoreTest {
 
   @Test public void firstAidKitHealsAuthoritativeProgressionHp() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray());
     CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
     progression.normalizeState(state);
@@ -95,7 +95,7 @@ public class ItemCoreTest {
 
   @Test public void banhMiAndLavieUpdateAuthoritativeSurvivalState() throws Exception {
     JSONObject foodState = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 48L * 60L));
     ItemCore.grantChestLootItem(foodState, 5);
@@ -109,7 +109,7 @@ public class ItemCoreTest {
     assertTrue(foodReply.contains("Đói +45"));
 
     JSONObject waterState = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray())
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 24L * 60L));
     ItemCore.grantChestLootItem(waterState, 3);
@@ -128,7 +128,7 @@ public class ItemCoreTest {
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.BANDAGE_ID).put("name", "Băng Gạc Y Tế").put("quantity", 1)));
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.ALMOND_WATER_ID).put("name", "Almond Water").put("quantity", 1)))
         .put("party", new JSONArray().put(lucia));
@@ -150,7 +150,7 @@ public class ItemCoreTest {
 
   @Test public void downedCompanionCannotBypassTenTurnReviveWithHealingItem() throws Exception {
     JSONObject state = new JSONObject()
-        .put("player", new JSONObject().put("name", "Kai Akechi"))
+        .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
             .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
     CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
