@@ -172,7 +172,7 @@ final class ItemCore {
       targetCharacterId = CharacterProgressionCore.normalizeCharacterId(targetId);
       if ("kai".equals(targetCharacterId)) {
         JSONObject player = state.optJSONObject("player");
-        targetName = player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+        targetName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
       } else {
         JSONObject target = findPartyMember(state.optJSONArray("party"), targetId);
         if (target == null || !CharacterEncounterCore.isJoinedMember(target)) {
@@ -391,7 +391,7 @@ final class ItemCore {
     String ownerId = CharacterProgressionCore.normalizeCharacterId(rawOwnerId);
     if (ownerId.isEmpty() || "kai".equals(ownerId)) {
       JSONObject player = state == null ? null : state.optJSONObject("player");
-      return player == null ? "Kai Akechi" : player.optString("name", "Kai Akechi");
+      return player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
     }
     JSONObject owner = findPartyMember(state == null ? null : state.optJSONArray("party"), ownerId);
     return owner == null ? ownerId : owner.optString("name", ownerId);
