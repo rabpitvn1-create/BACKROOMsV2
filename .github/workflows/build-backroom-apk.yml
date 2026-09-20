@@ -382,9 +382,7 @@ jobs:
 
       - name: Test snapshot overlay geometry
         run: |
-          java android-apk/tools/GenerateOverlayMetrics.java
-          git diff -- android-apk/app/src/main/assets/snapshot-ui.js
-          git diff --exit-code -- android-apk/app/src/main/assets/snapshot-ui.js
+          java android-apk/tools/GenerateOverlayMetrics.java --check
           node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs
 
       - name: Run Java tests and build debug APK
