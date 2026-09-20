@@ -125,6 +125,10 @@ public final class CombatChoiceEngine {
     return new Skill(name, description, proc, damage, effect, turns, value, offensive);
   }
 
+  private static Skill skill(String name, int proc, int damage, String effect, int turns, int value, boolean offensive) {
+    return skill(name, "", proc, damage, effect, turns, value, offensive);
+  }
+
   private static void skills(String id, Skill... definitions) {
     List<Skill> list = new ArrayList<>();
     for (Skill definition : definitions) list.add(definition);
