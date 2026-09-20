@@ -31,6 +31,11 @@
   party.insertAdjacentElement('afterend',detail);
   var selectedId='';
 
+  function publishSelection(){
+    var id=selectedId||'kai';
+    if(typeof window.backroomInventoryOwnerChanged==='function')window.backroomInventoryOwnerChanged(id);
+  }
+
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
     if(value.indexOf('kai')>=0||value.indexOf('twilight')>=0)return 'kai';
@@ -204,7 +209,7 @@
     var role=document.createElement('div');role.className='party-detail-role';role.textContent=meta.role||String(member.role||'Party member');
     identity.appendChild(name);identity.appendChild(role);
     var close=document.createElement('button');close.type='button';close.className='party-detail-close';close.textContent='×';close.setAttribute('aria-label','Đóng thông tin nhân vật');
-    close.addEventListener('click',function(){selectedId='';detail.hidden=true;renderPartyUi();});
+    close.addEventListener('click',function(){selectedId='';detail.hidden=true;publishSelection();renderPartyUi();});
     head.appendChild(avatar);head.appendChild(identity);head.appendChild(close);detail.appendChild(head);
 
     var sections=document.createElement('div');sections.className='party-detail-sections';
@@ -255,8 +260,8 @@
 
   function openMember(member){
     var id=norm((member.id||'')+' '+(member.name||''));
-    if(selectedId===id&&!detail.hidden){selectedId='';detail.hidden=true;renderPartyUi();return;}
-    selectedId=id;renderDetail(member);renderPartyUi();
+    if(selectedId===id&&!detail.hidden){selectedId='';detail.hidden=true;publishSelection();renderPartyUi();return;}
+    selectedId=id;publishSelection();renderDetail(member);renderPartyUi();
   }
 
   function renderPartyUi(){
@@ -276,7 +281,7 @@
     if(selectedId){
       var selected=list.find(function(member){return norm((member.id||'')+' '+(member.name||''))===selectedId;});
       if(selected&&!detail.hidden)renderDetail(selected);
-      else if(!selected){selectedId='';detail.hidden=true;}
+      else if(!selected){selectedId='';detail.hidden=true;publishSelection();}
     }
   }
 
@@ -285,5 +290,6 @@
   if(typeof oldRender==='function'){
     window.render=function(){oldRender();renderPartyUi();};
   }
+  publishSelection();
   renderPartyUi();
 })();
