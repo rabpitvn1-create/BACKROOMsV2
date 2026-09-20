@@ -9,7 +9,7 @@
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
   var META={
-    cao_minh:{name:'Cao Minh',role:'Đội trưởng SRU'},
+    cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'},
     lucia:{name:'Lucia Lục',role:'Tactical Riflewoman'},
     iris:{name:'Iris',role:'Scout / Target Eliminator'},
     syvial:{name:'Syvial',role:'Đội phó SRU'}
