@@ -19,7 +19,8 @@ final class CharacterProgressionCore {
   static final int DEFAULT_BONUS_POOL = 10;
   static final int BASE_MAX_HP = 50;
   static final int HP_PER_EXPLORER = 15;
-  static final int HOUND_BASE_EXP = 10;\n  static final int MIN_ENTITY_BASE_EXP = HOUND_BASE_EXP;
+  static final int HOUND_BASE_EXP = 10;
+  static final int MIN_ENTITY_BASE_EXP = HOUND_BASE_EXP;
   static final int COMPANION_REVIVE_EXPLORER_TURNS = 10;
 
   interface IntRng {
