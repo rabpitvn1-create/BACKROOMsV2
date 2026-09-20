@@ -1,7 +1,7 @@
 # The BACKROOMS — Drive Source Map for Runtime Knowledge
 
 Status: CURRENT SOURCE MAP
-Last character sync: 2026-09-17
+Last character sync: 2026-09-21
 
 This file maps runtime knowledge to its authoritative Google Drive source. Local mirrors, old saves/logs and retired patch artifacts are not canon authorities when they conflict with a newer Drive source.
 
@@ -21,8 +21,11 @@ This file maps runtime knowledge to its authoritative Google Drive source. Local
 
 Runtime character source: `app/src/main/assets/knowledge/characters_current.json`.
 Human audit wiki: `CHARACTER_CODEX_CURRENT.md`.
+Runtime compact mirror: `app/src/main/assets/index.html` → `CURRENT_CHARACTER_CANON`.
 
-The old `app/src/main/assets/knowledge/knowledge_db.json` predates the 2026-09-17 Characters Drive sync and contains legacy character rows. Those legacy character rows are **not authoritative** for Kai/Iris/Syvial/Lucia. World/level/entity records in that file may still be used only when they do not conflict with a newer Drive source.
+Compatibility note: the machine-readable file retains internal key `characters.kai` only for existing save/runtime compatibility. Its canonical identity is Cao Minh; the internal key must never leak into narration or UI.
+
+The current `app/src/main/assets/knowledge/knowledge_db.json` contains Cao Minh R15 core/story records. Any residual legacy protagonist wording outside the Cao Minh character records is not a character-canon authority and must not override the current Drive source.
 
 Current game state embeds the compact current character canon so the Java-only Gemini path receives the latest character locks without restoring the retired Kotlin/LiteRT knowledge engine.
 
@@ -37,19 +40,22 @@ Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
 
 ### Cao Minh source map
 
-| Area | Drive anchors | Current lock |
-|---|---|---|
-| Identity / position | `CAO-ID-01`, `CAO-OVERVIEW-01` | Cao Minh / Vạn Giới Ma Tôn; Ma Đạo Kiếm Tu; đệ nhất cường giả của thế giới nguyên sinh trước khi rơi vào Backrooms. |
-| Personality / code | `CAO-PER-01`, `CAO-CODE-01` | Phóng túng, hay châm chọc, không tự xem mình là anh hùng; không chủ động hại người vô tội; phản ứng rất nhanh khi nguy hiểm thật. |
-| Vạn Quỷ Ma Tâm | `CAO-CORE-VQM-01` | Đạo Cơ / Ma Hải / nguồn ma nguyên trung tâm; không tự bịa trần nội tại, cooldown, phản phệ hoặc mất kiểm soát. |
-| Vạn Quỷ Ma Thân | `CAO-VQMS-01` | Giải phóng bản nguyên nhưng giữ nguyên ý thức, ký ức, tính cách và phán đoán. |
-| Huyết Ma Kiếm | `CAO-EQP-HUYET-MA-KIEM-01` | Bản mệnh đại kiếm ma đạo; kiếm thể, ngự kiếm, Huyết Sát Ma Khí. |
-| Huyết Ma Chiến Khải | `CAO-EQP-HUYET-MA-KHAI-01` | Bản mệnh Ma Khải đen–đỏ, liên kết trực tiếp với ma nguyên. |
-| Vạn Tàng Giới | `CAO-EQP-VANTANG-01` | Lưu trữ vật vô tri; Phản Bổn chính pháp bảo hiện hữu, không tạo bản sao/sinh linh. |
-| Huyết Ma Nhị Thập Tứ Trảm | `CAO-ULT-HUYETMA24-01` | Đúng 24 trảm trong thời gian ngoại giới dừng hoàn toàn. |
-| Backrooms entry | `CAO-BACKROOMS-01` | Từ Ma Sơn rơi khỏi thế giới nguyên sinh; không biết trước tên Level/Entity/quy luật; ưu tiên khám phá và kiểm chứng, đường về là mục tiêu thứ hai. |
-| Secret origin | `CAO-SECRET-01` | Huyết thống bán nhân/bán ma và truyền thừa Vạn Quỷ Ma Tôn là KNOWLEDGE_LOCK. |
-
+| Runtime concept | Source anchor | Current lock |
+| --- | --- | --- |
+| Identity / title | `CAO-ID-01`, `CAO-QUICK-01` | Cao Minh / Vạn Giới Ma Tôn; Ma Đạo Kiếm Tu; strongest known cultivator of original world; no sect/empire/organization ownership. Original world name/era/detailed realms remain OPEN. |
+| Hidden origin | `CAO-SECRET-01` | KNOWLEDGE_LOCK: half-human/half-demon, ancient inheritance linked to Vạn Quỷ Ma Tôn. Vạn Quỷ Ma Tôn is inheritance source, not Cao Minh's title. |
+| Visual | `CAO-VIS-01` | R15: long black high ponytail, dark-red eyes, exposed face, black-red Huyết Ma Chiến Khải and a large straight broad Huyết Ma Kiếm with red inscriptions/Ma Luân. |
+| Personality / code | `CAO-PER-01`, `CAO-CODE-01` | Confident, relaxed, lazy, wine-loving, sarcastic; no proactive harm to innocents; protects accepted allies when practical rescue remains. |
+| Combat / sword sense | `CAO-COMBAT-01` | High sword/divine sense, weak-point and trajectory reading, sword control, close combat and multi-angle handling; attacks outside direct sight still require valid information. |
+| Vạn Quỷ Ma Tâm | `CAO-CORE-VQM-01` | Đạo Cơ + Ma Hải + central origin; vast ma-nguyên source with no canonically locked intrinsic ceiling; enhances body/reflex/perception/divine sense/regeneration and nourishes bound artifacts. |
+| Vạn Quỷ Ma Thân | `CAO-VQMS-01` | Full release without inherent control loss, corruption, invented duration cap or backlash. |
+| Huyết Ma Nhị Thập Tứ Trảm | `CAO-ULT-HUYETMA24-01` | External time fully stops; exactly 24 strikes; time resumes only after strike 24. |
+| Huyết Ma Kiếm | `CAO-EQP-HUYET-MA-KIEM-01` | Bound demonic greatsword; divine-sense control/recall; existing sword can progressively regenerate, never duplicates itself. |
+| Huyết Ma Chiến Khải | `CAO-EQP-HUYET-MA-KHAI-01` | Bound black-red Ma Khải, second-skin operation, Ma Trảo/Huyết Ấn/Đạp Hư Ma Văn; can progressively re-form if damaged. |
+| Vạn Tàng Giới | `CAO-EQP-VANTANG-01`, `CAO-WEAK-01` | Stores inanimate matter. Phản Bổn restores the same existing artifact to its own best historical state; no copy/create/upgrade-beyond-history/living storage. One-day-one-night per-artifact Phản Bổn cooldown after success. |
+| Backrooms entry / knowledge | `CAO-BACKROOMS-01` | Ma Sơn → unexplained fall; no default Level/Entity/rule knowledge; investigate from evidence; returning home is secondary. |
+| Dialogue / Diệp Minh | `CAO-DLG-01` | Natural complete speech with humor/sarcasm; no constant “bổn tọa”. Only the existence of a feud with Diệp Minh is locked; details remain OPEN. |
+| Gameplay projection | `CAO-GAMEPLAY-R15-01` | Tứ Liên 30%/4 hits/170% + Bleeding; Trấn Hồn 20%/4 hits/130% + Stun; Ma Độn 20%/2 hits/147%; Thiên Ma Bộ 30%/+50pp Evasion/3 turns; Ultimate every turn 3×n = 24×10 HP, Accuracy 200%, ignore Evasion, suppress AUTO rolls. |
 ### Iris source map
 
 | Runtime concept | Source anchor | Current lock |

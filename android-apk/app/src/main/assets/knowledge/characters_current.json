@@ -1,22 +1,68 @@
 {
-  "schemaVersion": 2,
-  "syncedAt": "2026-09-20",
+  "schemaVersion": 3,
+  "syncedAt": "2026-09-21",
   "authority": "Google Drive / 02_CHARACTERS",
-  "instruction": "Google Drive character canon is authoritative. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15. The legacy internal key `kai` is retained only for save/runtime compatibility and must never be exposed as Cao Minh's identity. KNOWLEDGE_LOCK is backstage knowledge only; OPEN/UNKNOWN fields remain unresolved.",
+  "instruction": "Google Drive character canon is authoritative. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15. The legacy internal key `kai` is retained only for save/runtime compatibility and must never be exposed as Cao Minh's identity. KNOWLEDGE_LOCK is backstage knowledge only; OPEN/UNKNOWN fields remain unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology.",
   "characters": {
     "kai": {
       "name": "Cao Minh / Vạn Giới Ma Tôn",
       "source": "02_CHARACTERS/Cao_Minh_Codex.docx",
       "driveId": "1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq",
       "revision": "R15",
+      "canonVersion": "CAO-MINH-VAN-GIOI-MA-TON-CODEX-20260920-R15",
+      "sourceModifiedAt": "2026-09-20T16:48:53.061Z",
       "aliases": [
         "cao minh",
         "vạn giới ma tôn",
         "van gioi ma ton"
       ],
-      "runtime": "Cao Minh is Vạn Giới Ma Tôn, a Ma Đạo Kiếm Tu who had already become the strongest cultivator of his original world before falling into Backrooms. He is confident, irreverent, often lazy or teasing outside real danger, but reacts quickly and precisely when a threat becomes serious. He does not define people by simple righteous/demonic labels and does not intentionally harm innocents. Backrooms interests him because its rules are unfamiliar. Understanding its nature is his current first priority; returning to his original world is second. He has no default knowledge of Backrooms level names, entities or rules.",
-      "abilities": "Vạn Quỷ Ma Tâm is Cao Minh's central Đạo Cơ, Ma Hải and source of ma nguyên. Current canon does not establish an intrinsic depletion ceiling, arbitrary cooldown, corruption or berserk loss of control. Vạn Quỷ Ma Thân releases his original demonic foundation without replacing his mind or personality and has no invented intrinsic maximum duration. Huyết Ma Nhị Thập Tứ Trảm performs exactly 24 strikes while external time is completely stopped.",
-      "equipment": "Huyết Ma Kiếm is Cao Minh's bound demonic greatsword and can be wielded directly, controlled by thần niệm or reinforced with Huyết Sát Ma Khí. Huyết Ma Chiến Khải is his bound black-red Ma Khải. Vạn Tàng Giới is an inanimate-storage bound artifact with Phản Bổn that restores the same existing artifact only to the best state it has actually achieved; it does not create copies or living beings."
+      "runtime": "Cao Minh is Vạn Giới Ma Tôn, a Ma Đạo Kiếm Tu and the strongest known cultivator of his original world before falling into Backrooms. He belongs to no sect, empire or organization. The original world's name, historical era and detailed cultivation-realm system remain OPEN. He is confident but not blindly arrogant; relaxed, lazy, wine-loving and sarcastic outside serious danger, and reacts quickly and precisely when danger becomes real. He does not intentionally harm innocents and does not use righteous/demonic labels as a substitute for judgment.",
+      "knowledgeLock": "Backstage canon: Cao Minh is half-human/half-demon and inherits an ancient lineage linked to Vạn Quỷ Ma Tôn. Vạn Quỷ Ma Tôn is the inheritance source, not Cao Minh's title. Other characters may not infer this full origin merely from demonic energy, Huyết Ma Kiếm, Vạn Quỷ Ma Thân or regeneration.",
+      "visual": "R15: apparent male around thirty, true age unknown; very long thick black hair in a high ponytail, dark-red eyes and exposed face. Huyết Ma Chiến Khải is black-red bound armor with blood-red demonic inscriptions. Huyết Ma Kiếm is a large straight broad black greatsword with red blood inscriptions and a Ma Luân around the red crystal at the guard; it can hover and move under divine-sense control.",
+      "abilities": "Cao Minh has extremely high sword sense and divine sense. Vạn Quỷ Ma Tâm is his Đạo Cơ, Ma Hải and central origin, supplying a vast ma-nguyên source with no canonically locked intrinsic ceiling, enhancing body/reflex/perception/divine sense/regeneration and nourishing bound artifacts. Vạn Quỷ Ma Thân is full release of that origin and does not inherently remove control, impose a duration cap, cause corruption or backlash. Huyết Ma Nhị Thập Tứ Trảm stops external time completely and performs exactly 24 strikes before time resumes.",
+      "equipment": "Bound equipment: Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới. The existing Huyết Ma Kiếm and Huyết Ma Chiến Khải can progressively regenerate through Vạn Quỷ Ma Tâm; regeneration restores the existing artifact and does not create duplicates. Vạn Tàng Giới stores inanimate matter. Phản Bổn restores the same existing artifact to the best state that exact artifact genuinely reached in its own history; it does not copy, upgrade beyond history, create matter from nothing or store/recreate living beings. After a successful Phản Bổn, that same artifact requires one day and one night before Phản Bổn can be used on it again; this does not block natural bound-artifact regeneration.",
+      "backrooms": "Immediately before transition Cao Minh was on Ma Sơn drinking spirit wine with Huyết Ma Kiếm nearby. The ground vanished without a recognized formation, spatial turbulence or warning. He lands in the yellow Backrooms environment and tests it with divine sense and a demonic mark. He has no default knowledge of Backrooms level names/numbers, Entity identities, rules or origin. His current first priority is to investigate local rules and the nature of Backrooms; returning to his original world is second.",
+      "dialogue": "Speak naturally and completely, often using humor or sarcasm. Do not make him constantly say 'bổn tọa', speak like an ancient manual, or use vague pseudo-philosophy to sound profound. With Diệp Minh only the existence of an established feud is locked; cause, history, intensity, balance of victories and outcome remain OPEN.",
+      "gameplay": {
+        "note": "Gameplay-only projection from CAO-GAMEPLAY-R15-01; not in-world cultivation terminology.",
+        "huyetMaTuLien": {
+          "chance": 0.3,
+          "hits": 4,
+          "totalWeaponDamageMultiplier": 1.7,
+          "bleedingTurns": 3,
+          "bleedingMaxHpFractionPerTurn": 0.05,
+          "reproc": "refresh_duration_only"
+        },
+        "maTamTranHon": {
+          "chance": 0.2,
+          "hits": 4,
+          "totalWeaponDamageMultiplier": 1.3,
+          "stunTurns": 1,
+          "stunScope": "reaction/counterattack tied to the triggering combat turn"
+        },
+        "huyetAnhMaDon": {
+          "chance": 0.2,
+          "hits": 2,
+          "totalWeaponDamageMultiplier": 1.47
+        },
+        "thienMaBo": {
+          "chance": 0.3,
+          "evasionPercentagePoints": 50,
+          "durationCombatTurnsIncludingProcTurn": 3,
+          "reproc": "refresh_duration_only",
+          "doesNotAutoNegateMandatoryAoe": true
+        },
+        "ultimate": {
+          "name": "Huyết Ma Nhị Thập Tứ Trảm",
+          "priorityTurns": "combat turn 3 and multiples of 3",
+          "hits": 24,
+          "damageHpPerHit": 10,
+          "accuracyPercent": 200,
+          "ignoresEvasion": true,
+          "suppressAutoSkillRollsOnUltimateTurn": true
+        },
+        "hardLock": "AUTO rolls are independent and multiple AUTO skills may proc in one eligible turn. A successful AUTO proc hits without an additional accuracy/evasion roll."
+      }
     },
     "iris": {
       "name": "Iris / ARGUS",
