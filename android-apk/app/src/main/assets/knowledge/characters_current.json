@@ -1,37 +1,46 @@
 {
   "schemaVersion": 2,
-  "syncedAt": "2026-09-17",
+  "syncedAt": "2026-09-20",
   "authority": "Google Drive / 02_CHARACTERS",
-  "instruction": "This is the current character canon. It overrides conflicting legacy character facts in old saves, logs, local mirrors, compact canon files and retired patch artifacts. KNOWLEDGE_LOCK facts are writer/GM canon and must not automatically become in-world character knowledge. UNKNOWN/OPEN fields must remain unknown until explicitly retconned.",
+  "instruction": "Current character canon for the Cao Minh R15 retcon. Cao Minh R15 overrides every conflicting player-character legacy fact. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN remains unknown until explicitly retconned. No pre-existing relationship between Cao Minh and Iris/Syvial exists at campaign start.",
   "characters": {
-    "kai": {
-      "name": "Kai Akechi / Twilight",
-      "source": "02_CHARACTERS/Kai_Codex.docx",
+    "cao_minh": {
+      "name": "Cao Minh / Vạn Giới Ma Tôn",
+      "source": "02_CHARACTERS/Cao_Minh_Codex.docx",
       "driveId": "1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq",
-      "revision": "R12",
-      "aliases": ["kai", "kai akechi", "twilight"],
-      "runtime": "Kai is the SRU captain in the anti-anomalous police force. Current canon removes legacy Black Blood/Vatican organization continuity. Public SRU records classify him as human. KNOWLEDGE_LOCK: he is half-human/half-demon, son of Sparda and Eve; other characters may not infer that secret merely from his powers. Origin era 2299 is not a birth year; true age remains unknown. Combat tier UR+. Outside danger he can be relaxed, lazy, teasing and irreverent; in real danger he becomes disciplined and decisive and prioritizes teammates/civilians.",
-      "abilities": "Sparda Core supplies infinite demon power with no intrinsic depletion, mana cap, cooldown, corruption, berserk state or backlash. It enhances physical ability, perception, regeneration and powers/self-repairs every item Kai is currently equipping. Devil Trigger has no intrinsic duration cap/cooldown/control loss. Guilty Crown Override uses SRU Assault Rifle MK19 to fire exactly 24 Sparda demonic 5.56x45 mm shots while external time is fully stopped, then ends after shot 24.",
-      "equipment": "Current signature firearm: SRU Assault Rifle MK19, physical 5.56x45 mm NATO, detachable 30-round magazine, 700-950 rpm full-auto, 368 mm barrel, 838 mm extended / 756 mm collapsed, effective range about 500-600 m; physical ammunition is finite. The same rifle can fire Sparda demonic 5.56x45 mm formed directly from Sparda Core, consuming no physical ammunition and dealing physical damage described as tens of times stronger than ordinary physical ammunition; do not invent an exact multiplier. Current armor: SRU-MK20 Powered Armor, black/gunmetal with ivory panels and small brass/gold details; face/head exposed in the R12 reference, very long silver-white hair tied in a high ponytail. Omnivault Ring now has only infinite inanimate storage/retrieval and Restore of the same existing equipment to its best previously existing state. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed. Restore has a per-item 24-hour cooldown after successful use and does not limit Sparda Core self-repair. Omnivault never stores or recreates living beings."
+      "revision": "R15",
+      "aliases": [
+        "cao minh",
+        "vạn giới ma tôn",
+        "van gioi ma ton"
+      ],
+      "runtime": "Cao Minh is Vạn Giới Ma Tôn, a pure tiên-hiệp/ma-đạo sword cultivator who had already reached the summit of his original world before accidentally falling into Backrooms. He does not belong to a modern/future military organization and has no pre-existing relationship with Iris or Syvial. He enters Backrooms out of an unexplained spatial fall, then chooses to explore because it is the first unknown world in a long time that he cannot immediately explain. He does not know Backrooms Level/Entity rules before observing or validating them. His unresolved enmity with Diệp Minh is OPEN: do not invent its cause, guilt, history or outcome.",
+      "abilities": "Vạn Quỷ Ma Tâm is Cao Minh's Đạo Cơ/Ma Hải and an effectively inexhaustible source of ma nguyên. It supports regeneration and bound-equipment restoration without an invented mana bar, intrinsic cooldown, corruption or loss of control. Vạn Quỷ Ma Thân is his full-release state and does not create a second personality. Huyết Ma Tứ Liên: 170% weapon damage plus Chảy máu 3 turns at 5% Max HP per turn. Ma Tâm Trấn Hồn: 130% weapon damage plus Choáng 1 turn. Huyết Ảnh Ma Độn: 147% weapon damage using ngự kiếm/ma độn. Thiên Ma Bộ: +50 percentage points Evasion for 3 turns. Huyết Ma Nhị Thập Tứ Trảm: exactly 24 strikes while external time is fully stopped; gameplay projection is 10 HP per strike, 240 HP total.",
+      "equipment": "Set Vạn Giới Ma Tôn: Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới. Huyết Ma Kiếm is Cao Minh's bound straight broad greatsword, used for physical sword combat, Huyết Sát Ma Khí and ngự kiếm. Huyết Ma Chiến Khải is bound ma-khải formed from Ma Kim, ma văn, tinh huyết and ma nguyên rather than technology; it can regenerate from Vạn Quỷ Ma Tâm. Vạn Tàng Giới stores inanimate objects in a bound inner space and has Phản Bổn, which restores an existing object toward its best previously existing state; it does not copy living beings or fabricate new objects."
     },
     "iris": {
       "name": "Iris / ARGUS",
       "source": "02_CHARACTERS/Iris_Codex.docx",
       "driveId": "1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k",
       "revision": "R07",
-      "aliases": ["iris", "argus"],
-      "runtime": "Iris is her current legal/official name; no surname is locked. ARGUS is her SRU combat callsign. She is Scout / Target Eliminator in Kai's SRU team and a real ranged combatant/Gunslinger, not a remote intelligence station. She is half-human/half-demon, daughter of Belial and a human mother who is deceased; the mother's identity, occupation, origin and cause of death remain UNKNOWN. Iris's exact birth year/origin era and exact combat tier remain UNKNOWN and must not be inferred as UR+ from Kai or Syvial. Kai was the first SRU member to discover her; SRU later standardized Project 07. Personality: calm, decisive, sharp, brave and caring; emotionally more transparent/tsundere around Kai without becoming childish or violent.",
+      "aliases": [
+        "iris",
+        "argus"
+      ],
+      "runtime": "Iris remains an independent character governed by her own current source. She is a ranged combatant/Gunslinger with her established Belial Core, ARGUS Terrain Read and Recon Frame equipment. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; any meeting must begin as first contact unless live campaign state later establishes otherwise.",
       "abilities": "Belial Core supplies infinite demon power for her established equipment and abilities but is not a second intelligence. Thousandfold Cognition accelerates information reception/analysis up to 1:1000 and does not accelerate her body or weapon mechanisms 1000x. ARGUS Terrain Read replaces the retired EYE-infinity drone concept: it uses Iris's direct observation plus sensors in her current area to analyze terrain, routes, lines of sight, cover, ambush points and abnormal traces. It does not grant omniscience, wall vision, remote camera generation or automatic supernatural true-form detection.",
       "equipment": "Current armor: SRU Recon Frame R03, a mobile black/gunmetal full-body mechanical frame with orange-red light accents, optimized for scout/ranged combat. Signature weapons: Ivory & Ebony, two large mechanical pistols synchronized with Belial Core. Their bullets are formed from Iris's demon power; she does not rely on ordinary physical magazines as the primary ammunition source. Infinite energy does not mean infinite fire rate, durability, per-shot damage, accuracy or guaranteed target identification. Field MedNet is battlefield medicine, not magical healing. Field Galley is practical field cooking/logistics, not matter creation.",
-      "relationships": "Iris has romantic feelings for Kai; Kai knows, but current canon does not establish reciprocation. Iris uses the Vietnamese anh-em address system with Kai. Iris and Syvial are friends and trusted teammates with romantic rivalry around Kai, not enemies; exact Iris-to-Syvial address remains UNKNOWN."
+      "relationships": "No pre-existing relationship with Cao Minh. Any later relationship or address system must emerge from campaign continuity. Iris and Syvial may retain relationships established by their own sources where they do not imply a prior relationship with Cao Minh."
     },
     "syvial": {
       "name": "Syvial",
       "source": "02_CHARACTERS/Syvial_Codex.docx",
       "driveId": "1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY",
       "revision": "CURRENT",
-      "aliases": ["syvial"],
-      "runtime": "Syvial is half-human/half-demon, daughter of Lucifer and a human mother whose identity remains UNKNOWN. She comes from the year 2299, which is an origin era rather than a birth year; true age remains unknown. She is UR+ and in the same overall power tier as Kai. Current organization: SRU in the anti-anomalous police force; she is deputy leader of Kai Akechi / Twilight's team. Outside combat she is natural, social, teasing, food-loving and capable of ordinary conversation; in danger she becomes focused and precise. She is intensely yandere toward Kai but remains lucid, intelligent and socially capable. She wants Kai to choose her voluntarily; jealousy does not authorize random murder, mission sabotage, mind control, memory erasure or imprisonment.",
+      "aliases": [
+        "syvial"
+      ],
+      "runtime": "Syvial remains an independent high-tier supernatural swordswoman governed by her own current source. Her Lucifer Core, Devil Trigger, GodKiller and Lucifer Armor remain her own established abilities/equipment. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; any meeting must begin as first contact unless live campaign state later establishes otherwise.",
       "abilities": "Lucifer Core supplies infinite demon power, enhances physical ability/reflex/perception/regeneration, powers Lucifer Armor and synchronizes GodKiller; it is not a second intelligence. Devil Trigger does not remove control and has no invented intrinsic duration/cooldown absent from canon. GodKiller Override / Twenty-Four Severance performs exactly 24 cuts while external time is completely stopped.",
       "equipment": "GodKiller is a massive purely mechanical greatsword, not a gun or gunblade. It is linked to Syvial and may be recalled unless a sufficiently strong mechanism directly blocks that link. Lucifer Armor is a mobile full-body high-tech/mecha armor in black/gunmetal/silver with magenta light accents. Its pointed headgear modules are mechanical sensors, not biological horns. The armor is very durable and rapidly self-repairing but is not canonically absolutely indestructible."
     },
@@ -40,10 +49,16 @@
       "source": "02_CHARACTERS/Lucia_Codex.docx",
       "driveId": "1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ",
       "revision": "R03",
-      "aliases": ["lucia", "lucia lục", "hứa thuý mai", "thúy mai", "thuý mai"],
-      "runtime": "Legal/real name: Hứa Thuý Mai. Lucia Lục is a military nickname/callsign, not her legal name. She is a 19-year-old human Vietnamese woman of Hoa Kiều background and a great-great-granddaughter of the Hứa family. She has one year of military service/training through a Vietnam plus United States program and achieved an excellent entrance result. She is a capable young human tactical riflewoman, not a supernatural UR+ combatant. Lucia can only be encountered through CharacterEncounterCore's Level 0 Explorer roll and must not be auto-created by the model. She was not part of the initial SRU group that entered the Async investigation; the initial separated group is Kai, Iris and Syvial. Her initial Level 0 objective is to find a route toward Level 1.",
+      "aliases": [
+        "lucia",
+        "lucia lục",
+        "hứa thuý mai",
+        "thúy mai",
+        "thuý mai"
+      ],
+      "runtime": "Legal/real name: Hứa Thuý Mai. Lucia Lục is a military nickname/callsign, not her legal name. She is a 19-year-old human Vietnamese woman of Hoa Kiều background and a great-great-granddaughter of the Hứa family. She has one year of military service/training through a Vietnam plus United States program and achieved an excellent entrance result. She is a capable young human tactical riflewoman, not a supernatural UR+ combatant. Lucia can only be encountered through CharacterEncounterCore's Level 0 Explorer roll and must not be auto-created by the model. Her initial Level 0 objective is to find a route toward Level 1.",
       "gameplay": "Locked gameplay baseline: HP 100, STR 7, DF 7, AGI 8, CRIT 7; regenerate +2 HP after every 3 separately completed turns, persisted across save/load. Current main weapon is a personalized M4A1 with physical ammunition: 60 rounds in main magazines plus 90 reserve, total 150 at baseline. She also carries a combat dagger and military navigation watch. A black handgun is visible in the thigh holster reference, but exact model/ammunition/gameplay behavior remain OPEN. Current inventory capacity baseline: 8 item types, maximum 100 units per type; equipment is managed separately.",
-      "visual": "R03 visual lock: young adult face, long black hair in a high ponytail, warm brown eyes, modern camouflage/tactical kit, no helmet, personalized M4A1 with adjustable stock/rail/optic/foregrip/suppressor/light/laser as visual components. Exact height/body measurements remain OPEN. Relationship and address with Kai remain OPEN."
+      "visual": "R03 visual lock: young adult face, long black hair in a high ponytail, warm brown eyes, modern camouflage/tactical kit, no helmet, personalized M4A1 with adjustable stock/rail/optic/foregrip/suppressor/light/laser as visual components. Exact height/body measurements remain OPEN. Relationship and address with Cao Minh remain OPEN."
     }
   }
 }
