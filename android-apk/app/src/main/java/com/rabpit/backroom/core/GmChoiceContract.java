@@ -24,8 +24,8 @@ public final class GmChoiceContract {
       Pattern.compile("(?iu)[+-]\\d+(?:\\.\\d+)?%?\\s*(?:HP|DEF)\\b");
 
   private static final String[][] FIXED_TERMS = {
-      {"Kai Akechi", "character"},
-      {"Kai", "character"},
+      {"Cao Minh", "character"},
+      {"Vạn Giới Ma Tôn", "character"},
       {"Iris", "character"},
       {"Syvial", "character"},
       {"Lucia Lục", "character"},
