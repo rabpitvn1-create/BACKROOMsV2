@@ -66,6 +66,7 @@ jobs:
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
+          set -x
           grep -Fq 'versionCode 81' android-apk/app/build.gradle
           grep -Fq "versionName '1.1.81'" android-apk/app/build.gradle
           test -s android-apk/RELEASE_NOTES_1.1.81.txt
