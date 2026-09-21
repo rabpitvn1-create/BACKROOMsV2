@@ -66,6 +66,25 @@ public final class CombatChoiceEngine {
   }
 }
 
+  private static final class CharacterProc {
+    final String name;
+    final int procPercent;
+    final int bonusDamagePercent;
+    final String effect;
+    final int effectTurns;
+    final int effectValue;
+
+    CharacterProc(String name, int procPercent, int bonusDamagePercent, String effect,
+                  int effectTurns, int effectValue) {
+      this.name = name;
+      this.procPercent = procPercent;
+      this.bonusDamagePercent = bonusDamagePercent;
+      this.effect = effect;
+      this.effectTurns = effectTurns;
+      this.effectValue = effectValue;
+    }
+  }
+
   private static final class Ultimate {
     final String name;
     final int hitCount;
@@ -86,6 +105,7 @@ public final class CombatChoiceEngine {
   private static final Map<String, EntityProfile> ENTITIES = new LinkedHashMap<>();
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
   private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
+  private static final Map<String, List<CharacterProc>> CHARACTER_PROCS = new LinkedHashMap<>();
   private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();
 
   static {
@@ -146,6 +166,17 @@ public final class CombatChoiceEngine {
     skills("lucia",
         skill("M4A1 Joint Attack", "", 150, "", 0, 0));
 
+    // Independent proc skills may trigger after a basic attack or normal Skill, never an Ultimate.
+    // Kai is Legacy and deliberately has no entry in this authoritative pool.
+    characterProcs("cao_minh",
+        characterProc("Huyết Sát Kiếm Ấn", 50, 25, "Chảy máu", 2, 3),
+        characterProc("Phá Giáp Ma Kiếm", 48, 20, "Xuyên giáp", 2, 10),
+        characterProc("Ma Tâm Chấn", 45, 15, "Choáng", 1, 0));
+    characterProcs("lucia",
+        characterProc("Toxic Burst", 52, 25, "Trúng độc", 2, 3),
+        characterProc("Armor-Piercing Burst", 55, 20, "Xuyên giáp", 2, 10),
+        characterProc("Concussive Burst", 46, 15, "Choáng", 1, 0));
+
     // Ultimate damage derives from each character's current basic DMG instead of a fixed HP value.
     // SSF uses the listed total; FSF keeps the Poker Dice 200% Ultimate multiplier.
     ULTIMATES.put("cao_minh",
@@ -190,6 +221,34 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   x^=x>>>16; x^=x<<11; return (int)Math.floorMod(x,100L);
 }
 
+  private static CharacterProc characterProc(String name, int procPercent, int bonusDamagePercent,
+                                             String effect, int turns, int value) {
+    return new CharacterProc(name, procPercent, bonusDamagePercent, effect, turns, value);
+  }
+
+  private static void characterProcs(String id, CharacterProc... definitions) {
+    List<CharacterProc> list = new ArrayList<>();
+    for (CharacterProc definition : definitions) list.add(definition);
+    CHARACTER_PROCS.put(id, list);
+  }
+
+  static int characterProcCount(String id) {
+    List<CharacterProc> pool = CHARACTER_PROCS.get(CharacterProgressionCore.normalizeCharacterId(id));
+    return pool == null ? 0 : pool.size();
+  }
+
+  static int characterProcPercent(String id, int index) {
+    List<CharacterProc> pool = CHARACTER_PROCS.get(CharacterProgressionCore.normalizeCharacterId(id));
+    if (pool == null || index < 0 || index >= pool.size()) return -1;
+    return pool.get(index).procPercent;
+  }
+
+  static int characterProcRoll(int seed, int sequence, String actorId, String procName) {
+    long mixed = (seed & 0xffffffffL) * 31L + (long)(sequence + 1) * 131L
+        + (long)(actorId + ":" + procName).hashCode() * 17L;
+    return (int)Math.floorMod(mixed, 100L);
+  }
+
   static Map<String, String> semanticCatalog() {
     Map<String, String> output = new LinkedHashMap<>();
     for (EntityProfile profile : ENTITIES.values()) output.put(profile.name, "entity");
@@ -197,6 +256,12 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       for (Skill skill : pool) {
         output.put(skill.name, "skill");
         if (!skill.effect.trim().isEmpty()) output.put(skill.effect, "effect");
+      }
+    }
+    for (List<CharacterProc> pool : CHARACTER_PROCS.values()) {
+      for (CharacterProc proc : pool) {
+        output.put(proc.name, "skill");
+        if (!proc.effect.trim().isEmpty()) output.put(proc.effect, "effect");
       }
     }
     for (Ultimate ultimate : ULTIMATES.values()) output.put(ultimate.name, "skill");
@@ -331,6 +396,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             .put("stagePercent", scaled.getInt("stagePercent"))
             .put("bleedTurns", 0)
             .put("bleedPercent", 0)
+            .put("poisonTurns", 0)
+            .put("poisonPercent", 0)
+            .put("armorBreakTurns", 0)
+            .put("armorBreakPercent", 0)
             .put("stunTurns", 0));
 
     state.put("combat", combat);
@@ -451,6 +520,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int handPercent = "ONE PAIR".equals(hand) ? 125 : 100;
       int damage = basicDamage(baseAttack, str, handPercent);
       applyEntityDamage(combat, entity, damage);
+      applyCharacterProcs(combat, actor, entity, baseAttack);
       if ("TWO PAIR".equals(hand)) {
         result.evadeResponse = true;
         result.summary = "[TWO PAIR] " + actorName + " né và phản công.";
@@ -487,6 +557,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     int damage = skillDamage(baseAttack, selected.optInt("damagePercent", 100), skl, handPercent);
     applyEntityDamage(combat, entity, damage);
     applySkillEffect(entity, selected);
+    applyCharacterProcs(combat, actor, entity, baseAttack);
     result.summary = "[" + handToken(hand) + "] " + actorName + " dùng "
         + selected.optString("name", "Skill")
         + (handPercent == 100 ? "." : " · " + handPercent + "% DMG.");
@@ -507,23 +578,75 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
   private static void applyEntityDamage(JSONObject combat, JSONObject entity, int damage)
       throws Exception {
-    int hp = Math.max(0, entity.optInt("hp", 0) - Math.max(1, damage));
+    int raw = Math.max(1, damage);
+    int armorBreak = entity.optInt("armorBreakTurns", 0) > 0
+        ? Math.max(0, entity.optInt("armorBreakPercent", 0)) : 0;
+    int resolved = Math.max(1, (int)(((long)raw * (100L + armorBreak) + 50L) / 100L));
+    int hp = Math.max(0, entity.optInt("hp", 0) - resolved);
     entity.put("hp", hp);
-    addFeedback(combat, "actor", "entity", "damage", "-" + Math.max(1, damage) + " HP", true);
+    addFeedback(combat, "actor", "entity", "damage", "-" + resolved + " HP", true);
   }
 
   private static void applySkillEffect(JSONObject entity, JSONObject selected) throws Exception {
-    String effect = selected.optString("effect", "");
-    int turns = Math.max(0, selected.optInt("effectTurns", 0));
-    int value = Math.max(0, selected.optInt("effectValue", 0));
-    if ("Choáng".equals(effect) && turns > 0) {
-      entity.put("stunTurns", Math.max(entity.optInt("stunTurns", 0), turns));
-    } else if ("Chảy máu".equals(effect) && turns > 0 && value > 0) {
-      entity.put("bleedTurns", Math.max(entity.optInt("bleedTurns", 0), turns));
-      entity.put("bleedPercent", Math.max(entity.optInt("bleedPercent", 0), value));
+    applyStackingEffect(entity,
+        selected.optString("effect", ""),
+        Math.max(0, selected.optInt("effectTurns", 0)),
+        Math.max(0, selected.optInt("effectValue", 0)));
+  }
+
+  private static void applyCharacterProcs(JSONObject combat, JSONObject actor, JSONObject entity,
+                                          int baseAttack) throws Exception {
+    if (entity.optInt("hp", 0) <= 0) return;
+    String actorId = CharacterProgressionCore.normalizeCharacterId(actor.optString("id", ""));
+    List<CharacterProc> pool = CHARACTER_PROCS.get(actorId);
+    if (pool == null || pool.isEmpty()) return;
+
+    for (CharacterProc proc : pool) {
+      int sequence = combat.optInt("rngSequence", 0);
+      int roll = characterProcRoll(combat.optInt("seed", 1), sequence, actorId, proc.name);
+      combat.put("rngSequence", sequence + 1);
+      if (roll >= proc.procPercent) continue;
+
+      int bonus = Math.max(1,
+          (int)(((long)Math.max(1, baseAttack) * proc.bonusDamagePercent + 50L) / 100L));
+      applyEntityDamage(combat, entity, bonus);
+      applyStackingEffect(entity, proc.effect, proc.effectTurns, proc.effectValue);
+      addFeedback(combat, "actor", "entity", "proc", proc.name + " · PROC", true);
+      if (entity.optInt("hp", 0) <= 0) return;
     }
-    // Armor/evasion/accuracy effects are intentionally not projected into hidden stats. Poker
-    // Dice owns evade and Entity has no DEF/AGI system in this ruleset.
+  }
+
+  static void applyStackingEffect(JSONObject entity, String effect, int turns, int value)
+      throws Exception {
+    if ("Choáng".equals(effect) && turns > 0) {
+      // Stun is the only effect whose duration stacks. Cap prevents permanent stun-lock.
+      entity.put("stunTurns", Math.min(3,
+          Math.max(0, entity.optInt("stunTurns", 0)) + turns));
+      return;
+    }
+
+    if ("Chảy máu".equals(effect) && turns > 0 && value > 0) {
+      int currentTurns = Math.max(0, entity.optInt("bleedTurns", 0));
+      entity.put("bleedTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("bleedPercent", Math.min(25,
+          Math.max(0, entity.optInt("bleedPercent", 0)) + value));
+      return;
+    }
+
+    if ("Trúng độc".equals(effect) && turns > 0 && value > 0) {
+      int currentTurns = Math.max(0, entity.optInt("poisonTurns", 0));
+      entity.put("poisonTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("poisonPercent", Math.min(25,
+          Math.max(0, entity.optInt("poisonPercent", 0)) + value));
+      return;
+    }
+
+    if ("Xuyên giáp".equals(effect) && turns > 0 && value > 0) {
+      int currentTurns = Math.max(0, entity.optInt("armorBreakTurns", 0));
+      entity.put("armorBreakTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("armorBreakPercent", Math.min(75,
+          Math.max(0, entity.optInt("armorBreakPercent", 0)) + value));
+    }
   }
 
   private static void resolveEntityResponse(JSONObject combat, JSONObject actor, JSONObject entity,
@@ -565,13 +688,30 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static void tickRoundStartEffects(JSONObject combat, JSONObject entity) throws Exception {
-    int turns = Math.max(0, entity.optInt("bleedTurns", 0));
-    int percent = Math.max(0, entity.optInt("bleedPercent", 0));
-    if (turns <= 0 || percent <= 0 || entity.optInt("hp", 0) <= 0) return;
-    int damage = Math.max(1, entity.optInt("maxHp", 1) * percent / 100);
-    entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
-    entity.put("bleedTurns", turns - 1);
-    addFeedback(combat, "actor", "entity", "damage", "-" + damage + " HP", true);
+    if (entity.optInt("hp", 0) <= 0) return;
+
+    int bleedTurns = Math.max(0, entity.optInt("bleedTurns", 0));
+    int bleedPercent = Math.max(0, entity.optInt("bleedPercent", 0));
+    if (bleedTurns > 0 && bleedPercent > 0) {
+      int damage = Math.max(1, entity.optInt("maxHp", 1) * bleedPercent / 100);
+      entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
+      entity.put("bleedTurns", bleedTurns - 1);
+      addFeedback(combat, "actor", "entity", "damage", "BLEED · -" + damage + " HP", true);
+    }
+
+    if (entity.optInt("hp", 0) > 0) {
+      int poisonTurns = Math.max(0, entity.optInt("poisonTurns", 0));
+      int poisonPercent = Math.max(0, entity.optInt("poisonPercent", 0));
+      if (poisonTurns > 0 && poisonPercent > 0) {
+        int damage = Math.max(1, entity.optInt("maxHp", 1) * poisonPercent / 100);
+        entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
+        entity.put("poisonTurns", poisonTurns - 1);
+        addFeedback(combat, "actor", "entity", "damage", "POISON · -" + damage + " HP", true);
+      }
+    }
+
+    int armorTurns = Math.max(0, entity.optInt("armorBreakTurns", 0));
+    if (armorTurns > 0) entity.put("armorBreakTurns", armorTurns - 1);
   }
 
   private static JSONArray buildParticipants(JSONObject state, CharacterProgressionCore progression)
