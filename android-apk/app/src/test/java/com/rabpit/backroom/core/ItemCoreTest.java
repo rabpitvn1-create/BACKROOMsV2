@@ -107,7 +107,7 @@ public class ItemCoreTest {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray());
-    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
     progression.setCurrentHp(state, "cao_minh", 10);
     ItemCore.grantChestLootItem(state, 2);
@@ -159,7 +159,7 @@ public class ItemCoreTest {
             .put("id", ItemCore.ALMOND_WATER_ID).put("name", "Almond Water").put("quantity", 1)))
         .put("party", new JSONArray().put(lucia));
 
-    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
     progression.setCurrentHp(state, "lucia", 10);
 
@@ -179,7 +179,7 @@ public class ItemCoreTest {
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
             .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
-    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
     progression.setCurrentHp(state, "lucia", 0);
     ItemCore.grantChestLootItem(state, 2);
