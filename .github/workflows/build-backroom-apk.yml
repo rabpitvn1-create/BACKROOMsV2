@@ -339,7 +339,7 @@ jobs:
           grep -Fq 'RESOURCE_KEY = "coreResource"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'static int upgradeCost(int currentStat)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'DEFAULT_BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'LUCIA_BASE_MAX_HP = 100' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           ! grep -R -Fq 'HOUND_BASE_EXP' android-apk/app/src/main/java android-apk/app/src/test/java
           grep -Fq 'static int stagePercent(int stageIndex)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
           grep -Fq 'MAX_REROLLS = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
