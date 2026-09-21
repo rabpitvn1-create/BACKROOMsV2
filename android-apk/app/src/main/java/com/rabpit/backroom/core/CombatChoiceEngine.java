@@ -156,6 +156,9 @@ public final class CombatChoiceEngine {
       }
     }
     for (Ultimate ultimate : ULTIMATES.values()) output.put(ultimate.name, "skill");
+    // Canonical non-offensive skill retained for GM semantic recognition only. It is deliberately
+    // excluded from Poker Dice Skill selection so it cannot alter evade/dice outcomes.
+    output.put("Thiên Ma Bộ", "skill");
     return output;
   }
 
