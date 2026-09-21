@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 9;
+  private static final int CURRENT_SAVE_VERSION = 10;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -61,7 +61,10 @@ public final class GameCoreFacade implements AutoCloseable {
         incrementTurn(result);
         advanceGameTime(result, text);
         characterProgressionCore.applyExplorerTurnRecovery(result);
-        String reply = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory.";
+        JSONObject flags = result.optJSONObject("flags");
+        int coreReward = flags == null ? 0 : Math.max(0, flags.optInt("lastChestCoreReward", 0));
+        String reply = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory."
+            + (coreReward > 0 ? " Nhận +" + coreReward + " Core." : "");
         appendLog(result, "Mở Rương", reply);
         persist(result);
         return response(true, result, null, "chest_opened", reply);
@@ -128,7 +131,17 @@ public final class GameCoreFacade implements AutoCloseable {
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
+      int beforeStageIndex = LevelCore.stageIndex(before);
       levelCore.validateAndApplyTransition(before, sanitized);
+      int afterStageIndex = LevelCore.stageIndex(sanitized);
+      if (afterStageIndex != beforeStageIndex) {
+        int stageCoreReward = characterProgressionCore.rewardStageCompletion(sanitized, afterStageIndex);
+        JSONObject flags = sanitized.optJSONObject("flags");
+        if (flags == null) flags = new JSONObject();
+        flags.put("lastStageCoreReward", stageCoreReward);
+        flags.put("lastStageRewardIndex", afterStageIndex);
+        sanitized.put("flags", flags);
+      }
       entityCore.validateAndApply(before, sanitized);
       itemCore.validateAndApply(before, sanitized);
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
@@ -207,6 +220,25 @@ public final class GameCoreFacade implements AutoCloseable {
       return response(true, state, null, "item_action_committed", reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "item_action_rejected", null);
+    }
+  }
+
+  public synchronized String processCoreUpgrade(String stateJson, String characterId, String stat) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      characterEncounterCore.normalizeState(state);
+      JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      characterDetailCore.projectState(state);
+      persist(state);
+      String reply = result.getString("stat") + " của " + result.getString("characterId")
+          + " tăng lên " + result.getInt("value") + ". -" + result.getInt("cost")
+          + " Core.";
+      return response(true, state, null, "core_upgrade_committed", reply);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "core_upgrade_rejected", null);
     }
   }
 
