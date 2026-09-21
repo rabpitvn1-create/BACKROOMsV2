@@ -1,0 +1,7 @@
+Backroom 1.1.82
+
+- Thêm hệ proc-skill authoritative cho Cao Minh và Lucia trong CombatChoiceEngine; Kai vẫn là Legacy và không được khôi phục vào runtime proc.
+- Cao Minh và Lucia tiếp tục giữ toàn bộ proc cũ và có thêm proc mới theo cơ chế cộng dồn hiện hành.
+- Proc có thể kích hoạt từ đòn đánh thường và skill thường, nhưng không kích hoạt từ Ultimate.
+- Chảy máu và trúng độc cộng dồn sát thương thay vì duration; xuyên giáp cộng dồn tỷ lệ hiệu quả thay vì duration; choáng là hiệu ứng duy nhất được cộng thêm lượt trong giới hạn chống stun-lock.
+- Bổ sung và sửa regression tests cho proc, stack status-effect, xuyên giáp và loại trừ Ultimate.
