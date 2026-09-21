@@ -13,6 +13,8 @@ final class ItemCore {
   static final int CHEST_SPAWN_RATE_PERCENT = 3;
   static final int ENTITY_DROP_MIN_PERCENT = 10;
   static final int ENTITY_DROP_MAX_PERCENT = 20;
+  static final int CORE_ENTITY_DROP_PERCENT = 10;
+  static final int CORE_CHEST_DROP_PERCENT = 50;
   static final String OPEN_CHEST_ACTION = "__loot:open_chest";
 
   static final String ALMOND_WATER_ID = "almond-water";
@@ -43,8 +45,22 @@ final class ItemCore {
   private static final String CHEST_PRESENT = "chestPresent";
   private static final String CHEST_SOURCE = "core_exploration_roll";
 
+  interface IntRng {
+    int nextInt(int bound);
+  }
+
   private final CharacterProgressionCore progressionCore = new CharacterProgressionCore();
   private final SurvivalCore survivalCore = new SurvivalCore();
+  private final IntRng rng;
+
+  ItemCore() {
+    this(bound -> ThreadLocalRandom.current().nextInt(bound));
+  }
+
+  ItemCore(IntRng rng) {
+    if (rng == null) throw new IllegalArgumentException("rng is required");
+    this.rng = rng;
+  }
 
   void normalizeInventory(JSONObject state) throws Exception {
     if (state == null) return;
@@ -80,7 +96,7 @@ final class ItemCore {
   void prepareExplorationLoot(JSONObject state) throws Exception {
     JSONObject flags = flags(state);
     if (flags.optBoolean(CHEST_PRESENT, false)) return;
-    int roll = ThreadLocalRandom.current().nextInt(100);
+    int roll = nextRoll(100);
     if (!shouldSpawnChest(roll)) return;
     flags.put(CHEST_PRESENT, true);
     flags.put("chestSource", CHEST_SOURCE);
@@ -119,7 +135,15 @@ final class ItemCore {
     if (!flags.optBoolean(CHEST_PRESENT, false)) {
       throw new IllegalStateException("Không có rương để mở.");
     }
-    String itemName = grantChestLootItem(state, ThreadLocalRandom.current().nextInt(100));
+    String itemName = grantChestLootItem(state, nextRoll(100));
+    int coreRoll = nextRoll(100);
+    int coreReward = 0;
+    if (shouldDropCore(coreRoll, CORE_CHEST_DROP_PERCENT)) {
+      coreReward = progressionCore.grantCore(state,
+          CharacterProgressionCore.bundleSize(LevelCore.stageIndex(state)));
+    }
+    flags.put("lastChestCoreRoll", coreRoll);
+    flags.put("lastChestCoreReward", coreReward);
     flags.put(CHEST_PRESENT, false);
     flags.put("lastChestOpenedTurn", Math.max(1, state.optInt("turn", 1)));
     flags.remove("chestSource");
@@ -238,6 +262,11 @@ final class ItemCore {
 
   static boolean shouldDropEntityLoot(int roll, int ratePercent) {
     int rate = Math.max(ENTITY_DROP_MIN_PERCENT, Math.min(ENTITY_DROP_MAX_PERCENT, ratePercent));
+    return roll >= 0 && roll < rate;
+  }
+
+  static boolean shouldDropCore(int roll, int ratePercent) {
+    int rate = Math.max(0, Math.min(100, ratePercent));
     return roll >= 0 && roll < rate;
   }
 
@@ -462,6 +491,12 @@ final class ItemCore {
     if (flags == null) flags = new JSONObject();
     state.put("flags", flags);
     return flags;
+  }
+
+  private int nextRoll(int bound) {
+    int value = rng.nextInt(bound);
+    if (value < 0 || value >= bound) throw new IllegalStateException("RNG returned an out-of-range value");
+    return value;
   }
 
   private void copy(JSONObject source, JSONObject target, String key) throws Exception {
