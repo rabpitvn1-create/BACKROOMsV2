@@ -292,6 +292,116 @@ public class CombatChoiceEngineTest {
   assertEquals(r,CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1));
 }
 
+  @Test public void caoMinhAndLuciaEachHaveThreeCharacterProcsAndKaiHasNone() {
+    assertEquals(3, CombatChoiceEngine.characterProcCount("cao_minh"));
+    assertEquals(3, CombatChoiceEngine.characterProcCount("lucia"));
+    assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
+
+    for (String id : new String[]{"cao_minh", "lucia"}) {
+      for (int i = 0; i < 3; i++) {
+        int chance = CombatChoiceEngine.characterProcPercent(id, i);
+        assertTrue(chance >= 45 && chance <= 55);
+      }
+    }
+  }
+
+  @Test public void stackingRulesIncreasePotencyButOnlyStunIncreasesDuration() throws Exception {
+    JSONObject entity = new JSONObject()
+        .put("bleedTurns", 2).put("bleedPercent", 3)
+        .put("poisonTurns", 2).put("poisonPercent", 3)
+        .put("armorBreakTurns", 2).put("armorBreakPercent", 10)
+        .put("stunTurns", 1);
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Chảy máu", 3, 4);
+    assertEquals(2, entity.getInt("bleedTurns"));
+    assertEquals(7, entity.getInt("bleedPercent"));
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Trúng độc", 3, 5);
+    assertEquals(2, entity.getInt("poisonTurns"));
+    assertEquals(8, entity.getInt("poisonPercent"));
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Xuyên giáp", 3, 15);
+    assertEquals(2, entity.getInt("armorBreakTurns"));
+    assertEquals(25, entity.getInt("armorBreakPercent"));
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Choáng", 1, 0);
+    assertEquals(2, entity.getInt("stunTurns"));
+  }
+
+  @Test public void basicAttackCanTriggerCharacterProc() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+    JSONObject combat = state.getJSONObject("combat");
+
+    int seed = 1;
+    while (CombatChoiceEngine.characterProcRoll(
+        seed, 0, "cao_minh", "Huyết Sát Kiếm Ấn") >= 50) seed++;
+    combat.put("seed", seed).put("rngSequence", 0);
+
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONObject entity = combat.getJSONObject("entity");
+    assertTrue(entity.getInt("bleedTurns") > 0);
+    assertTrue(entity.getInt("bleedPercent") > 0);
+  }
+
+  @Test public void normalSkillCanTriggerCharacterProc() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+    JSONObject combat = state.getJSONObject("combat");
+
+    int seed = 1;
+    while (CombatChoiceEngine.characterProcRoll(
+        seed, 0, "cao_minh", "Huyết Sát Kiếm Ấn") >= 50) seed++;
+    combat.put("seed", seed).put("rngSequence", 0);
+
+    finalizeAs(state, 3,3,3,1,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONObject entity = combat.getJSONObject("entity");
+    assertTrue(entity.getInt("bleedTurns") > 0);
+    assertTrue(entity.getInt("bleedPercent") > 0);
+  }
+
+  @Test public void ultimateNeverTriggersCharacterProc() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+    JSONObject combat = state.getJSONObject("combat");
+
+    int seed = 1;
+    while (CombatChoiceEngine.characterProcRoll(
+        seed, 0, "cao_minh", "Huyết Sát Kiếm Ấn") >= 50) seed++;
+    combat.put("seed", seed).put("rngSequence", 0);
+
+    finalizeAs(state, 1,2,3,4,5);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONObject entity = combat.getJSONObject("entity");
+    assertEquals(0, entity.getInt("bleedTurns"));
+    assertEquals(0, entity.getInt("poisonTurns"));
+    assertEquals(0, entity.getInt("armorBreakTurns"));
+    assertEquals(0, entity.getInt("stunTurns"));
+  }
+
+  @Test public void armorBreakPercentIncreasesDamageWithoutExtendingDuration() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
+    JSONObject entity = combat.getJSONObject("entity");
+
+    actor.put("id", "iris");
+    entity.put("armorBreakTurns", 2).put("armorBreakPercent", 20);
+    int before = entity.getInt("hp");
+
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(before - 36, entity.getInt("hp"));
+    assertEquals(2, entity.getInt("armorBreakTurns"));
+  }
+
   private static void finalizeAs(JSONObject state, int... values) throws Exception {
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     JSONArray array = new JSONArray();
