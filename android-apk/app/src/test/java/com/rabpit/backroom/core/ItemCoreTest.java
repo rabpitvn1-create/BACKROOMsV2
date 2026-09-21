@@ -32,6 +32,32 @@ public class ItemCoreTest {
     }
   }
 
+  @Test public void entityCoreDropBoundaryIsExactlyTenPercent() {
+    assertTrue(ItemCore.shouldDropCore(0, ItemCore.CORE_ENTITY_DROP_PERCENT));
+    assertTrue(ItemCore.shouldDropCore(9, ItemCore.CORE_ENTITY_DROP_PERCENT));
+    assertFalse(ItemCore.shouldDropCore(10, ItemCore.CORE_ENTITY_DROP_PERCENT));
+  }
+
+  @Test public void chestCoreDropBoundaryIsExactlyFiftyPercent() {
+    assertTrue(ItemCore.shouldDropCore(49, ItemCore.CORE_CHEST_DROP_PERCENT));
+    assertFalse(ItemCore.shouldDropCore(50, ItemCore.CORE_CHEST_DROP_PERCENT));
+  }
+
+  @Test public void chestCoreRollIsIndependentAndUsesStageBundle() throws Exception {
+    JSONObject state = new JSONObject()
+        .put("turn", 1)
+        .put("currentLevel", 3)
+        .put(LevelCore.LEVEL_KEY, "3")
+        .put("player", new JSONObject().put("name", "Cao Minh"))
+        .put("party", new JSONArray())
+        .put("flags", new JSONObject().put("chestPresent", true));
+    ItemCore core = new ItemCore(new SequenceRng(0, 49));
+    core.openChest(state);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    assertEquals(2, progression.coreCount(state));
+    assertEquals(2, state.getJSONObject("flags").getInt("lastChestCoreReward"));
+  }
+
   @Test public void allEightConsumableEffectsMatchContract() {
     assertEquals(50, ItemCore.itemEffectValue(ItemCore.ALMOND_WATER_ID, "hunger"));
     assertEquals(100, ItemCore.itemEffectValue(ItemCore.ALMOND_WATER_ID, "thirst"));
@@ -168,4 +194,15 @@ public class ItemCoreTest {
     assertEquals(0, progression.profile(state, "lucia").getInt("currentHp"));
     assertEquals(1, state.getJSONArray("inventory").length());
   }
+  private static final class SequenceRng implements ItemCore.IntRng {
+    private final int[] values;
+    private int index;
+    SequenceRng(int... values) { this.values = values; }
+    @Override public int nextInt(int bound) {
+      int value = values[Math.min(index++, values.length - 1)];
+      if (value < 0 || value >= bound) throw new IllegalStateException("bad test rng");
+      return value;
+    }
+  }
+
 }
