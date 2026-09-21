@@ -10,19 +10,25 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CombatChoiceEngineTest {
-  @Test public void rollProducesFiveD6Values() throws Exception {
+  @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    CombatChoiceEngine.roll(state);
-    JSONArray values = state.getJSONObject("combat").getJSONObject("diceState").getJSONArray("values");
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    JSONArray values = dice.getJSONArray("values");
+    assertTrue(dice.getBoolean("hasRolled"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
     assertEquals(5, values.length());
-    for (int i = 0; i < 5; i++) assertTrue(values.getInt(i) >= 1 && values.getInt(i) <= 6);
+    int[] rolled = new int[5];
+    for (int i = 0; i < 5; i++) {
+      rolled[i] = values.getInt(i);
+      assertTrue(rolled[i] >= 1 && rolled[i] <= 6);
+    }
+    assertEquals(CombatChoiceEngine.classify(rolled), dice.getString("hand"));
   }
 
   @Test public void holdPersistsAndRerollTouchesOnlyUnheldDice() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    CombatChoiceEngine.roll(state);
     JSONObject combat = state.getJSONObject("combat");
     JSONObject dice = combat.getJSONObject("diceState");
     JSONArray before = new JSONArray(dice.getJSONArray("values").toString());
@@ -45,40 +51,56 @@ public class CombatChoiceEngineTest {
     assertEquals(1, dice.getInt("rerollsUsed"));
   }
 
-  @Test public void exactlyThreeRerollsAfterInitialThenForcedFinalize() throws Exception {
+  @Test public void exactlyThreeRerollsThenRollStopsUntilFinish() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    CombatChoiceEngine.roll(state);
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     assertFalse(dice.getBoolean("finalized"));
 
     CombatChoiceEngine.roll(state);
     CombatChoiceEngine.roll(state);
-    assertFalse(dice.getBoolean("finalized"));
     CombatChoiceEngine.roll(state);
 
     assertEquals(3, dice.getInt("rerollsUsed"));
-    assertTrue(dice.getBoolean("finalized"));
+    assertFalse(dice.getBoolean("finalized"));
     String frozen = dice.toString();
     CombatChoiceEngine.roll(state);
     assertEquals(frozen, dice.toString());
+
+    CombatChoiceEngine.finishHand(state);
+    assertTrue(dice.getBoolean("finalized"));
   }
 
-  @Test public void holdingAllFiveAndPressingRollFinalizesWithoutSpendingReroll() throws Exception {
+  @Test public void holdingAllFiveStopsRerollUntilFinishWithoutSpendingReroll() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    CombatChoiceEngine.roll(state);
     for (int i = 0; i < 5; i++) CombatChoiceEngine.setHold(state, i, true);
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     CombatChoiceEngine.roll(state);
+    assertFalse(dice.getBoolean("finalized"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+
+    CombatChoiceEngine.finishHand(state);
     assertTrue(dice.getBoolean("finalized"));
     assertEquals(0, dice.getInt("rerollsUsed"));
+  }
+
+  @Test public void finishCanFinalizeCurrentHandBeforeAnyReroll() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    dice.put("values", new JSONArray().put(2).put(2).put(1).put(4).put(6));
+
+    CombatChoiceEngine.finishHand(state);
+
+    assertTrue(dice.getBoolean("finalized"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+    assertEquals("ONE PAIR", dice.getString("hand"));
   }
 
   @Test public void serializedReloadCannotProduceFreeDifferentReroll() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    CombatChoiceEngine.roll(state);
     CombatChoiceEngine.setHold(state, 1, true);
     JSONObject reloaded = new JSONObject(state.toString());
 
@@ -168,7 +190,7 @@ public class CombatChoiceEngineTest {
     JSONArray gmLog = state.getJSONArray("log");
     assertFalse(gmLog.getJSONObject(0).has("battleLog"));
 
-    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.finishHand(state);
     CombatChoiceEngine.resolveFinalized(state);
 
     JSONArray battleLog = gmLog.getJSONObject(0).getJSONArray("battleLog");
