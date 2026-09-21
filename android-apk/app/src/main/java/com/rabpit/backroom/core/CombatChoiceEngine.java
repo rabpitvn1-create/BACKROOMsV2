@@ -627,25 +627,25 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
     if ("Chảy máu".equals(effect) && turns > 0 && value > 0) {
       int currentTurns = Math.max(0, entity.optInt("bleedTurns", 0));
+      int currentPercent = currentTurns > 0 ? Math.max(0, entity.optInt("bleedPercent", 0)) : 0;
       entity.put("bleedTurns", currentTurns > 0 ? currentTurns : turns);
-      entity.put("bleedPercent", Math.min(25,
-          Math.max(0, entity.optInt("bleedPercent", 0)) + value));
+      entity.put("bleedPercent", Math.min(25, currentPercent + value));
       return;
     }
 
     if ("Trúng độc".equals(effect) && turns > 0 && value > 0) {
       int currentTurns = Math.max(0, entity.optInt("poisonTurns", 0));
+      int currentPercent = currentTurns > 0 ? Math.max(0, entity.optInt("poisonPercent", 0)) : 0;
       entity.put("poisonTurns", currentTurns > 0 ? currentTurns : turns);
-      entity.put("poisonPercent", Math.min(25,
-          Math.max(0, entity.optInt("poisonPercent", 0)) + value));
+      entity.put("poisonPercent", Math.min(25, currentPercent + value));
       return;
     }
 
     if ("Xuyên giáp".equals(effect) && turns > 0 && value > 0) {
       int currentTurns = Math.max(0, entity.optInt("armorBreakTurns", 0));
+      int currentPercent = currentTurns > 0 ? Math.max(0, entity.optInt("armorBreakPercent", 0)) : 0;
       entity.put("armorBreakTurns", currentTurns > 0 ? currentTurns : turns);
-      entity.put("armorBreakPercent", Math.min(75,
-          Math.max(0, entity.optInt("armorBreakPercent", 0)) + value));
+      entity.put("armorBreakPercent", Math.min(75, currentPercent + value));
     }
   }
 
@@ -695,7 +695,9 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     if (bleedTurns > 0 && bleedPercent > 0) {
       int damage = Math.max(1, entity.optInt("maxHp", 1) * bleedPercent / 100);
       entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
-      entity.put("bleedTurns", bleedTurns - 1);
+      int remaining = bleedTurns - 1;
+      entity.put("bleedTurns", remaining);
+      if (remaining == 0) entity.put("bleedPercent", 0);
       addFeedback(combat, "actor", "entity", "damage", "BLEED · -" + damage + " HP", true);
     }
 
@@ -705,13 +707,19 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       if (poisonTurns > 0 && poisonPercent > 0) {
         int damage = Math.max(1, entity.optInt("maxHp", 1) * poisonPercent / 100);
         entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
-        entity.put("poisonTurns", poisonTurns - 1);
+        int remaining = poisonTurns - 1;
+        entity.put("poisonTurns", remaining);
+        if (remaining == 0) entity.put("poisonPercent", 0);
         addFeedback(combat, "actor", "entity", "damage", "POISON · -" + damage + " HP", true);
       }
     }
 
     int armorTurns = Math.max(0, entity.optInt("armorBreakTurns", 0));
-    if (armorTurns > 0) entity.put("armorBreakTurns", armorTurns - 1);
+    if (armorTurns > 0) {
+      int remaining = armorTurns - 1;
+      entity.put("armorBreakTurns", remaining);
+      if (remaining == 0) entity.put("armorBreakPercent", 0);
+    }
   }
 
   private static JSONArray buildParticipants(JSONObject state, CharacterProgressionCore progression)
