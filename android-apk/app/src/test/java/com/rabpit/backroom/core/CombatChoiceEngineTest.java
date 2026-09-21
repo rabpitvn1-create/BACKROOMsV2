@@ -49,6 +49,30 @@ public class CombatChoiceEngineTest {
     }
     assertEquals(sequenceBefore + 3, combat.getInt("rngSequence"));
     assertEquals(1, dice.getInt("rerollsUsed"));
+    assertEquals(CombatChoiceEngine.classify(
+        after.getInt(0), after.getInt(1), after.getInt(2), after.getInt(3), after.getInt(4)),
+        dice.getString("hand"));
+  }
+
+  @Test public void normalizeActiveLegacyTurnBackfillsInitialRoll() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject dice = combat.getJSONObject("diceState");
+    dice.put("values", new JSONArray().put(0).put(0).put(0).put(0).put(0))
+        .put("hasRolled", false)
+        .put("rerollsUsed", 0)
+        .put("hand", "");
+    combat.put("rngSequence", 0);
+
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+
+    JSONArray values = dice.getJSONArray("values");
+    assertTrue(dice.getBoolean("hasRolled"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+    assertEquals(CombatChoiceEngine.classify(
+        values.getInt(0), values.getInt(1), values.getInt(2), values.getInt(3), values.getInt(4)),
+        dice.getString("hand"));
   }
 
   @Test public void exactlyThreeRerollsThenRollStopsUntilFinish() throws Exception {
