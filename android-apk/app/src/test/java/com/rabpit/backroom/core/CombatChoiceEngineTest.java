@@ -292,13 +292,13 @@ public class CombatChoiceEngineTest {
   assertEquals(r,CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1));
 }
 
-  @Test public void caoMinhAndLuciaEachHaveThreeCharacterProcsAndKaiHasNone() {
-    assertEquals(3, CombatChoiceEngine.characterProcCount("cao_minh"));
-    assertEquals(3, CombatChoiceEngine.characterProcCount("lucia"));
+  @Test public void caoMinhAndLuciaEachHaveFourCharacterProcsAndKaiHasNone() {
+    assertEquals(4, CombatChoiceEngine.characterProcCount("cao_minh"));
+    assertEquals(4, CombatChoiceEngine.characterProcCount("lucia"));
     assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
 
     for (String id : new String[]{"cao_minh", "lucia"}) {
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 4; i++) {
         int chance = CombatChoiceEngine.characterProcPercent(id, i);
         assertTrue(chance >= 45 && chance <= 55);
       }
@@ -418,7 +418,7 @@ public class CombatChoiceEngineTest {
     finalizeAs(state, 2,2,1,4,6);
     CombatChoiceEngine.resolveFinalized(state);
 
-    assertEquals(before - 36, entity.getInt("hp"));
+    assertEquals(before - 46, entity.getInt("hp"));
     assertEquals(2, entity.getInt("armorBreakTurns"));
   }
 
