@@ -328,6 +328,26 @@ public class CombatChoiceEngineTest {
     assertEquals(2, entity.getInt("stunTurns"));
   }
 
+  @Test public void expiredProcPotencyDoesNotCarryIntoAnewApplication() throws Exception {
+    JSONObject entity = new JSONObject()
+        .put("bleedTurns", 0).put("bleedPercent", 25)
+        .put("poisonTurns", 0).put("poisonPercent", 25)
+        .put("armorBreakTurns", 0).put("armorBreakPercent", 75)
+        .put("stunTurns", 0);
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Chảy máu", 2, 4);
+    assertEquals(2, entity.getInt("bleedTurns"));
+    assertEquals(4, entity.getInt("bleedPercent"));
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Trúng độc", 2, 5);
+    assertEquals(2, entity.getInt("poisonTurns"));
+    assertEquals(5, entity.getInt("poisonPercent"));
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Xuyên giáp", 2, 10);
+    assertEquals(2, entity.getInt("armorBreakTurns"));
+    assertEquals(10, entity.getInt("armorBreakPercent"));
+  }
+
   @Test public void basicAttackCanTriggerCharacterProc() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "diep_minh", 0);
