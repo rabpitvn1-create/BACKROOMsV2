@@ -32,6 +32,7 @@ final class CharacterDetailCore {
     JSONObject details = new JSONObject()
         .put("leaderId", "cao_minh")
         .put("maxMembers", MAX_MEMBERS)
+        .put("coreCount", characterProgressionCore.coreCount(state))
         .put("elapsedSubjectiveMinutes", elapsed);
 
     JSONArray members = new JSONArray();
@@ -83,9 +84,7 @@ final class CharacterDetailCore {
     int hp = progression.getInt("currentHp");
     int maxHp = progression.getInt("maxHp");
     member.put("currentHp", hp).put("hp", hp).put("maxHp", maxHp);
-    member.put("explorer", progression.getInt("explorer"));
-    member.put("exp", progression.getInt("exp"));
-    member.put("requiredExp", progression.getInt("requiredExp"));
+    member.put("baseMaxHp", progression.getInt("baseMaxHp"));
     member.put("stats", new JSONObject(progression.getJSONObject("stats").toString()));
     member.put("progressionSource", progression.getString("source"));
 

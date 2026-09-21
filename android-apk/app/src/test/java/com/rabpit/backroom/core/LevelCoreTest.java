@@ -414,4 +414,14 @@ public class LevelCoreTest {
     assertEquals(0, protectedRoute.getInt("streak"));
     assertFalse(protectedRoute.getBoolean("exitAvailable"));
   }
+  @Test public void stageIndexFollowsProgressionGraphNotDecimalNames() throws Exception {
+    String[] keys = {"0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms","1","2","3","4","5","6"};
+    for (int i = 0; i < keys.length; i++) {
+      assertEquals(keys[i], i, LevelCore.stageIndexForKey(keys[i]));
+    }
+    assertEquals(4, LevelCore.stageIndexForKey("0.7"));
+    assertEquals(8, LevelCore.stageIndexForKey("1"));
+    assertEquals(13, LevelCore.stageIndexForKey("6"));
+  }
+
 }

@@ -6,265 +6,251 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CombatChoiceEngineTest {
-  @Test public void attackUsesMaximumNeutralLegacyDamage() {
-    assertEquals(28, CombatChoiceEngine.maxNormalDamage(30, 2));
-    assertEquals(22, CombatChoiceEngine.maxNormalDamage(30, 8));
-    assertEquals(1, CombatChoiceEngine.maxNormalDamage(5, 99));
-  }
-
-  @Test public void defendDoublesDefenseForIncomingDamage() {
-    assertEquals(10, CombatChoiceEngine.normalIncomingDamage(20, 10));
-    assertEquals(1, CombatChoiceEngine.defendedIncomingDamage(20, 10));
-    assertEquals(8, CombatChoiceEngine.defendedIncomingDamage(22, 7));
-  }
-
-  @Test public void counterUsesHalfNormalAttackDamage() {
-    assertEquals(10, CombatChoiceEngine.counterDamage(20));
-    assertEquals(11, CombatChoiceEngine.counterDamage(21));
-    assertEquals(1, CombatChoiceEngine.counterDamage(1));
-  }
-
-  @Test public void combatPartyCapacityIsFourIncludingCaoMinh() {
-    assertEquals(4, CombatChoiceEngine.maxCombatParticipants());
-  }
-
-  @Test public void battleAcceptsOnlyFixedAbcTokens() {
-    assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_A));
-    assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_B));
-    assertTrue(CombatChoiceEngine.isCombatAction(CombatChoiceEngine.ACTION_C));
-    assertFalse(CombatChoiceEngine.isCombatAction("Cao Minh chạy sang trái"));
-  }
-
-  @Test public void criticalDamageContractIsThreePointFiveTimesBase() {
-    assertEquals(3.5d, CombatChoiceEngine.CRITICAL_DAMAGE_MULTIPLIER, 0.0d);
-  }
-
-  @Test public void allConfiguredSkillsUseOneHundredPercentProc() {
-    String[][] skills = {
-        {"cao_minh", "Huyết Ma Tứ Liên"},
-        {"cao_minh", "Ma Tâm Trấn Hồn"},
-        {"cao_minh", "Huyết Ảnh Ma Độn"},
-        {"cao_minh", "Thiên Ma Bộ"},
-        {"cao_minh", "Huyết Ma Nhị Thập Tứ Trảm"},
-        {"iris", "Twosome Time"},
-        {"iris", "Rain Storm"},
-        {"iris", "Honeycomb Fire"},
-        {"iris", "Charged Shot"},
-        {"syvial", "Rift Sever"},
-        {"syvial", "Crimson Guillotine"},
-        {"syvial", "Lucifer Breaker"},
-        {"syvial", "Spatial Dominion"},
-        {"lucia", "M4A1 Joint Attack"}
-    };
-    for (String[] skill : skills) {
-      assertEquals(skill[0] + " / " + skill[1], 100,
-          CombatChoiceEngine.configuredProcPercent(skill[0], skill[1]));
+  @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    JSONArray values = dice.getJSONArray("values");
+    assertTrue(dice.getBoolean("hasRolled"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+    assertEquals(5, values.length());
+    int[] rolled = new int[5];
+    for (int i = 0; i < 5; i++) {
+      rolled[i] = values.getInt(i);
+      assertTrue(rolled[i] >= 1 && rolled[i] <= 6);
     }
-    assertEquals(240, CombatChoiceEngine.exactDamageForSkill("Huyết Ma Nhị Thập Tứ Trảm"));
-    assertEquals(0, CombatChoiceEngine.exactDamageForSkill("Huyết Ma Tứ Liên"));
+    assertEquals(CombatChoiceEngine.classify(rolled), dice.getString("hand"));
   }
 
-  @Test public void caoMinhSkillChoiceAlwaysActivates() throws Exception {
+  @Test public void holdPersistsAndRerollTouchesOnlyUnheldDice() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_C);
-
-    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
-    String text = battleLog == null ? "" : battleLog.toString();
-    assertFalse(text.contains("không kích hoạt"));
-    assertFalse(text.contains("Trượt."));
-  }
-
-  @Test public void luciaSkillChoiceAlwaysHitsEntity() throws Exception {
-    JSONArray party = new JSONArray()
-        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true));
-    JSONObject state = combatState(party);
-    CombatChoiceEngine.start(state, "hound", 0);
-
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
     JSONObject combat = state.getJSONObject("combat");
-    assertEquals("Lucia Lục", combat.getString("currentActor"));
-    int beforeHp = combat.getJSONObject("entity").getInt("hp");
+    JSONObject dice = combat.getJSONObject("diceState");
+    JSONArray before = new JSONArray(dice.getJSONArray("values").toString());
+    CombatChoiceEngine.setHold(state, 0, true);
+    CombatChoiceEngine.setHold(state, 3, true);
+    int sequenceBefore = combat.getInt("rngSequence");
+    int seed = combat.getInt("seed");
 
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_C);
+    CombatChoiceEngine.roll(state);
 
-    int afterHp = state.getJSONObject("combat").getJSONObject("entity").getInt("hp");
-    assertTrue(afterHp < beforeHp);
-    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
-    String text = battleLog == null ? "" : battleLog.toString();
-    assertFalse(text.contains("Trượt."));
-  }
-
-  @Test public void knownEntityCatalogPreservesLegacyProfiles() throws Exception {
-    assertTrue(CombatChoiceEngine.isKnownEntity("hound"));
-    assertTrue(CombatChoiceEngine.isKnownEntity("jeff_the_killer"));
-    assertTrue(CombatChoiceEngine.isKnownEntity("slenderman"));
-    assertFalse(CombatChoiceEngine.isKnownEntity("not_a_real_entity"));
-
-    JSONObject state = combatState(new JSONArray());
-    CombatChoiceEngine.start(state, "hound", 0);
-    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
-    assertEquals(240, entity.getInt("maxHp"));
-    assertEquals(15, entity.getInt("attack"));
-    assertEquals(2, entity.getInt("defense"));
-    assertTrue(entity.has("statBaseline"));
-    assertTrue(entity.has("statModifier"));
-  }
-
-  @Test public void sub500EntityHpIsIncreasedByTwoHundredPercent() throws Exception {
-    String[] keys = {
-        "hound", "clump", "duller", "deathmoth", "hostile_faceling", "false_puddle",
-        "paintings", "smiler", "skin-stealer", "predatory_window", "biological_pipeline",
-        "wretch", "cable_mimic", "the_beast_of_level_5", "hotel_corpse_lure",
-        "jeff_the_killer", "jane_the_killer", "slenderman", "diep_minh"
-    };
-    int[] expectedHp = {
-        240, 315, 270, 195, 225, 285,
-        210, 255, 300, 345, 360,
-        255, 300, 435, 330,
-        360, 360, 480, 2000
-    };
-
-    for (int i = 0; i < keys.length; i++) {
-      JSONObject state = combatState(new JSONArray());
-      CombatChoiceEngine.start(state, keys[i], 0);
-      JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
-      assertEquals(keys[i] + " maxHp", expectedHp[i], entity.getInt("maxHp"));
-      assertEquals(keys[i] + " hp", expectedHp[i], entity.getInt("hp"));
+    JSONArray after = dice.getJSONArray("values");
+    assertEquals(before.getInt(0), after.getInt(0));
+    assertEquals(before.getInt(3), after.getInt(3));
+    int sequence = sequenceBefore;
+    for (int slot : new int[]{1,2,4}) {
+      assertEquals(CombatChoiceEngine.deterministicDie(seed, sequence, slot), after.getInt(slot));
+      sequence++;
     }
+    assertEquals(sequenceBefore + 3, combat.getInt("rngSequence"));
+    assertEquals(1, dice.getInt("rerollsUsed"));
+    assertEquals(CombatChoiceEngine.classify(
+        after.getInt(0), after.getInt(1), after.getInt(2), after.getInt(3), after.getInt(4)),
+        dice.getString("hand"));
   }
 
-  @Test public void entityHpScalesWithLuciaExplorerProgression() throws Exception {
-    JSONObject state = combatState(new JSONArray());
-    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
-    progression.normalizeState(state);
-    progression.profile(state, "lucia").put("explorer", 3);
-    progression.normalizeState(state);
-
-    CombatChoiceEngine.start(state, "hound", 0);
-
-    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
-    assertEquals(449, entity.getInt("maxHp"));
-    assertEquals(449, entity.getInt("hp"));
-    assertEquals(449, entity.getJSONObject("statEffective").getInt("maxHp"));
-  }
-
-  @Test public void soloCombatRosterContainsOnlyCaoMinhAndUsesProgressionHp() throws Exception {
+  @Test public void normalizeActiveLegacyTurnBackfillsInitialRoll() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
-    assertEquals(1, participants.length());
-    assertEquals("cao_minh", participants.getJSONObject(0).getString("id"));
-    assertEquals(50, participants.getJSONObject(0).getInt("hp"));
-    assertEquals(50, participants.getJSONObject(0).getInt("maxHp"));
-  }
-
-  @Test public void onlyJoinedPartyCharactersEnterCombatInCanonicalOrder() throws Exception {
-    JSONArray party = new JSONArray()
-        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục").put("joined", true))
-        .put(new JSONObject().put("id", "iris").put("name", "Iris").put("joined", false))
-        .put(new JSONObject().put("id", "syvial").put("name", "Syvial").put("joined", true));
-    JSONObject state = combatState(party);
-    CombatChoiceEngine.start(state, "hound", 0);
-    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
-    assertEquals(3, participants.length());
-    assertEquals("cao_minh", participants.getJSONObject(0).getString("id"));
-    assertEquals("lucia", participants.getJSONObject(1).getString("id"));
-    assertEquals("syvial", participants.getJSONObject(2).getString("id"));
-  }
-
-  @Test public void defeatConsumesEncounterAndDoesNotLeaveRestartFlag() throws Exception {
-    JSONObject state = combatState(new JSONArray());
-    CombatChoiceEngine.start(state, "clump", 0);
-
     JSONObject combat = state.getJSONObject("combat");
-    combat.getJSONArray("participants").getJSONObject(0).put("hp", 1);
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
-
-    assertFalse(state.getJSONObject("combat").getBoolean("active"));
-    assertEquals("defeat", state.getJSONObject("combat").getString("outcome"));
-    assertEquals("", state.getJSONObject("flags").getString("entityEncounterKey"));
-    assertTrue(state.getJSONObject("combat").getBoolean("deathRecoveryApplied"));
-    assertEquals(0, state.getInt("currentLevel"));
-    assertEquals(LevelCore.LEVEL_ZERO_START_LOCATION, state.getString("location"));
-    assertEquals(50, state.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("cao_minh").getInt("currentHp"));
-  }
-
-  @Test public void caoMinhDeathImmediatelyRespawnsAtLevelZeroAndHalvesProgression() throws Exception {
-    JSONObject state = combatState(new JSONArray())
-        .put("currentLevel", 5)
-        .put("location", "Level 5 / Terror Hotel");
-    CharacterProgressionCore progression = new CharacterProgressionCore(bound -> 0);
-    progression.normalizeState(state);
-    JSONObject cao_minh = progression.profile(state, "cao_minh");
-    cao_minh.put("explorer", 10).put("exp", 200).put("currentHp", 50).put("maxHp", 200);
-
-    CombatChoiceEngine.start(state, "clump", 0);
-    state.getJSONObject("combat").getJSONArray("participants").getJSONObject(0).put("hp", 1);
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
-
-    JSONObject after = state.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("cao_minh");
-    assertFalse(state.getJSONObject("combat").getBoolean("active"));
-    assertEquals("defeat", state.getJSONObject("combat").getString("outcome"));
-    assertEquals(0, state.getInt("currentLevel"));
-    assertEquals(LevelCore.LEVEL_ZERO_START_LOCATION, state.getString("location"));
-    assertEquals(5, after.getInt("explorer"));
-    assertEquals(100, after.getInt("exp"));
-    assertEquals(125, after.getInt("currentHp"));
-    assertEquals(125, after.getInt("maxHp"));
-  }
-
-  @Test public void terminalDefeatNormalizationClearsLegacyRestartFlag() throws Exception {
-    JSONObject state = combatState(new JSONArray());
-    state.put("combat", new JSONObject()
-        .put("active", false)
-        .put("outcome", "defeat"));
-    state.getJSONObject("flags").put("entityEncounterKey", "clump");
+    JSONObject dice = combat.getJSONObject("diceState");
+    dice.put("values", new JSONArray().put(0).put(0).put(0).put(0).put(0))
+        .put("hasRolled", false)
+        .put("rerollsUsed", 0)
+        .put("hand", "");
+    combat.put("rngSequence", 0);
 
     CombatChoiceEngine.normalizeTerminalEncounter(state);
 
-    assertEquals("", state.getJSONObject("flags").getString("entityEncounterKey"));
+    JSONArray values = dice.getJSONArray("values");
+    assertTrue(dice.getBoolean("hasRolled"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+    assertEquals(CombatChoiceEngine.classify(
+        values.getInt(0), values.getInt(1), values.getInt(2), values.getInt(3), values.getInt(4)),
+        dice.getString("hand"));
   }
 
-  @Test public void houndKillRewardsExpExactlyOnce() throws Exception {
+  @Test public void exactlyThreeRerollsThenRollStopsUntilFinish() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
-    state.getJSONObject("combat").getJSONObject("entity").put("hp", 1);
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    assertFalse(dice.getBoolean("finalized"));
 
-    JSONObject cao_minh = state.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("cao_minh");
-    assertEquals(10, cao_minh.getInt("exp"));
-    assertTrue(state.getJSONObject("combat").getBoolean("expResolved"));
+    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.roll(state);
 
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
-    assertEquals(10, cao_minh.getInt("exp"));
+    assertEquals(3, dice.getInt("rerollsUsed"));
+    assertFalse(dice.getBoolean("finalized"));
+    String frozen = dice.toString();
+    CombatChoiceEngine.roll(state);
+    assertEquals(frozen, dice.toString());
+
+    CombatChoiceEngine.finishHand(state);
+    assertTrue(dice.getBoolean("finalized"));
   }
 
-  @Test public void nonHoundKillAlsoRewardsExpAndLogsIt() throws Exception {
+  @Test public void holdingAllFiveStopsRerollUntilFinishWithoutSpendingReroll() throws Exception {
     JSONObject state = combatState(new JSONArray());
-    CombatChoiceEngine.start(state, "deathmoth", 0);
-    state.getJSONObject("combat").getJSONObject("entity").put("hp", 1);
+    CombatChoiceEngine.start(state, "hound", 0);
+    for (int i = 0; i < 5; i++) CombatChoiceEngine.setHold(state, i, true);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    CombatChoiceEngine.roll(state);
+    assertFalse(dice.getBoolean("finalized"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
 
-    CombatChoiceEngine.resolve(state, CombatChoiceEngine.ACTION_A);
+    CombatChoiceEngine.finishHand(state);
+    assertTrue(dice.getBoolean("finalized"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+  }
 
-    JSONObject cao_minh = state.getJSONObject("characterProgression")
-        .getJSONObject("characters").getJSONObject("cao_minh");
-    assertTrue(cao_minh.getInt("exp") > 0);
-    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).optJSONArray("battleLog");
-    assertTrue(battleLog != null && battleLog.toString().contains("EXP"));
+  @Test public void finishCanFinalizeCurrentHandBeforeAnyReroll() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    dice.put("values", new JSONArray().put(2).put(2).put(1).put(4).put(6));
+
+    CombatChoiceEngine.finishHand(state);
+
+    assertTrue(dice.getBoolean("finalized"));
+    assertEquals(0, dice.getInt("rerollsUsed"));
+    assertEquals("ONE PAIR", dice.getString("hand"));
+  }
+
+  @Test public void serializedReloadCannotProduceFreeDifferentReroll() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    CombatChoiceEngine.setHold(state, 1, true);
+    JSONObject reloaded = new JSONObject(state.toString());
+
+    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.roll(reloaded);
+
+    assertEquals(
+        state.getJSONObject("combat").getJSONObject("diceState").toString(),
+        reloaded.getJSONObject("combat").getJSONObject("diceState").toString());
+    assertEquals(state.getJSONObject("combat").getInt("rngSequence"),
+        reloaded.getJSONObject("combat").getInt("rngSequence"));
+  }
+
+  @Test public void orderedStraightClassificationIsExact() {
+    assertEquals("SSF", CombatChoiceEngine.classify(1,2,3,4,5));
+    assertEquals("SSF", CombatChoiceEngine.classify(5,4,3,2,1));
+    assertEquals("STRAIGHT", CombatChoiceEngine.classify(2,3,4,5,6));
+    assertEquals("STRAIGHT", CombatChoiceEngine.classify(6,5,4,3,2));
+    assertNotEquals("STRAIGHT", CombatChoiceEngine.classify(5,1,4,2,3));
+    assertNotEquals("SSF", CombatChoiceEngine.classify(5,1,4,2,3));
+  }
+
+  @Test public void pairTwoPairTripleFullHouseFourAndFiveKindClassifyCorrectly() {
+    assertEquals("ONE PAIR", CombatChoiceEngine.classify(2,2,1,4,6));
+    assertEquals("TWO PAIR", CombatChoiceEngine.classify(2,2,4,4,6));
+    assertEquals("THREE OF A KIND", CombatChoiceEngine.classify(3,3,3,1,6));
+    assertEquals("FULL HOUSE", CombatChoiceEngine.classify(3,3,3,6,6));
+    assertEquals("FOUR OF A KIND", CombatChoiceEngine.classify(4,4,4,4,2));
+    assertEquals("FSF", CombatChoiceEngine.classify(6,6,6,6,6));
+  }
+
+  @Test public void fsfPriorityOverridesFourOfAKind() {
+    assertEquals("FSF", CombatChoiceEngine.classify(1,1,1,1,1));
+  }
+
+  @Test public void handAndStatsApplyExactlyOnceToDamage() {
+    assertEquals(30, CombatChoiceEngine.basicDamage(30, 5, 100));
+    assertEquals(38, CombatChoiceEngine.basicDamage(30, 5, 125));
+    assertEquals(33, CombatChoiceEngine.basicDamage(30, 6, 100));
+    assertEquals(77, CombatChoiceEngine.skillDamage(30, 170, 5, 150));
+    assertEquals(84, CombatChoiceEngine.skillDamage(30, 170, 6, 150));
+    assertEquals(240, CombatChoiceEngine.ultimateDamage(240, 5, 100));
+    assertEquals(480, CombatChoiceEngine.ultimateDamage(240, 5, 200));
+  }
+
+  @Test public void defenseUsesDiminishingDivisionAndNeverImmunity() {
+    assertEquals(20, CombatChoiceEngine.defendedIncomingDamage(20, 5));
+    assertEquals(18, CombatChoiceEngine.defendedIncomingDamage(20, 6));
+    assertEquals(10, CombatChoiceEngine.defendedIncomingDamage(20, 15));
+    assertEquals(1, CombatChoiceEngine.defendedIncomingDamage(1, 999));
+  }
+
+  @Test public void downedCharacterIsSkippedAndFourSlotOrderWrapsRound() throws Exception {
+    JSONArray party = new JSONArray()
+        .put(member("lucia", "Lucia Lục"))
+        .put(member("iris", "Iris"))
+        .put(member("syvial", "Syvial"));
+    JSONObject state = combatState(party);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+    progression.setCurrentHp(state, "iris", 0);
+
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+    assertEquals(4, state.getJSONObject("combat").getJSONArray("participants").length());
+
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+    assertEquals("Lucia Lục", state.getJSONObject("combat").getString("currentActor"));
+
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+    assertEquals("Syvial", state.getJSONObject("combat").getString("currentActor"));
+
+    int round = state.getJSONObject("combat").getInt("round");
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+    assertEquals("Cao Minh", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals(round + 1, state.getJSONObject("combat").getInt("round"));
+  }
+
+  @Test public void rerollsDoNotSpamGmLogAndResolveAddsOneCombatLine() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.roll(state);
+    CombatChoiceEngine.roll(state);
+    JSONArray gmLog = state.getJSONArray("log");
+    assertFalse(gmLog.getJSONObject(0).has("battleLog"));
+
+    CombatChoiceEngine.finishHand(state);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONArray battleLog = gmLog.getJSONObject(0).getJSONArray("battleLog");
+    assertEquals(1, battleLog.length());
+    String text = battleLog.getJSONObject(0).getString("text");
+    assertFalse(text.toLowerCase().contains("reroll"));
+    assertFalse(text.toLowerCase().contains("dice"));
+  }
+
+  @Test public void onlyCaoMinhHasAuthoritativeUltimateDamageMappingToday() {
+    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
+    assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
+    assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
+    assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
+  }
+
+  private static void finalizeAs(JSONObject state, int... values) throws Exception {
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    JSONArray array = new JSONArray();
+    for (int value : values) array.put(value);
+    dice.put("values", array)
+        .put("hasRolled", true)
+        .put("finalized", true)
+        .put("resolved", false)
+        .put("hand", CombatChoiceEngine.classify(values));
+  }
+
+  private static JSONObject member(String id, String name) throws Exception {
+    return new JSONObject().put("id", id).put("name", name).put("joined", true);
   }
 
   private static JSONObject combatState(JSONArray party) throws Exception {
     return new JSONObject()
         .put("turn", 4)
         .put("currentLevel", 0)
+        .put(LevelCore.LEVEL_KEY, "0")
         .put("location", LevelCore.LEVEL_ZERO_START_LOCATION)
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", party)

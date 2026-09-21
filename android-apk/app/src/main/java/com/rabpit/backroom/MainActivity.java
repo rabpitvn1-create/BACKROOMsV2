@@ -597,25 +597,15 @@ public class MainActivity extends Activity {
           JSONObject submitted = new JSONObject(stateJson);
 
           if (CombatChoiceEngine.isActive(submitted)) {
-            if (!CombatChoiceEngine.isCombatAction(action)) {
-              throw new Exception("Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.");
-            }
-            JSONObject resolved = CombatChoiceEngine.resolve(submitted, action);
-            resolved = new JSONObject(gameCore.normalizeState(resolved.toString()));
-            emit("backroomCombatTurn", resolved.toString());
-            return;
+            throw new Exception("Đang chiến đấu. Hãy dùng khung Poker Dice trong GAME MASTER.");
           }
 
           String existingEncounter = encounterKey(submitted);
           if (CombatChoiceEngine.isKnownEntity(existingEncounter)) {
             CombatChoiceEngine.start(submitted, existingEncounter, lastGmLogIndex(submitted));
             submitted = new JSONObject(gameCore.normalizeState(submitted.toString()));
-            emit("backroomCombatTurn", submitted.toString());
+            emit("backroomCombatDiceState", submitted.toString());
             return;
-          }
-
-          if (CombatChoiceEngine.isCombatAction(action)) {
-            throw new Exception("Không có trận chiến đang hoạt động.");
           }
 
           JSONObject localResult = new JSONObject(gameCore.processRule(stateJson, action));
@@ -652,7 +642,7 @@ public class MainActivity extends Activity {
             "Tránh sáo ngữ và câu đệm như 'một cảm giác bất an bao trùm', 'mọi thứ vẫn như cũ', 'bóng tối như nuốt chửng', 'không có gì xảy ra'. Không kết mỗi reply bằng câu hỏi tu từ hoặc 'Bạn sẽ làm gì tiếp?'.\n" +
             gmStyleExamples +
             "EXPLORER CHOICES: trả 0 đến 3 gợi ý hành động ngắn trong choices. Đây chỉ là gợi ý, không phải nhánh kịch bản; người chơi vẫn có thể nhập hành động tự do. Không cố tạo đủ 3 nếu tình huống không cần. Mỗi lựa chọn phải khác nhau có ý nghĩa. " +
-            "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì engine sẽ chuyển sang Battle A/B/C. " +
+            "Nếu một Entity đang trực tiếp hiện diện/đối đầu và flags.entityEncounterKey khác rỗng thì choices phải là [] vì Core sẽ chuyển sang Poker Dice combat. " +
             "SEMANTIC HIGHLIGHTS: highlights dùng object {text,type}, trong đó text phải là chuỗi CHÍNH XÁC xuất hiện trong reply và type chỉ được là character, entity, item, skill, effect, location hoặc stat. Dùng character cho tên nhân vật/NPC, entity cho Entity/quái vật, item cho vật phẩm/trang bị, skill cho kỹ năng, effect cho trạng thái/buff/debuff, location cho Level/khu vực, stat cho chỉ số. Không đưa từ nối hay cả câu vào highlights. Mỗi choice có thể có highlights riêng theo cùng format. " +
             "ENTITY CORE CONTRACT: Main Game Core sở hữu toàn bộ spawn roll. Không được tự tạo, tự chọn, tự thay hoặc tự tăng tỉ lệ Entity. Giữ nguyên flags.entityEncounterKey do Core cung cấp. Nếu encounter đang hoạt động và thực sự kết thúc trong lượt này, chỉ đặt flags.entityEncounterResolved=true; nếu chưa kết thúc thì không đặt cờ resolved. " +
             "ITEM CORE CONTRACT: Gemini không được tạo loot rời, tự mở rương, tự cho vật phẩm, tự xóa vật phẩm hoặc thay đổi inventory. Consumable loot chỉ do Core cấp từ Entity hoặc Rương. " +
@@ -724,6 +714,63 @@ public class MainActivity extends Activity {
       });
     }
 
+    @JavascriptInterface public void combatRoll(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          CombatChoiceEngine.roll(submitted);
+          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          emit("backroomCombatDiceState", committed.toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null ? "Không thể ROLL." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void combatHold(String stateJson, int dieIndex, boolean held) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          CombatChoiceEngine.setHold(submitted, dieIndex, held);
+          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          emit("backroomCombatDiceState", committed.toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null ? "Không thể HOLD die." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void combatFinish(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          CombatChoiceEngine.finishHand(submitted);
+          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          emit("backroomCombatDiceState", committed.toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null ? "Không thể FINISH hand." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void combatResolve(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject resolved = CombatChoiceEngine.resolveFinalized(submitted);
+          resolved = new JSONObject(gameCore.normalizeState(resolved.toString()));
+          emit("backroomCombatTurn", resolved.toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null ? "Không thể resolve combat hand." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void coreUpgrade(String stateJson, String characterId, String stat) {
+      io.execute(() -> emit("backroomCoreUpgrade",
+          gameCore.processCoreUpgrade(stateJson, characterId, stat)));
+    }
+
     @JavascriptInterface public void itemAction(String stateJson, String ownerId, String itemId,
                                                 String operation, String targetId, int quantity) {
       io.execute(() -> {
@@ -734,7 +781,7 @@ public class MainActivity extends Activity {
               .put("handled", false)
               .put("state", submitted)
               .put("reason", "combat_locked")
-              .put("error", "Battle đang hoạt động. Chỉ A/B/C được phép thực hiện.");
+              .put("error", "Battle đang hoạt động. Hãy hoàn tất Poker Dice trước.");
             emit("backroomItemAction", rejected.toString());
             return;
           }

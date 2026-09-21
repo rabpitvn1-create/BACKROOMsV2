@@ -90,7 +90,7 @@ jobs:
           ! grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'CombatChoiceEngine.resolve' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CombatChoiceEngine.resolveFinalized' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
@@ -206,7 +206,7 @@ jobs:
           grep -Fq 'CharacterEncounterCore.isJoinedMember' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'finishDefeat(state, combat)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'clearEncounterFlag(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          grep -Fq 'COMPANION_REVIVE_EXPLORER_TURNS = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'COMPANION_REVIVE_TURNS = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq '.put("leaderId", "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'ensureProfileObject(characters, "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'applyCaoMinhDeathPenalty(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
@@ -308,6 +308,18 @@ jobs:
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq 'window.backroomCombatDiceState' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.combatRoll' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.combatHold' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.combatFinish' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.combatResolve' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'combat-dice-modal' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'static int stageIndexForKey(String levelKey)' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
+          grep -Fq 'CORE_ENTITY_DROP_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'CORE_CHEST_DROP_PERCENT = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          test "$(find android-apk/app/src/main/assets/dice -type f -name 'die-*.svg' | wc -l)" -eq 6
+          ! grep -R -Fq 'ACTION_A' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          ! grep -R -Fq 'Math.random' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '6. PROLOGUE — MANDATORY NEW GAME OPENING' android-apk/app/src/main/assets/index.html
           grep -Fq 'Ma Sơn.' android-apk/app/src/main/assets/index.html
           grep -Fq 'Và lần đầu tiên sau rất nhiều năm, Vạn Giới Ma Tôn cảm thấy chuyến đi phía trước có lẽ sẽ không nhàm chán.' android-apk/app/src/main/assets/index.html
@@ -326,14 +338,15 @@ jobs:
           ! grep -Fq "tagsSection('INVENTORY'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq 'ROOT_KEY = "characterProgression"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'BASE_STAT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'FEATURED_BONUS_POOL = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'DEFAULT_BONUS_POOL = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'HP_PER_EXPLORER = 15' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'HOUND_BASE_EXP = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'LUCIA_REFERENCE_PERCENT = 93' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
-          grep -Fq 'CRITICAL_DAMAGE_MULTIPLIER = 3.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          grep -Fq 'allConfiguredSkillsUseOneHundredPercentProc' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
+          grep -Fq 'RESOURCE_KEY = "coreResource"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'static int upgradeCost(int currentStat)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'DEFAULT_BASE_MAX_HP = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          ! grep -R -Fq 'HOUND_BASE_EXP' android-apk/app/src/main/java android-apk/app/src/test/java
+          grep -Fq 'static int stagePercent(int stageIndex)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
+          grep -Fq 'MAX_REROLLS = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'exactlyThreeRerollsThenRollStopsUntilFinish' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
+          grep -Fq 'finishCanFinalizeCurrentHandBeforeAnyReroll' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
           ! grep -Fq 'lucia-hit' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'Huyết Ma Nhị Thập Tứ Trảm' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -Fq 'Guilty Crown Override' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
@@ -343,20 +356,20 @@ jobs:
           ! grep -R -Fq 'MK19_CRIT = 8' android-apk/app/src/main/java android-apk/app/src/test/java
           ! grep -R -Fq 'levelGrowthConfigured' android-apk/app/src/main/java android-apk/app/src/test/java
           ! grep -R -Fq 'Level nhân vật' android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "addRow(status,'Explorer',member.explorer)" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "addRow(status,'EXP',String(member.exp)+' / '+String(member.requiredExp))" android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "parts.push('Explorer '+signed(explorer))" android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "addRow(status,'Explorer'" android-apk/app/src/main/assets/party-ui.js
+          ! grep -Fq "addRow(status,'EXP'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "['STR','DEF','SKL','VIT']" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "parts.push('EQ '" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq "tagsSection('TRANG BỊ'" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq 'equipment:' android-apk/app/src/main/assets/party-ui.js
           ! grep -R -Fq 'EquipmentStatCore' android-apk/app/src/main/java android-apk/app/src/test/java
           ! grep -Fq '.put("equipment"' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
           grep -Fq 'profile.remove("equipment")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'normalizationRemovesLegacyEquipmentState' android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
+          grep -Fq 'legacyExpAndRandomStatsMigrateOnceToBaseline' android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterProgressionCoreTest.java
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/SurvivalCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/SurvivalCoreTest.java
-          grep -Fq 'CURRENT_SAVE_VERSION = 9' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'survivalCore.projectPhysiology(state, id)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'copyField(before, sanitized, SurvivalCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ItemCore.grantEntityLootItem' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
@@ -414,7 +427,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
@@ -439,6 +452,8 @@ jobs:
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/inventory-ui.js'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/party-ui.js'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/player-action-ui.js'
+          unzip -l Backroom-1.1.81.apk | grep -q 'assets/dice/die-1.svg'
+          unzip -l Backroom-1.1.81.apk | grep -q 'assets/dice/die-6.svg'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/avatars/cao_minh_avatar.jpg'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
           unzip -l Backroom-1.1.81.apk | grep -q 'assets/cao_minh_entity_overlay.png'

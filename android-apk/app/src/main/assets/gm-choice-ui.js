@@ -32,7 +32,12 @@
     ".composer.battle-locked textarea{background:#101316;color:#697178;border-color:#262d33}",
     ".composer.battle-locked #submit{background:#24282c;color:#777e84;border-color:#30353a;opacity:.7}",
     ".message.gm{border-left-color:#59646d}",
-    ".battle-separator{height:1px;background:#262d33;margin-top:10px}"
+    ".battle-separator{height:1px;background:#262d33;margin-top:10px}",
+    ".combat-dice-panel[hidden]{display:none}.combat-dice-panel{width:100%;box-sizing:border-box;margin-top:12px;background:#0e1114;border:1px solid #46515a;padding:14px;display:grid;gap:12px;touch-action:manipulation}",
+    ".combat-dice-title{font-family:'Play',system-ui,sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em}.combat-dice-meta{font-size:11px;color:#9ba6af}",
+    ".combat-dice-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.combat-die{padding:5px;aspect-ratio:1/1;border:1px solid #343d45;background:#151a1f;display:grid;place-items:center;min-width:0}.combat-die img{width:100%;height:100%;object-fit:contain}.combat-die.held{border-color:#f6c85f;background:#211e14;box-shadow:inset 0 0 0 1px #f6c85f55}.combat-die:disabled{opacity:.85}",
+    ".combat-dice-result{min-height:22px;text-align:center;font-family:'Play',system-ui,sans-serif;font-size:16px;font-weight:700;color:#f6c85f}",
+    ".combat-dice-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.combat-roll,.combat-finish{width:100%;padding:12px 8px;background:#1b2126;border:1px solid #46515a;color:#f0f3f5;font-family:'Play',system-ui,sans-serif;font-weight:700;letter-spacing:.12em}.combat-roll:disabled,.combat-finish:disabled{opacity:.45}"
   ].join('');
   document.head.appendChild(style);
 
@@ -199,18 +204,6 @@
     Android.submitTurn(JSON.stringify(state), '__loot:open_chest');
   }
 
-  function submitCombatChoice(choice) {
-    if (!choice || choice.disabled || window.__combatBusy) return;
-    if (!window.Android || typeof Android.submitTurn !== 'function') {
-      if (status) status.textContent = 'Không tìm thấy Android bridge.';
-      return;
-    }
-    window.__combatBusy = true;
-    syncComposer();
-    if (typeof window.render === 'function') window.render();
-    if (status) status.textContent = 'Đang xử lý Lượt chiến đấu ' + ((state.combat && state.combat.round) || 1) + '…';
-    Android.submitTurn(JSON.stringify(state), '__combat:' + String(choice.id || '').toUpperCase());
-  }
 
   function makeChoiceButton(prefix, text, entry, extra, disabled, selected, onClick) {
     var button = document.createElement('button');
@@ -239,41 +232,11 @@
       });
       article.appendChild(battleLog);
     }
-
-    var combat = state && state.combat;
-    if (!combat || !combat.active || Number(combat.logIndex) !== Number(index)) return;
-    var box = document.createElement('div');
-    box.className = 'gm-choices';
-    var label = document.createElement('div');
-    label.className = 'combat-turn-label';
-    var visualIndex = Number.isInteger(window.__combatVisualActorIndex) ? window.__combatVisualActorIndex : Number(combat.actorIndex || 0);
-    var visualParticipant = Array.isArray(combat.participants) && combat.participants[visualIndex] ? combat.participants[visualIndex] : null;
-    var visualActor = visualParticipant && (visualParticipant.name || visualParticipant.id) ? (visualParticipant.name || visualParticipant.id) : (combat.currentActor || 'Nhân vật');
-    var visualRound = Number.isInteger(window.__combatVisualActorIndex) && Number.isInteger(combat.resolvedRound) ? combat.resolvedRound : (combat.round || 1);
-    label.appendChild(document.createTextNode('LƯỢT CHIẾN ĐẤU ' + visualRound + ' · '));
-    appendRichText(label, visualActor, entry, [{text:visualActor,type:'character'}]);
-    box.appendChild(label);
-    if (window.__combatBusy && Number.isInteger(window.__combatVisualActorIndex)) { article.appendChild(box); return; }
-    var choices = Array.isArray(combat.choices) ? combat.choices : [];
-    choices.forEach(function(choice){
-      var disabled = !!choice.disabled || window.__combatBusy;
-      var button=makeChoiceButton(choice.id || '?', choice.text || '', entry,
-        combat.currentSkill ? [combat.currentSkill.name] : [], disabled, false,
-        function(){ submitCombatChoice(choice); });
-      if(choice.description){
-        var detail=document.createElement('div');
-        detail.className='combat-skill-description';
-        detail.textContent=String(choice.description);
-        button.appendChild(detail);
-      }
-      box.appendChild(button);
-    });
-    article.appendChild(box);
   }
 
   function appendExplorerChoices(article, entry, index) {
     if (!entry) return;
-    if (state.combat && state.combat.active && Number(state.combat.logIndex) === Number(index)) return;
+    if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
     var hasChest = latest && chestPresent();
     var choices = Array.isArray(entry.choices) ? entry.choices : [];
@@ -319,6 +282,7 @@
       article.appendChild(text);
       if (!player) {
         appendBattleSection(article, entry, index);
+        appendCombatDiceSection(article, index);
         appendExplorerChoices(article, entry, index);
       }
       log.appendChild(article);
@@ -363,7 +327,7 @@
     action.readOnly = combat;
     if (combat) {
       action.value = '';
-      action.placeholder = 'Đang chiến đấu — hãy chọn A, B hoặc C trong khung GAME MASTER.';
+      action.placeholder = 'Đang chiến đấu — hoàn tất Poker Dice trong khung bên trên.';
       submit.disabled = true;
     } else {
       action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';
@@ -371,12 +335,182 @@
     }
   }
 
+  var dicePanel=document.createElement('section');
+  dicePanel.className='combat-dice-panel';
+  dicePanel.hidden=true;
+  dicePanel.setAttribute('aria-label','Poker Dice Combat');
+  dicePanel.innerHTML='<div class="combat-dice-title" id="combatDiceTitle"></div><div class="combat-dice-meta" id="combatDiceMeta"></div><div class="combat-dice-row" id="combatDiceRow"></div><div class="combat-dice-result" id="combatDiceResult"></div><div class="combat-dice-actions"><button type="button" class="combat-roll" id="combatDiceRoll">ROLL</button><button type="button" class="combat-finish" id="combatDiceFinish">FINISH</button></div>';
+  var diceTitle=dicePanel.querySelector('#combatDiceTitle');
+  var diceMeta=dicePanel.querySelector('#combatDiceMeta');
+  var diceRow=dicePanel.querySelector('#combatDiceRow');
+  var diceResult=dicePanel.querySelector('#combatDiceResult');
+  var diceRoll=dicePanel.querySelector('#combatDiceRoll');
+  var diceFinish=dicePanel.querySelector('#combatDiceFinish');
+  var finalizeTimer=0;
+  var finalizeKey='';
+
+  function diceAsset(value){
+    return 'file:///android_asset/dice/die-'+String(value)+'.svg';
+  }
+
+  function allHeld(values){
+    if(!Array.isArray(values)||values.length!==5)return false;
+    for(var i=0;i<5;i++)if(values[i]!==true)return false;
+    return true;
+  }
+
+  function handLabel(hand){
+    var labels={
+      'NO HAND':'No Hand',
+      'ONE PAIR':'One Pair',
+      'TWO PAIR':'Two Pair',
+      'THREE OF A KIND':'Three of a Kind',
+      'STRAIGHT':'Straight',
+      'FULL HOUSE':'Full House',
+      'FOUR OF A KIND':'Four of a Kind',
+      'SSF':'SSF',
+      'FSF':'FSF'
+    };
+    var key=String(hand||'NO HAND');
+    return labels[key]||key;
+  }
+
+  function combatDiceState(){
+    return state&&state.combat&&state.combat.active&&state.combat.diceState?state.combat.diceState:null;
+  }
+
+  function combatLogIndex(){
+    if(!state||!Array.isArray(state.log))return -1;
+    var combat=state.combat||{};
+    var index=Number(combat.logIndex);
+    if(Number.isInteger(index)&&index>=0&&index<state.log.length){
+      var entry=state.log[index];
+      if(entry&&entry.role!=='player')return index;
+    }
+    return lastGmIndex();
+  }
+
+  function appendCombatDiceSection(article,index){
+    if(!state||!state.combat||!state.combat.active)return;
+    if(index!==combatLogIndex())return;
+    article.appendChild(dicePanel);
+  }
+
+  function sendCombatHold(index,held){
+    if(window.__combatBusy||!window.Android||typeof Android.combatHold!=='function')return;
+    window.__combatBusy=true;
+    renderCombatPanel();
+    Android.combatHold(JSON.stringify(state),index,!!held);
+  }
+
+  function sendCombatRoll(){
+    if(window.__combatBusy||!window.Android||typeof Android.combatRoll!=='function')return;
+    window.__combatBusy=true;
+    renderCombatPanel();
+    Android.combatRoll(JSON.stringify(state));
+  }
+
+  function sendCombatFinish(){
+    if(window.__combatBusy||!window.Android||typeof Android.combatFinish!=='function')return;
+    window.__combatBusy=true;
+    renderCombatPanel();
+    Android.combatFinish(JSON.stringify(state));
+  }
+
+  function scheduleCombatResolve(combat,dice){
+    var key=String(combat.round||1)+':'+String(combat.actorIndex||0)+':'+String(combat.rngSequence||0)+':'+String(dice.hand||'');
+    if(finalizeKey===key&&finalizeTimer)return;
+    if(finalizeTimer)clearTimeout(finalizeTimer);
+    finalizeKey=key;
+    finalizeTimer=setTimeout(function(){
+      finalizeTimer=0;
+      if(window.__combatBusy||!state||!state.combat||!state.combat.active)return;
+      var current=state.combat.diceState;
+      if(!current||current.finalized!==true||current.resolved===true)return;
+      if(!window.Android||typeof Android.combatResolve!=='function')return;
+      window.__combatBusy=true;
+      renderCombatPanel();
+      Android.combatResolve(JSON.stringify(state));
+    },2000);
+  }
+
+  function renderCombatPanel(){
+    var combat=state&&state.combat;
+    var dice=combatDiceState();
+    var visible=!!dice&&!window.__combatFeedbackBusy;
+    dicePanel.hidden=!visible;
+    if(!visible)return;
+
+    diceTitle.textContent=String(combat.currentActor||'Nhân vật');
+    var hasRolled=dice.hasRolled===true;
+    var rerolls=Math.max(0,Number(dice.rerollsUsed)||0);
+    var maxRerolls=Math.max(0,Number(dice.maxRerolls)||3);
+    diceMeta.textContent='Reroll '+String(rerolls)+' / '+String(maxRerolls)+' · chạm die để HOLD';
+
+    diceRow.textContent='';
+    var values=Array.isArray(dice.values)?dice.values:[0,0,0,0,0];
+    var held=Array.isArray(dice.held)?dice.held:[false,false,false,false,false];
+    for(var i=0;i<5;i++){
+      (function(index){
+        var button=document.createElement('button');
+        button.type='button';
+        button.className='combat-die'+(held[index]===true?' held':'');
+        button.disabled=!hasRolled||dice.finalized===true||window.__combatBusy;
+        button.setAttribute('aria-label','Die '+String(index+1)+(held[index]===true?' HOLD':''));
+        var value=Number(values[index])||0;
+        if(value>=1&&value<=6){
+          var img=document.createElement('img');
+          img.src=diceAsset(value);
+          img.alt=String(value);
+          button.appendChild(img);
+        }else{
+          var blank=document.createElement('span');blank.textContent='?';button.appendChild(blank);
+        }
+        button.addEventListener('click',function(){sendCombatHold(index,held[index]!==true);});
+        diceRow.appendChild(button);
+      })(i);
+    }
+
+    diceResult.textContent=hasRolled?handLabel(dice.hand):'';
+    diceRoll.textContent='ROLL';
+    diceFinish.textContent='FINISH';
+    diceRoll.disabled=window.__combatBusy||dice.finalized===true||!hasRolled||rerolls>=maxRerolls||allHeld(held);
+    diceFinish.disabled=window.__combatBusy||dice.finalized===true||!hasRolled;
+    if(dice.finalized===true)scheduleCombatResolve(combat,dice);
+  }
+
+  diceRoll.addEventListener('click',sendCombatRoll);
+  diceFinish.addEventListener('click',sendCombatFinish);
+
+  window.backroomCombatDiceState=function(json){
+    try{
+      state=JSON.parse(json);
+      if(typeof CURRENT_CHARACTER_CANON!=='undefined')state.characterCanon=CURRENT_CHARACTER_CANON;
+      try{localStorage.setItem('backroom-apk-state',JSON.stringify(state));}catch(_){}
+      window.__combatBusy=false;
+      if(typeof busy!=='undefined')busy=false;
+      if(typeof window.render==='function')window.render();
+      syncComposer();
+      renderCombatPanel();
+      if(status){
+        var dice=combatDiceState();
+        status.textContent=dice&&dice.finalized===true
+          ? 'Đã chốt '+String(dice.hand||'hand')+'.'
+          : 'Poker Dice · '+String(state.combat&&state.combat.currentActor||'Nhân vật');
+      }
+    }catch(_){
+      window.__combatBusy=false;
+      if(status)status.textContent='Combat dice state không hợp lệ.';
+    }
+  };
+
   var previousRender = window.render;
   window.render = function(){
     if (typeof previousRender === 'function') previousRender();
     renderSemanticLog();
     syncComposer();
     if (state && state.combat && state.combat.active) scrollCombatToBottom();
+    renderCombatPanel();
   };
 
   if (form) {
@@ -384,7 +518,7 @@
       if (state && state.combat && state.combat.active) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (status) status.textContent = 'Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.';
+        if (status) status.textContent = 'Đang chiến đấu. Hãy hoàn tất Poker Dice trong khung bên trên.';
         syncComposer();
       }
     }, true);
@@ -409,6 +543,7 @@
 
   function finishCombatAnimation(token) {
     if (token !== window.__combatAnimationToken) return;
+    window.__combatFeedbackBusy = false;
     window.__combatBusy = false;
     if (typeof busy !== 'undefined') busy = false;
     if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
@@ -442,6 +577,7 @@
         return;
       }
 
+      window.__combatFeedbackBusy = true;
       window.__combatBusy = true;
       if (typeof busy !== 'undefined') busy = true;
       var token = ++window.__combatAnimationToken;
@@ -451,6 +587,7 @@
       }
       if (typeof window.render === 'function') window.render();
       syncComposer();
+      renderCombatPanel();
       scrollCombatToBottom();
       if (status) status.textContent = 'Đang xử lý lượt của ' + (combat.resolvedActorName || 'nhân vật') + '…';
 
@@ -467,6 +604,7 @@
       setTimeout(function(){ finishCombatAnimation(token); }, delay);
     } catch (error) {
       ++window.__combatAnimationToken;
+      window.__combatFeedbackBusy = false;
       window.__combatBusy = false;
       if (typeof busy !== 'undefined') busy = false;
       if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
@@ -477,6 +615,7 @@
 
   var previousError = window.backroomError;
   window.backroomError = function(message){
+    window.__combatFeedbackBusy = false;
     window.__combatBusy = false;
     if (typeof previousError === 'function') previousError(message);
     syncComposer();

@@ -10,123 +10,134 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Small deterministic combat state machine used by the Android/WebView build.
+ * Authoritative 5D6 Poker Dice combat state machine.
  *
- * Explorer turn is intentionally owned by the outer game state. This engine never changes state.turn.
- * One player click resolves exactly one character action followed by that character's Entity response,
- * then advances to the next living party member. A combat round advances only after the last living
- * character has received its Entity response.
+ * The WebView only displays values already produced here. Dice values, holds, reroll count,
+ * finalized hand and PRNG sequence are serializable combat state, so reload cannot grant a free
+ * reroll. One finalized hand resolves exactly one Character action and at most one Entity response.
  */
 public final class CombatChoiceEngine {
-  public static final String ACTION_A = "__combat:A";
-  public static final String ACTION_B = "__combat:B";
-  public static final String ACTION_C = "__combat:C";
-  private static final int HUYET_MA_24_STRIKES = 24;
-  private static final int HUYET_MA_24_DAMAGE_PER_STRIKE = 10;
-  private static final int HUYET_MA_24_TOTAL_DAMAGE = HUYET_MA_24_STRIKES * HUYET_MA_24_DAMAGE_PER_STRIKE;
-  private static final int MAX_COMBAT_PARTICIPANTS = 4;
-  static final int CAO_MINH_DEFAULT_ATTACK = 30;
-  static final int CAO_MINH_DEFAULT_DEFENSE = 10;
-  static final double CRITICAL_DAMAGE_MULTIPLIER = 3.5d;
+  static final int MAX_COMBAT_PARTICIPANTS = 4;
+  static final int MAX_REROLLS = 3;
+  static final int DICE_COUNT = 5;
+
+  private static final int HUYET_MA_24_TOTAL_DAMAGE = 240;
+  private static final int CAO_MINH_BASE_ATTACK = 30;
 
   private static final class EntityProfile {
     final String key;
     final String name;
     final int maxHp;
-    final int attack;
-    final int defense;
+    final int damage;
 
-    EntityProfile(String key, String name, int maxHp, int attack, int defense) {
+    EntityProfile(String key, String name, int maxHp, int damage) {
       this.key = key;
       this.name = name;
       this.maxHp = maxHp;
-      this.attack = attack;
-      this.defense = defense;
+      this.damage = damage;
     }
   }
 
   private static final class Skill {
     final String name;
     final String description;
-    final int procPercent;
     final int damagePercent;
     final String effect;
     final int effectTurns;
     final int effectValue;
-    final boolean offensive;
 
-    Skill(String name, String description, int procPercent, int damagePercent, String effect, int effectTurns, int effectValue, boolean offensive) {
+    Skill(String name, String description, int damagePercent, String effect, int effectTurns,
+          int effectValue) {
       this.name = name;
       this.description = description;
-      this.procPercent = procPercent;
       this.damagePercent = damagePercent;
       this.effect = effect;
       this.effectTurns = effectTurns;
       this.effectValue = effectValue;
-      this.offensive = offensive;
     }
+  }
+
+  private static final class Ultimate {
+    final String name;
+    final int exactDamage;
+
+    Ultimate(String name, int exactDamage) {
+      this.name = name;
+      this.exactDamage = exactDamage;
+    }
+  }
+
+  private static final class ActionResult {
+    String summary;
+    boolean evadeResponse;
   }
 
   private static final Map<String, EntityProfile> ENTITIES = new LinkedHashMap<>();
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
+  private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();
 
   static {
-    entity("hound", "Hound", 240, 15, 2);
-    entity("clump", "Clump", 315, 17, 5);
-    entity("duller", "Duller", 270, 14, 3);
-    entity("deathmoth", "Deathmoth", 195, 13, 1);
-    entity("hostile_faceling", "Hostile Faceling", 225, 14, 2);
-    entity("false_puddle", "False Puddle", 285, 16, 4);
-    entity("paintings", "Paintings", 210, 12, 1);
-    entity("smiler", "Smiler", 255, 18, 2);
-    entity("skin-stealer", "Skin-Stealer", 300, 18, 4);
-    entity("predatory_window", "Predatory Window", 345, 17, 6);
-    entity("biological_pipeline", "Biological Pipeline", 360, 18, 7);
-    entity("wretch", "Wretch", 255, 16, 2);
-    entity("cable_mimic", "Cable Mimic", 300, 17, 5);
-    entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22, 8);
-    entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18, 5);
-    entity("jeff_the_killer", "Jeff", 360, 20, 4);
-    entity("jane_the_killer", "Jane", 360, 20, 4);
-    entity("slenderman", "Slenderman", 480, 23, 8);
-    entity("diep_minh", "Diệp Minh", 2000, 42, 14);
+    entity("hound", "Hound", 240, 15);
+    entity("clump", "Clump", 315, 17);
+    entity("duller", "Duller", 270, 14);
+    entity("deathmoth", "Deathmoth", 195, 13);
+    entity("hostile_faceling", "Hostile Faceling", 225, 14);
+    entity("false_puddle", "False Puddle", 285, 16);
+    entity("paintings", "Paintings", 210, 12);
+    entity("smiler", "Smiler", 255, 18);
+    entity("skin-stealer", "Skin-Stealer", 300, 18);
+    entity("predatory_window", "Predatory Window", 345, 17);
+    entity("biological_pipeline", "Biological Pipeline", 360, 18);
+    entity("wretch", "Wretch", 255, 16);
+    entity("cable_mimic", "Cable Mimic", 300, 17);
+    entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22);
+    entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18);
+    entity("jeff_the_killer", "Jeff", 360, 20);
+    entity("jane_the_killer", "Jane", 360, 20);
+    entity("slenderman", "Slenderman", 480, 23);
+    entity("diep_minh", "Diệp Minh", 2000, 42);
 
-    // Choice C skills are guaranteed to activate. Damage/effects remain unchanged.
+    // Only offensive canonical skills participate in Poker Dice Skill hands. Passive/evasion
+    // skills do not silently replace or modify dice outcomes.
     skills("cao_minh",
-      skill("Huyết Ma Tứ Liên", "Bốn trảm liên hoàn: phá thế, phá khí, phá thể rồi lưu Huyết Sát Kiếm Ý; tổng 170% weapon damage và Chảy máu 3 lượt, mỗi lượt 5% Max HP.", 100, 170, "Chảy máu", 3, 5, true),
-      skill("Ma Tâm Trấn Hồn", "Ma uy từ Vạn Quỷ Ma Tâm trấn áp thần hồn rồi Huyết Ma Kiếm giáng xuống; tổng 130% weapon damage và Choáng 1 lượt.", 100, 130, "Choáng", 1, 0, true),
-      skill("Huyết Ảnh Ma Độn", "Ngự Huyết Ma Kiếm lao qua mục tiêu, hóa huyết ảnh dịch chuyển tới vị trí kiếm rồi chém đúng hai kiếm; tổng 147% weapon damage.", 100, 147, "", 0, 0, true),
-      skill("Thiên Ma Bộ", "Lấy ma nguyên làm điểm tựa trong hư không để đổi hướng tức thời; nhận +50 điểm phần trăm Né tránh trong 3 lượt.", 100, 0, "Né tránh", 3, 50, false),
-      skill("Huyết Ma Nhị Thập Tứ Trảm", "Vạn Quỷ Ma Thân giải phóng; ngoại giới dừng hoàn toàn và Cao Minh hoàn tất đúng 24 trảm, mỗi trảm 10 HP trong gameplay hiện tại.", 100, 0, "", 0, 0, true));
+        skill("Huyết Ma Tứ Liên",
+            "Bốn trảm liên hoàn; tổng 170% weapon damage và Chảy máu.", 170, "Chảy máu", 3, 5),
+        skill("Ma Tâm Trấn Hồn",
+            "Ma uy trấn áp thần hồn; tổng 130% weapon damage và Choáng.", 130, "Choáng", 1, 0),
+        skill("Huyết Ảnh Ma Độn",
+            "Dịch chuyển theo Huyết Ma Kiếm rồi chém đúng hai kiếm; tổng 147% weapon damage.",
+            147, "", 0, 0));
 
     skills("iris",
-      skill("Twosome Time", 100, 155, "", 0, 0, true),
-      skill("Rain Storm", 100, 145, "", 0, 0, true),
-      skill("Honeycomb Fire", 100, 185, "Phá giáp", 2, 20, true),
-      skill("Charged Shot", 100, 175, "", 0, 0, true));
+        skill("Twosome Time", "", 155, "", 0, 0),
+        skill("Rain Storm", "", 145, "", 0, 0),
+        skill("Honeycomb Fire", "", 185, "Phá giáp", 2, 20),
+        skill("Charged Shot", "", 175, "", 0, 0));
 
     skills("syvial",
-      skill("Rift Sever", 100, 175, "", 0, 0, true),
-      skill("Crimson Guillotine", 100, 190, "Chảy máu", 3, 4, true),
-      skill("Lucifer Breaker", 100, 155, "Choáng", 1, 0, true),
-      skill("Spatial Dominion", 100, 210, "Mất phương hướng", 2, 25, true));
+        skill("Rift Sever", "", 175, "", 0, 0),
+        skill("Crimson Guillotine", "", 190, "Chảy máu", 3, 4),
+        skill("Lucifer Breaker", "", 155, "Choáng", 1, 0),
+        skill("Spatial Dominion", "", 210, "Mất phương hướng", 2, 25));
 
     skills("lucia",
-      skill("M4A1 Joint Attack", 100, 150, "", 0, 0, true));
+        skill("M4A1 Joint Attack", "", 150, "", 0, 0));
+
+    // Canonical runtime data currently defines both identity and gameplay damage for Cao Minh's
+    // Ultimate. Other characters intentionally remain unmapped until authoritative damage exists.
+    ULTIMATES.put("cao_minh",
+        new Ultimate("Huyết Ma Nhị Thập Tứ Trảm", HUYET_MA_24_TOTAL_DAMAGE));
   }
 
   private CombatChoiceEngine() {}
 
-  private static void entity(String key, String name, int hp, int attack, int defense) {
-    ENTITIES.put(key, new EntityProfile(key, name, hp, attack, defense));
+  private static void entity(String key, String name, int hp, int damage) {
+    ENTITIES.put(key, new EntityProfile(key, name, hp, damage));
   }
 
-  private static Skill skill(String name, String description, int proc, int damage, String effect, int turns, int value, boolean offensive) {
-    return new Skill(name, description, proc, damage, effect, turns, value, offensive);
-  }
-
-  private static Skill skill(String name, int proc, int damage, String effect, int turns, int value, boolean offensive) {
-    return skill(name, "", proc, damage, effect, turns, value, offensive);
+  private static Skill skill(String name, String description, int damage, String effect, int turns,
+                             int value) {
+    return new Skill(name, description, damage, effect, turns, value);
   }
 
   private static void skills(String id, Skill... definitions) {
@@ -141,9 +152,13 @@ public final class CombatChoiceEngine {
     for (List<Skill> pool : SKILLS.values()) {
       for (Skill skill : pool) {
         output.put(skill.name, "skill");
-        if (skill.effect != null && !skill.effect.trim().isEmpty()) output.put(skill.effect, "effect");
+        if (!skill.effect.trim().isEmpty()) output.put(skill.effect, "effect");
       }
     }
+    for (Ultimate ultimate : ULTIMATES.values()) output.put(ultimate.name, "skill");
+    // Canonical non-offensive skill retained for GM semantic recognition only. It is deliberately
+    // excluded from Poker Dice Skill selection so it cannot alter evade/dice outcomes.
+    output.put("Thiên Ma Bộ", "skill");
     return output;
   }
 
@@ -151,219 +166,394 @@ public final class CombatChoiceEngine {
     return key != null && ENTITIES.containsKey(key.trim().toLowerCase(Locale.ROOT));
   }
 
-  public static boolean isCombatAction(String action) {
-    return ACTION_A.equals(action) || ACTION_B.equals(action) || ACTION_C.equals(action);
-  }
-
   public static boolean isActive(JSONObject state) {
     JSONObject combat = state == null ? null : state.optJSONObject("combat");
     return combat != null && combat.optBoolean("active", false);
-  }
-
-  /** Neutral normal attack uses the maximum value of the legacy 18 + 4..12 roll, then armor. */
-  public static int maxNormalDamage(int attackMax, int entityDefense) {
-    return Math.max(1, Math.max(1, attackMax) - Math.max(0, entityDefense));
-  }
-
-  public static int defendedIncomingDamage(int entityAttack, int baseDefense) {
-    return Math.max(1, Math.max(1, entityAttack) - Math.max(0, baseDefense) * 2);
-  }
-
-  public static int normalIncomingDamage(int entityAttack, int baseDefense) {
-    return Math.max(1, Math.max(1, entityAttack) - Math.max(0, baseDefense));
-  }
-
-  public static int counterDamage(int normalAttackDamage) {
-    return Math.max(1, (Math.max(1, normalAttackDamage) + 1) / 2);
-  }
-
-  static int configuredProcPercent(String characterId, String skillName) {
-    List<Skill> pool = SKILLS.get(normalizeCharacterId(characterId));
-    if (pool == null || skillName == null) return -1;
-    for (Skill skill : pool) if (skillName.equals(skill.name)) return skill.procPercent;
-    return -1;
-  }
-
-  static int exactDamageForSkill(String skillName) {
-    return "Huyết Ma Nhị Thập Tứ Trảm".equals(skillName) ? HUYET_MA_24_TOTAL_DAMAGE : 0;
   }
 
   static int maxCombatParticipants() {
     return MAX_COMBAT_PARTICIPANTS;
   }
 
+  static boolean hasAuthoritativeUltimate(String characterId) {
+    return ULTIMATES.containsKey(CharacterProgressionCore.normalizeCharacterId(characterId));
+  }
+
+  static String classify(int... dice) {
+    if (dice == null || dice.length != DICE_COUNT) return "NO HAND";
+    int[] values = dice.clone();
+    for (int value : values) if (value < 1 || value > 6) return "NO HAND";
+
+    boolean allSame = true;
+    for (int i = 1; i < values.length; i++) allSame &= values[i] == values[0];
+    if (allSame) return "FSF";
+
+    if (matches(values, 1, 2, 3, 4, 5) || matches(values, 5, 4, 3, 2, 1)) return "SSF";
+    if (matches(values, 2, 3, 4, 5, 6) || matches(values, 6, 5, 4, 3, 2)) return "STRAIGHT";
+
+    int[] counts = new int[7];
+    for (int value : values) counts[value]++;
+    boolean four = false;
+    boolean triple = false;
+    int pairs = 0;
+    for (int value = 1; value <= 6; value++) {
+      if (counts[value] == 4) four = true;
+      if (counts[value] == 3) triple = true;
+      if (counts[value] == 2) pairs++;
+    }
+    if (four) return "FOUR OF A KIND";
+    if (triple && pairs == 1) return "FULL HOUSE";
+    if (triple) return "THREE OF A KIND";
+    if (pairs >= 2) return "TWO PAIR";
+    if (pairs == 1) return "ONE PAIR";
+    return "NO HAND";
+  }
+
+  private static boolean matches(int[] values, int a, int b, int c, int d, int e) {
+    return values[0] == a && values[1] == b && values[2] == c && values[3] == d
+        && values[4] == e;
+  }
+
+  static int basicDamage(int baseDamage, int str, int handPercent) {
+    return scaledDamage(baseDamage, CharacterProgressionCore.statPercent(str), handPercent);
+  }
+
+  static int skillDamage(int baseDamage, int skillPercent, int skl, int handPercent) {
+    long skillBase = ((long)Math.max(1, baseDamage) * Math.max(0, skillPercent) + 50L) / 100L;
+    return scaledDamage((int)Math.max(1L, skillBase),
+        CharacterProgressionCore.statPercent(skl), handPercent);
+  }
+
+  static int ultimateDamage(int baseDamage, int skl, int handPercent) {
+    return scaledDamage(baseDamage, CharacterProgressionCore.statPercent(skl), handPercent);
+  }
+
+  private static int scaledDamage(int baseDamage, int statPercent, int handPercent) {
+    long scaled = (long)Math.max(1, baseDamage) * Math.max(0, statPercent) * Math.max(0, handPercent);
+    return Math.max(1, (int)((scaled + 5_000L) / 10_000L));
+  }
+
+  static int defendedIncomingDamage(int rawDamage, int def) {
+    int defPercent = CharacterProgressionCore.statPercent(def);
+    long numerator = (long)Math.max(1, rawDamage) * 100L;
+    return Math.max(1, (int)((numerator + defPercent / 2L) / defPercent));
+  }
+
+  static int deterministicDie(int seed, int sequence, int slot) {
+    long mixed = (seed & 0xffffffffL) * 1_103_515_245L
+        + (long)(sequence + 1) * 12_345L
+        + (long)(slot + 1) * 2_654_435_761L;
+    mixed ^= mixed >>> 17;
+    mixed ^= mixed << 13;
+    return 1 + (int)Math.floorMod(mixed, 6L);
+  }
+
   public static JSONObject start(JSONObject state, String entityKey, int gmLogIndex) throws Exception {
     if (state == null) throw new IllegalArgumentException("state is required");
     String normalized = entityKey == null ? "" : entityKey.trim().toLowerCase(Locale.ROOT);
     EntityProfile profile = ENTITIES.get(normalized);
-    if (profile == null) return state;
-    if (isActive(state)) return state;
+    if (profile == null || isActive(state)) return state;
 
-    CharacterProgressionCore progressionCore = new CharacterProgressionCore();
-    progressionCore.normalizeState(state);
-    JSONArray participants = buildParticipants(state, progressionCore);
-    if (participants.length() == 0) return state;
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+    JSONArray participants = buildParticipants(state, progression);
+    if (!hasLivingParticipant(participants)) return state;
 
-    JSONObject combat = new JSONObject();
-    combat.put("active", true);
-    combat.put("round", 1);
-    combat.put("actorIndex", 0);
-    combat.put("sequence", 0);
-    combat.put("seed", stableSeed(state, normalized, participants));
-    combat.put("logIndex", Math.max(0, gmLogIndex));
-    combat.put("participants", participants);
+    int stageIndex = LevelCore.stageIndex(state);
+    JSONObject scaled = new EntityStatCore().profile(
+        normalized, profile.maxHp, profile.damage, stageIndex);
 
-    JSONObject statProfile = new EntityStatCore().profile(
-        state, normalized, progressionCore, profile.maxHp);
-    int scaledMaxHp = statProfile.getJSONObject("effective").getInt("maxHp");
-    JSONObject entityState = new JSONObject()
-      .put("key", profile.key)
-      .put("name", profile.name)
-      .put("hp", scaledMaxHp)
-      .put("maxHp", scaledMaxHp)
-      .put("attack", profile.attack)
-      .put("defense", profile.defense)
-      .put("bleedTurns", 0)
-      .put("bleedPercent", 0)
-      .put("stunTurns", 0)
-      .put("armorBreakTurns", 0)
-      .put("armorBreakPercent", 0);
-    entityState.put("statBaseline", statProfile.getJSONObject("baseline"));
-    entityState.put("statModifier", statProfile.getJSONObject("modifier"));
-    entityState.put("statEffective", statProfile.getJSONObject("effective"));
-    combat.put("entity", entityState);
+    JSONObject combat = new JSONObject()
+        .put("active", true)
+        .put("round", 1)
+        .put("actorIndex", firstLivingIndex(participants))
+        .put("rngSequence", 0)
+        .put("seed", stableSeed(state, normalized, participants))
+        .put("logIndex", Math.max(0, gmLogIndex))
+        .put("participants", participants)
+        .put("stageIndex", stageIndex)
+        .put("entity", new JSONObject()
+            .put("key", profile.key)
+            .put("name", profile.name)
+            .put("hp", scaled.getInt("maxHp"))
+            .put("maxHp", scaled.getInt("maxHp"))
+            .put("attack", scaled.getInt("damage"))
+            .put("baseHp", profile.maxHp)
+            .put("baseDamage", profile.damage)
+            .put("stagePercent", scaled.getInt("stagePercent"))
+            .put("bleedTurns", 0)
+            .put("bleedPercent", 0)
+            .put("stunTurns", 0));
 
     state.put("combat", combat);
     prepareCurrentTurn(combat);
     return state;
   }
 
-  public static JSONObject resolve(JSONObject state, String action) throws Exception {
-    if (!isActive(state)) return state;
-    if (!isCombatAction(action)) throw new IllegalArgumentException("Đang chiến đấu. Hãy chọn A, B hoặc C.");
-
-    JSONObject combat = state.getJSONObject("combat");
-    combat.put("feedbackEvents", new JSONArray());
-    combat.put("resolvedEntityTurn", false);
-    JSONArray participants = combat.getJSONArray("participants");
-    int actorIndex = combat.optInt("actorIndex", 0);
-    if (actorIndex < 0 || actorIndex >= participants.length()) actorIndex = 0;
-    JSONObject actor = participants.getJSONObject(actorIndex);
-    if (actor.optInt("hp", 0) <= 0) {
-      advanceActor(combat);
-      actorIndex = combat.optInt("actorIndex", 0);
-      actor = participants.getJSONObject(actorIndex);
+  public static JSONObject setHold(JSONObject state, int dieIndex, boolean held) throws Exception {
+    if (!isActive(state)) throw new IllegalStateException("Không có trận chiến đang hoạt động.");
+    if (dieIndex < 0 || dieIndex >= DICE_COUNT) throw new IllegalArgumentException("Die index không hợp lệ.");
+    JSONObject dice = diceState(state.getJSONObject("combat"));
+    if (!dice.optBoolean("hasRolled", false)) {
+      throw new IllegalStateException("Phải ROLL trước khi HOLD.");
     }
-
-    combat.put("resolvedActorIndex", actorIndex);
-    combat.put("resolvedActorName", actor.optString("name", "Nhân vật"));
-    combat.put("resolvedRound", Math.max(1, combat.optInt("round", 1)));
-    JSONObject entity = combat.getJSONObject("entity");
-    if (actorIndex == 0 && combat.optInt("round", 1) > 1) {
-      tickRoundStartEffects(state, combat, entity);
-      if (entity.optInt("hp", 0) <= 0) {
-        finishVictory(state, combat, entity);
-        return state;
-      }
+    if (dice.optBoolean("finalized", false)) {
+      throw new IllegalStateException("Hand đã được chốt.");
     }
-
-    boolean defending = ACTION_B.equals(action);
-    if (ACTION_A.equals(action)) {
-      resolveAttack(state, combat, actor, entity);
-    } else if (defending) {
-      appendBattleLine(state, combat,
-        actor.optString("name", "Nhân vật") + " phòng thủ. +100% DEF.",
-        actor.optString("name", ""), "+100% DEF");
-    } else {
-      resolveSkill(state, combat, actor, entity);
-    }
-
-    if (entity.optInt("hp", 0) <= 0) {
-      finishVictory(state, combat, entity);
-      syncParticipants(state, participants);
-      return state;
-    }
-
-    combat.put("resolvedEntityTurn", true);
-    resolveEntityResponse(state, combat, actor, entity, defending);
-    syncParticipants(state, participants);
-
-    if (isCaoMinhDown(participants)) {
-      finishPlayerDefeat(state, combat);
-      return state;
-    }
-
-    if (entity.optInt("hp", 0) <= 0) {
-      finishVictory(state, combat, entity);
-      return state;
-    }
-    if (!hasLivingParticipant(participants)) {
-      finishDefeat(state, combat);
-      return state;
-    }
-
-    advanceActor(combat);
-    combat.put("nextActorIndex", combat.optInt("actorIndex", 0));
-    prepareCurrentTurn(combat);
+    dice.getJSONArray("held").put(dieIndex, held);
     return state;
   }
 
-  private static JSONArray buildParticipants(JSONObject state, CharacterProgressionCore progressionCore)
+  public static JSONObject roll(JSONObject state) throws Exception {
+    if (!isActive(state)) throw new IllegalStateException("Không có trận chiến đang hoạt động.");
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject dice = diceState(combat);
+    if (dice.optBoolean("finalized", false)) return state;
+
+    boolean hasRolled = dice.optBoolean("hasRolled", false);
+    if (!hasRolled) {
+      rollDice(combat, dice, false);
+      dice.put("hasRolled", true).put("rerollsUsed", 0);
+      updateHand(dice);
+      return state;
+    }
+
+    int rerollsUsed = Math.max(0, dice.optInt("rerollsUsed", 0));
+    if (rerollsUsed >= MAX_REROLLS || allHeld(dice.getJSONArray("held"))) return state;
+
+    rollDice(combat, dice, true);
+    dice.put("rerollsUsed", rerollsUsed + 1);
+    updateHand(dice);
+    return state;
+  }
+
+  public static JSONObject finishHand(JSONObject state) throws Exception {
+    if (!isActive(state)) throw new IllegalStateException("Không có trận chiến đang hoạt động.");
+    JSONObject dice = diceState(state.getJSONObject("combat"));
+    if (!dice.optBoolean("hasRolled", false)) {
+      throw new IllegalStateException("Dice chưa có Initial Roll.");
+    }
+    if (!dice.optBoolean("finalized", false)) finalizeHand(dice);
+    return state;
+  }
+
+  public static JSONObject resolveFinalized(JSONObject state) throws Exception {
+    if (!isActive(state)) return state;
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject dice = diceState(combat);
+    if (!dice.optBoolean("finalized", false)) {
+      throw new IllegalStateException("Hand chưa được chốt.");
+    }
+    if (dice.optBoolean("resolved", false)) return state;
+
+    combat.put("feedbackEvents", new JSONArray());
+    combat.put("resolvedEntityTurn", false);
+
+    JSONArray participants = combat.getJSONArray("participants");
+    int actorIndex = currentLivingIndex(combat, participants);
+    if (actorIndex < 0) {
+      finishDefeat(state, combat);
+      return state;
+    }
+    JSONObject actor = participants.getJSONObject(actorIndex);
+    combat.put("actorIndex", actorIndex);
+    combat.put("resolvedActorIndex", actorIndex);
+    combat.put("resolvedActorName", actor.optString("name", "Nhân vật"));
+    combat.put("resolvedRound", Math.max(1, combat.optInt("round", 1)));
+
+    JSONObject entity = combat.getJSONObject("entity");
+    if (actorIndex == firstLivingIndex(participants) && combat.optInt("round", 1) > 1) {
+      tickRoundStartEffects(combat, entity);
+    }
+
+    String hand = dice.optString("hand", "NO HAND");
+    ActionResult result = resolveHandAction(combat, actor, entity, hand);
+    dice.put("resolved", true);
+
+    if (entity.optInt("hp", 0) > 0) {
+      combat.put("resolvedEntityTurn", true);
+      resolveEntityResponse(combat, actor, entity, result.evadeResponse);
+    }
+
+    syncParticipants(state, participants);
+
+    if (entity.optInt("hp", 0) <= 0) {
+      finishVictory(state, combat, entity);
+    } else if (isCaoMinhDown(participants) || !hasLivingParticipant(participants)) {
+      finishDefeat(state, combat);
+    } else {
+      advanceActor(combat);
+      combat.put("nextActorIndex", combat.optInt("actorIndex", 0));
+      prepareCurrentTurn(combat);
+    }
+
+    appendBattleLine(state, combat, result.summary);
+    return state;
+  }
+
+  private static ActionResult resolveHandAction(JSONObject combat, JSONObject actor, JSONObject entity,
+                                                String hand) throws Exception {
+    ActionResult result = new ActionResult();
+    String actorName = actor.optString("name", "Nhân vật");
+    int str = actor.optInt("STR", CharacterProgressionCore.BASE_STAT);
+    int skl = actor.optInt("SKL", CharacterProgressionCore.BASE_STAT);
+    int baseAttack = Math.max(1, actor.optInt("baseAttack", CAO_MINH_BASE_ATTACK));
+
+    if ("NO HAND".equals(hand) || "ONE PAIR".equals(hand) || "TWO PAIR".equals(hand)) {
+      int handPercent = "ONE PAIR".equals(hand) ? 125 : 100;
+      int damage = basicDamage(baseAttack, str, handPercent);
+      applyEntityDamage(combat, entity, damage);
+      if ("TWO PAIR".equals(hand)) {
+        result.evadeResponse = true;
+        result.summary = "[TWO PAIR] " + actorName + " né và phản công.";
+      } else if ("ONE PAIR".equals(hand)) {
+        result.summary = "[PAIR] " + actorName + " đánh thường · 125% DMG.";
+      } else {
+        result.summary = "[NO HAND] " + actorName + " đánh thường.";
+      }
+      return result;
+    }
+
+    if ("SSF".equals(hand) || "FSF".equals(hand)) {
+      int handPercent = "FSF".equals(hand) ? 200 : 100;
+      Ultimate ultimate = ULTIMATES.get(actor.optString("id", ""));
+      if (ultimate == null || ultimate.exactDamage <= 0) {
+        result.summary = "[" + hand + "] " + actorName + " chưa có Ultimate authoritative.";
+        return result;
+      }
+      int damage = ultimateDamage(ultimate.exactDamage, skl, handPercent);
+      applyEntityDamage(combat, entity, damage);
+      result.summary = "[" + hand + "] " + actorName + " dùng " + ultimate.name
+          + ("FSF".equals(hand) ? " · 200% DMG." : ".");
+      return result;
+    }
+
+    int handPercent = skillHandPercent(hand);
+    JSONObject selected = combat.optJSONObject("currentSkill");
+    if (selected == null || selected.optString("name", "").isEmpty()) {
+      result.summary = "[" + handToken(hand) + "] " + actorName + " không có Skill authoritative.";
+      return result;
+    }
+
+    int damage = skillDamage(baseAttack, selected.optInt("damagePercent", 100), skl, handPercent);
+    applyEntityDamage(combat, entity, damage);
+    applySkillEffect(entity, selected);
+    result.summary = "[" + handToken(hand) + "] " + actorName + " dùng "
+        + selected.optString("name", "Skill")
+        + (handPercent == 100 ? "." : " · " + handPercent + "% DMG.");
+    return result;
+  }
+
+  private static int skillHandPercent(String hand) {
+    if ("STRAIGHT".equals(hand)) return 150;
+    if ("FULL HOUSE".equals(hand)) return 200;
+    if ("FOUR OF A KIND".equals(hand)) return 250;
+    return 100;
+  }
+
+  private static String handToken(String hand) {
+    if ("THREE OF A KIND".equals(hand)) return "TRIPLE";
+    return hand;
+  }
+
+  private static void applyEntityDamage(JSONObject combat, JSONObject entity, int damage)
+      throws Exception {
+    int hp = Math.max(0, entity.optInt("hp", 0) - Math.max(1, damage));
+    entity.put("hp", hp);
+    addFeedback(combat, "actor", "entity", "damage", "-" + Math.max(1, damage) + " HP", true);
+  }
+
+  private static void applySkillEffect(JSONObject entity, JSONObject selected) throws Exception {
+    String effect = selected.optString("effect", "");
+    int turns = Math.max(0, selected.optInt("effectTurns", 0));
+    int value = Math.max(0, selected.optInt("effectValue", 0));
+    if ("Choáng".equals(effect) && turns > 0) {
+      entity.put("stunTurns", Math.max(entity.optInt("stunTurns", 0), turns));
+    } else if ("Chảy máu".equals(effect) && turns > 0 && value > 0) {
+      entity.put("bleedTurns", Math.max(entity.optInt("bleedTurns", 0), turns));
+      entity.put("bleedPercent", Math.max(entity.optInt("bleedPercent", 0), value));
+    }
+    // Armor/evasion/accuracy effects are intentionally not projected into hidden stats. Poker
+    // Dice owns evade and Entity has no DEF/AGI system in this ruleset.
+  }
+
+  private static void resolveEntityResponse(JSONObject combat, JSONObject actor, JSONObject entity,
+                                            boolean evade) throws Exception {
+    int stunTurns = Math.max(0, entity.optInt("stunTurns", 0));
+    if (stunTurns > 0) {
+      entity.put("stunTurns", stunTurns - 1);
+      addFeedback(combat, "entity", "actor", "miss", "STUN", false);
+      return;
+    }
+
+    if (evade) {
+      addFeedback(combat, "entity", "actor", "miss", "EVADE", false);
+      return;
+    }
+
+    int rawDamage = Math.max(1, entity.optInt("attack", 1));
+    int def = actor.optInt("DEF", CharacterProgressionCore.BASE_STAT);
+    int damage = defendedIncomingDamage(rawDamage, def);
+    actor.put("hp", Math.max(0, actor.optInt("hp", 0) - damage));
+    addFeedback(combat, "entity", "actor", "damage", "-" + damage + " HP", true);
+  }
+
+  private static void tickRoundStartEffects(JSONObject combat, JSONObject entity) throws Exception {
+    int turns = Math.max(0, entity.optInt("bleedTurns", 0));
+    int percent = Math.max(0, entity.optInt("bleedPercent", 0));
+    if (turns <= 0 || percent <= 0 || entity.optInt("hp", 0) <= 0) return;
+    int damage = Math.max(1, entity.optInt("maxHp", 1) * percent / 100);
+    entity.put("hp", Math.max(0, entity.optInt("hp", 0) - damage));
+    entity.put("bleedTurns", turns - 1);
+    addFeedback(combat, "actor", "entity", "damage", "-" + damage + " HP", true);
+  }
+
+  private static JSONArray buildParticipants(JSONObject state, CharacterProgressionCore progression)
       throws Exception {
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
     String playerName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
-    JSONObject caoMinhProfile = progressionCore.profile(state, "cao_minh");
-    output.put(participant("cao_minh", playerName, -1, player,
-        caoMinhProfile.getInt("currentHp"), caoMinhProfile.getInt("maxHp"),
-        CAO_MINH_DEFAULT_ATTACK, CAO_MINH_DEFAULT_DEFENSE));
+    JSONObject cao = progression.profile(state, "cao_minh");
+    output.put(participant("cao_minh", playerName, -1, player, cao, CAO_MINH_BASE_ATTACK));
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;
     for (int i = 0; i < party.length() && output.length() < MAX_COMBAT_PARTICIPANTS; i++) {
       JSONObject member = party.optJSONObject(i);
       if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
-      String name = member.optString("name", member.optString("id", "")).trim();
-      if (name.isEmpty() || normalizeCharacterId(name).equals("cao_minh")) continue;
-      String id = normalizeCharacterId(member.optString("id", name));
-      int defaultAttack = "syvial".equals(id) ? 32 : "iris".equals(id) ? 28 : "lucia".equals(id) ? 24 : 24;
-      int defaultDefense = "syvial".equals(id) ? 10 : "iris".equals(id) ? 8 : "lucia".equals(id) ? 7 : 7;
-      JSONObject profile = progressionCore.profile(state, id);
-      output.put(participant(id, name, i, member,
-          profile.getInt("currentHp"), profile.getInt("maxHp"), defaultAttack, defaultDefense));
+      String id = CharacterProgressionCore.normalizeCharacterId(
+          member.optString("id", member.optString("name", "")));
+      if (id.isEmpty() || "cao_minh".equals(id)) continue;
+      String name = member.optString("name", id);
+      int baseAttack = "syvial".equals(id) ? 32 : "iris".equals(id) ? 28 : 24;
+      output.put(participant(id, name, i, member, progression.profile(state, id), baseAttack));
     }
     return output;
   }
 
   private static JSONObject participant(String id, String name, int sourceIndex, JSONObject source,
-                                        int currentHp, int maxHp, int fallbackAttack, int fallbackDefense)
-      throws Exception {
-    int normalizedMaxHp = Math.max(1, maxHp);
-    int hp = Math.max(0, Math.min(currentHp, normalizedMaxHp));
-    int attack = firstPositive(source, fallbackAttack, "attackMax", "attack", "ATK", "str", "STR");
-    int defense = firstPositive(source, fallbackDefense, "defense", "DEF", "df", "DF");
+                                        JSONObject profile, int fallbackAttack) throws Exception {
+    JSONObject stats = profile.getJSONObject("stats");
+    int maxHp = Math.max(1, profile.getInt("maxHp"));
+    int hp = Math.max(0, Math.min(profile.getInt("currentHp"), maxHp));
+    int baseAttack = firstPositive(source, fallbackAttack, "attackMax", "attack", "ATK");
     return new JSONObject()
-      .put("id", id)
-      .put("name", name)
-      .put("sourceIndex", sourceIndex)
-      .put("hp", hp)
-      .put("maxHp", normalizedMaxHp)
-      .put("attack", attack)
-      .put("defense", defense)
-      .put("evasionBonus", 0)
-      .put("evasionTurns", 0);
+        .put("id", id)
+        .put("name", name)
+        .put("sourceIndex", sourceIndex)
+        .put("hp", hp)
+        .put("maxHp", maxHp)
+        .put("baseAttack", baseAttack)
+        .put("STR", stats.getInt("STR"))
+        .put("DEF", stats.getInt("DEF"))
+        .put("SKL", stats.getInt("SKL"))
+        .put("VIT", stats.getInt("VIT"));
   }
 
   private static int firstPositive(JSONObject source, int fallback, String... keys) {
-    if (source == null) return fallback;
-    for (String key : keys) {
-      int value = source.optInt(key, 0);
-      if (value > 0) return value;
-    }
-    JSONObject stats = source.optJSONObject("stats");
-    if (stats != null) {
+    if (source != null) {
       for (String key : keys) {
-        int value = stats.optInt(key, 0);
+        int value = source.optInt(key, 0);
         if (value > 0) return value;
       }
     }
@@ -371,212 +561,163 @@ public final class CombatChoiceEngine {
   }
 
   private static int stableSeed(JSONObject state, String entityKey, JSONArray participants) {
-    String basis = entityKey + "|" + state.optInt("turn", 1) + "|" + participants.toString();
+    String basis = entityKey + "|" + state.optInt("turn", 1) + "|"
+        + state.optString(LevelCore.LEVEL_KEY, "0") + "|" + participants.toString();
     int hash = basis.hashCode();
     return hash == Integer.MIN_VALUE ? 1 : Math.abs(hash);
   }
 
-  private static void resolveAttack(JSONObject state, JSONObject combat, JSONObject actor, JSONObject entity) throws Exception {
-    int damage = maxNormalDamage(actor.optInt("attack", 30), effectiveEntityDefense(entity));
-    int hp = Math.max(0, entity.optInt("hp", 0) - damage);
-    entity.put("hp", hp);
-    String actorName = actor.optString("name", "Nhân vật");
-    String entityName = entity.optString("name", "Entity");
-    String damageText = "-" + damage + " HP";
-    String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
-    appendBattleLine(state, combat,
-      actorName + " tấn công " + entityName + ". " + damageText + " (" + hpText + ")",
-      actorName, entityName, damageText, hpText);
-    addFeedback(combat, "actor", "entity", "damage", damageText, true);
+  private static JSONObject newDiceState() throws Exception {
+    JSONArray values = new JSONArray();
+    JSONArray held = new JSONArray();
+    for (int i = 0; i < DICE_COUNT; i++) {
+      values.put(0);
+      held.put(false);
+    }
+    return new JSONObject()
+        .put("values", values)
+        .put("held", held)
+        .put("hasRolled", false)
+        .put("rerollsUsed", 0)
+        .put("maxRerolls", MAX_REROLLS)
+        .put("finalized", false)
+        .put("resolved", false)
+        .put("hand", "");
   }
 
-  private static void resolveSkill(JSONObject state, JSONObject combat, JSONObject actor, JSONObject entity) throws Exception {
-    JSONObject selected = combat.optJSONObject("currentSkill");
-    String actorName = actor.optString("name", "Nhân vật");
-    String entityName = entity.optString("name", "Entity");
-    if (selected == null || selected.optString("name", "").isEmpty()) {
-      appendBattleLine(state, combat, actorName + " không có kỹ năng khả dụng.", actorName);
-      return;
+  private static JSONObject diceState(JSONObject combat) throws Exception {
+    JSONObject dice = combat.optJSONObject("diceState");
+    if (dice == null) throw new IllegalStateException("Combat dice state bị thiếu.");
+    JSONArray values = dice.optJSONArray("values");
+    JSONArray held = dice.optJSONArray("held");
+    if (values == null || held == null || values.length() != DICE_COUNT || held.length() != DICE_COUNT) {
+      throw new IllegalStateException("Combat dice state không hợp lệ.");
     }
+    return dice;
+  }
 
-    String skillName = selected.optString("name", "Kỹ năng");
-    int procPercent = selected.optInt("procPercent", 100);
-    if (nextRoll(combat, "proc:" + skillName) >= procPercent) {
-      appendBattleLine(state, combat,
-        actorName + " dùng " + skillName + " lên " + entityName + ". Trượt.",
-        actorName, skillName, entityName);
-      addFeedback(combat, "actor", "entity", "miss", "MISS", false);
-      return;
+  private static void ensureInitialRoll(JSONObject combat) throws Exception {
+    JSONObject dice = combat.optJSONObject("diceState");
+    if (dice == null) {
+      dice = newDiceState();
+      combat.put("diceState", dice);
     }
+    dice = diceState(combat);
+    if (!dice.optBoolean("hasRolled", false)) {
+      rollDice(combat, dice, false);
+      dice.put("hasRolled", true).put("rerollsUsed", 0);
+    }
+    if (dice.optString("hand", "").trim().isEmpty()) updateHand(dice);
+  }
 
-    boolean offensive = selected.optBoolean("offensive", true);
-    int exactDamage = exactDamageForSkill(skillName);
-    if (exactDamage > 0) {
-      int hp = Math.max(0, entity.optInt("hp", 0) - exactDamage);
-      entity.put("hp", hp);
-      String damageText = "-" + exactDamage + " HP";
-      String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
-      appendBattleLine(state, combat,
-        actorName + " dùng " + skillName + ": hoàn tất đúng " + HUYET_MA_24_STRIKES +
-          " trảm khi ngoại giới dừng hoàn toàn. " + damageText + " (" + hpText + ")",
-        actorName, skillName, entityName, damageText, hpText);
-      addFeedback(combat, "actor", "entity", "damage", damageText, true);
-      return;
+  private static void rollDice(JSONObject combat, JSONObject dice, boolean respectHeld)
+      throws Exception {
+    JSONArray values = dice.getJSONArray("values");
+    JSONArray held = dice.getJSONArray("held");
+    for (int i = 0; i < DICE_COUNT; i++) {
+      if (respectHeld && held.optBoolean(i, false)) continue;
+      int sequence = combat.optInt("rngSequence", 0);
+      int value = deterministicDie(combat.optInt("seed", 1), sequence, i);
+      combat.put("rngSequence", sequence + 1);
+      values.put(i, value);
     }
-    if (offensive) {
-      int raw = Math.max(1, actor.optInt("attack", 30) * selected.optInt("damagePercent", 100) / 100);
-      int damage = Math.max(1, raw - effectiveEntityDefense(entity));
-      int hp = Math.max(0, entity.optInt("hp", 0) - damage);
-      entity.put("hp", hp);
-      String damageText = "-" + damage + " HP";
-      String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
-      appendBattleLine(state, combat,
-        actorName + " dùng " + skillName + " lên " + entityName + ". " + damageText + " (" + hpText + ")",
-        actorName, skillName, entityName, damageText, hpText);
-      addFeedback(combat, "actor", "entity", "damage", damageText, true);
+  }
+
+  private static void updateHand(JSONObject dice) throws Exception {
+    JSONArray values = dice.getJSONArray("values");
+    int[] hand = new int[DICE_COUNT];
+    for (int i = 0; i < DICE_COUNT; i++) hand[i] = values.optInt(i, 0);
+    dice.put("hand", classify(hand));
+  }
+
+  private static boolean allHeld(JSONArray held) {
+    if (held == null || held.length() != DICE_COUNT) return false;
+    for (int i = 0; i < DICE_COUNT; i++) if (!held.optBoolean(i, false)) return false;
+    return true;
+  }
+
+  private static void finalizeHand(JSONObject dice) throws Exception {
+    updateHand(dice);
+    dice.put("finalized", true);
+  }
+
+  private static void prepareCurrentTurn(JSONObject combat) throws Exception {
+    JSONArray participants = combat.getJSONArray("participants");
+    int actorIndex = currentLivingIndex(combat, participants);
+    if (actorIndex < 0) return;
+    combat.put("actorIndex", actorIndex);
+    JSONObject actor = participants.getJSONObject(actorIndex);
+    String id = actor.optString("id", "");
+
+    List<Skill> pool = SKILLS.get(id);
+    if (pool != null && !pool.isEmpty()) {
+      int index = Math.floorMod(
+          combat.optInt("seed", 1) + combat.optInt("round", 1) * 31 + actorIndex * 17,
+          pool.size());
+      combat.put("currentSkill", skillJson(pool.get(index)));
     } else {
-      appendBattleLine(state, combat,
-        actorName + " dùng " + skillName + ".",
-        actorName, skillName);
+      combat.remove("currentSkill");
     }
 
-    applySkillEffect(state, combat, actor, entity, selected);
-  }
-
-  private static void applySkillEffect(JSONObject state, JSONObject combat, JSONObject actor,
-                                       JSONObject entity, JSONObject selected) throws Exception {
-    String effect = selected.optString("effect", "").trim();
-    if (effect.isEmpty() || entity.optInt("hp", 0) <= 0) return;
-    int turns = Math.max(0, selected.optInt("effectTurns", 0));
-    int value = Math.max(0, selected.optInt("effectValue", 0));
-    String entityName = entity.optString("name", "Entity");
-    String actorName = actor.optString("name", "Nhân vật");
-
-    if ("Choáng".equals(effect)) {
-      entity.put("stunTurns", Math.max(entity.optInt("stunTurns", 0), turns));
-      appendBattleLine(state, combat, entityName + " bị Choáng " + turns + " lượt.", entityName, "Choáng");
-    } else if ("Chảy máu".equals(effect)) {
-      entity.put("bleedTurns", Math.max(entity.optInt("bleedTurns", 0), turns));
-      entity.put("bleedPercent", Math.max(entity.optInt("bleedPercent", 0), value));
-      appendBattleLine(state, combat, entityName + " bị Chảy máu " + turns + " lượt.", entityName, "Chảy máu");
-    } else if ("Phá giáp".equals(effect)) {
-      entity.put("armorBreakTurns", Math.max(entity.optInt("armorBreakTurns", 0), turns));
-      entity.put("armorBreakPercent", Math.max(entity.optInt("armorBreakPercent", 0), value));
-      appendBattleLine(state, combat, entityName + " bị Phá giáp " + turns + " lượt.", entityName, "Phá giáp");
-    } else if ("Né tránh".equals(effect)) {
-      actor.put("evasionBonus", value).put("evasionTurns", turns);
-      appendBattleLine(state, combat,
-        actorName + " nhận +" + value + "% Né tránh trong " + turns + " lượt.",
-        actorName, "+" + value + "% Né tránh", "Né tránh");
-    } else if ("Mất phương hướng".equals(effect)) {
-      entity.put("accuracyPenalty", value).put("accuracyPenaltyTurns", turns);
-      appendBattleLine(state, combat,
-        entityName + " bị Mất phương hướng " + turns + " lượt.", entityName, "Mất phương hướng");
-    }
-  }
-
-  private static void resolveEntityResponse(JSONObject state, JSONObject combat, JSONObject actor,
-                                            JSONObject entity, boolean defending) throws Exception {
-    String entityName = entity.optString("name", "Entity");
-    String actorName = actor.optString("name", "Nhân vật");
-
-    int stunTurns = entity.optInt("stunTurns", 0);
-    if (stunTurns > 0) {
-      entity.put("stunTurns", stunTurns - 1);
-      appendBattleLine(state, combat, entityName + " mất lượt vì Choáng.", entityName, "Choáng");
-      decrementActorEvasion(actor);
-      decrementEntityTemporaryEffects(entity);
-      return;
-    }
-
-    int dodgeChance = defending ? 20 : 0;
-    dodgeChance += actor.optInt("evasionTurns", 0) > 0 ? actor.optInt("evasionBonus", 0) : 0;
-    dodgeChance = Math.min(95, Math.max(0, dodgeChance));
-    int accuracyPenalty = entity.optInt("accuracyPenaltyTurns", 0) > 0 ? entity.optInt("accuracyPenalty", 0) : 0;
-    int hitRoll = nextRoll(combat, "entity:" + actorName);
-    boolean dodged = hitRoll < Math.min(95, dodgeChance + accuracyPenalty);
-
-    if (dodged) {
-      appendBattleLine(state, combat,
-        entityName + " tấn công " + actorName + ". " + actorName + " né thành công.",
-        entityName, actorName);
-      addFeedback(combat, "entity", "actor", "miss", "MISS", false);
-      if (defending) {
-        int normal = maxNormalDamage(actor.optInt("attack", 30), effectiveEntityDefense(entity));
-        int damage = counterDamage(normal);
-        int hp = Math.max(0, entity.optInt("hp", 0) - damage);
-        entity.put("hp", hp);
-        String damageText = "-" + damage + " HP";
-        String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
-        appendBattleLine(state, combat,
-          actorName + " phản công " + entityName + ". " + damageText + " (" + hpText + ")",
-          actorName, entityName, damageText, hpText);
-        addFeedback(combat, "entity", "entity", "damage", damageText, true);
-      }
+    Ultimate ultimate = ULTIMATES.get(id);
+    if (ultimate != null) {
+      combat.put("currentUltimate", new JSONObject()
+          .put("name", ultimate.name)
+          .put("exactDamage", ultimate.exactDamage));
     } else {
-      int damage = defending
-        ? defendedIncomingDamage(entity.optInt("attack", 1), actor.optInt("defense", 0))
-        : normalIncomingDamage(entity.optInt("attack", 1), actor.optInt("defense", 0));
-      int hp = Math.max(0, actor.optInt("hp", 0) - damage);
-      actor.put("hp", hp);
-      String damageText = "-" + damage + " HP";
-      String hpText = "HP " + hp + "/" + actor.optInt("maxHp", hp);
-      appendBattleLine(state, combat,
-        entityName + " tấn công " + actorName + ". " + damageText + " (" + hpText + ")",
-        entityName, actorName, damageText, hpText);
-      addFeedback(combat, "entity", "actor", "damage", damageText, true);
-      if (hp <= 0) appendBattleLine(state, combat, actorName + " bị hạ.", actorName);
+      combat.remove("currentUltimate");
     }
 
-    decrementActorEvasion(actor);
-    decrementEntityTemporaryEffects(entity);
+    combat.put("currentActor", actor.optString("name", "Nhân vật"));
+    combat.put("diceState", newDiceState());
+    ensureInitialRoll(combat);
   }
 
-  private static void tickRoundStartEffects(JSONObject state, JSONObject combat, JSONObject entity) throws Exception {
-    int bleedTurns = entity.optInt("bleedTurns", 0);
-    int bleedPercent = entity.optInt("bleedPercent", 0);
-    if (bleedTurns <= 0 || bleedPercent <= 0 || entity.optInt("hp", 0) <= 0) return;
-    int damage = Math.max(1, entity.optInt("maxHp", 1) * bleedPercent / 100);
-    int hp = Math.max(0, entity.optInt("hp", 0) - damage);
-    entity.put("hp", hp).put("bleedTurns", bleedTurns - 1);
-    String entityName = entity.optString("name", "Entity");
-    String damageText = "-" + damage + " HP";
-    String hpText = "HP " + hp + "/" + entity.optInt("maxHp", hp);
-    appendBattleLine(state, combat,
-      entityName + " chịu Chảy máu. " + damageText + " (" + hpText + ")",
-      entityName, "Chảy máu", damageText, hpText);
-    addFeedback(combat, "actor", "entity", "damage", damageText, true);
+  private static JSONObject skillJson(Skill skill) throws Exception {
+    return new JSONObject()
+        .put("name", skill.name)
+        .put("description", skill.description)
+        .put("damagePercent", skill.damagePercent)
+        .put("effect", skill.effect)
+        .put("effectTurns", skill.effectTurns)
+        .put("effectValue", skill.effectValue);
   }
 
-  private static int effectiveEntityDefense(JSONObject entity) {
-    int defense = Math.max(0, entity.optInt("defense", 0));
-    int turns = entity.optInt("armorBreakTurns", 0);
-    int percent = turns > 0 ? Math.max(0, entity.optInt("armorBreakPercent", 0)) : 0;
-    return Math.max(0, defense - defense * percent / 100);
+  private static int currentLivingIndex(JSONObject combat, JSONArray participants) {
+    int current = combat.optInt("actorIndex", 0);
+    if (current >= 0 && current < participants.length()) {
+      JSONObject actor = participants.optJSONObject(current);
+      if (actor != null && actor.optInt("hp", 0) > 0) return current;
+    }
+    for (int step = 1; step <= participants.length(); step++) {
+      int candidate = Math.floorMod(current + step, participants.length());
+      JSONObject actor = participants.optJSONObject(candidate);
+      if (actor != null && actor.optInt("hp", 0) > 0) return candidate;
+    }
+    return -1;
   }
 
-  private static void decrementActorEvasion(JSONObject actor) throws Exception {
-    int turns = actor.optInt("evasionTurns", 0);
-    if (turns > 0) actor.put("evasionTurns", turns - 1);
-    if (turns <= 1) actor.put("evasionBonus", 0);
-  }
-
-  private static void decrementEntityTemporaryEffects(JSONObject entity) throws Exception {
-    int armorTurns = entity.optInt("armorBreakTurns", 0);
-    if (armorTurns > 0) entity.put("armorBreakTurns", armorTurns - 1);
-    int accuracyTurns = entity.optInt("accuracyPenaltyTurns", 0);
-    if (accuracyTurns > 0) entity.put("accuracyPenaltyTurns", accuracyTurns - 1);
-  }
-
-  private static boolean isCaoMinhDown(JSONArray participants) {
+  private static int firstLivingIndex(JSONArray participants) {
     for (int i = 0; i < participants.length(); i++) {
-      JSONObject participant = participants.optJSONObject(i);
-      if (participant == null) continue;
-      String id = normalizeCharacterId(
-          participant.optString("id", participant.optString("name", "")));
-      if ("cao_minh".equals(id)) return participant.optInt("hp", 0) <= 0;
+      JSONObject actor = participants.optJSONObject(i);
+      if (actor != null && actor.optInt("hp", 0) > 0) return i;
     }
-    return false;
+    return 0;
+  }
+
+  private static void advanceActor(JSONObject combat) throws Exception {
+    JSONArray participants = combat.getJSONArray("participants");
+    int current = combat.optInt("actorIndex", 0);
+    for (int step = 1; step <= participants.length(); step++) {
+      int candidate = (current + step) % participants.length();
+      JSONObject participant = participants.optJSONObject(candidate);
+      if (participant == null || participant.optInt("hp", 0) <= 0) continue;
+      if (candidate <= current) {
+        combat.put("round", Math.max(1, combat.optInt("round", 1)) + 1);
+      }
+      combat.put("actorIndex", candidate);
+      return;
+    }
   }
 
   private static boolean hasLivingParticipant(JSONArray participants) {
@@ -587,170 +728,65 @@ public final class CombatChoiceEngine {
     return false;
   }
 
-  private static void advanceActor(JSONObject combat) throws Exception {
-    JSONArray participants = combat.getJSONArray("participants");
-    int current = combat.optInt("actorIndex", 0);
-    int next = current;
-    boolean found = false;
-    for (int step = 1; step <= participants.length(); step++) {
-      int candidate = (current + step) % participants.length();
-      JSONObject participant = participants.optJSONObject(candidate);
-      if (participant != null && participant.optInt("hp", 0) > 0) {
-        next = candidate;
-        found = true;
-        break;
+  private static boolean isCaoMinhDown(JSONArray participants) {
+    for (int i = 0; i < participants.length(); i++) {
+      JSONObject participant = participants.optJSONObject(i);
+      if (participant != null && "cao_minh".equals(participant.optString("id", ""))) {
+        return participant.optInt("hp", 0) <= 0;
       }
     }
-    if (!found) return;
-    if (next <= current) combat.put("round", Math.max(1, combat.optInt("round", 1)) + 1);
-    combat.put("actorIndex", next);
+    return false;
   }
 
-  private static void prepareCurrentTurn(JSONObject combat) throws Exception {
-    JSONArray participants = combat.getJSONArray("participants");
-    int actorIndex = combat.optInt("actorIndex", 0);
-    JSONObject actor = participants.getJSONObject(actorIndex);
-    String id = normalizeCharacterId(actor.optString("id", actor.optString("name", "")));
-    List<Skill> pool = SKILLS.get(id);
-    Skill selected = null;
-    if (pool != null && !pool.isEmpty()) {
-      int seed = combat.optInt("seed", 1);
-      int round = combat.optInt("round", 1);
-      int index = Math.floorMod(seed + round * 31 + actorIndex * 17, pool.size());
-      selected = pool.get(index);
-    }
-
-    JSONArray choices = new JSONArray();
-    choices.put(choice("A", "Tấn công", false));
-    choices.put(choice("B", "Phòng thủ", false));
-    if (selected != null) {
-      JSONObject skillJson = skillJson(selected);
-      combat.put("currentSkill", skillJson);
-      JSONObject skillChoice = choice("C", selected.name, false);
-      skillChoice.put("description", selected.description);
-      choices.put(skillChoice);
-    } else {
-      combat.remove("currentSkill");
-      choices.put(choice("C", "Không có kỹ năng", true));
-    }
-    combat.put("choices", choices);
-    combat.put("currentActor", actor.optString("name", "Nhân vật"));
-  }
-
-  private static JSONObject choice(String id, String text, boolean disabled) throws Exception {
-    return new JSONObject().put("id", id).put("text", text).put("disabled", disabled);
-  }
-
-  private static JSONObject skillJson(Skill skill) throws Exception {
-    return new JSONObject()
-      .put("name", skill.name)
-      .put("description", skill.description)
-      .put("procPercent", skill.procPercent)
-      .put("damagePercent", skill.damagePercent)
-      .put("effect", skill.effect)
-      .put("effectTurns", skill.effectTurns)
-      .put("effectValue", skill.effectValue)
-      .put("offensive", skill.offensive);
-  }
-
-  private static int nextRoll(JSONObject combat, String salt) throws Exception {
-    int sequence = combat.optInt("sequence", 0);
+  private static int nextPercent(JSONObject combat, String salt) throws Exception {
+    int sequence = combat.optInt("rngSequence", 0);
     int seed = combat.optInt("seed", 1);
-    int value = Math.floorMod(seed * 31 + sequence * 131 + salt.hashCode() * 17, 100);
-    combat.put("sequence", sequence + 1);
+    long mixed = (seed & 0xffffffffL) * 31L + (long)(sequence + 1) * 131L
+        + (long)salt.hashCode() * 17L;
+    int value = (int)Math.floorMod(mixed, 100L);
+    combat.put("rngSequence", sequence + 1);
     return value;
   }
 
-  private static void addFeedback(JSONObject combat, String phase, String target, String kind,
-                                  String text, boolean flash) throws Exception {
-    JSONArray events = combat.optJSONArray("feedbackEvents");
-    if (events == null) events = new JSONArray();
-    JSONObject event = new JSONObject()
-      .put("phase", phase)
-      .put("target", target)
-      .put("kind", kind)
-      .put("text", text == null ? "" : text)
-      .put("flash", flash)
-      .put("actorIndex", combat.optInt("resolvedActorIndex", combat.optInt("actorIndex", 0)));
-    events.put(event);
-    combat.put("feedbackEvents", events);
-  }
+  private static void finishVictory(JSONObject state, JSONObject combat, JSONObject entity)
+      throws Exception {
+    String entityKey = entity.optString("key", "entity");
 
-  private static void appendBattleLine(JSONObject state, JSONObject combat, String text, String... highlights) throws Exception {
-    JSONArray log = state.optJSONArray("log");
-    if (log == null || log.length() == 0) return;
-    int index = combat.optInt("logIndex", log.length() - 1);
-    index = Math.max(0, Math.min(index, log.length() - 1));
-    JSONObject entry = log.optJSONObject(index);
-    if (entry == null) return;
-    JSONArray battleLog = entry.optJSONArray("battleLog");
-    if (battleLog == null) battleLog = new JSONArray();
-    JSONArray semantic = new JSONArray();
-    for (String highlight : highlights) {
-      if (highlight != null && !highlight.trim().isEmpty()) semantic.put(highlight.trim());
-    }
-    battleLog.put(new JSONObject().put("text", text).put("highlights", semantic));
-    entry.put("battleLog", battleLog);
-  }
-
-  private static void finishVictory(JSONObject state, JSONObject combat, JSONObject entity) throws Exception {
-    String entityName = entity.optString("name", "Entity");
-    if (!combat.optBoolean("victoryLogged", false)) {
-      appendBattleLine(state, combat, entityName + " bị tiêu diệt.", entityName);
-      combat.put("victoryLogged", true);
-    }
     if (!combat.optBoolean("lootResolved", false)) {
-      String entityKey = entity.optString("key", "entity");
       int rate = ItemCore.entityDropRatePercent(entityKey);
-      int dropRoll = nextRoll(combat, "loot-drop:" + entityKey);
-      combat.put("entityLootRatePercent", rate).put("entityLootRoll", dropRoll);
-      if (ItemCore.shouldDropEntityLoot(dropRoll, rate)) {
-        String itemName = ItemCore.grantEntityLootItem(state, nextRoll(combat, "loot-item:" + entityKey));
-        appendBattleLine(state, combat, entityName + " rơi " + itemName + " x1.", entityName, itemName);
+      int roll = nextPercent(combat, "loot-drop:" + entityKey);
+      combat.put("entityLootRatePercent", rate).put("entityLootRoll", roll);
+      if (ItemCore.shouldDropEntityLoot(roll, rate)) {
+        String itemName = ItemCore.grantEntityLootItem(
+            state, nextPercent(combat, "loot-item:" + entityKey));
         combat.put("droppedItem", itemName);
       }
       combat.put("lootResolved", true);
     }
 
-    boolean expAlreadyResolved = combat.optBoolean("expResolved", false);
-    new CharacterProgressionCore().grantEntityKillExp(
-        state, entity.optString("key", ""), entity.optInt("maxHp", 0),
-        combat.optJSONArray("participants"), combat);
-    if (!expAlreadyResolved) {
-      JSONArray awards = combat.optJSONArray("expAwards");
-      if (awards != null) {
-        for (int i = 0; i < awards.length(); i++) {
-          JSONObject award = awards.optJSONObject(i);
-          if (award == null) continue;
-          int reward = Math.max(0, award.optInt("rewardExp", 0));
-          if (reward <= 0) continue;
-          String name = award.optString("name", award.optString("id", "Nhân vật"));
-          int explorerGained = Math.max(0, award.optInt("explorerGained", 0));
-          String line = name + " nhận +" + reward + " EXP."
-              + (explorerGained > 0 ? " Explorer +" + explorerGained + "." : "");
-          appendBattleLine(state, combat, line, name, "+" + reward + " EXP");
-        }
+    if (!combat.optBoolean("coreDropResolved", false)) {
+      int roll = nextPercent(combat, "core-drop:" + entityKey);
+      int reward = 0;
+      if (ItemCore.shouldDropCore(roll, ItemCore.CORE_ENTITY_DROP_PERCENT)) {
+        reward = CharacterProgressionCore.bundleSize(LevelCore.stageIndex(state));
+        new CharacterProgressionCore().grantCore(state, reward);
       }
+      combat.put("coreDropRoll", roll)
+          .put("coreDropReward", reward)
+          .put("coreDropResolved", true);
     }
 
-    combat.put("active", false).put("outcome", "victory").put("choices", new JSONArray());
+    combat.put("active", false).put("outcome", "victory");
     clearEncounterFlag(state);
   }
 
   private static void finishDefeat(JSONObject state, JSONObject combat) throws Exception {
-    finishPlayerDefeat(state, combat);
-  }
-
-  private static void finishPlayerDefeat(JSONObject state, JSONObject combat) throws Exception {
-    combat.put("active", false).put("outcome", "defeat").put("choices", new JSONArray());
+    combat.put("active", false).put("outcome", "defeat");
     if (!combat.optBoolean("deathRecoveryApplied", false)) {
-      CharacterProgressionCore progressionCore = new CharacterProgressionCore();
-      progressionCore.applyCaoMinhDeathPenalty(state);
+      CharacterProgressionCore progression = new CharacterProgressionCore();
+      progression.applyCaoMinhDeathPenalty(state);
       LevelCore.resetToLevelZeroStart(state);
-      combat.put("deathRecoveryApplied", true);
-      combat.put("playerRespawned", true);
-      appendBattleLine(state, combat,
-          "Cao Minh bị hạ. Cao Minh trở lại điểm bắt đầu Level 0 và chịu hình phạt tiến trình.", "Cao Minh");
+      combat.put("deathRecoveryApplied", true).put("playerRespawned", true);
     }
     clearEncounterFlag(state);
   }
@@ -758,10 +794,14 @@ public final class CombatChoiceEngine {
   static void normalizeTerminalEncounter(JSONObject state) throws Exception {
     if (state == null) return;
     JSONObject combat = state.optJSONObject("combat");
-    if (combat == null || combat.optBoolean("active", false)) return;
+    if (combat == null) return;
+    if (combat.optBoolean("active", false)) {
+      ensureInitialRoll(combat);
+      return;
+    }
     String outcome = combat.optString("outcome", "");
     if ("defeat".equals(outcome) && !combat.optBoolean("deathRecoveryApplied", false)) {
-      finishPlayerDefeat(state, combat);
+      finishDefeat(state, combat);
       return;
     }
     if ("victory".equals(outcome) || "defeat".equals(outcome)) clearEncounterFlag(state);
@@ -773,19 +813,19 @@ public final class CombatChoiceEngine {
   }
 
   private static void syncParticipants(JSONObject state, JSONArray participants) throws Exception {
-    CharacterProgressionCore progressionCore = new CharacterProgressionCore();
-    progressionCore.normalizeState(state);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
     JSONArray party = state.optJSONArray("party");
+
     for (int i = 0; i < participants.length(); i++) {
       JSONObject participant = participants.optJSONObject(i);
       if (participant == null) continue;
-      String id = normalizeCharacterId(
-          participant.optString("id", participant.optString("name", "")));
-      progressionCore.setCurrentHp(state, id, participant.optInt("hp", 0));
+      String id = participant.optString("id", "");
+      progression.setCurrentHp(state, id, participant.optInt("hp", 0));
       if (!"cao_minh".equals(id) && participant.optInt("hp", 0) <= 0) {
-        progressionCore.markCompanionDown(state, id);
+        progression.markCompanionDown(state, id);
       }
-      JSONObject profile = progressionCore.profile(state, id);
+      JSONObject profile = progression.profile(state, id);
       int hp = profile.getInt("currentHp");
       int maxHp = profile.getInt("maxHp");
       int sourceIndex = participant.optInt("sourceIndex", -1);
@@ -802,12 +842,30 @@ public final class CombatChoiceEngine {
     }
   }
 
-  private static String normalizeCharacterId(String raw) {
-    String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-    if (value.contains("cao_minh") ) return "cao_minh";
-    if (value.contains("iris") || value.contains("argus")) return "iris";
-    if (value.contains("syvial")) return "syvial";
-    if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hua thuy mai")) return "lucia";
-    return value.replace(' ', '_');
+  private static void addFeedback(JSONObject combat, String phase, String target, String kind,
+                                  String text, boolean flash) throws Exception {
+    JSONArray events = combat.optJSONArray("feedbackEvents");
+    if (events == null) events = new JSONArray();
+    events.put(new JSONObject()
+        .put("phase", phase)
+        .put("target", target)
+        .put("kind", kind)
+        .put("text", text == null ? "" : text)
+        .put("flash", flash)
+        .put("actorIndex", combat.optInt("resolvedActorIndex", combat.optInt("actorIndex", 0))));
+    combat.put("feedbackEvents", events);
+  }
+
+  private static void appendBattleLine(JSONObject state, JSONObject combat, String text)
+      throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null || log.length() == 0 || text == null || text.trim().isEmpty()) return;
+    int index = Math.max(0, Math.min(combat.optInt("logIndex", log.length() - 1), log.length() - 1));
+    JSONObject entry = log.optJSONObject(index);
+    if (entry == null) return;
+    JSONArray battleLog = entry.optJSONArray("battleLog");
+    if (battleLog == null) battleLog = new JSONArray();
+    battleLog.put(new JSONObject().put("text", text).put("highlights", new JSONArray()));
+    entry.put("battleLog", battleLog);
   }
 }

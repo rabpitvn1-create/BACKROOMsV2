@@ -3,43 +3,29 @@ package com.rabpit.backroom.core;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
-/** Core-owned character progression. Character Level does not exist in this system. */
+/**
+ * Core-owned party progression for the Poker Dice ruleset.
+ *
+ * There is no Character Level, Explorer rank or EXP in this system. The only mutable combat
+ * progression is STR/DEF/SKL/VIT, paid from one party-shared Core resource.
+ */
 final class CharacterProgressionCore {
   static final String ROOT_KEY = "characterProgression";
   static final String CHARACTERS_KEY = "characters";
+  static final String RESOURCE_KEY = "coreResource";
   static final String LEGACY_ROOT_KEY = "characterRpg";
 
   static final int BASE_STAT = 5;
-  static final int FEATURED_BONUS_POOL = 20;
-  static final int DEFAULT_BONUS_POOL = 10;
-  static final int BASE_MAX_HP = 50;
-  static final int HP_PER_EXPLORER = 15;
-  static final int HOUND_BASE_EXP = 10;
-  static final int MIN_ENTITY_BASE_EXP = HOUND_BASE_EXP;
-  static final int COMPANION_REVIVE_EXPLORER_TURNS = 10;
+  static final int DEFAULT_BASE_MAX_HP = 50;
+  static final int COMPANION_REVIVE_TURNS = 10;
 
-  interface IntRng {
-    int nextInt(int bound);
-  }
-
-  private final IntRng rng;
-
-  CharacterProgressionCore() {
-    this(bound -> ThreadLocalRandom.current().nextInt(bound));
-  }
-
-  CharacterProgressionCore(IntRng rng) {
-    if (rng == null) throw new IllegalArgumentException("rng is required");
-    this.rng = rng;
-  }
+  private static final String[] STAT_KEYS = {"STR", "DEF", "SKL", "VIT"};
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
+
     JSONObject root = state.optJSONObject(ROOT_KEY);
     if (root == null) root = new JSONObject();
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);
@@ -50,21 +36,40 @@ final class CharacterProgressionCore {
     ensureProfileObject(characters, "iris");
     ensureProfileObject(characters, "syvial");
 
+    JSONObject resource = root.optJSONObject(RESOURCE_KEY);
+    if (resource == null) {
+      resource = new JSONObject()
+          .put("quantity", 0)
+          // Old saves must not receive retroactive Stage rewards merely by being loaded.
+          .put("highestRewardedStageIndex", Math.max(0, LevelCore.stageIndex(state)));
+    } else {
+      resource.put("quantity", Math.max(0, resource.optInt("quantity", 0)));
+      if (!resource.has("highestRewardedStageIndex")) {
+        resource.put("highestRewardedStageIndex", Math.max(0, LevelCore.stageIndex(state)));
+      } else {
+        resource.put("highestRewardedStageIndex",
+            Math.max(-1, resource.optInt("highestRewardedStageIndex", -1)));
+      }
+    }
+
     root.put(CHARACTERS_KEY, characters);
+    root.put(RESOURCE_KEY, resource);
+    root.put("schema", "core_stats_v1");
     state.put(ROOT_KEY, root);
+
     state.remove(LEGACY_ROOT_KEY);
     state.remove("equipment");
-    stripLegacyEquipment(state.optJSONObject("player"));
+    stripLegacyProgression(state.optJSONObject("player"));
 
     JSONArray party = state.optJSONArray("party");
     if (party != null) {
-      for (int i = 0; i < party.length(); i++) stripLegacyEquipment(party.optJSONObject(i));
+      for (int i = 0; i < party.length(); i++) stripLegacyProgression(party.optJSONObject(i));
     }
 
     JSONObject partyDetails = state.optJSONObject("partyDetails");
     JSONArray detailMembers = partyDetails == null ? null : partyDetails.optJSONArray("members");
     if (detailMembers != null) {
-      for (int i = 0; i < detailMembers.length(); i++) stripLegacyEquipment(detailMembers.optJSONObject(i));
+      for (int i = 0; i < detailMembers.length(); i++) stripLegacyProgression(detailMembers.optJSONObject(i));
     }
   }
 
@@ -81,132 +86,100 @@ final class CharacterProgressionCore {
     return ensureProfile(state, rawId);
   }
 
-  JSONObject generateBaseStats(int bonusPool) throws Exception {
-    JSONObject stats = new JSONObject()
-        .put("STR", BASE_STAT)
-        .put("DF", BASE_STAT)
-        .put("AGI", BASE_STAT)
-        .put("CRIT", BASE_STAT);
-    String[] keys = {"STR", "DF", "AGI", "CRIT"};
-    for (int i = 0; i < Math.max(0, bonusPool); i++) {
-      int roll = rng.nextInt(keys.length);
-      if (roll < 0 || roll >= keys.length) {
-        throw new IllegalStateException("RNG returned an out-of-range value");
-      }
-      String key = keys[roll];
-      stats.put(key, stats.getInt(key) + 1);
-    }
-    return stats;
-  }
-
-  static int requiredExp(int explorer) {
-    return 50 * (Math.max(0, explorer) + 1);
-  }
-
-  static int maxHpForExplorer(int explorer) {
-    return BASE_MAX_HP + Math.max(0, explorer) * HP_PER_EXPLORER;
-  }
-
-  static int baseExpForEntity(String entityKey) {
-    return normalizeEntityKey(entityKey).isEmpty() ? 0 : MIN_ENTITY_BASE_EXP;
-  }
-
-  static int baseExpForEntity(String entityKey, int entityMaxHp) {
-    if (normalizeEntityKey(entityKey).isEmpty()) return 0;
-    if (entityMaxHp <= 0) return MIN_ENTITY_BASE_EXP;
-    return Math.max(MIN_ENTITY_BASE_EXP, (int)Math.round(entityMaxHp / 24.0d));
-  }
-
-  static int rewardExp(int baseExp, int explorer) {
-    if (baseExp <= 0) return 0;
-    return (int)Math.round(baseExp * (1.0d + 0.20d * Math.max(0, explorer)));
-  }
-
-  static int applyExp(JSONObject profile, int reward) throws Exception {
-    if (profile == null || reward <= 0) return 0;
-    int explorer = Math.max(0, profile.optInt("explorer", 0));
-    int exp = Math.max(0, profile.optInt("exp", 0)) + reward;
-    int gained = 0;
-    while (exp >= requiredExp(explorer)) {
-      exp -= requiredExp(explorer);
-      explorer++;
-      gained++;
-    }
-    profile.put("explorer", explorer);
-    profile.put("exp", exp);
-    int maxHp = maxHpForExplorer(explorer);
-    int currentHp = Math.max(0, Math.min(profile.optInt("currentHp", BASE_MAX_HP), maxHp));
-    profile.put("currentHp", currentHp);
-    profile.put("maxHp", maxHp);
-    return gained;
-  }
-
-  void grantEntityKillExp(JSONObject state, String entityKey, JSONArray participants, JSONObject combat)
-      throws Exception {
-    int entityMaxHp = combat == null || combat.optJSONObject("entity") == null
-        ? 0 : combat.optJSONObject("entity").optInt("maxHp", 0);
-    grantEntityKillExp(state, entityKey, entityMaxHp, participants, combat);
-  }
-
-  void grantEntityKillExp(JSONObject state, String entityKey, int entityMaxHp,
-                          JSONArray participants, JSONObject combat) throws Exception {
-    if (state == null) return;
-    if (combat != null && combat.optBoolean("expResolved", false)) return;
+  int coreCount(JSONObject state) throws Exception {
     normalizeState(state);
+    return state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY).getInt("quantity");
+  }
 
-    int baseExp = baseExpForEntity(entityKey, entityMaxHp);
-    JSONArray awards = new JSONArray();
-    Set<String> seen = new LinkedHashSet<>();
-    if (participants != null) {
-      for (int i = 0; i < participants.length(); i++) {
-        JSONObject participant = participants.optJSONObject(i);
-        if (participant == null) continue;
-        String id = normalizeCharacterId(
-            participant.optString("id", participant.optString("name", "")));
-        if (id.isEmpty() || !seen.add(id)) continue;
-        JSONObject profile = ensureProfile(state, id);
-        int explorerBefore = Math.max(0, profile.optInt("explorer", 0));
-        int reward = rewardExp(baseExp, explorerBefore);
-        int gained = applyExp(profile, reward);
-        awards.put(new JSONObject()
-            .put("id", id)
-            .put("name", participant.optString("name", id))
-            .put("rewardExp", reward)
-            .put("explorerBefore", explorerBefore)
-            .put("explorerAfter", profile.getInt("explorer"))
-            .put("explorerGained", gained)
-            .put("expAfter", profile.getInt("exp")));
-      }
+  int highestRewardedStageIndex(JSONObject state) throws Exception {
+    normalizeState(state);
+    return state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY)
+        .optInt("highestRewardedStageIndex", -1);
+  }
+
+  static int upgradeCost(int currentStat) {
+    int normalized = Math.max(BASE_STAT, currentStat);
+    return 1 + (normalized - BASE_STAT) / 2;
+  }
+
+  static int bundleSize(int stageIndex) {
+    return 1 + Math.max(0, stageIndex) / 10;
+  }
+
+  static int statPercent(int stat) {
+    return 100 + 10 * (Math.max(BASE_STAT, stat) - BASE_STAT);
+  }
+
+  static int scaledByStat(int baseValue, int stat) {
+    long scaled = (long)Math.max(0, baseValue) * statPercent(stat);
+    return Math.max(0, (int)((scaled + 50L) / 100L));
+  }
+
+  static int maxHpFor(int baseMaxHp, int vit) {
+    return Math.max(1, scaledByStat(Math.max(1, baseMaxHp), vit));
+  }
+
+  JSONObject upgradeStat(JSONObject state, String rawId, String rawStat) throws Exception {
+    String id = normalizeCharacterId(rawId);
+    String stat = normalizeStat(rawStat);
+    if (id.isEmpty()) throw new IllegalArgumentException("character id is required");
+    if (stat.isEmpty()) throw new IllegalArgumentException("Chỉ có thể nâng STR, DEF, SKL hoặc VIT.");
+
+    JSONObject profile = ensureProfile(state, id);
+    JSONObject stats = profile.getJSONObject("stats");
+    int current = Math.max(BASE_STAT, stats.optInt(stat, BASE_STAT));
+    int cost = upgradeCost(current);
+    JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
+    int available = Math.max(0, resource.optInt("quantity", 0));
+    if (available < cost) {
+      throw new IllegalStateException("Không đủ Core. Cần " + cost + " Core.");
     }
-    if (combat != null) {
-      combat.put("baseExp", baseExp);
-      combat.put("expAwards", awards);
-      combat.put("expResolved", true);
-    }
+
+    resource.put("quantity", available - cost);
+    stats.put(stat, current + 1);
+    normalizeHp(profile);
+    syncShadowHp(state, id, profile.getInt("currentHp"), profile.getInt("maxHp"));
+
+    return new JSONObject()
+        .put("characterId", id)
+        .put("stat", stat)
+        .put("value", current + 1)
+        .put("cost", cost)
+        .put("coreRemaining", available - cost);
+  }
+
+  int grantCore(JSONObject state, int amount) throws Exception {
+    if (amount <= 0) return 0;
+    normalizeState(state);
+    JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
+    int current = Math.max(0, resource.optInt("quantity", 0));
+    resource.put("quantity", current + amount);
+    return amount;
+  }
+
+  int rewardStageCompletion(JSONObject state, int stageIndex) throws Exception {
+    normalizeState(state);
+    int normalizedStage = Math.max(0, stageIndex);
+    JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
+    int highest = resource.optInt("highestRewardedStageIndex", -1);
+    if (normalizedStage <= highest) return 0;
+    int reward = bundleSize(normalizedStage);
+    resource.put("quantity", Math.max(0, resource.optInt("quantity", 0)) + reward);
+    resource.put("highestRewardedStageIndex", normalizedStage);
+    return reward;
   }
 
   void applyCaoMinhDeathPenalty(JSONObject state) throws Exception {
-    normalizeState(state);
-    JSONObject cao_minh = profile(state, "cao_minh");
-    int explorer = Math.max(0, cao_minh.optInt("explorer", 0));
-    int exp = Math.max(0, cao_minh.optInt("exp", 0));
-    int reducedExplorer = explorer / 2;
-    int reducedExp = exp / 2;
-    int maxHp = maxHpForExplorer(reducedExplorer);
-
-    cao_minh.put("explorer", reducedExplorer);
-    cao_minh.put("exp", reducedExp);
-    cao_minh.put("maxHp", maxHp);
-    cao_minh.put("currentHp", maxHp);
-    cao_minh.remove("downedAtTurn");
-    cao_minh.remove("reviveAtTurn");
-
+    // EXP/Explorer penalties no longer exist. Preserve the established respawn flow but do not
+    // mutate Core or combat stats.
+    JSONObject profile = ensureProfile(state, "cao_minh");
+    int maxHp = profile.getInt("maxHp");
+    profile.put("currentHp", maxHp);
+    profile.remove("downedAtTurn");
+    profile.remove("reviveAtTurn");
+    syncShadowHp(state, "cao_minh", maxHp, maxHp);
     JSONObject player = state.optJSONObject("player");
-    if (player != null) {
-      player.put("hp", maxHp);
-      player.put("maxHp", maxHp);
-      player.put("condition", "Ổn định");
-    }
+    if (player != null) player.put("condition", "Ổn định");
   }
 
   void markCompanionDown(JSONObject state, String rawId) throws Exception {
@@ -219,12 +192,14 @@ final class CharacterProgressionCore {
     int turn = Math.max(1, state.optInt("turn", 1));
     if (!profile.has("reviveAtTurn")) {
       profile.put("downedAtTurn", turn);
-      profile.put("reviveAtTurn", turn + COMPANION_REVIVE_EXPLORER_TURNS);
+      profile.put("reviveAtTurn", turn + COMPANION_REVIVE_TURNS);
     }
     syncPartyRecoveryState(state, id, profile, turn);
   }
 
   void applyExplorerTurnRecovery(JSONObject state) throws Exception {
+    // Method name retained to avoid a broad unrelated call-site rewrite. Recovery is turn based,
+    // not Explorer-progression based.
     normalizeState(state);
     int turn = Math.max(1, state.optInt("turn", 1));
     JSONArray party = state.optJSONArray("party");
@@ -239,7 +214,6 @@ final class CharacterProgressionCore {
       JSONObject profile = profile(state, id);
       int hp = Math.max(0, profile.optInt("currentHp", 0));
       int reviveAtTurn = profile.optInt("reviveAtTurn", -1);
-
       if (hp <= 0 && reviveAtTurn > 0 && turn >= reviveAtTurn) {
         profile.put("currentHp", 1);
         profile.remove("downedAtTurn");
@@ -247,6 +221,99 @@ final class CharacterProgressionCore {
       }
       syncPartyRecoveryState(state, id, profile, turn);
     }
+  }
+
+  void setCurrentHp(JSONObject state, String rawId, int currentHp) throws Exception {
+    JSONObject profile = ensureProfile(state, rawId);
+    normalizeHp(profile);
+    int maxHp = profile.getInt("maxHp");
+    profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
+  }
+
+  int healCurrentHp(JSONObject state, String rawId, int amount) throws Exception {
+    String id = normalizeCharacterId(rawId);
+    JSONObject profile = ensureProfile(state, id);
+    normalizeHp(profile);
+    int current = Math.max(0, profile.optInt("currentHp", 0));
+    int maxHp = profile.getInt("maxHp");
+    if (!"cao_minh".equals(id) && current <= 0) {
+      throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ đủ 10 Explorer Turn để hồi sinh.");
+    }
+    int next = Math.min(maxHp, current + Math.max(0, amount));
+    profile.put("currentHp", next);
+    syncShadowHp(state, id, next, maxHp);
+    return next - current;
+  }
+
+  void protectFromCandidate(JSONObject before, JSONObject candidate) throws Exception {
+    if (before == null || candidate == null) return;
+    normalizeState(before);
+    candidate.put(ROOT_KEY, new JSONObject(before.getJSONObject(ROOT_KEY).toString()));
+    candidate.remove(LEGACY_ROOT_KEY);
+    stripLegacyProgression(candidate.optJSONObject("player"));
+    JSONArray party = candidate.optJSONArray("party");
+    if (party != null) {
+      for (int i = 0; i < party.length(); i++) stripLegacyProgression(party.optJSONObject(i));
+    }
+  }
+
+  private JSONObject ensureProfileObject(JSONObject characters, String id) throws Exception {
+    JSONObject profile = characters.optJSONObject(id);
+    if (profile == null) profile = new JSONObject();
+
+    profile.put("id", id);
+    boolean migrated = !"core_stats_v1".equals(profile.optString("schema", ""));
+    JSONObject stats = profile.optJSONObject("stats");
+    if (stats == null || migrated) {
+      stats = freshStats();
+    } else {
+      for (String key : STAT_KEYS) stats.put(key, Math.max(BASE_STAT, stats.optInt(key, BASE_STAT)));
+      stats.remove("DF");
+      stats.remove("AGI");
+      stats.remove("CRIT");
+      stats.remove("LUCK");
+    }
+    profile.put("stats", stats);
+
+    int baseMaxHp = profile.has("baseMaxHp")
+        ? Math.max(1, profile.optInt("baseMaxHp", defaultBaseMaxHp(id)))
+        : defaultBaseMaxHp(id);
+    profile.put("baseMaxHp", baseMaxHp);
+    if (!profile.has("currentHp")) profile.put("currentHp", baseMaxHp);
+    profile.put("schema", "core_stats_v1");
+
+    profile.remove("baseStats");
+    profile.remove("explorer");
+    profile.remove("exp");
+    profile.remove("level");
+    profile.remove("equipment");
+    normalizeHp(profile);
+
+    characters.put(id, profile);
+    return profile;
+  }
+
+  private static JSONObject freshStats() throws Exception {
+    return new JSONObject()
+        .put("STR", BASE_STAT)
+        .put("DEF", BASE_STAT)
+        .put("SKL", BASE_STAT)
+        .put("VIT", BASE_STAT);
+  }
+
+  private static int defaultBaseMaxHp(String id) {
+    return DEFAULT_BASE_MAX_HP;
+  }
+
+  private static void normalizeHp(JSONObject profile) throws Exception {
+    JSONObject stats = profile.getJSONObject("stats");
+    int maxHp = maxHpFor(profile.optInt("baseMaxHp", DEFAULT_BASE_MAX_HP),
+        stats.optInt("VIT", BASE_STAT));
+    int current = profile.has("currentHp")
+        ? profile.optInt("currentHp", maxHp)
+        : maxHp;
+    profile.put("maxHp", maxHp);
+    profile.put("currentHp", Math.max(0, Math.min(current, maxHp)));
   }
 
   private void syncPartyRecoveryState(JSONObject state, String id, JSONObject profile, int turn)
@@ -260,10 +327,10 @@ final class CharacterProgressionCore {
       if (!id.equals(memberId)) continue;
 
       int hp = Math.max(0, profile.optInt("currentHp", 0));
-      int maxHp = Math.max(1, profile.optInt("maxHp", BASE_MAX_HP));
+      int maxHp = Math.max(1, profile.optInt("maxHp", DEFAULT_BASE_MAX_HP));
       member.put("hp", hp).put("maxHp", maxHp);
       if (hp <= 0) {
-        int reviveAtTurn = profile.optInt("reviveAtTurn", turn + COMPANION_REVIVE_EXPLORER_TURNS);
+        int reviveAtTurn = profile.optInt("reviveAtTurn", turn + COMPANION_REVIVE_TURNS);
         member.put("condition", "Bị hạ");
         member.put("reviveTurnsRemaining", Math.max(0, reviveAtTurn - turn));
       } else {
@@ -272,27 +339,6 @@ final class CharacterProgressionCore {
       }
       return;
     }
-  }
-
-  void setCurrentHp(JSONObject state, String rawId, int currentHp) throws Exception {
-    JSONObject profile = ensureProfile(state, rawId);
-    int maxHp = maxHpForExplorer(profile.optInt("explorer", 0));
-    profile.put("maxHp", maxHp);
-    profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
-  }
-
-  int healCurrentHp(JSONObject state, String rawId, int amount) throws Exception {
-    String id = normalizeCharacterId(rawId);
-    JSONObject profile = ensureProfile(state, id);
-    int current = Math.max(0, profile.optInt("currentHp", 0));
-    int maxHp = Math.max(1, profile.optInt("maxHp", maxHpForExplorer(profile.optInt("explorer", 0))));
-    if (!"cao_minh".equals(id) && current <= 0) {
-      throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ hồi sinh.");
-    }
-    int next = Math.min(maxHp, current + Math.max(0, amount));
-    profile.put("currentHp", next).put("maxHp", maxHp);
-    syncShadowHp(state, id, next, maxHp);
-    return next - current;
   }
 
   private void syncShadowHp(JSONObject state, String id, int hp, int maxHp) throws Exception {
@@ -313,70 +359,9 @@ final class CharacterProgressionCore {
     }
   }
 
-  void protectFromCandidate(JSONObject before, JSONObject candidate) throws Exception {
-    if (before == null || candidate == null) return;
-    normalizeState(before);
-    candidate.put(ROOT_KEY, new JSONObject(before.getJSONObject(ROOT_KEY).toString()));
-    candidate.remove(LEGACY_ROOT_KEY);
-    stripShadowProgression(candidate.optJSONObject("player"));
-    JSONArray party = candidate.optJSONArray("party");
-    if (party != null) {
-      for (int i = 0; i < party.length(); i++) stripShadowProgression(party.optJSONObject(i));
-    }
-  }
-
-  private JSONObject ensureProfileObject(JSONObject characters, String id) throws Exception {
-    JSONObject profile = characters.optJSONObject(id);
-    if (profile == null) {
-      profile = new JSONObject()
-          .put("id", id)
-          .put("baseStats", generateBaseStats(bonusPoolFor(id)))
-          .put("explorer", 0)
-          .put("exp", 0)
-          .put("currentHp", BASE_MAX_HP)
-          .put("maxHp", BASE_MAX_HP);
-    } else {
-      profile.put("id", id);
-      JSONObject baseStats = profile.optJSONObject("baseStats");
-      if (baseStats == null) baseStats = generateBaseStats(bonusPoolFor(id));
-      else normalizeExistingBaseStats(baseStats);
-      profile.put("baseStats", baseStats);
-
-      int explorer = Math.max(0, profile.optInt("explorer", 0));
-      profile.put("explorer", explorer);
-      profile.put("exp", Math.max(0, profile.optInt("exp", 0)));
-      int maxHp = maxHpForExplorer(explorer);
-      int currentHp = profile.has("currentHp")
-          ? profile.optInt("currentHp", BASE_MAX_HP) : BASE_MAX_HP;
-      profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
-      profile.put("maxHp", maxHp);
-    }
-    profile.remove("equipment");
-    characters.put(id, profile);
-    return profile;
-  }
-
-  private static void normalizeExistingBaseStats(JSONObject baseStats) throws Exception {
-    String[] keys = {"STR", "DF", "AGI", "CRIT"};
-    for (String key : keys) {
-      if (!baseStats.has(key)) baseStats.put(key, BASE_STAT);
-    }
-  }
-
-  private static int bonusPoolFor(String id) {
-    return "cao_minh".equals(id) || "iris".equals(id) || "syvial".equals(id)
-        ? FEATURED_BONUS_POOL : DEFAULT_BONUS_POOL;
-  }
-
-  static int sumBaseStats(JSONObject stats) {
-    if (stats == null) return 0;
-    return stats.optInt("STR", 0) + stats.optInt("DF", 0)
-        + stats.optInt("AGI", 0) + stats.optInt("CRIT", 0);
-  }
-
   static String normalizeCharacterId(String raw) {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
-    if (value.contains("cao_minh") ) return "cao_minh";
+    if (value.contains("cao_minh") || value.contains("cao minh")) return "cao_minh";
     if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hứa thúy mai")
         || value.contains("hua thuy mai")) return "lucia";
     if (value.contains("iris") || value.contains("argus")) return "iris";
@@ -384,20 +369,19 @@ final class CharacterProgressionCore {
     return value.replace(' ', '_');
   }
 
-  private static String normalizeEntityKey(String raw) {
-    return raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+  private static String normalizeStat(String raw) {
+    String value = raw == null ? "" : raw.trim().toUpperCase(Locale.ROOT);
+    for (String key : STAT_KEYS) if (key.equals(value)) return key;
+    return "";
   }
 
-  private static void stripShadowProgression(JSONObject character) {
+  private static void stripLegacyProgression(JSONObject character) {
     if (character == null) return;
     character.remove("baseStats");
+    character.remove("stats");
     character.remove("explorer");
     character.remove("exp");
     character.remove("level");
     character.remove("equipment");
-  }
-
-  private static void stripLegacyEquipment(JSONObject character) {
-    if (character != null) character.remove("equipment");
   }
 }
