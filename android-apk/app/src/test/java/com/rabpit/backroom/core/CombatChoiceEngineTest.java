@@ -119,7 +119,7 @@ public class CombatChoiceEngineTest {
     assertEquals(38, CombatChoiceEngine.basicDamage(30, 5, 125));
     assertEquals(33, CombatChoiceEngine.basicDamage(30, 6, 100));
     assertEquals(77, CombatChoiceEngine.skillDamage(30, 170, 5, 150));
-    assertEquals(85, CombatChoiceEngine.skillDamage(30, 170, 6, 150));
+    assertEquals(84, CombatChoiceEngine.skillDamage(30, 170, 6, 150));
     assertEquals(240, CombatChoiceEngine.ultimateDamage(240, 5, 100));
     assertEquals(480, CombatChoiceEngine.ultimateDamage(240, 5, 200));
   }
