@@ -345,7 +345,8 @@ jobs:
           ! grep -R -Fq 'HOUND_BASE_EXP' android-apk/app/src/main/java android-apk/app/src/test/java
           grep -Fq 'static int stagePercent(int stageIndex)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityStatCore.java
           grep -Fq 'MAX_REROLLS = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          grep -Fq 'exactlyThreeRerollsAfterInitialThenForcedFinalize' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
+          grep -Fq 'exactlyThreeRerollsThenRollStopsUntilFinish' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
+          grep -Fq 'finishCanFinalizeCurrentHandBeforeAnyReroll' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
           ! grep -Fq 'lucia-hit' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'Huyết Ma Nhị Thập Tứ Trảm' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -Fq 'Guilty Crown Override' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
