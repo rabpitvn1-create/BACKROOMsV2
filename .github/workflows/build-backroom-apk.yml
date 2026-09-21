@@ -311,7 +311,9 @@ jobs:
           grep -Fq 'window.backroomCombatDiceState' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.combatRoll' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.combatHold' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.combatFinish' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.combatResolve' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'combat-dice-modal' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'static int stageIndexForKey(String levelKey)' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'CORE_ENTITY_DROP_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           grep -Fq 'CORE_CHEST_DROP_PERCENT = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
