@@ -224,6 +224,29 @@ public class CombatChoiceEngineTest {
     assertFalse(text.toLowerCase().contains("dice"));
   }
 
+  @Test public void asyncEnemiesHaveDistinctCombatProfiles() throws Exception {
+    String[] keys = {"async_rifleman", "async_vanguard", "async_tactical", "async_decon"};
+    String[] names = {"ASYNC Rifleman", "ASYNC Vanguard", "ASYNC Tactical Operative", "ASYNC Decon Specialist"};
+    int[] hp = {300, 330, 270, 315};
+    int[] damage = {20, 21, 18, 19};
+
+    for (int i = 0; i < keys.length; i++) {
+      assertTrue(CombatChoiceEngine.isKnownEntity(keys[i]));
+      JSONObject state = combatState(new JSONArray());
+      state.getJSONObject("flags").put("entityEncounterKey", keys[i]);
+
+      CombatChoiceEngine.start(state, keys[i], 0);
+
+      JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+      assertEquals(keys[i], entity.getString("key"));
+      assertEquals(names[i], entity.getString("name"));
+      assertEquals(hp[i], entity.getInt("baseHp"));
+      assertEquals(damage[i], entity.getInt("baseDamage"));
+      assertEquals(hp[i], entity.getInt("maxHp"));
+      assertEquals(damage[i], entity.getInt("attack"));
+    }
+  }
+
   @Test public void onlyCaoMinhHasAuthoritativeUltimateDamageMappingToday() {
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));

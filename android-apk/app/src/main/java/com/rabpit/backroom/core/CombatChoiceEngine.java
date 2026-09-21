@@ -93,6 +93,10 @@ public final class CombatChoiceEngine {
     entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22);
     entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18);
     entity("jeff_the_killer", "Jeff", 360, 20);
+    entity("async_rifleman", "ASYNC Rifleman", 300, 20);
+    entity("async_vanguard", "ASYNC Vanguard", 330, 21);
+    entity("async_tactical", "ASYNC Tactical Operative", 270, 18);
+    entity("async_decon", "ASYNC Decon Specialist", 315, 19);
     entity("jane_the_killer", "Jane", 360, 20);
     entity("slenderman", "Slenderman", 480, 23);
     entity("diep_minh", "Diệp Minh", 2000, 42);
