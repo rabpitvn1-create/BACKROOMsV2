@@ -51,18 +51,18 @@ public class CharacterProgressionCoreTest {
     assertEquals(once, state.getJSONObject(CharacterProgressionCore.ROOT_KEY).toString());
   }
 
-  @Test public void vitUsesAuthoritativeBaseHpAndLuciaStartsFromOneHundred() throws Exception {
+  @Test public void vitScalesFromCurrentRuntimeBaseHp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
     assertEquals(50, core.profile(state, "cao_minh").getInt("baseMaxHp"));
     assertEquals(50, core.profile(state, "cao_minh").getInt("maxHp"));
-    assertEquals(100, core.profile(state, "lucia").getInt("baseMaxHp"));
-    assertEquals(100, core.profile(state, "lucia").getInt("maxHp"));
+    assertEquals(50, core.profile(state, "lucia").getInt("baseMaxHp"));
+    assertEquals(50, core.profile(state, "lucia").getInt("maxHp"));
 
     core.grantCore(state, 1);
     core.upgradeStat(state, "lucia", "VIT");
-    assertEquals(110, core.profile(state, "lucia").getInt("maxHp"));
+    assertEquals(55, core.profile(state, "lucia").getInt("maxHp"));
   }
 
   @Test public void statMultiplierUsesFiveAsOneHundredPercent() {
