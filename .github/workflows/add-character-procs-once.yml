@@ -1,0 +1,176 @@
+name: Add character procs once
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/add-character-procs-once.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Patch authoritative combat proc rules
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java')
+          s=p.read_text()
+          old='''  private static final class Ultimate {'''
+          new='''  private static final class CharacterProc {
+    final String name;
+    final int procPercent;
+    final int bonusDamagePercent;
+    final String effect;
+    final int effectTurns;
+    final int effectValue;
+
+    CharacterProc(String name, int procPercent, int bonusDamagePercent, String effect,
+                  int effectTurns, int effectValue) {
+      this.name = name;
+      this.procPercent = procPercent;
+      this.bonusDamagePercent = bonusDamagePercent;
+      this.effect = effect;
+      this.effectTurns = effectTurns;
+      this.effectValue = effectValue;
+    }
+  }
+
+  private static final class Ultimate {'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='''  private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
+  private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();'''
+          new='''  private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
+  private static final Map<String, List<CharacterProc>> CHARACTER_PROCS = new LinkedHashMap<>();
+  private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();'''
+          assert old in s
+          s=s.replace(old,new,1)
+          marker='''    skills("lucia",
+        skill("M4A1 Joint Attack", "", 150, "", 0, 0));
+'''
+          insert=marker+'''
+    // Character proc skills are independent bonus attacks. They may trigger from basic attacks and
+    // normal Skills, but resolveHandAction deliberately never calls them from Ultimate branches.
+    characterProcs("cao_minh",
+        characterProc("Huyết Sát Kiếm Ấn", 50, 35, "Chảy máu", 3, 4));
+    characterProcs("lucia",
+        characterProc("Neuroshock Burst", 48, 30, "Choáng", 1, 0));
+'''
+          assert marker in s
+          s=s.replace(marker,insert,1)
+          marker='''static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex) {
+  long x=(seed&0xffffffffL)*1664525L+(long)Math.max(1,round)*1013904223L+(long)(actorIndex+1)*2654435761L+(long)(skillIndex+1)*97531L;
+  x^=x>>>16; x^=x<<11; return (int)Math.floorMod(x,100L);
+}
+'''
+          insert=marker+'''
+  private static CharacterProc characterProc(String name, int procPercent, int bonusDamagePercent,
+                                             String effect, int turns, int value) {
+    return new CharacterProc(name, procPercent, bonusDamagePercent, effect, turns, value);
+  }
+
+  private static void characterProcs(String id, CharacterProc... definitions) {
+    List<CharacterProc> list = new ArrayList<>();
+    for (CharacterProc definition : definitions) list.add(definition);
+    CHARACTER_PROCS.put(id, list);
+  }
+
+  static int characterProcCount(String id) {
+    List<CharacterProc> pool = CHARACTER_PROCS.get(CharacterProgressionCore.normalizeCharacterId(id));
+    return pool == null ? 0 : pool.size();
+  }
+'''
+          assert marker in s
+          s=s.replace(marker,insert,1)
+          old='''      applyEntityDamage(combat, entity, damage);
+      if ("TWO PAIR".equals(hand)) {'''
+          new='''      applyEntityDamage(combat, entity, damage);
+      applyCharacterProcs(combat, actor, entity, baseAttack);
+      if ("TWO PAIR".equals(hand)) {'''
+          assert old in s
+          s=s.replace(old,new,1)
+          old='''    applyEntityDamage(combat, entity, damage);
+    applySkillEffect(entity, selected);
+    result.summary ='''
+          new='''    applyEntityDamage(combat, entity, damage);
+    applySkillEffect(entity, selected);
+    applyCharacterProcs(combat, actor, entity, baseAttack);
+    result.summary ='''
+          assert old in s
+          s=s.replace(old,new,1)
+          marker='''  private static void applySkillEffect(JSONObject entity, JSONObject selected) throws Exception {'''
+          helper='''  private static void applyCharacterProcs(JSONObject combat, JSONObject actor, JSONObject entity,
+                                          int baseAttack) throws Exception {
+    List<CharacterProc> pool = CHARACTER_PROCS.get(actor.optString("id", ""));
+    if (pool == null || pool.isEmpty() || entity.optInt("hp", 0) <= 0) return;
+    for (CharacterProc proc : pool) {
+      if (nextPercent(combat, "character-proc:" + actor.optString("id", "") + ":" + proc.name)
+          >= proc.procPercent) continue;
+      int bonus = Math.max(1, baseAttack * proc.bonusDamagePercent / 100);
+      applyEntityDamage(combat, entity, bonus);
+      applyStackingEffect(entity, proc.effect, proc.effectTurns, proc.effectValue);
+      addFeedback(combat, "actor", "entity", "proc", proc.name + " · PROC", true);
+    }
+  }
+
+  private static void applyStackingEffect(JSONObject entity, String effect, int turns, int value)
+      throws Exception {
+    if ("Choáng".equals(effect) && turns > 0) {
+      // Stun is the only status whose duration stacks. Cap prevents permanent stun-lock.
+      entity.put("stunTurns", Math.min(3, Math.max(0, entity.optInt("stunTurns", 0)) + turns));
+    } else if ("Chảy máu".equals(effect) && turns > 0 && value > 0) {
+      // Re-applying bleed increases potency while preserving the existing duration.
+      int currentTurns = Math.max(0, entity.optInt("bleedTurns", 0));
+      entity.put("bleedTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("bleedPercent", Math.min(25, Math.max(0, entity.optInt("bleedPercent", 0)) + value));
+    } else if ("Trúng độc".equals(effect) && turns > 0 && value > 0) {
+      int currentTurns = Math.max(0, entity.optInt("poisonTurns", 0));
+      entity.put("poisonTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("poisonPercent", Math.min(25, Math.max(0, entity.optInt("poisonPercent", 0)) + value));
+    } else if ("Xuyên giáp".equals(effect) && turns > 0 && value > 0) {
+      int currentTurns = Math.max(0, entity.optInt("armorBreakTurns", 0));
+      entity.put("armorBreakTurns", currentTurns > 0 ? currentTurns : turns);
+      entity.put("armorBreakPercent", Math.min(75,
+          Math.max(0, entity.optInt("armorBreakPercent", 0)) + value));
+    }
+  }
+
+'''+marker
+          assert marker in s
+          s=s.replace(marker,helper,1)
+          p.write_text(s)
+
+          t=Path('android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java')
+          ts=t.read_text()
+          needle='''public class CombatChoiceEngineTest {'''
+          add='''public class CombatChoiceEngineTest {
+  @Test
+  public void characterProcPool_targetsCaoMinhAndLucia_notLegacyKai() {
+    assertEquals(1, CombatChoiceEngine.characterProcCount("cao_minh"));
+    assertEquals(1, CombatChoiceEngine.characterProcCount("lucia"));
+    assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
+  }
+'''
+          assert needle in ts
+          ts=ts.replace(needle,add,1)
+          t.write_text(ts)
+          PY
+      - name: Run focused tests
+        working-directory: android-apk
+        run: ./gradlew testDebugUnitTest --tests com.rabpit.backroom.core.CombatChoiceEngineTest
+      - name: Commit gameplay update
+        run: |
+          rm .github/workflows/add-character-procs-once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java .github/workflows/add-character-procs-once.yml
+          git commit -m 'Add Cao Minh and Lucia proc skills'
+          git push
