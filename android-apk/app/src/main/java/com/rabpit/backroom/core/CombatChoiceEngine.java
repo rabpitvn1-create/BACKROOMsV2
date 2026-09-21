@@ -310,35 +310,30 @@ public final class CombatChoiceEngine {
     JSONObject dice = diceState(combat);
     if (dice.optBoolean("finalized", false)) return state;
 
-    JSONArray values = dice.getJSONArray("values");
-    JSONArray held = dice.getJSONArray("held");
     boolean hasRolled = dice.optBoolean("hasRolled", false);
-
-    if (hasRolled && allHeld(held)) {
-      finalizeHand(dice);
+    if (!hasRolled) {
+      rollDice(combat, dice, false);
+      dice.put("hasRolled", true).put("rerollsUsed", 0);
+      updateHand(dice);
       return state;
     }
 
     int rerollsUsed = Math.max(0, dice.optInt("rerollsUsed", 0));
-    if (hasRolled && rerollsUsed >= MAX_REROLLS) {
-      finalizeHand(dice);
-      return state;
-    }
+    if (rerollsUsed >= MAX_REROLLS || allHeld(dice.getJSONArray("held"))) return state;
 
-    for (int i = 0; i < DICE_COUNT; i++) {
-      if (hasRolled && held.optBoolean(i, false)) continue;
-      int sequence = combat.optInt("rngSequence", 0);
-      int value = deterministicDie(combat.optInt("seed", 1), sequence, i);
-      combat.put("rngSequence", sequence + 1);
-      values.put(i, value);
-    }
+    rollDice(combat, dice, true);
+    dice.put("rerollsUsed", rerollsUsed + 1);
+    updateHand(dice);
+    return state;
+  }
 
-    dice.put("hasRolled", true);
-    if (hasRolled) {
-      rerollsUsed++;
-      dice.put("rerollsUsed", rerollsUsed);
-      if (rerollsUsed >= MAX_REROLLS) finalizeHand(dice);
+  public static JSONObject finishHand(JSONObject state) throws Exception {
+    if (!isActive(state)) throw new IllegalStateException("Không có trận chiến đang hoạt động.");
+    JSONObject dice = diceState(state.getJSONObject("combat"));
+    if (!dice.optBoolean("hasRolled", false)) {
+      throw new IllegalStateException("Dice chưa có Initial Roll.");
     }
+    if (!dice.optBoolean("finalized", false)) finalizeHand(dice);
     return state;
   }
 
@@ -601,6 +596,40 @@ public final class CombatChoiceEngine {
     return dice;
   }
 
+  private static void ensureInitialRoll(JSONObject combat) throws Exception {
+    JSONObject dice = combat.optJSONObject("diceState");
+    if (dice == null) {
+      dice = newDiceState();
+      combat.put("diceState", dice);
+    }
+    dice = diceState(combat);
+    if (!dice.optBoolean("hasRolled", false)) {
+      rollDice(combat, dice, false);
+      dice.put("hasRolled", true).put("rerollsUsed", 0);
+    }
+    if (dice.optString("hand", "").trim().isEmpty()) updateHand(dice);
+  }
+
+  private static void rollDice(JSONObject combat, JSONObject dice, boolean respectHeld)
+      throws Exception {
+    JSONArray values = dice.getJSONArray("values");
+    JSONArray held = dice.getJSONArray("held");
+    for (int i = 0; i < DICE_COUNT; i++) {
+      if (respectHeld && held.optBoolean(i, false)) continue;
+      int sequence = combat.optInt("rngSequence", 0);
+      int value = deterministicDie(combat.optInt("seed", 1), sequence, i);
+      combat.put("rngSequence", sequence + 1);
+      values.put(i, value);
+    }
+  }
+
+  private static void updateHand(JSONObject dice) throws Exception {
+    JSONArray values = dice.getJSONArray("values");
+    int[] hand = new int[DICE_COUNT];
+    for (int i = 0; i < DICE_COUNT; i++) hand[i] = values.optInt(i, 0);
+    dice.put("hand", classify(hand));
+  }
+
   private static boolean allHeld(JSONArray held) {
     if (held == null || held.length() != DICE_COUNT) return false;
     for (int i = 0; i < DICE_COUNT; i++) if (!held.optBoolean(i, false)) return false;
@@ -608,10 +637,7 @@ public final class CombatChoiceEngine {
   }
 
   private static void finalizeHand(JSONObject dice) throws Exception {
-    JSONArray values = dice.getJSONArray("values");
-    int[] hand = new int[DICE_COUNT];
-    for (int i = 0; i < DICE_COUNT; i++) hand[i] = values.optInt(i, 0);
-    dice.put("hand", classify(hand));
+    updateHand(dice);
     dice.put("finalized", true);
   }
 
@@ -644,6 +670,7 @@ public final class CombatChoiceEngine {
 
     combat.put("currentActor", actor.optString("name", "Nhân vật"));
     combat.put("diceState", newDiceState());
+    ensureInitialRoll(combat);
   }
 
   private static JSONObject skillJson(Skill skill) throws Exception {
@@ -767,7 +794,11 @@ public final class CombatChoiceEngine {
   static void normalizeTerminalEncounter(JSONObject state) throws Exception {
     if (state == null) return;
     JSONObject combat = state.optJSONObject("combat");
-    if (combat == null || combat.optBoolean("active", false)) return;
+    if (combat == null) return;
+    if (combat.optBoolean("active", false)) {
+      ensureInitialRoll(combat);
+      return;
+    }
     String outcome = combat.optString("outcome", "");
     if ("defeat".equals(outcome) && !combat.optBoolean("deathRecoveryApplied", false)) {
       finishDefeat(state, combat);
