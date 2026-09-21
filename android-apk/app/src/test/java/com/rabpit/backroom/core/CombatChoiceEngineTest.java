@@ -166,8 +166,10 @@ public class CombatChoiceEngineTest {
     assertEquals(33, CombatChoiceEngine.basicDamage(30, 6, 100));
     assertEquals(77, CombatChoiceEngine.skillDamage(30, 170, 5, 150));
     assertEquals(84, CombatChoiceEngine.skillDamage(30, 170, 6, 150));
-    assertEquals(240, CombatChoiceEngine.ultimateDamage(240, 5, 100));
-    assertEquals(480, CombatChoiceEngine.ultimateDamage(240, 5, 200));
+    assertEquals(35, CombatChoiceEngine.ultimateDamage(30, 1, 15, 100));
+    assertEquals(840, CombatChoiceEngine.ultimateDamage(30, 24, 15, 100));
+    assertEquals(1680, CombatChoiceEngine.ultimateDamage(30, 24, 15, 200));
+    assertEquals(2100, CombatChoiceEngine.ultimateDamage(30, 60, 15, 100));
   }
 
   @Test public void defenseUsesDiminishingDivisionAndNeverImmunity() {
@@ -247,11 +249,32 @@ public class CombatChoiceEngineTest {
     }
   }
 
-  @Test public void onlyCaoMinhHasAuthoritativeUltimateDamageMappingToday() {
+  @Test public void caoMinhAndLuciaHaveAuthoritativeUltimateMappings() {
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
+    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
-    assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
+  }
+
+  @Test public void luciaSsfUsesDynamicTooYoungToDieUltimate() throws Exception {
+    JSONObject state = combatState(new JSONArray().put(member("lucia", "Lucia Lục")));
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+
+    finalizeAs(state, 2,2,4,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+    assertEquals("Lucia Lục", state.getJSONObject("combat").getString("currentActor"));
+
+    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+    int before = entity.getInt("hp");
+    int expected = CombatChoiceEngine.ultimateDamage(24, 60, 15, 100);
+
+    finalizeAs(state, 1,2,3,4,5);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(before - expected, entity.getInt("hp"));
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    assertTrue(battleLog.getJSONObject(battleLog.length() - 1).getString("text")
+        .contains("Too Young To Die"));
   }
 
   private static void finalizeAs(JSONObject state, int... values) throws Exception {

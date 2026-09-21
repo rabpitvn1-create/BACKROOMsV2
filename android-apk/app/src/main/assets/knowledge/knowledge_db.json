@@ -335,7 +335,7 @@
       "id": "CHAR.CAO_MINH.HUYET_MA_24",
       "domain": "CHARACTER",
       "kind": "ultimate",
-      "text": "Huyết Ma Nhị Thập Tứ Trảm always resolves as exactly 24 strikes while external time is completely stopped. Gameplay projection is 10 HP per strike, 240 HP total. Do not turn it into gunfire, change the count, or downgrade full time-stop into generic slow motion without explicit retcon.",
+      "text": "Huyết Ma Nhị Thập Tứ Trảm always resolves as exactly 24 strikes while external time is completely stopped. Gameplay damage is dynamic: each strike deals 100% of Cao Minh's current DMG + 15% Bonus DMG, so the Ultimate scales with the character instead of using a fixed 10 HP per strike / 240 HP total. Do not turn it into gunfire, change the count, or downgrade full time-stop into generic slow motion without explicit retcon.",
       "source": {
         "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
         "anchor": "CAO-ULT-HUYETMA24-01"
@@ -1400,6 +1400,30 @@
       "affordances": [
         "direct_threat",
         "trace_analysis"
+      ]
+    },
+    {
+      "id": "CHAR.LUCIA.TOO_YOUNG_TO_DIE",
+      "domain": "CHARACTER",
+      "kind": "ultimate",
+      "text": "Too Young To Die is Lucia Lục / Hứa Thuý Mai's Poker Dice Ultimate. It fires exactly 60 M4A1 shots. Each shot deals 100% of Lucia's current DMG + 15% Bonus DMG. Damage scales from current character DMG and is not locked to a fixed HP amount. This is a gameplay projection and does not grant supernatural power or infinite ammunition.",
+      "source": {
+        "document": "02_CHARACTERS/Lucia_Codex.docx",
+        "anchor": "09 · KỸ NĂNG GAMEPLAY HIỆN HÀNH / Too Young To Die"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "lucia",
+        "hứa thuý mai",
+        "too young to die",
+        "ultimate",
+        "m4a1"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
       ]
     }
   ]

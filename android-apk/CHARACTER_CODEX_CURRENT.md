@@ -67,7 +67,7 @@ Các con số sau chỉ thuộc lớp gameplay nội bộ, không phải thuật
 - **Huyết Ảnh Ma Độn — AUTO:** roll độc lập 20%; đúng 2 kiếm; tổng 147% weapon damage.
 - **Thiên Ma Bộ — AUTO:** roll độc lập 30%; +50 điểm phần trăm Evasion trước phản công thông thường của Entity trong 3 combat turn tính cả turn kích hoạt; tái kích hoạt làm mới thời lượng; không tự vô hiệu sát thương diện rộng bắt buộc.
 - Các AUTO roll độc lập và có thể cùng proc. Proc thành công đồng nghĩa kỹ năng trúng, không thêm accuracy/evasion roll riêng.
-- **Huyết Ma Nhị Thập Tứ Trảm — gameplay priority:** tự động ưu tiên ở combat turn thứ 3 và các bội số của 3; đúng 24 đòn, mỗi đòn 10 HP, Accuracy 200%, bỏ qua Evasion. Ở turn Ultimate, bốn AUTO skill trên không roll.
+- **Huyết Ma Nhị Thập Tứ Trảm — Ultimate:** đúng 24 trảm. Mỗi trảm gây **100% DMG hiện tại của Cao Minh + 15% Bonus DMG**; sát thương scale theo DMG hiện tại của nhân vật và không còn khóa ở 10 HP mỗi trảm / 240 HP tổng. Canon time-stop và đúng 24 trảm giữ nguyên.
 
 ### Backrooms — CAO-BACKROOMS-01
 
@@ -94,6 +94,11 @@ Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, kh�
 ## Hứa Thuý Mai / Lucia Lục
 
 Lucia chỉ xuất hiện qua encounter do **CharacterEncounterCore** sở hữu. Gemini không được tự spawn hoặc mutate Party. Quan hệ và xưng hô với Cao Minh vẫn OPEN cho đến khi continuity trong campaign xác lập.
+
+### Gameplay override — Ultimate
+
+- **Too Young To Die — ULTIMATE:** Lucia xả đúng 60 phát M4A1. Mỗi phát bắn gây **100% DMG hiện tại của Lucia + 15% Bonus DMG**. Damage lấy từ DMG hiện tại ở thời điểm kích hoạt, không khóa ở một mức HP cố định.
+- Retcon này thay vai trò AUTO legacy của Too Young To Die trong runtime Poker Dice; Lucia vẫn là con người bình thường được huấn luyện tốt, không nhận thêm năng lực siêu nhiên.
 
 ## Runtime contract
 

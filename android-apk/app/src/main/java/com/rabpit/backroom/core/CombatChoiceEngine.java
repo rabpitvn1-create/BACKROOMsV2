@@ -21,7 +21,9 @@ public final class CombatChoiceEngine {
   static final int MAX_REROLLS = 3;
   static final int DICE_COUNT = 5;
 
-  private static final int HUYET_MA_24_TOTAL_DAMAGE = 240;
+  private static final int ULTIMATE_BONUS_DAMAGE_PERCENT = 15;
+  private static final int HUYET_MA_24_HIT_COUNT = 24;
+  private static final int LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT = 60;
   private static final int CAO_MINH_BASE_ATTACK = 30;
 
   private static final class EntityProfile {
@@ -59,11 +61,13 @@ public final class CombatChoiceEngine {
 
   private static final class Ultimate {
     final String name;
-    final int exactDamage;
+    final int hitCount;
+    final int bonusPercent;
 
-    Ultimate(String name, int exactDamage) {
+    Ultimate(String name, int hitCount, int bonusPercent) {
       this.name = name;
-      this.exactDamage = exactDamage;
+      this.hitCount = hitCount;
+      this.bonusPercent = bonusPercent;
     }
   }
 
@@ -127,10 +131,14 @@ public final class CombatChoiceEngine {
     skills("lucia",
         skill("M4A1 Joint Attack", "", 150, "", 0, 0));
 
-    // Canonical runtime data currently defines both identity and gameplay damage for Cao Minh's
-    // Ultimate. Other characters intentionally remain unmapped until authoritative damage exists.
+    // Ultimate damage derives from each character's current basic DMG instead of a fixed HP value.
+    // SSF uses the listed total; FSF keeps the Poker Dice 200% Ultimate multiplier.
     ULTIMATES.put("cao_minh",
-        new Ultimate("Huyết Ma Nhị Thập Tứ Trảm", HUYET_MA_24_TOTAL_DAMAGE));
+        new Ultimate("Huyết Ma Nhị Thập Tứ Trảm", HUYET_MA_24_HIT_COUNT,
+            ULTIMATE_BONUS_DAMAGE_PERCENT));
+    ULTIMATES.put("lucia",
+        new Ultimate("Too Young To Die", LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT,
+            ULTIMATE_BONUS_DAMAGE_PERCENT));
   }
 
   private CombatChoiceEngine() {}
@@ -228,8 +236,12 @@ public final class CombatChoiceEngine {
         CharacterProgressionCore.statPercent(skl), handPercent);
   }
 
-  static int ultimateDamage(int baseDamage, int skl, int handPercent) {
-    return scaledDamage(baseDamage, CharacterProgressionCore.statPercent(skl), handPercent);
+  static int ultimateDamage(int currentDamage, int hitCount, int bonusPercent, int handPercent) {
+    long perHit = ((long)Math.max(1, currentDamage) * (100L + Math.max(0, bonusPercent)) + 50L)
+        / 100L;
+    long total = perHit * Math.max(1, hitCount);
+    long scaled = (total * Math.max(0, handPercent) + 50L) / 100L;
+    return Math.max(1, (int)Math.min(Integer.MAX_VALUE, scaled));
   }
 
   private static int scaledDamage(int baseDamage, int statPercent, int handPercent) {
@@ -421,11 +433,12 @@ public final class CombatChoiceEngine {
     if ("SSF".equals(hand) || "FSF".equals(hand)) {
       int handPercent = "FSF".equals(hand) ? 200 : 100;
       Ultimate ultimate = ULTIMATES.get(actor.optString("id", ""));
-      if (ultimate == null || ultimate.exactDamage <= 0) {
+      if (ultimate == null || ultimate.hitCount <= 0) {
         result.summary = "[" + hand + "] " + actorName + " chưa có Ultimate authoritative.";
         return result;
       }
-      int damage = ultimateDamage(ultimate.exactDamage, skl, handPercent);
+      int currentDamage = basicDamage(baseAttack, str, 100);
+      int damage = ultimateDamage(currentDamage, ultimate.hitCount, ultimate.bonusPercent, handPercent);
       applyEntityDamage(combat, entity, damage);
       result.summary = "[" + hand + "] " + actorName + " dùng " + ultimate.name
           + ("FSF".equals(hand) ? " · 200% DMG." : ".");
@@ -667,7 +680,9 @@ public final class CombatChoiceEngine {
     if (ultimate != null) {
       combat.put("currentUltimate", new JSONObject()
           .put("name", ultimate.name)
-          .put("exactDamage", ultimate.exactDamage));
+          .put("hitCount", ultimate.hitCount)
+          .put("bonusPercent", ultimate.bonusPercent)
+          .put("damageFormula", "100% current DMG + " + ultimate.bonusPercent + "% Bonus DMG per hit"));
     } else {
       combat.remove("currentUltimate");
     }
