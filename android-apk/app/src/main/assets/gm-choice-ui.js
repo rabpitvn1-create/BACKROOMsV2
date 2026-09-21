@@ -33,11 +33,11 @@
     ".composer.battle-locked #submit{background:#24282c;color:#777e84;border-color:#30353a;opacity:.7}",
     ".message.gm{border-left-color:#59646d}",
     ".battle-separator{height:1px;background:#262d33;margin-top:10px}",
-    ".combat-dice-modal[hidden]{display:none}.combat-dice-modal{position:fixed;inset:0;z-index:240;display:grid;place-items:center;padding:14px;background:#000b;touch-action:none}",
-    ".combat-dice-panel{width:min(94vw,420px);background:#0e1114;border:1px solid #46515a;box-shadow:0 24px 80px #000c;padding:14px;display:grid;gap:12px;touch-action:manipulation}",
+    ".combat-dice-panel[hidden]{display:none}.combat-dice-panel{width:100%;box-sizing:border-box;margin-top:12px;background:#0e1114;border:1px solid #46515a;padding:14px;display:grid;gap:12px;touch-action:manipulation}",
     ".combat-dice-title{font-family:'Play',system-ui,sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em}.combat-dice-meta{font-size:11px;color:#9ba6af}",
     ".combat-dice-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.combat-die{padding:5px;aspect-ratio:1/1;border:1px solid #343d45;background:#151a1f;display:grid;place-items:center;min-width:0}.combat-die img{width:100%;height:100%;object-fit:contain}.combat-die.held{border-color:#f6c85f;background:#211e14;box-shadow:inset 0 0 0 1px #f6c85f55}.combat-die:disabled{opacity:.85}",
-    ".combat-dice-result{min-height:18px;text-align:center;font-family:'Play',system-ui,sans-serif;font-weight:700;color:#f6c85f}.combat-roll{width:100%;letter-spacing:.14em}.combat-roll:disabled{opacity:.5}"
+    ".combat-dice-result{min-height:22px;text-align:center;font-family:'Play',system-ui,sans-serif;font-size:16px;font-weight:700;color:#f6c85f}",
+    ".combat-dice-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.combat-roll,.combat-finish{width:100%;padding:12px 8px;background:#1b2126;border:1px solid #46515a;color:#f0f3f5;font-family:'Play',system-ui,sans-serif;font-weight:700;letter-spacing:.12em}.combat-roll:disabled,.combat-finish:disabled{opacity:.45}"
   ].join('');
   document.head.appendChild(style);
 
@@ -236,7 +236,7 @@
 
   function appendExplorerChoices(article, entry, index) {
     if (!entry) return;
-    if (state.combat && state.combat.active && Number(state.combat.logIndex) === Number(index)) return;
+    if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
     var hasChest = latest && chestPresent();
     var choices = Array.isArray(entry.choices) ? entry.choices : [];
@@ -282,6 +282,7 @@
       article.appendChild(text);
       if (!player) {
         appendBattleSection(article, entry, index);
+        appendCombatDiceSection(article, index);
         appendExplorerChoices(article, entry, index);
       }
       log.appendChild(article);
@@ -326,7 +327,7 @@
     action.readOnly = combat;
     if (combat) {
       action.value = '';
-      action.placeholder = 'Đang chiến đấu — hoàn tất Poker Dice trong popup.';
+      action.placeholder = 'Đang chiến đấu — hoàn tất Poker Dice trong khung bên trên.';
       submit.disabled = true;
     } else {
       action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';
@@ -334,17 +335,17 @@
     }
   }
 
-  var diceModal=document.createElement('div');
-  diceModal.className='combat-dice-modal';
-  diceModal.hidden=true;
-  diceModal.setAttribute('aria-hidden','true');
-  diceModal.innerHTML='<section class="combat-dice-panel" role="dialog" aria-modal="true" aria-label="Poker Dice Combat"><div class="combat-dice-title" id="combatDiceTitle"></div><div class="combat-dice-meta" id="combatDiceMeta"></div><div class="combat-dice-row" id="combatDiceRow"></div><div class="combat-dice-result" id="combatDiceResult"></div><button type="button" class="combat-roll" id="combatDiceRoll">ROLL</button></section>';
-  document.body.appendChild(diceModal);
-  var diceTitle=diceModal.querySelector('#combatDiceTitle');
-  var diceMeta=diceModal.querySelector('#combatDiceMeta');
-  var diceRow=diceModal.querySelector('#combatDiceRow');
-  var diceResult=diceModal.querySelector('#combatDiceResult');
-  var diceRoll=diceModal.querySelector('#combatDiceRoll');
+  var dicePanel=document.createElement('section');
+  dicePanel.className='combat-dice-panel';
+  dicePanel.hidden=true;
+  dicePanel.setAttribute('aria-label','Poker Dice Combat');
+  dicePanel.innerHTML='<div class="combat-dice-title" id="combatDiceTitle"></div><div class="combat-dice-meta" id="combatDiceMeta"></div><div class="combat-dice-row" id="combatDiceRow"></div><div class="combat-dice-result" id="combatDiceResult"></div><div class="combat-dice-actions"><button type="button" class="combat-roll" id="combatDiceRoll">ROLL</button><button type="button" class="combat-finish" id="combatDiceFinish">FINISH</button></div>';
+  var diceTitle=dicePanel.querySelector('#combatDiceTitle');
+  var diceMeta=dicePanel.querySelector('#combatDiceMeta');
+  var diceRow=dicePanel.querySelector('#combatDiceRow');
+  var diceResult=dicePanel.querySelector('#combatDiceResult');
+  var diceRoll=dicePanel.querySelector('#combatDiceRoll');
+  var diceFinish=dicePanel.querySelector('#combatDiceFinish');
   var finalizeTimer=0;
   var finalizeKey='';
 
@@ -358,22 +359,62 @@
     return true;
   }
 
+  function handLabel(hand){
+    var labels={
+      'NO HAND':'No Hand',
+      'ONE PAIR':'One Pair',
+      'TWO PAIR':'Two Pair',
+      'THREE OF A KIND':'Three of a Kind',
+      'STRAIGHT':'Straight',
+      'FULL HOUSE':'Full House',
+      'FOUR OF A KIND':'Four of a Kind',
+      'SSF':'SSF',
+      'FSF':'FSF'
+    };
+    var key=String(hand||'NO HAND');
+    return labels[key]||key;
+  }
+
   function combatDiceState(){
     return state&&state.combat&&state.combat.active&&state.combat.diceState?state.combat.diceState:null;
+  }
+
+  function combatLogIndex(){
+    if(!state||!Array.isArray(state.log))return -1;
+    var combat=state.combat||{};
+    var index=Number(combat.logIndex);
+    if(Number.isInteger(index)&&index>=0&&index<state.log.length){
+      var entry=state.log[index];
+      if(entry&&entry.role!=='player')return index;
+    }
+    return lastGmIndex();
+  }
+
+  function appendCombatDiceSection(article,index){
+    if(!state||!state.combat||!state.combat.active)return;
+    if(index!==combatLogIndex())return;
+    article.appendChild(dicePanel);
   }
 
   function sendCombatHold(index,held){
     if(window.__combatBusy||!window.Android||typeof Android.combatHold!=='function')return;
     window.__combatBusy=true;
-    renderCombatPopup();
+    renderCombatPanel();
     Android.combatHold(JSON.stringify(state),index,!!held);
   }
 
   function sendCombatRoll(){
     if(window.__combatBusy||!window.Android||typeof Android.combatRoll!=='function')return;
     window.__combatBusy=true;
-    renderCombatPopup();
+    renderCombatPanel();
     Android.combatRoll(JSON.stringify(state));
+  }
+
+  function sendCombatFinish(){
+    if(window.__combatBusy||!window.Android||typeof Android.combatFinish!=='function')return;
+    window.__combatBusy=true;
+    renderCombatPanel();
+    Android.combatFinish(JSON.stringify(state));
   }
 
   function scheduleCombatResolve(combat,dice){
@@ -388,26 +429,23 @@
       if(!current||current.finalized!==true||current.resolved===true)return;
       if(!window.Android||typeof Android.combatResolve!=='function')return;
       window.__combatBusy=true;
-      renderCombatPopup();
+      renderCombatPanel();
       Android.combatResolve(JSON.stringify(state));
     },2000);
   }
 
-  function renderCombatPopup(){
+  function renderCombatPanel(){
     var combat=state&&state.combat;
     var dice=combatDiceState();
     var visible=!!dice&&!window.__combatFeedbackBusy;
-    diceModal.hidden=!visible;
-    diceModal.setAttribute('aria-hidden',visible?'false':'true');
-    document.body.classList.toggle('combat-dice-open',visible);
+    dicePanel.hidden=!visible;
     if(!visible)return;
 
     diceTitle.textContent=String(combat.currentActor||'Nhân vật');
     var hasRolled=dice.hasRolled===true;
     var rerolls=Math.max(0,Number(dice.rerollsUsed)||0);
-    diceMeta.textContent=hasRolled
-      ? 'Reroll '+String(rerolls)+' / 3 · chạm die để HOLD'
-      : 'Initial Roll · 5D6';
+    var maxRerolls=Math.max(0,Number(dice.maxRerolls)||3);
+    diceMeta.textContent='Reroll '+String(rerolls)+' / '+String(maxRerolls)+' · chạm die để HOLD';
 
     diceRow.textContent='';
     var values=Array.isArray(dice.values)?dice.values:[0,0,0,0,0];
@@ -433,13 +471,16 @@
       })(i);
     }
 
-    diceResult.textContent=dice.finalized===true?String(dice.hand||'NO HAND'):'';
+    diceResult.textContent=hasRolled?handLabel(dice.hand):'';
     diceRoll.textContent='ROLL';
-    diceRoll.disabled=window.__combatBusy||dice.finalized===true;
+    diceFinish.textContent='FINISH';
+    diceRoll.disabled=window.__combatBusy||dice.finalized===true||!hasRolled||rerolls>=maxRerolls||allHeld(held);
+    diceFinish.disabled=window.__combatBusy||dice.finalized===true||!hasRolled;
     if(dice.finalized===true)scheduleCombatResolve(combat,dice);
   }
 
   diceRoll.addEventListener('click',sendCombatRoll);
+  diceFinish.addEventListener('click',sendCombatFinish);
 
   window.backroomCombatDiceState=function(json){
     try{
@@ -450,7 +491,7 @@
       if(typeof busy!=='undefined')busy=false;
       if(typeof window.render==='function')window.render();
       syncComposer();
-      renderCombatPopup();
+      renderCombatPanel();
       if(status){
         var dice=combatDiceState();
         status.textContent=dice&&dice.finalized===true
@@ -469,7 +510,7 @@
     renderSemanticLog();
     syncComposer();
     if (state && state.combat && state.combat.active) scrollCombatToBottom();
-    renderCombatPopup();
+    renderCombatPanel();
   };
 
   if (form) {
@@ -477,7 +518,7 @@
       if (state && state.combat && state.combat.active) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (status) status.textContent = 'Đang chiến đấu. Hãy hoàn tất Poker Dice trong popup.';
+        if (status) status.textContent = 'Đang chiến đấu. Hãy hoàn tất Poker Dice trong khung bên trên.';
         syncComposer();
       }
     }, true);
@@ -546,7 +587,7 @@
       }
       if (typeof window.render === 'function') window.render();
       syncComposer();
-      renderCombatPopup();
+      renderCombatPanel();
       scrollCombatToBottom();
       if (status) status.textContent = 'Đang xử lý lượt của ' + (combat.resolvedActorName || 'nhân vật') + '…';
 
