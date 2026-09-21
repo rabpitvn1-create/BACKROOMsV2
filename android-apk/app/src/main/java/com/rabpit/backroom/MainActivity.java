@@ -740,6 +740,19 @@ public class MainActivity extends Activity {
       });
     }
 
+    @JavascriptInterface public void combatFinish(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          CombatChoiceEngine.finishHand(submitted);
+          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          emit("backroomCombatDiceState", committed.toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null ? "Không thể FINISH hand." : e.getMessage());
+        }
+      });
+    }
+
     @JavascriptInterface public void combatResolve(String stateJson) {
       io.execute(() -> {
         try {
