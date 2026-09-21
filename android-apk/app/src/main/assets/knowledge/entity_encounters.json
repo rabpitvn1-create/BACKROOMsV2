@@ -14,7 +14,8 @@
     ],
     "roamingAllLevels": true,
     "canonLevelRestrictionsApplied": false,
-    "levelMetadataMeaning": "reference_only_not_runtime_eligibility"
+    "levelMetadataMeaning": "reference_only_not_runtime_eligibility",
+    "entitySkillProcPolicy": "Each skill rolls independently once per valid Entity response; if none proc, use the normal basic attack."
   },
   "entities": [
     {
@@ -27,7 +28,24 @@
         4,
         5
       ],
-      "canon": "Fast aggressive four-limbed predator. Hunts humans, often in groups, and exploits isolation, injury and constrained routes."
+      "canon": "Fast aggressive four-limbed predator. Hunts humans, often in groups, and exploits isolation, injury and constrained routes.",
+      "autoProcSkills": [
+        {
+          "name": "Dead Bite",
+          "damagePercent": 120,
+          "procPercent": 35
+        },
+        {
+          "name": "Rending Pounce",
+          "damagePercent": 115,
+          "procPercent": 32
+        },
+        {
+          "name": "Pack Maul",
+          "damagePercent": 110,
+          "procPercent": 38
+        }
+      ]
     },
     {
       "key": "clump",
@@ -37,7 +55,24 @@
         1,
         2
       ],
-      "canon": "Mass of limbs and muscle that ambushes from dark recesses, technical gaps and crawlspaces and drags humans out of formation."
+      "canon": "Mass of limbs and muscle that ambushes from dark recesses, technical gaps and crawlspaces and drags humans out of formation.",
+      "autoProcSkills": [
+        {
+          "name": "Grasping Crush",
+          "damagePercent": 120,
+          "procPercent": 34
+        },
+        {
+          "name": "Limb Barrage",
+          "damagePercent": 115,
+          "procPercent": 36
+        },
+        {
+          "name": "Drag Down",
+          "damagePercent": 110,
+          "procPercent": 31
+        }
+      ]
     },
     {
       "key": "duller",
@@ -46,7 +81,24 @@
       "levels": [
         1
       ],
-      "canon": "Distorted humanoid Entity that watches before approaching and exploits concrete-column blind spots."
+      "canon": "Distorted humanoid Entity that watches before approaching and exploits concrete-column blind spots.",
+      "autoProcSkills": [
+        {
+          "name": "Blindside Strike",
+          "damagePercent": 125,
+          "procPercent": 33
+        },
+        {
+          "name": "Distorted Lunge",
+          "damagePercent": 115,
+          "procPercent": 37
+        },
+        {
+          "name": "Column Ambush",
+          "damagePercent": 120,
+          "procPercent": 30
+        }
+      ]
     },
     {
       "key": "deathmoth",

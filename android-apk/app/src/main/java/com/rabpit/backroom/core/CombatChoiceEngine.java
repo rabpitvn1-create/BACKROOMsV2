@@ -59,6 +59,13 @@ public final class CombatChoiceEngine {
     }
   }
 
+  private static final class EntitySkill {
+  final String name; final int damagePercent; final int procPercent;
+  EntitySkill(String name, int damagePercent, int procPercent) {
+    this.name=name; this.damagePercent=damagePercent; this.procPercent=procPercent;
+  }
+}
+
   private static final class Ultimate {
     final String name;
     final int hitCount;
@@ -78,6 +85,7 @@ public final class CombatChoiceEngine {
 
   private static final Map<String, EntityProfile> ENTITIES = new LinkedHashMap<>();
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
+  private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
   private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();
 
   static {
@@ -104,6 +112,13 @@ public final class CombatChoiceEngine {
     entity("jane_the_killer", "Jane", 360, 20);
     entity("slenderman", "Slenderman", 480, 23);
     entity("diep_minh", "Diệp Minh", 2000, 42);
+
+    entitySkills("hound",
+    entitySkill("Dead Bite",120,35), entitySkill("Rending Pounce",115,32), entitySkill("Pack Maul",110,38));
+  entitySkills("clump",
+    entitySkill("Grasping Crush",120,34), entitySkill("Limb Barrage",115,36), entitySkill("Drag Down",110,31));
+  entitySkills("duller",
+    entitySkill("Blindside Strike",125,33), entitySkill("Distorted Lunge",115,37), entitySkill("Column Ambush",120,30));
 
     // Only offensive canonical skills participate in Poker Dice Skill hands. Passive/evasion
     // skills do not silently replace or modify dice outcomes.
@@ -157,6 +172,23 @@ public final class CombatChoiceEngine {
     for (Skill definition : definitions) list.add(definition);
     SKILLS.put(id, list);
   }
+
+  private static EntitySkill entitySkill(String name,int damagePercent,int procPercent) {
+  return new EntitySkill(name,damagePercent,procPercent);
+}
+private static void entitySkills(String id,EntitySkill... definitions) {
+  List<EntitySkill> list=new ArrayList<>(); for(EntitySkill d:definitions) list.add(d); ENTITY_SKILLS.put(id,list);
+}
+static int entitySkillCount(String key) {
+  List<EntitySkill> pool=ENTITY_SKILLS.get(key==null?"":key.trim().toLowerCase(Locale.ROOT)); return pool==null?0:pool.size();
+}
+static int entitySkillDamage(int rawDamage,int percent) {
+  return Math.max(1,(int)(((long)Math.max(1,rawDamage)*Math.max(0,percent)+50L)/100L));
+}
+static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex) {
+  long x=(seed&0xffffffffL)*1664525L+(long)Math.max(1,round)*1013904223L+(long)(actorIndex+1)*2654435761L+(long)(skillIndex+1)*97531L;
+  x^=x>>>16; x^=x<<11; return (int)Math.floorMod(x,100L);
+}
 
   static Map<String, String> semanticCatalog() {
     Map<String, String> output = new LinkedHashMap<>();
@@ -509,10 +541,27 @@ public final class CombatChoiceEngine {
     }
 
     int rawDamage = Math.max(1, entity.optInt("attack", 1));
-    int def = actor.optInt("DEF", CharacterProgressionCore.BASE_STAT);
+  int def = actor.optInt("DEF", CharacterProgressionCore.BASE_STAT);
+  List<EntitySkill> pool = ENTITY_SKILLS.get(entity.optString("key", ""));
+  boolean procTriggered = false;
+  if (pool != null) {
+    int seed = combat.optInt("seed", 1);
+    int round = Math.max(1, combat.optInt("round", 1));
+    int actorIndex = Math.max(0, combat.optInt("actorIndex", 0));
+    for (int i = 0; i < pool.size(); i++) {
+      EntitySkill skill = pool.get(i);
+      if (entitySkillProcRoll(seed, round, actorIndex, i) >= skill.procPercent) continue;
+      procTriggered = true;
+      int damage = defendedIncomingDamage(entitySkillDamage(rawDamage, skill.damagePercent), def);
+      actor.put("hp", Math.max(0, actor.optInt("hp", 0) - damage));
+      addFeedback(combat, "entity", "actor", "damage", skill.name + " · -" + damage + " HP", true);
+    }
+  }
+  if (!procTriggered) {
     int damage = defendedIncomingDamage(rawDamage, def);
     actor.put("hp", Math.max(0, actor.optInt("hp", 0) - damage));
     addFeedback(combat, "entity", "actor", "damage", "-" + damage + " HP", true);
+  }
   }
 
   private static void tickRoundStartEffects(JSONObject combat, JSONObject entity) throws Exception {

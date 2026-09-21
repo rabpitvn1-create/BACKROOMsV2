@@ -277,6 +277,21 @@ public class CombatChoiceEngineTest {
         .contains("Too Young To Die"));
   }
 
+  @Test public void firstEntityRotationHasExactlyThreeSkillsEach() {
+  assertEquals(3, CombatChoiceEngine.entitySkillCount("hound"));
+  assertEquals(3, CombatChoiceEngine.entitySkillCount("clump"));
+  assertEquals(3, CombatChoiceEngine.entitySkillCount("duller"));
+}
+@Test public void entitySkillDamageIsBounded() {
+  assertEquals(18, CombatChoiceEngine.entitySkillDamage(15,120));
+  assertEquals(17, CombatChoiceEngine.entitySkillDamage(15,115));
+  assertEquals(21, CombatChoiceEngine.entitySkillDamage(17,125));
+}
+@Test public void entitySkillProcRollIsStableWithinTurn() {
+  int r=CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1); assertTrue(r>=0&&r<100);
+  assertEquals(r,CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1));
+}
+
   private static void finalizeAs(JSONObject state, int... values) throws Exception {
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     JSONArray array = new JSONArray();
