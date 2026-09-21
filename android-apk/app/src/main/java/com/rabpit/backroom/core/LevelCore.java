@@ -307,6 +307,30 @@ final class LevelCore {
     return LEVEL_ZERO_PROGRESSION.clone();
   }
 
+  /**
+   * Authoritative gameplay Stage order. Sub-level decimals are graph node names, never numeric
+   * stage values.
+   */
+  static int stageIndex(JSONObject state) {
+    if (state == null) return 0;
+    return stageIndexForKey(new LevelCore((Context)null, bound -> 0).resolveLevelKey(state));
+  }
+
+  static int stageIndexForKey(String levelKey) {
+    String key = normalizeKey(levelKey);
+    for (int i = 0; i < LEVEL_ZERO_PROGRESSION.length; i++) {
+      if (LEVEL_ZERO_PROGRESSION[i].equals(key)) return i;
+    }
+    if (isMainLevelKey(key)) {
+      int level = parentLevel(key);
+      if (level >= 1) {
+        // Level 1 is index 8 because the Level 0 graph contains eight nodes before it.
+        return (LEVEL_ZERO_PROGRESSION.length - 1) + (level - 1);
+      }
+    }
+    return 0;
+  }
+
   static String displayName(String levelKey) {
     String key = normalizeKey(levelKey);
     switch (key) {
