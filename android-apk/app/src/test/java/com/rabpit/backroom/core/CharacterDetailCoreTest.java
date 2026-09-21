@@ -41,7 +41,7 @@ public class CharacterDetailCoreTest {
     assertEquals("NORMAL", cao.getJSONObject("physiology").getString("hunger"));
   }
 
-  @Test public void joinedLuciaUsesCanonicalBaseHpAndOwnPhysiology() throws Exception {
+  @Test public void joinedLuciaUsesCurrentRuntimeBaseHpAndOwnPhysiology() throws Exception {
     JSONObject state = new JSONObject()
         .put("turn", 1)
         .put("currentLevel", 0)
@@ -57,8 +57,8 @@ public class CharacterDetailCoreTest {
     assertEquals(2, members.length());
     JSONObject lucia = members.getJSONObject(1);
     assertEquals("lucia", lucia.getString("id"));
-    assertEquals(100, lucia.getInt("maxHp"));
-    assertEquals(100, lucia.getInt("baseMaxHp"));
+    assertEquals(50, lucia.getInt("maxHp"));
+    assertEquals(50, lucia.getInt("baseMaxHp"));
     assertEquals(5, lucia.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
     assertNotNull(lucia.getJSONArray("inventory"));
   }
