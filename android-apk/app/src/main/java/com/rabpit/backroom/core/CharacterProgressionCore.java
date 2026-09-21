@@ -19,7 +19,6 @@ final class CharacterProgressionCore {
 
   static final int BASE_STAT = 5;
   static final int DEFAULT_BASE_MAX_HP = 50;
-  static final int LUCIA_BASE_MAX_HP = 100;
   static final int COMPANION_REVIVE_TURNS = 10;
 
   private static final String[] STAT_KEYS = {"STR", "DEF", "SKL", "VIT"};
@@ -303,7 +302,7 @@ final class CharacterProgressionCore {
   }
 
   private static int defaultBaseMaxHp(String id) {
-    return "lucia".equals(id) ? LUCIA_BASE_MAX_HP : DEFAULT_BASE_MAX_HP;
+    return DEFAULT_BASE_MAX_HP;
   }
 
   private static void normalizeHp(JSONObject profile) throws Exception {
