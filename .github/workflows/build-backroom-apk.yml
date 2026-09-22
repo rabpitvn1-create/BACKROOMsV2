@@ -300,7 +300,11 @@ jobs:
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
           grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
+          grep -Fq 'id="gameMenuOpen"' android-apk/app/src/main/assets/index.html
+          grep -Fq 'id="gameMenuModal"' android-apk/app/src/main/assets/index.html
+          ! grep -Fq '<div class="turn">TURN' android-apk/app/src/main/assets/index.html
           grep -Fq 'player-action-ui.js' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'management-ui.js' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq ".message.gm .role,.gm-choice{font-family:system-ui" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq ".semantic{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
@@ -327,6 +331,7 @@ jobs:
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
+          node --check android-apk/app/src/main/assets/management-ui.js
           grep -Fq 'window.backroomCombatDiceState' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.combatRoll' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.combatHold' android-apk/app/src/main/assets/gm-choice-ui.js
