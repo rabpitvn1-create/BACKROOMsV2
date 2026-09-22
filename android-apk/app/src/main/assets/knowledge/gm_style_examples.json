@@ -1,31 +1,21 @@
 {
   "version": 2,
-  "instruction": "Các ví dụ minh họa văn phong xianxia x Backrooms: Xianxia là lăng kính nhận thức của Cao Minh (thần thức, ma nguyên, quy tắc), Backrooms là thực tại khách quan (hành lang, đèn huỳnh quang, chất lỏng, súng đạn). Tuyệt đối không gán nhãn Backrooms thành bí cảnh hay cấm chế. Dùng ví dụ làm tham chiếu nhịp kể; không sao chép nguyên văn.",
+  "instruction": "Hai ví dụ chỉ dạy nhịp kể xianxia × Backrooms. Xianxia là lăng kính nhận thức của Cao Minh; Backrooms vẫn là thực tại khách quan. Chỉ khẳng định điều quan sát/canon xác nhận, còn suy luận phải giữ mức độ bất định. Không sao chép sự kiện hay câu chữ vào lượt thật.",
   "goodExamples": [
     {
-      "name": "Lượt yên tĩnh, dùng thần thức quan sát dị tượng",
-      "player": "Cao Minh dừng lại dùng thần thức quan sát dị tượng.",
-      "gm": "Cao Minh ngưng thần, phóng thả thần thức ra xung quanh. Thần thức lướt qua lớp giấy dán tường vàng nhạt rồi kẹt lại ở một vệt màu sẫm trên vách—không phải cấm chế ma đạo hay trận pháp, mà là một khoảng thực tại bị xói mòn làm bóp méo luồng khí cơ. Tiếng đèn huỳnh quang phía trên vẫn ù đều, không mang linh lực hay sát khí."
+      "name": "Thần thức quan sát nhưng không biến suy luận thành fact",
+      "player": "Cao Minh dùng thần thức kiểm tra vệt sẫm trên bức tường.",
+      "gm": "Thần thức lướt qua lớp giấy dán tường rồi khựng nhẹ ở vệt sẫm. Cảm nhận tại đó méo đi một chút, nhưng không có trận văn hay dao động linh lực quen thuộc. Chừng ấy chỉ đủ cho Cao Minh biết hiện tượng không giống những cấm chế hắn từng gặp; bản chất của nó vẫn chưa thể kết luận."
     },
     {
-      "name": "Chạm trán người lạ, đối thoại chuẩn sắc thái tiên hiệp với thực tại Backrooms",
-      "player": "Cao Minh cất lời hỏi người lạ mặt.",
-      "gm": "Cao Minh nhìn khẩu súng trong tay đối phương rồi lên tiếng, giọng bình thản không chút gợn sóng:\n\n\"Các hạ dừng tay. Vùng này không có lối thoát, chĩa binh khí vào ta cũng vô ích.\"\n\nNgười kia giật mình khựng lại, ánh mắt nghi ngại lướt qua phong thái lạ lẫm của anh trước khi hạ nòng súng xuống vài phân."
-    },
-    {
-      "name": "Tương tác vật lý dùng ma nguyên bảo vệ nhưng nhận thức đúng bản chất",
-      "player": "Cao Minh dùng ma nguyên bao bọc ngón tay chạm vào vệt chất lỏng dính trên tường.",
-      "gm": "Ma nguyên luân chuyển đến đầu ngón tay, tạo thành lớp màng mỏng cách tuyệt. Khi chạm vào vệt chất lỏng dính trên tường, Cao Minh nhận ra đây chỉ là hóa chất bẩn bốc mùi ẩm mốc—không có ma tính hay độc tố tiên gia nhưng đang ăn mòn dần lớp vữa."
-    },
-    {
-      "name": "Quan sát cấu trúc không gian dị thường bằng lăng kính tu hành",
-      "player": "Cao Minh tiếp tục tiến sâu vào đoạn hành lang u tối.",
-      "gm": "Hành lang kéo dài rồi bất ngờ gấp khúc theo một góc độ phi lý. Bằng kinh nghiệm nhìn nhận quy tắc thực tại, Cao Minh nhận ra cấu trúc không gian ở đây đang tự lặp lại—mỗi vệt ố trên sàn đều giống hệt đoạn vừa qua, dù không hề có dấu vết của ảo thuật hay ảo trận."
+      "name": "Đối thoại tiên hiệp tự nhiên trong thực tại Backrooms",
+      "player": "Cao Minh lên tiếng với người lạ đang cầm súng.",
+      "gm": "Cao Minh dừng ngoài tầm với, mắt lướt qua thứ binh khí kim loại trong tay đối phương.\\n\\n“Các hạ, hạ binh khí xuống. Ta không có ý giao thủ.”\\n\\nNgười kia vẫn giữ khoảng cách, nhưng nòng súng hạ xuống đôi chút. Tiếng đèn huỳnh quang tiếp tục rền đều trên đầu cả hai."
     }
   ],
   "badExample": {
     "player": "Cao Minh đi tiếp.",
-    "gm": "Cao Minh bước vào bí cảnh Level 0. Cơn gió ma đạo bao trùm lấy không gian. Cánh cửa phía trước là một cấm chế cổ xưa do yêu thú trấn giữ. Phù chú đèn huỳnh quang phát ra ma âm u ám. Bạn sẽ làm gì tiếp?",
-    "why": "Sai vì tự ý đổi Level thành 'bí cảnh', tự biến cửa thành 'cấm chế', biến đèn huỳnh quang thành 'phù chú ma âm', và kết thúc bằng câu hỏi máy móc. Phá vỡ nguyên tắc 'Xianxia là lăng kính, Backrooms là thực tại'."
+    "gm": "Cao Minh bước vào bí cảnh Level 0. Cánh cửa phía trước là cấm chế cổ xưa do yêu thú trấn giữ, còn đèn huỳnh quang phát ra ma âm. Bạn sẽ làm gì tiếp?",
+    "why": "Sai vì tự đổi Level thành bí cảnh, cửa thành cấm chế và sinh vật chưa xác nhận thành yêu thú; đồng thời kết lượt bằng câu hỏi máy móc."
   }
 }
