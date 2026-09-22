@@ -104,8 +104,14 @@ jobs:
                   ext = "jpg"
               elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
                   ext = "webp"
+              elif raw.startswith((b"GIF87a", b"GIF89a")):
+                  ext = "gif"
+              elif len(raw) >= 12 and raw[4:8] == b"ftyp":
+                  ext = "avif"
               else:
-                  raise SystemExit(f"Unsupported image format returned for {name}")
+                  raise SystemExit(
+                      f"Unsupported image format returned for {name}; magic={raw[:16].hex()} length={len(raw)}"
+                  )
               (out / f"{name}.source.{ext}").write_bytes(raw)
 
           (out / "status_icons.generated.json").write_text(
