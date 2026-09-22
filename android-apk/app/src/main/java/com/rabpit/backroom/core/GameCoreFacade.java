@@ -116,6 +116,11 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
                                                        String encounterDialogueJson) {
+    return processValidatedCandidate(beforeJson, candidateJson, action, encounterDialogueJson, null);
+  }
+
+  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
+                                                       String encounterDialogueJson, String transitionTarget) {
     JSONObject before = parseState(beforeJson);
     try {
       levelCore.normalizeState(before);
@@ -126,13 +131,16 @@ public final class GameCoreFacade implements AutoCloseable {
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
-      // Loot, survival and character progression are Core-owned. Gemini/Haiku never mutate them directly.
       copyField(before, sanitized, "inventory");
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
       int beforeStageIndex = LevelCore.stageIndex(before);
-      levelCore.validateAndApplyTransition(before, sanitized);
+      if (transitionTarget == null) {
+        levelCore.validateAndApplyTransition(before, sanitized);
+      } else {
+        levelCore.applyNarrativeTransition(before, sanitized, transitionTarget);
+      }
       int afterStageIndex = LevelCore.stageIndex(sanitized);
       if (afterStageIndex != beforeStageIndex) {
         int stageCoreReward = characterProgressionCore.rewardStageCompletion(sanitized, afterStageIndex);
@@ -152,10 +160,10 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(sanitized);
 
       persist(sanitized);
-      return response(true, sanitized, null, "gemini_delta_committed", null);
+      return response(true, sanitized, null, "ai_delta_committed", null);
     } catch (Exception e) {
       debug("processValidatedCandidate failed: " + e.getMessage());
-      return response(false, before, safeMessage(e), "gemini_delta_rejected", null);
+      return response(false, before, safeMessage(e), "ai_delta_rejected", null);
     }
   }
 
