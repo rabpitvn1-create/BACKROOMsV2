@@ -89,7 +89,8 @@ jobs:
           grep -Fq 'function shouldShowCaoMinhOverlay()' android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'file:///android_asset/kai_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'generated.optString("transitionTarget", "")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'CombatChoiceEngine.resolveFinalized' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -111,7 +112,10 @@ jobs:
           grep -Fq ".inventory-item-name{font-family:'Play',system-ui,sans-serif;font-weight:700;color:#f6c85f;text-decoration:none}" android-apk/app/src/main/assets/inventory-ui.js
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/inventory-ui.js
-          grep -Fq 'type chỉ được là character, entity, item, skill, effect, location hoặc stat' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'GmNarrativePacket.build' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          grep -Fq 'projected.remove("characterCanon")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmNarrativePacketTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           grep -Fq 'GmChoiceContract.gmEntry(reply, generated, state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'CombatChoiceEngine.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
@@ -159,7 +163,7 @@ jobs:
           test -s android-apk/app/src/main/assets/knowledge/knowledge_db.json
           test -s android-apk/app/src/main/assets/knowledge/entity_encounters.json
           test -s android-apk/app/src/main/assets/knowledge/gm_style_examples.json
-          jq -e '.version == 2 and (.goodExamples | length == 4) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
+          jq -e '.version == 2 and (.goodExamples | length == 2) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
           grep -Fq '"version": 4' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
@@ -258,15 +262,22 @@ jobs:
           grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'structuredKnowledgeRotatesLargeScenePoolsByTurn' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'promptState.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'promptState.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'projected.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          grep -Fq 'projected.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          grep -Fq 'projected.remove("characterCanon")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'private String recentStoryContext(JSONObject state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'private String gmStyleExamplesContext()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'GM STYLE FEW-SHOT EXAMPLES:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'NARRATIVE VOICE:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'Không kết mỗi reply bằng câu hỏi tu từ' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'Không tự thêm quyết định, ý định, lời nói hoặc hành động tiếp theo cho Cao Minh' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarratorContract.java
+          grep -Fq 'NARRATIVE VOICE:' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarratorContract.java
+          grep -Fq 'Không kết mỗi reply bằng câu hỏi tu từ' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarratorContract.java
+          grep -Fq 'PLAYER AGENCY' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarratorContract.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmNarratorContractTest.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/ProviderRetryPolicy.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/ProviderRetryPolicyTest.java
+          grep -Fq 'ProviderRetryPolicy.shouldRetrySameProvider' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'ProviderRetryPolicy.shouldRotateGeminiKey' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CaoMinhVoiceContract.java
           grep -Fq 'CAO MINH VOICE CONTRACT' android-apk/app/src/main/java/com/rabpit/backroom/core/CaoMinhVoiceContract.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CaoMinhVoiceContractTest.java
