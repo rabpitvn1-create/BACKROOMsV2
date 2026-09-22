@@ -14,12 +14,11 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import com.rabpit.backroom.core.CaoMinhVoiceContract;
 import com.rabpit.backroom.core.CombatChoiceEngine;
 import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
-import com.rabpit.backroom.core.GmNarrativePacket;
 import com.rabpit.backroom.core.GmNarratorContract;
-import com.rabpit.backroom.core.ProviderRetryPolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.BufferedReader;
@@ -274,6 +273,13 @@ public class MainActivity extends Activity {
     return body.toString();
   }
 
+  private static boolean isContentOrJsonError(Exception error) {
+    if (error == null || error instanceof HttpError) return false;
+    String msg = error.getMessage();
+    if (msg == null) return false;
+    return msg.contains("JSON") || msg.contains("AI không") || msg.contains("phản hồi");
+  }
+
   private String geminiText(String prompt) throws Exception {
     Exception last = null;
     String[] keys = geminiKeys();
@@ -314,8 +320,10 @@ public class MainActivity extends Activity {
         return output;
       } catch (Exception error) {
         last = error;
+        if (isContentOrJsonError(error)) {
+          throw error;
+        }
         int status = error instanceof HttpError ? ((HttpError)error).status : 0;
-        if (!ProviderRetryPolicy.shouldRotateGeminiKey(status, error.getMessage())) throw error;
         if (keyIndex < keys.length - 1) sleepBeforeNextGeminiKey(keyIndex, status);
       }
     }
@@ -475,8 +483,11 @@ public class MainActivity extends Activity {
         return haikuTextOnce(prompt);
       } catch (Exception error) {
         last = error;
+        if (isContentOrJsonError(error)) {
+          break;
+        }
         int status = error instanceof HttpError ? ((HttpError)error).status : 0;
-        if (attempt == 0 && ProviderRetryPolicy.shouldRetrySameProvider(status, error.getMessage())) {
+        if (attempt == 0 && (status == 0 || retryable(status))) {
           Log.w(TAG, "Haiku transport/server attempt failed; retrying once.");
           try {
             Thread.sleep(HAIKU_RETRY_DELAY_MS);
@@ -552,17 +563,16 @@ public class MainActivity extends Activity {
     if (log == null || log.length() == 0) return "(chưa có lượt trước)";
 
     StringBuilder recent = new StringBuilder();
-    int start = Math.max(0, log.length() - 4);
+    int start = Math.max(0, log.length() - 6);
     for (int i = start; i < log.length(); i++) {
       JSONObject entry = log.optJSONObject(i);
       if (entry == null) continue;
       String text = entry.optString("text", "").trim();
       if (text.isEmpty()) continue;
-      String line = ("player".equals(entry.optString("role", "")) ? "PLAYER: " : "GM: ")
-          + clipped(text, 680);
-      if (recent.length() > 0) line = "\n" + line;
-      if (recent.length() + line.length() > GmNarrativePacket.MAX_RECENT_STORY_CHARS) break;
-      recent.append(line);
+      if (recent.length() > 0) recent.append("\n");
+      boolean player = "player".equals(entry.optString("role", ""));
+      recent.append(player ? "PLAYER: " : "GM: ");
+      recent.append(clipped(text, 1400));
     }
     return recent.length() == 0 ? "(chưa có lượt trước)" : recent.toString();
   }
@@ -638,11 +648,28 @@ public class MainActivity extends Activity {
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String itemContext = gameCore.itemPromptContext(coreBeforeJson);
           String characterContext = gameCore.characterPromptContext(coreBeforeJson);
+          JSONObject promptState = new JSONObject(state.toString());
+          promptState.remove("levelRoute");
+          promptState.remove("log");
           String recentStory = recentStoryContext(state);
           String gmStyleExamples = gmStyleExamplesContext();
-          String prompt = GmNarrativePacket.build(
-              levelContext, entityContext, itemContext, characterContext,
-              recentStory, state, action, gmStyleExamples);
+          String gmNarratorContract = GmNarratorContract.promptContext();
+          String caoMinhCard = GmNarratorContract.caoMinhNarrativeCard();
+          String prompt = "Bạn là Game Master của text game Backrooms (xianxia x Backrooms).\n" +
+            gmNarratorContract + "\n" +
+            caoMinhCard + "\n" +
+            "NGÔN NGỮ HIỂN THỊ: Toàn bộ reply, sceneLabel, choices và encounterDialogue phải viết bằng tiếng Việt tự nhiên. Mọi thuật ngữ mô tả từ knowledge/context phải được dịch sang tiếng Việt; tuyệt đối không giữ nguyên tiếng Anh nội bộ trừ tên riêng chính thức (Cao Minh, Backrooms, Level, Entity, Item, Skill).\n" +
+            gmStyleExamples + "\n" +
+            "QUYỀN SỞ HỮU CỦA CORE (Core-Owned Boundaries):\n" +
+            "- Java Core hoàn toàn sở hữu Level, route, Entity spawn, Loot, Inventory, Party và Combat.\n" +
+            "- AI chỉ tập trung sáng tác lời kể (reply), tên/mô tả bối cảnh ngắn (sceneLabel), gợi ý hành động (choices) và thoại gặp mặt (encounterDialogue).\n\n" +
+            "EXPLORER CHOICES: 0 đến 3 gợi ý hành động ngắn trong choices (mỗi Lựa chọn là {\"text\":\"...\"}). Nếu Entity đang đối đầu trực tiếp, đặt choices là [].\n" +
+            "ENCOUNTER DIALOGUE: Nếu Character Core báo pending intro, reply dựng khoảnh khắc gặp mặt; encounterDialogue chứa đúng 2-5 câu thoại thực sự. Nếu không pending thì encounterDialogue là [].\n\n" +
+            levelContext + "\n" + entityContext + "\n" + itemContext + "\n" + characterContext + "\n" +
+            "RECENT STORY CONTEXT (giữ tính liên tục, không lặp lại nguyên văn):\n" + recentStory + "\n\n" +
+            "State hiện tại: " + promptState.toString() + "\nHành động người chơi: " + action +
+            "\nTrả DUY NHẤT JSON hợp lệ (không markdown):\n" +
+            "{\"reply\":\"phản hồi Game Master\",\"sceneLabel\":\"vị trí/bối cảnh ngắn\",\"choices\":[{\"text\":\"Gợi ý 1\"}],\"encounterDialogue\":[]}";
           long tCtxEnd = System.currentTimeMillis();
 
           long tGenStart = System.currentTimeMillis();
@@ -665,16 +692,22 @@ public class MainActivity extends Activity {
           if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
           JSONArray encounterDialogue = generated.optJSONArray("encounterDialogue");
           if (encounterDialogue == null) encounterDialogue = new JSONArray();
-          String transitionTarget = generated.optString("transitionTarget", "").trim();
 
           state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
-          String sceneLabel = generated.optString("sceneLabel", "").trim();
+          String sceneLabel = generated.optString("sceneLabel", generated.optString("location", "")).trim();
           if (!sceneLabel.isEmpty()) state.put("location", sceneLabel);
+          JSONObject generatedFlags = generated.optJSONObject("flags");
+          if (generatedFlags != null) {
+            JSONObject flags = state.optJSONObject("flags");
+            if (flags == null) flags = new JSONObject();
+            mergeObject(flags, generatedFlags);
+            state.put("flags", flags);
+          }
           long tParseEnd = System.currentTimeMillis();
 
           long tValStart = System.currentTimeMillis();
           JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
-              coreBeforeJson, state.toString(), action, encounterDialogue.toString(), transitionTarget));
+              coreBeforeJson, state.toString(), action, encounterDialogue.toString()));
           if (!coreCommit.optBoolean("handled", false)) {
             throw new Exception("Game State Core từ chối AI delta: " + coreCommit.optString("error", "invalid_delta"));
           }

@@ -39,7 +39,6 @@ final class LevelCore {
   private static final String INVALID_LEVEL_KEY = "__invalid__";
   private static final int LEVEL_MISMATCH = -2;
   private static final int ROUTE_ROLL_BOUND = 100;
-  static final int MAX_KNOWLEDGE_CONTEXT_CHARS = 3200;
 
   private final Map<String, JSONObject> knowledgeByLevelKey = new LinkedHashMap<>();
   private final Map<String, String> legacyCanonByLevelKey = new LinkedHashMap<>();
@@ -178,62 +177,6 @@ final class LevelCore {
     candidate.put(LEVEL_KEY, fromKey);
   }
 
-  void applyNarrativeTransition(JSONObject before, JSONObject candidate, String transitionTarget) throws Exception {
-    if (candidate == null) throw new IllegalArgumentException("candidate state is required");
-    normalizeState(before);
-    String fromKey = resolveLevelKey(before);
-    JSONObject beforeRoute = normalizeRouteState(before, fromKey);
-    copyRouteState(beforeRoute, candidate);
-
-    boolean resetThisTurn =
-        beforeRoute.optInt("lastRollTurn", -1) == Math.max(1, before.optInt("turn", 1))
-            && "RESET".equals(beforeRoute.optString("lastResult", ""));
-
-    if (resetThisTurn) {
-      candidate.put("currentLevel", parentLevel(fromKey));
-      candidate.put(LEVEL_KEY, fromKey);
-      String returnLocation = beforeRoute.optString("returnLocation", "").trim();
-      candidate.put("location", returnLocation.isEmpty()
-          ? before.optString("location", defaultLocation(fromKey))
-          : returnLocation);
-      return;
-    }
-
-    String requested = normalizeKey(transitionTarget);
-    if (requested.isEmpty() || "none".equals(requested)) requested = fromKey;
-    if (!isKnownLevelKey(requested)) {
-      throw new IllegalArgumentException("Unsupported Level transition target");
-    }
-    if (!nodeTransitionAllowed(fromKey, requested)) {
-      throw new IllegalArgumentException(
-          "Invalid Level transition: " + displayName(fromKey) + " -> " + displayName(requested));
-    }
-
-    if (!requested.equals(fromKey)) {
-      if (!beforeRoute.optBoolean("exitAvailable", false)) {
-        throw new IllegalArgumentException("Level transition is locked until the hidden route chain completes");
-      }
-      candidate.put("currentLevel", parentLevel(requested));
-      candidate.put(LEVEL_KEY, requested);
-      candidate.put(ROUTE_STATE, newRouteState(requested));
-    } else {
-      candidate.put("currentLevel", parentLevel(fromKey));
-      candidate.put(LEVEL_KEY, fromKey);
-      copyRouteState(beforeRoute, candidate);
-    }
-
-    String sceneLabel = candidate.optString("location", "").trim();
-    String labelKey = levelKeyFromLocation(sceneLabel);
-    if (!labelKey.isEmpty() && !labelKey.equals(requested)) sceneLabel = "";
-    if (sceneLabel.isEmpty()) {
-      candidate.put("location", requested.equals(fromKey)
-          ? before.optString("location", defaultLocation(fromKey))
-          : defaultLocation(requested));
-    } else {
-      candidate.put("location", sceneLabel);
-    }
-  }
-
   String promptContext(JSONObject state) {
     return promptContext(state, "");
   }
@@ -252,24 +195,16 @@ final class LevelCore {
 
     String next = nextRequiredLevelKey(levelKey);
     String allowed;
-    String allowedKeys;
     if (next != null) {
       allowed = displayName(next);
-      allowedKeys = next;
     } else {
       StringBuilder values = new StringBuilder();
-      StringBuilder keys = new StringBuilder();
       for (int target = 0; target <= 6; target++) {
         if (target == level || !GameCoreRules.levelTransitionAllowed(level, target)) continue;
-        if (values.length() > 0) {
-          values.append(", ");
-          keys.append(", ");
-        }
+        if (values.length() > 0) values.append(", ");
         values.append(displayName(String.valueOf(target)));
-        keys.append(target);
       }
       allowed = values.length() == 0 ? "none" : values.toString();
-      allowedKeys = keys.length() == 0 ? "none" : keys.toString();
     }
 
     JSONObject route;
@@ -311,13 +246,11 @@ final class LevelCore {
         : "LEVEL TRANSITION: LOCKED. Keep currentLevelKey unchanged and keep the environment inside "
             + displayName(levelKey) + ".";
 
-    String narrativeTransitionInstruction = exitAvailable
-        ? "NARRATIVE TRANSITION SIGNAL: sceneLabel is descriptive only and never changes Level state. "
-            + "If this turn actually crosses an allowed boundary, return transitionTarget as one exact key from ["
-            + allowedKeys + "]. Otherwise transitionTarget must be empty."
-        : "NARRATIVE TRANSITION SIGNAL: sceneLabel is descriptive only and never changes Level state. "
-            + "transitionTarget must be empty because the route is locked.";
-
+    String mutationInstruction = next == null
+        ? "STATE RULE: currentLevelKey must match the current Level. currentLevel remains the integer parent Level number."
+        : "STATE RULE: when the narration actually crosses into the next destination, set currentLevelKey to '"
+            + next + "' and currentLevel to " + parentLevel(next)
+            + ". Before that moment keep currentLevelKey='" + levelKey + "'.";
 
     return "CURRENT LEVEL NODE: " + displayName(levelKey) + "\n"
         + "CURRENT LEVEL KEY: " + levelKey + "\n"
@@ -328,7 +261,7 @@ final class LevelCore {
         + "Entity spawning, item spawning, combat, stats and hidden route progress remain Core-owned.\n"
         + "VALID NEXT LEVEL TRANSITION: " + allowed + "\n"
         + transitionInstruction + "\n"
-        + narrativeTransitionInstruction + "\n"
+        + mutationInstruction + "\n"
         + routeInstruction;
   }
 
@@ -676,37 +609,35 @@ final class LevelCore {
   }
 
   private static boolean isSectionRelevantForCategory(String section, String category) {
-    if ("identity".equals(section) || "canonicalFacts".equals(section)
-        || "gmConstraints".equals(section) || "gameplayOverride".equals(section)
-        || "forbiddenInventions".equals(section)) {
+    // Core invariant sections
+    if ("identity".equals(section) || "architecture".equals(section) ||
+        "gmConstraints".equals(section) || "gameplayOverride".equals(section) ||
+        "entrancesExits".equals(section)) {
       return true;
     }
 
     switch (category) {
       case "OBSERVE":
-        return "architecture".equals(section) || "sensory".equals(section)
-            || "anomalies".equals(section) || "evidenceRules".equals(section)
-            || "microLocations".equals(section) || "environmentEvents".equals(section)
-            || "quietTurnPatterns".equals(section);
+        return "sensory".equals(section) || "anomalies".equals(section) ||
+            "evidenceRules".equals(section) || "quietTurnPatterns".equals(section) ||
+            "microLocations".equals(section) || "environmentEvents".equals(section);
       case "INSPECT":
-        return "interactionRules".equals(section) || "actionConsequences".equals(section)
-            || "hazards".equals(section) || "resources".equals(section)
-            || "evidenceRules".equals(section) || "persistenceRules".equals(section);
+        return "interactionRules".equals(section) || "actionConsequences".equals(section) ||
+            "hazards".equals(section) || "resources".equals(section) ||
+            "evidenceRules".equals(section) || "persistenceRules".equals(section);
       case "REST":
-        return "hazards".equals(section) || "persistenceRules".equals(section)
-            || "environmentStates".equals(section) || "quietTurnPatterns".equals(section)
-            || "hazardEscalation".equals(section);
+        return "hazards".equals(section) || "persistenceRules".equals(section) ||
+            "environmentStates".equals(section) || "quietTurnPatterns".equals(section) ||
+            "hazardEscalation".equals(section);
       case "ENCOUNTER":
-        return "encounterStaging".equals(section) || "hazardEscalation".equals(section)
-            || "entities".equals(section) || "hazards".equals(section)
-            || "zones".equals(section) || "evidenceRules".equals(section);
+        return "encounterStaging".equals(section) || "hazardEscalation".equals(section) ||
+            "entities".equals(section) || "hazards".equals(section) || "zones".equals(section);
       case "EXPLORATION":
       default:
-        return "architecture".equals(section) || "navigation".equals(section)
-            || "entrancesExits".equals(section) || "navigationPatterns".equals(section)
-            || "routeProgressionCues".equals(section) || "zones".equals(section)
-            || "microLocations".equals(section) || "sceneSeeds".equals(section)
-            || "variationPool".equals(section);
+        return "navigation".equals(section) || "navigationPatterns".equals(section) ||
+            "routeProgressionCues".equals(section) || "zones".equals(section) ||
+            "microLocations".equals(section) || "sceneSeeds".equals(section) ||
+            "variationPool".equals(section);
     }
   }
 
@@ -723,94 +654,63 @@ final class LevelCore {
     if (!name.isEmpty()) out.append("NAME: ").append(name).append('\n');
 
     String category = categorizeAction(action);
+
     JSONArray order = knowledgeSectionOrder;
     if (order.length() == 0) {
       order = new JSONArray()
           .put("identity").put("architecture").put("zones").put("sensory")
           .put("anomalies").put("hazards").put("resources").put("entities")
           .put("navigation").put("entrancesExits").put("gameplayOverride")
-          .put("gmConstraints").put("variationPool").put("canonicalFacts")
-          .put("forbiddenInventions");
+          .put("gmConstraints").put("variationPool");
     }
 
-    String[] coreSections = {
-        "identity", "canonicalFacts", "gmConstraints", "gameplayOverride", "forbiddenInventions"
-    };
-    for (String section : coreSections) {
-      JSONArray values = bundle.optJSONArray(section);
-      if (values == null || values.length() == 0) continue;
-      appendSectionWithinBudget(out, values, section, turn);
-    }
-
-    for (int i = 0; i < order.length() && out.length() < MAX_KNOWLEDGE_CONTEXT_CHARS; i++) {
+    for (int i = 0; i < order.length(); i++) {
       String section = order.optString(i, "").trim();
-      if (isCoreNarrativeSection(section) || !isSectionRelevantForCategory(section, category)) continue;
+      if (!isSectionRelevantForCategory(section, category)) continue;
+
       JSONArray values = bundle.optJSONArray(section);
       if (values == null || values.length() == 0) continue;
-      appendSectionWithinBudget(out, values, section, turn);
+      if (out.length() > 0) out.append('\n');
+      out.append(sectionLabel(section)).append(":\n");
+
+      int limit = rotatingSectionLimit(section);
+      if (limit > 0 && values.length() > limit) {
+        appendRotatingValues(out, values, section, turn, limit);
+      } else {
+        appendAllValues(out, values);
+      }
     }
     return out.toString().trim();
   }
 
-  private static boolean isCoreNarrativeSection(String section) {
-    return "identity".equals(section) || "canonicalFacts".equals(section)
-        || "gmConstraints".equals(section) || "gameplayOverride".equals(section)
-        || "forbiddenInventions".equals(section);
+  private static void appendAllValues(StringBuilder out, JSONArray values) {
+    for (int i = 0; i < values.length(); i++) {
+      String value = values.optString(i, "").trim();
+      if (!value.isEmpty()) out.append("- ").append(value).append('\n');
+    }
   }
 
-  private static void appendSectionWithinBudget(
-      StringBuilder out, JSONArray values, String section, int turn) {
+  private static void appendRotatingValues(
+      StringBuilder out, JSONArray values, String section, int turn, int limit) {
     int size = values.length();
-    if (size == 0 || out.length() >= MAX_KNOWLEDGE_CONTEXT_CHARS) return;
-    int configuredLimit = rotatingSectionLimit(section);
-    int count = configuredLimit > 0 ? Math.min(configuredLimit, size) : size;
-    int start = configuredLimit > 0 && size > count
-        ? Math.floorMod((Math.max(1, turn) - 1) * count + section.hashCode(), size)
-        : 0;
-
-    String header = (out.length() > 0 ? "\n" : "") + sectionLabel(section) + ":\n";
-    StringBuilder block = new StringBuilder(header);
-    int added = 0;
-    for (int i = 0; i < count; i++) {
+    int start = Math.floorMod((Math.max(1, turn) - 1) * limit + section.hashCode(), size);
+    for (int i = 0; i < limit; i++) {
       String value = values.optString((start + i) % size, "").trim();
-      if (value.isEmpty()) continue;
-      String line = "- " + value + "\n";
-      if (out.length() + block.length() + line.length() > MAX_KNOWLEDGE_CONTEXT_CHARS) break;
-      block.append(line);
-      added++;
+      if (!value.isEmpty()) out.append("- ").append(value).append('\n');
     }
-    if (added > 0) out.append(block);
   }
 
   private static int rotatingSectionLimit(String section) {
-    if ("identity".equals(section)) return 2;
-    if ("canonicalFacts".equals(section)) return 2;
-    if ("gmConstraints".equals(section)) return 3;
-    if ("gameplayOverride".equals(section)) return 2;
-    if ("forbiddenInventions".equals(section)) return 2;
-    if ("architecture".equals(section)) return 3;
-    if ("zones".equals(section)) return 2;
-    if ("sensory".equals(section)) return 3;
-    if ("anomalies".equals(section)) return 2;
-    if ("hazards".equals(section)) return 3;
-    if ("resources".equals(section)) return 2;
-    if ("entities".equals(section)) return 2;
-    if ("navigation".equals(section)) return 3;
-    if ("entrancesExits".equals(section)) return 2;
-    if ("variationPool".equals(section)) return 4;
-    if ("microLocations".equals(section)) return 2;
-    if ("environmentStates".equals(section)) return 2;
-    if ("environmentEvents".equals(section)) return 2;
-    if ("interactionRules".equals(section)) return 3;
-    if ("actionConsequences".equals(section)) return 2;
-    if ("persistenceRules".equals(section)) return 2;
-    if ("evidenceRules".equals(section)) return 3;
-    if ("navigationPatterns".equals(section)) return 2;
-    if ("routeProgressionCues".equals(section)) return 2;
-    if ("encounterStaging".equals(section)) return 3;
-    if ("hazardEscalation".equals(section)) return 2;
-    if ("quietTurnPatterns".equals(section)) return 2;
+    if ("variationPool".equals(section)) return 6;
+    if ("microLocations".equals(section)) return 4;
+    if ("environmentEvents".equals(section)) return 4;
+    if ("actionConsequences".equals(section)) return 4;
+    if ("navigationPatterns".equals(section)) return 4;
+    if ("routeProgressionCues".equals(section)) return 4;
+    if ("quietTurnPatterns".equals(section)) return 4;
     if ("sceneSeeds".equals(section)) return 6;
+    if ("forbiddenInventions".equals(section)) return 4;
+    if ("canonicalFacts".equals(section)) return 4;
     return 0;
   }
 

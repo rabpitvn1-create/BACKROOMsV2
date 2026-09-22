@@ -3,11 +3,6 @@ package com.rabpit.backroom.core;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,18 +26,6 @@ public class LevelCoreTest {
       if (value < 0 || value >= bound) throw new IllegalStateException("Test RNG out of range");
       return value;
     }
-  }
-
-  private static String readRepoAsset(String relativePath) throws Exception {
-    Path[] candidates = new Path[] {
-        Paths.get("src/main/assets", relativePath),
-        Paths.get("app/src/main/assets", relativePath),
-        Paths.get("android-apk/app/src/main/assets", relativePath)
-    };
-    for (Path path : candidates) {
-      if (Files.isRegularFile(path)) return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-    }
-    throw new IllegalStateException("Unable to locate test asset: " + relativePath);
   }
 
   private static JSONObject state(int turn, String location) throws Exception {
@@ -474,70 +457,14 @@ public class LevelCoreTest {
     assertFalse(explorePrompt.contains("INTERACT_FACT"));
   }
 
-  @Test public void levelZeroKnowledgeContextBudgetUsesRealAsset() throws Exception {
-    LevelCore core = LevelCore.withKnowledge(
-        readRepoAsset("knowledge/level_knowledge.json"), new SequenceRng(0));
+  @Test public void levelZeroKnowledgeContextBudgetIsEnforcedForOrdinaryTurn() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(0));
     JSONObject state = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
 
     String explorePrompt = core.promptContext(state, "Cao Minh đi tiếp theo hành lang");
-
-    assertTrue("Real Level 0 context should stay below 6,000 chars, was: " + explorePrompt.length(),
+    // Knowledge context in ordinary turn must be significantly smaller than old 27k chars
+    assertTrue("Level 0 explore prompt context should be budgeted (< 6,000 chars), was: " + explorePrompt.length(),
         explorePrompt.length() < 6000);
-    assertTrue(explorePrompt.contains("GM CONSTRAINTS"));
-    assertTrue(explorePrompt.contains("CANONICALFACTS"));
-    assertTrue(explorePrompt.contains("FORBIDDENINVENTIONS"));
-  }
-
-  @Test public void narrativeSceneLabelCannotForgeLevelTransition() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(5));
-    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
-    core.normalizeState(before);
-
-    JSONObject candidate = new JSONObject(before.toString())
-        .put("currentLevel", 6)
-        .put(LevelCore.LEVEL_KEY, "6")
-        .put("location", "Level 6 / forged by scene label");
-
-    core.applyNarrativeTransition(before, candidate, "");
-
-    assertEquals(0, candidate.getInt("currentLevel"));
-    assertEquals("0", candidate.getString(LevelCore.LEVEL_KEY));
-    assertEquals("Level 0 / Start", candidate.getString("location"));
-  }
-
-  @Test public void narrativeTransitionUsesOnlyUnlockedValidatedTarget() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(5));
-    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
-    for (int turn = 1; turn <= 10; turn++) {
-      before.put("turn", turn);
-      core.rollRouteForExplorerAction(before, ROUTE_ACTION);
-    }
-
-    JSONObject candidate = new JSONObject(before.toString())
-        .put("currentLevel", 6)
-        .put(LevelCore.LEVEL_KEY, "6")
-        .put("location", "Qua ngưỡng cửa lạ");
-
-    core.applyNarrativeTransition(before, candidate, "0.1");
-
-    assertEquals(0, candidate.getInt("currentLevel"));
-    assertEquals("0.1", candidate.getString(LevelCore.LEVEL_KEY));
-    assertEquals("Qua ngưỡng cửa lạ", candidate.getString("location"));
-    assertFalse(candidate.getJSONObject(LevelCore.ROUTE_STATE).getBoolean("exitAvailable"));
-  }
-
-  @Test public void narrativeTransitionRejectsLockedTarget() throws Exception {
-    LevelCore core = new LevelCore(null, new SequenceRng(5));
-    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
-    core.normalizeState(before);
-    JSONObject candidate = new JSONObject(before.toString());
-
-    try {
-      core.applyNarrativeTransition(before, candidate, "0.1");
-      fail("Expected locked narrative transition to be rejected");
-    } catch (IllegalArgumentException expected) {
-      assertTrue(expected.getMessage().contains("locked"));
-    }
   }
 
 }

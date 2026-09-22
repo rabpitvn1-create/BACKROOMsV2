@@ -329,13 +329,13 @@ public class CombatChoiceEngineTest {
     }
   }
 
-  @Test public void caoMinhAndLuciaEachHaveFourCharacterProcsAndKaiHasNone() {
-    assertEquals(4, CombatChoiceEngine.characterProcCount("cao_minh"));
-    assertEquals(4, CombatChoiceEngine.characterProcCount("lucia"));
+  @Test public void caoMinhAndLuciaEachHaveFiveCharacterProcsAndKaiHasNone() {
+    assertEquals(5, CombatChoiceEngine.characterProcCount("cao_minh"));
+    assertEquals(5, CombatChoiceEngine.characterProcCount("lucia"));
     assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
 
     for (String id : new String[]{"cao_minh", "lucia"}) {
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 5; i++) {
         int chance = CombatChoiceEngine.characterProcPercent(id, i);
         assertTrue(chance >= 45 && chance <= 55);
       }

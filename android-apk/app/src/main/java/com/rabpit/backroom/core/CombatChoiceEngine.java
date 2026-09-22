@@ -172,12 +172,14 @@ public final class CombatChoiceEngine {
         characterProc("Huyết Sát Kiếm Ấn", 50, 25, "Chảy máu", 2, 3),
         characterProc("Phá Giáp Ma Kiếm", 48, 20, "Xuyên giáp", 2, 10),
         characterProc("Ma Tâm Chấn", 45, 15, "Choáng", 1, 0),
-        characterProc("Huyết Độc Ma Khí", 47, 20, "Trúng độc", 2, 3));
+        characterProc("Huyết Độc Ma Khí", 47, 20, "Trúng độc", 2, 3),
+        characterProc("Huyết Liệt Ma Ấn", 51, 20, "Chảy máu", 2, 4));
     characterProcs("lucia",
         characterProc("Toxic Burst", 52, 25, "Trúng độc", 2, 3),
         characterProc("Armor-Piercing Burst", 55, 20, "Xuyên giáp", 2, 10),
         characterProc("Concussive Burst", 46, 15, "Choáng", 1, 0),
-        characterProc("Rending Burst", 49, 20, "Chảy máu", 2, 3));
+        characterProc("Rending Burst", 49, 20, "Chảy máu", 2, 3),
+        characterProc("Corrosive Burst", 51, 20, "Trúng độc", 2, 4));
 
     // Ultimate damage derives from each character's current basic DMG instead of a fixed HP value.
     // SSF uses the listed total; FSF keeps the Poker Dice 200% Ultimate multiplier.
