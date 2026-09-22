@@ -89,7 +89,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   if(window.__backroomEnhancements)return;
   window.__backroomEnhancements=true;
   var st=document.createElement('style');
-  st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-grounded{position:absolute;left:auto;right:2.5%;top:8%;width:auto;height:84%;max-width:95%;max-height:none;object-fit:contain;pointer-events:none;transform:none}.snapshot>img.snapshot-character{z-index:2;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{left:2.5%;right:auto;max-width:46%;z-index:3;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}.snapshot-character-placeholder{position:absolute;right:2.5%;bottom:8%;width:38%;height:84%;z-index:2;pointer-events:none;opacity:.46;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));animation:combat-overlay-enter .18s ease-out}.snapshot-character-placeholder:before{content:"";position:absolute;left:50%;top:2%;width:27%;aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:#fff}.snapshot-character-placeholder:after{content:"";position:absolute;left:13%;right:13%;bottom:0;height:78%;background:#fff;clip-path:polygon(38% 0,62% 0,72% 10%,82% 25%,88% 51%,76% 100%,24% 100%,12% 51%,18% 25%,28% 10%);border-radius:18% 18% 9% 9%}.snapshot-combat-character{animation:combat-overlay-enter .18s ease-out}.combat-hit-flash{animation:combat-hit-flash .14s ease-out!important}.combat-float{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,0);font-family:Play,system-ui,sans-serif;font-weight:700;font-size:20px;color:#fff;white-space:nowrap;text-shadow:0 2px 3px #000,0 0 6px #000;animation:combat-float-up .86s ease-out forwards}@keyframes combat-hit-flash{0%,100%{opacity:1}50%{filter:brightness(0) invert(1) drop-shadow(0 0 8px #fff);opacity:1}}@keyframes combat-float-up{0%{opacity:0;transform:translate(-50%,8px) scale(.96)}12%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1.04)}}@keyframes combat-overlay-enter{from{opacity:0}to{opacity:1}}.snapshot>img.snapshot-chest{position:absolute;left:50%;bottom:-5%;transform:translateX(-50%);width:auto;max-width:58%;height:92%;object-fit:contain;object-position:center bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.65))}';
+  st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-grounded{position:absolute;left:auto;right:2.5%;top:8%;width:auto;height:84%;max-width:95%;max-height:none;object-fit:contain;pointer-events:none;transform:none}.snapshot>img.snapshot-character{z-index:2;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{left:2.5%;right:auto;max-width:46%;z-index:3;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}.snapshot-character-placeholder{position:absolute;right:2.5%;bottom:8%;width:38%;height:84%;z-index:2;pointer-events:none;opacity:.46;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));animation:combat-overlay-enter .18s ease-out}.snapshot-character-placeholder:before{content:"";position:absolute;left:50%;top:2%;width:27%;aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:#fff}.snapshot-character-placeholder:after{content:"";position:absolute;left:13%;right:13%;bottom:0;height:78%;background:#fff;clip-path:polygon(38% 0,62% 0,72% 10%,82% 25%,88% 51%,76% 100%,24% 100%,12% 51%,18% 25%,28% 10%);border-radius:18% 18% 9% 9%}.snapshot-combat-character{animation:combat-overlay-enter .18s ease-out}.combat-hit-flash{animation:combat-hit-flash .14s ease-out!important}.combat-float{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,0);font-family:Play,system-ui,sans-serif;font-weight:700;font-size:20px;color:#fff;white-space:nowrap;text-shadow:0 2px 3px #000,0 0 6px #000;animation:combat-float-up .86s ease-out forwards}@keyframes combat-hit-flash{0%,100%{opacity:1}50%{filter:brightness(0) invert(1) drop-shadow(0 0 8px #fff);opacity:1}}@keyframes combat-float-up{0%{opacity:0;transform:translate(-50%,8px) scale(.96)}12%{opacity:1}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1.04)}}@keyframes combat-overlay-enter{from{opacity:0}to{opacity:1}}.combat-status-hud{position:absolute;z-index:7;display:flex;align-items:center;justify-content:center;gap:3px;padding:3px 5px;background:rgba(6,8,10,.82);border:1px solid rgba(220,228,235,.55);border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.65);pointer-events:none;transform:translate(-50%,-100%)}.combat-status-icon{display:block;width:24px;height:24px;object-fit:contain}.snapshot>img.snapshot-chest{position:absolute;left:50%;bottom:-5%;transform:translateX(-50%);width:auto;max-width:58%;height:92%;object-fit:contain;object-position:center bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.65))}';
   document.head.appendChild(st);
   var __overlayBoundsCache={};
   // Synchronous metadata avoids coupling any sprite to other images' load events.
@@ -126,6 +126,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
       var bounds=metric.paint;
       ['left','top','right','bottom'].forEach(function(key){img.dataset['visible'+key[0].toUpperCase()+key.slice(1)+'Px']=String(bounds[key]*result.scale);});
       img.style.visibility='visible';
+      setTimeout(renderCombatStatusHuds,0);
     }
     if(img.complete&&img.naturalWidth)apply();else img.addEventListener('load',apply,{once:true});
   }
@@ -145,6 +146,12 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','async_vanguard','async_tactical','async_decon','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={cao_minh:'file:///android_asset/cao_minh_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
+  var __combatStatusIcons={
+    bleed:'file:///android_asset/status/status_bleed.png',
+    poison:'file:///android_asset/status/status_poison.png',
+    stun:'file:///android_asset/status/status_stun.png',
+    armor_break:'file:///android_asset/status/status_armor_break.png'
+  };
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
   function normalizeEntityKey(v){if(v===null||v===undefined)return '';var k=String(v).trim().toLowerCase().replace(/\s+/g,'_');if(k==='skin_stealer')k='skin-stealer';return __entityKeys.indexOf(k)>=0?k:'';}
@@ -153,6 +160,50 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function shouldShowCaoMinhOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey()||chestPresent());}catch(e){return false;}}
   function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('cao_minh')>=0||k.indexOf('cao minh')>=0)return 'cao_minh';if(k.indexOf('lucia')>=0||k.indexOf('hứa thuý mai')>=0||k.indexOf('hua thuy mai')>=0)return 'lucia';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
   function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
+
+  function combatStatusSubject(target){
+    try{
+      var c=state&&state.combat;if(!c||!c.active)return null;
+      return target==='entity'?(c.entity||null):combatVisualParticipant();
+    }catch(_){return null;}
+  }
+
+  function combatStatuses(target){
+    var subject=combatStatusSubject(target),out=[];if(!subject)return out;
+    function add(key,label,turns){if(Number(turns||0)>0)out.push({key:key,label:label,src:__combatStatusIcons[key]});}
+    add('bleed','Chảy máu',subject.bleedTurns);
+    add('poison','Trúng độc',subject.poisonTurns);
+    add('armor_break','Xuyên giáp',subject.armorBreakTurns);
+    add('stun','Choáng',subject.stunTurns);
+    return out;
+  }
+
+  function combatStatusAnchor(target){
+    var box=document.getElementById('snapshot'),el=combatTargetElement(target);
+    if(!box||!el||typeof box.getBoundingClientRect!=='function'||typeof el.getBoundingClientRect!=='function')return null;
+    var br=box.getBoundingClientRect(),er=el.getBoundingClientRect(),x=er.left-br.left+er.width/2,y=er.top-br.top-6;
+    if(el.tagName==='IMG'&&el.dataset.visibleLeftPx){
+      var left=Number(el.dataset.visibleLeftPx||0),top=Number(el.dataset.visibleTopPx||0),right=Number(el.dataset.visibleRightPx||el.clientWidth);
+      x=er.left-br.left+(left+right)/2;y=er.top-br.top+top-6;
+    }
+    return {box:box,x:x,y:Math.max(28,y)};
+  }
+
+  function renderCombatStatusHuds(){
+    var box=document.getElementById('snapshot');if(!box)return;
+    box.querySelectorAll('.combat-status-hud').forEach(function(node){node.remove();});
+    if(!state||!state.combat||!state.combat.active)return;
+    ['entity','actor'].forEach(function(target){
+      var statuses=combatStatuses(target);if(!statuses.length)return;
+      var anchor=combatStatusAnchor(target);if(!anchor)return;
+      var hud=document.createElement('div');hud.className='combat-status-hud combat-status-'+target;
+      hud.setAttribute('role','img');hud.setAttribute('aria-label',statuses.map(function(x){return x.label;}).join(', '));
+      statuses.forEach(function(status){
+        var icon=document.createElement('img');icon.className='combat-status-icon';icon.src=status.src;icon.alt='';icon.dataset.status=status.key;hud.appendChild(icon);
+      });
+      hud.style.left=anchor.x+'px';hud.style.top=anchor.y+'px';anchor.box.appendChild(hud);
+    });
+  }
   function appendCombatCharacter(box,participant){
     var actor=participant||{id:'cao_minh',name:'Cao Minh'},id=normalizeActorId(actor.id||actor.name),src=__combatCharacterOverlays[id]||'';
     if(src){
@@ -171,7 +222,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
       img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/cao_minh_snapshot_overlay.png';img.alt='Cao Minh';box.appendChild(img);alignOverlayToGround(img,'right','character');
     }
   }
-  function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh local cho Level hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}
+  function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh local cho Level hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);setTimeout(renderCombatStatusHuds,0);}
   function combatTargetElement(target){var box=document.getElementById('snapshot');if(!box)return null;return target==='entity'?box.querySelector('.snapshot-entity'):box.querySelector('.snapshot-combat-character');}
   function targetAnchor(target){
     var box=document.getElementById('snapshot'),el=combatTargetElement(target);if(!box||!el)return null;
@@ -186,12 +237,12 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   window.backroomClearCombatVisualActor=function(){window.__combatVisualActorIndex=null;window.__combatVisualEntityKey='';renderSnapshot();};
   window.backroomPlayCombatFeedback=function(event){
     try{
-      var e=event||{},anchor=targetAnchor(e.target==='entity'?'entity':'actor');if(!anchor)return;
+      var e=event||{},text=String(e.text||'').trim();if(!/^-\d+ HP$/i.test(text))return;
+      var anchor=targetAnchor(e.target==='entity'?'entity':'actor');if(!anchor)return;
       if(e.flash){
         anchor.el.classList.remove('combat-hit-flash');void anchor.el.offsetWidth;anchor.el.classList.add('combat-hit-flash');
         setTimeout(function(){anchor.el&&anchor.el.classList.remove('combat-hit-flash');},170);
       }
-      var text=String(e.text||'').trim();if(!text)return;
       var floater=document.createElement('div');floater.className='combat-float';floater.textContent=text;floater.style.left=anchor.x+'px';floater.style.top=anchor.y+'px';anchor.box.appendChild(floater);
       floater.addEventListener('animationend',function(){floater.remove();},{once:true});setTimeout(function(){floater.remove();},1000);
     }catch(_){}

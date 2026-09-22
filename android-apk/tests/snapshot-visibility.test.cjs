@@ -40,3 +40,31 @@ test('generated bounds exist for all registered overlays and match PNG dimension
  const names=['cao_minh_snapshot_overlay.png','cao_minh_entity_overlay.png','lucia_entity_overlay.png',...fs.readdirSync(path.join(assets,'entity')).filter(n=>n.endsWith('.png')).map(n=>'entity/'+n)];
  for(const name of names){const m=geometry.assetMetric('file:///android_asset/'+name),data=fs.readFileSync(path.join(assets,name));assert.ok(m,name);assert.equal(m.width,data.readUInt32BE(16));assert.equal(m.height,data.readUInt32BE(20));assert.ok(m.paint.right<=m.width&&m.body.bottom<=m.height);}
 });
+
+
+test('combat status HUD uses generated local icons and one icon per active status type',()=>{
+ const names=['status_bleed.png','status_poison.png','status_stun.png','status_armor_break.png'];
+ const dir=path.join(__dirname,'../app/src/main/assets/status');
+ for(const name of names){
+   const file=path.join(dir,name);
+   assert.ok(fs.existsSync(file),name);
+   const data=fs.readFileSync(file);
+   assert.equal(data.toString('ascii',1,4),'PNG',name);
+   assert.equal(data.readUInt32BE(16),128,name);
+   assert.equal(data.readUInt32BE(20),128,name);
+ }
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_bleed\.png/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_poison\.png/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_stun\.png/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_armor_break\.png/);
+ assert.match(source,/subject\.bleedTurns/);
+ assert.match(source,/subject\.poisonTurns/);
+ assert.match(source,/subject\.armorBreakTurns/);
+ assert.match(source,/subject\.stunTurns/);
+ assert.match(source,/combat-status-hud/);
+});
+
+test('combat floating overlay only accepts numeric HP damage',()=>{
+ assert.match(source,/if\(!\/\^-\\d\+ HP\$\/i\.test\(text\)\)return;/);
+ assert.doesNotMatch(source,/floater\.textContent=.*PROC/);
+});

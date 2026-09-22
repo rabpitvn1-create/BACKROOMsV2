@@ -135,6 +135,9 @@ jobs:
           grep -Fq 'return haikuText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'return geminiText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
+          for status_icon in status_bleed status_poison status_stun status_armor_break; do
+            test -s "android-apk/app/src/main/assets/status/${status_icon}.png"
+          done
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
@@ -467,6 +470,10 @@ jobs:
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/chest_overlay.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/fonts/OFL-Play.txt'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_bleed.png'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_poison.png'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_stun.png'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_armor_break.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/diep_minh.png'
