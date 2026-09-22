@@ -137,17 +137,14 @@ jobs:
           test -n "$action_src"
 
           convert "$frame_src" -auto-orient -resize '1536x1152^' -gravity center -extent 1536x1152 \
-            "$OUT_DIR/snapshot_frame.base.png"
-          convert -size 1536x1152 xc:white -fill black \
+            -alpha on -fill 'rgba(0,0,0,0)' \
             -draw 'roundrectangle 108,92 1428,1060 18,18' \
-            "$OUT_DIR/snapshot_frame.mask.png"
-          convert "$OUT_DIR/snapshot_frame.base.png" "$OUT_DIR/snapshot_frame.mask.png" \
-            -alpha off -compose CopyOpacity -composite "$OUT_DIR/snapshot_frame.png"
+            "$OUT_DIR/snapshot_frame.png"
 
           convert "$action_src" -auto-orient -resize '1400x300^' -gravity center -extent 1400x300 \
             -alpha on "$OUT_DIR/action_plate.png"
 
-          rm "$frame_src" "$action_src" "$OUT_DIR/snapshot_frame.base.png" "$OUT_DIR/snapshot_frame.mask.png"
+          rm "$frame_src" "$action_src"
 
       - name: Verify HUD assets
         shell: bash
