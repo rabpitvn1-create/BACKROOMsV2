@@ -30,6 +30,7 @@
   var inventoryTitle=inventory&&inventory.closest?inventory.closest('.card')&&inventory.closest('.card').querySelector('h2'):null;
   var selectedItem=null;
   var selectedOwnerId='cao_minh';
+  var itemBusy=false;
 
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
@@ -84,12 +85,24 @@
     if(old)old.remove();
     selectedItem=null;
   }
+  function combatLocked(){return !!(state&&state.combat&&state.combat.active)}
+  function processingLocked(){
+    return itemBusy||!!window.__combatBusy||(typeof busy!=='undefined'&&!!busy);
+  }
+  function interactionLocked(){return combatLocked()||processingLocked()}
   function send(operation,target,quantity){
     if(!selectedItem||!window.Android||typeof Android.itemAction!=='function')return;
-    if(state&&state.combat&&state.combat.active){if(status)status.textContent='Không thể quản lý vật phẩm trong chiến đấu.';return}
+    if(combatLocked()){if(status)status.textContent='Không thể quản lý vật phẩm trong chiến đấu.';return}
+    if(processingLocked()){if(status)status.textContent='Đang xử lý thao tác khác. Hãy chờ hoàn tất trước khi dùng Inventory.';return}
     var q=Math.max(1,Math.min(qty(selectedItem),Number(quantity)||1));
-    Android.itemAction(JSON.stringify(state),selectedOwnerId,itemId(selectedItem),operation,String(target||''),q);
-    if(status)status.textContent='Đang xử lý vật phẩm…';
+    try{
+      itemBusy=true;
+      Android.itemAction(JSON.stringify(state),selectedOwnerId,itemId(selectedItem),operation,String(target||''),q);
+      if(status)status.textContent='Đang xử lý vật phẩm…';
+    }catch(_){
+      itemBusy=false;
+      if(status)status.textContent='Không thể gửi thao tác vật phẩm.';
+    }
   }
   function openSheet(item){
     closeSheet();
@@ -106,8 +119,8 @@
     var qinput=document.createElement('input');qinput.type='number';qinput.min='1';qinput.max=String(qty(item));qinput.value='1';qinput.inputMode='numeric';
     qrow.appendChild(qlabel);qrow.appendChild(qinput);sheet.appendChild(qrow);
 
-    var locked=!!(state&&state.combat&&state.combat.active);
-    if(locked){var note=document.createElement('div');note.className='inventory-note';note.textContent='Battle đang hoạt động. Chỉ A/B/C được phép thực hiện.';sheet.appendChild(note)}
+    var locked=interactionLocked();
+    if(locked){var note=document.createElement('div');note.className='inventory-note';note.textContent=combatLocked()?'Battle đang hoạt động. Chỉ A/B/C được phép thực hiện.':'Đang xử lý thao tác khác. Inventory tạm khóa để tránh ghi đè state.';sheet.appendChild(note)}
 
     var actions=document.createElement('div');actions.className='inventory-sheet-actions';
     var use=document.createElement('button');use.type='button';use.textContent='SỬ DỤNG';use.disabled=locked||!isConsumable(item);
@@ -189,6 +202,7 @@
   };
 
   window.backroomItemAction=function(json){
+    itemBusy=false;
     try{
       var result=JSON.parse(json);
       if(result.state)state=result.state;

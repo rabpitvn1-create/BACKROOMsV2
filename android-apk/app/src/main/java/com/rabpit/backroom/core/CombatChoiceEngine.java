@@ -154,7 +154,7 @@ public final class CombatChoiceEngine {
     skills("iris",
         skill("Twosome Time", "", 155, "", 0, 0),
         skill("Rain Storm", "", 145, "", 0, 0),
-        skill("Honeycomb Fire", "", 185, "Phá giáp", 2, 20),
+        skill("Honeycomb Fire", "", 185, "Xuyên giáp", 2, 20),
         skill("Charged Shot", "", 175, "", 0, 0));
 
     skills("syvial",
@@ -599,11 +599,19 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     return hand;
   }
 
-  private static boolean isTrackedStatusEffect(String effect) {
-    return "Chảy máu".equals(effect)
+  private static String canonicalStatusEffect(String effect) {
+    if ("Chảy máu".equals(effect)
         || "Trúng độc".equals(effect)
         || "Xuyên giáp".equals(effect)
-        || "Choáng".equals(effect);
+        || "Choáng".equals(effect)) {
+      return effect;
+    }
+    if ("Phá giáp".equals(effect)) return "Xuyên giáp";
+    return "";
+  }
+
+  private static boolean isTrackedStatusEffect(String effect) {
+    return !canonicalStatusEffect(effect).isEmpty();
   }
 
   private static String actorBattleSummary(String hand, String actorName, String action,
@@ -628,7 +636,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     List<String> unique = new ArrayList<>();
     if (effects != null) {
       for (String effect : effects) {
-        if (isTrackedStatusEffect(effect) && !unique.contains(effect)) unique.add(effect);
+        String canonical = canonicalStatusEffect(effect);
+        if (!canonical.isEmpty() && !unique.contains(canonical)) unique.add(canonical);
       }
     }
 
@@ -698,6 +707,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
   static void applyStackingEffect(JSONObject entity, String effect, int turns, int value)
       throws Exception {
+    effect = canonicalStatusEffect(effect);
     if ("Choáng".equals(effect) && turns > 0) {
       // Stun is the only effect whose duration stacks. Cap prevents permanent stun-lock.
       entity.put("stunTurns", Math.min(3,

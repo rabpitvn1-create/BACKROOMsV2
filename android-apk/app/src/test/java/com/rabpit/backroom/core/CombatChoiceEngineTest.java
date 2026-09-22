@@ -500,6 +500,17 @@ public class CombatChoiceEngineTest {
     assertEquals(0, entity.getInt("stunTurns"));
   }
 
+  @Test public void legacyPhaGiapAliasUsesArmorBreakRules() throws Exception {
+    JSONObject entity = new JSONObject()
+        .put("armorBreakTurns", 0)
+        .put("armorBreakPercent", 0);
+
+    CombatChoiceEngine.applyStackingEffect(entity, "Phá giáp", 2, 20);
+
+    assertEquals(2, entity.getInt("armorBreakTurns"));
+    assertEquals(20, entity.getInt("armorBreakPercent"));
+  }
+
   @Test public void armorBreakPercentIncreasesDamageWithoutExtendingDuration() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "diep_minh", 0);
