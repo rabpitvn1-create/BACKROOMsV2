@@ -19,7 +19,7 @@ public final class GmChoiceContract {
   private static final Pattern LEVEL_PATTERN =
       Pattern.compile("(?iu)\\bLevel\\s+\\d+(?:\\s*[-–—/]\\s*[A-Za-zÀ-ỹ0-9 _]+)?");
   private static final Pattern HP_PAIR_PATTERN =
-      Pattern.compile("(?iu)\\bHP\\s*\\d+\\s*/\\s*\\d+\\b");
+      Pattern.compile("(?iu)(?:\\bHP\\s*\\d+\\s*/\\s*\\d+\\b|\\b\\d+\\s*/\\s*\\d+\\s*HP\\b)");
   private static final Pattern SIGNED_STAT_PATTERN =
       Pattern.compile("(?iu)[+-]\\d+(?:\\.\\d+)?%?\\s*(?:HP|DEF)\\b");
 
@@ -228,6 +228,10 @@ public final class GmChoiceContract {
     LinkedHashMap<String, JSONObject> output = new LinkedHashMap<>();
     addHighlightList(output, input, null, false);
     return toArray(output);
+  }
+
+  public static JSONArray semanticHighlights(String text, JSONObject state) throws Exception {
+    return deterministicHighlights(text, state, null);
   }
 
   private static JSONArray deterministicHighlights(String text, JSONObject state, JSONArray modelHighlights)

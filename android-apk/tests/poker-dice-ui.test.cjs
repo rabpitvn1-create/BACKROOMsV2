@@ -51,3 +51,12 @@ test('production dice UI uses local assets and no Unicode dice glyphs', () => {
 test('finished hand waits two seconds before Core resolve', () => {
   assert.match(source, /setTimeout\(function\(\)[\s\S]*Android\.combatResolve\(JSON\.stringify\(state\)\)[\s\S]*},2000\)/);
 });
+
+
+test('battle log uses semantic font for Cao Minh title and compact hand tokens', () => {
+  assert.match(source, /Vạn Giới Ma Tôn/);
+  assert.match(source, /\[F\.O\.A\.K\]/);
+  assert.match(source, /knownHandTokens\.forEach\(function\(x\)\{ addTerm\(map,x,'stat'\); \}\)/);
+  assert.match(source, /Trúng độc/);
+  assert.match(source, /Xuyên giáp/);
+});

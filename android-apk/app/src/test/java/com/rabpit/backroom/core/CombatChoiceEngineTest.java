@@ -207,7 +207,7 @@ public class CombatChoiceEngineTest {
     assertEquals(round + 1, state.getJSONObject("combat").getInt("round"));
   }
 
-  @Test public void rerollsDoNotSpamGmLogAndResolveAddsOneCombatLine() throws Exception {
+  @Test public void rerollsDoNotSpamGmLogAndResolveAddsOrderedActorAndEntityLines() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
     CombatChoiceEngine.roll(state);
@@ -220,10 +220,18 @@ public class CombatChoiceEngineTest {
     CombatChoiceEngine.resolveFinalized(state);
 
     JSONArray battleLog = gmLog.getJSONObject(0).getJSONArray("battleLog");
-    assertEquals(1, battleLog.length());
-    String text = battleLog.getJSONObject(0).getString("text");
-    assertFalse(text.toLowerCase().contains("reroll"));
-    assertFalse(text.toLowerCase().contains("dice"));
+    assertEquals(2, battleLog.length());
+    String actorLine = battleLog.getJSONObject(0).getString("text");
+    String entityLine = battleLog.getJSONObject(1).getString("text");
+    assertTrue(actorLine.startsWith("["));
+    assertTrue(actorLine.contains("Cao Minh"));
+    assertTrue(actorLine.contains("Hound -"));
+    assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
+    assertTrue(entityLine.startsWith("Hound "));
+    assertTrue(entityLine.contains("Cao Minh -"));
+    assertTrue(entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
+    assertFalse(actorLine.toLowerCase().contains("reroll"));
+    assertFalse(actorLine.toLowerCase().contains("dice"));
   }
 
   @Test public void asyncEnemiesHaveDistinctCombatProfiles() throws Exception {
@@ -273,8 +281,14 @@ public class CombatChoiceEngineTest {
 
     assertEquals(before - expected, entity.getInt("hp"));
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
-    assertTrue(battleLog.getJSONObject(battleLog.length() - 1).getString("text")
-        .contains("Too Young To Die"));
+    boolean foundUltimate = false;
+    for (int i = 0; i < battleLog.length(); i++) {
+      if (battleLog.getJSONObject(i).getString("text").contains("Too Young To Die")) {
+        foundUltimate = true;
+        break;
+      }
+    }
+    assertTrue(foundUltimate);
   }
 
   @Test public void firstEntityRotationHasExactlyThreeSkillsEach() {
@@ -291,6 +305,29 @@ public class CombatChoiceEngineTest {
   int r=CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1); assertTrue(r>=0&&r<100);
   assertEquals(r,CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1));
 }
+
+  @Test public void fourOfAKindUsesCompactDetailedBattleLineAndNoProcTextFloater() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "diep_minh", 0);
+
+    finalizeAs(state, 4,4,4,4,2);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    String actorLine = battleLog.getJSONObject(0).getString("text");
+    assertTrue(actorLine.startsWith("[F.O.A.K] Cao Minh "));
+    assertFalse(actorLine.contains("FOUR OF A KIND"));
+    assertTrue(actorLine.contains("Diệp Minh -"));
+    assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
+
+    JSONArray feedback = state.getJSONObject("combat").getJSONArray("feedbackEvents");
+    for (int i = 0; i < feedback.length(); i++) {
+      String text = feedback.getJSONObject(i).optString("text", "");
+      if (text.isEmpty()) continue;
+      assertTrue("Unexpected combat floater: " + text, text.matches("-\\d+ HP"));
+      assertFalse(text.contains("PROC"));
+    }
+  }
 
   @Test public void caoMinhAndLuciaEachHaveFourCharacterProcsAndKaiHasNone() {
     assertEquals(4, CombatChoiceEngine.characterProcCount("cao_minh"));

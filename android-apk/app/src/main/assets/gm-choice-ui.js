@@ -57,7 +57,8 @@
     'Twosome Time','Rain Storm','Honeycomb Fire','Charged Shot',
     'Rift Sever','Crimson Guillotine','Lucifer Breaker','Spatial Dominion','M4A1 Joint Attack'
   ];
-  var knownEffects = ['Choáng','Chảy máu','Phá giáp','Né tránh','Mất phương hướng'];
+  var knownEffects = ['Choáng','Chảy máu','Trúng độc','Xuyên giáp','Phá giáp','Né tránh','Mất phương hướng'];
+  var knownHandTokens = ['[NO HAND]','[PAIR]','[TWO PAIR]','[TRIPLE]','[STRAIGHT]','[FULL HOUSE]','[F.O.A.K]','[SSF]','[FSF]'];
 
   function normalizeSemanticType(value) {
     var type = String(value || '').trim().toLowerCase();
@@ -89,9 +90,10 @@
 
   function entryHighlights(entry) {
     var map = new Map();
-    ['Cao Minh','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
+    ['Cao Minh','Vạn Giới Ma Tôn','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
     knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
     knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
+    knownHandTokens.forEach(function(x){ addTerm(map,x,'stat'); });
 
     try {
       if (state && state.player) addTerm(map, state.player.name, 'character');
@@ -128,7 +130,7 @@
 
     var patterns = terms.map(function(x){ return escapeRegex(x.text); });
     patterns.push('[+-]\\d+(?:\\.\\d+)?%?\\s*(?:HP|DEF)');
-    patterns.push('HP\\s*\\d+\\s*\\/\\s*\\d+');
+    patterns.push('(?:HP\\s*\\d+\\s*\\/\\s*\\d+|\\d+\\s*\\/\\s*\\d+\\s*HP)');
     patterns.push('Level\\s+\\d+(?:\\s*[-–—/]\\s*[A-Za-zÀ-ỹ0-9 _]+)?');
     var re = new RegExp('(' + patterns.join('|') + ')', 'gi');
     var cursor = 0;
@@ -140,7 +142,7 @@
       if (!type) {
         if (/^-/.test(matched) && /(?:HP|DEF)$/i.test(matched)) type = 'damage';
         else if (/^\+/.test(matched) && /(?:HP|DEF)$/i.test(matched)) type = 'buff';
-        else if (/^HP\s*\d+\s*\/\s*\d+$/i.test(matched)) type = 'stat';
+        else if (/^(?:HP\s*\d+\s*\/\s*\d+|\d+\s*\/\s*\d+\s*HP)$/i.test(matched)) type = 'stat';
         else if (/^Level\s+\d+/i.test(matched)) type = 'location';
         else type = 'generic';
       }

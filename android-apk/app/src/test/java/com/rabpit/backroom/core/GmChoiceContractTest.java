@@ -32,6 +32,24 @@ public class GmChoiceContractTest {
     assertHighlight(highlights, "EXP", "stat");
   }
 
+  @Test public void combatSemanticsHighlightTitleCompactHandAndHpPair() throws Exception {
+    JSONObject state = new JSONObject()
+        .put("player", new JSONObject().put("name", "Cao Minh"))
+        .put("combat", new JSONObject()
+            .put("currentActor", "Cao Minh")
+            .put("entity", new JSONObject().put("name", "Hound")));
+    JSONArray highlights = GmChoiceContract.semanticHighlights(
+        "[F.O.A.K] Vạn Giới Ma Tôn dùng Huyết Ảnh Ma Độn, Hound -20 HP [30/50 HP].",
+        state);
+
+    assertHighlight(highlights, "[F.O.A.K]", "stat");
+    assertHighlight(highlights, "Vạn Giới Ma Tôn", "character");
+    assertHighlight(highlights, "Huyết Ảnh Ma Độn", "skill");
+    assertHighlight(highlights, "Hound", "entity");
+    assertHighlight(highlights, "-20 HP", "stat");
+    assertHighlight(highlights, "30/50 HP", "stat");
+  }
+
   @Test public void gmEntryNormalizesLeakedEnglishEnvironmentTerms() throws Exception {
     JSONObject generated = new JSONObject().put("choices",
         new JSONArray().put(new JSONObject().put("text",
