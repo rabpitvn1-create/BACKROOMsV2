@@ -1,4 +1,4 @@
-name: Purge Recent Actions and Temp Branches
+name: Purge Actions History and Stale Branches
 
 on:
   workflow_dispatch:
@@ -11,45 +11,13 @@ on:
 permissions:
   actions: write
   contents: write
+  pull-requests: read
 
 jobs:
   purge:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete merged massive-update legacy branches first
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for branch in \
-            massive-update \
-            massive-update-edit \
-            massive-update-finalwork \
-            massive-update-impl \
-            massive-update-safety \
-            massive-update-stage \
-            massive-update-temp \
-            massive-update-work
-          do
-            if ! gh api "/repos/${REPO}/branches/${branch}" >/dev/null 2>&1; then
-              echo "Already absent: ${branch}"
-              continue
-            fi
-
-            ahead_by="$(gh api "/repos/${REPO}/compare/main...${branch}" --jq '.ahead_by')"
-            if [[ "${ahead_by}" != "0" ]]; then
-              echo "::error::Refusing to delete ${branch}: ${ahead_by} commit(s) are not in main."
-              exit 1
-            fi
-
-            echo "Deleting merged legacy branch ${branch}"
-            gh api --method DELETE "/repos/${REPO}/git/refs/heads/${branch}"
-          done
-
-      - name: Purge recent failed/cancelled/queued runs and temp branches
+      - name: Purge failed/cancelled/queued runs and stale branches
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -58,23 +26,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          read -r START_EPOCH END_EPOCH START_LABEL END_LABEL < <(
-            python3 - <<'PY'
-          from datetime import datetime, time, timedelta
-          from zoneinfo import ZoneInfo
-
-          tz = ZoneInfo("Asia/Ho_Chi_Minh")
-          today = datetime.now(tz).date()
-          start_day = today - timedelta(days=1)
-          end_day = today + timedelta(days=1)
-          start = datetime.combine(start_day, time.min, tzinfo=tz)
-          end = datetime.combine(end_day, time.min, tzinfo=tz)
-          print(int(start.timestamp()), int(end.timestamp()), start_day.isoformat(), today.isoformat())
-          PY
-          )
-
-          echo "Cleanup window (Asia/Ho_Chi_Minh): ${START_LABEL} through ${END_LABEL}"
           echo "Current purge run: ${CURRENT_RUN_ID}"
+          echo "Scope: all workflow history; no date cutoff."
 
           deleted_runs=0
           failed_run_deletions=0
@@ -96,11 +49,6 @@ jobs:
 
             [[ "${run_id}" == "${CURRENT_RUN_ID}" ]] && continue
 
-            created_epoch="$(date -u -d "${created_at}" +%s)"
-            if (( created_epoch < START_EPOCH || created_epoch >= END_EPOCH )); then
-              continue
-            fi
-
             delete=false
             if [[ "${status}" == "queued" ]]; then
               delete=true
@@ -115,7 +63,6 @@ jobs:
             [[ "${delete}" != "true" ]] && continue
 
             echo "Deleting run ${run_id}: ${run_name} [status=${status}, conclusion=${conclusion:-none}, created=${created_at}]"
-
             success=false
 
             if [[ "${status}" == "queued" ]]; then
@@ -145,22 +92,21 @@ jobs:
 
             if [[ "${success}" == "true" ]]; then
               deleted_runs=$((deleted_runs + 1))
-            else
-              if [[ "${status}" == "queued" ]]; then
-                job_count="$(gh api "/repos/${REPO}/actions/runs/${run_id}/jobs" --jq '.total_count // (.jobs | length)' 2>/dev/null || echo unknown)"
-                if [[ "${job_count}" == "0" ]]; then
-                  echo "::warning::Run ${run_id} is an orphaned queued record with zero jobs. GitHub currently refuses cancel/force-cancel/delete; leaving it for GitHub reconciliation or deletion after it ages past the platform limit."
-                  orphaned_queued_runs=$((orphaned_queued_runs + 1))
-                  continue
-                fi
-              fi
-
-              echo "::warning::Failed to delete run ${run_id}"
-              failed_run_deletions=$((failed_run_deletions + 1))
+              continue
             fi
-          done
 
-          OWNER="${REPO%%/*}"
+            if [[ "${status}" == "queued" ]]; then
+              job_count="$(gh api "/repos/${REPO}/actions/runs/${run_id}/jobs" --jq '.total_count // (.jobs | length)' 2>/dev/null || echo unknown)"
+              if [[ "${job_count}" == "0" ]]; then
+                echo "::warning::Run ${run_id} is an orphaned queued record with zero jobs. GitHub refuses cancel/force-cancel/delete; preserving only because the platform will not accept deletion yet."
+                orphaned_queued_runs=$((orphaned_queued_runs + 1))
+                continue
+              fi
+            fi
+
+            echo "::warning::Failed to delete run ${run_id}"
+            failed_run_deletions=$((failed_run_deletions + 1))
+          done
 
           mapfile -t OPEN_PR_HEADS < <(
             gh api --paginate \
@@ -193,17 +139,25 @@ jobs:
 
           deleted_branches=0
           failed_branch_deletions=0
+          preserved_unique_branches=0
 
           mapfile -t BRANCHES < <(
             gh api --paginate \
               -H 'Accept: application/vnd.github+json' \
               "/repos/${REPO}/branches?per_page=100" \
-              --jq '.[].name'
+              --jq '.[] | {name, protected} | @json'
           )
 
-          for branch in "${BRANCHES[@]}"; do
+          for row in "${BRANCHES[@]}"; do
+            branch="$(jq -r '.name' <<< "${row}")"
+            protected="$(jq -r '.protected' <<< "${row}")"
+
             [[ "${branch}" == "main" ]] && continue
-            is_temp_branch "${branch}" || continue
+
+            if [[ "${protected}" == "true" ]]; then
+              echo "Preserving protected branch ${branch}."
+              continue
+            fi
 
             if has_open_pr "${branch}"; then
               echo "Preserving ${branch}: open PR exists."
@@ -218,26 +172,29 @@ jobs:
           PY
             )"
 
-            branch_json="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/branches/${encoded_branch}")"
-            branch_sha="$(jq -r '.commit.sha' <<< "${branch_json}")"
-            commit_date="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/commits/${branch_sha}" --jq '.commit.committer.date')"
-            commit_epoch="$(date -u -d "${commit_date}" +%s)"
+            ahead_by="$(gh api \
+              -H 'Accept: application/vnd.github+json' \
+              "/repos/${REPO}/compare/main...${encoded_branch}" \
+              --jq '.ahead_by')"
 
-            if [[ "${branch}" =~ ^massive-update(-.*)?$ ]]; then
-              ahead_by="$(gh api -H 'Accept: application/vnd.github+json' "/repos/${REPO}/compare/main...${encoded_branch}" --jq '.ahead_by')"
-              if [[ "${ahead_by}" != "0" ]]; then
-                echo "Preserving ${branch}: branch still has ${ahead_by} commit(s) not in main."
-                continue
-              fi
-              echo "Deleting merged legacy branch ${branch} at ${branch_sha}"
-            else
-              if (( commit_epoch < START_EPOCH || commit_epoch >= END_EPOCH )); then
-                echo "Preserving ${branch}: head commit ${commit_date} is outside cleanup window."
-                continue
-              fi
-              echo "Deleting temporary branch ${branch} at ${branch_sha} (head date ${commit_date})"
+            delete_branch=false
+            reason=""
+
+            if is_temp_branch "${branch}"; then
+              delete_branch=true
+              reason="temporary/action branch"
+            elif [[ "${ahead_by}" == "0" ]]; then
+              delete_branch=true
+              reason="fully merged/no unique commits"
             fi
 
+            if [[ "${delete_branch}" != "true" ]]; then
+              echo "Preserving ${branch}: ${ahead_by} unique commit(s) remain."
+              preserved_unique_branches=$((preserved_unique_branches + 1))
+              continue
+            fi
+
+            echo "Deleting branch ${branch}: ${reason}."
             if gh api --method DELETE "/repos/${REPO}/git/refs/heads/${encoded_branch}" >/dev/null 2>&1; then
               deleted_branches=$((deleted_branches + 1))
             else
@@ -248,10 +205,10 @@ jobs:
 
           echo "Deleted workflow runs: ${deleted_runs}"
           echo "Failed run deletions: ${failed_run_deletions}"
-          echo "Orphaned queued runs left by GitHub control plane: ${orphaned_queued_runs}"
-          echo "Deleted temporary branches: ${deleted_branches}"
+          echo "Orphaned queued runs blocked by GitHub: ${orphaned_queued_runs}"
+          echo "Deleted stale/temp branches: ${deleted_branches}"
+          echo "Preserved branches with unique commits: ${preserved_unique_branches}"
           echo "Failed branch deletions: ${failed_branch_deletions}"
-          echo "Successful runs and non-temporary branches were preserved."
 
           if (( failed_run_deletions != 0 || failed_branch_deletions != 0 )); then
             exit 1
