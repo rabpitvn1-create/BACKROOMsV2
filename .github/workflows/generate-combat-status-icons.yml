@@ -98,9 +98,10 @@ jobs:
 
           for name, prompt in prompts.items():
               raw = request_image(prompt)
-              if raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+              magic = raw[:16].hex()
+              if magic.startswith("89504e470d0a1a0a"):
                   ext = "png"
-              elif raw.startswith(b"\\xff\\xd8\\xff"):
+              elif magic.startswith("ffd8ff"):
                   ext = "jpg"
               elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
                   ext = "webp"
@@ -110,7 +111,7 @@ jobs:
                   ext = "avif"
               else:
                   raise SystemExit(
-                      f"Unsupported image format returned for {name}; magic={raw[:16].hex()} length={len(raw)}"
+                      f"Unsupported image format returned for {name}; magic={magic} length={len(raw)}"
                   )
               (out / f"{name}.source.{ext}").write_bytes(raw)
 
