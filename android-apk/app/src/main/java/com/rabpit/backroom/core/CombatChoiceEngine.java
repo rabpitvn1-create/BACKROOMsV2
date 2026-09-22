@@ -684,6 +684,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static void applySkillEffect(JSONObject entity, JSONObject selected) throws Exception {
+    if (entity.optInt("hp", 0) <= 0) return;
     applyStackingEffect(entity,
         selected.optString("effect", ""),
         Math.max(0, selected.optInt("effectTurns", 0)),
@@ -707,9 +708,9 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int bonus = Math.max(1,
           (int)(((long)Math.max(1, baseAttack) * proc.bonusDamagePercent + 50L) / 100L));
       applyEntityDamage(combat, entity, bonus);
+      if (entity.optInt("hp", 0) <= 0) return effects;
       applyStackingEffect(entity, proc.effect, proc.effectTurns, proc.effectValue);
       if (isTrackedStatusEffect(proc.effect)) effects.add(proc.effect);
-      if (entity.optInt("hp", 0) <= 0) return effects;
     }
     return effects;
   }

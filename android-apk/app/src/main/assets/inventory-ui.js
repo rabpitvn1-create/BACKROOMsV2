@@ -31,6 +31,8 @@
   var selectedItem=null;
   var selectedOwnerId='cao_minh';
   var itemBusy=false;
+  window.__inventoryBusy=false;
+  function setItemBusy(value){itemBusy=!!value;window.__inventoryBusy=itemBusy}
 
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
@@ -87,7 +89,8 @@
   }
   function combatLocked(){return !!(state&&state.combat&&state.combat.active)}
   function processingLocked(){
-    return itemBusy||!!window.__combatBusy||(typeof busy!=='undefined'&&!!busy);
+    return itemBusy||!!window.__coreUpgradeBusy||!!window.__combatBusy
+      ||(typeof busy!=='undefined'&&!!busy);
   }
   function interactionLocked(){return combatLocked()||processingLocked()}
   function send(operation,target,quantity){
@@ -96,11 +99,11 @@
     if(processingLocked()){if(status)status.textContent='Đang xử lý thao tác khác. Hãy chờ hoàn tất trước khi dùng Inventory.';return}
     var q=Math.max(1,Math.min(qty(selectedItem),Number(quantity)||1));
     try{
-      itemBusy=true;
+      setItemBusy(true);
       Android.itemAction(JSON.stringify(state),selectedOwnerId,itemId(selectedItem),operation,String(target||''),q);
       if(status)status.textContent='Đang xử lý vật phẩm…';
     }catch(_){
-      itemBusy=false;
+      setItemBusy(false);
       if(status)status.textContent='Không thể gửi thao tác vật phẩm.';
     }
   }
@@ -202,7 +205,7 @@
   };
 
   window.backroomItemAction=function(json){
-    itemBusy=false;
+    setItemBusy(false);
     try{
       var result=JSON.parse(json);
       if(result.state)state=result.state;

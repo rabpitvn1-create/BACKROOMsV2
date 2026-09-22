@@ -500,6 +500,47 @@ public class CombatChoiceEngineTest {
     assertEquals(0, entity.getInt("stunTurns"));
   }
 
+  @Test public void lethalSkillDoesNotApplyStatusToDefeatedEntity() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject entity = combat.getJSONObject("entity");
+    entity.put("hp", 1);
+    combat.put("currentSkill", new JSONObject()
+        .put("name", "Lethal Bleed")
+        .put("damagePercent", 100)
+        .put("effect", "Chảy máu")
+        .put("effectTurns", 3)
+        .put("effectValue", 5));
+
+    finalizeAs(state, 2,2,2,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(0, entity.getInt("hp"));
+    assertEquals(0, entity.getInt("bleedTurns"));
+    assertEquals(0, entity.getInt("bleedPercent"));
+  }
+
+  @Test public void lethalCharacterProcDoesNotApplyStatusToDefeatedEntity() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject entity = combat.getJSONObject("entity");
+    entity.put("hp", 35);
+
+    int seed = 1;
+    while (CombatChoiceEngine.characterProcRoll(
+        seed, 0, "cao_minh", "Huyết Sát Kiếm Ấn") >= 50) seed++;
+    combat.put("seed", seed).put("rngSequence", 0);
+
+    finalizeAs(state, 1,2,3,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(0, entity.getInt("hp"));
+    assertEquals(0, entity.getInt("bleedTurns"));
+    assertEquals(0, entity.getInt("bleedPercent"));
+  }
+
   @Test public void legacyPhaGiapAliasUsesArmorBreakRules() throws Exception {
     JSONObject entity = new JSONObject()
         .put("armorBreakTurns", 0)

@@ -188,8 +188,14 @@
     return 1+Math.floor((Math.max(5,current||5)-5)/2);
   }
 
+  function mutationLocked(){
+    return !!window.__coreUpgradeBusy||!!window.__inventoryBusy||!!window.__combatBusy
+      ||(typeof busy!=='undefined'&&!!busy)
+      ||!!(state&&state.combat&&state.combat.active);
+  }
+
   function requestCoreUpgrade(characterId,stat){
-    if(window.__coreUpgradeBusy||state&&state.combat&&state.combat.active)return;
+    if(mutationLocked())return;
     if(!window.Android||typeof Android.coreUpgrade!=='function'){
       if(typeof status!=='undefined'&&status)status.textContent='Không tìm thấy Android Core upgrade bridge.';
       return;
@@ -211,7 +217,7 @@
       value.textContent=String(current)+' · tiếp theo: '+String(cost)+' Core';
       var button=document.createElement('button');button.type='button';button.className='core-stat-upgrade';
       button.textContent='+1 ('+cost+')';
-      button.disabled=!!window.__coreUpgradeBusy||coreCount()<cost||!!(state&&state.combat&&state.combat.active);
+      button.disabled=mutationLocked()||coreCount()<cost;
       button.addEventListener('click',function(event){event.stopPropagation();requestCoreUpgrade(id,key);});
       line.appendChild(name);line.appendChild(value);line.appendChild(button);container.appendChild(line);
     });
