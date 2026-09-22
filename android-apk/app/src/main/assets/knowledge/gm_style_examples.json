@@ -1,31 +1,21 @@
 {
   "version": 2,
-  "instruction": "Các ví dụ chỉ dạy nhịp kể và cách giữ continuity. Không được sao chép sự kiện, địa điểm, câu chữ, kết luận hay nhân vật từ ví dụ vào lượt thật. Văn phong cần tự nhiên như truyện đã biên tập: mỗi cảnh có trọng tâm, chi tiết được chọn lọc, đối thoại có mục đích và không biến mô tả thành checklist giác quan.",
+  "instruction": "Hai ví dụ chỉ dạy nhịp kể xianxia × Backrooms. Xianxia là lăng kính nhận thức của Cao Minh; Backrooms vẫn là thực tại khách quan. Chỉ khẳng định điều quan sát/canon xác nhận, còn suy luận phải giữ mức độ bất định. Không sao chép sự kiện hay câu chữ vào lượt thật.",
   "goodExamples": [
     {
-      "name": "Lượt yên tĩnh, viết ngắn",
-      "player": "Cao Minh đứng lại nghe ngóng.",
-      "gm": "Cao Minh dừng ở chỗ giao nhau.\n\nTiếng đèn vẫn rền trên trần. Xen giữa nó có một tiếng cộc rất khẽ từ hành lang bên phải, rồi im. Cao Minh chờ thêm vài giây nhưng âm thanh không lặp lại."
+      "name": "Thần thức quan sát nhưng không biến suy luận thành fact",
+      "player": "Cao Minh dùng thần thức kiểm tra vệt sẫm trên bức tường.",
+      "gm": "Thần thức lướt qua lớp giấy dán tường rồi khựng nhẹ ở vệt sẫm. Cảm nhận tại đó méo đi một chút, nhưng không có trận văn hay dao động linh lực quen thuộc. Chừng ấy chỉ đủ cho Cao Minh biết hiện tượng không giống những cấm chế hắn từng gặp; bản chất của nó vẫn chưa thể kết luận."
     },
     {
-      "name": "Hành động có hệ quả cụ thể",
-      "player": "Cao Minh kéo thử cánh cửa kim loại.",
-      "gm": "Cánh cửa nhúc nhích được vài phân rồi kẹt cứng. Mép dưới cào qua nền, để lại một vệt sáng trên lớp bụi.\n\nQua khe hở chỉ thấy một khoảng tối hẹp. Không có luồng gió hay tiếng động nào từ bên trong."
-    },
-    {
-      "name": "First contact phải được dựng thành cảnh",
-      "player": "Cao Minh đi tiếp.",
-      "gm": "Vừa qua góc tường, Cao Minh thấy một người đứng ở cuối đoạn hành lang. Người kia cũng khựng lại khi nhận ra anh; khẩu súng đang cầm hạ xuống một chút nhưng chưa rời tay.\n\nKhoảng cách giữa hai người còn hơn mười mét. Trước khoảnh khắc này, không có dấu hiệu nào cho thấy họ đã đi cùng nhau."
-    },
-    {
-      "name": "Đối thoại tự nhiên, không đọc lore",
-      "player": "Cao Minh hỏi người vừa gặp có bị thương không.",
-      "gm": "Người kia nhìn nhanh xuống cánh tay áo bị rách rồi lắc đầu.\n\n\"Chỉ sượt qua thôi.\"\n\nCô nghiêng người nhường khỏi lối đi, mắt vẫn để ý đoạn hành lang phía sau."
+      "name": "Đối thoại tiên hiệp tự nhiên trong thực tại Backrooms",
+      "player": "Cao Minh lên tiếng với người lạ đang cầm súng.",
+      "gm": "Cao Minh dừng ngoài tầm với, mắt lướt qua thứ binh khí kim loại trong tay đối phương.\n\n“Các hạ, hạ binh khí xuống. Ta không có ý giao thủ.”\n\nNgười kia vẫn giữ khoảng cách, nhưng nòng súng hạ xuống đôi chút. Tiếng đèn huỳnh quang tiếp tục rền đều trên đầu cả hai."
     }
   ],
   "badExample": {
     "player": "Cao Minh đi tiếp.",
-    "gm": "Cao Minh tiếp tục bước đi trong hành lang. Ánh sáng vàng nhợt, thảm ẩm mềm, mùi nấm mốc nồng nặc và tiếng đèn huỳnh quang ù đều bao quanh anh. Cô gái phía sau không có dấu hiệu hoảng loạn, ánh mắt quét khắp không gian với sự cảnh giác của một người được huấn luyện bài bản nhưng chưa từng bước vào chiến đấu thực sự. Cô ghi nhớ lời Cao Minh rồi bước nhẹ hơn. Bạn sẽ làm gì tiếp?",
-    "why": "Sai vì liệt kê giác quan theo công thức, tự bịa quá khứ và trạng thái tâm lý, tự biến một nhân vật mới thành người đã đi cùng Cao Minh từ trước, tự quyết định hành động của NPC theo văn mẫu và kết bằng câu hỏi máy móc."
+    "gm": "Cao Minh bước vào bí cảnh Level 0. Cánh cửa phía trước là cấm chế cổ xưa do yêu thú trấn giữ, còn đèn huỳnh quang phát ra ma âm. Bạn sẽ làm gì tiếp?",
+    "why": "Sai vì tự đổi Level thành bí cảnh, cửa thành cấm chế và sinh vật chưa xác nhận thành yêu thú; đồng thời kết lượt bằng câu hỏi máy móc."
   }
 }

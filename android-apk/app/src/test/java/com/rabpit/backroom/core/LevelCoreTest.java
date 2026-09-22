@@ -3,6 +3,11 @@ package com.rabpit.backroom.core;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +31,18 @@ public class LevelCoreTest {
       if (value < 0 || value >= bound) throw new IllegalStateException("Test RNG out of range");
       return value;
     }
+  }
+
+  private static String readRepoAsset(String relativePath) throws Exception {
+    Path[] candidates = new Path[] {
+        Paths.get("src/main/assets", relativePath),
+        Paths.get("app/src/main/assets", relativePath),
+        Paths.get("android-apk/app/src/main/assets", relativePath)
+    };
+    for (Path path : candidates) {
+      if (Files.isRegularFile(path)) return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+    }
+    throw new IllegalStateException("Unable to locate test asset: " + relativePath);
   }
 
   private static JSONObject state(int turn, String location) throws Exception {
@@ -422,6 +439,105 @@ public class LevelCoreTest {
     assertEquals(4, LevelCore.stageIndexForKey("0.7"));
     assertEquals(8, LevelCore.stageIndexForKey("1"));
     assertEquals(13, LevelCore.stageIndexForKey("6"));
+  }
+
+  @Test public void actionAwareLevelContextSelectsRelevantSections() throws Exception {
+    String knowledge = new JSONObject()
+        .put("schemaVersion", 2)
+        .put("sectionOrder", new org.json.JSONArray()
+            .put("identity").put("architecture").put("sensory").put("interactionRules").put("navigation"))
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("name", "Level 0")
+                .put("identity", new org.json.JSONArray().put("IDENT_FACT"))
+                .put("architecture", new org.json.JSONArray().put("ARCH_FACT"))
+                .put("sensory", new org.json.JSONArray().put("SENSORY_FACT"))
+                .put("interactionRules", new org.json.JSONArray().put("INTERACT_FACT"))
+                .put("navigation", new org.json.JSONArray().put("NAV_FACT"))))
+        .toString();
+
+    LevelCore core = LevelCore.withKnowledge(knowledge, new SequenceRng(0));
+
+    String observePrompt = core.knowledgeContext("0", 1, "Cao Minh đứng yên lắng nghe xung quanh");
+    assertTrue(observePrompt.contains("SENSORY_FACT"));
+    assertFalse(observePrompt.contains("INTERACT_FACT"));
+    assertFalse(observePrompt.contains("NAV_FACT"));
+
+    String interactPrompt = core.knowledgeContext("0", 1, "Cao Minh mở tủ gỗ kiểm tra");
+    assertTrue(interactPrompt.contains("INTERACT_FACT"));
+    assertFalse(interactPrompt.contains("SENSORY_FACT"));
+    assertFalse(interactPrompt.contains("NAV_FACT"));
+
+    String explorePrompt = core.knowledgeContext("0", 1, "Cao Minh tiếp tục di chuyển");
+    assertTrue(explorePrompt.contains("NAV_FACT"));
+    assertFalse(explorePrompt.contains("SENSORY_FACT"));
+    assertFalse(explorePrompt.contains("INTERACT_FACT"));
+  }
+
+  @Test public void levelZeroKnowledgeContextBudgetUsesRealAsset() throws Exception {
+    LevelCore core = LevelCore.withKnowledge(
+        readRepoAsset("knowledge/level_knowledge.json"), new SequenceRng(0));
+    JSONObject state = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
+
+    String explorePrompt = core.promptContext(state, "Cao Minh đi tiếp theo hành lang");
+
+    assertTrue("Real Level 0 context should stay below 6,000 chars, was: " + explorePrompt.length(),
+        explorePrompt.length() < 6000);
+    assertTrue(explorePrompt.contains("GM CONSTRAINTS"));
+    assertTrue(explorePrompt.contains("CANONICALFACTS"));
+    assertTrue(explorePrompt.contains("FORBIDDENINVENTIONS"));
+  }
+
+  @Test public void narrativeSceneLabelCannotForgeLevelTransition() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
+    core.normalizeState(before);
+
+    JSONObject candidate = new JSONObject(before.toString())
+        .put("currentLevel", 6)
+        .put(LevelCore.LEVEL_KEY, "6")
+        .put("location", "Level 6 / forged by scene label");
+
+    core.applyNarrativeTransition(before, candidate, "");
+
+    assertEquals(0, candidate.getInt("currentLevel"));
+    assertEquals("0", candidate.getString(LevelCore.LEVEL_KEY));
+    assertEquals("Level 0 / Start", candidate.getString("location"));
+  }
+
+  @Test public void narrativeTransitionUsesOnlyUnlockedValidatedTarget() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
+    for (int turn = 1; turn <= 10; turn++) {
+      before.put("turn", turn);
+      core.rollRouteForExplorerAction(before, ROUTE_ACTION);
+    }
+
+    JSONObject candidate = new JSONObject(before.toString())
+        .put("currentLevel", 6)
+        .put(LevelCore.LEVEL_KEY, "6")
+        .put("location", "Qua ngưỡng cửa lạ");
+
+    core.applyNarrativeTransition(before, candidate, "0.1");
+
+    assertEquals(0, candidate.getInt("currentLevel"));
+    assertEquals("0.1", candidate.getString(LevelCore.LEVEL_KEY));
+    assertEquals("Qua ngưỡng cửa lạ", candidate.getString("location"));
+    assertFalse(candidate.getJSONObject(LevelCore.ROUTE_STATE).getBoolean("exitAvailable"));
+  }
+
+  @Test public void narrativeTransitionRejectsLockedTarget() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject before = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
+    core.normalizeState(before);
+    JSONObject candidate = new JSONObject(before.toString());
+
+    try {
+      core.applyNarrativeTransition(before, candidate, "0.1");
+      fail("Expected locked narrative transition to be rejected");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("locked"));
+    }
   }
 
 }
