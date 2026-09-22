@@ -733,14 +733,29 @@ final class LevelCore {
           .put("forbiddenInventions");
     }
 
+    String[] coreSections = {
+        "identity", "canonicalFacts", "gmConstraints", "gameplayOverride", "forbiddenInventions"
+    };
+    for (String section : coreSections) {
+      JSONArray values = bundle.optJSONArray(section);
+      if (values == null || values.length() == 0) continue;
+      appendSectionWithinBudget(out, values, section, turn);
+    }
+
     for (int i = 0; i < order.length() && out.length() < MAX_KNOWLEDGE_CONTEXT_CHARS; i++) {
       String section = order.optString(i, "").trim();
-      if (!isSectionRelevantForCategory(section, category)) continue;
+      if (isCoreNarrativeSection(section) || !isSectionRelevantForCategory(section, category)) continue;
       JSONArray values = bundle.optJSONArray(section);
       if (values == null || values.length() == 0) continue;
       appendSectionWithinBudget(out, values, section, turn);
     }
     return out.toString().trim();
+  }
+
+  private static boolean isCoreNarrativeSection(String section) {
+    return "identity".equals(section) || "canonicalFacts".equals(section)
+        || "gmConstraints".equals(section) || "gameplayOverride".equals(section)
+        || "forbiddenInventions".equals(section);
   }
 
   private static void appendSectionWithinBudget(
