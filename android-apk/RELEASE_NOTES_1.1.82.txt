@@ -10,3 +10,6 @@ Backroom 1.1.82
 - Semantic-highlight bằng font Play cho Vạn Giới Ma Tôn, Poker hand token, tên skill/Entity/effect và chỉ số combat.
 - Floating overlay trên sprite chỉ còn hiển thị damage dạng -N HP; tên skill, PROC và hiệu ứng không còn bay trên Entity.
 - Thêm HUD trạng thái nhỏ phía trên Entity/nhân vật bằng icon bleed, poison, stun và armor break được tạo trực tiếp qua IMG API của repository.
+
+- Làm lại preview HUD sau rollback: Snapshot dùng frame PNG Tu Tiên × Backroom được sinh bằng IMG API, với viewport trong suốt và ornament thật thay vì border CSS.
+- PLAYER ACTION và nút THỰC HIỆN dùng action plate PNG cùng ngôn ngữ mỹ thuật, giữ nguyên hành vi DOM/touch của WebView.

@@ -138,6 +138,8 @@ jobs:
           for status_icon in status_bleed status_poison status_stun status_armor_break; do
             test -s "android-apk/app/src/main/assets/status/${status_icon}.png"
           done
+          test -s android-apk/app/src/main/assets/hud/snapshot_frame.png
+          test -s android-apk/app/src/main/assets/hud/action_plate.png
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
@@ -430,7 +432,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
@@ -474,6 +476,8 @@ jobs:
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_poison.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_stun.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/status/status_armor_break.png'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/hud/snapshot_frame.png'
+          unzip -l Backroom-1.1.82.apk | grep -q 'assets/hud/action_plate.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.82.apk | grep -q 'assets/entity/diep_minh.png'
