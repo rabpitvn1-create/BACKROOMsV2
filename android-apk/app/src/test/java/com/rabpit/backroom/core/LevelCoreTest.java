@@ -3,6 +3,7 @@ package com.rabpit.backroom.core;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,7 +40,7 @@ public class LevelCoreTest {
         Paths.get("android-apk/app/src/main/assets", relativePath)
     };
     for (Path path : candidates) {
-      if (Files.isRegularFile(path)) return Files.readString(path);
+      if (Files.isRegularFile(path)) return new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
     }
     throw new IllegalStateException("Unable to locate test asset: " + relativePath);
   }
