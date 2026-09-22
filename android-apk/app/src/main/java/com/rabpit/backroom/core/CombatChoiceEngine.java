@@ -492,6 +492,12 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     JSONObject entity = combat.getJSONObject("entity");
     if (actorIndex == firstLivingIndex(participants) && combat.optInt("round", 1) > 1) {
       tickRoundStartEffects(combat, entity);
+      if (entity.optInt("hp", 0) <= 0) {
+        dice.put("resolved", true);
+        syncParticipants(state, participants);
+        finishVictory(state, combat, entity);
+        return state;
+      }
     }
 
     String hand = dice.optString("hand", "NO HAND");

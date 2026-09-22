@@ -355,6 +355,52 @@ public class CombatChoiceEngineTest {
     }
   }
 
+  @Test public void lethalBleedAtRoundStartEndsCombatBeforeActorAction() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject entity = combat.getJSONObject("entity");
+
+    combat.put("round", 2).put("actorIndex", 0);
+    entity.put("hp", 1)
+        .put("bleedTurns", 1).put("bleedPercent", 3)
+        .put("poisonTurns", 0).put("poisonPercent", 0);
+    finalizeAs(state, 1,2,3,4,6);
+
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(0, entity.getInt("hp"));
+    assertFalse(combat.getBoolean("active"));
+    assertEquals("victory", combat.getString("outcome"));
+    assertTrue(combat.getJSONObject("diceState").getBoolean("resolved"));
+    assertFalse(combat.getBoolean("resolvedEntityTurn"));
+    assertEquals(1, combat.getJSONArray("feedbackEvents").length());
+    assertFalse(state.getJSONArray("log").getJSONObject(0).has("battleLog"));
+  }
+
+  @Test public void lethalPoisonAtRoundStartEndsCombatBeforeActorAction() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject entity = combat.getJSONObject("entity");
+
+    combat.put("round", 2).put("actorIndex", 0);
+    entity.put("hp", 1)
+        .put("bleedTurns", 0).put("bleedPercent", 0)
+        .put("poisonTurns", 1).put("poisonPercent", 3);
+    finalizeAs(state, 1,2,3,4,6);
+
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(0, entity.getInt("hp"));
+    assertFalse(combat.getBoolean("active"));
+    assertEquals("victory", combat.getString("outcome"));
+    assertTrue(combat.getJSONObject("diceState").getBoolean("resolved"));
+    assertFalse(combat.getBoolean("resolvedEntityTurn"));
+    assertEquals(1, combat.getJSONArray("feedbackEvents").length());
+    assertFalse(state.getJSONArray("log").getJSONObject(0).has("battleLog"));
+  }
+
   @Test public void stackingRulesIncreasePotencyButOnlyStunIncreasesDuration() throws Exception {
     JSONObject entity = new JSONObject()
         .put("bleedTurns", 2).put("bleedPercent", 3)

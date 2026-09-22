@@ -21,10 +21,11 @@ test('generated Tu Tien HUD asset files remain present on disk at expected dimen
   assert.deepEqual(pngSize(path.join(assets,'hud/action_plate.png')),[1400,300]);
 });
 
-test('snapshot returns to clean dark frame without snapshot_frame.png layer',()=>{
+test('snapshot returns to clean dark frame without decorative/status HUD layers',()=>{
   assert.doesNotMatch(snapshot,/snapshot_frame\.png/);
   assert.doesNotMatch(snapshot,/\.snapshot-hud-frame/);
-  assert.match(snapshot,/\.combat-status-hud\{[^}]*z-index:7/);
+  assert.doesNotMatch(snapshot,/\.combat-status-hud/);
+  assert.doesNotMatch(snapshot,/__combatStatusIcons/);
   assert.match(snapshot,/\.combat-float\{[^}]*z-index:8/);
 });
 
