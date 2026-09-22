@@ -160,8 +160,11 @@ jobs:
           test "$(identify -format '%wx%h' "$OUT_DIR/snapshot_frame.png")" = "1536x1152"
           test "$(identify -format '%wx%h' "$OUT_DIR/action_plate.png")" = "1400x300"
 
-          frame_alpha="$(identify -format '%[opaque]' "$OUT_DIR/snapshot_frame.png")"
-          test "$frame_alpha" = "False" || { echo "::error::snapshot_frame.png must contain transparency"; exit 1; }
+          center_alpha="$(convert "$OUT_DIR/snapshot_frame.png" -crop 1x1+768+576 -format '%[fx:a]' info:)"
+          awk -v alpha="$center_alpha" 'BEGIN { exit !(alpha < 0.01) }' || {
+            echo "::error::snapshot_frame.png center must be transparent; alpha=$center_alpha"
+            exit 1
+          }
 
           file "$OUT_DIR/snapshot_frame.png"
           file "$OUT_DIR/action_plate.png"
