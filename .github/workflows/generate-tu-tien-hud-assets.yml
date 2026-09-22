@@ -137,8 +137,7 @@ jobs:
           test -n "$action_src"
 
           convert "$frame_src" -auto-orient -resize '1536x1152^' -gravity center -extent 1536x1152 \
-            -alpha on -fill 'rgba(0,0,0,0)' \
-            -draw 'roundrectangle 108,92 1428,1060 18,18' \
+            -alpha set -region '1320x968+108+92' -channel A -evaluate set 0 +channel +region \
             "$OUT_DIR/snapshot_frame.png"
 
           convert "$action_src" -auto-orient -resize '1400x300^' -gravity center -extent 1400x300 \
