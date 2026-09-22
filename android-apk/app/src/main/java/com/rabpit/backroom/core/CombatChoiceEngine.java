@@ -411,6 +411,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             .put("poisonPercent", 0)
             .put("armorBreakTurns", 0)
             .put("armorBreakPercent", 0)
+            .put("accuracyPenaltyTurns", 0)
+            .put("accuracyPenalty", 0)
             .put("stunTurns", 0));
 
     state.put("combat", combat);
@@ -603,7 +605,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     if ("Chảy máu".equals(effect)
         || "Trúng độc".equals(effect)
         || "Xuyên giáp".equals(effect)
-        || "Choáng".equals(effect)) {
+        || "Choáng".equals(effect)
+        || "Mất phương hướng".equals(effect)) {
       return effect;
     }
     if ("Phá giáp".equals(effect)) return "Xuyên giáp";
@@ -658,6 +661,12 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       } else if ("Choáng".equals(effect)) {
         int turns = Math.max(0, entity.optInt("stunTurns", 0));
         if (turns > 0) details.add("Choáng trong " + turns + " lượt");
+      } else if ("Mất phương hướng".equals(effect)) {
+        int turns = Math.max(0, entity.optInt("accuracyPenaltyTurns", 0));
+        int percent = Math.max(0, entity.optInt("accuracyPenalty", 0));
+        if (turns > 0 && percent > 0) {
+          details.add("Mất phương hướng -" + percent + "% chính xác trong " + turns + " lượt");
+        }
       }
     }
     return String.join(", ", details);
@@ -736,7 +745,23 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int currentPercent = currentTurns > 0 ? Math.max(0, entity.optInt("armorBreakPercent", 0)) : 0;
       entity.put("armorBreakTurns", currentTurns > 0 ? currentTurns : turns);
       entity.put("armorBreakPercent", Math.min(75, currentPercent + value));
+      return;
     }
+
+    if ("Mất phương hướng".equals(effect) && turns > 0 && value > 0) {
+      entity.put("accuracyPenaltyTurns",
+          Math.max(Math.max(0, entity.optInt("accuracyPenaltyTurns", 0)), turns));
+      entity.put("accuracyPenalty",
+          Math.max(Math.max(0, entity.optInt("accuracyPenalty", 0)), Math.min(95, value)));
+    }
+  }
+
+  private static void consumeAccuracyPenaltyTurn(JSONObject entity) throws Exception {
+    int turns = Math.max(0, entity.optInt("accuracyPenaltyTurns", 0));
+    if (turns <= 0) return;
+    int remaining = turns - 1;
+    entity.put("accuracyPenaltyTurns", remaining);
+    if (remaining == 0) entity.put("accuracyPenalty", 0);
   }
 
   private static String resolveEntityResponse(JSONObject combat, JSONObject actor, JSONObject entity,
@@ -746,13 +771,28 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     int stunTurns = Math.max(0, entity.optInt("stunTurns", 0));
     if (stunTurns > 0) {
       entity.put("stunTurns", stunTurns - 1);
+      consumeAccuracyPenaltyTurn(entity);
       addFeedback(combat, "entity", "actor", "miss", "", false);
       return entityName + " bị Choáng, không thể tấn công " + actorName + ".";
     }
 
     if (evade) {
+      consumeAccuracyPenaltyTurn(entity);
       addFeedback(combat, "entity", "actor", "miss", "", false);
       return entityName + " tấn công " + actorName + " nhưng " + actorName + " né được.";
+    }
+
+    int accuracyTurns = Math.max(0, entity.optInt("accuracyPenaltyTurns", 0));
+    int accuracyPenalty = accuracyTurns > 0
+        ? Math.max(0, Math.min(95, entity.optInt("accuracyPenalty", 0))) : 0;
+    if (accuracyPenalty > 0) {
+      int roll = nextPercent(combat,
+          "accuracy:" + entity.optString("key", "") + ":" + actor.optString("id", ""));
+      if (roll < accuracyPenalty) {
+        consumeAccuracyPenaltyTurn(entity);
+        addFeedback(combat, "entity", "actor", "miss", "", false);
+        return entityName + " bị Mất phương hướng và đánh trượt " + actorName + ".";
+      }
     }
 
     int before = Math.max(0, actor.optInt("hp", 0));
@@ -786,6 +826,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     String action = triggeredSkills.isEmpty()
         ? "tấn công"
         : "dùng " + String.join(" + ", triggeredSkills);
+    consumeAccuracyPenaltyTurn(entity);
     return entityName + " " + action + ", " + actorName + " -" + dealt
         + " HP [" + hp + "/" + maxHp + " HP].";
   }

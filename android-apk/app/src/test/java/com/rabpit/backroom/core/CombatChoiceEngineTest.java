@@ -511,6 +511,31 @@ public class CombatChoiceEngineTest {
     assertEquals(20, entity.getInt("armorBreakPercent"));
   }
 
+  @Test public void spatialDominionRestoresAccuracyPenaltyMissAndDuration() throws Exception {
+    JSONObject state = combatState(new JSONArray().put(member("syvial", "Syvial")));
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(1);
+    JSONObject entity = combat.getJSONObject("entity");
+
+    combat.put("actorIndex", 1).put("seed", 2).put("rngSequence", 0);
+    combat.put("currentSkill", new JSONObject()
+        .put("name", "Spatial Dominion")
+        .put("damagePercent", 210)
+        .put("effect", "Mất phương hướng")
+        .put("effectTurns", 2)
+        .put("effectValue", 25));
+    int hpBefore = actor.getInt("hp");
+
+    finalizeAs(state, 2,2,2,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(hpBefore, actor.getInt("hp"));
+    assertEquals(1, entity.getInt("accuracyPenaltyTurns"));
+    assertEquals(25, entity.getInt("accuracyPenalty"));
+    assertTrue(combat.getBoolean("resolvedEntityTurn"));
+  }
+
   @Test public void armorBreakPercentIncreasesDamageWithoutExtendingDuration() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "diep_minh", 0);
