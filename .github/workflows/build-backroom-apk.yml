@@ -121,7 +121,7 @@ jobs:
           grep -Fq 'CombatChoiceEngine.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'ItemCore.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'gmEntryAddsCoreOwnedSemanticHighlightsWithoutModelMetadata' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
-          grep -Fq 'NGÔN NGỮ HIỂN THỊ:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'NGÔN NGỮ HIỂN THỊ:' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'normalizePlayerFacingVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'gmEntryNormalizesLeakedEnglishEnvironmentTerms' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           jq -e '
