@@ -2,10 +2,6 @@ name: Generate Combat Status Icons
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/generate-combat-status-icons.yml'
 
 permissions:
   contents: write
