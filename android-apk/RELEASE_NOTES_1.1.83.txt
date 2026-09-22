@@ -1,0 +1,7 @@
+Backroom 1.1.83
+
+- Làm mới khung Snapshot theo phong cách Tu Tiên × Backroom: viền vàng đồng cũ, điểm nhấn đỏ sẫm, góc khung dạng ấn ký và chiều sâu nội khung.
+- Làm mới nút THỰC HIỆN thành primary action rõ ràng hơn, giữ nguyên submit behavior và khả năng bấm trên Android WebView.
+- Giữ nguyên combat HUD, status icons, battle log, semantic highlighting và toàn bộ logic gameplay hiện có.
+- Cập nhật regression test cho snapshot frame và primary action; sửa baseline build để nhận diện snapshot HUD mới.
+- Build verification trước khi bump đã pass đầy đủ: baseline, snapshot/UI tests, Java unit tests, APK build, APK verify và release verify.
