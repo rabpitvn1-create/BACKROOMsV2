@@ -430,7 +430,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
