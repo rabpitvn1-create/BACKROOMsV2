@@ -98,7 +98,15 @@ jobs:
 
           for name, prompt in prompts.items():
               raw = request_image(prompt)
-              (out / f"{name}.raw").write_bytes(raw)
+              if raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+                  ext = "png"
+              elif raw.startswith(b"\\xff\\xd8\\xff"):
+                  ext = "jpg"
+              elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+                  ext = "webp"
+              else:
+                  raise SystemExit(f"Unsupported image format returned for {name}")
+              (out / f"{name}.source.{ext}").write_bytes(raw)
 
           (out / "status_icons.generated.json").write_text(
               json.dumps({"model": model, "icons": prompts}, ensure_ascii=False, indent=2) + "\n",
@@ -109,7 +117,8 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick
           for name in status_bleed status_poison status_stun status_armor_break; do
-            src="$OUT_DIR/$name.raw"
+            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "$name.source.*" -print -quit)"
+            test -n "$src"
             dst="$OUT_DIR/$name.png"
             convert "$src" -auto-orient -resize '112x112>' -gravity center -background none -extent 128x128 "$dst"
             rm "$src"
