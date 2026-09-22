@@ -1,9 +1,21 @@
 {
-  "model": "mgr/grok-imagine-image",
+  "source": "Google Drive / Novel / effecticon",
+  "folderId": "1u65fT-43Dd-Yrs5_fMNgRsKHc47R5btt",
+  "format": "webp",
+  "dimensions": "128x128",
+  "transparentBackground": true,
   "icons": {
-    "status_bleed": "A single compact combat status-effect HUD icon for a dark survival RPG game. Square composition, centered symbol, high contrast, crisp thin dark outline, clean cell-shaded game UI style, small-screen readable silhouette, no letters, no numbers, no words, no watermark, no border frame, isolated icon with transparent background and generous transparent padding. BLEED status: a sharp crimson blood droplet split by two small slash marks, dangerous but clean, no gore.",
-    "status_poison": "A single compact combat status-effect HUD icon for a dark survival RPG game. Square composition, centered symbol, high contrast, crisp thin dark outline, clean cell-shaded game UI style, small-screen readable silhouette, no letters, no numbers, no words, no watermark, no border frame, isolated icon with transparent background and generous transparent padding. POISON status: toxic green-purple droplet with a small bubbling hazard motif, clearly poisonous, no skull text.",
-    "status_stun": "A single compact combat status-effect HUD icon for a dark survival RPG game. Square composition, centered symbol, high contrast, crisp thin dark outline, clean cell-shaded game UI style, small-screen readable silhouette, no letters, no numbers, no words, no watermark, no border frame, isolated icon with transparent background and generous transparent padding. STUN status: bright gold-white concussive spiral with three short electric sparks, readable as dazed or stunned.",
-    "status_armor_break": "A single compact combat status-effect HUD icon for a dark survival RPG game. Square composition, centered symbol, high contrast, crisp thin dark outline, clean cell-shaded game UI style, small-screen readable silhouette, no letters, no numbers, no words, no watermark, no border frame, isolated icon with transparent background and generous transparent padding. ARMOR BREAK status: steel-blue shield cracked through the center with a downward fracture, clearly broken defense."
+    "status_bleed": {
+      "fileId": "1Dk2qfbFhpuOiDu6iI3QxjkKSGAx3n2Ex"
+    },
+    "status_poison": {
+      "fileId": "1KdQCYAY7e5BE-z7hlpoxyrEBC1yX0q6I"
+    },
+    "status_stun": {
+      "fileId": "1Y0n4_XOOPjLOigI-eaeHteU-Iin4broD"
+    },
+    "status_armor_break": {
+      "fileId": "17PHyFG-7K9MBO9RPCn6_pg2JHi1p7Czy"
+    }
   }
 }

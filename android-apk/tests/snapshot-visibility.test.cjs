@@ -42,26 +42,39 @@ test('generated bounds exist for all registered overlays and match PNG dimension
 });
 
 
-test('combat status HUD uses generated local icons and one icon per active status type',()=>{
- const names=['status_bleed.png','status_poison.png','status_stun.png','status_armor_break.png'];
+function webpDimensions(data){
+ assert.equal(data.toString('ascii',0,4),'RIFF');
+ assert.equal(data.toString('ascii',8,12),'WEBP');
+ const chunk=data.toString('ascii',12,16);
+ if(chunk==='VP8L'){
+   assert.equal(data[20],0x2f);
+   const bits=data.readUInt32LE(21);
+   return {width:(bits&0x3fff)+1,height:((bits>>>14)&0x3fff)+1};
+ }
+ throw new Error('Unsupported WEBP chunk in status icon: '+chunk);
+}
+
+test('combat status HUD uses Drive WEBP icons and anchors them at actor/entity feet',()=>{
+ const names=['status_bleed.webp','status_poison.webp','status_stun.webp','status_armor_break.webp'];
  const dir=path.join(__dirname,'../app/src/main/assets/status');
  for(const name of names){
    const file=path.join(dir,name);
    assert.ok(fs.existsSync(file),name);
-   const data=fs.readFileSync(file);
-   assert.equal(data.toString('ascii',1,4),'PNG',name);
-   assert.equal(data.readUInt32BE(16),128,name);
-   assert.equal(data.readUInt32BE(20),128,name);
+   const data=fs.readFileSync(file),dims=webpDimensions(data);
+   assert.equal(dims.width,128,name);
+   assert.equal(dims.height,128,name);
  }
- assert.match(source,/file:\/\/\/android_asset\/status\/status_bleed\.png/);
- assert.match(source,/file:\/\/\/android_asset\/status\/status_poison\.png/);
- assert.match(source,/file:\/\/\/android_asset\/status\/status_stun\.png/);
- assert.match(source,/file:\/\/\/android_asset\/status\/status_armor_break\.png/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_bleed\.webp/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_poison\.webp/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_stun\.webp/);
+ assert.match(source,/file:\/\/\/android_asset\/status\/status_armor_break\.webp/);
+ assert.match(source,/visibleBottomPx/);
+ assert.match(source,/y=er\.top-br\.top\+bottom-4/);
+ assert.match(source,/function clampCombatStatusHud\(hud,anchor\)/);
  assert.match(source,/subject\.bleedTurns/);
  assert.match(source,/subject\.poisonTurns/);
  assert.match(source,/subject\.armorBreakTurns/);
  assert.match(source,/subject\.stunTurns/);
- assert.match(source,/combat-status-hud/);
 });
 
 test('combat floating overlay only accepts numeric HP damage',()=>{

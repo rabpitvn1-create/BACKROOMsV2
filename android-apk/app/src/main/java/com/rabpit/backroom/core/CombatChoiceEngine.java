@@ -587,6 +587,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static String handToken(String hand) {
+    if ("ONE PAIR".equals(hand)) return "PAIR";
     if ("THREE OF A KIND".equals(hand)) return "TRIPLE";
     if ("FOUR OF A KIND".equals(hand)) return "F.O.A.K";
     return hand;

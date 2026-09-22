@@ -126,8 +126,8 @@ jobs:
           for name in status_bleed status_poison status_stun status_armor_break; do
             src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "$name.source.*" -print -quit)"
             test -n "$src"
-            dst="$OUT_DIR/$name.png"
-            convert "$src" -auto-orient -resize '112x112>' -gravity center -background none -extent 128x128 "$dst"
+            dst="$OUT_DIR/$name.webp"
+            convert "$src" -auto-orient -resize '112x112>' -gravity center -background none -extent 128x128 -define webp:lossless=true "$dst"
             rm "$src"
           done
 
@@ -136,7 +136,7 @@ jobs:
         run: |
           set -euo pipefail
           for name in status_bleed status_poison status_stun status_armor_break; do
-            file="$OUT_DIR/$name.png"
+            file="$OUT_DIR/$name.webp"
             test -s "$file"
             dims="$(identify -format '%wx%h' "$file")"
             test "$dims" = "128x128" || { echo "::error::$file is $dims"; exit 1; }
@@ -150,7 +150,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$OUT_DIR/status_bleed.png" "$OUT_DIR/status_poison.png" "$OUT_DIR/status_stun.png" "$OUT_DIR/status_armor_break.png" "$OUT_DIR/status_icons.generated.json"
+          git add "$OUT_DIR/status_bleed.webp" "$OUT_DIR/status_poison.webp" "$OUT_DIR/status_stun.webp" "$OUT_DIR/status_armor_break.webp" "$OUT_DIR/status_icons.generated.json"
           git diff --cached --quiet && { echo 'Status icons unchanged.'; exit 0; }
           git commit -m 'Generate combat status icons'
           git push origin HEAD:main

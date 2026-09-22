@@ -147,10 +147,10 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','async_vanguard','async_tactical','async_decon','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={cao_minh:'file:///android_asset/cao_minh_entity_overlay.png',lucia:'file:///android_asset/lucia_entity_overlay.png'};
   var __combatStatusIcons={
-    bleed:'file:///android_asset/status/status_bleed.png',
-    poison:'file:///android_asset/status/status_poison.png',
-    stun:'file:///android_asset/status/status_stun.png',
-    armor_break:'file:///android_asset/status/status_armor_break.png'
+    bleed:'file:///android_asset/status/status_bleed.webp',
+    poison:'file:///android_asset/status/status_poison.webp',
+    stun:'file:///android_asset/status/status_stun.webp',
+    armor_break:'file:///android_asset/status/status_armor_break.webp'
   };
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
@@ -181,12 +181,20 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function combatStatusAnchor(target){
     var box=document.getElementById('snapshot'),el=combatTargetElement(target);
     if(!box||!el||typeof box.getBoundingClientRect!=='function'||typeof el.getBoundingClientRect!=='function')return null;
-    var br=box.getBoundingClientRect(),er=el.getBoundingClientRect(),x=er.left-br.left+er.width/2,y=er.top-br.top-6;
+    var br=box.getBoundingClientRect(),er=el.getBoundingClientRect(),x=er.left-br.left+er.width/2,y=er.top-br.top+er.height-4;
     if(el.tagName==='IMG'&&el.dataset.visibleLeftPx){
-      var left=Number(el.dataset.visibleLeftPx||0),top=Number(el.dataset.visibleTopPx||0),right=Number(el.dataset.visibleRightPx||el.clientWidth);
-      x=er.left-br.left+(left+right)/2;y=er.top-br.top+top-6;
+      var left=Number(el.dataset.visibleLeftPx||0),right=Number(el.dataset.visibleRightPx||el.clientWidth),bottom=Number(el.dataset.visibleBottomPx||el.clientHeight);
+      x=er.left-br.left+(left+right)/2;y=er.top-br.top+bottom-4;
     }
-    return {box:box,x:x,y:Math.max(28,y)};
+    return {box:box,x:x,y:y};
+  }
+
+  function clampCombatStatusHud(hud,anchor){
+    var margin=6,hudWidth=Math.max(1,hud.offsetWidth||0),hudHeight=Math.max(1,hud.offsetHeight||0);
+    var half=hudWidth/2,maxX=Math.max(margin+half,anchor.box.clientWidth-margin-half);
+    var x=Math.max(margin+half,Math.min(maxX,anchor.x));
+    var y=Math.max(hudHeight+margin,Math.min(anchor.box.clientHeight-margin,anchor.y));
+    hud.style.left=x+'px';hud.style.top=y+'px';
   }
 
   function renderCombatStatusHuds(){
@@ -201,7 +209,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
       statuses.forEach(function(status){
         var icon=document.createElement('img');icon.className='combat-status-icon';icon.src=status.src;icon.alt='';icon.dataset.status=status.key;hud.appendChild(icon);
       });
-      hud.style.left=anchor.x+'px';hud.style.top=anchor.y+'px';anchor.box.appendChild(hud);
+      anchor.box.appendChild(hud);clampCombatStatusHud(hud,anchor);
     });
   }
   function appendCombatCharacter(box,participant){
