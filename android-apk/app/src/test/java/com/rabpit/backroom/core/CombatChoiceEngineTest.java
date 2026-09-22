@@ -306,6 +306,19 @@ public class CombatChoiceEngineTest {
   assertEquals(r,CombatChoiceEngine.entitySkillProcRoll(12345,4,2,1));
 }
 
+  @Test public void onePairUsesCompactPairTokenInBattleLog() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    finalizeAs(state, 2,2,1,4,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    String actorLine = battleLog.getJSONObject(0).getString("text");
+    assertTrue(actorLine.startsWith("[PAIR] Cao Minh "));
+    assertFalse(actorLine.contains("[ONE PAIR]"));
+  }
+
   @Test public void fourOfAKindUsesCompactDetailedBattleLineAndNoProcTextFloater() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "diep_minh", 0);
