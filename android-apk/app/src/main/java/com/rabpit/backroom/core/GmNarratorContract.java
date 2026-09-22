@@ -5,7 +5,7 @@ public final class GmNarratorContract {
   private GmNarratorContract() {}
 
   public static String promptContext() {
-    return "GM NARRATIVE GENRE CONTRACT:\n"
+    return "NARRATIVE VOICE: GM NARRATIVE GENRE CONTRACT:\n"
         + "1. GÓC NHÌN & VĂN PHONG: Kể theo ngôi thứ ba hạn định, lấy Cao Minh làm trung tâm. "
         + "Văn phong như một chương truyện xianxia x Backrooms đã được biên tập kỹ lưỡng. "
         + "Không viết như báo cáo hệ thống, nhật ký sinh tồn hiện đại, văn mẫu AI hay biên bản quân sự.\n"

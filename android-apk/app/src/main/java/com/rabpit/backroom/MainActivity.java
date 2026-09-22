@@ -690,6 +690,13 @@ public class MainActivity extends Activity {
           state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
           String sceneLabel = generated.optString("sceneLabel", generated.optString("location", "")).trim();
           if (!sceneLabel.isEmpty()) state.put("location", sceneLabel);
+          JSONObject generatedFlags = generated.optJSONObject("flags");
+          if (generatedFlags != null) {
+            JSONObject flags = state.optJSONObject("flags");
+            if (flags == null) flags = new JSONObject();
+            mergeObject(flags, generatedFlags);
+            state.put("flags", flags);
+          }
           long tParseEnd = System.currentTimeMillis();
 
           long tValStart = System.currentTimeMillis();
