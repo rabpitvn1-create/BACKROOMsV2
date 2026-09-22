@@ -1,31 +1,31 @@
 {
   "version": 2,
-  "instruction": "Các ví dụ chỉ dạy nhịp kể và cách giữ continuity. Không được sao chép sự kiện, địa điểm, câu chữ, kết luận hay nhân vật từ ví dụ vào lượt thật. Văn phong cần tự nhiên như truyện đã biên tập: mỗi cảnh có trọng tâm, chi tiết được chọn lọc, đối thoại có mục đích và không biến mô tả thành checklist giác quan.",
+  "instruction": "Các ví dụ minh họa văn phong xianxia x Backrooms: Xianxia là lăng kính nhận thức của Cao Minh (thần thức, ma nguyên, quy tắc), Backrooms là thực tại khách quan (hành lang, đèn huỳnh quang, chất lỏng, súng đạn). Tuyệt đối không gán nhãn Backrooms thành bí cảnh hay cấm chế. Dùng ví dụ làm tham chiếu nhịp kể; không sao chép nguyên văn.",
   "goodExamples": [
     {
-      "name": "Lượt yên tĩnh, viết ngắn",
-      "player": "Cao Minh đứng lại nghe ngóng.",
-      "gm": "Cao Minh dừng ở chỗ giao nhau.\n\nTiếng đèn vẫn rền trên trần. Xen giữa nó có một tiếng cộc rất khẽ từ hành lang bên phải, rồi im. Cao Minh chờ thêm vài giây nhưng âm thanh không lặp lại."
+      "name": "Lượt yên tĩnh, dùng thần thức quan sát dị tượng",
+      "player": "Cao Minh dừng lại dùng thần thức quan sát dị tượng.",
+      "gm": "Cao Minh ngưng thần, phóng thả thần thức ra xung quanh. Thần thức lướt qua lớp giấy dán tường vàng nhạt rồi kẹt lại ở một vệt màu sẫm trên vách—không phải cấm chế ma đạo hay trận pháp, mà là một khoảng thực tại bị xói mòn làm bóp méo luồng khí cơ. Tiếng đèn huỳnh quang phía trên vẫn ù đều, không mang linh lực hay sát khí."
     },
     {
-      "name": "Hành động có hệ quả cụ thể",
-      "player": "Cao Minh kéo thử cánh cửa kim loại.",
-      "gm": "Cánh cửa nhúc nhích được vài phân rồi kẹt cứng. Mép dưới cào qua nền, để lại một vệt sáng trên lớp bụi.\n\nQua khe hở chỉ thấy một khoảng tối hẹp. Không có luồng gió hay tiếng động nào từ bên trong."
+      "name": "Chạm trán người lạ, đối thoại chuẩn sắc thái tiên hiệp với thực tại Backrooms",
+      "player": "Cao Minh cất lời hỏi người lạ mặt.",
+      "gm": "Cao Minh nhìn khẩu súng trong tay đối phương rồi lên tiếng, giọng bình thản không chút gợn sóng:\n\n\"Các hạ dừng tay. Vùng này không có lối thoát, chĩa binh khí vào ta cũng vô ích.\"\n\nNgười kia giật mình khựng lại, ánh mắt nghi ngại lướt qua phong thái lạ lẫm của anh trước khi hạ nòng súng xuống vài phân."
     },
     {
-      "name": "First contact phải được dựng thành cảnh",
-      "player": "Cao Minh đi tiếp.",
-      "gm": "Vừa qua góc tường, Cao Minh thấy một người đứng ở cuối đoạn hành lang. Người kia cũng khựng lại khi nhận ra anh; khẩu súng đang cầm hạ xuống một chút nhưng chưa rời tay.\n\nKhoảng cách giữa hai người còn hơn mười mét. Trước khoảnh khắc này, không có dấu hiệu nào cho thấy họ đã đi cùng nhau."
+      "name": "Tương tác vật lý dùng ma nguyên bảo vệ nhưng nhận thức đúng bản chất",
+      "player": "Cao Minh dùng ma nguyên bao bọc ngón tay chạm vào vệt chất lỏng dính trên tường.",
+      "gm": "Ma nguyên luân chuyển đến đầu ngón tay, tạo thành lớp màng mỏng cách tuyệt. Khi chạm vào vệt chất lỏng dính trên tường, Cao Minh nhận ra đây chỉ là hóa chất bẩn bốc mùi ẩm mốc—không có ma tính hay độc tố tiên gia nhưng đang ăn mòn dần lớp vữa."
     },
     {
-      "name": "Đối thoại tự nhiên, không đọc lore",
-      "player": "Cao Minh hỏi người vừa gặp có bị thương không.",
-      "gm": "Người kia nhìn nhanh xuống cánh tay áo bị rách rồi lắc đầu.\n\n\"Chỉ sượt qua thôi.\"\n\nCô nghiêng người nhường khỏi lối đi, mắt vẫn để ý đoạn hành lang phía sau."
+      "name": "Quan sát cấu trúc không gian dị thường bằng lăng kính tu hành",
+      "player": "Cao Minh tiếp tục tiến sâu vào đoạn hành lang u tối.",
+      "gm": "Hành lang kéo dài rồi bất ngờ gấp khúc theo một góc độ phi lý. Bằng kinh nghiệm nhìn nhận quy tắc thực tại, Cao Minh nhận ra cấu trúc không gian ở đây đang tự lặp lại—mỗi vệt ố trên sàn đều giống hệt đoạn vừa qua, dù không hề có dấu vết của ảo thuật hay ảo trận."
     }
   ],
   "badExample": {
     "player": "Cao Minh đi tiếp.",
-    "gm": "Cao Minh tiếp tục bước đi trong hành lang. Ánh sáng vàng nhợt, thảm ẩm mềm, mùi nấm mốc nồng nặc và tiếng đèn huỳnh quang ù đều bao quanh anh. Cô gái phía sau không có dấu hiệu hoảng loạn, ánh mắt quét khắp không gian với sự cảnh giác của một người được huấn luyện bài bản nhưng chưa từng bước vào chiến đấu thực sự. Cô ghi nhớ lời Cao Minh rồi bước nhẹ hơn. Bạn sẽ làm gì tiếp?",
-    "why": "Sai vì liệt kê giác quan theo công thức, tự bịa quá khứ và trạng thái tâm lý, tự biến một nhân vật mới thành người đã đi cùng Cao Minh từ trước, tự quyết định hành động của NPC theo văn mẫu và kết bằng câu hỏi máy móc."
+    "gm": "Cao Minh bước vào bí cảnh Level 0. Cơn gió ma đạo bao trùm lấy không gian. Cánh cửa phía trước là một cấm chế cổ xưa do yêu thú trấn giữ. Phù chú đèn huỳnh quang phát ra ma âm u ám. Bạn sẽ làm gì tiếp?",
+    "why": "Sai vì tự ý đổi Level thành 'bí cảnh', tự biến cửa thành 'cấm chế', biến đèn huỳnh quang thành 'phù chú ma âm', và kết thúc bằng câu hỏi máy móc. Phá vỡ nguyên tắc 'Xianxia là lăng kính, Backrooms là thực tại'."
   }
 }

@@ -178,10 +178,14 @@ final class LevelCore {
   }
 
   String promptContext(JSONObject state) {
+    return promptContext(state, "");
+  }
+
+  String promptContext(JSONObject state, String action) {
     String levelKey = resolveLevelKey(state);
     int level = parentLevel(levelKey);
     int turn = Math.max(1, state.optInt("turn", 1));
-    String canon = knowledgeContext(levelKey, turn);
+    String canon = knowledgeContext(levelKey, turn, action);
     if (canon.trim().isEmpty()) {
       canon = legacyCanonByLevelKey.get(levelKey);
     }
@@ -578,13 +582,78 @@ final class LevelCore {
     } catch (Exception ignored) {}
   }
 
-  private String knowledgeContext(String levelKey, int turn) {
+  static String categorizeAction(String action) {
+    if (action == null) return "EXPLORATION";
+    String lower = action.toLowerCase(Locale.ROOT).trim();
+    if (lower.contains("nghe") || lower.contains("nhìn") || lower.contains("quan sát") ||
+        lower.contains("soi") || lower.contains("lắng nghe") || lower.contains("look") ||
+        lower.contains("listen") || lower.contains("observe") || lower.contains("examine")) {
+      return "OBSERVE";
+    }
+    if (lower.contains("kiểm tra") || lower.contains("tìm") || lower.contains("dùng") ||
+        lower.contains("mở") || lower.contains("chạm") || lower.contains("sờ") ||
+        lower.contains("inspect") || lower.contains("search") || lower.contains("use")) {
+      return "INSPECT";
+    }
+    if (lower.contains("nghỉ") || lower.contains("ngủ") || lower.contains("tu luyện") ||
+        lower.contains("điều hòa") || lower.contains("nghỉ ngơi") || lower.contains("rest") ||
+        lower.contains("sleep") || lower.contains("meditate") || lower.contains("camp")) {
+      return "REST";
+    }
+    if (lower.contains("quái") || lower.contains("đối đầu") || lower.contains("sinh thể") ||
+        lower.contains("gặp") || lower.contains("encounter") || lower.contains("combat") ||
+        lower.contains("entity")) {
+      return "ENCOUNTER";
+    }
+    return "EXPLORATION";
+  }
+
+  private static boolean isSectionRelevantForCategory(String section, String category) {
+    // Core invariant sections
+    if ("identity".equals(section) || "architecture".equals(section) ||
+        "gmConstraints".equals(section) || "gameplayOverride".equals(section) ||
+        "entrancesExits".equals(section)) {
+      return true;
+    }
+
+    switch (category) {
+      case "OBSERVE":
+        return "sensory".equals(section) || "anomalies".equals(section) ||
+            "evidenceRules".equals(section) || "quietTurnPatterns".equals(section) ||
+            "microLocations".equals(section) || "environmentEvents".equals(section);
+      case "INSPECT":
+        return "interactionRules".equals(section) || "actionConsequences".equals(section) ||
+            "hazards".equals(section) || "resources".equals(section) ||
+            "evidenceRules".equals(section) || "persistenceRules".equals(section);
+      case "REST":
+        return "hazards".equals(section) || "persistenceRules".equals(section) ||
+            "environmentStates".equals(section) || "quietTurnPatterns".equals(section) ||
+            "hazardEscalation".equals(section);
+      case "ENCOUNTER":
+        return "encounterStaging".equals(section) || "hazardEscalation".equals(section) ||
+            "entities".equals(section) || "hazards".equals(section) || "zones".equals(section);
+      case "EXPLORATION":
+      default:
+        return "navigation".equals(section) || "navigationPatterns".equals(section) ||
+            "routeProgressionCues".equals(section) || "zones".equals(section) ||
+            "microLocations".equals(section) || "sceneSeeds".equals(section) ||
+            "variationPool".equals(section);
+    }
+  }
+
+  String knowledgeContext(String levelKey, int turn) {
+    return knowledgeContext(levelKey, turn, "");
+  }
+
+  String knowledgeContext(String levelKey, int turn, String action) {
     JSONObject bundle = knowledgeByLevelKey.get(normalizeKey(levelKey));
     if (bundle == null) return "";
 
     StringBuilder out = new StringBuilder();
     String name = bundle.optString("name", displayName(levelKey)).trim();
     if (!name.isEmpty()) out.append("NAME: ").append(name).append('\n');
+
+    String category = categorizeAction(action);
 
     JSONArray order = knowledgeSectionOrder;
     if (order.length() == 0) {
@@ -597,6 +666,8 @@ final class LevelCore {
 
     for (int i = 0; i < order.length(); i++) {
       String section = order.optString(i, "").trim();
+      if (!isSectionRelevantForCategory(section, category)) continue;
+
       JSONArray values = bundle.optJSONArray(section);
       if (values == null || values.length() == 0) continue;
       if (out.length() > 0) out.append('\n');
@@ -631,13 +702,15 @@ final class LevelCore {
 
   private static int rotatingSectionLimit(String section) {
     if ("variationPool".equals(section)) return 6;
-    if ("microLocations".equals(section)) return 5;
-    if ("environmentEvents".equals(section)) return 5;
+    if ("microLocations".equals(section)) return 4;
+    if ("environmentEvents".equals(section)) return 4;
     if ("actionConsequences".equals(section)) return 4;
     if ("navigationPatterns".equals(section)) return 4;
     if ("routeProgressionCues".equals(section)) return 4;
     if ("quietTurnPatterns".equals(section)) return 4;
     if ("sceneSeeds".equals(section)) return 6;
+    if ("forbiddenInventions".equals(section)) return 4;
+    if ("canonicalFacts".equals(section)) return 4;
     return 0;
   }
 

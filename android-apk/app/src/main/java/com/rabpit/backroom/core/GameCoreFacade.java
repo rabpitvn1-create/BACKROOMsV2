@@ -160,10 +160,14 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String levelPromptContext(String stateJson) {
+    return levelPromptContext(stateJson, "");
+  }
+
+  public synchronized String levelPromptContext(String stateJson, String action) {
     JSONObject state = parseState(stateJson);
     try {
       levelCore.normalizeState(state);
-      return levelCore.promptContext(state);
+      return levelCore.promptContext(state, action);
     } catch (Exception e) {
       return "CURRENT LEVEL: 0\nLEVEL CANON: unavailable";
     }

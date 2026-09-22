@@ -424,4 +424,47 @@ public class LevelCoreTest {
     assertEquals(13, LevelCore.stageIndexForKey("6"));
   }
 
+  @Test public void actionAwareLevelContextSelectsRelevantSections() throws Exception {
+    String knowledge = new JSONObject()
+        .put("schemaVersion", 2)
+        .put("sectionOrder", new org.json.JSONArray()
+            .put("identity").put("architecture").put("sensory").put("interactionRules").put("navigation"))
+        .put("levels", new JSONObject()
+            .put("0", new JSONObject()
+                .put("name", "Level 0")
+                .put("identity", new org.json.JSONArray().put("IDENT_FACT"))
+                .put("architecture", new org.json.JSONArray().put("ARCH_FACT"))
+                .put("sensory", new org.json.JSONArray().put("SENSORY_FACT"))
+                .put("interactionRules", new org.json.JSONArray().put("INTERACT_FACT"))
+                .put("navigation", new org.json.JSONArray().put("NAV_FACT"))))
+        .toString();
+
+    LevelCore core = LevelCore.withKnowledge(knowledge, new SequenceRng(0));
+
+    String observePrompt = core.knowledgeContext("0", 1, "Cao Minh đứng yên lắng nghe xung quanh");
+    assertTrue(observePrompt.contains("SENSORY_FACT"));
+    assertFalse(observePrompt.contains("INTERACT_FACT"));
+    assertFalse(observePrompt.contains("NAV_FACT"));
+
+    String interactPrompt = core.knowledgeContext("0", 1, "Cao Minh mở tủ gỗ kiểm tra");
+    assertTrue(interactPrompt.contains("INTERACT_FACT"));
+    assertFalse(interactPrompt.contains("SENSORY_FACT"));
+    assertFalse(interactPrompt.contains("NAV_FACT"));
+
+    String explorePrompt = core.knowledgeContext("0", 1, "Cao Minh tiếp tục di chuyển");
+    assertTrue(explorePrompt.contains("NAV_FACT"));
+    assertFalse(explorePrompt.contains("SENSORY_FACT"));
+    assertFalse(explorePrompt.contains("INTERACT_FACT"));
+  }
+
+  @Test public void levelZeroKnowledgeContextBudgetIsEnforcedForOrdinaryTurn() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(0));
+    JSONObject state = state(1, "Level 0 / Start").put(LevelCore.LEVEL_KEY, "0");
+
+    String explorePrompt = core.promptContext(state, "Cao Minh đi tiếp theo hành lang");
+    // Knowledge context in ordinary turn must be significantly smaller than old 27k chars
+    assertTrue("Level 0 explore prompt context should be budgeted (< 6,000 chars), was: " + explorePrompt.length(),
+        explorePrompt.length() < 6000);
+  }
+
 }
