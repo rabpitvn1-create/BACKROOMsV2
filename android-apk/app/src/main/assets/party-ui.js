@@ -4,7 +4,7 @@
 
   var AVATARS={
     cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg',
-    lucia:'file:///android_asset/avatars/lucia_avatar.jpg',
+    lucia:'file:///android_asset/avatars/lucia_avatar.png',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
