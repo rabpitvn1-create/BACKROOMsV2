@@ -139,9 +139,12 @@ jobs:
           grep -Fq 'return haikuText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'return geminiText(prompt);' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/assets/fonts/OFL-Play.txt
-          for status_icon in status_bleed status_poison status_stun status_armor_break; do
-            test -s "android-apk/app/src/main/assets/status/${status_icon}.webp"
-          done
+          test ! -e android-apk/app/src/main/assets/status/status_bleed.webp
+          test ! -e android-apk/app/src/main/assets/status/status_poison.webp
+          test ! -e android-apk/app/src/main/assets/status/status_stun.webp
+          test ! -e android-apk/app/src/main/assets/status/status_armor_break.webp
+          test ! -e android-apk/app/src/main/assets/status/status_icons.generated.json
+          ! grep -Fq 'combat-status-hud' android-apk/app/src/main/assets/snapshot-ui.js
           test -s android-apk/app/src/main/assets/hud/snapshot_frame.png
           test -s android-apk/app/src/main/assets/hud/action_plate.png
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
@@ -481,16 +484,9 @@ jobs:
           cmp <(unzip -p Backroom-1.1.84.apk assets/avatars/lucia_avatar.png) android-apk/app/src/main/assets/avatars/lucia_avatar.png
           cmp <(unzip -p Backroom-1.1.84.apk assets/lucia_entity_overlay.png) android-apk/app/src/main/assets/lucia_entity_overlay.png
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/chest_overlay.png'
+          ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/fonts/OFL-Play.txt'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_bleed.webp'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_poison.webp'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_stun.webp'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_armor_break.webp'
-          ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_bleed.png'
-          ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_poison.png'
-          ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_stun.png'
-          ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_armor_break.png'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/hud/snapshot_frame.png'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/hud/action_plate.png'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/entity/hound.png'
