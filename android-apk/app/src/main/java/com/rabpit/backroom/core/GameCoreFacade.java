@@ -206,7 +206,8 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String storyDecisionPrefetchRequest(String stateJson, String recentStory) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
@@ -214,6 +215,13 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        return new JSONObject().put("needed", false).put("error", "stale_story_decision").toString();
+      }
       return storyCore.decisionPrefetchRequest(state, recentStory).toString();
     } catch (Exception e) {
       JSONObject output = new JSONObject();
@@ -226,7 +234,8 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String commitStoryDecisionPackage(
       String stateJson, String contextHash, String generatedPackageJson) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
@@ -234,6 +243,14 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        return response(false, state, "Story decision prefetch đã cũ.",
+            "story_decision_prefetch_stale", null);
+      }
       JSONObject generated = parseState(generatedPackageJson);
       storyCore.installDecisionPackage(state, contextHash, generated);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
