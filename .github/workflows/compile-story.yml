@@ -51,13 +51,22 @@ jobs:
       - name: Commit generated interactions
         run: |
           set -euo pipefail
+          GENERATED='android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json'
+          cp "$GENERATED" /tmp/level0.interactions.json
+          git fetch origin "${GITHUB_REF_NAME}"
+          git reset --hard "origin/${GITHUB_REF_NAME}"
+          cp /tmp/level0.interactions.json "$GENERATED"
+
+          # The branch may have advanced while the model was compiling. Validate again
+          # against the latest compiler/source before creating a generated commit.
+          python3 .github/scripts/compile-story.py --validate-generated
+
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json
+          git add "$GENERATED"
           if git diff --cached --quiet; then
             echo 'Story interactions are already current.'
           else
             git commit -m 'Compile Level 0 story interactions'
-            git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin HEAD:"${GITHUB_REF_NAME}"
           fi
