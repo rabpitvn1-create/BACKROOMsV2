@@ -5,8 +5,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -431,15 +432,15 @@ final class StoryCore {
     JSONObject outcomes = new JSONObject();
     List<JSONObject> publicChoices = new ArrayList<>();
     addOutcome(publicChoices, outcomes,
-        opaqueChoiceId(actualHash, decisionId, OUTCOME_CANON), canonText, OUTCOME_CANON, "");
+        opaqueChoiceId(), canonText, OUTCOME_CANON, "");
     addOutcome(publicChoices, outcomes,
-        opaqueChoiceId(actualHash, decisionId, OUTCOME_TRAP), trapText, OUTCOME_TRAP, trapReply);
+        opaqueChoiceId(), trapText, OUTCOME_TRAP, trapReply);
     addOutcome(publicChoices, outcomes,
-        opaqueChoiceId(actualHash, decisionId, OUTCOME_CONVERGE),
-        convergeText, OUTCOME_CONVERGE, convergeReply);
+        opaqueChoiceId(), convergeText, OUTCOME_CONVERGE, convergeReply);
 
-    publicChoices.sort(Comparator.comparing(choice ->
-        StoryRepository.sourceDigest(actualHash + "|" + choice.optString("id", ""))));
+    // Shuffle once when the private package is created, then persist that order.
+    // Reloads keep the same visible order; no public state can derive provenance.
+    Collections.shuffle(publicChoices);
 
     JSONArray choices = new JSONArray();
     for (JSONObject choice : publicChoices) choices.put(choice);
@@ -693,12 +694,8 @@ final class StoryCore {
     }
   }
 
-  private static String opaqueChoiceId(String contextHash, String decisionId, String outcomeType) {
-    String digest = StoryRepository.sourceDigest(
-        (contextHash == null ? "" : contextHash) + "|"
-            + (decisionId == null ? "" : decisionId) + "|"
-            + (outcomeType == null ? "" : outcomeType));
-    return "choice_" + (digest.length() >= 20 ? digest.substring(0, 20) : digest);
+  private static String opaqueChoiceId() {
+    return "choice_" + UUID.randomUUID().toString().replace("-", "");
   }
 
   private static void addOutcome(
