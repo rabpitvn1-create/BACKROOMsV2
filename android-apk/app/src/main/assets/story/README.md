@@ -1,569 +1,744 @@
-# BACKROOMsV2 — Authored Story Data
+# BACKROOMsV2 — Novelist-First Story Pipeline
 
-> **Status:** Architecture contract / story data specification.  
-> **Important:** The presence of this directory does **not** mean StoryCore, story-driven exits, scripted encounters, save migration, or route-streak replacement are already implemented in runtime code.
+> **Status:** Architecture contract for the future story pipeline.  
+> **Important:** This README describes the intended workflow. It does **not** mean the Story Compiler, StoryCore, generated story graph, story-driven exits, scripted encounters, save migration, or legacy route-streak replacement are already implemented in runtime code.
 
-## Purpose
+## Core principle
 
-This directory is the canonical home for **authored story content** used by BACKROOMsV2.
+**THE AUTHOR WRITES A NOVEL. THE SYSTEM TURNS IT INTO GAMEPLAY.**
+
+BACKROOMsV2 is designed for a **novelist-first workflow**.
+
+The author is not expected to be a game designer, programmer, narrative scripter, or JSON editor.
+
+The author should be able to write ordinary prose as a novel and provide that manuscript to the project. Technical story structures are derived afterward by tooling/AI and runtime code.
 
 The intended architecture is:
 
-**AUTHOR/STORY DATA → PLAYER A/B/C → CORE STATE/CONSEQUENCE → AI PERFORMANCE**
+~~~text
+NOVEL MANUSCRIPT
+      ↓
+STORY COMPILER / AI ANALYSIS
+      ↓
+GENERATED STORY STRUCTURE
+      ↓
+PLAYER INTERACTION
+      ↓
+CORE STATE / CONSEQUENCES
+      ↓
+AI PERFORMANCE
+~~~
 
-In plain terms:
+Short version:
 
-- the author decides what is actually allowed to happen in the story;
-- A/B/C choices drive real story progression;
-- Core systems own game state, consequences, mechanics, exits, encounters, and validation;
-- AI narrates and performs the current scene;
-- AI is **not** the primary story director.
-
-The goal is **AUTHORED GAME, GENERATIVE PERFORMANCE**.
-
----
-
-## What belongs here
-
-Put authored story data here, including:
-
-- Level story structure;
-- Chapters;
-- Story nodes/scenes;
-- authored narrative source;
-- required story facts/events;
-- forbidden reveals;
-- choice A/B/C definitions;
-- deterministic next-node links;
-- story flags;
-- important dialogue anchors;
-- snapshot bindings;
-- scripted encounter requests;
-- story conditions for making an exit ready.
-
-Do **not** use this directory as a replacement for:
-
-- world/Level canon;
-- character canon;
-- Entity registry or encounter rules;
-- combat mechanics;
-- inventory/item definitions;
-- live save state;
-- general AI style examples.
-
-Existing machine-readable knowledge remains under:
-
-`app/src/main/assets/knowledge/`
-
-The current runtime authority map is documented in:
-
-`android-apk/KNOWLEDGE_SOURCE_MAP.md`
-
-Story content must respect current world, character, Entity, Level, and live-save authority. Story files must not silently override them.
+**The novel is the creative source of truth. Generated game data is only a technical translation of it.**
 
 ---
 
-## Recommended directory layout
+## What the author is responsible for
 
-```text
+The author writes:
+
+- prose;
+- chapters;
+- scenes;
+- dialogue;
+- character behavior;
+- mysteries;
+- revelations;
+- emotional beats;
+- important events;
+- consequences;
+- the actual intended story.
+
+The author does **not** need to write:
+
+- StoryNode IDs;
+- JSON;
+- flags;
+- nextNode;
+- requiredFacts;
+- forbiddenReveals;
+- A/B/C metadata;
+- save-state fields;
+- encounter metadata;
+- LevelCore rules;
+- runtime graph logic.
+
+Those are technical responsibilities.
+
+Do not push implementation concerns back onto the novelist.
+
+---
+
+## Source of truth
+
+The authored manuscript is the primary story source.
+
+Recommended layout:
+
+~~~text
 story/
 ├── README.md
-├── story_manifest.json
-├── level_0/
-│   ├── chapter_01.json
-│   ├── chapter_02.json
+├── source/
+│   ├── level_0.md
+│   ├── level_1.md
 │   └── ...
-├── level_1/
-│   └── ...
-└── ...
-```
+└── generated/
+    ├── story_manifest.json
+    ├── level_0/
+    │   ├── chapter_01.story.json
+    │   ├── chapter_02.story.json
+    │   └── ...
+    └── ...
+~~~
 
-Prefer **one Chapter per file**.
+The exact generated layout may change when StoryCore is implemented, but the separation must remain:
 
-A Chapter may contain roughly 5,000–6,000 words of total authored source, but that does **not** mean a player receives 5,000–6,000 words in one turn.
+~~~text
+source/     = human-authored manuscript
+generated/  = machine-derived gameplay data
+~~~
 
-A Chapter is played across many StoryNodes/turns.
+Files under generated/ should be treated as rebuildable artifacts.
 
-Do not load or send an entire Chapter to the AI when only one current scene is needed.
+They must not become the place where the canonical story is manually rewritten.
 
 ---
 
-## Story manifest
+## How the author may write
 
-`story_manifest.json` is the index of available authored story content.
+The manuscript may be written as normal prose.
 
-Conceptual example:
+Example:
 
-```json
-{
-  "schemaVersion": 1,
-  "levels": {
-    "0": {
-      "startChapter": "L0_C01",
-      "chapters": [
-        "level_0/chapter_01.json",
-        "level_0/chapter_02.json"
-      ]
-    }
-  }
-}
-```
+~~~markdown
+# Level 0
 
-The manifest should identify files. It should not duplicate the full Chapter contents.
+## Chapter 1
+
+Cao Minh mở mắt.
+
+Ánh đèn huỳnh quang kéo dài trên trần nhà. Tiếng ù đều đặn
+len vào khoảng không tĩnh lặng đến mức khó phân biệt nó đang vang
+trong căn phòng hay bên trong đầu hắn.
+
+Hắn chống tay xuống lớp thảm ẩm và đứng dậy.
+
+...
+
+Cao Minh dừng lại trước ngã ba.
+
+Hành lang bên trái tối hơn hẳn. Bên phải, ánh đèn chớp tắt từng nhịp.
+Phía sau là con đường hắn vừa đi qua.
+~~~
+
+That is enough as authored source.
+
+The author does **not** have to add:
+
+~~~text
+A. Go left
+B. Go right
+C. Go back
+~~~
+
+The author also does not have to mark every StoryNode or gameplay transition.
+
+Chapter headings and scene headings are useful for readability, but the intended pipeline must not require the novelist to learn a custom scripting language.
 
 ---
 
-## Chapter structure
+## Whole-novel input is valid
 
-A Chapter should be a deterministic graph/state machine, not a single giant prose block.
+The system should support receiving a large manuscript and deriving structure from it.
 
-Conceptual example:
+For example, level_0.md may contain:
 
-```json
+~~~text
+Chapter 1
+Chapter 2
+Chapter 3
+...
+Chapter 10
+~~~
+
+The compiler may split it into technical Chapter/Scene units afterward.
+
+The author may also choose one Markdown file per Chapter for convenience, but that is an editorial preference, not a gameplay requirement.
+
+---
+
+## Story compilation
+
+The intended Story Compiler converts authored prose into runtime-friendly structure.
+
+Conceptually:
+
+~~~text
+manuscript
+→ detect Chapters
+→ detect scenes
+→ identify important story beats
+→ identify interactive opportunities
+→ derive gameplay choices where appropriate
+→ build deterministic story graph
+→ derive required facts
+→ derive forbidden reveals
+→ bind relevant characters
+→ bind snapshots where configured
+→ bind scripted encounters where justified
+→ produce generated story data
+→ validate graph
+~~~
+
+The compiler must preserve authorial intent.
+
+It is a translator, not a replacement author.
+
+---
+
+## A/B/C choices are generated, not authored by default
+
+The novelist does not need to write A/B/C.
+
+The compiler may derive choices from natural decision points already present or implied by the manuscript.
+
+Example authored prose:
+
+~~~text
+Cao Minh dừng trước ngã ba.
+
+Một hành lang bên trái chìm trong bóng tối.
+Bên phải, ánh đèn huỳnh quang chớp tắt liên tục.
+Hắn đứng im vài giây, lắng nghe.
+~~~
+
+Generated gameplay may become:
+
+~~~text
+A. Đi vào hành lang bên trái.
+B. Kiểm tra hành lang bên phải.
+C. Đứng lại và lắng nghe kỹ hơn.
+~~~
+
+These choices belong to generated game data, not necessarily to the manuscript.
+
+### Do not force choices everywhere
+
+If a scene does not contain a meaningful decision, do not fabricate three buttons merely to satisfy a format.
+
+Linear scenes are valid.
+
+Important dialogue may be linear.
+
+A mandatory story event may be linear.
+
+A/B/C should exist where interaction improves the experience.
+
+The game must not turn ordinary prose into a constant multiple-choice exam.
+
+---
+
+## Choice generation must not rewrite the plot
+
+Generated choices may vary:
+
+- approach;
+- order of investigation;
+- tone;
+- method;
+- minor tactical behavior;
+- roleplay expression.
+
+They must not casually invent major alternate plot branches unsupported by the authored story.
+
+If the manuscript requires an event to happen, choices may converge on that event.
+
+Example:
+
+~~~text
+A → Cao Minh opens the door directly
+B → Lucia checks the door first
+C → the party listens before opening it
+                    ↓
+        AUTHORED EVENT: the door opens
+~~~
+
+This preserves interactivity without surrendering plot control.
+
+---
+
+## Authorial truth versus generated freedom
+
+The compiler should separate story information into two broad categories.
+
+### Locked authored truth
+
+Things that must remain true:
+
+- major events;
+- discoveries;
+- deaths or survival;
+- important relationships;
+- mandatory dialogue information;
+- mystery boundaries;
+- character knowledge;
+- story consequences;
+- Level progression requirements.
+
+### Generative performance freedom
+
+Things AI may vary:
+
+- wording;
+- connective narration;
+- gestures;
+- atmosphere;
+- minor reactions;
+- incidental banter;
+- pacing within safe limits;
+- combat prose after mechanics are resolved.
+
+The AI performs the story.
+
+It does not own the story.
+
+---
+
+## Generated story data
+
+Generated files may contain technical structures such as:
+
+- Chapter IDs;
+- StoryNode IDs;
+- scene boundaries;
+- A/B/C definitions;
+- graph edges;
+- flags;
+- required facts;
+- forbidden reveals;
+- character-presence metadata;
+- snapshot references;
+- scripted encounter requests;
+- exit-readiness conditions.
+
+Conceptual generated example:
+
+~~~json
 {
-  "schemaVersion": 1,
-  "levelId": "0",
   "chapterId": "L0_C01",
-  "title": "Example Chapter",
+  "source": "../source/level_0.md",
   "startNode": "L0_C01_S001",
-  "nodes": []
-}
-```
-
-Recommended node IDs:
-
-```text
-L{LEVEL}_C{CHAPTER}_S{SCENE}
-```
-
-Examples:
-
-```text
-L0_C01_S001
-L0_C01_S002A
-L0_C01_S002B
-```
-
-IDs are save-facing identifiers. Once released and used by saves, do not rename them casually.
-
----
-
-## StoryNode
-
-A StoryNode represents one playable authored scene/state.
-
-Conceptual shape:
-
-```json
-{
-  "id": "L0_C01_S001",
-  "type": "story",
-  "snapshot": null,
-  "charactersPresent": ["cao_minh"],
-  "requiredFacts": [],
-  "forbiddenReveals": [],
-  "dialogueAnchors": [],
-  "narrativeSource": "",
-  "choices": {
-    "A": {
-      "text": "",
-      "setFlags": [],
-      "clearFlags": [],
-      "nextNode": ""
-    },
-    "B": {
-      "text": "",
-      "setFlags": [],
-      "clearFlags": [],
-      "nextNode": ""
-    },
-    "C": {
-      "text": "",
-      "setFlags": [],
-      "clearFlags": [],
-      "nextNode": ""
+  "nodes": {
+    "L0_C01_S001": {
+      "choices": {
+        "A": {
+          "text": "Đi vào hành lang bên trái",
+          "nextNode": "L0_C01_S002A"
+        },
+        "B": {
+          "text": "Kiểm tra hành lang bên phải",
+          "nextNode": "L0_C01_S002B"
+        },
+        "C": {
+          "text": "Đứng lại và lắng nghe",
+          "nextNode": "L0_C01_S002C"
+        }
+      }
     }
   }
 }
-```
+~~~
 
-This is a design contract, not a guarantee that every field above is already supported by runtime code.
+This file is a technical artifact.
 
-Before implementing the loader, verify the schema against the actual StoryCore implementation and tests.
-
----
-
-## Meaning of important fields
-
-### `narrativeSource`
-
-Authored source for the scene.
-
-It defines what the scene is actually about and supplies material for AI narration.
-
-It is **not automatically a verbatim script** that the AI must repeat word-for-word.
-
-Important locked dialogue or text that must remain exact should use an explicit locked mechanism rather than relying on the AI to preserve wording.
-
-### `requiredFacts`
-
-Facts/events that the generated scene must preserve.
-
-Examples:
-
-- an object must be discovered;
-- a character must notice a specific clue;
-- a door must remain closed;
-- an injury must persist;
-- a specific story event must occur.
-
-AI may change presentation, not the truth of these facts.
-
-### `forbiddenReveals`
-
-Information that must not be revealed in this node.
-
-This protects mysteries, character knowledge boundaries, and future story beats.
-
-Do not rely only on the prompt for critical state protection. Core validation should reject or repair invalid output where practical.
-
-### `charactersPresent`
-
-Characters actually present in the scene.
-
-Presence does not imply knowledge.
-
-Character knowledge must still respect current canon and live continuity.
-
-### `dialogueAnchors`
-
-Important dialogue facts, beats, or locked disclosures.
-
-Use these for information that must be communicated without requiring every connecting sentence to be authored.
-
-### `snapshot`
-
-Optional visual anchor for a StoryNode or major scene.
-
-A snapshot belongs to the scene, not mechanically to "turn number X".
-
-### `choices`
-
-A/B/C are the authoritative progression inputs.
-
-A choice may:
-
-- set flags;
-- clear flags;
-- apply consequences through Core;
-- request a scripted event;
-- choose the next StoryNode.
-
-The AI must not choose the next StoryNode on its own.
+It is not the novel.
 
 ---
 
-## A/B/C versus free text
+## Generated files must not become a second source of truth
 
-### A/B/C
+Avoid copying and manually maintaining the same prose in both Markdown and JSON.
 
-A/B/C changes real story/world progression.
+Preferred rule:
 
-Expected flow:
+~~~text
+SOURCE MANUSCRIPT = canonical creative content
+GENERATED JSON     = derived runtime metadata
+~~~
 
-```text
-current StoryNode
-+ selected A/B/C
-→ Core validates choice
-→ Core applies consequences
-→ Core determines next StoryNode
-→ AI receives the resulting scene packet
-→ AI narrates the scene
-```
+If the manuscript changes, generated data should be regenerated and revalidated.
 
-### Free text
+Generated files should eventually carry a clear warning such as:
 
-Free text is primarily for:
+~~~text
+DO NOT EDIT MANUALLY.
+Generated from authored story source.
+~~~
+
+This prevents the manuscript and runtime graph from slowly becoming two contradictory versions of the same story.
+
+---
+
+## AI narration contract
+
+At runtime, AI should receive only the material needed for the current scene.
+
+Conceptually:
+
+~~~text
+CURRENT AUTHORED SCENE
+PLAYER ACTION / CHOICE
+LOCKED STORY FACTS
+FORBIDDEN REVEALS
+RELEVANT LIVE STATE
+RELEVANT CHARACTER DATA
+RELEVANT LEVEL DATA
+RECENT CONTINUITY
+TASK: PERFORM / NARRATE THIS SCENE
+~~~
+
+Do not send the entire novel or an entire 5–6k-word Chapter every turn when a smaller scene packet is sufficient.
+
+AI may narrate and perform.
+
+AI must not independently:
+
+- rewrite major authored events;
+- choose the next authoritative StoryNode;
+- reveal future mysteries;
+- invent character knowledge;
+- unlock a Level transition;
+- create authoritative loot;
+- mutate HP/status/game state;
+- spawn an authoritative Entity;
+- override LevelCore;
+- invent canon because source data is missing.
+
+---
+
+## Free-text player input
+
+Free text remains useful for:
 
 - roleplay;
 - talking to characters;
 - asking questions;
-- inspecting;
+- inspecting surroundings;
+- expressing intent;
 - flavor interaction.
 
-Free text should not silently advance a StoryNode unless a future explicit rule says otherwise.
+Free text should not automatically destroy authored progression.
 
-Example:
-
-```text
-A. Open the door
-B. Go back
-C. Wait
-```
-
-The player may type:
-
-```text
-Cao Minh looks at Lucia and asks what she thinks.
-```
-
-AI may perform the conversation, but the progression node remains unchanged until a valid progression action is committed.
+The runtime may allow free-form interaction inside the current scene while keeping the main story state anchored until a valid progression action occurs.
 
 ---
 
-## AI contract
+## Character knowledge
 
-Normal story narration should use a compact scene packet.
+The manuscript may contain information that the reader or author knows but a character does not.
 
-Conceptually:
+The compiler and runtime must preserve this distinction.
 
-```text
-CURRENT CHAPTER / NODE
-PLAYER CHOICE
-REQUIRED EVENTS
-FORBIDDEN REVEALS
-RELEVANT STORY FLAGS
-RECENT CONTINUITY
-RELEVANT CHARACTER DATA
-RELEVANT LEVEL DATA
-TASK: NARRATE THIS SCENE
-```
+A character may only act on knowledge legitimately available through:
 
-Do not send the full Level story or full 5–6k-word Chapter on every turn.
+- prior established knowledge;
+- direct observation;
+- dialogue;
+- discovered evidence;
+- live continuity;
+- current canon.
 
-The AI may perform:
-
-- narration;
-- atmosphere;
-- gestures;
-- minor dialogue;
-- character reactions;
-- banter;
-- combat prose after Core resolves mechanics.
-
-The AI must not independently:
-
-- pick the next StoryNode;
-- unlock a Level transition;
-- create authoritative loot;
-- mutate HP/status/state;
-- spawn an Entity;
-- override LevelCore;
-- reveal forbidden facts;
-- invent canon to repair missing data.
+Do not let AI convert author knowledge into character omniscience.
 
 ---
 
-## World and character knowledge boundaries
+## Relationship with existing canon
 
-Authored story does not grant characters omniscience.
+This directory is for authored story, not for replacing other authoritative systems.
 
-A fact existing in story data means the **author/runtime** knows it. It does not mean every character knows it.
+Existing machine-readable knowledge remains under:
 
-Every disclosure must respect:
+app/src/main/assets/knowledge/
 
-- what the character previously knew;
-- what they directly observed;
-- what another character told them;
-- what live continuity has established;
-- what current canon permits.
+The current runtime authority map is documented in:
 
-If a StoryNode requires a character to know something new, the story must provide a legitimate way for that knowledge to be acquired.
+android-apk/KNOWLEDGE_SOURCE_MAP.md
+
+Story compilation must respect current:
+
+- character canon;
+- world canon;
+- Level canon;
+- Entity rules;
+- item definitions;
+- live save state;
+- combat state.
+
+The manuscript may intentionally introduce new story facts, but integration must be explicit rather than silently overwriting unrelated runtime canon.
 
 ---
 
 ## Level progression authority
 
-Story data may decide **when the story is ready for an exit**.
+The authored story may determine when the narrative requirement for leaving an area has been satisfied.
 
-It must not directly bypass LevelCore.
+It must not bypass LevelCore.
 
-Intended authority:
+Intended flow:
 
-```text
-Story progression
+~~~text
+authored story progression
 → story requirement completed
 → EXIT_READY
-→ LevelCore determines valid destinations
-→ player crosses
+→ LevelCore determines valid destination
+→ player actually crosses
 → LevelCore validates transition
 → next Level
-```
+~~~
 
-Existing anti-skip and Level transition validation remain authoritative.
+Story controls **when the plot permits leaving**.
 
-Never encode a StoryNode as a backdoor that teleports the player to an otherwise invalid Level.
+LevelCore controls **where the game actually permits going**.
+
+AI only narrates the event.
 
 ---
 
 ## Entity encounters
 
-There are two conceptually different encounter types.
+Random roaming encounters and scripted story encounters remain separate concepts.
 
-### Roaming encounter
+### Roaming encounters
 
 Owned by EntityCore.
 
-Random roaming encounters are gameplay interrupts, not required authored story beats.
+They may interrupt story gameplay when pacing rules allow it.
 
-Expected flow:
+After resolution, story progression resumes with persistent mechanical consequences.
 
-```text
-StoryNode active
-→ roaming encounter starts
-→ story is paused
-→ encounter/combat resolves
-→ HP/status/loot/time consequences persist
-→ same story flow resumes
-```
+### Scripted story encounters
 
-### Scripted story encounter
+A story compiler may derive or register a scripted encounter when the manuscript clearly requires one.
 
-Requested by authored story because the plot requires it.
+Story data requests it.
 
-Story data may request a specific scripted encounter, but EntityCore should remain responsible for actually creating and owning the encounter.
+EntityCore owns the actual authoritative encounter.
 
-Do not ask AI prose to "spawn" an authoritative Entity.
+AI prose does not spawn Entities by itself.
 
 ---
 
-## Encounter pacing
+## Pacing protection
 
-Random encounters must eventually support pacing protection.
+The future runtime should be able to suppress random encounters during sensitive authored scenes, for example:
 
-Examples of story states where roaming may need suppression:
-
-```text
+~~~text
 KEY_DIALOGUE
 KEY_STORY_SCENE
 SCRIPTED_ENCOUNTER
 POST_COMBAT_GRACE
-```
+~~~
 
-A random encounter should not repeatedly interrupt important authored dialogue or immediately chain combat into combat.
+A roaming encounter should not repeatedly destroy the pacing of an important conversation or authored reveal.
 
-These rules belong to runtime policy, not prose.
+This is runtime policy, not something the novelist should have to micromanage in prose.
+
+---
+
+## Snapshots
+
+Snapshots are visual anchors for important scenes.
+
+The novelist should not be required to think in terms of turn numbers.
+
+The compiler/runtime may bind available snapshots to suitable scenes afterward.
+
+Snapshot metadata is technical data.
+
+The prose remains the authored source.
 
 ---
 
 ## Save compatibility
 
-StoryNode IDs, Chapter IDs, flags, and schema versions may become persistent save data.
+Generated Chapter IDs, StoryNode IDs, flags, and schema versions may become save-facing data.
 
-Therefore:
+Therefore the implementation must eventually support:
 
-- use stable IDs;
-- include `schemaVersion`;
-- do not rename released IDs without migration;
-- do not delete a released node if an existing save may point to it unless a migration/fallback exists;
-- validate missing/corrupt story state safely;
-- preserve backward compatibility with older saves.
+- stable generated identifiers;
+- schema versioning;
+- save migration;
+- missing-node recovery;
+- safe fallback behavior;
+- backward compatibility with older saves.
 
-Older saves may contain legacy route/streak state.
+Older saves may still contain legacy route/streak state.
 
-Do not assume legacy fields have disappeared merely because story-driven progression is introduced.
+Do not delete or reinterpret legacy fields merely because the novelist-first pipeline is introduced.
 
-Any removal of hidden route streak must happen only after migration and regression coverage are ready.
-
----
-
-## Adding a new Level
-
-When adding a Level later:
-
-1. create `story/level_X/`;
-2. add Chapter files;
-3. register them in `story_manifest.json`;
-4. use stable Level/Chapter/Node IDs;
-5. verify all referenced characters, snapshots, flags, encounters, and destination logic exist;
-6. verify story facts against current canon;
-7. test every A/B/C edge;
-8. test save/resume from representative nodes;
-9. test roaming interruption and resume;
-10. test Level transition validation.
-
-Do not copy an old Level and blindly rename IDs. That is how graph corruption acquires a family tree.
+Migration must be explicit and tested.
 
 ---
 
-## Adding a new Chapter
+## Regeneration safety
 
-Before merging a Chapter:
+Once generated story data becomes part of released saves, regeneration cannot blindly renumber every node.
 
-- every node ID must be unique;
-- every non-terminal choice must resolve to a valid node;
-- unreachable nodes should be intentional;
-- required facts must not contradict current canon;
-- forbidden reveals must cover important future mysteries;
-- character presence and knowledge must be valid;
-- snapshots must exist if referenced;
-- scripted encounters must reference supported runtime definitions;
-- terminal nodes must define the intended Chapter/Level continuation;
-- tests should detect broken links.
+The compiler will need stable identity rules.
+
+Possible future strategies include:
+
+- stable source anchors;
+- persistent generated IDs;
+- content-independent scene keys;
+- migration maps when structural edits occur.
+
+The exact mechanism must be chosen from the actual implementation.
+
+Do not invent one in content files before StoryCore exists.
+
+---
+
+## Expected author workflow
+
+The intended human workflow is deliberately simple:
+
+~~~text
+1. Write the novel.
+2. Put the manuscript in story/source/.
+3. Run the story compilation pipeline.
+4. Review important generated choices/branches if needed.
+5. Validate.
+6. Build the game.
+~~~
+
+The author should not have to manually maintain generated JSON after every prose edit.
+
+---
+
+## Expected technical workflow
+
+For developers or AI agents working on the pipeline:
+
+~~~text
+Inspect manuscript
+→ parse structure
+→ derive gameplay graph
+→ preserve authored truth
+→ generate runtime metadata
+→ validate references
+→ run regression tests
+→ preserve save compatibility
+~~~
+
+Do not make the novelist manually solve technical problems that the pipeline can solve deterministically.
+
+---
+
+## Future automation
+
+The target experience may eventually be exposed as a command such as:
+
+~~~text
+./gradlew compileStory
+~~~
+
+or an equivalent build/tooling command.
+
+A future CI flow may look like:
+
+~~~text
+story/source/*.md changed
+→ parse manuscript
+→ compile story
+→ validate story graph
+→ validate references
+→ run tests
+→ produce generated story data
+~~~
+
+This is a target architecture, not a statement that such tooling currently exists.
 
 ---
 
 ## Validation requirements
 
-Story data should eventually be validated automatically in CI.
+Generated story data should eventually be validated automatically.
 
 At minimum validate:
 
-- valid JSON;
-- supported `schemaVersion`;
-- unique Level/Chapter/Node IDs;
-- valid `startNode`;
-- valid choice targets;
-- no dangling node references;
+- source files can be read;
+- generated JSON is valid;
+- supported schema version;
+- unique Chapter/StoryNode IDs;
+- valid start node;
+- valid graph edges;
+- no dangling choice targets;
+- valid character references;
 - valid snapshot references;
-- valid character IDs;
-- valid scripted encounter IDs;
+- valid scripted encounter references;
 - valid Level references;
 - safe terminal nodes;
-- no duplicate flags where duplicates are invalid.
+- preservation of required authored events;
+- save compatibility where IDs already exist.
 
-Runtime must also fail safely if story data is malformed.
+Compiler uncertainty should be surfaced instead of silently inventing major story logic.
 
 ---
 
 ## Implementation order
 
-Do not rewrite the whole game at once.
+Do not rewrite the entire game in one pass.
 
 Preferred order:
 
-1. story schema;
-2. story manifest;
-3. StoryState save model;
-4. loader/repository;
-5. deterministic StoryNode + A/B/C transitions;
-6. compact AI scene packet;
-7. snapshot binding;
-8. dialogue/relationship state;
-9. story-driven EXIT_READY;
-10. keep LevelCore transition authority;
-11. scripted Entity API;
-12. roaming suppression/grace;
-13. route-streak retirement only after regression confidence;
-14. old-save migration;
-15. tests + CI + APK verification.
+1. lock the novelist-first source format;
+2. create source/generated directory boundaries;
+3. define generated schema;
+4. implement parser/compiler;
+5. add graph validation;
+6. add StoryState save model;
+7. add loader/repository;
+8. add deterministic progression;
+9. generate compact AI scene packets;
+10. bind snapshots;
+11. add dialogue/relationship continuity support;
+12. integrate story-driven EXIT_READY;
+13. preserve LevelCore transition authority;
+14. add scripted Entity API;
+15. add roaming suppression/grace;
+16. migrate legacy progression only after regression confidence;
+17. add old-save migration;
+18. add CI and APK verification.
 
 ---
 
-## Current warning for future contributors and AI agents
+## Warning for future contributors and AI agents
 
-**Do not infer implementation from this README.**
+**Do not assume the novelist should write game data.**
 
-Before modifying story runtime:
+If a proposed workflow requires the author to manually create StoryNodes, flags, graph edges, JSON, or A/B/C metadata for ordinary story writing, stop and reconsider the design.
+
+The project requirement is:
+
+> **A novelist should be able to provide prose, and the technical pipeline should do the conversion work.**
+
+Also:
+
+**Do not infer current implementation from this README.**
+
+Before changing runtime code:
 
 1. inspect repository HEAD;
 2. trace current save/state flow;
-3. inspect choice handling;
+3. inspect current choice handling;
 4. inspect LevelCore transition validation;
 5. inspect EntityCore/combat ownership;
 6. inspect tests;
 7. make the smallest compatible change.
 
-This document describes the intended architecture and data contract.
+This README defines the intended author experience and architecture.
 
-Actual code at repository HEAD is the source of truth for what is currently implemented.
+Actual repository HEAD remains the source of truth for what is currently implemented.
