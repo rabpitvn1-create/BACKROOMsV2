@@ -96,7 +96,7 @@ public class GmNarrativePacketTest {
         "");
 
     assertTrue(packet.contains("STORY CORE:"));
-    assertTrue(packet.contains("No compiled manuscript scene is bound yet"));
+    assertTrue(packet.contains("No authored manuscript chapter is currently bound"));
     assertTrue(packet.contains("authored Story state"));
   }
 
