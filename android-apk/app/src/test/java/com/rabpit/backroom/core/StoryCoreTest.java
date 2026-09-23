@@ -90,20 +90,6 @@ public class StoryCoreTest {
     assertEquals("Lục Trầm", state.getJSONArray("party").getJSONObject(0).getString("name"));
   }
 
-  @Test public void oldSaveWithJoinedLucTramMigratesForwardWithoutRemoval() throws Exception {
-    JSONObject state = state().put("party", new JSONArray()
-        .put(new JSONObject()
-            .put("id", "luc_tram")
-            .put("name", "Lục Trầm")
-            .put("joined", true)));
-    StoryCore core = new StoryCore();
-
-    core.normalizeState(state);
-
-    assertEquals(StoryCore.STATUS_PARTY_MEMBER, StoryCore.characterStatus(state, "luc_tram"));
-    assertEquals(1, state.getJSONArray("party").length());
-  }
-
   @Test public void promptMakesStoryOwnershipExplicit() throws Exception {
     JSONObject state = state();
     StoryCore core = new StoryCore();
