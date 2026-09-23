@@ -103,6 +103,8 @@ public class StoryRepositoryTest {
 
   private static JSONObject deterministicAlternates() throws Exception {
     return new JSONObject()
+        .put("canon", new JSONObject()
+            .put("text", "Thực hiện hành động dẫn sang diễn biến kế tiếp"))
         .put("trap", new JSONObject()
             .put("text", "Dừng lại quan sát một chi tiết khác trong khu vực")
             .put("reply", "Không gian quanh Cao Minh khép lại theo một nhịp khó nhận ra. Những dấu hiệu quen thuộc lại trở về đúng vị trí trước đó."))
@@ -153,31 +155,11 @@ public class StoryRepositoryTest {
     int delivered = 0;
     int compiledDecisions = 0;
 
-    while (core.hasPendingAuthoredStory(state)) {
-      StoryCore.AuthoredTurn turn =
-          core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-      if (turn == null) break;
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    while (turn != null) {
       delivered++;
       if ("cutaway".equals(turn.visibility)) cutawayChapters.add(turn.chapterId);
-
-      if (core.awaitingDecision(state)) {
-        compiledDecisions++;
-        assertEquals(StoryRepository.MODE_DECISION, turn.mode);
-        assertTrue(core.decisionNeedsPrefetch(state));
-        JSONObject request = core.decisionPrefetchRequest(state, "");
-        assertTrue(request.getBoolean("needed"));
-        core.installDecisionPackage(
-            state, request.getString("contextHash"), deterministicAlternates());
-        assertTrue(core.decisionReady(state));
-        String canonId = canonChoiceId(state);
-        assertFalse(canonId.isEmpty());
-        StoryCore.DecisionResolution resolution =
-            core.resolveDecision(state, canonId, characterCore);
-        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
-        delivered++;
-        turn = resolution.authoredTurn;
-        assertTrue(turn != null);
-      }
 
       String lucStatus = StoryCore.characterStatus(state, "luc_tram");
       if (firstParallelChapter.isEmpty() && StoryCore.STATUS_PARALLEL.equals(lucStatus)) {
@@ -206,13 +188,33 @@ public class StoryRepositoryTest {
         }
       }
 
-      state.put("turn", state.optInt("turn", 1) + 1);
+      if (core.awaitingDecision(state)) {
+        compiledDecisions++;
+        assertEquals(StoryRepository.MODE_DECISION, turn.mode);
+        assertTrue(core.decisionNeedsPrefetch(state));
+        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue(request.getBoolean("needed"));
+        core.installDecisionPackage(
+            state, request.getString("contextHash"), deterministicAlternates());
+        assertTrue(core.decisionReady(state));
+        String canonId = canonChoiceId(state);
+        assertFalse(canonId.isEmpty());
+        StoryCore.DecisionResolution resolution =
+            core.resolveDecision(state, canonId, characterCore);
+        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+        assertTrue(core.hasPendingStoryAdvance(state));
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advancePendingTurn(state, characterCore);
+      } else {
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+      }
+
       assertTrue("Story loop exceeded safety bound", delivered < 1000);
     }
 
     assertTrue("No authored segments were delivered", delivered > 30);
-    assertTrue("Compiler produced no story decision contracts", compiledDecisions > 0);
-    assertTrue("Compiler exceeded the one-per-non-cutaway-chapter ceiling", compiledDecisions <= 26);
+    assertTrue("Every player-controlled turn should be compiled as a decision", compiledDecisions > 100);
     assertEquals(new LinkedHashSet<>(java.util.Arrays.asList(
         "L0_C03", "L0_C05", "L0_C07", "L0_C09")), cutawayChapters);
     assertEquals("L0_C03", firstParallelChapter);
@@ -262,7 +264,7 @@ public class StoryRepositoryTest {
 
     String digest = StoryRepository.sourceDigest(source);
     String decisions = "{"
-        + "\"schemaVersion\":2,"
+        + "\"schemaVersion\":3,"
         + "\"sourceRevision\":\"digest-test\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
@@ -271,7 +273,6 @@ public class StoryRepositoryTest {
         + "\"L0_C01_P001\":{"
         + "\"mode\":\"DECISION\","
         + "\"decisionContract\":{"
-        + "\"canonChoiceText\":\"Tiến theo dấu vừa nhận ra\","
         + "\"loopAnchor\":\"L0_C01_P001\","
         + "\"decisionGuard\":\"Không thay đổi sự kiện kế tiếp.\""
         + "}},"
@@ -283,8 +284,8 @@ public class StoryRepositoryTest {
     StoryRepository fresh = StoryRepository.fromText(metadata, sources, decisions);
     StoryRepository.Segment freshSegment = fresh.segment("L0_C01", 0);
     assertEquals(StoryRepository.MODE_DECISION, freshSegment.mode);
-    assertEquals("Tiến theo dấu vừa nhận ra",
-        freshSegment.decisionContract.getString("canonChoiceText"));
+    assertEquals("L0_C01_P001",
+        freshSegment.decisionContract.getString("loopAnchor"));
 
     sources.put(sourcePath, source + "\n\nĐã sửa bản thảo.");
     StoryRepository stale = StoryRepository.fromText(metadata, sources, decisions);

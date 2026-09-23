@@ -60,6 +60,14 @@ public final class GameCoreFacade implements AutoCloseable {
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
+      if (storyCore.awaitingEntityAttack(legacy)) {
+        JSONObject result = deepCopy(legacy);
+        String reply = "Encounter cốt truyện đang chờ. Chỉ có thể chọn Tấn công.";
+        persist(result);
+        return response(true, result, "story_entity_attack_required",
+            "story_entity_attack_required", reply);
+      }
+
       if (storyCore.awaitingDecision(legacy)) {
         JSONObject result = deepCopy(legacy);
         String reply = storyCore.decisionReady(legacy)
@@ -288,17 +296,101 @@ public final class GameCoreFacade implements AutoCloseable {
       characterProgressionCore.applyExplorerTurnRecovery(state);
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
-      if (resolution.looped) storyCore.refreshLoopDecisionContext(state);
       appendDecisionLog(state, resolution);
+
+      // Random Entity roll belongs to the END of the resolved story turn.
+      // The next authored turn is forbidden from rendering until this gate is clear.
+      entityCore.prepareEncounter(state);
+      String encounter = encounterKey(state);
+      if (CombatChoiceEngine.isKnownEntity(encounter)) {
+        CombatChoiceEngine.start(state, encounter, lastGmLogIndex(state));
+      } else if (storyCore.hasPendingStoryAdvance(state)) {
+        advancePendingStorySequence(state);
+      } else if (resolution.looped) {
+        storyCore.refreshLoopDecisionContext(state);
+      }
+
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
       return response(true, state, null,
-          resolution.looped ? "story_decision_looped" : "story_decision_committed",
+          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat"
+              : (resolution.looped ? "story_decision_looped" : "story_turn_committed"),
           resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_rejected", null);
     }
   }
+
+  public synchronized String processStoryEntityAttack(String stateJson) {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+
+      String entityKey = storyCore.consumeEntityAttack(state);
+      entityCore.prepareAuthoredEncounter(state, entityKey);
+
+      JSONArray log = state.optJSONArray("log");
+      if (log == null) log = new JSONArray();
+      log.put(new JSONObject().put("role", "player").put("text", "Tấn công"));
+      state.put("log", log);
+
+      CombatChoiceEngine.start(state, entityKey, lastGmLogIndex(state));
+      if (!CombatChoiceEngine.isActive(state)) {
+        throw new IllegalStateException("Không thể bắt đầu authored Entity combat: " + entityKey);
+      }
+
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "story_entity_combat_started", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_entity_attack_rejected", null);
+    }
+  }
+
+  public synchronized String processCombatResolution(String stateJson) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      restoreHiddenDecisionPackage(submitted, state);
+      // Combat dice/participants live on the submitted state. Keep Core-owned story
+      // state from persisted storage, but apply the submitted combat snapshot.
+      if (submitted.has("combat")) state.put("combat", submitted.get("combat"));
+      if (submitted.has("party")) state.put("party", submitted.get("party"));
+      if (submitted.has("player")) state.put("player", submitted.get("player"));
+
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+
+      boolean wasActive = CombatChoiceEngine.isActive(state);
+      CombatChoiceEngine.resolveFinalized(state);
+      CombatChoiceEngine.normalizeTerminalEncounter(state);
+      boolean active = CombatChoiceEngine.isActive(state);
+      JSONObject combat = state.optJSONObject("combat");
+      String outcome = combat == null ? "" : combat.optString("outcome", "");
+
+      if (wasActive && !active && "victory".equals(outcome)
+          && storyCore.hasPendingStoryAdvance(state)) {
+        advancePendingStorySequence(state);
+      }
+
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null,
+          active ? "combat_turn_resolved" : "combat_finished", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "combat_resolve_rejected", null);
+    }
+  }
+
 
   public synchronized String levelPromptContext(String stateJson) {
     return levelPromptContext(stateJson, "");
@@ -401,9 +493,10 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
-      if (storyCore.awaitingDecision(state)) {
+      if (storyCore.awaitingDecision(state) || storyCore.awaitingEntityAttack(state)
+          || storyCore.hasPendingStoryAdvance(state)) {
         return response(false, state,
-            "Hãy xử lý điểm quyết định cốt truyện trước khi thay đổi Inventory.",
+            "Hãy xử lý lượt cốt truyện hiện tại trước khi thay đổi Inventory.",
             "story_decision_locked", null);
       }
       String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
@@ -422,9 +515,10 @@ public final class GameCoreFacade implements AutoCloseable {
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
-      if (storyCore.awaitingDecision(state)) {
+      if (storyCore.awaitingDecision(state) || storyCore.awaitingEntityAttack(state)
+          || storyCore.hasPendingStoryAdvance(state)) {
         return response(false, state,
-            "Hãy xử lý điểm quyết định cốt truyện trước khi nâng chỉ số.",
+            "Hãy xử lý lượt cốt truyện hiện tại trước khi nâng chỉ số.",
             "story_decision_locked", null);
       }
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
@@ -611,21 +705,58 @@ public final class GameCoreFacade implements AutoCloseable {
     state.put("log", log);
   }
 
+  private String encounterKey(JSONObject state) {
+    JSONObject flags = state == null ? null : state.optJSONObject("flags");
+    return flags == null ? "" : flags.optString("entityEncounterKey", "").trim().toLowerCase(Locale.ROOT);
+  }
+
+  private int lastGmLogIndex(JSONObject state) {
+    JSONArray log = state == null ? null : state.optJSONArray("log");
+    if (log == null || log.length() == 0) return 0;
+    for (int i = log.length() - 1; i >= 0; i--) {
+      JSONObject entry = log.optJSONObject(i);
+      if (entry != null && !"player".equals(entry.optString("role"))) return i;
+    }
+    return Math.max(0, log.length() - 1);
+  }
+
+  private void advancePendingStorySequence(JSONObject state) throws Exception {
+    StoryCore.AuthoredTurn authored = storyCore.advancePendingTurn(state, characterEncounterCore);
+    int safety = 0;
+    while (authored != null && safety++ < 64) {
+      appendStoryContinuationLog(state, authored);
+      if (!"cutaway".equals(authored.visibility)) return;
+      authored = storyCore.advanceAndRender(
+          state, StoryCore.ADVANCE_ACTION_VI, characterEncounterCore);
+    }
+    if (safety >= 64) throw new IllegalStateException("Cutaway auto-advance exceeded safety bound.");
+  }
+
+  private void appendStoryContinuationLog(
+      JSONObject state, StoryCore.AuthoredTurn authored) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    JSONObject gm = new JSONObject()
+        .put("role", "gm")
+        .put("text", authored.reply)
+        .put("storyThread", authored.thread)
+        .put("storyVisibility", authored.visibility)
+        .put("storyChapter", authored.chapterId)
+        .put("storySegmentId", authored.segmentId)
+        .put("storyMode", authored.mode)
+        .put("authored", true);
+    log.put(gm);
+    state.put("log", log);
+  }
+
   private void appendDecisionLog(
       JSONObject state, StoryCore.DecisionResolution resolution) throws Exception {
     JSONArray log = state.optJSONArray("log");
     if (log == null) log = new JSONArray();
     log.put(new JSONObject().put("role", "player").put("text", resolution.visibleChoice));
 
-    JSONObject gm = new JSONObject().put("role", "gm").put("text", resolution.reply);
-    if (resolution.authoredTurn != null) {
-      gm.put("storyThread", resolution.authoredTurn.thread)
-          .put("storyVisibility", resolution.authoredTurn.visibility)
-          .put("storyChapter", resolution.authoredTurn.chapterId)
-          .put("storySegmentId", resolution.authoredTurn.segmentId)
-          .put("storyMode", resolution.authoredTurn.mode)
-          .put("authored", true);
-    } else {
+    if (resolution.reply != null && !resolution.reply.trim().isEmpty()) {
+      JSONObject gm = new JSONObject().put("role", "gm").put("text", resolution.reply);
       JSONObject metadata = storyCore.logMetadata(state);
       java.util.Iterator<String> keys = metadata.keys();
       while (keys.hasNext()) {
@@ -633,8 +764,8 @@ public final class GameCoreFacade implements AutoCloseable {
         gm.put(key, metadata.get(key));
       }
       gm.put("authored", false);
+      log.put(gm);
     }
-    log.put(gm);
     state.put("log", log);
   }
 

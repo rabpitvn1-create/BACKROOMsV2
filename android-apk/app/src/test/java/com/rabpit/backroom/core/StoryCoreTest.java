@@ -53,7 +53,7 @@ public class StoryCoreTest {
         + "}]}";
     String digest = StoryRepository.sourceDigest(source);
     String decisions = "{"
-        + "\"schemaVersion\":2,"
+        + "\"schemaVersion\":3,"
         + "\"sourceRevision\":\"decision-r2\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
@@ -62,9 +62,59 @@ public class StoryCoreTest {
         + "\"L0_C01_P001\":{"
         + "\"mode\":\"DECISION\","
         + "\"decisionContract\":{"
-        + "\"canonChoiceText\":\"Bám theo dấu cũ rồi bước tiếp\","
         + "\"loopAnchor\":\"L0_C01_P001\","
         + "\"decisionGuard\":\"Không thay đổi authored plot.\""
+        + "}},"
+        + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
+        + "}}}}";
+    Map<String, String> sources = new LinkedHashMap<>();
+    sources.put(sourcePath, source);
+    return StoryRepository.fromText(metadata, sources, decisions);
+  }
+
+
+  private static StoryRepository entityGateFixtureRepository() {
+    String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
+    StringBuilder encounter = new StringBuilder(
+        "Cao Minh khựng lại khi một Hound chắn ngang hành lang.");
+    while (encounter.length() < 920) {
+      encounter.append(" Tiếng móng cào thảm vang khô, con Entity vẫn giữ nguyên vị trí đối diện hắn.");
+    }
+    String source = "# Level 0 — Chương 01: Encounter\n\n"
+        + encounter + "\n\n"
+        + "Sau trận chiến, hành lang phía trước lại chìm trong tiếng ù đều đặn.";
+    String metadata = "{"
+        + "\"schemaVersion\":1,"
+        + "\"sourceRevision\":\"entity-gate-r1\","
+        + "\"segmentTargetChars\":800,"
+        + "\"segmentMaxChars\":1200,"
+        + "\"startChapter\":\"L0_C01\","
+        + "\"chapters\":[{"
+        + "\"id\":\"L0_C01\","
+        + "\"title\":\"Encounter\","
+        + "\"source\":\"" + sourcePath + "\","
+        + "\"thread\":\"cao_minh\","
+        + "\"visibility\":\"player\","
+        + "\"nextChapter\":\"\","
+        + "\"eventsOnEnter\":[],"
+        + "\"eventsOnExit\":[],"
+        + "\"requiredFacts\":[],"
+        + "\"forbiddenClaims\":[]"
+        + "}]}";
+    String digest = StoryRepository.sourceDigest(source);
+    String decisions = "{"
+        + "\"schemaVersion\":3,"
+        + "\"sourceRevision\":\"entity-gate-r1\","
+        + "\"chapters\":{"
+        + "\"L0_C01\":{"
+        + "\"sourceDigest\":\"" + digest + "\","
+        + "\"segments\":{"
+        + "\"L0_C01_P001\":{"
+        + "\"mode\":\"ENTITY_GATE\","
+        + "\"decisionContract\":{"
+        + "\"entityKey\":\"hound\","
+        + "\"attackText\":\"Tấn công\","
+        + "\"loopAnchor\":\"L0_C01_P001\""
         + "}},"
         + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
         + "}}}}";
@@ -250,6 +300,8 @@ public class StoryCoreTest {
 
   private static JSONObject preparedAlternates() throws Exception {
     return new JSONObject()
+        .put("canon", new JSONObject()
+            .put("text", "Bám theo dấu cũ rồi bước tiếp"))
         .put("trap", new JSONObject()
             .put("text", "Theo tiếng ù rẽ sang khoảng tối bên cạnh")
             .put("reply", "Tiếng ù kéo dài thêm một nhịp. Những vệt ố quen thuộc lại hiện ra trước mắt như thể khoảng hành lang vừa tự khép vòng."))
@@ -285,7 +337,7 @@ public class StoryCoreTest {
     JSONObject request = core.decisionPrefetchRequest(state, "(context)");
     assertTrue(request.getBoolean("needed"));
     String contextHash = request.getString("contextHash");
-    assertTrue(request.getString("prompt").contains("TWO additional plausible choices"));
+    assertTrue(request.getString("prompt").contains("COMPLETE three-choice package"));
 
     core.installDecisionPackage(state, contextHash, preparedAlternates());
     assertTrue(core.decisionReady(state));
@@ -309,11 +361,11 @@ public class StoryCoreTest {
       core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
       fail("Expected authored progression to remain blocked until a decision is resolved");
     } catch (IllegalStateException expected) {
-      assertTrue(expected.getMessage().contains("decision"));
+      assertTrue(expected.getMessage().contains("must be resolved"));
     }
   }
 
-  @Test public void canonDecisionAdvancesImmediatelyIntoAuthoredBeat() throws Exception {
+  @Test public void canonDecisionQueuesNextAuthoredTurnUntilGateClears() throws Exception {
     JSONObject state = state();
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
@@ -328,11 +380,16 @@ public class StoryCoreTest {
 
     assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
     assertFalse(resolution.looped);
-    assertTrue(resolution.reply.contains("áp sát mép tường"));
+    assertEquals("", resolution.reply);
     assertFalse(core.awaitingDecision(state));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("áp sát mép tường"));
+    assertFalse(core.hasPendingStoryAdvance(state));
   }
 
-  @Test public void convergeUsesPreparedReactionThenCanonicalBeat() throws Exception {
+  @Test public void convergeQueuesAuthoredBeatAfterPreparedReaction() throws Exception {
     JSONObject state = state();
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
@@ -348,8 +405,11 @@ public class StoryCoreTest {
     assertEquals(StoryCore.OUTCOME_CONVERGE, resolution.outcome);
     assertFalse(resolution.looped);
     assertTrue(resolution.reply.startsWith("Cao Minh giữ nguyên vị trí"));
-    assertTrue(resolution.reply.contains("áp sát mép tường"));
-    assertFalse(core.awaitingDecision(state));
+    assertFalse(resolution.reply.contains("áp sát mép tường"));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("áp sát mép tường"));
   }
 
   @Test public void trapUsesPreparedReactionAndReturnsToSameDecisionAnchor() throws Exception {
@@ -394,6 +454,34 @@ public class StoryCoreTest {
     } catch (IllegalStateException expected) {
       assertTrue(expected.getMessage().contains("context changed"));
     }
+  }
+
+
+  @Test public void authoredEntityGateExposesOnlyAttackAndBlocksNextTurn() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(entityGateFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    assertEquals(StoryRepository.MODE_ENTITY_GATE, turn.mode);
+    assertTrue(core.awaitingEntityAttack(state));
+    assertTrue(core.blocksFreePlayerAction(state));
+    assertFalse(core.awaitingDecision(state));
+
+    JSONObject choice = core.entityAttackChoice(state);
+    assertEquals("story_attack", choice.getString("id"));
+    assertEquals("Tấn công", choice.getString("text"));
+
+    String entityKey = core.consumeEntityAttack(state);
+    assertEquals("hound", entityKey);
+    assertFalse(core.awaitingEntityAttack(state));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("Sau trận chiến"));
+    assertFalse(core.hasPendingStoryAdvance(state));
   }
 
 }

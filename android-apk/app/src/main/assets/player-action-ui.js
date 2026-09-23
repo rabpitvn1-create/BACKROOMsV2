@@ -44,6 +44,24 @@
     }
   }
 
+  function storyEntityAttackActive(){
+    try {
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true
+        && state.story.awaitingEntityAttack === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function storyAdvancePending(){
+    try {
+      return !!(state && state.story && state.story.pendingStoryAdvance === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function fitVisualViewport(){
     if (modal.hidden) return;
     var vv = window.visualViewport;
@@ -72,15 +90,18 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing() || storyCutawayActive() || storyDecisionActive()) {
+    if (combatActive() || processing() || storyCutawayActive() || storyDecisionActive()
+        || storyEntityAttackActive() || storyAdvancePending()) {
       if (typeof statusEl !== 'undefined' && statusEl) {
         statusEl.textContent = combatActive()
           ? 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.'
-          : (storyDecisionActive()
-              ? 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.'
-              : (storyCutawayActive()
-                  ? 'Đang ở đoạn cắt cảnh. Hãy chọn “Tiếp tục cốt truyện” trong khung GAME MASTER.'
-                  : 'Đang xử lý lượt hiện tại.'));
+          : (storyEntityAttackActive()
+              ? 'Encounter cốt truyện: hãy chọn Tấn công trong khung GAME MASTER.'
+              : (storyDecisionActive()
+                  ? 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.'
+                  : (storyCutawayActive()
+                      ? 'Đang ở đoạn cắt cảnh cốt truyện.'
+                      : 'Đang xử lý lượt hiện tại.')));
       }
       return;
     }
@@ -100,10 +121,12 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing() || storyCutawayActive() || storyDecisionActive();
+    var locked = combatActive() || processing() || storyCutawayActive() || storyDecisionActive()
+      || storyEntityAttackActive() || storyAdvancePending();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyCutawayActive() || storyDecisionActive()) && !modal.hidden) closePlayerAction(true);
+    if ((combatActive() || storyCutawayActive() || storyDecisionActive()
+        || storyEntityAttackActive() || storyAdvancePending()) && !modal.hidden) closePlayerAction(true);
   }
 
   openButton.addEventListener('click', openPlayerAction);

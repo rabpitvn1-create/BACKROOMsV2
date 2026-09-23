@@ -194,6 +194,20 @@
     Android.resolveStoryDecision(JSON.stringify(state), String(choice.id));
   }
 
+  function submitStoryEntityAttack() {
+    if (!storyAwaitingEntityAttack() || window.__combatBusy
+        || (state.combat && state.combat.active)) return;
+    if (!window.Android || typeof Android.attackStoryEntity !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android story combat bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (typeof window.render === 'function') window.render();
+    Android.attackStoryEntity(JSON.stringify(state));
+  }
+
   function chestPresent() {
     try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
   }
@@ -204,6 +218,26 @@
         && state.story.arcComplete !== true
         && state.story.awaitingDecision === true);
     } catch (_) { return false; }
+  }
+
+  function storyAwaitingEntityAttack() {
+    try {
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true
+        && state.story.awaitingEntityAttack === true);
+    } catch (_) { return false; }
+  }
+
+  function storyPendingAdvance() {
+    try {
+      return !!(state && state.story && state.story.pendingStoryAdvance === true);
+    } catch (_) { return false; }
+  }
+
+  function storyEntityAttackChoice() {
+    if (!storyAwaitingEntityAttack()) return null;
+    var gate = state.story && state.story.entityGate ? state.story.entityGate : {};
+    return {id:'story_attack',text:String(gate.attackText || 'Tấn công')};
   }
 
   function storyDecisionReady() {
@@ -244,16 +278,14 @@
   }
 
   function storyAdvanceAvailable() {
-    try {
-      return !!(state && state.story && state.story.active === true
-        && state.story.arcComplete !== true && state.story.currentChapter
-        && state.story.awaitingDecision !== true);
-    } catch (_) { return false; }
+    return false;
   }
 
   function storyCutawayActive() {
     try {
-      return storyAdvanceAvailable() && String(state.story.visibility || '') === 'cutaway';
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true
+        && String(state.story.visibility || '') === 'cutaway');
     } catch (_) { return false; }
   }
 
@@ -317,50 +349,45 @@
     var latest = index === lastGmIndex();
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
+    var awaitingEntity = latest && storyAwaitingEntityAttack();
     var decisionReady = awaitingDecision && storyDecisionReady();
-    var storyAvailable = latest && storyAdvanceAvailable();
-    var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision;
+    var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision && !awaitingEntity;
 
     if (latest && storyDecisionNeedsPrefetch()) requestStoryDecisionPrefetch();
 
-    var choices = decisionReady
-      ? storyDecisionChoices()
-      : (cutaway || awaitingDecision ? [] : (Array.isArray(entry.choices) ? entry.choices : []));
-    if (latest && !choices.length && !cutaway && !awaitingDecision && !storyAvailable
-        && !(state.combat && state.combat.active)) {
+    var choices = [];
+    if (decisionReady) {
+      choices = storyDecisionChoices();
+    } else if (awaitingEntity) {
+      var attack = storyEntityAttackChoice();
+      if (attack) choices = [attack];
+    } else if (!cutaway && !storyPendingAdvance() && Array.isArray(entry.choices)) {
+      choices = entry.choices;
+    }
+
+    if (latest && !choices.length && !cutaway && !awaitingDecision && !awaitingEntity
+        && !storyPendingAdvance() && !(state.combat && state.combat.active)
+        && !(state.story && state.story.active === true && state.story.arcComplete !== true)) {
       choices = fallbackExplorerChoices();
     }
-    if (!hasChest && !storyAvailable && !choices.length) return;
+    if (!hasChest && !choices.length) return;
 
     var actionable = latest && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
     box.className = 'gm-choices explorer-choices';
-    var choiceOffset = 0;
 
     if (hasChest) {
       box.appendChild(makeChoiceButton('', 'Mở Rương', entry, [{text:'Rương',type:'item'}], !actionable, false,
         function(){ submitChestChoice(); }));
-      choiceOffset++;
     }
 
-    if (storyAvailable && choiceOffset < 3) {
-      var storyChoice = {text:'Tiếp tục',action:'Tiếp tục cốt truyện'};
-      box.appendChild(makeChoiceButton(
-        '',
-        storyChoice.text,
-        entry,
-        [],
-        !actionable,
-        false,
-        function(){ submitExplorerChoice(entry, storyChoice); }));
-      choiceOffset++;
-    }
-
-    choices.slice(0, 3 - choiceOffset).forEach(function(choice){
+    choices.slice(0, 3).forEach(function(choice){
       var disabled = !actionable || !!choice.disabled || !!choice.selected;
-      var onClick = decisionReady
-        ? function(){ submitStoryDecisionChoice(choice); }
-        : function(){ submitExplorerChoice(entry, choice); };
+      var onClick = awaitingEntity
+        ? function(){ submitStoryEntityAttack(); }
+        : (decisionReady
+            ? function(){ submitStoryDecisionChoice(choice); }
+            : function(){ submitExplorerChoice(entry, choice); });
       box.appendChild(makeChoiceButton('', choice.text || choice.action || '', entry, choice.highlights || [],
         disabled, !!choice.selected, onClick));
     });
@@ -427,7 +454,8 @@
   function syncComposer() {
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
-    var storyLocked = storyAwaitingDecision() || storyCutawayActive();
+    var storyLocked = storyAwaitingDecision() || storyAwaitingEntityAttack()
+      || storyPendingAdvance() || storyCutawayActive();
     form.classList.toggle('battle-locked', combat || storyLocked);
     action.disabled = combat || storyLocked;
     action.readOnly = combat || storyLocked;
@@ -437,9 +465,13 @@
       submit.disabled = true;
     } else if (storyLocked) {
       action.value = '';
-      action.placeholder = storyAwaitingDecision()
-        ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
-        : 'Đang ở đoạn cắt cảnh cốt truyện.';
+      action.placeholder = storyAwaitingEntityAttack()
+        ? 'Encounter cốt truyện: chọn Tấn công trong khung GAME MASTER.'
+        : (storyAwaitingDecision()
+            ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
+            : (storyPendingAdvance()
+                ? 'Đang chờ kết quả cuối turn trước khi mở turn kế.'
+                : 'Đang ở đoạn cắt cảnh cốt truyện.'));
       submit.disabled = true;
     } else {
       action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';

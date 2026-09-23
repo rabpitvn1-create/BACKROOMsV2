@@ -22,6 +22,7 @@ final class StoryRepository {
 
   static final String MODE_LINEAR = "LINEAR";
   static final String MODE_DECISION = "DECISION";
+  static final String MODE_ENTITY_GATE = "ENTITY_GATE";
   static final String MODE_CUTAWAY = "CUTAWAY";
   static final String MODE_LOCKED_EVENT = "LOCKED_EVENT";
 
@@ -85,11 +86,13 @@ final class StoryRepository {
     DecisionSpec(String mode, JSONObject rawContract) {
       String normalizedMode = normalizeMode(mode);
       JSONObject sanitized = sanitizeDecisionContract(normalizedMode, rawContract);
-      if (MODE_DECISION.equals(normalizedMode) && sanitized.length() == 0) {
+      if ((MODE_DECISION.equals(normalizedMode) || MODE_ENTITY_GATE.equals(normalizedMode))
+          && sanitized.length() == 0) {
         normalizedMode = MODE_LINEAR;
       }
       this.mode = normalizedMode;
-      this.contract = MODE_DECISION.equals(normalizedMode) ? sanitized : new JSONObject();
+      this.contract = (MODE_DECISION.equals(normalizedMode) || MODE_ENTITY_GATE.equals(normalizedMode))
+          ? sanitized : new JSONObject();
     }
   }
 
@@ -250,7 +253,7 @@ final class StoryRepository {
     segmentCache.clear();
     try {
       JSONObject root = new JSONObject(json == null ? "{}" : json);
-      if (root.optInt("schemaVersion", 0) != 2) return;
+      if (root.optInt("schemaVersion", 0) != 3) return;
       if (!sourceRevision.equals(root.optString("sourceRevision", "").trim())) return;
       JSONObject compiledChapters = root.optJSONObject("chapters");
       if (compiledChapters == null) return;
@@ -336,6 +339,7 @@ final class StoryRepository {
   private static String normalizeMode(String raw) {
     String mode = raw == null ? "" : raw.trim().toUpperCase(Locale.ROOT);
     if (MODE_DECISION.equals(mode)
+        || MODE_ENTITY_GATE.equals(mode)
         || MODE_CUTAWAY.equals(mode)
         || MODE_LOCKED_EVENT.equals(mode)) {
       return mode;
@@ -345,20 +349,32 @@ final class StoryRepository {
 
   private static JSONObject sanitizeDecisionContract(String mode, JSONObject raw) {
     JSONObject output = new JSONObject();
-    if (!MODE_DECISION.equals(mode) || raw == null) return output;
-    String canon = raw.optString("canonChoiceText", "").trim();
-    String anchor = raw.optString("loopAnchor", "").trim();
-    String guard = raw.optString("decisionGuard", "").trim();
-    if (canon.isEmpty() || canon.length() > 160 || anchor.isEmpty() || guard.isEmpty()) return output;
+    if (raw == null) return output;
     try {
-      output.put("canonChoiceText", canon);
-      output.put("loopAnchor", anchor);
-      output.put("decisionGuard", guard);
+      if (MODE_DECISION.equals(mode)) {
+        String anchor = raw.optString("loopAnchor", "").trim();
+        String guard = raw.optString("decisionGuard", "").trim();
+        if (anchor.isEmpty() || guard.isEmpty()) return output;
+        output.put("loopAnchor", anchor);
+        output.put("decisionGuard", guard);
+        return output;
+      }
+      if (MODE_ENTITY_GATE.equals(mode)) {
+        String entityKey = raw.optString("entityKey", "").trim().toLowerCase(Locale.ROOT);
+        String attackText = raw.optString("attackText", "").trim();
+        String anchor = raw.optString("loopAnchor", "").trim();
+        if (entityKey.isEmpty() || attackText.isEmpty() || anchor.isEmpty()) return output;
+        output.put("entityKey", entityKey);
+        output.put("attackText", attackText);
+        output.put("loopAnchor", anchor);
+        return output;
+      }
     } catch (Exception ignored) {
       return new JSONObject();
     }
     return output;
   }
+
 
   private void clearDecisions() {
     decisionChapterDigests.clear();
