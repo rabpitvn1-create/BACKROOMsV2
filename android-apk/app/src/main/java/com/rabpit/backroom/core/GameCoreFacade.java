@@ -58,6 +58,13 @@ public final class GameCoreFacade implements AutoCloseable {
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
+      if (storyCore.blocksFreePlayerAction(legacy) && !StoryCore.isAdvanceAction(text)) {
+        JSONObject result = deepCopy(legacy);
+        String reply = "Đang ở đoạn cắt cảnh của cốt truyện. Hãy chọn “Tiếp tục cốt truyện” để tiếp tục.";
+        persist(result);
+        return response(true, result, "story_cutaway_locked", "story_cutaway_locked", reply);
+      }
+
       if (itemCore.isOpenChestAction(text)) {
         JSONObject result = deepCopy(legacy);
         String itemName = itemCore.openChest(result);
