@@ -103,6 +103,8 @@ public class StoryRepositoryTest {
 
   private static JSONObject deterministicAlternates() throws Exception {
     return new JSONObject()
+        .put("canon", new JSONObject()
+            .put("text", "Thực hiện hành động dẫn sang diễn biến kế tiếp"))
         .put("trap", new JSONObject()
             .put("text", "Dừng lại quan sát một chi tiết khác trong khu vực")
             .put("reply", "Không gian quanh Cao Minh khép lại theo một nhịp khó nhận ra. Những dấu hiệu quen thuộc lại trở về đúng vị trí trước đó."))
@@ -174,8 +176,9 @@ public class StoryRepositoryTest {
         StoryCore.DecisionResolution resolution =
             core.resolveDecision(state, canonId, characterCore);
         assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+        assertTrue(core.hasPendingStoryAdvance(state));
+        turn = core.advancePendingTurn(state, characterCore);
         delivered++;
-        turn = resolution.authoredTurn;
         assertTrue(turn != null);
       }
 
@@ -211,8 +214,7 @@ public class StoryRepositoryTest {
     }
 
     assertTrue("No authored segments were delivered", delivered > 30);
-    assertTrue("Compiler produced no story decision contracts", compiledDecisions > 0);
-    assertTrue("Compiler exceeded the one-per-non-cutaway-chapter ceiling", compiledDecisions <= 26);
+    assertTrue("Every player-controlled turn should be compiled as a decision", compiledDecisions > 100);
     assertEquals(new LinkedHashSet<>(java.util.Arrays.asList(
         "L0_C03", "L0_C05", "L0_C07", "L0_C09")), cutawayChapters);
     assertEquals("L0_C03", firstParallelChapter);
@@ -271,7 +273,6 @@ public class StoryRepositoryTest {
         + "\"L0_C01_P001\":{"
         + "\"mode\":\"DECISION\","
         + "\"decisionContract\":{"
-        + "\"canonChoiceText\":\"Tiến theo dấu vừa nhận ra\","
         + "\"loopAnchor\":\"L0_C01_P001\","
         + "\"decisionGuard\":\"Không thay đổi sự kiện kế tiếp.\""
         + "}},"
@@ -283,8 +284,8 @@ public class StoryRepositoryTest {
     StoryRepository fresh = StoryRepository.fromText(metadata, sources, decisions);
     StoryRepository.Segment freshSegment = fresh.segment("L0_C01", 0);
     assertEquals(StoryRepository.MODE_DECISION, freshSegment.mode);
-    assertEquals("Tiến theo dấu vừa nhận ra",
-        freshSegment.decisionContract.getString("canonChoiceText"));
+    assertEquals("L0_C01_P001",
+        freshSegment.decisionContract.getString("loopAnchor"));
 
     sources.put(sourcePath, source + "\n\nĐã sửa bản thảo.");
     StoryRepository stale = StoryRepository.fromText(metadata, sources, decisions);
