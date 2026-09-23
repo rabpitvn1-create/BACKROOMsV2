@@ -4,6 +4,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -291,6 +296,52 @@ public class CombatChoiceEngineTest {
     assertTrue(foundUltimate);
   }
 
+  @Test public void everyCombatEntityHasThreeValidAutoProcSkills() throws Exception {
+    Field entitiesField = CombatChoiceEngine.class.getDeclaredField("ENTITIES");
+    entitiesField.setAccessible(true);
+    Field skillsField = CombatChoiceEngine.class.getDeclaredField("ENTITY_SKILLS");
+    skillsField.setAccessible(true);
+    Map<?, ?> entities = (Map<?, ?>) entitiesField.get(null);
+    Map<?, ?> pools = (Map<?, ?>) skillsField.get(null);
+
+    assertEquals(entities.keySet(), pools.keySet());
+    for (Object key : entities.keySet()) {
+      List<?> skills = (List<?>) pools.get(key);
+      assertEquals("Skill count for " + key, 3, skills.size());
+      for (Object skill : skills) {
+        Field damage = skill.getClass().getDeclaredField("damagePercent");
+        Field proc = skill.getClass().getDeclaredField("procPercent");
+        damage.setAccessible(true);
+        proc.setAccessible(true);
+        assertTrue("Damage for " + key, damage.getInt(skill) > 0);
+        assertTrue("Proc for " + key, proc.getInt(skill) >= 20);
+        assertTrue("Proc for " + key, proc.getInt(skill) <= 35);
+      }
+    }
+  }
+
+  @Test public void entityFallsBackToBasicAttackWhenNoSkillProcs() throws Exception {
+    int seed = 1;
+    while (CombatChoiceEngine.entitySkillProcRoll(seed, 1, 0, 0) < 35
+        || CombatChoiceEngine.entitySkillProcRoll(seed, 1, 0, 1) < 32
+        || CombatChoiceEngine.entitySkillProcRoll(seed, 1, 0, 2) < 34) seed++;
+
+    JSONObject combat = new JSONObject().put("seed", seed).put("round", 1).put("actorIndex", 0);
+    JSONObject actor = new JSONObject().put("name", "Cao Minh").put("hp", 100)
+        .put("maxHp", 100).put("DEF", CharacterProgressionCore.BASE_STAT);
+    JSONObject entity = new JSONObject().put("key", "hound").put("name", "Hound")
+        .put("attack", 15);
+    Method respond = CombatChoiceEngine.class.getDeclaredMethod("resolveEntityResponse",
+        JSONObject.class, JSONObject.class, JSONObject.class, boolean.class);
+    respond.setAccessible(true);
+
+    String summary = (String) respond.invoke(null, combat, actor, entity, false);
+
+    assertTrue(summary.startsWith("Hound tấn công, Cao Minh -"));
+    assertEquals(100 - actor.getInt("hp"),
+        CombatChoiceEngine.defendedIncomingDamage(15, CharacterProgressionCore.BASE_STAT));
+    assertEquals(1, combat.getJSONArray("feedbackEvents").length());
+  }
   @Test public void firstEntityRotationHasExactlyThreeSkillsEach() {
   assertEquals(3, CombatChoiceEngine.entitySkillCount("hound"));
   assertEquals(3, CombatChoiceEngine.entitySkillCount("clump"));

@@ -137,11 +137,97 @@ public final class CombatChoiceEngine {
     entity("diep_minh", "Diệp Minh", 2000, 42);
 
     entitySkills("hound",
-    entitySkill("Dead Bite",120,35), entitySkill("Rending Pounce",115,32), entitySkill("Pack Maul",110,38));
-  entitySkills("clump",
-    entitySkill("Grasping Crush",120,34), entitySkill("Limb Barrage",115,36), entitySkill("Drag Down",110,31));
-  entitySkills("duller",
-    entitySkill("Blindside Strike",125,33), entitySkill("Distorted Lunge",115,37), entitySkill("Column Ambush",120,30));
+        entitySkill("Dead Bite", 120, 35),
+        entitySkill("Rending Pounce", 115, 32),
+        entitySkill("Pack Maul", 110, 34));
+    entitySkills("clump",
+        entitySkill("Grasping Crush", 120, 34),
+        entitySkill("Limb Barrage", 115, 35),
+        entitySkill("Drag Down", 110, 31));
+    entitySkills("duller",
+        entitySkill("Blindside Strike", 125, 33),
+        entitySkill("Distorted Lunge", 115, 35),
+        entitySkill("Column Ambush", 120, 30));
+    entitySkills("deathmoth",
+        entitySkill("Ceiling Dive", 110, 31),
+        entitySkill("Wing Strike", 115, 32),
+        entitySkill("Dark Recess Ambush", 120, 23));
+    entitySkills("hostile_faceling",
+        entitySkill("Sudden Grasp", 110, 35),
+        entitySkill("Close-Quarters Strike", 115, 26),
+        entitySkill("Predatory Lunge", 120, 27));
+    entitySkills("false_puddle",
+        entitySkill("Toothed Snap", 110, 31),
+        entitySkill("Footstep Ambush", 115, 27),
+        entitySkill("Puddle Bite", 120, 25));
+    entitySkills("paintings",
+        entitySkill("Canvas Reach", 110, 33),
+        entitySkill("Frame Ambush", 115, 27),
+        entitySkill("Pulling Grasp", 120, 21));
+    entitySkills("smiler",
+        entitySkill("Darkness Lunge", 110, 32),
+        entitySkill("Blindside Strike", 115, 26),
+        entitySkill("Shadow Bite", 120, 23));
+    entitySkills("skin-stealer",
+        entitySkill("Disguised Strike", 110, 32),
+        entitySkill("Close-Range Slash", 115, 29),
+        entitySkill("Ambush Lunge", 120, 21));
+    entitySkills("predatory_window",
+        entitySkill("Window Reach", 110, 34),
+        entitySkill("Threshold Grasp", 115, 28),
+        entitySkill("Close-Range Pull", 120, 25));
+    entitySkills("biological_pipeline",
+        entitySkill("Constriction", 110, 33),
+        entitySkill("Pipeline Crush", 115, 30),
+        entitySkill("Corrosive Contact", 120, 20));
+    entitySkills("wretch",
+        entitySkill("Ragged Swipe", 110, 32),
+        entitySkill("Pain-Fueled Lunge", 115, 27),
+        entitySkill("Scent-Tracked Strike", 120, 22));
+    entitySkills("cable_mimic",
+        entitySkill("Cable Lash", 110, 35),
+        entitySkill("Bundle Constriction", 115, 29),
+        entitySkill("Current-Driven Grip", 120, 28));
+    entitySkills("the_beast_of_level_5",
+        entitySkill("Cornered Strike", 110, 33),
+        entitySkill("Isolated Prey Ambush", 115, 32),
+        entitySkill("Hotel Corridor Lunge", 120, 21));
+    entitySkills("hotel_corpse_lure",
+        entitySkill("Corpse-Lure Grasp", 110, 35),
+        entitySkill("Close-Range Ambush", 115, 28),
+        entitySkill("Sudden Strike", 120, 20));
+    entitySkills("jeff_the_killer",
+        entitySkill("Stalking Slash", 110, 34),
+        entitySkill("Close-Range Lunge", 115, 29),
+        entitySkill("Tactical Ambush", 120, 23));
+    entitySkills("async_rifleman",
+        entitySkill("Controlled Burst", 110, 32),
+        entitySkill("Cover Fire", 115, 32),
+        entitySkill("Crossfire Burst", 120, 28));
+    entitySkills("async_vanguard",
+        entitySkill("Advancing Burst", 110, 35),
+        entitySkill("Choke-Point Fire", 115, 29),
+        entitySkill("Armored Push", 120, 20));
+    entitySkills("async_tactical",
+        entitySkill("Flanking Shot", 110, 32),
+        entitySkill("Pistol Burst", 115, 27),
+        entitySkill("Blind-Angle Shot", 120, 21));
+    entitySkills("async_decon",
+        entitySkill("Cover Shot", 110, 35),
+        entitySkill("Spaced Pistol Fire", 115, 31),
+        entitySkill("Coordinated Shot", 120, 26));
+    entitySkills("jane_the_killer",
+        entitySkill("Stalking Strike", 110, 33),
+        entitySkill("Close-Range Slash", 115, 27),
+        entitySkill("Sudden Lunge", 120, 25));
+    entitySkills("slenderman",
+        entitySkill("Tendril Strike", 110, 31),
+        entitySkill("Tendril Sweep", 115, 26),
+        entitySkill("Looming Grasp", 120, 21));
+    entitySkills("diep_minh",
+        entitySkill("Golden Sword Slash", 110, 32),
+        entitySkill("Demonic Claw", 115, 32),
+        entitySkill("Sword-Claw Assault", 120, 21));
 
     // Only offensive canonical skills participate in Poker Dice Skill hands. Passive/evasion
     // skills do not silently replace or modify dice outcomes.
