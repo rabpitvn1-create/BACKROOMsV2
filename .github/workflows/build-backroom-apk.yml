@@ -385,6 +385,10 @@ jobs:
           grep -Fq 'coreDropRatePercent", 100' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CoreRewardEconomyTest.java
           grep -Fq 'CORE_CHEST_DROP_PERCENT = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'BASE_CRITICAL_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
+          grep -Fq 'ENTITY_BASE_EVASION_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'combatStatusSection(member)' android-apk/app/src/main/assets/party-ui.js
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CharacterStatCoreTest.java
           test "$(find android-apk/app/src/main/assets/dice -type f -name 'die-*.svg' | wc -l)" -eq 6
           ! grep -R -Fq 'ACTION_A' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -R -Fq 'Math.random' android-apk/app/src/main/assets/gm-choice-ui.js
