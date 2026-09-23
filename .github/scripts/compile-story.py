@@ -21,6 +21,17 @@ SCHEMA_VERSION = 1
 COMPILER_VERSION = 1
 MAX_INTERACTIVE_PER_CHAPTER = 2
 VALID_MODES = {"LINEAR", "INTERACTIVE", "CUTAWAY", "LOCKED_EVENT"}
+FORBIDDEN_CHOICE_PATTERNS = [
+    re.compile(r"(?iu)\\b(?:đi|tiến|bước|chạy)\\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\\b"),
+    re.compile(r"(?iu)\\b(?:chọn|đổi|thay đổi)\\s+(?:lối|hướng|đường)\\b"),
+    re.compile(r"(?iu)\\b(?:rời|quay lại|trở lại)\\b"),
+    re.compile(r"(?iu)\\btiếp tục\\s+(?:đi|khám phá|di chuyển)\\b"),
+    re.compile(r"(?iu)\\btìm kiếm sâu hơn\\b"),
+    re.compile(r"(?iu)\\b(?:đề xuất|đề nghị)\\s+(?:đi|vào|rời|quay)\\b"),
+    re.compile(r"(?iu)\\b(?:mở|phá|đập|cạy)\\s+(?:cửa|panel|tường|hộp)\\b"),
+    re.compile(r"(?iu)\\b(?:tấn công|giết|đánh)\\b"),
+    re.compile(r"(?iu)\\b(?:uống|ăn|chạm vào)\\b"),
+]
 HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages"
 HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 GEMINI_DEFAULT_MODEL = "gemini-3.6-flash"
@@ -400,6 +411,8 @@ INTERACTION RULES:
 - Each choice is only an INTENT/APPROACH, never a claimed outcome.
 - Choice text may use only facts, characters, objects and observations already present in the current segment or earlier segments in this chapter. Never mention a reveal, destination, encounter, person, object or result that first appears later.
 - The three choices must all be plausible at that exact pause and must be able to receive a short local reaction before returning to the exact authored path.
+- V1 choices should be observational/conversational/preparatory: observe, inspect, ask, listen, wait, mark, compare, warn, prepare, or focus.
+- Do NOT make navigation/outcome choices: no choosing another route, entering/leaving an area, turning back, forcing a door, consuming an item, attacking, forcing a meeting, or forcing a discovery.
 - Do not offer "leave", "refuse the plot", "attack an ally", "change destination", "force a meeting", "force a discovery", "call a person who has not been confirmed present", or any choice that would invalidate the next authored segment.
 - Prefer LINEAR over a weak, fake, spoiler-prone, or artificial choice.
 - Any forcedLockedSegmentId MUST be LOCKED_EVENT.
@@ -426,6 +439,11 @@ Every input segment must appear exactly once and in the same order.
 
 INPUT:
 """ + json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def choice_changes_authored_path(text):
+    value = str(text or "").strip()
+    return any(pattern.search(value) for pattern in FORBIDDEN_CHOICE_PATTERNS)
 
 
 def sanitize_model_chapter(chapter, segments, raw_result, forced_locked):
@@ -468,7 +486,8 @@ def sanitize_model_chapter(chapter, segments, raw_result, forced_locked):
                 text = str(choice.get("text", "") or "").strip()
                 normalized = re.sub(r"\\s+", " ", text).casefold()
                 if (not text or len(text) > 180 or normalized in seen
-                        or normalized in {"tiếp tục cốt truyện", "continue story"}):
+                        or normalized in {"tiếp tục cốt truyện", "continue story"}
+                        or choice_changes_authored_path(text)):
                     clean_choices = []
                     break
                 seen.add(normalized)
