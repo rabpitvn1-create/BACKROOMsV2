@@ -58,5 +58,6 @@ jobs:
             echo 'Story interactions are already current.'
           else
             git commit -m 'Compile Level 0 story interactions'
-            git push origin HEAD:${GITHUB_REF_NAME}
+            git pull --rebase origin "${GITHUB_REF_NAME}"
+            git push origin HEAD:"${GITHUB_REF_NAME}"
           fi
