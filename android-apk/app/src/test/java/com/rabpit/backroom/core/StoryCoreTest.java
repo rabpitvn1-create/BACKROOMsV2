@@ -361,7 +361,7 @@ public class StoryCoreTest {
       core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
       fail("Expected authored progression to remain blocked until a decision is resolved");
     } catch (IllegalStateException expected) {
-      assertTrue(expected.getMessage().contains("decision"));
+      assertTrue(expected.getMessage().contains("must be resolved"));
     }
   }
 
