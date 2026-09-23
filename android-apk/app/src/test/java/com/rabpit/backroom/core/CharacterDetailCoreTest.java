@@ -41,14 +41,14 @@ public class CharacterDetailCoreTest {
     assertEquals("NORMAL", cao.getJSONObject("physiology").getString("hunger"));
   }
 
-  @Test public void joinedLuciaUsesCurrentRuntimeBaseHpAndOwnPhysiology() throws Exception {
+  @Test public void joinedLucTramUsesCurrentRuntimeBaseHpAndOwnPhysiology() throws Exception {
     JSONObject state = new JSONObject()
         .put("turn", 1)
         .put("currentLevel", 0)
         .put(LevelCore.LEVEL_KEY, "0")
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
-            .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)))
+            .put("id", "lucia").put("name", "Lục Trầm").put("joined", true)))
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 5));
 
     new CharacterDetailCore().projectState(state);

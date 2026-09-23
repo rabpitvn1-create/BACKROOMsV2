@@ -13,35 +13,38 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class CharacterEncounterCoreTest {
-  @Test public void luciaRollsOnlyOnLevelZeroAndUsesExactTenPercentBoundary() throws Exception {
-    assertTrue(CharacterEncounterCore.shouldEncounterLucia("0", 0));
-    assertTrue(CharacterEncounterCore.shouldEncounterLucia("0", 9));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia("0", 10));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia("1", 0));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia("0.1", 0));
-    assertFalse(CharacterEncounterCore.shouldEncounterLucia("red_rooms", 0));
+  @Test public void lucTramRollsOnlyAfterLevelZeroAndUsesExactTenPercentBoundary() throws Exception {
+    assertFalse(CharacterEncounterCore.shouldEncounterLucTram("0", 0));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucTram("0.1", 0));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucTram("0-7", 0));
+    assertTrue(CharacterEncounterCore.shouldEncounterLucTram("1", 0));
+    assertTrue(CharacterEncounterCore.shouldEncounterLucTram("1", 9));
+    assertFalse(CharacterEncounterCore.shouldEncounterLucTram("1", 10));
 
-    SequenceRng levelZeroRng = new SequenceRng(9, 3999, 3999);
-    JSONObject levelZero = state(0, 1);
-    CharacterEncounterCore levelZeroCore = new CharacterEncounterCore(levelZeroRng);
-    levelZeroCore.rollForExplorerAction(levelZero, "Cao Minh đi tiếp");
+    SequenceRng levelZeroRng = new SequenceRng(3999, 3999);
+    JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
+    new CharacterEncounterCore(levelZeroRng).rollForExplorerAction(levelZero, "Cao Minh đi tiếp");
     assertEquals(0, levelZero.getJSONArray("party").length());
-    assertEquals("lucia", levelZero.getJSONObject("characterEncounter")
-        .getJSONArray("pendingIntro").getString(0));
-    JSONObject committed = new JSONObject(levelZero.toString());
-    levelZeroCore.validateAndApply(levelZero, committed,
-        new JSONArray().put("Ai đó?").put("Bình tĩnh. Tôi là Lucia."));
-    assertEquals("lucia", committed.getJSONArray("party").getJSONObject(0).getString("id"));
-    assertEquals(3, levelZeroRng.calls);
+    assertEquals(0, levelZero.getJSONObject("characterEncounter")
+        .getJSONArray("pendingIntro").length());
+    assertEquals(2, levelZeroRng.calls);
 
-    SequenceRng levelOneRng = new SequenceRng(3999, 3999);
-    JSONObject levelOne = state(1, 1);
-    new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Cao Minh đi tiếp");
+    SequenceRng levelOneRng = new SequenceRng(9, 3999, 3999);
+    JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
+    CharacterEncounterCore levelOneCore = new CharacterEncounterCore(levelOneRng);
+    levelOneCore.rollForExplorerAction(levelOne, "Cao Minh đi tiếp");
     assertEquals(0, levelOne.getJSONArray("party").length());
-    assertEquals(2, levelOneRng.calls);
+    assertEquals("lucia", levelOne.getJSONObject("characterEncounter")
+        .getJSONArray("pendingIntro").getString(0));
+    JSONObject committed = new JSONObject(levelOne.toString());
+    levelOneCore.validateAndApply(levelOne, committed,
+        new JSONArray().put("Ma đầu.").put("Không ngờ lại gặp ngươi ở nơi này."));
+    assertEquals("lucia", committed.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("Lục Trầm", committed.getJSONArray("party").getJSONObject(0).getString("name"));
+    assertEquals(3, levelOneRng.calls);
   }
 
-  @Test public void luciaDoesNotRollInsideLevelZeroSublevels() throws Exception {
+  @Test public void lucTramDoesNotEncounterInsideLevelZeroSublevels() throws Exception {
     SequenceRng rng = new SequenceRng(3999, 3999);
     JSONObject sublevel = state(0, 1).put(LevelCore.LEVEL_KEY, "0.1");
     new CharacterEncounterCore(rng).rollForExplorerAction(sublevel, "Cao Minh đi tiếp");
@@ -58,7 +61,7 @@ public class CharacterEncounterCoreTest {
   @Test public void oneExplorerRollQueuesAllHitsThenJoinsAfterFirstContact() throws Exception {
     SequenceRng rng = new SequenceRng(0, 0, 0);
     CharacterEncounterCore core = new CharacterEncounterCore(rng);
-    JSONObject state = state(0, 7);
+    JSONObject state = state(1, 7).put(LevelCore.LEVEL_KEY, "1");
     CharacterEncounterCore.EncounterResult result =
         core.rollForExplorerAction(state, "Cao Minh quan sát hành lang");
     assertTrue(result.joinedAny());
@@ -80,8 +83,8 @@ public class CharacterEncounterCoreTest {
     assertEquals(3, candidate.getJSONArray("party").length());
   }
 
-  @Test public void geminiFailureKeepsFirstContactPendingWithoutPrematureJoin() throws Exception {
-    JSONObject state = state(0, 3);
+  @Test public void geminiFailureKeepsReunionPendingWithoutPrematureJoin() throws Exception {
+    JSONObject state = state(1, 3).put(LevelCore.LEVEL_KEY, "1");
     CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999, 3999));
     core.rollForExplorerAction(state, "Cao Minh mở cửa");
     JSONObject savedAfterFailure = new JSONObject(state.toString());
@@ -109,7 +112,7 @@ public class CharacterEncounterCoreTest {
     state.put("party", new JSONArray()
         .put(new JSONObject().put("id", "cao_minh").put("name", "Cao Minh"))
         .put(lucia)
-        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục"))
+        .put(new JSONObject().put("id", "lucia").put("name", "Lục Trầm"))
         .put("Iris")
         .put("Syvial"));
 
@@ -117,6 +120,7 @@ public class CharacterEncounterCoreTest {
     JSONArray party = state.getJSONArray("party");
     assertEquals(CharacterEncounterCore.MAX_COMPANIONS, party.length());
     assertEquals("lucia", party.getJSONObject(0).getString("id"));
+    assertEquals("Lục Trầm", party.getJSONObject(0).getString("name"));
     assertFalse(party.getJSONObject(0).has("hp"));
     assertFalse(party.getJSONObject(0).has("stats"));
     assertFalse(party.getJSONObject(0).has("level"));
@@ -124,7 +128,7 @@ public class CharacterEncounterCoreTest {
     assertTrue(party.getJSONObject(0).getBoolean("joined"));
     assertEquals("iris", party.getJSONObject(1).getString("id"));
     assertEquals("syvial", party.getJSONObject(2).getString("id"));
-    assertTrue(party.getJSONObject(0).getJSONArray("inventory").length() >= 3);
+    assertTrue(party.getJSONObject(0).getJSONArray("inventory").length() >= 2);
     assertTrue(party.getJSONObject(1).getJSONArray("inventory").length() >= 2);
     assertTrue(party.getJSONObject(2).getJSONArray("inventory").length() >= 2);
   }
@@ -138,7 +142,7 @@ public class CharacterEncounterCoreTest {
   @Test public void geminiCandidateCannotAddRemoveOrReplacePartyMembers() throws Exception {
     CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng());
     JSONObject before = state(0, 2).put("party", new JSONArray()
-        .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục")));
+        .put(new JSONObject().put("id", "lucia").put("name", "Lục Trầm")));
     core.normalizeState(before);
     JSONObject candidate = new JSONObject(before.toString()).put("party", new JSONArray()
         .put(new JSONObject().put("id", "syvial").put("name", "Syvial").put("joined", true)));

@@ -150,7 +150,7 @@ public class ItemCoreTest {
 
   @Test public void selectedCompanionUsesOwnInventoryWithoutTouchingCaoMinhInventory() throws Exception {
     JSONObject lucia = new JSONObject()
-        .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)
+        .put("id", "lucia").put("name", "Lục Trầm").put("joined", true)
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.BANDAGE_ID).put("name", "Băng Gạc Y Tế").put("quantity", 1)));
     JSONObject state = new JSONObject()
@@ -167,7 +167,7 @@ public class ItemCoreTest {
         state, "lucia", ItemCore.BANDAGE_ID, "use", "", 1);
 
     assertEquals(25, progression.profile(state, "lucia").getInt("currentHp"));
-    assertTrue(reply.contains("Lucia Lục"));
+    assertTrue(reply.contains("Lục Trầm"));
     assertEquals(0, lucia.getJSONArray("inventory").length());
     assertEquals(1, state.getJSONArray("inventory").length());
     assertEquals(ItemCore.ALMOND_WATER_ID,
@@ -178,7 +178,7 @@ public class ItemCoreTest {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
-            .put("id", "lucia").put("name", "Lucia Lục").put("joined", true)));
+            .put("id", "lucia").put("name", "Lục Trầm").put("joined", true)));
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
     progression.setCurrentHp(state, "lucia", 0);

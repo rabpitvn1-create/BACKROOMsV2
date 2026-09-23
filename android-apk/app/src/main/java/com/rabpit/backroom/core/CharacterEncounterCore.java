@@ -100,6 +100,7 @@ final class CharacterEncounterCore {
     // "lucia" remains the stable save/runtime id for backward compatibility.
     // Lục Trầm's current canon requires the reunion to happen only after Level 0.
     if (!containsPartyId(party, "lucia")
+        && isLucTramEncounterLevel(currentLevelKey)
         && shouldEncounterLucTram(currentLevelKey, nextRoll(100))) {
       hits.add("lucia");
     }
@@ -197,13 +198,17 @@ final class CharacterEncounterCore {
     }
   }
 
-  static boolean shouldEncounterLucTram(String levelKey, int roll) {
+  static boolean isLucTramEncounterLevel(String levelKey) {
     String normalized = levelKey == null ? "" : levelKey.trim().toLowerCase(Locale.ROOT);
-    boolean afterLevelZero = !normalized.isEmpty()
+    return !normalized.isEmpty()
         && !"0".equals(normalized)
         && !normalized.startsWith("0.")
         && !normalized.startsWith("0-");
-    return afterLevelZero && roll >= 0 && roll < LUC_TRAM_RATE_PERCENT;
+  }
+
+  static boolean shouldEncounterLucTram(String levelKey, int roll) {
+    return isLucTramEncounterLevel(levelKey)
+        && roll >= 0 && roll < LUC_TRAM_RATE_PERCENT;
   }
 
   static boolean shouldEncounterRare(int roll) {

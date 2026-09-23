@@ -13,7 +13,7 @@ public class GmChoiceContractTest {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("location", "Level 0 / The Lobby — hành lang phía đông")
-        .put("party", new JSONArray().put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục")))
+        .put("party", new JSONArray().put(new JSONObject().put("id", "lucia").put("name", "Lục Trầm")))
         .put("inventory", new JSONArray().put(new JSONObject().put("id", "almond-water").put("name", "Almond Water")));
 
     String reply = "Cao Minh gặp Clump tại Level 0. Lucia Lục dùng Thiên Ma Bộ trong khi "
@@ -22,9 +22,9 @@ public class GmChoiceContractTest {
     JSONArray highlights = entry.getJSONArray("highlights");
 
     assertHighlight(highlights, "Cao Minh", "character");
-    assertHighlight(highlights, "Lucia Lục", "character");
+    assertHighlight(highlights, "Lục Trầm", "character");
     assertHighlight(highlights, "Clump", "entity");
-    assertHighlight(highlights, "Thiên Ma Bộ", "skill");
+    assertHighlight(highlights, "Tịch Quang Phản Kiếm", "skill");
     assertHighlight(highlights, "Chảy máu", "effect");
     assertHighlight(highlights, "Almond Water", "item");
     assertHighlight(highlights, "Level 0", "location");
