@@ -291,6 +291,11 @@ public class StoryCoreTest {
       JSONObject choice = publicChoices.getJSONObject(i);
       assertTrue(choice.has("id"));
       assertTrue(choice.has("text"));
+      String publicId = choice.getString("id").toLowerCase(java.util.Locale.ROOT);
+      assertTrue(publicId.startsWith("choice_"));
+      assertFalse(publicId.contains("canon"));
+      assertFalse(publicId.contains("trap"));
+      assertFalse(publicId.contains("converge"));
       assertFalse(choice.has("type"));
       assertFalse(choice.has("reply"));
     }
