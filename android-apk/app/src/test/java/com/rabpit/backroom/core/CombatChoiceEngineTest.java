@@ -613,7 +613,7 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("criticalChancePercent", 100);
+    actor.put("id", "iris").put("criticalChancePercent", 100);
     entity.put("evasionPercent", 0).put("resCriticalPercent", 0);
     int before = entity.getInt("hp");
 
