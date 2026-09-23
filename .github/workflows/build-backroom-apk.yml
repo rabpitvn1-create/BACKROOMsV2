@@ -373,7 +373,7 @@ jobs:
           grep -Fq 'MAX_REROLLS = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'exactlyThreeRerollsThenRollStopsUntilFinish' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
           grep -Fq 'finishCanFinalizeCurrentHandBeforeAnyReroll' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
-          ! grep -Fq 'lucia' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'skills("luc_tram"' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'Huyết Ma Nhị Thập Tứ Trảm' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -Fq 'Guilty Crown Override' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
