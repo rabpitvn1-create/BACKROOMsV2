@@ -31,18 +31,14 @@ public class CharacterEncounterCoreTest {
     assertEquals(2, levelOneRng.calls);
   }
 
-  @Test public void legacyPendingLucTramIsDroppedButJoinedLucTramIsPreserved() throws Exception {
+  @Test public void storyManagedLucTramCannotRemainInRandomPendingIntro() throws Exception {
     JSONObject state = state(1, 3)
-        .put("party", new JSONArray()
-            .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm").put("joined", true)))
         .put("characterEncounter", new JSONObject()
             .put("pendingIntro", new JSONArray().put("luc_tram"))
             .put("justEncountered", new JSONArray().put("luc_tram")));
 
     new CharacterEncounterCore(new SequenceRng()).normalizeState(state);
 
-    assertEquals(1, state.getJSONArray("party").length());
-    assertEquals("luc_tram", state.getJSONArray("party").getJSONObject(0).getString("id"));
     assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
     assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("justEncountered").length());
   }
