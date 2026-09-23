@@ -4,13 +4,16 @@ import android.content.Context;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/** Owns authored-story state, deterministic manuscript progression, and story character lifecycle. */
+/** Owns authored-story state, deterministic progression, and prefetched hidden story decisions. */
 final class StoryCore {
   static final String ROOT_KEY = "story";
-  static final int SCHEMA_VERSION = 2;
+  static final int SCHEMA_VERSION = 3;
 
   static final String STATUS_UNSEEN = "UNSEEN_IN_STORY";
   static final String STATUS_PARALLEL = "PARALLEL_STORY";
@@ -32,6 +35,11 @@ final class StoryCore {
   static final String EVENT_LEVEL0_ARC_BOUNDARY_REACHED = "LEVEL0_ARC_BOUNDARY_REACHED";
 
   static final String ADVANCE_ACTION_VI = "tiếp tục cốt truyện";
+  static final String DECISION_PREFETCH_REQUIRED = "PREFETCH_REQUIRED";
+  static final String DECISION_READY = "READY";
+  static final String OUTCOME_CANON = "CANON_PROGRESS";
+  static final String OUTCOME_TRAP = "TRAP_LOOP";
+  static final String OUTCOME_CONVERGE = "CONVERGE";
 
   static final class AuthoredTurn {
     final String reply;
@@ -40,8 +48,7 @@ final class StoryCore {
     final String thread;
     final String visibility;
     final String mode;
-    final JSONArray choices;
-    final String interactionGuard;
+    final JSONObject decisionContract;
 
     AuthoredTurn(
         String reply,
@@ -50,16 +57,35 @@ final class StoryCore {
         String thread,
         String visibility,
         String mode,
-        JSONArray choices,
-        String interactionGuard) {
+        JSONObject decisionContract) {
       this.reply = reply;
       this.chapterId = chapterId;
       this.segmentId = segmentId;
       this.thread = thread;
       this.visibility = visibility;
       this.mode = mode;
-      this.choices = copyArray(choices);
-      this.interactionGuard = interactionGuard == null ? "" : interactionGuard.trim();
+      this.decisionContract = copyObject(decisionContract);
+    }
+  }
+
+  static final class DecisionResolution {
+    final String visibleChoice;
+    final String reply;
+    final String outcome;
+    final AuthoredTurn authoredTurn;
+    final boolean looped;
+
+    DecisionResolution(
+        String visibleChoice,
+        String reply,
+        String outcome,
+        AuthoredTurn authoredTurn,
+        boolean looped) {
+      this.visibleChoice = visibleChoice;
+      this.reply = reply;
+      this.outcome = outcome;
+      this.authoredTurn = authoredTurn;
+      this.looped = looped;
     }
   }
 
@@ -114,13 +140,21 @@ final class StoryCore {
     if (!story.has("thread")) story.put("thread", "cao_minh");
     if (!story.has("visibility")) story.put("visibility", "player");
     if (!story.has("eventSequence")) story.put("eventSequence", 0);
-    if (!story.has("awaitingInteraction")) story.put("awaitingInteraction", false);
-    if (story.optJSONArray("interactionChoices") == null) story.put("interactionChoices", new JSONArray());
-    if (!story.has("interactionGuard")) story.put("interactionGuard", "");
-    if (!story.has("interactionSegmentId")) story.put("interactionSegmentId", "");
-    if (!story.has("interactionResolutionPending")) story.put("interactionResolutionPending", false);
-    if (!story.has("selectedInteractionAction")) story.put("selectedInteractionAction", "");
+    if (!story.has("awaitingDecision")) story.put("awaitingDecision", false);
+    if (!story.has("decisionStatus")) story.put("decisionStatus", "");
+    if (!story.has("decisionId")) story.put("decisionId", "");
+    if (story.optJSONObject("decisionContract") == null) story.put("decisionContract", new JSONObject());
+    if (story.optJSONObject("decisionPackage") == null) story.put("decisionPackage", new JSONObject());
+    if (story.optJSONObject("loopHistory") == null) story.put("loopHistory", new JSONObject());
     if (story.optJSONObject(FLAGS_KEY) == null) story.put(FLAGS_KEY, new JSONObject());
+
+    // Old v1 interaction fields are intentionally neutralized. Old save compatibility is not required.
+    story.put("awaitingInteraction", false);
+    story.put("interactionChoices", new JSONArray());
+    story.put("interactionGuard", "");
+    story.put("interactionSegmentId", "");
+    story.put("interactionResolutionPending", false);
+    story.put("selectedInteractionAction", "");
 
     JSONArray managed = story.optJSONArray(MANAGED_CHARACTERS_KEY);
     if (managed == null) managed = new JSONArray();
@@ -168,64 +202,59 @@ final class StoryCore {
       return story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
           && ("cutaway".equals(story.optString("visibility", ""))
-              || story.optBoolean("awaitingInteraction", false));
+              || story.optBoolean("awaitingDecision", false));
     } catch (Exception ignored) {
       return false;
     }
   }
 
-  boolean awaitingInteraction(JSONObject state) {
+  boolean awaitingDecision(JSONObject state) {
     try {
       normalizeState(state);
       JSONObject story = state.getJSONObject(ROOT_KEY);
       return story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
-          && story.optBoolean("awaitingInteraction", false);
+          && story.optBoolean("awaitingDecision", false);
     } catch (Exception ignored) {
       return false;
     }
   }
 
-  boolean isCompiledInteractionChoice(JSONObject state, String action) {
+  boolean decisionNeedsPrefetch(JSONObject state) {
     try {
       normalizeState(state);
       JSONObject story = state.getJSONObject(ROOT_KEY);
-      if (!story.optBoolean("awaitingInteraction", false)) return false;
-      String expected = action == null ? "" : action.trim();
-      if (expected.isEmpty()) return false;
-      JSONArray choices = story.optJSONArray("interactionChoices");
-      if (choices == null) return false;
-      for (int i = 0; i < choices.length(); i++) {
-        JSONObject choice = choices.optJSONObject(i);
-        if (choice != null && expected.equals(choice.optString("action", "").trim())) return true;
-      }
-    } catch (Exception ignored) {}
-    return false;
+      return story.optBoolean("awaitingDecision", false)
+          && DECISION_PREFETCH_REQUIRED.equals(story.optString("decisionStatus", ""));
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
-  boolean consumeCompiledInteractionChoice(JSONObject state, String action) throws Exception {
-    normalizeState(state);
-    if (!isCompiledInteractionChoice(state, action)) return false;
-    JSONObject story = state.getJSONObject(ROOT_KEY);
-    // Keep awaitingInteraction + choices intact until the AI reaction is validated.
-    // If both providers fail, the player can retry instead of losing the authored decision point.
-    story.put("interactionResolutionPending", true);
-    story.put("selectedInteractionAction", action == null ? "" : action.trim());
-    state.put(ROOT_KEY, story);
-    return true;
+  boolean decisionReady(JSONObject state) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      JSONObject pack = story.optJSONObject("decisionPackage");
+      return story.optBoolean("awaitingDecision", false)
+          && DECISION_READY.equals(story.optString("decisionStatus", ""))
+          && pack != null
+          && pack.optJSONArray("choices") != null
+          && pack.optJSONArray("choices").length() == 3;
+    } catch (Exception ignored) {
+      return false;
+    }
   }
 
-  void finishInteractionResponse(JSONObject state) throws Exception {
-    normalizeState(state);
-    JSONObject story = state.getJSONObject(ROOT_KEY);
-    if (!story.optBoolean("interactionResolutionPending", false)) return;
-    story.put("awaitingInteraction", false);
-    story.put("interactionResolutionPending", false);
-    story.put("selectedInteractionAction", "");
-    story.put("interactionGuard", "");
-    story.put("interactionSegmentId", "");
-    story.put("interactionChoices", new JSONArray());
-    state.put(ROOT_KEY, story);
+  JSONArray decisionChoices(JSONObject state) {
+    try {
+      normalizeState(state);
+      if (!decisionReady(state)) return new JSONArray();
+      return copyArray(state.getJSONObject(ROOT_KEY)
+          .getJSONObject("decisionPackage").optJSONArray("choices"));
+    } catch (Exception ignored) {
+      return new JSONArray();
+    }
   }
 
   static boolean isAdvanceAction(String action) {
@@ -239,8 +268,8 @@ final class StoryCore {
     if (!isAdvanceAction(action)) return null;
 
     JSONObject story = state.getJSONObject(ROOT_KEY);
-    if (story.optBoolean("awaitingInteraction", false)) {
-      throw new IllegalStateException("Story interaction choice must be resolved before advancing.");
+    if (story.optBoolean("awaitingDecision", false)) {
+      throw new IllegalStateException("Story decision must be resolved before authored progression.");
     }
     if (!story.optBoolean("active", false) || story.optBoolean("arcComplete", false)
         || repository == null || !repository.available()) {
@@ -292,15 +321,7 @@ final class StoryCore {
     story.put("currentSegmentCount", segment.count);
     story.put("currentScene", segment.id);
     story.put("segmentDelivered", true);
-    boolean interactive = StoryRepository.MODE_INTERACTIVE.equals(segment.mode)
-        && segment.choices != null && segment.choices.length() >= 2
-        && !"cutaway".equals(chapter.visibility);
-    story.put("awaitingInteraction", interactive);
-    story.put("interactionChoices", interactive ? copyArray(segment.choices) : new JSONArray());
-    story.put("interactionGuard", interactive ? segment.interactionGuard : "");
-    story.put("interactionSegmentId", interactive ? segment.id : "");
-    story.put("interactionResolutionPending", false);
-    story.put("selectedInteractionAction", "");
+    armDecisionIfNeeded(story, chapter, segment);
     state.put(ROOT_KEY, story);
 
     if (index == segment.count - 1) {
@@ -319,8 +340,165 @@ final class StoryCore {
         chapter.thread,
         chapter.visibility,
         segment.mode,
-        segment.choices,
-        segment.interactionGuard);
+        segment.decisionContract);
+  }
+
+  JSONObject decisionPrefetchRequest(JSONObject state, String recentStory) throws Exception {
+    normalizeState(state);
+    JSONObject output = new JSONObject().put("needed", false);
+    if (!decisionNeedsPrefetch(state) || repository == null) return output;
+
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    String chapterId = story.optString("currentChapter", "").trim();
+    int index = Math.max(0, story.optInt("currentSegmentIndex", 0));
+    StoryRepository.Segment current = repository.segment(chapterId, index);
+    StoryRepository.Segment next = repository.nextSegment(chapterId, index);
+    JSONObject contract = story.optJSONObject("decisionContract");
+    if (current == null || next == null || contract == null || contract.length() == 0) return output;
+
+    String contextHash = decisionContextHash(state);
+    String decisionId = story.optString("decisionId", current.id).trim();
+    String canonText = contract.optString("canonChoiceText", "").trim();
+    String guard = contract.optString("decisionGuard", "").trim();
+
+    StringBuilder prompt = new StringBuilder();
+    prompt.append("BACKROOMsV2 STORY DECISION PREFETCH\n\n");
+    prompt.append("The novelist owns canon. The canonical player choice is already fixed and you MUST NOT alter it.\n");
+    prompt.append("You must create exactly TWO additional plausible choices and their COMPLETE prepared reactions now, before the player clicks anything.\n");
+    prompt.append("At click time there will be NO model call.\n\n");
+    prompt.append("HIDDEN CANON CHOICE (do not repeat or label it): ").append(canonText).append("\n");
+    prompt.append("CURRENT PAUSE ANCHOR:\n").append(clipTail(current.text, 1400)).append("\n\n");
+    prompt.append("NEXT AUTHORED BEAT (private; never spoil its result in choice text):\n")
+        .append(clip(next.text, 1800)).append("\n\n");
+    if (recentStory != null && !recentStory.trim().isEmpty()) {
+      prompt.append("RECENT READER-VISIBLE CONTEXT:\n").append(clip(recentStory, 2600)).append("\n\n");
+    }
+    prompt.append("DECISION GUARD:\n").append(guard).append("\n\n");
+    prompt.append("Create:\n");
+    prompt.append("1) TRAP_LOOP: a choice that looks genuinely reasonable but is wrong because of a clue/rule already available to the player. ")
+        .append("Its reaction must naturally fold space/perception/action back to the CURRENT PAUSE ANCHOR. Never say 'wrong', 'trap', 'reset', 'loop', or expose game mechanics. ")
+        .append("Do not injure, kill, consume items, change Party, reveal lore, spawn Entities, or alter canon.\n");
+    prompt.append("2) CONVERGE: a different reasonable local approach with a short reaction that can immediately rejoin the exact NEXT AUTHORED BEAT unchanged. ")
+        .append("Do not duplicate or summarize the next authored beat.\n\n");
+    prompt.append("PUBLIC CHOICE RULES: both choices must be concise natural Vietnamese, similar in attractiveness/length to the canon choice, ")
+        .append("no A/B/C labels, no bullets, no meta words, no obvious stupid option, no outcome claims.\n");
+    prompt.append("REACTION RULES: Vietnamese prose only, max 900 characters each. No new authoritative facts.\n\n");
+    prompt.append("Return JSON only:\n");
+    prompt.append("{\"trap\":{\"text\":\"...\",\"reply\":\"...\"},")
+        .append("\"converge\":{\"text\":\"...\",\"reply\":\"...\"}}");
+
+    output.put("needed", true);
+    output.put("decisionId", decisionId);
+    output.put("contextHash", contextHash);
+    output.put("prompt", prompt.toString());
+    return output;
+  }
+
+  void installDecisionPackage(JSONObject state, String expectedContextHash, JSONObject generated)
+      throws Exception {
+    normalizeState(state);
+    if (!decisionNeedsPrefetch(state)) throw new IllegalStateException("No story decision needs prefetch.");
+
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    String actualHash = decisionContextHash(state);
+    if (expectedContextHash == null || !actualHash.equals(expectedContextHash.trim())) {
+      throw new IllegalStateException("Story decision context changed before prefetch completed.");
+    }
+
+    JSONObject contract = story.optJSONObject("decisionContract");
+    String canonText = contract == null ? "" : contract.optString("canonChoiceText", "").trim();
+    if (!validPublicChoice(canonText)) throw new IllegalStateException("Invalid canonical decision text.");
+
+    JSONObject trap = generated == null ? null : generated.optJSONObject("trap");
+    JSONObject converge = generated == null ? null : generated.optJSONObject("converge");
+    String trapText = trap == null ? "" : trap.optString("text", "").trim();
+    String trapReply = trap == null ? "" : trap.optString("reply", "").trim();
+    String convergeText = converge == null ? "" : converge.optString("text", "").trim();
+    String convergeReply = converge == null ? "" : converge.optString("reply", "").trim();
+
+    if (!validPublicChoice(trapText) || !validPublicChoice(convergeText)
+        || !validPreparedReply(trapReply) || !validPreparedReply(convergeReply)) {
+      throw new IllegalArgumentException("Prefetched story decision package is incomplete or unsafe.");
+    }
+    if (sameChoice(canonText, trapText) || sameChoice(canonText, convergeText)
+        || sameChoice(trapText, convergeText)) {
+      throw new IllegalArgumentException("Story decision choices must be distinct.");
+    }
+
+    String decisionId = story.optString("decisionId", "").trim();
+    if (decisionId.isEmpty()) throw new IllegalStateException("Missing story decision id.");
+
+    JSONObject outcomes = new JSONObject();
+    List<JSONObject> publicChoices = new ArrayList<>();
+    addOutcome(publicChoices, outcomes, decisionId + ":canon", canonText, OUTCOME_CANON, "");
+    addOutcome(publicChoices, outcomes, decisionId + ":trap", trapText, OUTCOME_TRAP, trapReply);
+    addOutcome(publicChoices, outcomes, decisionId + ":converge", convergeText, OUTCOME_CONVERGE, convergeReply);
+
+    publicChoices.sort(Comparator.comparing(choice ->
+        StoryRepository.sourceDigest(actualHash + "|" + choice.optString("id", ""))));
+
+    JSONArray choices = new JSONArray();
+    for (JSONObject choice : publicChoices) choices.put(choice);
+
+    JSONObject pack = new JSONObject()
+        .put("contextHash", actualHash)
+        .put("choices", choices)
+        .put("outcomes", outcomes);
+    story.put("decisionPackage", pack);
+    story.put("decisionStatus", DECISION_READY);
+    state.put(ROOT_KEY, story);
+  }
+
+  DecisionResolution resolveDecision(
+      JSONObject state, String rawChoiceId, CharacterEncounterCore characterCore) throws Exception {
+    normalizeState(state);
+    if (!decisionReady(state)) throw new IllegalStateException("Story decision is not ready.");
+
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    JSONObject pack = story.getJSONObject("decisionPackage");
+    String expectedHash = pack.optString("contextHash", "").trim();
+    if (!expectedHash.equals(decisionContextHash(state))) {
+      clearDecision(story);
+      throw new IllegalStateException("Story decision context changed; prefetch is stale.");
+    }
+
+    String choiceId = rawChoiceId == null ? "" : rawChoiceId.trim();
+    JSONObject publicChoice = findChoice(pack.optJSONArray("choices"), choiceId);
+    JSONObject outcome = pack.optJSONObject("outcomes") == null
+        ? null : pack.optJSONObject("outcomes").optJSONObject(choiceId);
+    if (publicChoice == null || outcome == null) throw new IllegalArgumentException("Unknown story decision choice.");
+
+    String visibleChoice = publicChoice.optString("text", "").trim();
+    String type = outcome.optString("type", "").trim();
+    String preparedReply = outcome.optString("reply", "").trim();
+
+    if (OUTCOME_TRAP.equals(type)) {
+      String chapterId = story.optString("currentChapter", "").trim();
+      int index = Math.max(0, story.optInt("currentSegmentIndex", 0));
+      StoryRepository.Segment current = repository == null ? null : repository.segment(chapterId, index);
+      if (current == null) throw new IllegalStateException("Missing trap loop anchor segment.");
+      JSONObject history = story.optJSONObject("loopHistory");
+      if (history == null) history = new JSONObject();
+      int count = Math.max(0, history.optInt(story.optString("decisionId", current.id), 0)) + 1;
+      history.put(story.optString("decisionId", current.id), count);
+      story.put("loopHistory", history);
+      state.put(ROOT_KEY, story);
+      String reply = preparedReply + "\n\n" + current.text;
+      return new DecisionResolution(visibleChoice, reply, OUTCOME_TRAP, null, true);
+    }
+
+    if (!OUTCOME_CANON.equals(type) && !OUTCOME_CONVERGE.equals(type)) {
+      throw new IllegalArgumentException("Unsupported story decision outcome.");
+    }
+
+    clearDecision(story);
+    state.put(ROOT_KEY, story);
+    AuthoredTurn authored = advanceAndRender(state, ADVANCE_ACTION_VI, characterCore);
+    if (authored == null) throw new IllegalStateException("Canonical authored beat is unavailable.");
+    String reply = OUTCOME_CONVERGE.equals(type)
+        ? preparedReply + "\n\n" + authored.reply
+        : authored.reply;
+    return new DecisionResolution(visibleChoice, reply, type, authored, false);
   }
 
   void applyCharacterEvent(
@@ -404,16 +582,9 @@ final class StoryCore {
         output.append("Story-local Nam presence: ")
             .append(nam.optString("presence", PRESENCE_UNKNOWN)).append(".\n");
       }
-      if (story.optBoolean("interactionResolutionPending", false)) {
-        output.append("COMPILED STORY INTERACTION RESPONSE:\n");
-        output.append("Selected action: ")
-            .append(story.optString("selectedInteractionAction", "")).append(".\n");
-        String guard = story.optString("interactionGuard", "").trim();
-        if (!guard.isEmpty()) {
-          output.append("INTERACTION GUARD: ").append(guard).append("\n");
-        }
-        output.append("Respond only to this local approach. Do not advance manuscript position, resolve a future authored event, ")
-            .append("change Party membership, create major discoveries, or contradict the next authored segment.\n");
+      if (story.optBoolean("awaitingDecision", false)) {
+        output.append("STORY DECISION: a hidden decision package is being/has been prefetched. ")
+            .append("Explorer AI must not resolve it or infer which visible choice is canon.\n");
       }
       if (story.optBoolean("arcComplete", false)) {
         output.append("Level 0 authored arc boundary has been reached. This is NOT a validated Level 1 transition.\n");
@@ -435,8 +606,8 @@ final class StoryCore {
       result.put("storyVisibility", story.optString("visibility", "player"));
       result.put("storyChapter", story.optString("currentChapter", ""));
       result.put("storySegmentId", story.optString("currentScene", ""));
-      result.put("storyMode", story.optBoolean("awaitingInteraction", false)
-          ? StoryRepository.MODE_INTERACTIVE
+      result.put("storyMode", story.optBoolean("awaitingDecision", false)
+          ? StoryRepository.MODE_DECISION
           : "");
     } catch (Exception ignored) {}
     return result;
@@ -457,6 +628,104 @@ final class StoryCore {
     }
   }
 
+  private void armDecisionIfNeeded(
+      JSONObject story, StoryRepository.Chapter chapter, StoryRepository.Segment segment) throws Exception {
+    boolean decision = StoryRepository.MODE_DECISION.equals(segment.mode)
+        && segment.decisionContract != null
+        && segment.decisionContract.length() > 0
+        && !"cutaway".equals(chapter.visibility);
+    if (!decision) {
+      clearDecision(story);
+      return;
+    }
+    story.put("awaitingDecision", true);
+    story.put("decisionStatus", DECISION_PREFETCH_REQUIRED);
+    story.put("decisionId", segment.id);
+    story.put("decisionContract", copyObject(segment.decisionContract));
+    story.put("decisionPackage", new JSONObject());
+  }
+
+  private void clearDecision(JSONObject story) throws Exception {
+    story.put("awaitingDecision", false);
+    story.put("decisionStatus", "");
+    story.put("decisionId", "");
+    story.put("decisionContract", new JSONObject());
+    story.put("decisionPackage", new JSONObject());
+  }
+
+  private String decisionContextHash(JSONObject state) {
+    try {
+      JSONObject story = state.optJSONObject(ROOT_KEY);
+      if (story == null) return "";
+      StringBuilder material = new StringBuilder();
+      material.append(story.optString("sourceRevision", "")).append('|')
+          .append(story.optString("currentChapter", "")).append('|')
+          .append(story.optString("currentScene", "")).append('|')
+          .append(story.optInt("currentSegmentIndex", 0)).append('|')
+          .append(story.optString("thread", "")).append('|')
+          .append(story.optString("visibility", "")).append('|')
+          .append(story.optJSONObject(FLAGS_KEY)).append('|')
+          .append(story.optJSONObject(CHARACTERS_KEY)).append('|')
+          .append(state.optJSONArray("party")).append('|')
+          .append(state.optJSONArray("inventory")).append('|')
+          .append(state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)))).append('|')
+          .append(state.optJSONObject(SurvivalCore.ROOT_KEY)).append('|')
+          .append(state.optJSONObject("flags"));
+      return StoryRepository.sourceDigest(material.toString());
+    } catch (Exception ignored) {
+      return "";
+    }
+  }
+
+  private static void addOutcome(
+      List<JSONObject> publicChoices,
+      JSONObject outcomes,
+      String id,
+      String text,
+      String type,
+      String reply) throws Exception {
+    publicChoices.add(new JSONObject().put("id", id).put("text", text));
+    outcomes.put(id, new JSONObject().put("type", type).put("reply", reply == null ? "" : reply));
+  }
+
+  private static JSONObject findChoice(JSONArray choices, String id) {
+    if (choices == null || id == null) return null;
+    for (int i = 0; i < choices.length(); i++) {
+      JSONObject choice = choices.optJSONObject(i);
+      if (choice != null && id.equals(choice.optString("id", ""))) return choice;
+    }
+    return null;
+  }
+
+  private static boolean validPublicChoice(String text) {
+    if (text == null) return false;
+    String value = text.trim();
+    if (value.length() < 4 || value.length() > 180) return false;
+    String lower = value.toLowerCase(Locale.ROOT);
+    return !lower.equals(ADVANCE_ACTION_VI)
+        && !lower.equals("continue story")
+        && !lower.contains("canon")
+        && !lower.contains("trap_loop")
+        && !lower.contains("bẫy")
+        && !lower.matches("^[abc][\\.\\):\\-].*");
+  }
+
+  private static boolean validPreparedReply(String text) {
+    if (text == null) return false;
+    String value = text.trim();
+    if (value.isEmpty() || value.length() > 1400) return false;
+    String lower = value.toLowerCase(Locale.ROOT);
+    return !lower.contains("bạn đã chọn sai")
+        && !lower.contains("trap_loop")
+        && !lower.contains("reset checkpoint");
+  }
+
+  private static boolean sameChoice(String a, String b) {
+    String aa = a == null ? "" : a.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    String bb = b == null ? "" : b.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    return aa.equals(bb);
+  }
+
   private void bindRepositoryStory(JSONObject story) throws Exception {
     if (!repository.available()) return;
     if (!story.optBoolean("active", false) || story.optString("currentChapter", "").trim().isEmpty()) {
@@ -467,6 +736,7 @@ final class StoryCore {
       story.put("segmentDelivered", false);
       story.put("chapterEntered", false);
       story.put("arcComplete", false);
+      clearDecision(story);
     }
     StoryRepository.Chapter chapter = repository.chapter(story.optString("currentChapter", ""));
     if (chapter != null) {
@@ -601,15 +871,35 @@ final class StoryCore {
     }
   }
 
+  private static JSONObject copyObject(JSONObject source) {
+    try {
+      return source == null ? new JSONObject() : new JSONObject(source.toString());
+    } catch (Exception ignored) {
+      return new JSONObject();
+    }
+  }
+
+  private static String clip(String text, int max) {
+    String value = text == null ? "" : text.trim();
+    return value.length() <= max ? value : value.substring(0, max);
+  }
+
+  private static String clipTail(String text, int max) {
+    String value = text == null ? "" : text.trim();
+    return value.length() <= max ? value : value.substring(value.length() - max);
+  }
+
   private static void appendArray(StringBuilder output, String label, JSONArray values) {
     if (values == null || values.length() == 0) return;
     output.append(label).append(": ");
+    boolean wrote = false;
     for (int i = 0; i < values.length(); i++) {
       String value = values.optString(i, "").trim();
       if (value.isEmpty()) continue;
-      if (i > 0) output.append(" | ");
+      if (wrote) output.append(" | ");
       output.append(value);
+      wrote = true;
     }
-    output.append("\n");
+    if (wrote) output.append("\n");
   }
 }
