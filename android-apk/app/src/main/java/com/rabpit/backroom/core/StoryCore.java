@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /** Owns authored-story state, deterministic progression, and prefetched hidden story decisions. */
 final class StoryCore {
   static final String ROOT_KEY = "story";
-  static final int SCHEMA_VERSION = 3;
+  static final int SCHEMA_VERSION = 4;
 
   static final String STATUS_UNSEEN = "UNSEEN_IN_STORY";
   static final String STATUS_PARALLEL = "PARALLEL_STORY";
@@ -142,10 +142,13 @@ final class StoryCore {
     if (!story.has("visibility")) story.put("visibility", "player");
     if (!story.has("eventSequence")) story.put("eventSequence", 0);
     if (!story.has("awaitingDecision")) story.put("awaitingDecision", false);
+    if (!story.has("awaitingEntityAttack")) story.put("awaitingEntityAttack", false);
+    if (!story.has("pendingStoryAdvance")) story.put("pendingStoryAdvance", false);
     if (!story.has("decisionStatus")) story.put("decisionStatus", "");
     if (!story.has("decisionId")) story.put("decisionId", "");
     if (story.optJSONObject("decisionContract") == null) story.put("decisionContract", new JSONObject());
     if (story.optJSONObject("decisionPackage") == null) story.put("decisionPackage", new JSONObject());
+    if (story.optJSONObject("entityGate") == null) story.put("entityGate", new JSONObject());
     if (story.optJSONObject("loopHistory") == null) story.put("loopHistory", new JSONObject());
     if (story.optJSONObject(FLAGS_KEY) == null) story.put(FLAGS_KEY, new JSONObject());
 
@@ -203,7 +206,9 @@ final class StoryCore {
       return story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
           && ("cutaway".equals(story.optString("visibility", ""))
-              || story.optBoolean("awaitingDecision", false));
+              || story.optBoolean("awaitingDecision", false)
+              || story.optBoolean("awaitingEntityAttack", false)
+              || story.optBoolean("pendingStoryAdvance", false));
     } catch (Exception ignored) {
       return false;
     }
@@ -219,6 +224,58 @@ final class StoryCore {
     } catch (Exception ignored) {
       return false;
     }
+  }
+
+  boolean awaitingEntityAttack(JSONObject state) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      return story.optBoolean("active", false)
+          && !story.optBoolean("arcComplete", false)
+          && story.optBoolean("awaitingEntityAttack", false);
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
+  JSONObject entityAttackChoice(JSONObject state) {
+    JSONObject choice = new JSONObject();
+    try {
+      normalizeState(state);
+      if (!awaitingEntityAttack(state)) return choice;
+      JSONObject gate = state.getJSONObject(ROOT_KEY).optJSONObject("entityGate");
+      if (gate == null) return choice;
+      choice.put("id", "story_attack");
+      choice.put("text", gate.optString("attackText", "Tấn công"));
+      choice.put("entityKey", gate.optString("entityKey", ""));
+    } catch (Exception ignored) {}
+    return choice;
+  }
+
+  boolean hasPendingStoryAdvance(JSONObject state) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      return story.optBoolean("pendingStoryAdvance", false);
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
+  String consumeEntityAttack(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("awaitingEntityAttack", false)) {
+      throw new IllegalStateException("No authored Entity gate is awaiting attack.");
+    }
+    JSONObject gate = story.optJSONObject("entityGate");
+    String entityKey = gate == null ? "" : gate.optString("entityKey", "").trim();
+    if (entityKey.isEmpty()) throw new IllegalStateException("Authored Entity gate is missing entityKey.");
+    story.put("awaitingEntityAttack", false);
+    story.put("pendingStoryAdvance", true);
+    story.put("entityGate", new JSONObject());
+    state.put(ROOT_KEY, story);
+    return entityKey;
   }
 
   boolean decisionNeedsPrefetch(JSONObject state) {
@@ -269,8 +326,10 @@ final class StoryCore {
     if (!isAdvanceAction(action)) return null;
 
     JSONObject story = state.getJSONObject(ROOT_KEY);
-    if (story.optBoolean("awaitingDecision", false)) {
-      throw new IllegalStateException("Story decision must be resolved before authored progression.");
+    if (story.optBoolean("awaitingDecision", false)
+        || story.optBoolean("awaitingEntityAttack", false)
+        || story.optBoolean("pendingStoryAdvance", false)) {
+      throw new IllegalStateException("Current story turn must be resolved before authored progression.");
     }
     if (!story.optBoolean("active", false) || story.optBoolean("arcComplete", false)
         || repository == null || !repository.available()) {
@@ -322,7 +381,7 @@ final class StoryCore {
     story.put("currentSegmentCount", segment.count);
     story.put("currentScene", segment.id);
     story.put("segmentDelivered", true);
-    armDecisionIfNeeded(story, chapter, segment);
+    armTurnGate(story, chapter, segment);
     state.put(ROOT_KEY, story);
 
     if (index == segment.count - 1) {
@@ -359,33 +418,34 @@ final class StoryCore {
 
     String contextHash = decisionContextHash(state);
     String decisionId = story.optString("decisionId", current.id).trim();
-    String canonText = contract.optString("canonChoiceText", "").trim();
     String guard = contract.optString("decisionGuard", "").trim();
 
     StringBuilder prompt = new StringBuilder();
-    prompt.append("BACKROOMsV2 STORY DECISION PREFETCH\n\n");
-    prompt.append("The novelist owns canon. The canonical player choice is already fixed and you MUST NOT alter it.\n");
-    prompt.append("You must create exactly TWO additional plausible choices and their COMPLETE prepared reactions now, before the player clicks anything.\n");
+    prompt.append("BACKROOMsV2 STORY TURN PREFETCH\n\n");
+    prompt.append("The novelist owns canon. The NEXT AUTHORED BEAT below is the fixed canonical outcome. ");
+    prompt.append("You may phrase the player-facing canon action, but you MUST NOT alter that outcome.\n");
+    prompt.append("Create the COMPLETE three-choice package now while the player reads the current turn. ");
     prompt.append("At click time there will be NO model call.\n\n");
-    prompt.append("HIDDEN CANON CHOICE (do not repeat or label it): ").append(canonText).append("\n");
-    prompt.append("CURRENT PAUSE ANCHOR:\n").append(clipTail(current.text, 1400)).append("\n\n");
-    prompt.append("NEXT AUTHORED BEAT (private; never spoil its result in choice text):\n")
-        .append(clip(next.text, 1800)).append("\n\n");
+    prompt.append("CURRENT TURN END:\n").append(clipTail(current.text, 1600)).append("\n\n");
+    prompt.append("NEXT AUTHORED BEAT (private canonical outcome):\n")
+        .append(clip(next.text, 2000)).append("\n\n");
     if (recentStory != null && !recentStory.trim().isEmpty()) {
       prompt.append("RECENT READER-VISIBLE CONTEXT:\n").append(clip(recentStory, 2600)).append("\n\n");
     }
     prompt.append("DECISION GUARD:\n").append(guard).append("\n\n");
-    prompt.append("Create:\n");
-    prompt.append("1) TRAP_LOOP: a choice that looks genuinely reasonable but is wrong because of a clue/rule already available to the player. ")
-        .append("Its reaction must naturally fold space/perception/action back to the CURRENT PAUSE ANCHOR. Never say 'wrong', 'trap', 'reset', 'loop', or expose game mechanics. ")
-        .append("Do not injure, kill, consume items, change Party, reveal lore, spawn Entities, or alter canon.\n");
-    prompt.append("2) CONVERGE: a different reasonable local approach with a short reaction that can immediately rejoin the exact NEXT AUTHORED BEAT unchanged. ")
-        .append("Do not duplicate or summarize the next authored beat.\n\n");
-    prompt.append("PUBLIC CHOICE RULES: both choices must be concise natural Vietnamese, similar in attractiveness/length to the canon choice, ")
-        .append("no A/B/C labels, no bullets, no meta words, no obvious stupid option, no outcome claims.\n");
-    prompt.append("REACTION RULES: Vietnamese prose only, max 900 characters each. No new authoritative facts.\n\n");
+    prompt.append("Create exactly:\n");
+    prompt.append("1) canon.text: a concise immediate action Cao Minh can choose NOW that naturally leads into the NEXT AUTHORED BEAT. ");
+    prompt.append("Do not reveal what happens after choosing it.\n");
+    prompt.append("2) trap.text + trap.reply: a genuinely reasonable wrong choice based on existing clues. ");
+    prompt.append("The reply must fold the situation back to the CURRENT TURN END without saying wrong/trap/reset/loop.\n");
+    prompt.append("3) converge.text + converge.reply: another reasonable local choice. ");
+    prompt.append("Its reply must leave state able to enter the exact NEXT AUTHORED BEAT unchanged.\n\n");
+    prompt.append("PUBLIC CHOICE RULES: concise natural Vietnamese, similar length/appeal, no A/B/C, no bullets, ");
+    prompt.append("no meta words, no 'Tiếp tục', no obvious stupid option, no result spoilers.\n");
+    prompt.append("REACTION RULES: Vietnamese prose only, max 900 characters. No new authoritative facts, items, Entities, Party changes, routes, deaths or lore.\n\n");
     prompt.append("Return JSON only:\n");
-    prompt.append("{\"trap\":{\"text\":\"...\",\"reply\":\"...\"},")
+    prompt.append("{\"canon\":{\"text\":\"...\"},")
+        .append("\"trap\":{\"text\":\"...\",\"reply\":\"...\"},")
         .append("\"converge\":{\"text\":\"...\",\"reply\":\"...\"}}");
 
     output.put("needed", true);
@@ -406,8 +466,8 @@ final class StoryCore {
       throw new IllegalStateException("Story decision context changed before prefetch completed.");
     }
 
-    JSONObject contract = story.optJSONObject("decisionContract");
-    String canonText = contract == null ? "" : contract.optString("canonChoiceText", "").trim();
+    JSONObject canon = generated == null ? null : generated.optJSONObject("canon");
+    String canonText = canon == null ? "" : canon.optString("text", "").trim();
     if (!validPublicChoice(canonText)) throw new IllegalStateException("Invalid canonical decision text.");
 
     JSONObject trap = generated == null ? null : generated.optJSONObject("trap");
@@ -497,13 +557,10 @@ final class StoryCore {
     }
 
     clearDecision(story);
+    story.put("pendingStoryAdvance", true);
     state.put(ROOT_KEY, story);
-    AuthoredTurn authored = advanceAndRender(state, ADVANCE_ACTION_VI, characterCore);
-    if (authored == null) throw new IllegalStateException("Canonical authored beat is unavailable.");
-    String reply = OUTCOME_CONVERGE.equals(type)
-        ? preparedReply + "\n\n" + authored.reply
-        : authored.reply;
-    return new DecisionResolution(visibleChoice, reply, type, authored, false);
+    String reply = OUTCOME_CONVERGE.equals(type) ? preparedReply : "";
+    return new DecisionResolution(visibleChoice, reply, type, null, false);
   }
 
   void refreshLoopDecisionContext(JSONObject state) throws Exception {
@@ -517,6 +574,16 @@ final class StoryCore {
     story.put("decisionPackage", pack);
     state.put(ROOT_KEY, story);
   }
+  AuthoredTurn advancePendingTurn(
+      JSONObject state, CharacterEncounterCore characterCore) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("pendingStoryAdvance", false)) return null;
+    story.put("pendingStoryAdvance", false);
+    state.put(ROOT_KEY, story);
+    return advanceAndRender(state, ADVANCE_ACTION_VI, characterCore);
+  }
+
 
   void applyCharacterEvent(
       JSONObject state,
@@ -600,8 +667,11 @@ final class StoryCore {
             .append(nam.optString("presence", PRESENCE_UNKNOWN)).append(".\n");
       }
       if (story.optBoolean("awaitingDecision", false)) {
-        output.append("STORY DECISION: a hidden decision package is being/has been prefetched. ")
-            .append("Explorer AI must not resolve it or infer which visible choice is canon.\n");
+        output.append("STORY DECISION: every player-controlled story turn owns exactly three hidden choices. ")
+            .append("Explorer AI must not resolve them or infer which visible choice is canon.\n");
+      }
+      if (story.optBoolean("awaitingEntityAttack", false)) {
+        output.append("AUTHORED ENTITY GATE: story requires combat here. Only the Attack action is legal until combat starts.\n");
       }
       if (story.optBoolean("arcComplete", false)) {
         output.append("Level 0 authored arc boundary has been reached. This is NOT a validated Level 1 transition.\n");
@@ -623,9 +693,9 @@ final class StoryCore {
       result.put("storyVisibility", story.optString("visibility", "player"));
       result.put("storyChapter", story.optString("currentChapter", ""));
       result.put("storySegmentId", story.optString("currentScene", ""));
-      result.put("storyMode", story.optBoolean("awaitingDecision", false)
-          ? StoryRepository.MODE_DECISION
-          : "");
+      result.put("storyMode", story.optBoolean("awaitingEntityAttack", false)
+          ? StoryRepository.MODE_ENTITY_GATE
+          : (story.optBoolean("awaitingDecision", false) ? StoryRepository.MODE_DECISION : ""));
     } catch (Exception ignored) {}
     return result;
   }
@@ -645,16 +715,28 @@ final class StoryCore {
     }
   }
 
-  private void armDecisionIfNeeded(
+  private void armTurnGate(
       JSONObject story, StoryRepository.Chapter chapter, StoryRepository.Segment segment) throws Exception {
-    boolean decision = StoryRepository.MODE_DECISION.equals(segment.mode)
+    clearDecision(story);
+    story.put("awaitingEntityAttack", false);
+    story.put("entityGate", new JSONObject());
+
+    if ("cutaway".equals(chapter.visibility)) return;
+
+    if (StoryRepository.MODE_ENTITY_GATE.equals(segment.mode)
         && segment.decisionContract != null
-        && segment.decisionContract.length() > 0
-        && !"cutaway".equals(chapter.visibility);
-    if (!decision) {
-      clearDecision(story);
+        && segment.decisionContract.length() > 0) {
+      story.put("awaitingEntityAttack", true);
+      story.put("entityGate", copyObject(segment.decisionContract));
       return;
     }
+
+    if (!StoryRepository.MODE_DECISION.equals(segment.mode)
+        || segment.decisionContract == null
+        || segment.decisionContract.length() == 0) {
+      return;
+    }
+
     story.put("awaitingDecision", true);
     story.put("decisionStatus", DECISION_PREFETCH_REQUIRED);
     story.put("decisionId", segment.id);
@@ -757,6 +839,9 @@ final class StoryCore {
       story.put("segmentDelivered", false);
       story.put("chapterEntered", false);
       story.put("arcComplete", false);
+      story.put("pendingStoryAdvance", false);
+      story.put("awaitingEntityAttack", false);
+      story.put("entityGate", new JSONObject());
       clearDecision(story);
     }
     StoryRepository.Chapter chapter = repository.chapter(story.optString("currentChapter", ""));
