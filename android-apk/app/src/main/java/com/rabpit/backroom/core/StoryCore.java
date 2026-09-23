@@ -501,6 +501,18 @@ final class StoryCore {
     return new DecisionResolution(visibleChoice, reply, type, authored, false);
   }
 
+  void refreshLoopDecisionContext(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("awaitingDecision", false)
+        || !DECISION_READY.equals(story.optString("decisionStatus", ""))) return;
+    JSONObject pack = story.optJSONObject("decisionPackage");
+    if (pack == null || pack.optJSONObject("outcomes") == null) return;
+    pack.put("contextHash", decisionContextHash(state));
+    story.put("decisionPackage", pack);
+    state.put(ROOT_KEY, story);
+  }
+
   void applyCharacterEvent(
       JSONObject state,
       String rawCharacterId,
