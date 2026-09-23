@@ -39,7 +39,7 @@ Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/asset
 - If an Entity encounter is already active, Core does not roll a replacement Entity.
 - If multiple independent rolls succeed on the same turn, Core selects one of those successful rolls because runtime supports one active encounter overlay at a time.
 - Gemini does not choose the spawned Entity and cannot replace `flags.entityEncounterKey`.
-- `jane_the_killer`, `slenderman` and `diep_minh` remain local overlay assets for legacy-save compatibility. They are still not in the auto-spawn registry because no fixed encounter rate is defined for them; the roaming policy applies to every Entity that is actually registered for auto-spawn.
+- `jane_the_killer`, `slenderman` and `diep_minh` remain legacy/local overlay keys and are not in the auto-spawn registry because no fixed encounter rate is defined for them. `diep_minh` now has a dedicated legacy/boss canon payload in `entity_encounters.json` plus `android-apk/DIEP_MINH_CANON.md`; `EntityCore` exposes that canon only when the legacy encounter is already active. This does **not** make Diệp Minh eligible for random spawning.
 
 Current fixed rates are stored only in `entity_encounters.json`; that file is the machine-readable encounter authority so documentation and runtime cannot quietly grow two different probability systems.
 
