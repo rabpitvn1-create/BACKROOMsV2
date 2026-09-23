@@ -9,11 +9,6 @@ on:
         description: 'Type DELETE_NON_RELEASE_RUNS to confirm'
         required: true
         type: string
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/purge-actions-except-green-releases.yml'
 
 permissions:
   actions: write
@@ -28,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate confirmation
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           CONFIRM: ${{ inputs.confirm }}
         shell: bash
