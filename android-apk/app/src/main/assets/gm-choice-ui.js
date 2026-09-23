@@ -186,11 +186,6 @@
       if (status) status.textContent = 'Không tìm thấy Android story bridge.';
       return;
     }
-    var pack = state.story && state.story.decisionPackage;
-    if (pack && Array.isArray(pack.choices)) {
-      pack.choices.forEach(function(x){ x.disabled = true; });
-    }
-    choice.selected = true;
     window.__combatBusy = true;
     if (typeof busy !== 'undefined') busy = true;
     if (submit) submit.disabled = true;
@@ -640,6 +635,32 @@
       }
     }, true);
   }
+
+  window.backroomStoryDecisionPrepared = function(json){
+    try {
+      state = JSON.parse(json);
+      if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
+      window.__storyDecisionPrefetchKey = '';
+      window.__storyDecisionPrefetchRetries = 0;
+      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
+      if (typeof window.render === 'function') window.render();
+      syncComposer();
+      if (status) status.textContent = 'Các lựa chọn đã sẵn sàng.';
+    } catch (_) {
+      window.__storyDecisionPrefetchKey = '';
+      if (status) status.textContent = 'Decision package không hợp lệ.';
+    }
+  };
+
+  window.backroomStoryDecisionPrefetchError = function(message){
+    window.__storyDecisionPrefetchKey = '';
+    window.__storyDecisionPrefetchRetries = (window.__storyDecisionPrefetchRetries || 0) + 1;
+    if (window.__storyDecisionPrefetchRetries <= 2 && storyDecisionNeedsPrefetch()) {
+      setTimeout(function(){ requestStoryDecisionPrefetch(); }, 900);
+      return;
+    }
+    if (status) status.textContent = 'Không thể chuẩn bị lựa chọn: ' + String(message || 'provider error');
+  };
 
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){
