@@ -1,0 +1,15 @@
+Backroom 1.1.87
+
+- Mọi story turn player-controlled có turn kế tiếp đều bắt buộc hiển thị đúng 3 lựa chọn dạng •.
+- Loại bỏ hoàn toàn lựa chọn “Tiếp tục” khỏi story gameplay.
+- Story Compiler v3 chuyển player-visible turn sang DECISION deterministic thay vì chỉ tạo decision khi model thấy “hợp lý”.
+- Random Entity được roll ở cuối turn hiện tại sau khi resolve lựa chọn và trước khi hiển thị turn kế tiếp.
+- Nếu random Entity xuất hiện, turn kế bị khóa cho tới khi combat kết thúc bằng victory.
+- Authored Entity encounter dùng ENTITY_GATE và chỉ hiển thị một lựa chọn duy nhất: • Tấn công.
+- Sau authored combat victory, story mới phát turn kế và quay lại vòng 3 lựa chọn.
+- StoryCore thêm pendingStoryAdvance và awaitingEntityAttack để giữ đúng thứ tự turn/combat.
+- Free input, Inventory và stat upgrade tiếp tục bị khóa trong lúc story/combat gate chưa resolve.
+- Giữ prefetch CANON / CONVERGE / TRAP_LOOP, hidden outcome Core-private và choiceId UUID opaque.
+- Tích hợp canon Diệp Minh R01 và legacy boss prompt.
+- Diệp Minh vẫn là legacy/boss-only, không được thêm vào auto-spawn Entity registry.
+- Runtime/Story provider policy giữ nguyên: Gemini key 1→5 trước, Haiku là fallback cuối.
