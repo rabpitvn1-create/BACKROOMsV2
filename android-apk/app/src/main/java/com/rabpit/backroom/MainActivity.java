@@ -501,22 +501,23 @@ public class MainActivity extends Activity {
   }
 
   private String generateText(String prompt) throws Exception {
-    Exception haikuError;
+    Exception geminiError;
     try {
-      return haikuText(prompt);
+      // geminiText() rotates through GEMINI_API_KEY_1..5 before it gives up.
+      return geminiText(prompt);
     } catch (Exception error) {
-      haikuError = error;
-      Log.w(TAG, "Haiku primary failed; falling back to Gemini.");
+      geminiError = error;
+      Log.w(TAG, "All Gemini keys failed; falling back to Haiku.");
     }
 
     try {
-      return geminiText(prompt);
-    } catch (Exception geminiError) {
+      return haikuText(prompt);
+    } catch (Exception haikuError) {
       throw new Exception(
-          "Haiku và toàn bộ Gemini fallback đều không khả dụng. Haiku: "
-              + providerErrorSummary(haikuError)
-              + " | Gemini: "
-              + providerErrorSummary(geminiError));
+          "Toàn bộ 5 Gemini key và Haiku fallback đều không khả dụng. Gemini: "
+              + providerErrorSummary(geminiError)
+              + " | Haiku: "
+              + providerErrorSummary(haikuError));
     }
   }
 
@@ -669,16 +670,17 @@ public class MainActivity extends Activity {
           long tCtxEnd = System.currentTimeMillis();
 
           long tGenStart = System.currentTimeMillis();
-          String providerUsed = "Haiku";
+          String providerUsed = "Gemini";
           boolean fallbackOccurred = false;
           String rawOutput = "";
           try {
-            rawOutput = haikuText(prompt);
-          } catch (Exception haikuError) {
-            fallbackOccurred = true;
-            providerUsed = "Gemini";
-            Log.w(TAG, "Haiku primary failed (" + providerErrorSummary(haikuError) + "); falling back to Gemini.");
             rawOutput = geminiText(prompt);
+          } catch (Exception geminiError) {
+            fallbackOccurred = true;
+            providerUsed = "Haiku";
+            Log.w(TAG, "All Gemini keys failed (" + providerErrorSummary(geminiError)
+                + "); falling back to Haiku.");
+            rawOutput = haikuText(prompt);
           }
           long tGenEnd = System.currentTimeMillis();
 
@@ -766,11 +768,11 @@ public class MainActivity extends Activity {
 
           String rawOutput;
           try {
-            rawOutput = haikuText(prompt);
-          } catch (Exception haikuError) {
-            Log.w(TAG, "Story decision Haiku prefetch failed ("
-                + providerErrorSummary(haikuError) + "); falling back to Gemini.");
             rawOutput = geminiText(prompt);
+          } catch (Exception geminiError) {
+            Log.w(TAG, "All Gemini keys failed for story decision prefetch ("
+                + providerErrorSummary(geminiError) + "); falling back to Haiku.");
+            rawOutput = haikuText(prompt);
           }
 
           JSONObject generated = parseModelJson(rawOutput);
