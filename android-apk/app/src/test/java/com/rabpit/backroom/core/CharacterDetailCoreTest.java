@@ -48,19 +48,19 @@ public class CharacterDetailCoreTest {
         .put(LevelCore.LEVEL_KEY, "0")
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
-            .put("id", "lucia").put("name", "Lục Trầm").put("joined", true)))
+            .put("id", "luc_tram").put("name", "Lục Trầm").put("joined", true)))
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 5));
 
     new CharacterDetailCore().projectState(state);
 
     JSONArray members = state.getJSONObject("partyDetails").getJSONArray("members");
     assertEquals(2, members.length());
-    JSONObject lucia = members.getJSONObject(1);
-    assertEquals("lucia", lucia.getString("id"));
-    assertEquals(50, lucia.getInt("maxHp"));
-    assertEquals(50, lucia.getInt("baseMaxHp"));
-    assertEquals(5, lucia.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
-    assertNotNull(lucia.getJSONArray("inventory"));
+    JSONObject lucTram = members.getJSONObject(1);
+    assertEquals("luc_tram", lucTram.getString("id"));
+    assertEquals(50, lucTram.getInt("maxHp"));
+    assertEquals(50, lucTram.getInt("baseMaxHp"));
+    assertEquals(5, lucTram.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
+    assertNotNull(lucTram.getJSONArray("inventory"));
   }
 
   @Test public void legacyThresholdsAndPercentagesRemainSurvivalOwned() throws Exception {

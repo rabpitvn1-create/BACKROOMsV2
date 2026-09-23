@@ -39,7 +39,7 @@ final class CharacterEncounterCore {
   private static final String JUST_ENCOUNTERED = "justEncountered";
   private static final String LAST_ROLL_TURN = "lastExplorerRollTurn";
   private static final String LAST_ROLL_ACTION = "lastExplorerRollAction";
-  private static final String[] CANONICAL_ORDER = {"lucia", "iris", "syvial"};
+  private static final String[] CANONICAL_ORDER = {"luc_tram", "iris", "syvial"};
 
   private final IntRng rng;
 
@@ -97,12 +97,11 @@ final class CharacterEncounterCore {
     List<String> hits = new ArrayList<>();
 
     String currentLevelKey = state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)));
-    // "lucia" remains the stable save/runtime id for backward compatibility.
     // Lục Trầm's current canon requires the reunion to happen only after Level 0.
-    if (!containsPartyId(party, "lucia")
+    if (!containsPartyId(party, "luc_tram")
         && isLucTramEncounterLevel(currentLevelKey)
         && shouldEncounterLucTram(currentLevelKey, nextRoll(100))) {
-      hits.add("lucia");
+      hits.add("luc_tram");
     }
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("iris");
@@ -174,7 +173,7 @@ final class CharacterEncounterCore {
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
-      boolean lucTramPending = containsString(pending, "lucia");
+      boolean lucTramPending = containsString(pending, "luc_tram");
       String encounterRule = lucTramPending
           ? "Lục Trầm is a REUNION, not first contact: she and Cao Minh knew and fought each other before Backrooms. " +
               "Begin with wary/hostile recognition consistent with their old rivalry. Do not jump directly to trust, romance, forgiveness or the hidden truth of Táng Kiếm Cốc. "
@@ -269,7 +268,7 @@ final class CharacterEncounterCore {
 
   private static JSONArray defaultInventory(String id) throws Exception {
     JSONArray inventory = new JSONArray();
-    if ("lucia".equals(id)) {
+    if ("luc_tram".equals(id)) {
       inventory.put(new JSONObject().put("name", "Tịch Quang Kiếm"));
       inventory.put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"));
     } else if ("iris".equals(id)) {
@@ -327,19 +326,18 @@ final class CharacterEncounterCore {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
-    if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("lucia")
-        || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai") || raw.contains("hua thuy mai")) return "lucia";
+    if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "luc_tram";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return "";
   }
 
   private static boolean isEncounterCharacter(String id) {
-    return "lucia".equals(id) || "iris".equals(id) || "syvial".equals(id);
+    return "luc_tram".equals(id) || "iris".equals(id) || "syvial".equals(id);
   }
 
   private static String displayName(String id) {
-    if ("lucia".equals(id)) return "Lục Trầm";
+    if ("luc_tram".equals(id)) return "Lục Trầm";
     if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
     return id;

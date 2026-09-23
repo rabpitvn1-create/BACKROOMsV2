@@ -13,7 +13,7 @@ public class GmChoiceContractTest {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("location", "Level 0 / The Lobby — hành lang phía đông")
-        .put("party", new JSONArray().put(new JSONObject().put("id", "lucia").put("name", "Lục Trầm")))
+        .put("party", new JSONArray().put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")))
         .put("inventory", new JSONArray().put(new JSONObject().put("id", "almond-water").put("name", "Almond Water")));
 
     String reply = "Cao Minh gặp Clump tại Level 0. Lục Trầm dùng Tịch Quang Phản Kiếm trong khi "

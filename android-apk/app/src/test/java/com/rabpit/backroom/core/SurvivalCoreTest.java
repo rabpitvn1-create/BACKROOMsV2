@@ -41,9 +41,9 @@ public class SurvivalCoreTest {
     JSONObject state = new JSONObject()
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 500))
         .put("party", new JSONArray().put(
-            new JSONObject().put("id", "lucia").put("name", "Lục Trầm").put("joined", true)));
+            new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm").put("joined", true)));
 
-    JSONObject physiology = core.projectPhysiology(state, "lucia");
+    JSONObject physiology = core.projectPhysiology(state, "luc_tram");
 
     assertEquals(100, physiology.getInt("foodPercent"));
     assertEquals(100, physiology.getInt("waterPercent"));

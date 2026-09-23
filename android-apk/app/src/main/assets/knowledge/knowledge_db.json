@@ -1406,7 +1406,7 @@
       "id": "CHAR.LUC_TRAM.IDENTITY",
       "domain": "CHARACTER",
       "kind": "identity",
-      "text": "Lục Trầm is a Chân truyền đệ tử of Thiên Kiếm Môn, a Chính Đạo Kiếm Tu from the same origin world as Cao Minh. She and Cao Minh already knew and fought each other before Backrooms. Internal runtime/save id 'lucia' is retained only for backward compatibility and must not be treated as her current name.",
+      "text": "Lục Trầm is a Chân truyền đệ tử of Thiên Kiếm Môn, a Chính Đạo Kiếm Tu from the same origin world as Cao Minh. She and Cao Minh already knew and fought each other before Backrooms. Runtime id is 'luc_tram'.",
       "source": {
         "document": "02_CHARACTERS/Lục_Trầm_Codex",
         "anchor": "00-01 · HỒ SƠ / ĐỊNH DANH"
@@ -1419,7 +1419,7 @@
         "luc tram",
         "thiên kiếm môn",
         "chính đạo kiếm tu",
-        "lucia"
+        "luc_tram"
       ],
       "references": [],
       "affordances": [
@@ -1431,7 +1431,7 @@
       "id": "CHAR.LUC_TRAM.VISUAL_R01",
       "domain": "CHARACTER",
       "kind": "visual",
-      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar and combat overlay now use Lục Trầm's current Drive images; legacy runtime filenames are retained only for path compatibility.",
+      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar path is avatars/luctram_avatar.png and combat overlay path is luctram_overlay.png.",
       "source": {
         "document": "02_CHARACTERS/Lục_Trầm_Codex",
         "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R01"
@@ -1483,7 +1483,7 @@
       "id": "CHAR.LUC_TRAM.THIEN_KIEM_DINH_GIOI",
       "domain": "CHARACTER",
       "kind": "ultimate",
-      "text": "Thiên Kiếm Định Giới is Lục Trầm's current Poker Dice Ultimate presentation. Runtime mechanics are deliberately preserved from the retired Lucia Ultimate: exactly 60 hits, each using 100% of Lục Trầm's current DMG + 15% Bonus DMG in SSF, with existing FSF multiplier behavior unchanged. The 60-hit count is a gameplay projection; canonically Thiên Kiếm Định Giới establishes a local sword-domain through linked sword seals and does not grant absolute control over Backrooms space.",
+      "text": "Thiên Kiếm Định Giới is Lục Trầm's current Poker Dice Ultimate presentation. Runtime mechanics preserve the existing 60-hit projection: exactly 60 hits, each using 100% of Lục Trầm's current DMG + 15% Bonus DMG in SSF, with existing FSF multiplier behavior unchanged. The 60-hit count is a gameplay projection; canonically Thiên Kiếm Định Giới establishes a local sword-domain through linked sword seals and does not grant absolute control over Backrooms space.",
       "source": {
         "document": "02_CHARACTERS/Lục_Trầm_Codex",
         "anchor": "12 · TUYỆT KỸ — THIÊN KIẾM ĐỊNH GIỚI"
@@ -1496,7 +1496,7 @@
         "thiên kiếm định giới",
         "ultimate",
         "60 hit",
-        "lucia"
+        "luc_tram"
       ],
       "references": [
         "CHAR.LUC_TRAM.IDENTITY"

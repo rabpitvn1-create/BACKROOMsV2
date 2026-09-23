@@ -373,7 +373,7 @@ jobs:
           grep -Fq 'MAX_REROLLS = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'exactlyThreeRerollsThenRollStopsUntilFinish' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
           grep -Fq 'finishCanFinalizeCurrentHandBeforeAnyReroll' android-apk/app/src/test/java/com/rabpit/backroom/core/CombatChoiceEngineTest.java
-          ! grep -Fq 'lucia-hit' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'skills("luc_tram"' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'Huyết Ma Nhị Thập Tứ Trảm' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -Fq 'Guilty Crown Override' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.protectFromCandidate(before, sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
@@ -411,10 +411,10 @@ jobs:
           grep -Fq "cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'}" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg'" android-apk/app/src/main/assets/party-ui.js
           ! grep -Fq 'kai_avatar' android-apk/app/src/main/assets/party-ui.js
-          grep -Fq "lucia:'file:///android_asset/avatars/lucia_avatar.png'" android-apk/app/src/main/assets/party-ui.js
+          grep -Fq "luc_tram:'file:///android_asset/avatars/luctram_avatar.png'" android-apk/app/src/main/assets/party-ui.js
           grep -Fq "cao_minh:'file:///android_asset/cao_minh_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq 'file:///android_asset/cao_minh_snapshot_overlay.png' android-apk/app/src/main/assets/snapshot-ui.js
-          grep -Fq "lucia:'file:///android_asset/lucia_entity_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
+          grep -Fq "luc_tram:'file:///android_asset/luctram_overlay.png'" android-apk/app/src/main/assets/snapshot-ui.js
           grep -Fq "currentId=normalizeActorId(c.currentActor||'')" android-apk/app/src/main/assets/snapshot-ui.js
           test ! -e android-apk/app/src/main/assets/avatars/kai_avatar.jpg
           test ! -e android-apk/app/src/main/assets/avatars/kai_avatar.png
@@ -430,8 +430,8 @@ jobs:
           test "$(sha256sum android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           test "$(sha256sum android-apk/app/src/main/assets/cao_minh_snapshot_overlay.png | awk '{print $1}')" = 'e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e'
           test "$(sha256sum android-apk/app/src/main/assets/cao_minh_entity_overlay.png | awk '{print $1}')" = '980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47'
-          test "$(git hash-object android-apk/app/src/main/assets/avatars/lucia_avatar.png)" = '1ce0362afa76281c0dc1fac0e414954ac28ee484'
-          test "$(git hash-object android-apk/app/src/main/assets/lucia_entity_overlay.png)" = '5040709dc73f63185ed7c857af3a6589d0a0aa7b'
+          test "$(git hash-object android-apk/app/src/main/assets/avatars/luctram_avatar.png)" = '1ce0362afa76281c0dc1fac0e414954ac28ee484'
+          test "$(git hash-object android-apk/app/src/main/assets/luctram_overlay.png)" = '5040709dc73f63185ed7c857af3a6589d0a0aa7b'
 
       - name: Validate Game Master configuration
         run: |
@@ -486,10 +486,10 @@ jobs:
           test "$(unzip -p Backroom-1.1.84.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/avatars/kai_avatar.jpg'
           ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/avatars/kai_avatar.png'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/avatars/lucia_avatar.png'
-          unzip -l Backroom-1.1.84.apk | grep -q 'assets/lucia_entity_overlay.png'
-          cmp <(unzip -p Backroom-1.1.84.apk assets/avatars/lucia_avatar.png) android-apk/app/src/main/assets/avatars/lucia_avatar.png
-          cmp <(unzip -p Backroom-1.1.84.apk assets/lucia_entity_overlay.png) android-apk/app/src/main/assets/lucia_entity_overlay.png
+          unzip -l Backroom-1.1.84.apk | grep -q 'assets/avatars/luctram_avatar.png'
+          unzip -l Backroom-1.1.84.apk | grep -q 'assets/luctram_overlay.png'
+          cmp <(unzip -p Backroom-1.1.84.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
+          cmp <(unzip -p Backroom-1.1.84.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/chest_overlay.png'
           ! unzip -l Backroom-1.1.84.apk | grep -q 'assets/status/status_'
           unzip -l Backroom-1.1.84.apk | grep -q 'assets/fonts/Play-Bold.ttf'

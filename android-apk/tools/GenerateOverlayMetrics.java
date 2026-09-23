@@ -22,7 +22,10 @@ class GenerateOverlayMetrics {
   public static void main(String[] args) throws Exception {
     List<Path> files=new ArrayList<>();
     try(var paths=Files.list(ASSETS)) {
-      paths.filter(p->p.getFileName().toString().matches(".*_(snapshot|entity)_overlay\\.png")).forEach(files::add);
+      paths.filter(p -> {
+        String name = p.getFileName().toString();
+        return name.matches(".*_(snapshot|entity)_overlay\\.png") || name.equals("luctram_overlay.png");
+      }).forEach(files::add);
     }
     try(var paths=Files.list(ASSETS.resolve("entity"))) {
       paths.filter(p->p.toString().endsWith(".png")).forEach(files::add);

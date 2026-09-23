@@ -181,7 +181,7 @@ public class CombatChoiceEngineTest {
 
   @Test public void downedCharacterIsSkippedAndFourSlotOrderWrapsRound() throws Exception {
     JSONArray party = new JSONArray()
-        .put(member("lucia", "Lục Trầm"))
+        .put(member("luc_tram", "Lục Trầm"))
         .put(member("iris", "Iris"))
         .put(member("syvial", "Syvial"));
     JSONObject state = combatState(party);
@@ -259,13 +259,13 @@ public class CombatChoiceEngineTest {
 
   @Test public void caoMinhAndLucTramHaveAuthoritativeUltimateMappings() {
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
-    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
+    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("luc_tram"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
   }
 
   @Test public void lucTramSsfUsesDynamicThienKiemDinhGioiUltimate() throws Exception {
-    JSONObject state = combatState(new JSONArray().put(member("lucia", "Lục Trầm")));
+    JSONObject state = combatState(new JSONArray().put(member("luc_tram", "Lục Trầm")));
     CombatChoiceEngine.start(state, "diep_minh", 0);
 
     finalizeAs(state, 2,2,4,4,6);
@@ -344,10 +344,10 @@ public class CombatChoiceEngineTest {
 
   @Test public void caoMinhAndLucTramEachHaveFiveCharacterProcsAndKaiHasNone() {
     assertEquals(5, CombatChoiceEngine.characterProcCount("cao_minh"));
-    assertEquals(5, CombatChoiceEngine.characterProcCount("lucia"));
+    assertEquals(5, CombatChoiceEngine.characterProcCount("luc_tram"));
     assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
 
-    for (String id : new String[]{"cao_minh", "lucia"}) {
+    for (String id : new String[]{"cao_minh", "luc_tram"}) {
       for (int i = 0; i < 5; i++) {
         int chance = CombatChoiceEngine.characterProcPercent(id, i);
         assertTrue(chance >= 45 && chance <= 55);

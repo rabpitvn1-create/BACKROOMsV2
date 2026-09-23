@@ -11,7 +11,7 @@ function boot({unknown=false,unloaded=false,canvasContextMissing=false}={}){
   if(tag==='canvas')return {getContext(){reads++;if(canvasContextMissing)return null;return {drawImage(){},getImageData(){throw new Error('SecurityError: canvas has been tainted by cross-origin data');}};}};
   return {tagName:tag.toUpperCase(),style:{},dataset:{},className:'',complete:!unloaded,naturalWidth:0,naturalHeight:0,setAttribute(){},addEventListener(type,cb){if(type==='load')pending.push({el:this,cb});},set src(url){this.url=url;const m=geometry.assetMetric(url)||geometry.assetMetric('cao_minh_snapshot_overlay.png');this.naturalWidth=m.width;this.naturalHeight=m.height;},get src(){return this.url;}};
  }};
- const ctx={document,console:{warn(){}},localStorage:{removeItem(){}},setTimeout,clearTimeout,Image:function(){throw Error('Detached image preload must not gate overlays');},state:{flags:{},combat:{active:true,participants:[{id:'cao_minh'},{id:'lucia'}]}}};
+ const ctx={document,console:{warn(){}},localStorage:{removeItem(){}},setTimeout,clearTimeout,Image:function(){throw Error('Detached image preload must not gate overlays');},state:{flags:{},combat:{active:true,participants:[{id:'cao_minh'},{id:'luc_tram'}]}}};
  ctx.window=ctx;ctx.addEventListener=()=>{};
  vm.createContext(ctx);
  let js=source;if(unknown)js=js.replaceAll('file:///android_asset/cao_minh_snapshot_overlay.png','file:///android_asset/unregistered.png');
@@ -37,7 +37,7 @@ test('late image load aligns independently, without waiting for other characters
 });
 test('generated bounds exist for all registered overlays and match PNG dimensions',()=>{
  const assets=path.join(__dirname,'../app/src/main/assets');
- const names=['cao_minh_snapshot_overlay.png','cao_minh_entity_overlay.png','lucia_entity_overlay.png',...fs.readdirSync(path.join(assets,'entity')).filter(n=>n.endsWith('.png')).map(n=>'entity/'+n)];
+ const names=['cao_minh_snapshot_overlay.png','cao_minh_entity_overlay.png','luctram_overlay.png',...fs.readdirSync(path.join(assets,'entity')).filter(n=>n.endsWith('.png')).map(n=>'entity/'+n)];
  for(const name of names){const m=geometry.assetMetric('file:///android_asset/'+name),data=fs.readFileSync(path.join(assets,name));assert.ok(m,name);assert.equal(m.width,data.readUInt32BE(16));assert.equal(m.height,data.readUInt32BE(20));assert.ok(m.paint.right<=m.width&&m.body.bottom<=m.height);}
 });
 
