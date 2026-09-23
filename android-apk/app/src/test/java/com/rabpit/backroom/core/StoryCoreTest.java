@@ -6,6 +6,10 @@ import org.junit.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -14,6 +18,50 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class StoryCoreTest {
+  @Test public void freshBootstrapRendersCanonicalManuscriptAndArmsDecision() throws Exception {
+    Path assets = null;
+    for (Path dir = Paths.get("").toAbsolutePath(); dir != null && assets == null; dir = dir.getParent()) {
+      for (String candidate : new String[]{"src/main/assets", "app/src/main/assets",
+          "android-apk/app/src/main/assets"}) {
+        Path found = dir.resolve(candidate);
+        if (Files.isRegularFile(found.resolve(StoryRepository.LEVEL_ZERO_METADATA_ASSET))) {
+          assets = found;
+          break;
+        }
+      }
+    }
+    assertTrue("Canonical story assets must be available from the test checkout", assets != null);
+    final Path assetRoot = assets;
+    StoryRepository repository = new StoryRepository(path ->
+        new String(Files.readAllBytes(assetRoot.resolve(path)), StandardCharsets.UTF_8));
+    assertTrue(repository.available());
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(repository);
+    core.normalizeState(state);
+    JSONObject before = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(before.getBoolean("active"));
+    assertFalse(before.getBoolean("arcComplete"));
+    assertFalse(before.getBoolean("segmentDelivered"));
+    assertFalse(before.getBoolean("awaitingDecision"));
+    assertFalse(before.getBoolean("awaitingEntityAttack"));
+    assertFalse(before.getBoolean("pendingStoryAdvance"));
+    assertEquals("L0_C01", before.getString("currentChapter"));
+
+    StoryCore.AuthoredTurn turn = core.advanceAndRender(
+        state, "tiếp tục cốt truyện", new CharacterEncounterCore(bound -> bound - 1));
+    String manuscript = new String(Files.readAllBytes(
+        assets.resolve("story/source/level_0/LEVEL0_CH01.md")), StandardCharsets.UTF_8);
+    assertEquals("L0_C01_P001", turn.segmentId);
+    assertTrue(manuscript.contains("Ma Sơn. Không có đại chiến."));
+    assertTrue(turn.reply.startsWith("Level 0 — Chương 01: Nơi Không Có Tên"));
+    assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));
+    JSONObject after = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(after.getBoolean("segmentDelivered"));
+    assertTrue(after.getBoolean("awaitingDecision"));
+    assertEquals("PREFETCH_REQUIRED", after.getString("decisionStatus"));
+    assertFalse(after.getBoolean("awaitingEntityAttack"));
+  }
+
   private static JSONObject state() throws Exception {
     return new JSONObject()
         .put("currentLevel", 0)

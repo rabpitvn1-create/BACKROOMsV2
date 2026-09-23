@@ -180,6 +180,12 @@ jobs:
           grep -Fq "document.createTextNode('• ')" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "action:'Tiếp tục cốt truyện'" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Nhấn vào để bắt đầu khám phá thế giới Backrooms' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function storyBootstrapPending()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function storyBootstrapPending()' android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq 'storyBootstrapPending() || storyCutawayActive()' android-apk/app/src/main/assets/player-action-ui.js
+          ! grep -Fq 'Nhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01.' android-apk/app/src/main/assets/index.html
+          ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'storyDecisionActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'storyEntityAttackActive' android-apk/app/src/main/assets/player-action-ui.js
           ! grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -503,7 +509,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs android-apk/tests/story-bootstrap.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
