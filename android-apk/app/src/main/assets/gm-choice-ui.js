@@ -326,7 +326,7 @@
     var choices = decisionReady
       ? storyDecisionChoices()
       : (cutaway || awaitingDecision ? [] : (Array.isArray(entry.choices) ? entry.choices : []));
-    if (latest && !choices.length && !cutaway && !awaitingDecision
+    if (latest && !choices.length && !cutaway && !awaitingDecision && !storyAvailable
         && !(state.combat && state.combat.active)) {
       choices = fallbackExplorerChoices();
     }
@@ -344,7 +344,7 @@
     }
 
     if (storyAvailable && choiceOffset < 3) {
-      var storyChoice = {text:'Tiếp tục cốt truyện',action:'Tiếp tục cốt truyện'};
+      var storyChoice = {text:'Tiếp tục',action:'Tiếp tục cốt truyện'};
       box.appendChild(makeChoiceButton(
         '',
         storyChoice.text,
