@@ -4,8 +4,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -19,7 +23,40 @@ public class StoryCoreTest {
         .put("flags", new JSONObject());
   }
 
-  @Test public void normalizeCreatesContentAgnosticSaveState() throws Exception {
+  private static StoryRepository fixtureRepository() {
+    String metadata = "{"
+        + "\"schemaVersion\":1,"
+        + "\"sourceRevision\":\"fixture-r1\","
+        + "\"segmentTargetChars\":1900,"
+        + "\"segmentMaxChars\":2400,"
+        + "\"startChapter\":\"L0_C01\","
+        + "\"chapters\":["
+        + "{\"id\":\"L0_C01\",\"title\":\"Một\","
+        + "\"source\":\"story/source/level_0/LEVEL0_CH01.md\","
+        + "\"thread\":\"cao_minh\",\"visibility\":\"player\","
+        + "\"nextChapter\":\"L0_C02\","
+        + "\"eventsOnEnter\":[],"
+        + "\"eventsOnExit\":[{\"type\":\"CHARACTER_REUNION\",\"characterId\":\"luc_tram\"}],"
+        + "\"requiredFacts\":[],\"forbiddenClaims\":[]},"
+        + "{\"id\":\"L0_C02\",\"title\":\"Hai\","
+        + "\"source\":\"story/source/level_0/LEVEL0_CH02.md\","
+        + "\"thread\":\"luc_tram\",\"visibility\":\"cutaway\","
+        + "\"nextChapter\":\"\","
+        + "\"eventsOnEnter\":[{\"type\":\"CHARACTER_PRESENT\",\"characterId\":\"nam\",\"scope\":\"story_local\"}],"
+        + "\"eventsOnExit\":[{\"type\":\"LEVEL0_ARC_BOUNDARY_REACHED\"}],"
+        + "\"requiredFacts\":[\"reader-only\"],"
+        + "\"forbiddenClaims\":[\"not Cao Minh knowledge\"]}"
+        + "]}";
+
+    Map<String, String> sources = new LinkedHashMap<>();
+    sources.put("story/source/level_0/LEVEL0_CH01.md",
+        "# Level 0 — Chương 01: Một\n\nĐoạn authored thứ nhất.");
+    sources.put("story/source/level_0/LEVEL0_CH02.md",
+        "# Level 0 — Chương 02: Hai\n\nĐây là tuyến Lục Trầm.");
+    return StoryRepository.fromText(metadata, sources);
+  }
+
+  @Test public void normalizeWithoutRepositoryKeepsContentAgnosticState() throws Exception {
     JSONObject state = state();
     StoryCore core = new StoryCore();
 
@@ -31,6 +68,65 @@ public class StoryCoreTest {
     assertEquals("", story.getString("currentChapter"));
     assertEquals("", story.getString("currentScene"));
     assertEquals(StoryCore.STATUS_UNSEEN, StoryCore.characterStatus(state, "luc_tram"));
+  }
+
+  @Test public void repositoryBindsFinalStyleStoryWithoutAdvancingOnFreeAction() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(fixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    core.normalizeState(state);
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(story.getBoolean("active"));
+    assertEquals("L0_C01", story.getString("currentChapter"));
+    assertTrue(core.ownsLevelProgression(state));
+
+    assertNull(core.advanceAndRender(state, "Cao Minh quan sát xung quanh", characterCore));
+    assertFalse(story.getBoolean("segmentDelivered"));
+  }
+
+  @Test public void authoredTurnEmitsExactSourceAndAppliesExitEvent() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(fixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    assertEquals("L0_C01", turn.chapterId);
+    assertEquals("cao_minh", turn.thread);
+    assertEquals("player", turn.visibility);
+    assertTrue(turn.reply.contains("Level 0 — Chương 01: Một"));
+    assertTrue(turn.reply.contains("Đoạn authored thứ nhất."));
+    assertEquals(StoryCore.STATUS_REUNITED, StoryCore.characterStatus(state, "luc_tram"));
+    assertFalse(state.getJSONObject(StoryCore.ROOT_KEY).getBoolean("arcComplete"));
+  }
+
+  @Test public void cutawayIsReaderVisibleButEndsAtArcBoundaryWithoutLevelTransition() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(fixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    StoryCore.AuthoredTurn cutaway =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    assertEquals("L0_C02", cutaway.chapterId);
+    assertEquals("luc_tram", cutaway.thread);
+    assertEquals("cutaway", cutaway.visibility);
+
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(story.getBoolean("arcComplete"));
+    assertTrue(story.getJSONObject("flags").getBoolean("level0_arc_boundary_reached"));
+    assertEquals(0, state.getInt("currentLevel"));
+    assertEquals("0", state.getString("currentLevelKey"));
+    assertFalse(core.hasPendingAuthoredStory(state));
+
+    JSONObject nam = story.getJSONObject("characters").getJSONObject("nam");
+    assertEquals(StoryCore.PRESENCE_PRESENT, nam.getString("presence"));
+
+    String prompt = core.promptContext(state);
+    assertTrue(prompt.contains("NOT a validated Level 1 transition"));
   }
 
   @Test public void parallelStoryPresenceDoesNotAddLucTramToParty() throws Exception {
@@ -90,14 +186,14 @@ public class StoryCoreTest {
     assertEquals("Lục Trầm", state.getJSONArray("party").getJSONObject(0).getString("name"));
   }
 
-  @Test public void promptMakesStoryOwnershipExplicit() throws Exception {
+  @Test public void promptMakesStoryOwnershipExplicitWithoutRepository() throws Exception {
     JSONObject state = state();
     StoryCore core = new StoryCore();
 
     String prompt = core.promptContext(state);
 
     assertTrue(prompt.contains("Story-managed character Lục Trầm"));
-    assertTrue(prompt.contains("never spawn from random character rolls"));
-    assertTrue(prompt.contains("No compiled manuscript scene is bound yet"));
+    assertTrue(prompt.contains("No authored manuscript chapter is currently bound"));
+    assertTrue(prompt.contains("AI must not advance manuscript position"));
   }
 }
