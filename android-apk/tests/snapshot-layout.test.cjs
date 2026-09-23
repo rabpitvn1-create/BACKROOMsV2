@@ -3,8 +3,8 @@ const assert=require('node:assert/strict');
 const {bounds,envelope,layout}=require('../app/src/main/assets/snapshot-ui.js');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const metric=(w,h,pad=0)=>({width:w+pad*2,height:h+pad*2,body:{left:pad,top:pad,right:w+pad,bottom:h+pad},paint:{left:pad,top:pad,right:w+pad,bottom:h+pad}});
-const standing=metric(60,100),aiming=metric(120,100),lucia=metric(80,100);
-const family=envelope([standing,aiming,lucia]);
+const standing=metric(60,100),aiming=metric(120,100),lucTram=metric(80,100);
+const family=envelope([standing,aiming,lucTram]);
 test('transparent padding does not change body scale or baseline',()=>{
  const a=layout(standing,360,250,'right','character',family);
  const padded=metric(60,100,90),b=layout(padded,360,250,'right','character',family);
@@ -13,7 +13,7 @@ test('transparent padding does not change body scale or baseline',()=>{
 });
 test('standing, aiming and companion share height across aspect ratios',()=>{
  for(const [w,h] of [[320,250],[360,250],[390,250],[412,250],[620,450],[250,400],[800,250]]){
-  const poses=[standing,aiming,lucia].map(m=>layout(m,w,h,'right','character',family));
+  const poses=[standing,aiming,lucTram].map(m=>layout(m,w,h,'right','character',family));
   poses.forEach((r,i)=>{
    near(r.bodyHeight,poses[0].bodyHeight);near(r.top+100*r.scale,h*.92);
    assert.ok(r.left>=w*.025-1e-7);assert.ok(r.left+[60,120,80][i]*r.scale<=w*.975+1e-7);
