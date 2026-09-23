@@ -615,6 +615,185 @@ def compile_model_interactions(
     return compile_safe_linear(segments, forced_locked), "deterministic-safe-fallback"
 
 
+def build_review_prompt(chapter, segments, compiled, established_story_state):
+    candidates = []
+    for index, segment in enumerate(segments):
+        spec = compiled.get(segment["id"]) or {}
+        if spec.get("mode") != "INTERACTIVE":
+            continue
+        candidates.append({
+            "id": segment["id"],
+            "currentSegment": segment["text"],
+            "previousSegment": segments[index - 1]["text"] if index > 0 else "",
+            "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
+            "choices": spec.get("choices") or [],
+        })
+
+    payload = {
+        "chapter": {
+            "id": chapter.get("id"),
+            "title": chapter.get("title"),
+            "thread": chapter.get("thread"),
+            "visibility": chapter.get("visibility"),
+            "requiredFacts": chapter.get("requiredFacts") or [],
+            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
+        },
+        "establishedStoryState": established_story_state,
+        "allChapterSegments": segments,
+        "interactiveCandidates": candidates,
+    }
+    return """You are the strict QA reviewer for BACKROOMsV2 Story Compiler v1.
+Review ONLY the candidate A/B/C choices. The manuscript is authoritative.
+
+CRITICAL TIMING:
+- A choice appears AFTER currentSegment is fully completed and BEFORE nextSegment begins.
+- Anything already done, said, observed, tested, decided or called in currentSegment is in the past and MUST NOT be offered again.
+- nextSegment is visible to you ONLY to check convergence. A choice MUST NOT leak or assume facts that first appear in nextSegment or later.
+
+DROP THE ENTIRE INTERACTIVE SEGMENT TO LINEAR if any of the three choices:
+- repeats or redoes an action already completed in currentSegment;
+- invents or assumes an object, liquid, sign, route, person, mechanism, injury, sound, ability or fact not actually available at that pause;
+- assumes a character knows something the manuscript has not established they know;
+- gives a weapon/item an unsupported sensing or reasoning capability;
+- introduces a new theory, interpretation, diagnosis or lore claim not already raised before the pause;
+- changes route, timing, destination, authored event, relationship, Party state, resource outcome, combat outcome or Level progression;
+- asks to wait until a condition that would materially change authored pacing is satisfied;
+- is awkward, corrupted, misspelled, vague, redundant, or not natural Vietnamese;
+- cannot receive a short local reaction and then return unchanged to nextSegment.
+
+You MAY minimally rewrite all three choices to make them clean and safe, but may not add new facts.
+Prefer LINEAR over weak or artificial interaction.
+
+Return JSON only:
+{
+  "reviews": [
+    {
+      "id": "exact candidate segment id",
+      "mode": "INTERACTIVE|LINEAR",
+      "choices": [
+        {"text":"...","action":"..."},
+        {"text":"...","action":"..."},
+        {"text":"...","action":"..."}
+      ]
+    }
+  ]
+}
+
+For LINEAR, choices must be [].
+For INTERACTIVE, exactly 3 concise Vietnamese choices are required.
+Every interactiveCandidate id must appear exactly once and in the same order.
+
+INPUT:
+""" + json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def sanitize_review_result(
+        compiled, raw_result, established_story_state):
+    result = extract_json(raw_result)
+    rows = result.get("reviews")
+    if not isinstance(rows, list):
+        raise CompileError("review output missing reviews array.")
+
+    expected_ids = [
+        segment_id for segment_id, spec in compiled.items()
+        if spec.get("mode") == "INTERACTIVE"
+    ]
+    returned_ids = [row.get("id") for row in rows if isinstance(row, dict)]
+    if returned_ids != expected_ids:
+        raise CompileError("review segment IDs/order do not match interactive candidates.")
+
+    reviewed = json.loads(json.dumps(compiled, ensure_ascii=False))
+    for row in rows:
+        segment_id = row["id"]
+        mode = str(row.get("mode", "LINEAR")).strip().upper()
+        if mode != "INTERACTIVE":
+            reviewed[segment_id] = {
+                "mode": "LINEAR",
+                "choices": [],
+                "interactionGuard": "",
+            }
+            continue
+
+        choices = row.get("choices") if isinstance(row.get("choices"), list) else []
+        clean_choices = []
+        seen = set()
+        if len(choices) == 3:
+            for choice in choices:
+                if not isinstance(choice, dict):
+                    clean_choices = []
+                    break
+                text = str(choice.get("text", "") or "").strip()
+                normalized = re.sub(r"\\s+", " ", text).casefold()
+                if (not text or len(text) > 180 or normalized in seen
+                        or normalized in {"tiếp tục cốt truyện", "continue story"}
+                        or choice_changes_authored_path(text)
+                        or choice_addresses_unavailable_character(
+                            text, established_story_state)):
+                    clean_choices = []
+                    break
+                seen.add(normalized)
+                clean_choices.append({"text": text, "action": text})
+
+        if len(clean_choices) != 3:
+            reviewed[segment_id] = {
+                "mode": "LINEAR",
+                "choices": [],
+                "interactionGuard": "",
+            }
+        else:
+            reviewed[segment_id] = {
+                "mode": "INTERACTIVE",
+                "choices": clean_choices,
+                "interactionGuard": STANDARD_INTERACTION_GUARD,
+            }
+    return reviewed
+
+
+def downgrade_interactions_to_linear(compiled):
+    safe = json.loads(json.dumps(compiled, ensure_ascii=False))
+    for segment_id, spec in safe.items():
+        if spec.get("mode") == "INTERACTIVE":
+            safe[segment_id] = {
+                "mode": "LINEAR",
+                "choices": [],
+                "interactionGuard": "",
+            }
+    return safe
+
+
+def review_compiled_interactions(
+        chapter, segments, compiled, established_story_state):
+    interactive_ids = [
+        segment_id for segment_id, spec in compiled.items()
+        if spec.get("mode") == "INTERACTIVE"
+    ]
+    if not interactive_ids:
+        return compiled, "no-review-needed"
+
+    prompt = build_review_prompt(
+        chapter, segments, compiled, established_story_state)
+    strict_suffix = (
+        "\n\nSTRICT RETRY: Return one valid JSON object only. "
+        "No markdown, commentary, preface or suffix. Preserve candidate ids exactly."
+    )
+    errors = []
+    for attempt in range(2):
+        try:
+            raw, provider = generate(prompt if attempt == 0 else prompt + strict_suffix)
+            reviewed = sanitize_review_result(
+                compiled, raw, established_story_state)
+            return reviewed, provider + "-review"
+        except Exception as exc:
+            errors.append(str(exc))
+
+    print(
+        f"[story-compiler] WARNING {chapter.get('id', '')}: QA review failed; "
+        f"downgrading all interactive candidates to LINEAR. {' | '.join(errors)}",
+        file=sys.stderr,
+    )
+    return downgrade_interactions_to_linear(compiled), "deterministic-review-fallback"
+
+
 def compile_chapter(chapter, target, maximum, established_story_state):
     chapter_id = chapter.get("id", "")
     manuscript = chapter_source(chapter)
@@ -634,6 +813,9 @@ def compile_chapter(chapter, target, maximum, established_story_state):
         prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
         compiled, provider = compile_model_interactions(
             chapter, segments, forced_locked, prompt, established_story_state)
+        compiled, review_provider = review_compiled_interactions(
+            chapter, segments, compiled, established_story_state)
+        provider = provider + "+" + review_provider
 
     interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
     return {
