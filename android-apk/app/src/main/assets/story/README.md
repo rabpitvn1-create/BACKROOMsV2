@@ -1,7 +1,37 @@
 # BACKROOMsV2 — Novelist-First Story Pipeline
 
-> **Status:** Architecture contract for the future story pipeline.  
-> **Important:** This README describes the intended workflow. It does **not** mean the Story Compiler, StoryCore, generated story graph, story-driven exits, scripted encounters, save migration, or legacy route-streak replacement are already implemented in runtime code.
+> **Status:** Architecture contract plus the first content-agnostic runtime foundation.  
+> **Important:** StoryCore save state and authored character lifecycle plumbing now exist, but the Story Compiler, manuscript loader, generated story graph, story-driven exits, scripted encounters, and legacy route-streak replacement are **not** implemented yet.
+
+## Current implementation status
+
+Implemented runtime foundation:
+
+- `StoryCore` owns save-facing authored-story state under `story`;
+- save schema is prepared for `currentChapter`, `currentScene`, story flags and story-managed character state;
+- Lục Trầm is removed from random character encounter rolls;
+- authored character events can move a character through `PARALLEL_STORY`, `REUNITED`, `ACCOMPANYING` and `PARTY_MEMBER`;
+- reunion does not automatically mean Party join;
+- Party mutation remains Core-owned;
+- old saves that already contain Lục Trầm in Party keep her;
+- legacy pending random-intro state for Lục Trầm is discarded instead of re-triggering a random reunion;
+- StoryCore context is included in the compact GM narrative packet;
+- AI candidate state cannot overwrite StoryCore state.
+
+Not implemented yet:
+
+- importing or compiling the novelist manuscript;
+- `story/source/` manuscript content;
+- generated Chapter/Scene graph;
+- automatic A/B/C derivation;
+- authored scene text delivery;
+- story-driven `EXIT_READY`;
+- scripted Entity encounters from story data;
+- roaming encounter suppression/grace from story pacing;
+- replacement of the existing LevelCore route streak;
+- final Level 0 Chapter mapping.
+
+The current Level 0 manuscript is intentionally **not** committed or compiled while it is still being edited.
 
 ## Core principle
 
