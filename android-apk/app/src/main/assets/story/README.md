@@ -1,35 +1,38 @@
 # BACKROOMsV2 — Novelist-First Story Pipeline
 
-> **Status:** Architecture contract plus the first content-agnostic runtime foundation.  
-> **Important:** StoryCore save state and authored character lifecycle plumbing now exist, but the Story Compiler, manuscript loader, generated story graph, story-driven exits, scripted encounters, and legacy route-streak replacement are **not** implemented yet.
+> **Status:** Level 0 novelist-first runtime is implemented on the current branch.  
+> **Source revision:** `level0-final-2026-09-23`.
 
 ## Current implementation status
 
-Implemented runtime foundation:
+Implemented:
 
-- `StoryCore` owns save-facing authored-story state under `story`;
-- save schema is prepared for `currentChapter`, `currentScene`, story flags and story-managed character state;
-- Lục Trầm is removed from random character encounter rolls;
-- authored character events can move a character through `PARALLEL_STORY`, `REUNITED`, `ACCOMPANYING` and `PARTY_MEMBER`;
-- reunion does not automatically mean Party join;
-- Party mutation remains Core-owned;
-- StoryCore context is included in the compact GM narrative packet;
-- AI candidate state cannot overwrite StoryCore state.
+- all 30 final Level 0 Chapters are committed verbatim under `story/source/level_0/`;
+- `StoryRepository` loads generated metadata plus the authored Markdown directly from APK assets;
+- authored prose is split only at paragraph boundaries and emitted verbatim by Java Core;
+- the runtime exposes **Tiếp tục cốt truyện** as a deterministic authored-story action;
+- free exploration remains available between authored sections;
+- Level 0 hidden route-streak rolls are suppressed while StoryCore owns the active Level 0 story;
+- `StoryCore` owns save-facing chapter, segment, thread, visibility, story flags and story-character state;
+- Lục Trầm is permanently removed from random character encounter rolls;
+- Lục Trầm progresses through `PARALLEL_STORY → REUNITED → ACCOMPANYING → PARTY_MEMBER` only through authored events;
+- Nam is tracked as a story-local character and becomes `MISSING` at the authored Chapter 19 event;
+- Chapters 3, 5, 7 and 9 are explicit Lục Trầm cutaways;
+- cutaway facts are excluded from Cao Minh's recent-context knowledge;
+- free player input is disabled and Core-rejected while a cutaway is active;
+- AI candidate state cannot overwrite StoryCore state;
+- Chapter 30 sets `LEVEL0_ARC_BOUNDARY_REACHED` but does **not** claim or perform a Level 1 transition;
+- regression tests validate the 30 source files, metadata, paragraph segmentation and a complete Chapter 1 → Chapter 30 StoryCore run.
 
-Not implemented yet:
+Still intentionally not implemented:
 
-- importing or compiling the novelist manuscript;
-- `story/source/` manuscript content;
-- generated Chapter/Scene graph;
-- automatic A/B/C derivation;
-- authored scene text delivery;
-- story-driven `EXIT_READY`;
-- scripted Entity encounters from story data;
-- roaming encounter suppression/grace from story pacing;
-- replacement of the existing LevelCore route streak;
-- final Level 0 Chapter mapping.
+- automatic manuscript-to-A/B/C generation;
+- scripted Entity encounter events authored from manuscript metadata;
+- automatic snapshot binding per authored segment;
+- roaming encounter grace/suppression policies beyond authored turns themselves;
+- a post-Chapter-30 Level transition, because the current manuscript does not establish that the unnamed metal region is Level 1.
 
-The current Level 0 manuscript is intentionally **not** committed or compiled while it is still being edited.
+The existing `LevelCore` route-streak code still exists for non-story-owned progression, but it is not allowed to advance Level 0 while the authored Level 0 story is active.
 
 ## Core principle
 
@@ -109,19 +112,18 @@ Recommended layout:
 story/
 ├── README.md
 ├── source/
-│   ├── level_0.md
-│   ├── level_1.md
-│   └── ...
+│   └── level_0/
+│       ├── LEVEL0_CH01.md
+│       ├── LEVEL0_CH02.md
+│       ├── ...
+│       └── LEVEL0_CH30.md
 └── generated/
     ├── story_manifest.json
-    ├── level_0/
-    │   ├── chapter_01.story.json
-    │   ├── chapter_02.story.json
-    │   └── ...
-    └── ...
+    └── level_0/
+        └── level0.story.json
 ~~~
 
-The exact generated layout may change when StoryCore is implemented, but the separation must remain:
+The current implementation uses this separation, and future Levels should preserve it:
 
 ~~~text
 source/     = human-authored manuscript
