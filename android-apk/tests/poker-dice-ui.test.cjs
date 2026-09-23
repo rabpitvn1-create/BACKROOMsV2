@@ -73,11 +73,13 @@ test('combat completion scrolls to the start of the next GM narration', () => {
   assert.doesNotMatch(finishBlock, /scrollCombatToBottom\(\)/);
 });
 
-test('Core upgrades are locked by active combat, not pending story gates', () => {
+test('Core upgrades use persisted state and are locked only by active combat', () => {
   const start = coreFacadeSource.indexOf('public synchronized String processCoreUpgrade');
   const end = coreFacadeSource.indexOf('public synchronized String levelSnapshotDescriptor', start);
   assert.ok(start >= 0 && end > start);
   const upgradeBlock = coreFacadeSource.slice(start, end);
+  assert.match(upgradeBlock, /JSONObject state = parseState\(preferences\.getString\(STATE_KEY, "\{\}"\)\)/);
+  assert.match(upgradeBlock, /if \(state\.length\(\) == 0\) state = submitted;/);
   assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(state\)/);
   assert.doesNotMatch(upgradeBlock, /storyCore\.awaitingDecision|storyCore\.awaitingEntityAttack|storyCore\.hasPendingStoryAdvance/);
 });

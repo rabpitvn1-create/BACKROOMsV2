@@ -510,7 +510,9 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String processCoreUpgrade(String stateJson, String characterId, String stat) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (state.length() == 0) state = submitted;
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
