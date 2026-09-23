@@ -454,6 +454,212 @@ Do not let AI convert author knowledge into character omniscience.
 
 ---
 
+## Supporting characters discovered from the manuscript
+
+The novelist does not need to create a character database before writing a supporting character.
+
+If a new person appears naturally in the manuscript, the story pipeline should detect and classify that character automatically.
+
+Conceptual flow:
+
+~~~text
+manuscript mentions a character
+→ detect name / aliases / identity clues
+→ compare with current character canon
+→ existing character?
+   → yes: bind existing runtime/canon id
+   → no: create a story-local character record
+→ character appears again or becomes important?
+   → no: keep story-local
+   → yes: promote to recurring character
+→ character becomes canonically important?
+   → generate/update canonical profile
+→ character needs combat/party mechanics?
+   → create gameplay projection separately
+~~~
+
+The author should not have to stop writing in order to create IDs, JSON, stats, relationship variables, or a full Character Codex.
+
+### Story-local characters
+
+A one-scene or minor supporting character should remain lightweight.
+
+Conceptual generated record:
+
+~~~text
+id: tran_vu
+name: Trần Vũ
+scope: story_local
+firstAppearance: Level 0 / Chapter 3
+knownFacts:
+  - middle-aged man
+  - met Cao Minh in a corridor
+  - warned the group about a sound ahead
+knowledge:
+  - heard something dangerous ahead
+relationships:
+  cao_minh: just_met
+~~~
+
+Only information supported by the manuscript may be recorded as fact.
+
+If the manuscript does not state an exact age, occupation, hometown, history, abilities, or motive, leave it unknown/open.
+
+Do not invent extra biography merely to make a profile look complete.
+
+### Recurring characters
+
+If a story-local character reappears across scenes or Chapters, the compiler may promote the character to a recurring record.
+
+The generated profile may accumulate only newly established facts from later manuscript content.
+
+Example:
+
+~~~text
+Chapter 2:
+Trần Vũ is quiet and cautious.
+
+Chapter 6:
+The manuscript reveals he was an emergency doctor.
+
+Generated profile after Chapter 6:
+occupation: emergency doctor
+source: Chapter 6
+~~~
+
+The earlier record should be enriched, not rewritten with retroactive inventions.
+
+### Canonical character promotion
+
+A recurring character may be promoted to a canonical character when the manuscript establishes that the character has continuing importance, such as:
+
+- becoming a long-term companion;
+- joining the party;
+- becoming a major ally, rival, antagonist, or relationship anchor;
+- carrying important long-term knowledge;
+- recurring across Levels or major story arcs.
+
+Promotion means the technical pipeline may create or update a canonical character profile and bind it to a stable runtime ID.
+
+Promotion must not change the authored personality, history, knowledge, or relationships.
+
+### Gameplay projection is separate from character canon
+
+A character becoming playable or combat-capable does not mean the novelist must design numbers.
+
+Use this separation:
+
+~~~text
+NOVEL CHARACTER
+      ↓
+CANON PROFILE
+      ↓
+GAMEPLAY PROJECTION
+~~~
+
+The manuscript defines what the character can actually do in the story.
+
+The gameplay layer may derive or implement:
+
+- HP;
+- damage;
+- accuracy/evasion;
+- combat skills;
+- status effects;
+- equipment slots;
+- encounter/party behavior.
+
+Gameplay values are technical projections.
+
+They must not silently become new lore.
+
+For example, if the manuscript says a character is skilled with a fire axe, the game may need damage values for that axe. Those values do not authorize the pipeline to invent military training, supernatural strength, or a hidden combat history.
+
+### Relationship state
+
+Relationships should grow from authored events and live gameplay continuity.
+
+A generated/runtime relationship model may track technical state such as:
+
+~~~text
+trust
+respect
+suspicion
+knownFacts
+sharedEvents
+unresolvedQuestions
+~~~
+
+These values support continuity.
+
+They do not replace the manuscript.
+
+Do not infer deep friendship, romance, loyalty, hatred, or other major relationship changes from a single generic interaction unless the authored story or accumulated live continuity supports it.
+
+### Character knowledge remains scoped
+
+A newly detected supporting character only knows what the manuscript and live continuity establish that character knows.
+
+Do not copy:
+
+- author knowledge;
+- reader knowledge;
+- backstage canon;
+- another character's private knowledge;
+
+into the supporting character's runtime knowledge state.
+
+### Identity matching must be conservative
+
+Before creating a new character record, compare:
+
+- exact name;
+- aliases;
+- known runtime IDs;
+- contextual identity clues.
+
+If identity is uncertain, surface the ambiguity for review instead of merging two people or inventing a duplicate identity.
+
+This is especially important when:
+
+- aliases are used;
+- titles replace names;
+- the same surname appears repeatedly;
+- a character is intentionally unnamed;
+- a reveal later establishes that two apparent identities are the same person.
+
+### Unnamed supporting characters
+
+The manuscript may contain characters such as:
+
+~~~text
+the injured survivor
+the old woman
+the guard
+the child in the corridor
+~~~
+
+Do not force a permanent canonical identity immediately.
+
+They may use temporary story-local identifiers until the manuscript establishes a stable identity.
+
+If the person later receives a name, the generated data should preserve continuity and bind the earlier temporary record to the revealed identity rather than creating a second person.
+
+### Source traceability
+
+Generated character facts should remain traceable to the manuscript location that established them whenever practical.
+
+This allows future compilation or review to distinguish:
+
+- authored fact;
+- inferred technical metadata;
+- unresolved/open information;
+- gameplay-only projection.
+
+The pipeline should prefer "unknown" over unsupported certainty.
+
+---
+
 ## Relationship with existing canon
 
 This directory is for authored story, not for replacing other authoritative systems.
