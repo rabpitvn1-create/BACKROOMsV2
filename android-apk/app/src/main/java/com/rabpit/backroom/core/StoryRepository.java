@@ -346,7 +346,11 @@ final class StoryRepository {
       String text = item.optString("text", "").trim();
       String action = item.optString("action", text).trim();
       if (text.isEmpty() || action.isEmpty() || text.length() > 180 || action.length() > 220) continue;
-      output.put(new JSONObject().put("text", text).put("action", action));
+      try {
+        output.put(new JSONObject().put("text", text).put("action", action));
+      } catch (Exception ignored) {
+        continue;
+      }
     }
     return output.length() >= 2 ? output : new JSONArray();
   }
