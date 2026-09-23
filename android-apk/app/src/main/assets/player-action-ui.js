@@ -24,6 +24,16 @@
     return !!window.__combatBusy || (typeof busy !== 'undefined' && !!busy);
   }
 
+  function storyCutawayActive(){
+    try {
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true
+        && String(state.story.visibility || '') === 'cutaway');
+    } catch (_) {
+      return false;
+    }
+  }
+
   function fitVisualViewport(){
     if (modal.hidden) return;
     var vv = window.visualViewport;
@@ -52,11 +62,13 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing()) {
+    if (combatActive() || processing() || storyCutawayActive()) {
       if (typeof statusEl !== 'undefined' && statusEl) {
         statusEl.textContent = combatActive()
           ? 'Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.'
-          : 'Đang xử lý lượt hiện tại.';
+          : (storyCutawayActive()
+              ? 'Đang ở đoạn cắt cảnh. Hãy chọn “Tiếp tục cốt truyện” trong khung GAME MASTER.'
+              : 'Đang xử lý lượt hiện tại.');
       }
       return;
     }
@@ -76,10 +88,10 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing();
+    var locked = combatActive() || processing() || storyCutawayActive();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if (combatActive() && !modal.hidden) closePlayerAction(true);
+    if ((combatActive() || storyCutawayActive()) && !modal.hidden) closePlayerAction(true);
   }
 
   openButton.addEventListener('click', openPlayerAction);
