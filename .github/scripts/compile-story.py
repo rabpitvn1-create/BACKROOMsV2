@@ -717,6 +717,8 @@ def validate_generated(generated=None, metadata=None):
                         raise CompileError(f"{segment_id}: invalid interaction choice.")
                     if str(choice.get("action", "")).strip() != str(choice.get("text", "")).strip():
                         raise CompileError(f"{segment_id}: action must equal visible Vietnamese choice text.")
+                    if choice_changes_authored_path(str(choice.get("text", ""))):
+                        raise CompileError(f"{segment_id}: route/outcome-changing choice is forbidden in compiler v1.")
                 if guard != STANDARD_INTERACTION_GUARD:
                     raise CompileError(f"{segment_id}: interaction guard must be compiler-owned.")
             elif choices or guard:
