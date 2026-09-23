@@ -73,6 +73,57 @@ public class StoryCoreTest {
   }
 
 
+  private static StoryRepository entityGateFixtureRepository() {
+    String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
+    StringBuilder encounter = new StringBuilder(
+        "Cao Minh khựng lại khi một Hound chắn ngang hành lang.");
+    while (encounter.length() < 920) {
+      encounter.append(" Tiếng móng cào thảm vang khô, con Entity vẫn giữ nguyên vị trí đối diện hắn.");
+    }
+    String source = "# Level 0 — Chương 01: Encounter\n\n"
+        + encounter + "\n\n"
+        + "Sau trận chiến, hành lang phía trước lại chìm trong tiếng ù đều đặn.";
+    String metadata = "{"
+        + "\"schemaVersion\":1,"
+        + "\"sourceRevision\":\"entity-gate-r1\","
+        + "\"segmentTargetChars\":800,"
+        + "\"segmentMaxChars\":1200,"
+        + "\"startChapter\":\"L0_C01\","
+        + "\"chapters\":[{"
+        + "\"id\":\"L0_C01\","
+        + "\"title\":\"Encounter\","
+        + "\"source\":\"" + sourcePath + "\","
+        + "\"thread\":\"cao_minh\","
+        + "\"visibility\":\"player\","
+        + "\"nextChapter\":\"\","
+        + "\"eventsOnEnter\":[],"
+        + "\"eventsOnExit\":[],"
+        + "\"requiredFacts\":[],"
+        + "\"forbiddenClaims\":[]"
+        + "}]}";
+    String digest = StoryRepository.sourceDigest(source);
+    String decisions = "{"
+        + "\"schemaVersion\":3,"
+        + "\"sourceRevision\":\"entity-gate-r1\","
+        + "\"chapters\":{"
+        + "\"L0_C01\":{"
+        + "\"sourceDigest\":\"" + digest + "\","
+        + "\"segments\":{"
+        + "\"L0_C01_P001\":{"
+        + "\"mode\":\"ENTITY_GATE\","
+        + "\"decisionContract\":{"
+        + "\"entityKey\":\"hound\","
+        + "\"attackText\":\"Tấn công\","
+        + "\"loopAnchor\":\"L0_C01_P001\""
+        + "}},"
+        + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
+        + "}}}}";
+    Map<String, String> sources = new LinkedHashMap<>();
+    sources.put(sourcePath, source);
+    return StoryRepository.fromText(metadata, sources, decisions);
+  }
+
+
   private static StoryRepository fixtureRepository() {
     String metadata = "{"
         + "\"schemaVersion\":1,"
@@ -403,6 +454,34 @@ public class StoryCoreTest {
     } catch (IllegalStateException expected) {
       assertTrue(expected.getMessage().contains("context changed"));
     }
+  }
+
+
+  @Test public void authoredEntityGateExposesOnlyAttackAndBlocksNextTurn() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(entityGateFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    assertEquals(StoryRepository.MODE_ENTITY_GATE, turn.mode);
+    assertTrue(core.awaitingEntityAttack(state));
+    assertTrue(core.blocksFreePlayerAction(state));
+    assertFalse(core.awaitingDecision(state));
+
+    JSONObject choice = core.entityAttackChoice(state);
+    assertEquals("story_attack", choice.getString("id"));
+    assertEquals("Tấn công", choice.getString("text"));
+
+    String entityKey = core.consumeEntityAttack(state);
+    assertEquals("hound", entityKey);
+    assertFalse(core.awaitingEntityAttack(state));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("Sau trận chiến"));
+    assertFalse(core.hasPendingStoryAdvance(state));
   }
 
 }
