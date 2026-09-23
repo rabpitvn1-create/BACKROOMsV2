@@ -25,6 +25,9 @@ public final class CombatChoiceEngine {
   private static final int HUYET_MA_24_HIT_COUNT = 24;
   private static final int LUC_TRAM_THIEN_KIEM_HIT_COUNT = 60;
   private static final int CAO_MINH_BASE_ATTACK = 30;
+  private static final int CRITICAL_DAMAGE_PERCENT = 150;
+  private static final int ENTITY_BASE_CRITICAL_PERCENT = 5;
+  private static final int ENTITY_BASE_EVASION_PERCENT = 5;
 
   private static final class EntityProfile {
     final String key;
@@ -364,6 +367,36 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     return Math.max(1, (int)((numerator + defPercent / 2L) / defPercent));
   }
 
+  static int criticalDamage(int damage) {
+    long scaled = (long)Math.max(1, damage) * CRITICAL_DAMAGE_PERCENT;
+    return Math.max(1, (int)Math.min(Integer.MAX_VALUE, (scaled + 50L) / 100L));
+  }
+
+  static int effectiveChance(int chancePercent, int resistancePercent) {
+    return Math.max(0, Math.min(100,
+        Math.max(0, chancePercent) - Math.max(0, resistancePercent)));
+  }
+
+  static int secondaryStatRoll(int seed, int round, int actorIndex, String salt) {
+    long mixed = (seed & 0xffffffffL) * 1_664_525L
+        + (long)Math.max(1, round) * 1_013_904_223L
+        + (long)(Math.max(0, actorIndex) + 1) * 2_654_435_761L
+        + (long)(salt == null ? 0 : salt.hashCode()) * 97_531L;
+    mixed ^= mixed >>> 16;
+    mixed ^= mixed << 11;
+    return (int)Math.floorMod(mixed, 100L);
+  }
+
+  private static boolean secondaryChanceTriggers(
+      JSONObject combat, int chancePercent, String salt) {
+    int chance = Math.max(0, Math.min(100, chancePercent));
+    if (chance <= 0) return false;
+    int round = Math.max(1, combat.optInt("resolvedRound", combat.optInt("round", 1)));
+    int actorIndex = Math.max(0,
+        combat.optInt("resolvedActorIndex", combat.optInt("actorIndex", 0)));
+    return secondaryStatRoll(combat.optInt("seed", 1), round, actorIndex, salt) < chance;
+  }
+
   static int deterministicDie(int seed, int sequence, int slot) {
     long mixed = (seed & 0xffffffffL) * 1_103_515_245L
         + (long)(sequence + 1) * 12_345L
@@ -406,6 +439,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             .put("baseHp", profile.maxHp)
             .put("baseDamage", profile.damage)
             .put("stagePercent", scaled.getInt("stagePercent"))
+            .put("criticalChancePercent", ENTITY_BASE_CRITICAL_PERCENT)
+            .put("evasionPercent", ENTITY_BASE_EVASION_PERCENT)
+            .put("resCriticalPercent", 0)
+            .put("resEvasionPercent", 0)
             .put("bleedTurns", 0)
             .put("bleedPercent", 0)
             .put("poisonTurns", 0)
@@ -537,16 +574,24 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     int str = actor.optInt("STR", CharacterProgressionCore.BASE_STAT);
     int skl = actor.optInt("SKL", CharacterProgressionCore.BASE_STAT);
     int baseAttack = Math.max(1, actor.optInt("baseAttack", CAO_MINH_BASE_ATTACK));
+    result.evadeResponse = "TWO PAIR".equals(hand);
 
     if ("NO HAND".equals(hand) || "ONE PAIR".equals(hand) || "TWO PAIR".equals(hand)) {
+      String action = "TWO PAIR".equals(hand) ? "né và phản công" : "đánh thường";
+      if (entityEvadesActor(combat, actor, entity)) {
+        addFeedback(combat, "actor", "entity", "miss", "", false);
+        result.summary = actorMissSummary(hand, actorName, action, false, entity);
+        return result;
+      }
       int hpBefore = Math.max(0, entity.optInt("hp", 0));
       int handPercent = "ONE PAIR".equals(hand) ? 125 : 100;
+      boolean critical = actorCriticalTriggers(combat, actor, entity);
       int damage = basicDamage(baseAttack, str, handPercent);
+      if (critical) damage = criticalDamage(damage);
       applyEntityDamage(combat, entity, damage);
       List<String> effects = applyCharacterProcs(combat, actor, entity, baseAttack);
-      String action = "TWO PAIR".equals(hand) ? "né và phản công" : "đánh thường";
-      result.evadeResponse = "TWO PAIR".equals(hand);
-      result.summary = actorBattleSummary(hand, actorName, action, false, entity, hpBefore, effects);
+      result.summary = actorBattleSummary(
+          hand, actorName, action, false, critical, entity, hpBefore, effects);
       return result;
     }
 
@@ -554,27 +599,45 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int handPercent = "FSF".equals(hand) ? 200 : 100;
       Ultimate ultimate = ULTIMATES.get(actor.optString("id", ""));
       if (ultimate == null || ultimate.hitCount <= 0) {
-        result.summary = "[" + handToken(hand) + "] " + actorName + " chưa có Ultimate authoritative.";
+        result.summary = "[" + handToken(hand) + "] " + actorName
+            + " chưa có Ultimate authoritative.";
+        return result;
+      }
+      if (entityEvadesActor(combat, actor, entity)) {
+        addFeedback(combat, "actor", "entity", "miss", "", false);
+        result.summary = actorMissSummary(hand, actorName, ultimate.name, true, entity);
         return result;
       }
       int hpBefore = Math.max(0, entity.optInt("hp", 0));
       int currentDamage = basicDamage(baseAttack, str, 100);
+      boolean critical = actorCriticalTriggers(combat, actor, entity);
       int damage = ultimateDamage(currentDamage, ultimate.hitCount, ultimate.bonusPercent, handPercent);
+      if (critical) damage = criticalDamage(damage);
       applyEntityDamage(combat, entity, damage);
       result.summary = actorBattleSummary(
-          hand, actorName, ultimate.name, true, entity, hpBefore, new ArrayList<String>());
+          hand, actorName, ultimate.name, true, critical, entity, hpBefore, new ArrayList<String>());
       return result;
     }
 
     int handPercent = skillHandPercent(hand);
     JSONObject selected = combat.optJSONObject("currentSkill");
     if (selected == null || selected.optString("name", "").isEmpty()) {
-      result.summary = "[" + handToken(hand) + "] " + actorName + " không có Skill authoritative.";
+      result.summary = "[" + handToken(hand) + "] " + actorName
+          + " không có Skill authoritative.";
+      return result;
+    }
+
+    String skillName = selected.optString("name", "Skill");
+    if (entityEvadesActor(combat, actor, entity)) {
+      addFeedback(combat, "actor", "entity", "miss", "", false);
+      result.summary = actorMissSummary(hand, actorName, skillName, true, entity);
       return result;
     }
 
     int hpBefore = Math.max(0, entity.optInt("hp", 0));
+    boolean critical = actorCriticalTriggers(combat, actor, entity);
     int damage = skillDamage(baseAttack, selected.optInt("damagePercent", 100), skl, handPercent);
+    if (critical) damage = criticalDamage(damage);
     applyEntityDamage(combat, entity, damage);
 
     List<String> effects = new ArrayList<>();
@@ -584,8 +647,28 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     effects.addAll(applyCharacterProcs(combat, actor, entity, baseAttack));
 
     result.summary = actorBattleSummary(
-        hand, actorName, selected.optString("name", "Skill"), true, entity, hpBefore, effects);
+        hand, actorName, skillName, true, critical, entity, hpBefore, effects);
     return result;
+  }
+
+  private static boolean entityEvadesActor(JSONObject combat, JSONObject actor, JSONObject entity) {
+    int chance = effectiveChance(
+        entity.optInt("evasionPercent", 0), actor.optInt("resEvasionPercent", 0));
+    return secondaryChanceTriggers(combat, chance,
+        "entity-evasion:" + entity.optString("key", "") + ":" + actor.optString("id", ""));
+  }
+
+  private static boolean actorCriticalTriggers(JSONObject combat, JSONObject actor, JSONObject entity) {
+    int chance = effectiveChance(
+        actor.optInt("criticalChancePercent", 0), entity.optInt("resCriticalPercent", 0));
+    return secondaryChanceTriggers(combat, chance,
+        "actor-critical:" + actor.optString("id", "") + ":" + entity.optString("key", ""));
+  }
+
+  private static String actorMissSummary(String hand, String actorName, String action,
+                                         boolean usesSkillVerb, JSONObject entity) {
+    return "[" + handToken(hand) + "] " + actorName + (usesSkillVerb ? " dùng " : " ")
+        + action + " nhưng " + entity.optString("name", "Entity") + " né được.";
   }
 
   private static int skillHandPercent(String hand) {
@@ -619,13 +702,14 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static String actorBattleSummary(String hand, String actorName, String action,
-                                           boolean usesSkillVerb, JSONObject entity, int hpBefore,
-                                           List<String> effects) {
+                                           boolean usesSkillVerb, boolean critical, JSONObject entity,
+                                           int hpBefore, List<String> effects) {
     int hp = Math.max(0, entity.optInt("hp", 0));
     int maxHp = Math.max(1, entity.optInt("maxHp", 1));
     int dealt = Math.max(0, hpBefore - hp);
     StringBuilder text = new StringBuilder()
         .append("[").append(handToken(hand)).append("] ")
+        .append(critical ? "[CRITICAL] " : "")
         .append(actorName).append(usesSkillVerb ? " dùng " : " ")
         .append(action).append(", ")
         .append(entity.optString("name", "Entity"))
@@ -797,9 +881,23 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       }
     }
 
+    int passiveEvasion = effectiveChance(
+        actor.optInt("evasionPercent", 0), entity.optInt("resEvasionPercent", 0));
+    if (secondaryChanceTriggers(combat, passiveEvasion,
+        "actor-evasion:" + actor.optString("id", "") + ":" + entity.optString("key", ""))) {
+      consumeAccuracyPenaltyTurn(entity);
+      addFeedback(combat, "entity", "actor", "miss", "", false);
+      return entityName + " tấn công " + actorName + " nhưng " + actorName
+          + " né được nhờ Evasion.";
+    }
+
     int before = Math.max(0, actor.optInt("hp", 0));
     int rawDamage = Math.max(1, entity.optInt("attack", 1));
     int def = actor.optInt("DEF", CharacterProgressionCore.BASE_STAT);
+    int criticalChance = effectiveChance(
+        entity.optInt("criticalChancePercent", 0), actor.optInt("resCriticalPercent", 0));
+    boolean critical = secondaryChanceTriggers(combat, criticalChance,
+        "entity-critical:" + entity.optString("key", "") + ":" + actor.optString("id", ""));
     List<EntitySkill> pool = ENTITY_SKILLS.get(entity.optString("key", ""));
     List<String> triggeredSkills = new ArrayList<>();
     if (pool != null) {
@@ -810,14 +908,17 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         EntitySkill skill = pool.get(i);
         if (entitySkillProcRoll(seed, round, actorIndex, i) >= skill.procPercent) continue;
         triggeredSkills.add(skill.name);
-        int damage = defendedIncomingDamage(entitySkillDamage(rawDamage, skill.damagePercent), def);
+        int incoming = entitySkillDamage(rawDamage, skill.damagePercent);
+        if (critical) incoming = criticalDamage(incoming);
+        int damage = defendedIncomingDamage(incoming, def);
         actor.put("hp", Math.max(0, actor.optInt("hp", 0) - damage));
         addFeedback(combat, "entity", "actor", "damage", "-" + damage + " HP", true);
       }
     }
 
     if (triggeredSkills.isEmpty()) {
-      int damage = defendedIncomingDamage(rawDamage, def);
+      int incoming = critical ? criticalDamage(rawDamage) : rawDamage;
+      int damage = defendedIncomingDamage(incoming, def);
       actor.put("hp", Math.max(0, actor.optInt("hp", 0) - damage));
       addFeedback(combat, "entity", "actor", "damage", "-" + damage + " HP", true);
     }
@@ -829,8 +930,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         ? "tấn công"
         : "dùng " + String.join(" + ", triggeredSkills);
     consumeAccuracyPenaltyTurn(entity);
-    return entityName + " " + action + ", " + actorName + " -" + dealt
-        + " HP [" + hp + "/" + maxHp + " HP].";
+    return entityName + (critical ? " [CRITICAL] " : " ") + action + ", "
+        + actorName + " -" + dealt + " HP [" + hp + "/" + maxHp + " HP].";
   }
 
   private static void tickRoundStartEffects(JSONObject combat, JSONObject entity) throws Exception {
@@ -885,8 +986,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
           member.optString("id", member.optString("name", "")));
       if (id.isEmpty() || "cao_minh".equals(id)) continue;
       String name = member.optString("name", id);
-      int baseAttack = "syvial".equals(id) ? 32 : "iris".equals(id) ? 28 : 24;
-      output.put(participant(id, name, i, member, progression.profile(state, id), baseAttack));
+      output.put(participant(id, name, i, member, progression.profile(state, id),
+          baseAttackFor(member, id)));
     }
     return output;
   }
@@ -897,6 +998,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     int maxHp = Math.max(1, profile.getInt("maxHp"));
     int hp = Math.max(0, Math.min(profile.getInt("currentHp"), maxHp));
     int baseAttack = firstPositive(source, fallbackAttack, "attackMax", "attack", "ATK");
+    int str = stats.getInt("STR");
+    int def = stats.getInt("DEF");
+    int skl = stats.getInt("SKL");
+    int vit = stats.getInt("VIT");
     return new JSONObject()
         .put("id", id)
         .put("name", name)
@@ -904,10 +1009,23 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         .put("hp", hp)
         .put("maxHp", maxHp)
         .put("baseAttack", baseAttack)
-        .put("STR", stats.getInt("STR"))
-        .put("DEF", stats.getInt("DEF"))
-        .put("SKL", stats.getInt("SKL"))
-        .put("VIT", stats.getInt("VIT"));
+        .put("STR", str)
+        .put("DEF", def)
+        .put("SKL", skl)
+        .put("VIT", vit)
+        .put("criticalChancePercent", CharacterStatCore.criticalChancePercent(skl))
+        .put("evasionPercent", CharacterStatCore.evasionPercent(vit))
+        .put("resCriticalPercent", CharacterStatCore.criticalResistancePercent(def))
+        .put("resEvasionPercent", CharacterStatCore.evasionResistancePercent(skl));
+  }
+
+  static int baseAttackFor(JSONObject source, String rawId) {
+    String id = CharacterProgressionCore.normalizeCharacterId(rawId);
+    int fallback = "cao_minh".equals(id) ? CAO_MINH_BASE_ATTACK
+        : "syvial".equals(id) ? 32
+        : "iris".equals(id) ? 28
+        : 24;
+    return firstPositive(source, fallback, "attackMax", "attack", "ATK");
   }
 
   private static int firstPositive(JSONObject source, int fallback, String... keys) {
