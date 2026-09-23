@@ -3,8 +3,8 @@
   "rollMode": "independent_per_entity",
   "source": "01_WORLD/entity.md — BACKROOMS-ENTITY-R4 CURRENT / PROJECT CANON",
   "rules": {
-    "minimumRatePercent": 1,
-    "maximumRatePercent": 1.5,
+    "minimumRatePercent": 3,
+    "maximumRatePercent": 3.5,
     "sharedPool": false,
     "maxActiveEncounters": 1,
     "legacyOverlayOnlyKeys": [
@@ -21,7 +21,7 @@
     {
       "key": "hound",
       "name": "Hound",
-      "ratePercent": 1.5,
+      "ratePercent": 3.5,
       "levels": [
         1,
         2,
@@ -50,7 +50,7 @@
     {
       "key": "clump",
       "name": "Clump",
-      "ratePercent": 1.5,
+      "ratePercent": 3.5,
       "levels": [
         1,
         2
@@ -77,7 +77,7 @@
     {
       "key": "duller",
       "name": "Duller",
-      "ratePercent": 1.25,
+      "ratePercent": 3.25,
       "levels": [
         1
       ],
@@ -103,7 +103,7 @@
     {
       "key": "deathmoth",
       "name": "Deathmoth",
-      "ratePercent": 1.4,
+      "ratePercent": 3.4,
       "levels": [
         1,
         3,
@@ -131,7 +131,7 @@
     {
       "key": "hostile_faceling",
       "name": "Hostile Faceling",
-      "ratePercent": 1.2,
+      "ratePercent": 3.2,
       "levels": [
         1
       ],
@@ -157,7 +157,7 @@
     {
       "key": "false_puddle",
       "name": "False Puddle",
-      "ratePercent": 1.15,
+      "ratePercent": 3.15,
       "levels": [
         1
       ],
@@ -183,7 +183,7 @@
     {
       "key": "paintings",
       "name": "Paintings",
-      "ratePercent": 1.1,
+      "ratePercent": 3.1,
       "levels": [
         1
       ],
@@ -209,7 +209,7 @@
     {
       "key": "smiler",
       "name": "Smiler",
-      "ratePercent": 1.4,
+      "ratePercent": 3.4,
       "levels": [
         2
       ],
@@ -235,7 +235,7 @@
     {
       "key": "skin-stealer",
       "name": "Skin-Stealer",
-      "ratePercent": 1.25,
+      "ratePercent": 3.25,
       "levels": [
         2,
         3,
@@ -264,7 +264,7 @@
     {
       "key": "predatory_window",
       "name": "Predatory Window",
-      "ratePercent": 1.1,
+      "ratePercent": 3.1,
       "levels": [
         2,
         4,
@@ -292,7 +292,7 @@
     {
       "key": "biological_pipeline",
       "name": "Biological Pipeline",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         2
       ],
@@ -318,7 +318,7 @@
     {
       "key": "wretch",
       "name": "Wretch",
-      "ratePercent": 1.3,
+      "ratePercent": 3.3,
       "levels": [
         3
       ],
@@ -344,7 +344,7 @@
     {
       "key": "cable_mimic",
       "name": "Cable Mimic",
-      "ratePercent": 1.2,
+      "ratePercent": 3.2,
       "levels": [
         3
       ],
@@ -370,7 +370,7 @@
     {
       "key": "the_beast_of_level_5",
       "name": "The Beast of Level 5",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         5
       ],
@@ -396,7 +396,7 @@
     {
       "key": "hotel_corpse_lure",
       "name": "Hotel Corpse Lure",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         5
       ],
@@ -422,7 +422,7 @@
     {
       "key": "jeff_the_killer",
       "name": "Jeff the Killer",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         0,
         1,
@@ -455,7 +455,7 @@
       "key": "async_rifleman",
       "name": "ASYNC Rifleman",
       "faction": "ASYNC",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         0,
         1,
@@ -488,7 +488,7 @@
       "key": "async_vanguard",
       "name": "ASYNC Vanguard",
       "faction": "ASYNC",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         0,
         1,
@@ -521,7 +521,7 @@
       "key": "async_tactical",
       "name": "ASYNC Tactical Operative",
       "faction": "ASYNC",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         0,
         1,
@@ -554,7 +554,7 @@
       "key": "async_decon",
       "name": "ASYNC Decon Specialist",
       "faction": "ASYNC",
-      "ratePercent": 1,
+      "ratePercent": 3,
       "levels": [
         0,
         1,
