@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 1,
-  "compilerVersion": 1,
-  "compilerFingerprint": "517614a7cec25f5d171fc05c60494121c528c58b2ac261496069f9ffe80e02bb",
+  "schemaVersion": 2,
+  "compilerVersion": 2,
+  "compilerFingerprint": "2fd6ba8aa3c455a835b9f87c0c4302c6236be4b871fac6f5a5b8c66c809c52fa",
   "sourceRevision": "level0-final-2026-09-23",
-  "generatedBy": "story-compiler-v1",
+  "generatedBy": "story-compiler-v2",
   "chapters": {
     "L0_C01": {
       "source": "story/source/level_0/LEVEL0_CH01.md",
@@ -11,28 +11,27 @@
       "segments": {
         "L0_C01_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C01_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C01_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C01_P004": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Tiến vào dãy hành lang phía trước để bắt đầu tìm hiểu quy luật của không gian này.",
+            "loopAnchor": "L0_C01_P004",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C01_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -42,33 +41,27 @@
       "segments": {
         "L0_C02_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C02_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C02_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C02_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C02_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C02_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -78,28 +71,23 @@
       "segments": {
         "L0_C03_P001": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C03_P002": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C03_P003": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C03_P004": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C03_P005": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -108,29 +96,28 @@
       "sourceDigest": "cddcadffe40d17e88d587adb4d50cf0d63ee5abbfa89f550efc95732c267fb9c",
       "segments": {
         "L0_C04_P001": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Dùng phòng ba vòm làm điểm dừng chân nghỉ ngắn",
+            "loopAnchor": "L0_C04_P001",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C04_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C04_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C04_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C04_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -140,33 +127,27 @@
       "segments": {
         "L0_C05_P001": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C05_P002": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C05_P003": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C05_P004": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C05_P005": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C05_P006": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -176,28 +157,27 @@
       "segments": {
         "L0_C06_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C06_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C06_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Lặng lẽ tiến về hướng phát ra tiếng kim loại, cẩn trọng dò xét từng góc hành lang.",
+            "loopAnchor": "L0_C06_P003",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C06_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C06_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -207,33 +187,27 @@
       "segments": {
         "L0_C07_P001": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C07_P002": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C07_P003": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C07_P004": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C07_P005": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C07_P006": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -243,28 +217,23 @@
       "segments": {
         "L0_C08_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C08_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C08_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C08_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C08_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -274,33 +243,27 @@
       "segments": {
         "L0_C09_P001": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C09_P002": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C09_P003": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C09_P004": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C09_P005": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C09_P006": {
           "mode": "CUTAWAY",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -310,33 +273,27 @@
       "segments": {
         "L0_C10_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C10_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C10_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C10_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C10_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C10_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -346,33 +303,31 @@
       "segments": {
         "L0_C11_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C11_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C11_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C11_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C11_P005": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Đề xuất tiếp tục đồng hành cùng Lục Trầm vì mục tiêu sinh tồn.",
+            "loopAnchor": "L0_C11_P005",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C11_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -382,33 +337,27 @@
       "segments": {
         "L0_C12_P001": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C12_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C12_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C12_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C12_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C12_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -418,46 +367,27 @@
       "segments": {
         "L0_C13_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C13_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C13_P003": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Lặng lẽ quan sát hành lang vàng phía trước.",
-              "action": "Lặng lẽ quan sát hành lang vàng phía trước."
-            },
-            {
-              "text": "Để ý biểu cảm và sắc mặt của Nam lúc này.",
-              "action": "Để ý biểu cảm và sắc mặt của Nam lúc này."
-            },
-            {
-              "text": "Lắng nghe nhịp tiếng ù đèn huỳnh quang xung quanh.",
-              "action": "Lắng nghe nhịp tiếng ù đèn huỳnh quang xung quanh."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "decisionContract": {}
         },
         "L0_C13_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C13_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C13_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -467,33 +397,27 @@
       "segments": {
         "L0_C14_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C14_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C14_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C14_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C14_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C14_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -503,33 +427,27 @@
       "segments": {
         "L0_C15_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C15_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C15_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C15_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C15_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C15_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -539,33 +457,27 @@
       "segments": {
         "L0_C16_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C16_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C16_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C16_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C16_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C16_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -575,28 +487,23 @@
       "segments": {
         "L0_C17_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C17_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C17_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C17_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C17_P005": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -606,33 +513,27 @@
       "segments": {
         "L0_C18_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C18_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C18_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C18_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C18_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C18_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -642,33 +543,31 @@
       "segments": {
         "L0_C19_P001": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C19_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C19_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C19_P004": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Thay đổi cách ứng phó, yêu cầu giọng nói đứng yên để tiến tới kiểm tra.",
+            "loopAnchor": "L0_C19_P004",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C19_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C19_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -677,34 +576,32 @@
       "sourceDigest": "3d2d7026a1dc1f4d56dae3bc2f20580160de478f4bd476be34cee4df730a9901",
       "segments": {
         "L0_C20_P001": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Cất tiếng hỏi để kiểm chứng xem giọng nói phía sau tường có phải là Nam.",
+            "loopAnchor": "L0_C20_P001",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C20_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C20_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C20_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C20_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C20_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -714,33 +611,27 @@
       "segments": {
         "L0_C21_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C21_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C21_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C21_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C21_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C21_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -750,33 +641,31 @@
       "segments": {
         "L0_C22_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C22_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C22_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C22_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C22_P005": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Tiến lại gần kiểm tra cánh cửa xám.",
+            "loopAnchor": "L0_C22_P005",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C22_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -786,33 +675,27 @@
       "segments": {
         "L0_C23_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C23_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C23_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C23_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C23_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C23_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -822,33 +705,27 @@
       "segments": {
         "L0_C24_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C24_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C24_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C24_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C24_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C24_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -858,33 +735,27 @@
       "segments": {
         "L0_C25_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C25_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C25_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C25_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C25_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C25_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -894,33 +765,31 @@
       "segments": {
         "L0_C26_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C26_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C26_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C26_P004": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "DECISION",
+          "decisionContract": {
+            "canonChoiceText": "Đánh dấu ranh giới và kiểm tra độ ổn định của lối đi trước khi bước qua.",
+            "loopAnchor": "L0_C26_P004",
+            "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          }
         },
         "L0_C26_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C26_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -930,33 +799,27 @@
       "segments": {
         "L0_C27_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C27_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C27_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C27_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C27_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C27_P006": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -966,33 +829,27 @@
       "segments": {
         "L0_C28_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C28_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C28_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C28_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C28_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C28_P006": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -1002,28 +859,23 @@
       "segments": {
         "L0_C29_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C29_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C29_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C29_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C29_P005": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     },
@@ -1033,36 +885,30 @@
       "segments": {
         "L0_C30_P001": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C30_P002": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C30_P003": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C30_P004": {
           "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         },
         "L0_C30_P005": {
           "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "decisionContract": {}
         }
       }
     }
   },
   "providersUsed": [
     "deterministic",
-    "haiku+gemini-review+haiku-final-audit",
-    "haiku+gemini-review+no-final-audit-needed",
-    "haiku+no-review-needed+no-final-audit-needed"
+    "gemini",
+    "haiku"
   ]
 }
