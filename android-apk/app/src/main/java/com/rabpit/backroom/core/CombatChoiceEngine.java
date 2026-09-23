@@ -603,19 +603,14 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             + " chưa có Ultimate authoritative.";
         return result;
       }
-      if (entityEvadesActor(combat, actor, entity)) {
-        addFeedback(combat, "actor", "entity", "miss", "", false);
-        result.summary = actorMissSummary(hand, actorName, ultimate.name, true, entity);
-        return result;
-      }
+      // SSF/FSF are authoritative Poker Dice ultimates. Keep them deterministic and do not let
+      // passive Critical/Evasion rolls multiply or nullify a rare hand outcome.
       int hpBefore = Math.max(0, entity.optInt("hp", 0));
       int currentDamage = basicDamage(baseAttack, str, 100);
-      boolean critical = actorCriticalTriggers(combat, actor, entity);
       int damage = ultimateDamage(currentDamage, ultimate.hitCount, ultimate.bonusPercent, handPercent);
-      if (critical) damage = criticalDamage(damage);
       applyEntityDamage(combat, entity, damage);
       result.summary = actorBattleSummary(
-          hand, actorName, ultimate.name, true, critical, entity, hpBefore, new ArrayList<String>());
+          hand, actorName, ultimate.name, true, false, entity, hpBefore, new ArrayList<String>());
       return result;
     }
 
