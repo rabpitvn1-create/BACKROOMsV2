@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "compilerVersion": 1,
-  "compilerFingerprint": "1c49322e4f2823adfec661a9ea97eaaa44b9a2e14be796d3b9cd6fd37dd40c92",
+  "compilerFingerprint": "6d178ce820ce78333e7abd38fcd1939551061d0b8c9d286cb0a38ad1e111c23a",
   "sourceRevision": "level0-final-2026-09-23",
   "generatedBy": "story-compiler-v1",
   "chapters": {
@@ -185,9 +185,22 @@
           "interactionGuard": ""
         },
         "L0_C06_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm tra lại dấu vết xung quanh để xác định người thứ ba có theo hướng nào.",
+              "action": "Kiểm tra lại dấu vết xung quanh để xác định người thứ ba có theo hướng nào."
+            },
+            {
+              "text": "Khắc thêm một ma ấn ở vị trí này, lần này để lại thông tin cụ thể hơn.",
+              "action": "Khắc thêm một ma ấn ở vị trí này, lần này để lại thông tin cụ thể hơn."
+            },
+            {
+              "text": "Đứng yên và lắng nghe thêm, theo dõi xem tiếng kim loại có vang lại hay người nào phản ứng với tên được gọi.",
+              "action": "Đứng yên và lắng nghe thêm, theo dõi xem tiếng kim loại có vang lại hay người nào phản ứng với tên được gọi."
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C06_P004": {
           "mode": "LINEAR",
@@ -319,22 +332,9 @@
           "interactionGuard": ""
         },
         "L0_C10_P003": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Nghiên cứu kiếm ấn mới—so sánh lực và độ sâu với những dấu trước để đoán tâm trạng của cô.",
-              "action": "Nghiên cứu kiếm ấn mới—so sánh lực và độ sâu với những dấu trước để đoán tâm trạng của cô."
-            },
-            {
-              "text": "Đặt lòng bàn tay lên tường để cảm nhận liệu Lục Trầm còn ở gần hay đã rút lui.",
-              "action": "Đặt lòng bàn tay lên tường để cảm nhận liệu Lục Trầm còn ở gần hay đã rút lui."
-            },
-            {
-              "text": "Gõ tường lần nữa với tín hiệu khác—để xem cô có phản ứng hay không gian sẽ trêu lại.",
-              "action": "Gõ tường lần nữa với tín hiệu khác—để xem cô có phản ứng hay không gian sẽ trêu lại."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C10_P004": {
           "mode": "LINEAR",
@@ -368,9 +368,22 @@
           "interactionGuard": ""
         },
         "L0_C11_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Dùng thần thức quét kỹ ba đoạn hẹp, tìm xem chúng có thay đổi hay có gẫy ẩn nào.",
+              "action": "Dùng thần thức quét kỹ ba đoạn hẹp, tìm xem chúng có thay đổi hay có gẫy ẩn nào."
+            },
+            {
+              "text": "Hỏi Lục Trầm cô đã thử cách nào để qua khu hố ở phía cô.",
+              "action": "Hỏi Lục Trầm cô đã thử cách nào để qua khu hố ở phía cô."
+            },
+            {
+              "text": "Nhắc Nam không được nhìn xuống và giữ tâm thần khi qua các khoảng hẹp.",
+              "action": "Nhắc Nam không được nhìn xuống và giữ tâm thần khi qua các khoảng hẹp."
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C11_P004": {
           "mode": "LINEAR",
@@ -517,9 +530,22 @@
           "interactionGuard": ""
         },
         "L0_C15_P004": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Lắng nghe kỹ nhịp âm thanh khi họ tiến thêm, để xem tần suất có thay đổi.",
+              "action": "Lắng nghe kỹ nhịp âm thanh khi họ tiến thêm, để xem tần suất có thay đổi."
+            },
+            {
+              "text": "Hỏi Lục Trầm xem cô có cảm nhận được gì từ nhịp đó qua ma khí không.",
+              "action": "Hỏi Lục Trầm xem cô có cảm nhận được gì từ nhịp đó qua ma khí không."
+            },
+            {
+              "text": "Để ý liệu nhịp có liên hệ gì với các mảnh kim loại lộ ra mà họ vừa tìm thấy.",
+              "action": "Để ý liệu nhịp có liên hệ gì với các mảnh kim loại lộ ra mà họ vừa tìm thấy."
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C15_P005": {
           "mode": "LINEAR",
@@ -615,9 +641,22 @@
           "interactionGuard": ""
         },
         "L0_C18_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Hỏi Nam cái gì khác biệt giữa các lời đồn về Almond Water mà hắn nhớ được.",
+              "action": "Hỏi Nam cái gì khác biệt giữa các lời đồn về Almond Water mà hắn nhớ được."
+            },
+            {
+              "text": "Để ý xem liệu tốc độ phản xạ của Nam trong kính có bất thường như vừa nhìn thấy không.",
+              "action": "Để ý xem liệu tốc độ phản xạ của Nam trong kính có bất thường như vừa nhìn thấy không."
+            },
+            {
+              "text": "Tiếp tục quan sát Nam trong khoảng thời gian sắp tới trước khi di chuyển.",
+              "action": "Tiếp tục quan sát Nam trong khoảng thời gian sắp tới trước khi di chuyển."
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C18_P004": {
           "mode": "LINEAR",
@@ -646,19 +685,32 @@
           "interactionGuard": ""
         },
         "L0_C19_P002": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         },
         "L0_C19_P003": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         },
         "L0_C19_P004": {
-          "mode": "LOCKED_EVENT",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm tra lại dấu cọ trên giấy tường—nó có thể là bằng chứng Nam đã qua đó.",
+              "action": "Kiểm tra lại dấu cọ trên giấy tường—nó có thể là bằng chứng Nam đã qua đó."
+            },
+            {
+              "text": "Nhìn vào những tiếng gọi—từng giọng có khác nhau không, hay chúng quá giống?",
+              "action": "Nhìn vào những tiếng gọi—từng giọng có khác nhau không, hay chúng quá giống?"
+            },
+            {
+              "text": "Theo dõi chiều hướng của từng tiếng—chúng có di chuyển theo một mẫu nào không?",
+              "action": "Theo dõi chiều hướng của từng tiếng—chúng có di chuyển theo một mẫu nào không?"
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C19_P005": {
           "mode": "LINEAR",
@@ -774,7 +826,7 @@
           "interactionGuard": ""
         },
         "L0_C22_P006": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         }
@@ -790,32 +842,32 @@
           "interactionGuard": ""
         },
         "L0_C23_P002": {
-          "mode": "LINEAR",
+          "mode": "LOCKED_EVENT",
           "choices": [],
           "interactionGuard": ""
         },
         "L0_C23_P003": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P004": {
           "mode": "INTERACTIVE",
           "choices": [
             {
-              "text": "Quan sát bề mặt chất lỏng—có gợn sóng hay vật lạ nào hiện lên không?",
-              "action": "Quan sát bề mặt chất lỏng—có gợn sóng hay vật lạ nào hiện lên không?"
+              "text": "Kiểm tra bức tường liền kỹ càng—có vết nứt, bụi hay dấu hiệu nó vừa được tạo ra?",
+              "action": "Kiểm tra bức tường liền kỹ càng—có vết nứt, bụi hay dấu hiệu nó vừa được tạo ra?"
             },
             {
-              "text": "Hỏi Lục Trầm: giọng này có khác với cách Nam thường nói chuyện không?",
-              "action": "Hỏi Lục Trầm: giọng này có khác với cách Nam thường nói chuyện không?"
+              "text": "Hỏi Lục Trầm: cô có nghe được gì lạ trong giọng Nam ngoài cách gọi không?",
+              "action": "Hỏi Lục Trầm: cô có nghe được gì lạ trong giọng Nam ngoài cách gọi không?"
             },
             {
-              "text": "Cảm nhận thần thức sâu hơn vào vùng chất lỏng—có năng lượng bất thường nào?",
-              "action": "Cảm nhận thần thức sâu hơn vào vùng chất lỏng—có năng lượng bất thường nào?"
+              "text": "Đặt ma ấn thêm ở các hành lang xung quanh để ghi lại bất kỳ thay đổi không gian nào tiếp theo.",
+              "action": "Đặt ma ấn thêm ở các hành lang xung quanh để ghi lại bất kỳ thay đổi không gian nào tiếp theo."
             }
           ],
           "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
-        },
-        "L0_C23_P004": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
         },
         "L0_C23_P005": {
           "mode": "LINEAR",
@@ -849,22 +901,9 @@
           "interactionGuard": ""
         },
         "L0_C24_P004": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Dùng ma nguyên mảnh để thử lại đường tiếp giáp, nhưng lần này theo chiều ngang thay vì dọc.",
-              "action": "Dùng ma nguyên mảnh để thử lại đường tiếp giáp, nhưng lần này theo chiều ngang thay vì dọc."
-            },
-            {
-              "text": "Hỏi Lục Trầm liệu cô nhận thấy áp suất hay nhiệt độ khác nhau giữa hai bức tường.",
-              "action": "Hỏi Lục Trầm liệu cô nhận thấy áp suất hay nhiệt độ khác nhau giữa hai bức tường."
-            },
-            {
-              "text": "Lắng nghe tiếng rung cơ học xem nó phát mạnh hơn từ phía kim loại hay phía giấy tường.",
-              "action": "Lắng nghe tiếng rung cơ học xem nó phát mạnh hơn từ phía kim loại hay phía giấy tường."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C24_P005": {
           "mode": "LINEAR",
@@ -898,22 +937,9 @@
           "interactionGuard": ""
         },
         "L0_C25_P004": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Nhìn kỹ bức tường bên trái—có vết nứt, khe hở hay dấu hiệu lối mở nào không.",
-              "action": "Nhìn kỹ bức tường bên trái—có vết nứt, khe hở hay dấu hiệu lối mở nào không."
-            },
-            {
-              "text": "Hỏi Lục Trầm liệu Thiên Kiếm Linh Tâm có thể cảm nhận gì từ phía bên kia bức tường này không.",
-              "action": "Hỏi Lục Trầm liệu Thiên Kiếm Linh Tâm có thể cảm nhận gì từ phía bên kia bức tường này không."
-            },
-            {
-              "text": "Đứng im và lắng nghe thêm—tiếng ho hay âm thanh khác có lặp lại không.",
-              "action": "Đứng im và lắng nghe thêm—tiếng ho hay âm thanh khác có lặp lại không."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C25_P005": {
           "mode": "LINEAR",
@@ -942,27 +968,27 @@
           "interactionGuard": ""
         },
         "L0_C26_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
-        },
-        "L0_C26_P004": {
           "mode": "INTERACTIVE",
           "choices": [
             {
-              "text": "Nhìn kỹ hơn các đèn xanh—chúng có nhấp nháy theo nhịp nào không, hay luôn sáng đều?",
-              "action": "Nhìn kỹ hơn các đèn xanh—chúng có nhấp nháy theo nhịp nào không, hay luôn sáng đều?"
+              "text": "Quan sát kỹ hơn hai đèn xanh—chúng có nhấp nháy theo nhịp nào hay chỉ ổn định.",
+              "action": "Quan sát kỹ hơn hai đèn xanh—chúng có nhấp nháy theo nhịp nào hay chỉ ổn định."
             },
             {
-              "text": "Hỏi Lục Trầm liệu cô đã từng gặp điện hay bất cứ thứ gì như vậy ở đâu khác.",
-              "action": "Hỏi Lục Trầm liệu cô đã từng gặp điện hay bất cứ thứ gì như vậy ở đâu khác."
+              "text": "Hỏi Lục Trầm liệu cô từng thấy thiết bị có dòng năng lượng như thế này ở những Level khác.",
+              "action": "Hỏi Lục Trầm liệu cô từng thấy thiết bị có dòng năng lượng như thế này ở những Level khác."
             },
             {
-              "text": "Lắng nghe xem các hộp có phát ra tiếng gì—rít, rung, hay chỉ im lặng.",
-              "action": "Lắng nghe xem các hộp có phát ra tiếng gì—rít, rung, hay chỉ im lặng."
+              "text": "Chờ một lúc để nghe tiếng rung có đến từ những hộp này hay từ phía sâu hơn.",
+              "action": "Chờ một lúc để nghe tiếng rung có đến từ những hộp này hay từ phía sâu hơn."
             }
           ],
           "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        },
+        "L0_C26_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C26_P005": {
           "mode": "LINEAR",
@@ -991,22 +1017,9 @@
           "interactionGuard": ""
         },
         "L0_C27_P003": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Mở rộng thần thức để kiểm tra phía sau hành lang—sinh khí, chuyển động, bất kỳ dấu hiệu thể chất nào.",
-              "action": "Mở rộng thần thức để kiểm tra phía sau hành lang—sinh khí, chuyển động, bất kỳ dấu hiệu thể chất nào."
-            },
-            {
-              "text": "Nói lên một chi tiết riêng tư chỉ Nam thực sự biết, để xem giọng kia có thể trả lời hay tự phơi bày.",
-              "action": "Nói lên một chi tiết riêng tư chỉ Nam thực sự biết, để xem giọng kia có thể trả lời hay tự phơi bày."
-            },
-            {
-              "text": "Ghi nhận vị trí âm thanh hiện tại và tiếp tục tiến lên—để đứng sẵn sàng nếu có thay đổi.",
-              "action": "Ghi nhận vị trí âm thanh hiện tại và tiếp tục tiến lên—để đứng sẵn sàng nếu có thay đổi."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C27_P004": {
           "mode": "LINEAR",
@@ -1086,7 +1099,7 @@
           "interactionGuard": ""
         },
         "L0_C29_P005": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         }
