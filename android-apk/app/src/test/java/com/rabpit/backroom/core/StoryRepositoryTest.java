@@ -9,6 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -96,4 +100,96 @@ public class StoryRepositoryTest {
     }
     assertEquals(4, cutaways);
   }
+
+  @Test public void finalLevelZeroStoryRunsEndToEndWithAuthoredMilestones() throws Exception {
+    String metadata = readRepoAsset("story/generated/level_0/level0.story.json");
+    Map<String, String> sources = new LinkedHashMap<>();
+    for (int i = 1; i <= 30; i++) {
+      String path = String.format(java.util.Locale.ROOT,
+          "story/source/level_0/LEVEL0_CH%02d.md", i);
+      sources.put(path, readRepoAsset(path));
+    }
+
+    StoryRepository repository = StoryRepository.fromText(metadata, sources);
+    StoryCore core = StoryCore.withRepository(repository);
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+    JSONObject state = new JSONObject()
+        .put("currentLevel", 0)
+        .put("currentLevelKey", "0")
+        .put("turn", 1)
+        .put("party", new JSONArray())
+        .put("flags", new JSONObject());
+
+    Set<String> cutawayChapters = new LinkedHashSet<>();
+    String firstParallelChapter = "";
+    String firstReunionChapter = "";
+    String firstAccompanyChapter = "";
+    String firstPartyChapter = "";
+    String firstNamPresentChapter = "";
+    String firstNamMissingChapter = "";
+    int delivered = 0;
+
+    while (core.hasPendingAuthoredStory(state)) {
+      StoryCore.AuthoredTurn turn =
+          core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+      if (turn == null) break;
+      delivered++;
+      if ("cutaway".equals(turn.visibility)) cutawayChapters.add(turn.chapterId);
+
+      String lucStatus = StoryCore.characterStatus(state, "luc_tram");
+      if (firstParallelChapter.isEmpty() && StoryCore.STATUS_PARALLEL.equals(lucStatus)) {
+        firstParallelChapter = turn.chapterId;
+      }
+      if (firstReunionChapter.isEmpty() && StoryCore.STATUS_REUNITED.equals(lucStatus)) {
+        firstReunionChapter = turn.chapterId;
+      }
+      if (firstAccompanyChapter.isEmpty() && StoryCore.STATUS_ACCOMPANYING.equals(lucStatus)) {
+        firstAccompanyChapter = turn.chapterId;
+      }
+      if (firstPartyChapter.isEmpty() && StoryCore.STATUS_PARTY_MEMBER.equals(lucStatus)) {
+        firstPartyChapter = turn.chapterId;
+      }
+
+      JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+      JSONObject characters = story.getJSONObject("characters");
+      JSONObject nam = characters.optJSONObject("nam");
+      if (nam != null) {
+        String presence = nam.optString("presence", StoryCore.PRESENCE_UNKNOWN);
+        if (firstNamPresentChapter.isEmpty() && StoryCore.PRESENCE_PRESENT.equals(presence)) {
+          firstNamPresentChapter = turn.chapterId;
+        }
+        if (firstNamMissingChapter.isEmpty() && StoryCore.PRESENCE_MISSING.equals(presence)) {
+          firstNamMissingChapter = turn.chapterId;
+        }
+      }
+
+      state.put("turn", state.optInt("turn", 1) + 1);
+      assertTrue("Story loop exceeded safety bound", delivered < 1000);
+    }
+
+    assertTrue("No authored segments were delivered", delivered > 30);
+    assertEquals(new LinkedHashSet<>(java.util.Arrays.asList(
+        "L0_C03", "L0_C05", "L0_C07", "L0_C09")), cutawayChapters);
+    assertEquals("L0_C03", firstParallelChapter);
+    assertEquals("L0_C10", firstReunionChapter);
+    assertEquals("L0_C11", firstAccompanyChapter);
+    assertEquals("L0_C12", firstPartyChapter);
+    assertEquals("L0_C05", firstNamPresentChapter);
+    assertEquals("L0_C19", firstNamMissingChapter);
+
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(story.getBoolean("arcComplete"));
+    assertTrue(story.getJSONObject("flags").getBoolean("level0_arc_boundary_reached"));
+    assertEquals(StoryCore.STATUS_PARTY_MEMBER, StoryCore.characterStatus(state, "luc_tram"));
+    assertEquals(1, state.getJSONArray("party").length());
+    assertEquals("luc_tram", state.getJSONArray("party").getJSONObject(0).getString("id"));
+
+    JSONObject nam = story.getJSONObject("characters").getJSONObject("nam");
+    assertEquals(StoryCore.PRESENCE_MISSING, nam.getString("presence"));
+
+    assertEquals(0, state.getInt("currentLevel"));
+    assertEquals("0", state.getString("currentLevelKey"));
+    assertFalse(core.hasPendingAuthoredStory(state));
+  }
+
 }
