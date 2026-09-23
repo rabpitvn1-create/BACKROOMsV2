@@ -1431,7 +1431,7 @@
       "id": "CHAR.LUC_TRAM.VISUAL_R01",
       "domain": "CHARACTER",
       "kind": "visual",
-      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar and overlay assets are intentionally unchanged until a later art pass.",
+      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar and combat overlay now use Lục Trầm's current Drive images; legacy runtime filenames are retained only for path compatibility.",
       "source": {
         "document": "02_CHARACTERS/Lục_Trầm_Codex",
         "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R01"
