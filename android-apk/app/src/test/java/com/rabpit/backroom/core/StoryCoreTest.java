@@ -23,6 +23,49 @@ public class StoryCoreTest {
         .put("flags", new JSONObject());
   }
 
+  private static StoryRepository interactiveFixtureRepository() {
+    String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
+    String source = "# Level 0 — Chương 01: Tương tác\n\nCao Minh dừng trước hai lối đi.";
+    String metadata = "{"
+        + "\"schemaVersion\":1,"
+        + "\"sourceRevision\":\"interactive-r1\","
+        + "\"segmentTargetChars\":1900,"
+        + "\"segmentMaxChars\":2400,"
+        + "\"startChapter\":\"L0_C01\","
+        + "\"chapters\":[{"
+        + "\"id\":\"L0_C01\","
+        + "\"title\":\"Tương tác\","
+        + "\"source\":\"" + sourcePath + "\","
+        + "\"thread\":\"cao_minh\","
+        + "\"visibility\":\"player\","
+        + "\"nextChapter\":\"\","
+        + "\"eventsOnEnter\":[],"
+        + "\"eventsOnExit\":[],"
+        + "\"requiredFacts\":[],"
+        + "\"forbiddenClaims\":[]"
+        + "}]}";
+    String digest = StoryRepository.sourceDigest(source);
+    String interactions = "{"
+        + "\"schemaVersion\":1,"
+        + "\"sourceRevision\":\"interactive-r1\","
+        + "\"chapters\":{"
+        + "\"L0_C01\":{"
+        + "\"sourceDigest\":\"" + digest + "\","
+        + "\"segments\":{"
+        + "\"L0_C01_P001\":{"
+        + "\"mode\":\"INTERACTIVE\","
+        + "\"choices\":["
+        + "{\"text\":\"Nhìn trái\",\"action\":\"Quan sát kỹ lối bên trái\"},"
+        + "{\"text\":\"Nhìn phải\",\"action\":\"Quan sát kỹ lối bên phải\"},"
+        + "{\"text\":\"Đứng nghe\",\"action\":\"Đứng yên lắng nghe trước khi đi tiếp\"}"
+        + "],"
+        + "\"interactionGuard\":\"Không rời khu vực và không quyết định lối đi thay cho đoạn authored tiếp theo.\""
+        + "}}}}}";
+    Map<String, String> sources = new LinkedHashMap<>();
+    sources.put(sourcePath, source);
+    return StoryRepository.fromText(metadata, sources, interactions);
+  }
+
   private static StoryRepository fixtureRepository() {
     String metadata = "{"
         + "\"schemaVersion\":1,"
@@ -196,4 +239,41 @@ public class StoryCoreTest {
     assertTrue(prompt.contains("No authored manuscript chapter is currently bound"));
     assertTrue(prompt.contains("AI must not advance manuscript position"));
   }
+
+  @Test public void compiledInteractionBlocksAdvanceUntilChoiceResponseFinishes() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(interactiveFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    assertEquals(StoryRepository.MODE_INTERACTIVE, turn.mode);
+    assertEquals(3, turn.choices.length());
+    assertTrue(core.awaitingInteraction(state));
+    assertTrue(core.blocksFreePlayerAction(state));
+
+    try {
+      core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+      fail("Expected story advance to be blocked until compiled interaction is resolved");
+    } catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("interaction choice"));
+    }
+
+    String action = turn.choices.getJSONObject(0).getString("action");
+    assertTrue(core.isCompiledInteractionChoice(state, action));
+    assertFalse(core.isCompiledInteractionChoice(state, "Tự ý bỏ đi"));
+    assertTrue(core.consumeCompiledInteractionChoice(state, action));
+    assertFalse(core.awaitingInteraction(state));
+
+    String prompt = core.promptContext(state);
+    assertTrue(prompt.contains("COMPILED STORY INTERACTION RESPONSE"));
+    assertTrue(prompt.contains(action));
+    assertTrue(prompt.contains("Không rời khu vực"));
+
+    core.finishInteractionResponse(state);
+    String after = core.promptContext(state);
+    assertFalse(after.contains("COMPILED STORY INTERACTION RESPONSE"));
+  }
+
 }
