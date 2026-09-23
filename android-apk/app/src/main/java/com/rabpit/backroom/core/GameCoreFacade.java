@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 10;
+  private static final int CURRENT_SAVE_VERSION = 11;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -22,6 +22,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private final EntityCore entityCore;
   private final ItemCore itemCore;
   private final CharacterEncounterCore characterEncounterCore;
+  private final StoryCore storyCore;
   private final CharacterProgressionCore characterProgressionCore;
   private final SurvivalCore survivalCore;
   private final CharacterDetailCore characterDetailCore;
@@ -34,6 +35,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
+    this.storyCore = new StoryCore();
     this.characterProgressionCore = new CharacterProgressionCore();
     this.survivalCore = new SurvivalCore();
     this.characterDetailCore = new CharacterDetailCore();
@@ -133,6 +135,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
       copyField(before, sanitized, "inventory");
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
+      copyField(before, sanitized, StoryCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
       int beforeStageIndex = LevelCore.stageIndex(before);
@@ -153,6 +156,7 @@ public final class GameCoreFacade implements AutoCloseable {
       entityCore.validateAndApply(before, sanitized);
       itemCore.validateAndApply(before, sanitized);
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
+      storyCore.normalizeState(sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
       characterProgressionCore.applyExplorerTurnRecovery(sanitized);
@@ -192,6 +196,17 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String storyPromptContext(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      return storyCore.promptContext(state);
+    } catch (Exception e) {
+      return "STORY CORE: unavailable. Do not invent authored story progression or Party changes.";
+    }
+  }
+
   public synchronized String entityPromptContext(String stateJson) {
     JSONObject state = parseState(stateJson);
     try {
@@ -209,6 +224,25 @@ public final class GameCoreFacade implements AutoCloseable {
       return itemCore.promptContext(state);
     } catch (Exception e) {
       return "ITEM CORE: unavailable. Do not invent or grant loot.";
+    }
+  }
+
+  public synchronized String processStoryCharacterEvent(
+      String stateJson, String characterId, String eventType) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      storyCore.applyCharacterEvent(state, characterId, eventType, characterEncounterCore);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "story_event_committed", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_event_rejected", null);
     }
   }
 
@@ -429,6 +463,7 @@ public final class GameCoreFacade implements AutoCloseable {
         survivalCore.normalizeState(state);
         itemCore.normalizeInventory(state);
         characterDetailCore.projectState(state);
+        storyCore.normalizeState(state);
       } catch (Exception e) {
         debug("Character detail projection failed: " + e.getMessage());
       }
