@@ -18,6 +18,13 @@ public class EntityCoreTest {
     assertFalse(EntityCore.roamingAllowedOn(-1));
   }
 
+  @Test public void autoSpawnRateBoundsReflectPlusTwoPointIncrease() {
+    assertTrue(EntityCore.validAutoSpawnRatePercent(3.0d));
+    assertTrue(EntityCore.validAutoSpawnRatePercent(3.5d));
+    assertFalse(EntityCore.validAutoSpawnRatePercent(2.99d));
+    assertFalse(EntityCore.validAutoSpawnRatePercent(3.51d));
+  }
+
   @Test public void legacyBossPromptCarriesCanonWithoutAutoSpawnSemantics() {
     String prompt = EntityCore.legacyPromptContext(
         "diep_minh", "Diệp Minh", "Huyết cừu Cao gia; ontology Backrooms vẫn OPEN.");
