@@ -284,7 +284,7 @@ public class CombatChoiceEngineTest {
     finalizeAs(state, 1,2,3,4,5);
     CombatChoiceEngine.resolveFinalized(state);
 
-    assertEquals(before - expected, entity.getInt("hp"));
+    assertEquals(Math.max(0, before - expected), entity.getInt("hp"));
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     boolean foundUltimate = false;
     for (int i = 0; i < battleLog.length(); i++) {
