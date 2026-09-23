@@ -13,6 +13,7 @@ public final class GmNarrativePacket {
     projected.remove("log");
     projected.remove("levelRoute");
     projected.remove("characterCanon");
+    projected.remove(StoryCore.ROOT_KEY);
     return projected;
   }
 
