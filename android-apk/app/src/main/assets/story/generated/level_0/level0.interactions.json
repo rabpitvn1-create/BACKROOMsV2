@@ -1,0 +1,1494 @@
+{
+  "schemaVersion": 1,
+  "compilerVersion": 1,
+  "sourceRevision": "level0-final-2026-09-23",
+  "generatedBy": "story-compiler-v1",
+  "chapters": {
+    "L0_C01": {
+      "source": "story/source/level_0/LEVEL0_CH01.md",
+      "sourceDigest": "42abde5bfa266cec579d1e1240da6898deb128d88f064aee5954c7e08bb10433",
+      "segments": {
+        "L0_C01_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C01_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C01_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đặt thêm nhiều dấu ấn ở các vị trí khác nhau để kiểm tra không gian thay đổi như thế nào.",
+              "action": "Cao Minh methodically marks multiple locations with spiritual seals across different rooms, observing patterns of spatial transformation."
+            },
+            {
+              "text": "Cố gắng bước lùi theo đúng lộ tuyến cũ để xem liệu không gian có phục hồi trạng thái ban đầu.",
+              "action": "Cao Minh retraces his steps precisely, noting whether the corridor reverts to its original configuration."
+            },
+            {
+              "text": "Tiếp tục đi sâu hơn để tìm hiểu xem nơi này có ranh giới hay điểm cuối nào.",
+              "action": "Cao Minh presses forward deeper into the corridors, searching for boundaries or endpoints to this space."
+            }
+          ],
+          "interactionGuard": "Cao Minh remains in the yellow hallway system. He does not leave this location, does not obtain new information about how to return to Ma Son, and does not encounter any other entities or characters. He arrives at P004 with the same observations about spatial inconsistency that the manuscript requires."
+        },
+        "L0_C01_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C01_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C02": {
+      "source": "story/source/level_0/LEVEL0_CH02.md",
+      "sourceDigest": "0e744c1d5e79767daeb688f928e2d56512c4b099706ea38bfbd309f180d216cd",
+      "segments": {
+        "L0_C02_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C02_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C02_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Khảo sát ba vòm một cách có hệ thống, để lại dấu hiệu rõ ràng ở mỗi lối trước khi tiến xa.",
+              "action": "Cao Minh lập kế hoạch kiểm chứng từng vòm nhiều lần để hiểu rõ quy luật biến đổi không gian trước khi khám phá sâu hơn."
+            },
+            {
+              "text": "Sử dụng ma khí để kiểm tra ranh giới của không gian, thử tìm điểm yếu trong cơ chế biến đổi.",
+              "action": "Cao Minh thử những cách tiếp cận khác nhau bằng Huyết Sát Ma Khí để nhận ra mẫu hình của sự biến dạng không gian."
+            },
+            {
+              "text": "Đi thẳng qua vòm giữa dù biết không gian bị kéo dài, cố gắng đạt tới góc rẽ bằng mục tiêu và ý chí.",
+              "action": "Cao Minh thử chinh phục không gian bằng sự kiên định, nhưng nhanh chóng nhận ra quãng đường vẫn kéo dài bất hợp lý."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải vẫn ở lại khoang ba vòm sau lựa chọn, phải phát hiện ra rằng vòm và dấu hiệu có thể bị di chuyển độc lập, và phải bắt đầu nhận thức được rằng không gian thay đổi khi rời tầm quan sát."
+        },
+        "L0_C02_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C02_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Theo tiếng cạch một cách cẩn thận, sử dụng nó như một chỉ dẫn để tìm hiểu thêm về không gian.",
+              "action": "Cao Minh theo dõi âm thanh qua nhiều căn phòng, quan sát cách nó di chuyển và thay đổi hướng để đánh giá liệu nó là một hiệp lực hay chỉ là một yếu tố ngẫu nhiên."
+            },
+            {
+              "text": "Cố tìm nguồn tiếng cạch bằng cách chủ động vào các lối có tiếng, nhanh chóng xác định liệu có thế lực nào đang cố giao tiếp.",
+              "action": "Cao Minh chủ động đuổi theo tiếng cạch, nhưng nhanh chóng nhận thấy nó không theo mình theo cách đó, không phải là sự giao tiếp có chủ ý."
+            },
+            {
+              "text": "Bỏ qua tiếng cạch và tiếp tục khám phá một cách độc lập, dùng các dấu hiệu thực tế hơn để định hướng.",
+              "action": "Cao Minh chọn không để tiếng động lạ điều khiển hành động của mình, thay vào đó dựa vào các dấu vật cứng để đánh dấu đường đi."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải kết luận rằng âm thanh không bám theo mình theo cách hợp lý, phải tiếp tục hành trình khám phá một cách độc lập, và phải bước vào trạng thái kiệt sức tinh thần từ sự đơn điệu của không gian."
+        },
+        "L0_C02_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C03": {
+      "source": "story/source/level_0/LEVEL0_CH03.md",
+      "sourceDigest": "b655a5d1dd146392c4329d50768c0aa3d58e2473cb73b23fdeff4cb923e72827",
+      "segments": {
+        "L0_C03_P001": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C03_P002": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C03_P003": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C03_P004": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C03_P005": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C04": {
+      "source": "story/source/level_0/LEVEL0_CH04.md",
+      "sourceDigest": "cddcadffe40d17e88d587adb4d50cf0d63ee5abbfa89f550efc95732c267fb9c",
+      "segments": {
+        "L0_C04_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C04_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C04_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Theo âm thanh \"cạch\" ngay lập tức để xác định nguồn",
+              "action": "Cao Minh nhanh chóng di chuyển theo hướng âm thanh vọng, nhưng thần thức không phát hiện sinh vật hay chuyển động rõ ràng. Âm thanh lại đổi hướng, tăng sự hoang mang."
+            },
+            {
+              "text": "Dừng lại và lắng nghe kỹ để phân tích mô hình âm thanh",
+              "action": "Cao Minh nhận thấy âm thanh xuất hiện từ nhiều hướng không tương thích với một nguồn duy nhất. Hắn quyết định đi theo một hướng chưa kiểm, chứ không phải theo âm thanh."
+            },
+            {
+              "text": "Tiếp tục di chuyển mà bỏ qua âm thanh, chỉ sử dụng thần thức quét phòng",
+              "action": "Cao Minh bỏ qua tiếng cạch và tập trung vào quan sát không gian bằng thần thức. Hắn vẫn tìm thấy dấu hiệu hoạt động gần đây trên sàn nhà."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải tìm thấy vết xước trên sàn phòng dài và bóng đèn rung lỏng, giải thích được một phần tiếng cạch. Không thay đổi chuỗi sự kiện dẫn tới phòng cột."
+        },
+        "L0_C04_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C04_P005": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C05": {
+      "source": "story/source/level_0/LEVEL0_CH05.md",
+      "sourceDigest": "b147e476490aa53649686b3a4671281b06198229e3c1b443e43ebbdc605f1319",
+      "segments": {
+        "L0_C05_P001": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C05_P002": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C05_P003": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C05_P004": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C05_P005": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C05_P006": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C06": {
+      "source": "story/source/level_0/LEVEL0_CH06.md",
+      "sourceDigest": "7dc19faff20ffc649cc9f8d32d50e05faf3b6c7d06810d045bf0df6ae161df87",
+      "segments": {
+        "L0_C06_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C06_P002": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Theo dõi giọng nói từ xa, không gấp rút tiếp cận.",
+              "action": "Cao Minh chọn phương pháp cẩn thận, từng bước ánh sáng ma ấn để báo hiệu với bất kỳ tu sĩ nào đang gần."
+            },
+            {
+              "text": "Gọi tên Lục Trầm để xác định danh tính người phát âm thanh.",
+              "action": "Cao Minh gọi tên, nhưng không nhận được phản ứng trực tiếp—chỉ lời nói lặp lại, xác nhận đây không phải là giao tiếp bình thường."
+            },
+            {
+              "text": "Im lặng và di chuyển với cảnh giác tối đa, để ý dấu hiệu khác.",
+              "action": "Cao Minh giữ im lặng, tiếp tục tìm kiếm vết kiếm và dấu chân thay vì phản ứng với âm thanh."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải tiếp tục đi qua hành lang thấp và phát hiện rằng âm thanh chỉ lặp lại 'đừng' một cách cơ học, không phải hội thoại thực sự. Cô ta (Lục Trầm) vẫn ở đâu đó trong không gian này với người bị thương."
+        },
+        "L0_C06_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C06_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C06_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Ngồi ở cạnh ma ấn để chờ đợi phản ứng từ Lục Trầm.",
+              "action": "Cao Minh quyết định chờ; nơi này không an toàn để bước lung tung, và dấu hiệu của hắn đủ để cô nhận ra nếu cô tìm được."
+            },
+            {
+              "text": "Kiểm tra từng vòm một cách hệ thống, sẵn sàng gặp bất kỳ điều gì.",
+              "action": "Cao Minh khám phá cẩn thận nhưng không được giúp bởi hành lang—nó thay đổi cấu trúc sau khi hắn rời khỏi vòm."
+            },
+            {
+              "text": "Theo vết tay trên tường và những dấu chân, bỏ qua các bẫy âm thanh.",
+              "action": "Cao Minh tập trung vào bằng chứng vật chất, chẳng hạn như dấu tay mờ, để tìm Lục Trầm mà không bị lừa bởi những gì có thể được sao chép hoặc giả mạo."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải nhận ra rằng nơi này có thể tạo ra âm thanh giả mạo một giọng quen (không chỉ '...đừng...' vô nghĩa), làm khó việc xác định Lục Trầm hoặc nhân vật khác. Hắn phải kết thúc phân đoạn với sự hiểu biết rằng anh ta không thể hoàn toàn tin tưởng vào âm thanh và phải giữ niềm tin rằng Lục Trầm đủ 'khó tính' để nhận ra giả mạo."
+        }
+      }
+    },
+    "L0_C07": {
+      "source": "story/source/level_0/LEVEL0_CH07.md",
+      "sourceDigest": "0dd2a427d531bfe6b7da18722029ae43f8d1e24e7dfb836ce32495758c654927",
+      "segments": {
+        "L0_C07_P001": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C07_P002": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C07_P003": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C07_P004": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C07_P005": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C07_P006": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C08": {
+      "source": "story/source/level_0/LEVEL0_CH08.md",
+      "sourceDigest": "355643a00a780b7c77c8143edfde88a41e0772af1bc7787157f97f26954c27a3",
+      "segments": {
+        "L0_C08_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C08_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C08_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đi thẳng theo hướng kiếm khí bạc, chuẩn bị sẵn sàng gặp Lục Trầm.",
+              "action": "Cao Minh tăng tốc độ tìm kiếm, tập trung vào mục tiêu."
+            },
+            {
+              "text": "Quan sát kỹ lưỡng trước khi tiến, kiểm tra từng dấu hiệu thêm một lần.",
+              "action": "Cao Minh dừng lại để kiểm tra lại các dấu vết và tường xung quanh trước khi quyết định."
+            },
+            {
+              "text": "Tiến lên nhưng giữ khoảng cách an toàn, lắng nghe để định vị chính xác.",
+              "action": "Cao Minh đi từng bước cẩn thận, dựa vào âm thanh để điều chỉnh hướng đi."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải tiếp tục theo hướng kiếm khí bạc và cuối cùng gặp Lục Trầm cùng người thứ ba. Không thay đổi số người hoặc danh tính của họ."
+        },
+        "L0_C08_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C08_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Gọi tên Lục Trầm để xác nhận danh tính trước khi tiếp cận.",
+              "action": "Cao Minh gọi to, nhưng Lục Trầm hoặc người kia không phản ứng ngay tức khắc, buộc hắn phải tiếp tục theo dõi."
+            },
+            {
+              "text": "Ẩn nấp gần hơn để quan sát tình hình trước khi lộ mặt.",
+              "action": "Cao Minh tìm một vị trí yên tĩnh để nghe rõ hơn nội dung cuộc trò chuyện."
+            },
+            {
+              "text": "Tiến tới một cách bình thường, như một người tình cờ đi ngang.",
+              "action": "Cao Minh bước vào phòng với thái độ bình tĩnh, cho phép gặp gỡ xảy ra tự nhiên."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải gặp được Lục Trầm và người thứ ba trong phòng đó. Cuộc gặp gỡ phải dẫn đến đoạn hội thoại tiếp theo theo đúng bản thảo. Không thay đổi bản chất hay kết quả của cuộc gặp gỡ này."
+        }
+      }
+    },
+    "L0_C09": {
+      "source": "story/source/level_0/LEVEL0_CH09.md",
+      "sourceDigest": "da6cc22f4aa0d7fc800fa3eddfbb059c4cde21ccb1fb29464a6e5cc87c979687",
+      "segments": {
+        "L0_C09_P001": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C09_P002": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C09_P003": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C09_P004": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C09_P005": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C09_P006": {
+          "mode": "CUTAWAY",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C10": {
+      "source": "story/source/level_0/LEVEL0_CH10.md",
+      "sourceDigest": "a8944a5bbe8546b3c5bde8c8f33f4116fb7af9993c91051e2f9e980f66daa91f",
+      "segments": {
+        "L0_C10_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C10_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C10_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm thận trọng từng lối trước khi bước ra",
+              "action": "Cao Minh sử dụng thần thức để quét kỹ căn phòng phía trước, đảm bảo không có bẫy hoặc thay đổi không gian bất ngờ trước khi tiết lộ vị trí."
+            },
+            {
+              "text": "Để lại thêm một ma ấn rõ để hướng đường cho họ",
+              "action": "Cao Minh đặt một dấu kiếm sáng hơn cạnh góc, để cố tình hướng Lục Trầm và người kia quay lại vị trí này nếu không gian thay đổi."
+            },
+            {
+              "text": "Chờ để nghe thêm trước khi bước tới",
+              "action": "Cao Minh dừng lại và lắng nghe kỹ hơn để xác định chính xác ai là ai và tình huống người bị thương như thế nào."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải vẫn ở góc hành lang; không gian vẫn cần tách họ ra trước khi họ gặp; ma ấn hoặc kiếm ấn vẫn phải có trên tường."
+        },
+        "L0_C10_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C10_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C10_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C11": {
+      "source": "story/source/level_0/LEVEL0_CH11.md",
+      "sourceDigest": "591dfe9fc7d5002027d215f471b6fab1800b08aeab587f693218b8622f4f046f",
+      "segments": {
+        "L0_C11_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C11_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C11_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm tra tường xung quanh bằng thần thức trước khi tiếp tục.",
+              "action": "Cao Minh dùng nhận thức để quét vùng, xác nhận không có bẫy rõ ràng, rồi đi tiếp."
+            },
+            {
+              "text": "Hỏi Lục Trầm có phát hiện gì bất thường về cấu trúc nơi này.",
+              "action": "Lục Trầm chia sẻ quan sát về tiếng ù và những điểm thay đổi đường, rồi họ tiếp tục đi."
+            },
+            {
+              "text": "Cảnh báo Nam về những nguy hiểm phổ biến ở đây.",
+              "action": "Cao Minh giải thích về hố và chuyển động không gian; Nam chuẩn bị tâm lý trước khi qua."
+            }
+          ],
+          "interactionGuard": "Cao Minh, Lục Trầm, Nam vẫn đi chung về một hướng. Không có lựa chọn nào thay đổi quyết định này hay điều gì đến khu hố phía trước."
+        },
+        "L0_C11_P004": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C11_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C11_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C12": {
+      "source": "story/source/level_0/LEVEL0_CH12.md",
+      "sourceDigest": "67c8bfd7d57f14d7346fd4e2b70d94b8e34f02d9872f2acc05a63caa43735abc",
+      "segments": {
+        "L0_C12_P001": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C12_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C12_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm lại mảnh vải—có thể là bằng chứng của điều gì đó",
+              "action": "Cao Minh soi kỹ mảnh vải, cảm nhận linh lực hoặc dấu vết. Lục Trầm quan sát im lặng. Không tìm thấy gì bất thường; đơn giản là vải rách."
+            },
+            {
+              "text": "Hỏi Lục Trầm liệu cô ghi nhớ chính xác hành trình trước khi gặp Nam",
+              "action": "Lục Trầm khoác vai. Cô không chắc hoàn toàn—nơi này thay đổi. Cao Minh gật; hai người quyết định không tốn năng lượng vào câu đoán quá khứ."
+            },
+            {
+              "text": "Đề nghị tiếp tục di chuyển thay vì suy đoán—thông tin sẽ tự lộ ra",
+              "action": "Cao Minh và Lục Trầm giao nhìn, rồi gật. Kế hoạch hợp lý. Nam gom lại mảnh vải và chuẩn bị."
+            }
+          ],
+          "interactionGuard": "Mảnh vải vẫn không có giải thích rõ ràng. Ba người tiếp tục hành trình với Cao Minh dẫn đầu, Lục Trầm hỗ trợ Nam ở giữa."
+        },
+        "L0_C12_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C12_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Tìm kiếm kỹ lưỡng xung quanh bức tường để xem có mảnh tường nào khác chứa phần còn lại",
+              "action": "Cao Minh kiểm bằng thần thức phạm vi rộng hơn, Lục Trầm soi từng góc. Không tìm thấy mảnh khác. Một lẽ tự nhiên mà không có câu trả lời."
+            },
+            {
+              "text": "Đề xuất viết thêm vào bức tường—ghi lại dấu hiệu này để nhận diện sau",
+              "action": "Cao Minh lấy kim loại sắc, chuẩn bị. Lục Trầm giữ hắn lại—chạm vào tường có thể kích hoạt gì đó. Ba người từ bỏ ý tưởng và di chuyển."
+            },
+            {
+              "text": "Để mặc bức tường—tiếp tục trước khi Nam yếu thêm",
+              "action": "Cao Minh gật. Lục Trầm đã sẵn sàng hỗ trợ Nam. Họ bỏ lại bức tường với chữ viết bất hoàn chỉnh."
+            }
+          ],
+          "interactionGuard": "Bức tường vẫn tồn tại với nội dung 'DON'T' không hoàn thành. Ba người rời đi; Nam suy yếu dần và cần nghỉ ngơi."
+        },
+        "L0_C12_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C13": {
+      "source": "story/source/level_0/LEVEL0_CH13.md",
+      "sourceDigest": "ed9d73a2bacdeaf7c7c6ec2a0dc53d70bc1bdf09d2cfb331a7dce29e6f928916",
+      "segments": {
+        "L0_C13_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C13_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C13_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Hỏi Nam thêm chi tiết về giọng vợ—cách nó thay đổi hay những từ cô ấy nói.",
+              "action": "Cao Minh hoặc Lục Trầm tiếp tục thẩm vấn Nam, họ ghi lại đặc điểm riêng biệt của giọng. Nam trả lời rồi nhóm tiếp tục di chuyển."
+            },
+            {
+              "text": "Kiểm tra phía sau lưng hướng về vùng tối, đảm bảo giọng không theo.",
+              "action": "Cao Minh dùng thần thức quét lại, xác nhận không có tiếng gọi nữa. Nhóm tiếp tục di chuyển."
+            },
+            {
+              "text": "Im lặng một lúc, cho Nam tìm bình tĩnh trước khi tiếp tục.",
+              "action": "Cả ba ngồi yên, tiếng ù trở thành nền. Nam thở đều hơn. Họ tiếp tục di chuyển khi hắn sẵn sàng."
+            }
+          ],
+          "interactionGuard": "Nam vẫn phải công bố vợ đã chết, và cả nhóm phải hiểu giọng có ý nghĩa với người nghe. Không có sự xác minh về nguồn hoặc bản chất của hiện tượng."
+        },
+        "L0_C13_P004": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề xuất tiếp tục nhanh hơn để tránh thêm cuộc gọi nữa.",
+              "action": "Lục Trầm hoặc Cao Minh bác bỏ ý kiến, giải thích rằng vội vàng sẽ khiến họ sơ suất. Họ di chuyển với tốc độ cẩn trọng như bình thường."
+            },
+            {
+              "text": "Đề xuất dừng lại và cố ghi nhớ chi tiết khác về giọng giả hoặc hành vi của nó.",
+              "action": "Cao Minh hoặc Lục Trầm ghi nhận đề xuất. Nhóm trao đổi ngắn về sự khác biệt giữa các lần gọi rồi tiếp tục di chuyển."
+            },
+            {
+              "text": "Bảo Nam thử gọi lại để xem giọng phản ứng hay chỉ là lặp lại.",
+              "action": "Nam cân nhắc nhưng từ chối—hắn không muốn kích hoạt lại. Nhóm tiếp tục di chuyển không thay đổi chiến lược."
+            }
+          ],
+          "interactionGuard": "Giọng giả phải tiếp tục xuất hiện (lần gọi Cao Minh và \"ma đầu\"). Nam phải không ngủ. Sự phát hiện chai chất lỏng phải xảy ra. Không có xác minh nào về nguồn của hiện tượng âm thanh."
+        },
+        "L0_C13_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C13_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C14": {
+      "source": "story/source/level_0/LEVEL0_CH14.md",
+      "sourceDigest": "a0dfbc63c25ee3fe802d6047623109787146a1b8e4203f87bee608c8c1d1380f",
+      "segments": {
+        "L0_C14_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C14_P002": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề xuất theo lối có luồng khí để tìm lối ra mới.",
+              "action": "Cao Minh nhận xét về khả năng khám phá, nhưng Lục Trầm tỏ lo lắng cho Nam. Cuối cùng họ vẫn chọn lối trước vì sức khỏe của Nam là ưu tiên."
+            },
+            {
+              "text": "Ủng hộ Lục Trầm giữ lối trước vì chân Nam cần điều kiện tốt hơn.",
+              "action": "Cao Minh gật đồng ý nhanh chóng mà không tranh cãi thêm. Cả ba đi lối trước."
+            },
+            {
+              "text": "Yêu cầu cả ba dừng một lúc để đánh giá cả hai hướng trước khi quyết định.",
+              "action": "Cao Minh và Lục Trầm nghe Cao Minh phân tích thêm về các rủi ro. Cuối cùng Nam vẫn bỏ phiếu cho lối trước do thể lực."
+            }
+          ],
+          "interactionGuard": "Cả ba phải chọn lối trước mà Nam gợi ý. Lục Trầm đặt kiếm ấn ở lối có luồng khí. Họ tiếp tục di chuyển."
+        },
+        "L0_C14_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C14_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C14_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề xuất bỏ qua chữ 'KEEP MOVING' và tiếp tục theo luồng khí.",
+              "action": "Cao Minh ghi nhận cảnh báo nhưng không để nó chi phối quyết định. Cả ba vẫn tiếp tục vì họ đã có kế hoạch riêng, không vì bức tường."
+            },
+            {
+              "text": "Cảnh báo rằng chữ này có thể là dấu hiệu của mối nguy phía trước.",
+              "action": "Lục Trầm ghi nhận cảnh báo nhưng chỉ ra rằng họ cần tiếp tục tìm nước. Cả ba vẫn đi tiếp theo luồng khí."
+            },
+            {
+              "text": "Đặt câu hỏi ai viết chữ này và tại sao, trước khi tiếp tục.",
+              "action": "Nam chỉ ra không có câu trả lời. Cả ba công nhận không biết nguồn gốc nhưng quyết định tiếp tục vì mục tiêu tìm nước là cấp bách hơn."
+            }
+          ],
+          "interactionGuard": "Cả ba phải tiếp tục di chuyển theo luồng khí. Họ sẽ tìm thấy dải kim loại xám ở chân tường."
+        },
+        "L0_C14_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C15": {
+      "source": "story/source/level_0/LEVEL0_CH15.md",
+      "sourceDigest": "97b2f643f6a4e0abece96afb3f5679707a013b68999aa17288b7cf699c7261ee",
+      "segments": {
+        "L0_C15_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C15_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C15_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C15_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C15_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C15_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C16": {
+      "source": "story/source/level_0/LEVEL0_CH16.md",
+      "sourceDigest": "78c30bea2f2e8685e118494bdb5e71e931ae88d02c3762d00c064f60aba8d7cb",
+      "segments": {
+        "L0_C16_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C16_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C16_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm soát cửa cẩn thận trước khi xác nhận nó kẹt.",
+              "action": "Cao Minh dùng thần thức quét kỹ cơ chế cửa trượt, xác định liệu nó còn có thể hoạt động hay đã chết hoàn toàn."
+            },
+            {
+              "text": "Quan sát bên trong hốc kỹ thuật để tìm dấu hiệu tái hoạt động.",
+              "action": "Cao Minh nhìn kỹ các dây cáp và hộp kim loại, kiểm xem có động tĩnh gần đây hay các thành phần còn năng lượng."
+            },
+            {
+              "text": "Nghe nhận chấn động từ tường để xác định nó đến từ phía nào.",
+              "action": "Cao Minh tập trung vào tiếng ù thấp, sử dụng cảm nhận để theo dõi hướng dao động qua kết cấu kim loại."
+            }
+          ],
+          "interactionGuard": "Hốc kỹ thuật phải được xác nhận là nông, không có lối ra phía trước. Cửa phải vẫn kẹt. Tuyến kim loại và chấn động phải được ghi chép lại làm bằng chứng."
+        },
+        "L0_C16_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C16_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C16_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C17": {
+      "source": "story/source/level_0/LEVEL0_CH17.md",
+      "sourceDigest": "cb3f99bc36ba3358f04ac83ef35d3bea0256127cd44039a9421a9ce48ac80d0a",
+      "segments": {
+        "L0_C17_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C17_P002": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Chạm vào chiếc chén để cảm nhận nó kỹ hơn",
+              "action": "Cao Minh cố gắng kiểm lại bằng giác quan khác, nhưng cảm giác quen thuộc không dễ dàng xác định được. Vật thể thật, nhưng nguồn gốc vẫn mơ hồ. Hắn rút tay lại."
+            },
+            {
+              "text": "Hỏi Lục Trầm liệu cô có nhận ra chi tiết cụ thể nào từ Thiên Kiếm Môn",
+              "action": "Lục Trầm lắc đầu. Cô chỉ cảm thấy lối này giống như một điểm nào đó, nhưng ghi nhớ tạo ra những khoảng trống. Cô không muốn nói hết những gì cô tưởng mình nhớ."
+            },
+            {
+              "text": "Im lặng mà kiểm tra phòng từng góc, tìm những chi tiết không khớp",
+              "action": "Cao Minh đi quanh hệ thống, ghi nhận sự pha trộn lạ lùng giữa kiến trúc cổ và Backrooms. Sự kỳ lạ ấy là bằng chứng đủ để cảnh báo. Hắn gật với Lục Trầm."
+            }
+          ],
+          "interactionGuard": "Cao Minh, Lục Trầm và Nam phải phát hiện rằng phòng gỗ kết hợp cả ký ức và Backrooms. Cửa gỗ phải dẫn ra hành lang vàng bình thường. Ba người phải quyết định tiếp tục khám phá bằng cách đặt dấu để kiểm chứng."
+        },
+        "L0_C17_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C17_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C17_P005": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C18": {
+      "source": "story/source/level_0/LEVEL0_CH18.md",
+      "sourceDigest": "fee6fd46000e027b51ff8d1d2df8238cf90b460ccba0a0899a1817fe90c54f08",
+      "segments": {
+        "L0_C18_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C18_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C18_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Quan sát chi tiết phản ứng sinh lý của Nam trong thời gian chờ.",
+              "action": "Cao Minh tập trung vào nhịp tim, hơi thở và sắc mặt của Nam với độ chính xác của một tu sĩ đã huấn luyện, ghi nhớ từng dấu hiệu nhỏ nhất."
+            },
+            {
+              "text": "Hỏi Nam về những chi tiết khác mà anh còn nhớ về Almond Water.",
+              "action": "Cao Minh lần lượt kiểm chứng các chi tiết từ ký ức của Nam, phân biệt giữa thông tin có độ tin cậy cao và những phiên bản có thể là tưởng tượng."
+            },
+            {
+              "text": "Kiểm tra chai bằng cách quan sát dưới ánh sáng từ các góc độ khác nhau.",
+              "action": "Cao Minh nâng chai lên, xoay từ từ để theo dõi có cặn, lắng, hoặc bất kỳ sự thay đổi nhỏ nào trong chất lỏng theo điều kiện ánh sáng."
+            }
+          ],
+          "interactionGuard": "Nam phải uống được lượng nhỏ Almond Water mà không có phản ứng phụ tác hại ngay lập tức. Chai phải được chia thành các phần và bảo quản. Không ai có thể phát hiện ra thành phần thực sự hoặc tác dụng dài hạn chắc chắn."
+        },
+        "L0_C18_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C18_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề xuất ghi thêm thông tin khác (như ngày tháng, vị trí tìm thấy) cạnh dấu hỏi.",
+              "action": "Lục Trầm gật công nhận ý tưởng nhưng nhắc rằng dấu hiệu đơn giản là tốt nhất khi không biết rõ—thông tin càng ít, rủi ro nhầm lẫn càng giảm."
+            },
+            {
+              "text": "Đi phía trước để đánh giá tuyến đường tiếp theo trong khi Nam phục hồi từng từ.",
+              "action": "Cao Minh bước về phía trước một khoảng an toàn, theo dõi cấu trúc kim loại dày hơn và ghi nhớ các điểm tham chiếu trên đường."
+            },
+            {
+              "text": "Đi chậm lại và cho Nam thêm thời gian thích ứng khi đứng dậy.",
+              "action": "Cao Minh điều chỉnh nhịp đi theo tốc độ mà Nam có thể duy trì một cách an toàn, không vội vàng."
+            }
+          ],
+          "interactionGuard": "Nam phải bước được với tốc độ chậm nhưng ổn định. Chai Almond Water phải được đánh dấu bằng dấu hỏi và bảo quản. Nhóm ba người tiếp tục di chuyển theo tuyến kim loại. Không thay đổi quan hệ giữa ba người hoặc tình trạng của Nam ngoài sự phục hồi từng phần."
+        },
+        "L0_C18_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C19": {
+      "source": "story/source/level_0/LEVEL0_CH19.md",
+      "sourceDigest": "c9942de638422c7f185bef7b10a67f17a65eec92d06b3196f72e18aff9bb277f",
+      "segments": {
+        "L0_C19_P001": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C19_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C19_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C19_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C19_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C19_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C20": {
+      "source": "story/source/level_0/LEVEL0_CH20.md",
+      "sourceDigest": "3d2d7026a1dc1f4d56dae3bc2f20580160de478f4bd476be34cee4df730a9901",
+      "segments": {
+        "L0_C20_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C20_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C20_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C20_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C20_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C20_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C21": {
+      "source": "story/source/level_0/LEVEL0_CH21.md",
+      "sourceDigest": "1ebe671221910af4661aa2ed0376d3d5381f04d3f806ec23d399393a924d553e",
+      "segments": {
+        "L0_C21_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C21_P002": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Hỏi Lục Trầm về những gì cô nhớ từ lần tìm Nam thứ hai.",
+              "action": "Cao Minh hỏi Lục Trầm chi tiết gì cô ghi nhớ về phòng vòm khi họ tìm Nam lần trước. Cô trả lời ngắn gọn, đặc biệt về tình trạng của các dấu hiệu và liệu có gì khác lạ. Sau đó họ tiếp tục ngồi."
+            },
+            {
+              "text": "Quan sát kỹ ba chi tiết xung quanh các dấu hiệu để tìm bất thường.",
+              "action": "Cao Minh dùng thần thức kiểm cạnh vòm sứt, mảng thảm khô, và bóng đèn chết. Hắn và Lục Trầm không phát hiện thay đổi so với lần trước. Điều này khiến họ nhẹ nhõm hơn, nhưng vẫn cảnh báo. Họ tiếp tục ngồi."
+            },
+            {
+              "text": "Im lặng và cho phép Lục Trầm tập trung suy nghĩ về hiện tình.",
+              "action": "Cao Minh cất lời, để Lục Trầm tự xử lý suy nghĩ của cô trong bóng tối. Khoảng cách giữa họ giảm khi hắn không áp lực. Sau một lúc, họ đứng dậy để tiếp tục."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm vẫn ngồi nghỉ trong phòng vòm, các dấu hiệu ba chi tiết vẫn còn nguyên, dải vải Nam được giữ lại, Ma Kim ở cổ tay Lục Trầm vẫn chắc."
+        },
+        "L0_C21_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C21_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C21_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm hành lang phía trước kỹ hơn trước khi bước vào, dùng toàn bộ phạm vi thần thức.",
+              "action": "Cao Minh mở rộng thần thức tối đa trước khi họ bước qua khung. Anh không phát hiện mối đe dọa tức thì nhưng cảm nhận được một rung động lạ ở sâu trong tường. Họ vẫn tiếp tục, cẩn thận hơn."
+            },
+            {
+              "text": "Đặt một dấu cảnh báo riêng biệt ở khung cửa trước khi qua, để phân biệt với các dấu khác.",
+              "action": "Cao Minh khắc một biểu tượng khác—không phải ba đường xiên—lên khung xám để tạo điểm mốc rõ ràng. Lục Trầm gật nhận, thấy sự chu đáo của động tác. Họ bước qua với thêm một lớp bảo vệ thông tin."
+            },
+            {
+              "text": "Hỏi Lục Trầm liệu mảnh vải trắng có thể là cạm bẫy để lôi kéo họ tiếp tục.",
+              "action": "Cao Minh thừa nhận nghi ngờ về mảnh vải. Lục Trầm xem xét, nhưng quyết định vẫn giữ nó—bằng chứng tốt hơn không có bằng chứng. Họ bước qua khung với sự thống nhất về rủi ro."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm bước qua khung cửa xám, mảnh vải trắng vẫn ở mép kim loại, dấu kiểm và dấu ma ấn vẫn nguyên vị trí, vật liệu kim loại tiếp tục phát ra tiếng rung."
+        },
+        "L0_C21_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C22": {
+      "source": "story/source/level_0/LEVEL0_CH22.md",
+      "sourceDigest": "321d843228ac5cd38cdfd45a23f7b9b69e5c93639908854cfe1edcc7e9172782",
+      "segments": {
+        "L0_C22_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C22_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C22_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Quan sát kỹ vết nứt trên giáp của Lục Trầm để hiểu rõ mức độ nguy hiểm.",
+              "action": "Cao Minh dùng thần thức chi tiết hơn để đánh giá vết nứt, nhận ra nó có thể ảnh hưởng đến chiến đấu trong tình huống khó khăn."
+            },
+            {
+              "text": "Kiểm tra chai nước của Nam một cách cẩn thận hơn, tìm bất cứ dấu hiệu nào về thay đổi.",
+              "action": "Cao Minh mở nắp nhẹ và ngửi, cảm nhận lần nữa qua thần thức với sự tập trung hoàn toàn."
+            },
+            {
+              "text": "Tạo một phòng tro thêm để đảm bảo an toàn tuyệt đối trước khi hoàn toàn yên tâm.",
+              "action": "Cao Minh đề xuất kiểm thêm một vòng nữa; Lục Trầm gật nhưng nhận xét rằng họ đã thử đủ nhiều."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải tiếp tục ở căn phòng này để sửa giáp. Chai nước của Nam phải vẫn còn nguyên. Không có kết luận chắc chắn về Nam hoặc con đường phía trước."
+        },
+        "L0_C22_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C22_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C22_P006": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề nghị cho Lục Trầm tiến vào trước vì cô có kinh nghiệm với Thiên Kiếm Môn.",
+              "action": "Cao Minh để Lục Trầm bước đầu tiên; cô kiểm từng bước cẩn thận, Cao Minh theo sát sau."
+            },
+            {
+              "text": "Dùng Huyết Ma Kiếm để kiểm không gian phía bên kia cửa từ xa trước khi tiến gần.",
+              "action": "Cao Minh buông kiếm qua khe cửa; kiếm chạm nền tối, không có phản ứng bất thường, Lục Trầm gật."
+            },
+            {
+              "text": "Chộp lấy một mảnh tường cũ rơi lại và ném vào khoảng tối để kiểm phản ứng.",
+              "action": "Cao Minh tìm mảnh vật liệu, ném vào; nó rơi ổn định trên nền, không bị nuốt hay biến mất."
+            }
+          ],
+          "interactionGuard": "Cả hai phải tiếp tục kiểm cửa mới. Lục Trầm không được qua đầu tiên mà không có phương pháp kiểm. Không có kết luận về nguồn gốc hoặc mục đích của cửa này. Họ phải còn cùng nhau."
+        }
+      }
+    },
+    "L0_C23": {
+      "source": "story/source/level_0/LEVEL0_CH23.md",
+      "sourceDigest": "df6dc4d96ffef53872203062f5ac8c4318878332d2d32329ea232b8264f1f2a9",
+      "segments": {
+        "L0_C23_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C23_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C24": {
+      "source": "story/source/level_0/LEVEL0_CH24.md",
+      "sourceDigest": "c6565bc7afafaf9551387848a4bee549ab273d0656d0f39dcc69426623b096a7",
+      "segments": {
+        "L0_C24_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C24_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C24_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C24_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C24_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C24_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C25": {
+      "source": "story/source/level_0/LEVEL0_CH25.md",
+      "sourceDigest": "d9f337f14bcbfca73241299856df1df347c0bb1a3b9ef464b506e8c768a683ec",
+      "segments": {
+        "L0_C25_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C25_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C25_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm tra bức kính bằng cách áp dụng thêm sức mạnh vào một điểm nhỏ để đo độ cứng của nó.",
+              "action": "Cao Minh tăng áp lực phủ ma nguyên lên bề mặt. Bức kính vẫn không để lại dấu. Lục Trầm nhìn với sự không thoải mái, và Cao Minh nhận ra cô đúng—tìm hiểu giới hạn của thứ này không quan trọng bằng tìm đường phía trước."
+            },
+            {
+              "text": "Dùng Tịch Quang gõ nhẹ hơn lên nhiều điểm khác nhau để so sánh âm thanh.",
+              "action": "Cao Minh gõ một loạt tiếng trên bề mặt. Âm thanh dày, trầm, không thay đổi. Lục Trầm chờ đợi, sau đó đơn giản bảo anh rời đi. Tiếng vọng từ bức kính vẫn chỉ là bức kính."
+            },
+            {
+              "text": "Yêu cầu Lục Trầm mở rộng cảm nhận Thiên Kiếm để đánh giá cấu trúc phía bên kia bức kính.",
+              "action": "Lục Trầm đã làm điều này. Cô nhắc lại rằng bên kia chỉ là rỗng từ quan điểm của cô, bố cục không thể hiểu được từ phía này. Câu trả lời đã có rồi."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải rời bức kính qua hành lang bên phải, khám phá kiến trúc xen kẽ giữa hai thế giới, nghe thấy tiếng ho giống Nam, tìm vệt vải, để lại dấu báo, và cuối cùng bước vào lớp kim loại dày mà không gọi tên Nam hoặc hứa quay lại."
+        },
+        "L0_C25_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C25_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đề xuất theo tiếng ho trực tiếp bằng cách lắng nghe từng góc phòng.",
+              "action": "Lục Trầm nhắc Cao Minh rằng họ đã từng nghe những âm thanh bắt chước ở nơi này. Tiếng ho quen thuộc không phải là bằng chứng. Cô đề nghị tìm đường vòng thay vì chạy theo."
+            },
+            {
+              "text": "Dùng thần thức để xuyên qua tường, kiểm tra xem Nam có thực sự ở phía bên kia không.",
+              "action": "Cao Minh làm như vậy. Không có người. Không có sinh khí. Chỉ một căn phòng trống. Điều này thay đổi mọi thứ—tiếng ho không phải từ Nam sống động."
+            },
+            {
+              "text": "Gọi tên Nam và chờ xem anh ta có trả lời không.",
+              "action": "Lục Trầm ngăn hành động này bằng cách nhìn Cao Minh. Họ đều biết điều này—những giọng gọi lại từ nơi này có thể là bất kỳ điều gì. Tốt hơn hết là không cho nó cơ hội."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải tìm đường vòng đến căn phòng phía sau bức tường, phát hiện vệt bẩn với sợi vải giống cách Nam từng dùng, để lại dấu báo lớn và hai kiếm ấn (quy ước ba người), sau đó tiếp tục phía trước mà không gọi tên Nam hoặc hứa quay lại."
+        },
+        "L0_C25_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C26": {
+      "source": "story/source/level_0/LEVEL0_CH26.md",
+      "sourceDigest": "a5b7e06bc5fc8724c7ec8d7a462249be96f1bf4ebda64aec59b6ada7b4bd25ab",
+      "segments": {
+        "L0_C26_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C26_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C26_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Theo lối trái mà Lục Trầm chọn, để đánh giá quyết định của cô.",
+              "action": "Cao Minh bước theo Lục Trầm vào lối bên trái, bình tĩnh chấp nhận lựa chọn của cô về âm thanh máy móc."
+            },
+            {
+              "text": "Quan sát lối giữa trước khi quyết định, để hiểu tại sao cô tránh nó.",
+              "action": "Cao Minh nhìn kỹ lối giữa với thảm vàng, sau đó gật đầu đồng ý với lối trái mà cô đã chỉ ra."
+            },
+            {
+              "text": "Bình luận về tính logic của việc chọn dựa trên âm thanh thay vì các dấu hiệu khác.",
+              "action": "Cao Minh thừa nhận phương pháp của Lục Trầm hợp lý hơn, rồi theo cô vào lối bên trái mà không do dự thêm."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải vào lối bên trái. Phòng kỹ thuật với các hộp kim loại kín và đèn xanh nhạt sáng phải được phát hiện. Không thay đổi động lực hoặc mối quan hệ giữa hai người."
+        },
+        "L0_C26_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C26_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đồng ý ngay để thể hiện sự tin tưởng lẫn nhau, kỳ vọng Lục Trầm sẽ bị ngạc nhiên.",
+              "action": "Cao Minh nhận ra quyết định của cô, bình luận về sự hiếm hoi của việc họ không cãi cọ, rồi chuẩn bị đi qua ngưỡng."
+            },
+            {
+              "text": "Để Lục Trầm kiểm tra dấu vết lần thứ ba, đứng canh ở đó trong khi cô làm việc.",
+              "action": "Cao Minh chờ đợi bình tĩnh khi Lục Trầm quay lại kiểm tại dải thảm lần nữa, không vội vàng hoặc bất mãn."
+            },
+            {
+              "text": "Tự mình kiểm tra một dấu hiệu nào đó gần ngưỡng trong khi Lục Trầm kiểm phía sau.",
+              "action": "Cao Minh lấy mảnh kim loại nhỏ từ phòng kỹ thuật để khắc ký hiệu, thiết lập mốc mới trước khi bước qua."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải bước qua ngưỡng cửa mở vào hành lang kim loại. Cánh cửa vẫn mở phía sau họ. Ba loại dấu (ma ấn, kiếm ấn, mảnh kim loại) phải được đặt ở ranh giới. Sợi chỉ của Lục Trầm buộc vào mép khung phải được thiết lập. Cơ chế kiểm tra ổn định của không gian phải được ghi nhận. Kết luận về thứ không chịu biến mất phải được Cao Minh suy ngẫm."
+        },
+        "L0_C26_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C27": {
+      "source": "story/source/level_0/LEVEL0_CH27.md",
+      "sourceDigest": "b8489b7e33d2945e565f2d5b020bf4d357e8d23f75d2cebc47b22e9bf0234cd3",
+      "segments": {
+        "L0_C27_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C27_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C27_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Đợi một chút rồi hỏi lại câu hỏi khác để thử độ nhất quán của giọng.",
+              "action": "Cao Minh tiếp tục thử thách giọng với các câu hỏi khác nhau, quan sát xem nó có bộc lộ sơ hở hay nhất quán theo kịch bản giả."
+            },
+            {
+              "text": "Gọi tên của người phụ nữ mà hắn vừa nhận ra để kiểm xem giọng sẽ phản ứng.",
+              "action": "Cao Minh cố gắng xác nhận danh tính bằng cách gọi trực tiếp, nhưng người phụ nữ không trả lời, chỉ lặp lại câu yêu cầu cũ."
+            },
+            {
+              "text": "Tiếp tục đi mà không hỏi thêm, quan sát xem giọng sẽ theo theo hay thôi.",
+              "action": "Cao Minh và Lục Trầm tiến lên, để giọng phía sau thử thách sự quyết tâm của họ mà không cần xác nhận thêm."
+            }
+          ],
+          "interactionGuard": "Giọng phía sau phải được xác định là giả mạo hoặc không phải Nam. Cao Minh và Lục Trầm phải tiếp tục rời khỏi hành lang và bước qua cánh cửa mở như trong manuscript."
+        },
+        "L0_C27_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C27_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm tra thêm từng tấm kính một cách cẩn thận trước khi tiến đến quyết định vào phía kia.",
+              "action": "Cao Minh lầm từng khung một, tìm kiếm dấu hiệu bất thường hoặc điểm yếu tiềm ẩn trước khi Lục Trầm cho phép đi vào."
+            },
+            {
+              "text": "Yêu cầu Lục Trầm nói rõ cảm giác của cô về nơi này trước khi quyết định bước vào.",
+              "action": "Cao Minh tạm dừng để lắng nghe đánh giá của Lục Trầm về nguy hiểm tiềm tàng, nhưng cô từ chối và vẫn kiểm tra đường quay lại."
+            },
+            {
+              "text": "Mô tả chi tiết những gì hắn thấy qua kính với Lục Trầm để hình thành kế hoạch chung.",
+              "action": "Cao Minh liệt kê các đặc điểm vật lý (dầm, cầu, đèn) và so sánh với những gì họ biết, giúp cô hiểu rõ trước khi quyết định."
+            }
+          ],
+          "interactionGuard": "Lục Trầm phải kiểm tra đường quay lại trước và sau đó nói 'Đi'. Cao Minh phải đặt ma ấn và cả hai phải xác nhận kích thước của cấu trúc bên ngoài kính trước khi rời khỏi tấm kính."
+        },
+        "L0_C27_P006": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C28": {
+      "source": "story/source/level_0/LEVEL0_CH28.md",
+      "sourceDigest": "5ec40ae0dbaee4299e95caaa0e8119f9e0e59b5e6e8a64f3d543c78aec9e6db4",
+      "segments": {
+        "L0_C28_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C28_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C28_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Quán sát cách cửa hoạt động trước khi bước qua.",
+              "action": "Cao Minh dùng thần thức kiểm tra thêm linh kiện cảm ứng, ghi nhận chi tiết cơ chế. Lục Trầm chờ."
+            },
+            {
+              "text": "Hỏi Lục Trầm liệu nơi này có thể dẫn tới những người khác.",
+              "action": "Lục Trầm không trả lời ngay, nhưng gật nhẹ trước khi vào. Họ tiếp tục."
+            },
+            {
+              "text": "Để ý tới những tiếng máy khác nhau phía trong, chuẩn bị nhận diện chúng.",
+              "action": "Cao Minh ghi nhớ từng tầng âm thanh. Cơ thể họ bắt đầu thích ứng với không gian mới trước khi bước vào."
+            }
+          ],
+          "interactionGuard": "Cao Minh và Lục Trầm phải bước vào phòng kính với ba lối đi. Cửa cảm ứng hoạt động như cũ. Không sửa đổi mục đích hay hướng đi của họ."
+        },
+        "L0_C28_P004": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Nêu quan sát rằng cấu trúc này có thể là một hệ thống lớn hơn những phòng vàng.",
+              "action": "Lục Trầm gật nhẹ, xác nhận. Cô vẽ sơ đồ kỹ lưỡng hơn."
+            },
+            {
+              "text": "Kiểm tra xem liệu có dấu vết tác động con người nào trong phòng này.",
+              "action": "Cao Minh quét quanh, không tìm thấy. Điều đó vừa an tâm vừa khiến nơi đây xa lạ hơn. Lục Trầm chờ sẵn sàng vẽ bản đồ."
+            },
+            {
+              "text": "Đề xuất theo lối giữa dựa trên những dấu hiệu ổn định mà hắn nhận thấy.",
+              "action": "Lục Trầm nghe xong quyết định vẽ sơ đồ cục bộ. Cô xác nhận hướng của hắn với ba chiêu chứng: luồng khí, tiếng cơ khí, và đường kính ngoài."
+            }
+          ],
+          "interactionGuard": "Lục Trầm vẽ sơ đồ cục bộ, đánh dấu ba lối, chọn lối giữa. Cả hai quay lại ranh giới để đặt dấu mốc. Họ phải trở về phòng kính rồi bước vào lối giữa với kiếm đã sẵn sàng."
+        },
+        "L0_C28_P005": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C28_P006": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    },
+    "L0_C29": {
+      "source": "story/source/level_0/LEVEL0_CH29.md",
+      "sourceDigest": "d1c1af2bc8923b368a79294278e2667e078d209d4423501109d872f1ad631092",
+      "segments": {
+        "L0_C29_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C29_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C29_P003": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Kiểm kỹ lại các dấu hiệu xung quanh để chắc chắn không có dụng ý nào khác từ Nam.",
+              "action": "Cao Minh lại quét toàn bộ khu vực một lần, đối chiếu từng chi tiết. Lục Trầm chờ. Không có gì mới. Dấu mà họ để lại vẫn là dấu duy nhất."
+            },
+            {
+              "text": "Nói chuyện với Lục Trầm về khả năng Nam có thể đã tìm được con đường khác.",
+              "action": "Cao Minh nhận xét rằng mất dấu không có nghĩa mất ngôn ngữ. Lục Trầm gật, nhưng họ vẫn không theo một giọng gọi mơ hồ. Lựa chọn của họ không thay đổi."
+            },
+            {
+              "text": "Quan sát phòng lần cuối trước khi rời đi, ghi nhận tất cả những chi tiết nhỏ nhất.",
+              "action": "Cao Minh để ánh mắt trôi qua từng góc—vết bẩn, khe tường, mỗi vạch sẹo. Không có tin tức mới. Chỉ có sự vắng mặt. Họ quay bước về."
+            }
+          ],
+          "interactionGuard": "Cao Minh phải để lại mảnh kim loại khắc ba đường quy ước. Không hành động nào được để lại cơ sở để quay lại thêm lần nữa."
+        },
+        "L0_C29_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C29_P005": {
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Yêu cầu Lục Trầm xác nhận lần cuối rằng cánh cửa lớn này không phải bẫy hay gì khác.",
+              "action": "Lục Trầm kiểm lại các kiếm ấn của mình, gật. Cửa vẫn đứng yên. Cô không nói thêm. Không có gì thay đổi ở tâm thế của họ."
+            },
+            {
+              "text": "Đưa Lục Trầm một cơ hội để rút lui nếu cô cảm thấy nguy hiểm từ phía bên kia.",
+              "action": "Lục Trầm nhìn Cao Minh như thể hắn vừa nói điều không hợp lý. Cô không rút lui. Họ vẫn đứng chuẩn bị bước qua."
+            },
+            {
+              "text": "Im lặng và chỉ nhìn khe sáng giữa hai cánh cửa, cảm nhận độ lạnh từ bên kia.",
+              "action": "Cao Minh theo dõi luồng khí như thể nó có thể kể câu chuyện. Lục Trầm cũng đứng im. Chuẩn bị được hoàn tất. Không có từ ngữ nào thêm được cần."
+            }
+          ],
+          "interactionGuard": "Cả hai phải giữ vị trí chuẩn bị, không rút lui, không lùi lại, không thay đổi ý định mở cửa lớn này."
+        }
+      }
+    },
+    "L0_C30": {
+      "source": "story/source/level_0/LEVEL0_CH30.md",
+      "sourceDigest": "3c2ff8cdfbb86278e62771d2605cfdd6465c28478a9b7eebcc2f1d9acb357d46",
+      "segments": {
+        "L0_C30_P001": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C30_P002": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C30_P003": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C30_P004": {
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
+        },
+        "L0_C30_P005": {
+          "mode": "LOCKED_EVENT",
+          "choices": [],
+          "interactionGuard": ""
+        }
+      }
+    }
+  },
+  "providersUsed": [
+    "deterministic",
+    "haiku"
+  ]
+}
