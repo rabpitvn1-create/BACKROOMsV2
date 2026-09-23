@@ -20,6 +20,7 @@ final class EntityCore {
   private static final String SOURCE = "core_independent_roll";
 
   private final Map<String, EntityDefinition> entities = new LinkedHashMap<>();
+  private final Map<String, LegacyEntityDefinition> legacyEntities = new LinkedHashMap<>();
 
   EntityCore(Context context) {
     loadRegistry(context);
@@ -101,6 +102,8 @@ final class EntityCore {
 
     EntityDefinition entity = entities.get(activeKey);
     if (entity == null) {
+      LegacyEntityDefinition legacy = legacyEntities.get(activeKey);
+      if (legacy != null) return legacyPromptContext(activeKey, legacy.name, legacy.canon);
       return "ENTITY CORE: active legacy encounter key=" + activeKey + ". Preserve this existing encounter until it is actually resolved. " +
         "Do not replace it with another Entity. Set flags.entityEncounterResolved=true only when the narrated encounter genuinely ends.";
     }
@@ -111,6 +114,17 @@ final class EntityCore {
       "ENTITY CANON (behavior/capabilities only): " + entity.canon + "\n" +
       "Do not replace this Entity with another one. Continue the encounter according to state and behavioral canon. " +
       "Set flags.entityEncounterResolved=true only when the Entity is no longer directly present/engaged and the encounter has genuinely ended.";
+  }
+
+  static String legacyPromptContext(String activeKey, String name, String canon) {
+    String safeKey = activeKey == null ? "" : activeKey.trim();
+    String safeName = name == null || name.trim().isEmpty() ? safeKey : name.trim();
+    String safeCanon = canon == null ? "" : canon.trim();
+    return "ENTITY CORE ACTIVE LEGACY/BOSS ENCOUNTER: " + safeName + " (key=" + safeKey + ").\n" +
+      "LEGACY ENTITY CANON: " + safeCanon + "\n" +
+      "RUNTIME LOCK: this encounter is legacy/boss-only and must not be treated as an auto-spawn Entity. " +
+      "Preserve this encounter until it is genuinely resolved; do not replace it with another Entity. " +
+      "Set flags.entityEncounterResolved=true only when the narrated encounter genuinely ends.";
   }
 
   private JSONObject flags(JSONObject state) throws Exception {
@@ -148,6 +162,19 @@ final class EntityCore {
         if (key.isEmpty() || rate < 1.0 || rate > 1.5) continue;
         entities.put(key, new EntityDefinition(key, name, rate, canon));
       }
+
+      JSONArray legacyRecords = root.optJSONArray("legacyEntities");
+      if (legacyRecords != null) {
+        for (int i = 0; i < legacyRecords.length(); i++) {
+          JSONObject record = legacyRecords.optJSONObject(i);
+          if (record == null) continue;
+          String key = record.optString("key", "").trim();
+          String name = record.optString("name", key).trim();
+          String canon = record.optString("canon", "").trim();
+          if (key.isEmpty() || canon.isEmpty()) continue;
+          legacyEntities.put(key, new LegacyEntityDefinition(key, name, canon));
+        }
+      }
     } catch (Exception ignored) {}
   }
 
@@ -163,6 +190,18 @@ final class EntityCore {
 
   static boolean roamingAllowedOn(int level) {
     return level >= 0;
+  }
+
+  private static final class LegacyEntityDefinition {
+    final String key;
+    final String name;
+    final String canon;
+
+    LegacyEntityDefinition(String key, String name, String canon) {
+      this.key = key;
+      this.name = name;
+      this.canon = canon;
+    }
   }
 
   private static final class EntityDefinition {
