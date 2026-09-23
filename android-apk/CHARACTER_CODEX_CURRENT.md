@@ -87,7 +87,7 @@ Nguồn hiện hành: `DIEP_MINH_CANON.md`.
 
 **Khóa thị giác:** nam tử trẻ tóc đen; nửa phải cơ thể còn hình người trong pháp giáp đen–vàng, nửa trái dị hóa thành ma thể đen–đỏ với hồng quang, tua/nhánh quỷ dị và chân vuốt; mắt trái đỏ; tay phải cầm trường kiếm dài tỏa kim quang; quanh thân có phù vàng chữ đỏ, họa tiết âm dương/bát quái và dây xích. Những chi tiết giống cơ khí là tạo hình pháp giáp tiên hiệp, không phải công nghệ.
 
-**Backrooms:** Diệp Minh nguyên bản đã chết trước các lần xuất hiện trong Backrooms. Thực thể hiện tại giữ dung mạo, nhận ra Cao Minh và nhớ huyết cừu Cao gia, nhưng bản chất thật vẫn OPEN: tàn hồn, bản sao/tái tạo, một manifestation khác của cùng cá thể hoặc cơ chế chưa biết. Không khẳng định Backrooms có ý chí hay chủ động hồi sinh hắn. Một manifestation có thể bị tiêu diệt nhưng không xóa Diệp Minh vĩnh viễn; thời gian và nơi tái xuất không cố định.
+**Backrooms:** Diệp Minh nguyên bản đã chết trước các lần xuất hiện trong Backrooms. Thực thể hiện tại giữ dung mạo, nhận ra Cao Minh và nhớ huyết cừu Cao gia, nhưng bản chất thật vẫn OPEN: tàn hồn, bản sao/tái tạo, một hiện thân khác của cùng cá thể hoặc cơ chế chưa biết. Không khẳng định Backrooms có ý chí hay chủ động hồi sinh hắn. Một hiện thân có thể bị tiêu diệt nhưng không xóa Diệp Minh vĩnh viễn; thời gian và nơi tái xuất không cố định.
 
 **Runtime:** `diep_minh` là legacy/boss-only, không thuộc auto-spawn registry và không có `ratePercent` nếu chưa có retcon gameplay riêng.
 
