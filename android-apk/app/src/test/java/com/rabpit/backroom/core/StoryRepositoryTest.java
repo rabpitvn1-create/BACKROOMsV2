@@ -155,32 +155,11 @@ public class StoryRepositoryTest {
     int delivered = 0;
     int compiledDecisions = 0;
 
-    while (core.hasPendingAuthoredStory(state)) {
-      StoryCore.AuthoredTurn turn =
-          core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-      if (turn == null) break;
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    while (turn != null) {
       delivered++;
       if ("cutaway".equals(turn.visibility)) cutawayChapters.add(turn.chapterId);
-
-      if (core.awaitingDecision(state)) {
-        compiledDecisions++;
-        assertEquals(StoryRepository.MODE_DECISION, turn.mode);
-        assertTrue(core.decisionNeedsPrefetch(state));
-        JSONObject request = core.decisionPrefetchRequest(state, "");
-        assertTrue(request.getBoolean("needed"));
-        core.installDecisionPackage(
-            state, request.getString("contextHash"), deterministicAlternates());
-        assertTrue(core.decisionReady(state));
-        String canonId = canonChoiceId(state);
-        assertFalse(canonId.isEmpty());
-        StoryCore.DecisionResolution resolution =
-            core.resolveDecision(state, canonId, characterCore);
-        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
-        assertTrue(core.hasPendingStoryAdvance(state));
-        turn = core.advancePendingTurn(state, characterCore);
-        delivered++;
-        assertTrue(turn != null);
-      }
 
       String lucStatus = StoryCore.characterStatus(state, "luc_tram");
       if (firstParallelChapter.isEmpty() && StoryCore.STATUS_PARALLEL.equals(lucStatus)) {
@@ -209,7 +188,28 @@ public class StoryRepositoryTest {
         }
       }
 
-      state.put("turn", state.optInt("turn", 1) + 1);
+      if (core.awaitingDecision(state)) {
+        compiledDecisions++;
+        assertEquals(StoryRepository.MODE_DECISION, turn.mode);
+        assertTrue(core.decisionNeedsPrefetch(state));
+        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue(request.getBoolean("needed"));
+        core.installDecisionPackage(
+            state, request.getString("contextHash"), deterministicAlternates());
+        assertTrue(core.decisionReady(state));
+        String canonId = canonChoiceId(state);
+        assertFalse(canonId.isEmpty());
+        StoryCore.DecisionResolution resolution =
+            core.resolveDecision(state, canonId, characterCore);
+        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+        assertTrue(core.hasPendingStoryAdvance(state));
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advancePendingTurn(state, characterCore);
+      } else {
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+      }
+
       assertTrue("Story loop exceeded safety bound", delivered < 1000);
     }
 
@@ -264,7 +264,7 @@ public class StoryRepositoryTest {
 
     String digest = StoryRepository.sourceDigest(source);
     String decisions = "{"
-        + "\"schemaVersion\":2,"
+        + "\"schemaVersion\":3,"
         + "\"sourceRevision\":\"digest-test\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
