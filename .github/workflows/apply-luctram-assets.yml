@@ -59,25 +59,13 @@ jobs:
           java android-apk/tools/GenerateOverlayMetrics.java
           java android-apk/tools/GenerateOverlayMetrics.java --check
 
-      - name: Update asset assertions and canon notes
+      - name: Update canon notes
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           import json
-
-          build = Path('.github/workflows/build-backroom-apk.yml')
-          s = build.read_text()
-          s = s.replace(
-              "test \"$(git hash-object android-apk/app/src/main/assets/avatars/lucia_avatar.png)\" = 'e87ba8a420346fac12dc5129d5619b958b85f518'",
-              "test \"$(git hash-object android-apk/app/src/main/assets/avatars/lucia_avatar.png)\" = '1ce0362afa76281c0dc1fac0e414954ac28ee484'"
-          )
-          s = s.replace(
-              "test \"$(git hash-object android-apk/app/src/main/assets/lucia_entity_overlay.png)\" = 'aeafc7403ce4845fe5bd64825f7ba3ef52b62a82'",
-              "test \"$(git hash-object android-apk/app/src/main/assets/lucia_entity_overlay.png)\" = '5040709dc73f63185ed7c857af3a6589d0a0aa7b'"
-          )
-          build.write_text(s)
 
           codex = Path('android-apk/CHARACTER_CODEX_CURRENT.md')
           s = codex.read_text()
@@ -124,11 +112,10 @@ jobs:
           python3 -m json.tool android-apk/app/src/main/assets/knowledge/knowledge_db.json >/dev/null
           git diff --check
 
-      - name: Commit verified replacement and remove temporary workflow
+      - name: Commit verified replacement
         shell: bash
         run: |
           set -euo pipefail
-          rm .github/workflows/apply-luctram-assets.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
@@ -137,8 +124,6 @@ jobs:
             android-apk/app/src/main/assets/snapshot-ui.js \
             android-apk/app/src/main/assets/knowledge/characters_current.json \
             android-apk/app/src/main/assets/knowledge/knowledge_db.json \
-            android-apk/CHARACTER_CODEX_CURRENT.md \
-            .github/workflows/build-backroom-apk.yml \
-            .github/workflows/apply-luctram-assets.yml
+            android-apk/CHARACTER_CODEX_CURRENT.md
           git commit -m 'Replace Lục Trầm avatar and overlay'
           git push origin HEAD:codex/luc-tram-sync
