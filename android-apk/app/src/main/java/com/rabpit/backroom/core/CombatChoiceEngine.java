@@ -112,29 +112,29 @@ public final class CombatChoiceEngine {
   private static final Map<String, Ultimate> ULTIMATES = new LinkedHashMap<>();
 
   static {
-    entity("hound", "Hound", 240, 15);
-    entity("clump", "Clump", 315, 17);
-    entity("duller", "Duller", 270, 14);
-    entity("deathmoth", "Deathmoth", 195, 13);
-    entity("hostile_faceling", "Hostile Faceling", 225, 14);
-    entity("false_puddle", "False Puddle", 285, 16);
-    entity("paintings", "Paintings", 210, 12);
-    entity("smiler", "Smiler", 255, 18);
-    entity("skin-stealer", "Skin-Stealer", 300, 18);
-    entity("predatory_window", "Predatory Window", 345, 17);
-    entity("biological_pipeline", "Biological Pipeline", 360, 18);
-    entity("wretch", "Wretch", 255, 16);
-    entity("cable_mimic", "Cable Mimic", 300, 17);
-    entity("the_beast_of_level_5", "The Beast of Level 5", 435, 22);
-    entity("hotel_corpse_lure", "Hotel Corpse Lure", 330, 18);
-    entity("jeff_the_killer", "Jeff", 360, 20);
-    entity("async_rifleman", "ASYNC Rifleman", 300, 20);
-    entity("async_vanguard", "ASYNC Vanguard", 330, 21);
-    entity("async_tactical", "ASYNC Tactical Operative", 270, 18);
-    entity("async_decon", "ASYNC Decon Specialist", 315, 19);
-    entity("jane_the_killer", "Jane", 360, 20);
-    entity("slenderman", "Slenderman", 480, 23);
-    entity("diep_minh", "Diệp Minh", 2000, 42);
+    entity("hound", "Hound", 150, 15);
+    entity("clump", "Clump", 190, 17);
+    entity("duller", "Duller", 160, 14);
+    entity("deathmoth", "Deathmoth", 120, 13);
+    entity("hostile_faceling", "Hostile Faceling", 130, 14);
+    entity("false_puddle", "False Puddle", 170, 16);
+    entity("paintings", "Paintings", 120, 12);
+    entity("smiler", "Smiler", 150, 18);
+    entity("skin-stealer", "Skin-Stealer", 180, 18);
+    entity("predatory_window", "Predatory Window", 210, 17);
+    entity("biological_pipeline", "Biological Pipeline", 220, 18);
+    entity("wretch", "Wretch", 145, 16);
+    entity("cable_mimic", "Cable Mimic", 180, 17);
+    entity("the_beast_of_level_5", "The Beast of Level 5", 300, 22);
+    entity("hotel_corpse_lure", "Hotel Corpse Lure", 190, 18);
+    entity("jeff_the_killer", "Jeff", 240, 20);
+    entity("async_rifleman", "ASYNC Rifleman", 180, 20);
+    entity("async_vanguard", "ASYNC Vanguard", 200, 21);
+    entity("async_tactical", "ASYNC Tactical Operative", 165, 18);
+    entity("async_decon", "ASYNC Decon Specialist", 190, 19);
+    entity("jane_the_killer", "Jane", 270, 20);
+    entity("slenderman", "Slenderman", 360, 23);
+    entity("diep_minh", "Diệp Minh", 1200, 42);
 
     entitySkills("hound",
         entitySkill("Dead Bite", 120, 35),
