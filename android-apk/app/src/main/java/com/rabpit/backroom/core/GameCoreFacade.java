@@ -243,14 +243,24 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String processStoryDecision(String stateJson, String choiceId) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
+      restoreHiddenDecisionPackage(submitted, state);
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        throw new IllegalStateException("Story decision trên UI đã cũ.");
+      }
 
       StoryCore.DecisionResolution resolution =
           storyCore.resolveDecision(state, choiceId, characterEncounterCore);
@@ -413,6 +423,8 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String normalizeState(String stateJson) {
     JSONObject state = parseState(stateJson);
     try {
+      JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+      restoreHiddenDecisionPackage(state, persisted);
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
@@ -426,11 +438,11 @@ public final class GameCoreFacade implements AutoCloseable {
     } catch (Exception e) {
       debug("normalizeState failed: " + e.getMessage());
     }
-    return state.toString();
+    return clientSafeState(state).toString();
   }
 
   public synchronized String currentCoreState() {
-    return preferences.getString(STATE_KEY, "{}");
+    return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
   }
 
   public synchronized void clear() {
@@ -633,12 +645,44 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject output = new JSONObject();
     try {
       output.put("handled", handled);
-      output.put("state", state == null ? new JSONObject() : state);
+      output.put("state", clientSafeState(state == null ? new JSONObject() : state));
       output.put("reason", reason == null ? "" : reason);
       if (error != null && !error.isEmpty()) output.put("error", error);
       if (reply != null && !reply.isEmpty()) output.put("reply", reply);
     } catch (Exception ignored) {}
     return output.toString();
+  }
+
+  private JSONObject clientSafeState(JSONObject source) {
+    JSONObject safe = deepCopy(source);
+    try {
+      JSONObject story = safe.optJSONObject(StoryCore.ROOT_KEY);
+      if (story == null) return safe;
+      JSONObject pack = story.optJSONObject("decisionPackage");
+      if (pack != null) {
+        pack.remove("outcomes");
+        story.put("decisionPackage", pack);
+      }
+      safe.put(StoryCore.ROOT_KEY, story);
+    } catch (Exception ignored) {}
+    return safe;
+  }
+
+  private void restoreHiddenDecisionPackage(JSONObject submitted, JSONObject persisted) {
+    try {
+      JSONObject submittedStory = submitted == null ? null : submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject persistedStory = persisted == null ? null : persisted.optJSONObject(StoryCore.ROOT_KEY);
+      if (submittedStory == null || persistedStory == null) return;
+      if (!submittedStory.optBoolean("awaitingDecision", false)
+          || !persistedStory.optBoolean("awaitingDecision", false)) return;
+      String submittedId = submittedStory.optString("decisionId", "").trim();
+      String persistedId = persistedStory.optString("decisionId", "").trim();
+      if (submittedId.isEmpty() || !submittedId.equals(persistedId)) return;
+      JSONObject persistedPack = persistedStory.optJSONObject("decisionPackage");
+      if (persistedPack == null || persistedPack.optJSONObject("outcomes") == null) return;
+      submittedStory.put("decisionPackage", new JSONObject(persistedPack.toString()));
+      submitted.put(StoryCore.ROOT_KEY, submittedStory);
+    } catch (Exception ignored) {}
   }
 
   private String safeMessage(Exception e) {
