@@ -32,7 +32,7 @@ final class CharacterProgressionCore {
     if (characters == null) characters = new JSONObject();
 
     ensureProfileObject(characters, "cao_minh");
-    ensureProfileObject(characters, "lucia");
+    ensureProfileObject(characters, "luc_tram");
     ensureProfileObject(characters, "iris");
     ensureProfileObject(characters, "syvial");
 
@@ -362,9 +362,7 @@ final class CharacterProgressionCore {
   static String normalizeCharacterId(String raw) {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (value.contains("cao_minh") || value.contains("cao minh")) return "cao_minh";
-    if (value.contains("lục trầm") || value.contains("luc tram") || value.contains("lucia")
-        || value.contains("hứa thuý mai") || value.contains("hứa thúy mai")
-        || value.contains("hua thuy mai")) return "lucia";
+    if (value.contains("lục trầm") || value.contains("luc tram") || value.contains("luc_tram")) return "luc_tram";
     if (value.contains("iris") || value.contains("argus")) return "iris";
     if (value.contains("syvial")) return "syvial";
     return value.replace(' ', '_');
