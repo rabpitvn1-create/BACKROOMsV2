@@ -91,7 +91,8 @@ jobs:
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'generated.optString("transitionTarget", "")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'CombatChoiceEngine.resolveFinalized' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'gameCore.processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CombatChoiceEngine.resolveFinalized(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
