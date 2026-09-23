@@ -328,10 +328,13 @@ def call_gemini(prompt):
 
 def generate(prompt):
     try:
-        return call_haiku(prompt), "haiku"
-    except Exception as haiku_error:
-        print(f"[story-compiler] Haiku failed, using Gemini fallback: {haiku_error}", file=sys.stderr)
         return call_gemini(prompt), "gemini"
+    except Exception as gemini_error:
+        print(
+            f"[story-compiler] All Gemini keys failed, using Haiku fallback: {gemini_error}",
+            file=sys.stderr,
+        )
+        return call_haiku(prompt), "haiku"
 
 
 def forced_locked_indices(chapter, segment_count):
