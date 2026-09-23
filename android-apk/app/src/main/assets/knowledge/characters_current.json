@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
-  "syncedAt": "2026-09-21",
-  "authority": "Google Drive / 02_CHARACTERS",
-  "instruction": "Google Drive character canon is authoritative. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15 under canonical runtime id `cao_minh`. The retired `kai` player id/identity is not current runtime canon. KNOWLEDGE_LOCK is backstage knowledge only; OPEN/UNKNOWN fields remain unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology.",
+  "syncedAt": "2026-09-23",
+  "authority": "Google Drive / 02_CHARACTERS + scoped USER_RETCON android-apk/DIEP_MINH_CANON.md",
+  "instruction": "Google Drive character canon is authoritative except where a newer explicit USER_RETCON is committed as current canon. DIEP_MINH_CANON.md supersedes only the old OPEN Cao Minh ↔ Diệp Minh edge. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15 under canonical runtime id `cao_minh`. The retired `kai` player id/identity is not current runtime canon. KNOWLEDGE_LOCK is backstage knowledge only; remaining OPEN/UNKNOWN fields stay unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology.",
   "characters": {
     "cao_minh": {
       "name": "Cao Minh / Vạn Giới Ma Tôn",
@@ -22,7 +22,7 @@
       "abilities": "Cao Minh has extremely high sword sense and divine sense. Vạn Quỷ Ma Tâm is his Đạo Cơ, Ma Hải and central origin, supplying a vast ma-nguyên source with no canonically locked intrinsic ceiling, enhancing body/reflex/perception/divine sense/regeneration and nourishing bound artifacts. Vạn Quỷ Ma Thân is full release of that origin and does not inherently remove control, impose a duration cap, cause corruption or backlash. Huyết Ma Nhị Thập Tứ Trảm stops external time completely and performs exactly 24 strikes before time resumes.",
       "equipment": "Bound equipment: Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới. The existing Huyết Ma Kiếm and Huyết Ma Chiến Khải can progressively regenerate through Vạn Quỷ Ma Tâm; regeneration restores the existing artifact and does not create duplicates. Vạn Tàng Giới stores inanimate matter. Phản Bổn restores the same existing artifact to the best state that exact artifact genuinely reached in its own history; it does not copy, upgrade beyond history, create matter from nothing or store/recreate living beings. After a successful Phản Bổn, that same artifact requires one day and one night before Phản Bổn can be used on it again; this does not block natural bound-artifact regeneration.",
       "backrooms": "Immediately before transition Cao Minh was on Ma Sơn drinking spirit wine with Huyết Ma Kiếm nearby. The ground vanished without a recognized formation, spatial turbulence or warning. He lands in the yellow Backrooms environment and tests it with divine sense and a demonic mark. He has no default knowledge of Backrooms level names/numbers, Entity identities, rules or origin. His current first priority is to investigate local rules and the nature of Backrooms; returning to his original world is second.",
-      "dialogue": "Speak naturally and completely, often using humor or sarcasm. Do not make him constantly say 'bổn tọa', speak like an ancient manual, or use vague pseudo-philosophy to sound profound. With Diệp Minh only the existence of an established feud is locked; cause, history, intensity, balance of victories and outcome remain OPEN.",
+      "dialogue": "Speak naturally and completely, often using humor or sarcasm. Do not make him constantly say 'bổn tọa', speak like an ancient manual, or use vague pseudo-philosophy to sound profound. Diệp Minh is a sworn blood enemy: he directly contributed to the massacre of the Cao clan, a catastrophe that drove Cao Minh into despair and became a decisive cause of his turn to the demonic path. Do not make Diệp Minh the sole mastermind unless separately established; mastermind, motive, exact victims, earlier relationship, victory balance and final outcome remain OPEN.",
       "gameplay": {
         "note": "Gameplay-only projection from CAO-GAMEPLAY-R15-01; not in-world cultivation terminology.",
         "huyetMaTuLien": {
@@ -62,6 +62,14 @@
           "suppressAutoSkillRollsOnUltimateTurn": true
         },
         "hardLock": "AUTO rolls are independent and multiple AUTO skills may proc in one eligible turn. A successful AUTO proc hits without an additional accuracy/evasion roll."
+      },
+      "relationships": {
+        "diep_minh": {
+          "status": "tử địch không đội trời chung / huyết hải thâm cừu",
+          "canonRef": "android-apk/DIEP_MINH_CANON.md#03-huyết-hải-thâm-cừu--diep-minh-cao-rel-01",
+          "locked": "Diệp Minh trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố là một nguyên nhân quyết định đẩy Cao Minh vào ma đạo.",
+          "open": "Chủ mưu cuối cùng, động cơ, mức độ sát hại từng người, quan hệ trước đại kiếp, cán cân thắng bại và kết cục."
+        }
       }
     },
     "iris": {
