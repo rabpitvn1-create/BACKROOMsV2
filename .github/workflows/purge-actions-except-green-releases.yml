@@ -9,6 +9,11 @@ on:
         description: 'Type DELETE_NON_RELEASE_RUNS to confirm'
         required: true
         type: string
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/purge-actions-except-green-releases.yml'
 
 permissions:
   actions: write
@@ -23,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate confirmation
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           CONFIRM: ${{ inputs.confirm }}
         shell: bash
@@ -45,6 +51,7 @@ jobs:
           kept_release_runs=0
           deleted_runs=0
           failed_deletions=0
+          orphaned_queued_runs=0
           skipped_current=0
 
           mapfile -t RUNS < <(
@@ -118,8 +125,16 @@ jobs:
             if [[ "${deleted}" == "true" ]]; then
               deleted_runs=$((deleted_runs + 1))
             else
-              echo "::warning::Failed to delete workflow run ${run_id}"
-              failed_deletions=$((failed_deletions + 1))
+              job_count="$(
+                gh api                   -H 'Accept: application/vnd.github+json'                   "/repos/${REPO}/actions/runs/${run_id}/jobs?per_page=1"                   --jq '.total_count' 2>/dev/null || echo -1
+              )"
+              if [[ "${status}" == "queued" && "${job_count}" == "0" ]]; then
+                echo "::warning::Preserving orphaned queued run ${run_id}: GitHub reports zero jobs and refuses deletion."
+                orphaned_queued_runs=$((orphaned_queued_runs + 1))
+              else
+                echo "::warning::Failed to delete workflow run ${run_id}"
+                failed_deletions=$((failed_deletions + 1))
+              fi
             fi
           done
 
@@ -127,6 +142,7 @@ jobs:
           echo "Green release runs preserved: ${kept_release_runs}"
           echo "Non-release runs deleted: ${deleted_runs}"
           echo "Current purge run preserved temporarily: ${skipped_current}"
+          echo "Orphaned queued runs preserved by GitHub: ${orphaned_queued_runs}"
           echo "Failed deletions: ${failed_deletions}"
 
           if (( failed_deletions != 0 )); then
