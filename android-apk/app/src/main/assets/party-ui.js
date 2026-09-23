@@ -10,7 +10,7 @@
   };
   var META={
     cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'},
-    lucia:{name:'Lucia Lục',role:'Tactical Riflewoman'},
+    lucia:{name:'Lục Trầm',role:'Chân truyền Thiên Kiếm Môn'},
     iris:{name:'Iris',role:'Scout / Target Eliminator'},
     syvial:{name:'Syvial',role:'Đội phó SRU'}
   };
@@ -39,7 +39,7 @@
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
     if(value.indexOf('cao_minh')>=0||value.indexOf('cao minh')>=0)return 'cao_minh';
-    if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
+    if(value.indexOf('lục trầm')>=0||value.indexOf('luc tram')>=0||value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
     return value.replace(/\s+/g,'_');

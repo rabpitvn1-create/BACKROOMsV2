@@ -55,7 +55,8 @@
   var knownSkills = [
     'Huyết Ma Tứ Liên','Ma Tâm Trấn Hồn','Huyết Ảnh Ma Độn','Thiên Ma Bộ','Huyết Ma Nhị Thập Tứ Trảm',
     'Twosome Time','Rain Storm','Honeycomb Fire','Charged Shot',
-    'Rift Sever','Crimson Guillotine','Lucifer Breaker','Spatial Dominion','M4A1 Joint Attack'
+    'Rift Sever','Crimson Guillotine','Lucifer Breaker','Spatial Dominion',
+    'Tịch Quang Hợp Kích','Tịch Quang Phản Kiếm','Nhất Tuyến Phá Vọng','Thiên Kiếm Chấn','Bạch Hồng Quán Nhật','Vạn Kiếm Quy Tâm','Thiên Kiếm Định Giới'
   ];
   var knownEffects = ['Choáng','Chảy máu','Trúng độc','Xuyên giáp','Phá giáp','Né tránh','Mất phương hướng'];
   var knownHandTokens = ['[NO HAND]','[PAIR]','[TWO PAIR]','[TRIPLE]','[STRAIGHT]','[FULL HOUSE]','[F.O.A.K]','[SSF]','[FSF]'];
@@ -90,7 +91,7 @@
 
   function entryHighlights(entry) {
     var map = new Map();
-    ['Cao Minh','Vạn Giới Ma Tôn','Iris','Syvial','Lucia Lục','Hứa Thuý Mai'].forEach(function(x){ addTerm(map,x,'character'); });
+    ['Cao Minh','Vạn Giới Ma Tôn','Iris','Syvial','Lục Trầm'].forEach(function(x){ addTerm(map,x,'character'); });
     knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
     knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
     knownHandTokens.forEach(function(x){ addTerm(map,x,'stat'); });

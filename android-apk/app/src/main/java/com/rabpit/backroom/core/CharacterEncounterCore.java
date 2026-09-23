@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 /** Owns companion encounter rolls, joins, migration and pending GM introductions. */
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
-  static final int LUCIA_RATE_PERCENT = 10;
+  static final int LUC_TRAM_RATE_PERCENT = 10;
   static final int RARE_ENCOUNTER_BOUND = 4000;
 
   interface IntRng {
@@ -97,8 +97,10 @@ final class CharacterEncounterCore {
     List<String> hits = new ArrayList<>();
 
     String currentLevelKey = state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)));
-    if (!containsPartyId(party, "lucia") && "0".equals(currentLevelKey)
-        && shouldEncounterLucia(currentLevelKey, nextRoll(100))) {
+    // "lucia" remains the stable save/runtime id for backward compatibility.
+    // Lục Trầm's current canon requires the reunion to happen only after Level 0.
+    if (!containsPartyId(party, "lucia")
+        && shouldEncounterLucTram(currentLevelKey, nextRoll(100))) {
       hits.add("lucia");
     }
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
@@ -171,6 +173,11 @@ final class CharacterEncounterCore {
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
+      boolean lucTramPending = containsString(pending, "lucia");
+      String encounterRule = lucTramPending
+          ? "Lục Trầm is a REUNION, not first contact: she and Cao Minh knew and fought each other before Backrooms. " +
+              "Begin with wary/hostile recognition consistent with their old rivalry. Do not jump directly to trust, romance, forgiveness or the hidden truth of Táng Kiếm Cốc. "
+          : "For Iris/Syvial, depict first contact in the current location. ";
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
           "Not met: " + listText(notMet) + ".\n" +
@@ -180,15 +187,23 @@ final class CharacterEncounterCore {
           "Joined characters may be treated as already accompanying Cao Minh. Pending-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "A pending character encounter has triggered. The reply must depict the FIRST CONTACT in the current location before any dialogue, without implying that the character was already walking with Cao Minh, already in his Party, or present in earlier turns. Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. After this validated first-contact scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
+              : "A pending character encounter has triggered. Depict the encounter in the current location before any spoken line. " +
+                  encounterRule +
+                  "Do not imply the character was already walking with Cao Minh, already in his Party, or present in earlier Backrooms turns. " +
+                  "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                  "After this validated encounter scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
   }
 
-  static boolean shouldEncounterLucia(String levelKey, int roll) {
-    return "0".equals(levelKey == null ? "" : levelKey.trim())
-        && roll >= 0 && roll < LUCIA_RATE_PERCENT;
+  static boolean shouldEncounterLucTram(String levelKey, int roll) {
+    String normalized = levelKey == null ? "" : levelKey.trim().toLowerCase(Locale.ROOT);
+    boolean afterLevelZero = !normalized.isEmpty()
+        && !"0".equals(normalized)
+        && !normalized.startsWith("0.")
+        && !normalized.startsWith("0-");
+    return afterLevelZero && roll >= 0 && roll < LUC_TRAM_RATE_PERCENT;
   }
 
   static boolean shouldEncounterRare(int roll) {
@@ -250,9 +265,8 @@ final class CharacterEncounterCore {
   private static JSONArray defaultInventory(String id) throws Exception {
     JSONArray inventory = new JSONArray();
     if ("lucia".equals(id)) {
-      inventory.put(new JSONObject().put("name", "M4A1 cá nhân hóa"));
-      inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
-      inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
+      inventory.put(new JSONObject().put("name", "Tịch Quang Kiếm"));
+      inventory.put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"));
     } else if ("iris".equals(id)) {
       inventory.put(new JSONObject().put("name", "SRU Recon Frame R03"));
       inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
@@ -308,7 +322,8 @@ final class CharacterEncounterCore {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
-    if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai") || raw.contains("hua thuy mai")) return "lucia";
+    if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("lucia")
+        || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai") || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return "";
@@ -319,7 +334,7 @@ final class CharacterEncounterCore {
   }
 
   private static String displayName(String id) {
-    if ("lucia".equals(id)) return "Lucia Lục";
+    if ("lucia".equals(id)) return "Lục Trầm";
     if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
     return id;
