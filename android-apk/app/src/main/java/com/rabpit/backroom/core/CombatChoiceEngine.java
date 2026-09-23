@@ -1127,13 +1127,12 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     }
 
     if (!combat.optBoolean("coreDropResolved", false)) {
-      int roll = nextPercent(combat, "core-drop:" + entityKey);
-      int reward = 0;
-      if (ItemCore.shouldDropCore(roll, ItemCore.CORE_ENTITY_DROP_PERCENT)) {
-        reward = CharacterProgressionCore.bundleSize(LevelCore.stageIndex(state));
-        new CharacterProgressionCore().grantCore(state, reward);
-      }
-      combat.put("coreDropRoll", roll)
+      int stageIndex = Math.max(0, combat.optInt("stageIndex", LevelCore.stageIndex(state)));
+      int reward = CharacterProgressionCore.scaledCoreReward(
+          CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
+      new CharacterProgressionCore().grantCore(state, reward);
+      combat.remove("coreDropRoll");
+      combat.put("coreDropRatePercent", 100)
           .put("coreDropReward", reward)
           .put("coreDropResolved", true);
     }
