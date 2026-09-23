@@ -19,7 +19,7 @@ OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"
 
 SCHEMA_VERSION = 1
 COMPILER_VERSION = 1
-MAX_INTERACTIVE_PER_CHAPTER = 2
+MAX_INTERACTIVE_PER_CHAPTER = 1
 VALID_MODES = {"LINEAR", "INTERACTIVE", "CUTAWAY", "LOCKED_EVENT"}
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
@@ -424,7 +424,7 @@ CLASSIFICATION:
 - CUTAWAY is reserved for compiler-forced reader-only parallel scenes. Do not output CUTAWAY here unless input visibility is cutaway.
 
 INTERACTION RULES:
-- At most 2 INTERACTIVE segments in this chapter.
+- At most 1 INTERACTIVE segment in this chapter. Do not force a choice into every chapter.
 - An INTERACTIVE segment MUST have exactly 3 concise Vietnamese choices.
 - Each choice is only an INTENT/APPROACH, never a claimed outcome.
 - IMPORTANT TIMING: every action, line of dialogue and observation written inside the current segment has ALREADY happened before the choice appears. Never offer a choice that repeats, redoes or "decides" an action already completed in that segment.
@@ -650,7 +650,15 @@ CRITICAL TIMING:
 - Anything already done, said, observed, tested, decided or called in currentSegment is in the past and MUST NOT be offered again.
 - nextSegment is visible to you ONLY to check convergence. A choice MUST NOT leak or assume facts that first appear in nextSegment or later.
 
-DROP THE ENTIRE INTERACTIVE SEGMENT TO LINEAR if any of the three choices:
+REVIEWER ROLE:
+- You are QA, not a second story designer. The first compiler has already selected this as a candidate pause.
+- Do NOT downgrade merely because nextSegment continues the story. A short local reaction is allowed between currentSegment and nextSegment.
+- First try to REWRITE all three choices into safe micro-intents grounded in the current pause.
+- Use LINEAR only when there is genuinely no way to offer three distinct, natural, local approaches without inventing facts or changing authored progression.
+- It is acceptable for choices to inspect, listen, compare, ask a present character about something they demonstrably know, mark a detail, prepare, or briefly observe.
+- The three choices do not need different outcomes. They only need different local approaches before convergence.
+
+A candidate is INVALID unless rewritten or downgraded when a choice:
 - repeats or redoes an action already completed in currentSegment;
 - invents or assumes an object, liquid, sign, route, person, mechanism, injury, sound, ability or fact not actually available at that pause;
 - assumes a character knows something the manuscript has not established they know;
@@ -661,8 +669,7 @@ DROP THE ENTIRE INTERACTIVE SEGMENT TO LINEAR if any of the three choices:
 - is awkward, corrupted, misspelled, vague, redundant, or not natural Vietnamese;
 - cannot receive a short local reaction and then return unchanged to nextSegment.
 
-You MAY minimally rewrite all three choices to make them clean and safe, but may not add new facts.
-Prefer LINEAR over weak or artificial interaction.
+Rewrite bad choices whenever a safe rewrite exists. Downgrade to LINEAR only as the last resort.
 
 Return JSON only:
 {
