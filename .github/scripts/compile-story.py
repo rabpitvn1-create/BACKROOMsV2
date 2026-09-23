@@ -32,6 +32,9 @@ FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:tấn công|giết|đánh)\b"),
     re.compile(r"(?iu)\b(?:uống|ăn|chạm vào)\b"),
 ]
+RECHECK_CHOICE_PATTERNS = [
+    re.compile(r"(?iu)\b(?:xác nhận|kiểm tra lại|xem lại|thử lại|đo lại|đếm lại)\b"),
+]
 HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages"
 HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 GEMINI_DEFAULT_MODEL = "gemini-3.6-flash"
@@ -476,6 +479,11 @@ def choice_changes_authored_path(text):
     return any(pattern.search(value) for pattern in FORBIDDEN_CHOICE_PATTERNS)
 
 
+def choice_is_recheck_intent(text):
+    value = str(text or "").strip()
+    return any(pattern.search(value) for pattern in RECHECK_CHOICE_PATTERNS)
+
+
 def choice_addresses_unavailable_character(text, established_story_state):
     value = str(text or "").strip()
     characters = (established_story_state or {}).get("characters") or {}
@@ -544,6 +552,7 @@ def sanitize_model_chapter(
                 if (not text or len(text) > 180 or normalized in seen
                         or normalized in {"tiếp tục cốt truyện", "continue story"}
                         or choice_changes_authored_path(text)
+                        or choice_is_recheck_intent(text)
                         or choice_addresses_unavailable_character(
                             text, established_story_state)):
                     clean_choices = []
@@ -659,6 +668,7 @@ CRITICAL TIMING:
 - pauseAnchor is the end of currentSegment and is the authoritative physical/conversational state at the decision point.
 - Ground every retained/rewritten choice in pauseAnchor plus stable facts already established. Do NOT send characters back to an object, room, liquid, door, device, voice or clue that occurred earlier in currentSegment if pauseAnchor shows they have already moved on.
 - Anything already done, said, observed, tested, decided or called in currentSegment is in the past and MUST NOT be offered again.
+- Treat re-check wording such as "xác nhận", "kiểm tra lại", "xem lại", "thử lại", "đo lại", or "đếm lại" as invalid in V1; these often disguise repetition of a fact the manuscript already established.
 - If currentSegment ends mid-conversation or mid-action and nextSegment directly continues that same exchange/action, use LINEAR rather than inserting a choice into the middle.
 - nextSegment is visible to you ONLY to check convergence. A choice MUST NOT leak or assume facts that first appear in nextSegment or later.
 
@@ -746,6 +756,7 @@ def sanitize_review_result(
                 if (not text or len(text) > 180 or normalized in seen
                         or normalized in {"tiếp tục cốt truyện", "continue story"}
                         or choice_changes_authored_path(text)
+                        or choice_is_recheck_intent(text)
                         or choice_addresses_unavailable_character(
                             text, established_story_state)):
                     clean_choices = []
@@ -857,6 +868,7 @@ If even ONE choice is questionable, output LINEAR.
 
 A choice is invalid if it:
 - repeats or preempts an action/dialogue/test that already happened in currentSegment or is immediately authored in nextSegment;
+- uses re-check wording such as "xác nhận", "kiểm tra lại", "xem lại", "thử lại", "đo lại", or "đếm lại";
 - requires moving back to an earlier room/object/clue that is no longer present at pauseAnchor;
 - invents or assumes an object, phenomenon, capability, terminology, history, knowledge, location, relationship, or fact not established before the pause;
 - assumes a character knows Backrooms terminology or prior Backrooms experience not established in the manuscript;
