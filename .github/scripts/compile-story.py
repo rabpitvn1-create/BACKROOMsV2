@@ -22,15 +22,15 @@ COMPILER_VERSION = 1
 MAX_INTERACTIVE_PER_CHAPTER = 2
 VALID_MODES = {"LINEAR", "INTERACTIVE", "CUTAWAY", "LOCKED_EVENT"}
 FORBIDDEN_CHOICE_PATTERNS = [
-    re.compile(r"(?iu)\\b(?:đi|tiến|bước|chạy)\\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\\b"),
-    re.compile(r"(?iu)\\b(?:chọn|đổi|thay đổi)\\s+(?:lối|hướng|đường)\\b"),
-    re.compile(r"(?iu)\\b(?:rời|quay lại|trở lại)\\b"),
-    re.compile(r"(?iu)\\btiếp tục\\s+(?:đi|khám phá|di chuyển)\\b"),
-    re.compile(r"(?iu)\\btìm kiếm sâu hơn\\b"),
-    re.compile(r"(?iu)\\b(?:đề xuất|đề nghị)\\s+(?:đi|vào|rời|quay)\\b"),
-    re.compile(r"(?iu)\\b(?:mở|phá|đập|cạy)\\s+(?:cửa|panel|tường|hộp)\\b"),
-    re.compile(r"(?iu)\\b(?:tấn công|giết|đánh)\\b"),
-    re.compile(r"(?iu)\\b(?:uống|ăn|chạm vào)\\b"),
+    re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
+    re.compile(r"(?iu)\b(?:chọn|đổi|thay đổi)\s+(?:lối|hướng|đường)\b"),
+    re.compile(r"(?iu)\b(?:rời|quay lại|trở lại)\b"),
+    re.compile(r"(?iu)\btiếp tục\s+(?:đi|khám phá|di chuyển)\b"),
+    re.compile(r"(?iu)\btìm kiếm sâu hơn\b"),
+    re.compile(r"(?iu)\b(?:đề xuất|đề nghị)\s+(?:đi|vào|rời|quay)\b"),
+    re.compile(r"(?iu)\b(?:mở|phá|đập|cạy)\s+(?:cửa|panel|tường|hộp)\b"),
+    re.compile(r"(?iu)\b(?:tấn công|giết|đánh)\b"),
+    re.compile(r"(?iu)\b(?:uống|ăn|chạm vào)\b"),
 ]
 HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages"
 HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001"
