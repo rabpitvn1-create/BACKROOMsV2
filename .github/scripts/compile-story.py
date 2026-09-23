@@ -402,7 +402,13 @@ def build_prompt(chapter, segments, forced_locked, established_story_state):
         },
         "forcedLockedSegmentIds": [segments[i]["id"] for i in sorted(forced_locked)],
         "establishedStoryState": established_story_state,
-        "segments": segments,
+        "segments": [
+            {
+                **segment,
+                "pauseAnchor": segment["text"][-900:],
+            }
+            for segment in segments
+        ],
     }
     return """You are the BACKROOMsV2 Story Compiler. Convert authored Vietnamese novel prose into conservative gameplay interaction metadata.
 
@@ -428,6 +434,8 @@ INTERACTION RULES:
 - An INTERACTIVE segment MUST have exactly 3 concise Vietnamese choices.
 - Each choice is only an INTENT/APPROACH, never a claimed outcome.
 - IMPORTANT TIMING: every action, line of dialogue and observation written inside the current segment has ALREADY happened before the choice appears. Never offer a choice that repeats, redoes or "decides" an action already completed in that segment.
+- pauseAnchor is the END of that segment and represents the exact physical/conversational state when choices appear. Ground choices in pauseAnchor. An object/place mentioned earlier in the segment is NOT available if the characters have moved away from it by pauseAnchor.
+- If the segment ends in the middle of a conversation/action and the next authored segment directly continues it, prefer LINEAR instead of inserting A/B/C into the middle.
 - Choice text may use only facts, characters, objects and observations already present in the current segment or earlier segments in this chapter. Never mention a reveal, destination, encounter, person, object or result that first appears later.
 - Never ask a character about an earlier event, shared history, technical fact or memory unless the manuscript before this choice explicitly establishes that they know it.
 - Never introduce a new theory or interpretation as a choice unless that theory has already been raised in the manuscript before this pause.
@@ -624,6 +632,7 @@ def build_review_prompt(chapter, segments, compiled, established_story_state):
         candidates.append({
             "id": segment["id"],
             "currentSegment": segment["text"],
+            "pauseAnchor": segment["text"][-900:],
             "previousSegment": segments[index - 1]["text"] if index > 0 else "",
             "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
             "choices": spec.get("choices") or [],
@@ -647,7 +656,10 @@ Review ONLY the candidate A/B/C choices. The manuscript is authoritative.
 
 CRITICAL TIMING:
 - A choice appears AFTER currentSegment is fully completed and BEFORE nextSegment begins.
+- pauseAnchor is the end of currentSegment and is the authoritative physical/conversational state at the decision point.
+- Ground every retained/rewritten choice in pauseAnchor plus stable facts already established. Do NOT send characters back to an object, room, liquid, door, device, voice or clue that occurred earlier in currentSegment if pauseAnchor shows they have already moved on.
 - Anything already done, said, observed, tested, decided or called in currentSegment is in the past and MUST NOT be offered again.
+- If currentSegment ends mid-conversation or mid-action and nextSegment directly continues that same exchange/action, use LINEAR rather than inserting a choice into the middle.
 - nextSegment is visible to you ONLY to check convergence. A choice MUST NOT leak or assume facts that first appear in nextSegment or later.
 
 REVIEWER ROLE:
