@@ -178,9 +178,11 @@ final class CharacterProgressionCore {
     int highest = resource.optInt("highestRewardedStageIndex", -1);
     if (normalizedStage <= highest) return 0;
     int reward = bundleSize(normalizedStage);
-    resource.put("quantity", Math.max(0, resource.optInt("quantity", 0)) + reward);
+    int current = Math.max(0, resource.optInt("quantity", 0));
+    int granted = (int)Math.min((long)reward, (long)Integer.MAX_VALUE - current);
+    resource.put("quantity", current + granted);
     resource.put("highestRewardedStageIndex", normalizedStage);
-    return reward;
+    return granted;
   }
 
   void applyCaoMinhDeathPenalty(JSONObject state) throws Exception {
