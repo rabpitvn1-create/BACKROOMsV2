@@ -50,7 +50,7 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Tr�
 | Armor | `09 · THIÊN CƠ BẠCH KIM KIẾM KHẢI` | Pháp bảo tiên hiệp, không phải công nghệ/mecha thuần khoa học. |
 | Relationship | `13-20` | Cao Minh và Lục Trầm từng giao chiến nhiều lần; Backrooms là tái ngộ, không first contact; romance phải phát triển chậm. |
 | Backrooms | `14-15, 21` | Rơi vào Level 0 khác vị trí; runtime encounter chỉ sau Level 0; không có knowledge preload. |
-| Gameplay id | `lucia` | Giữ stable id cho save compatibility; mọi tên/lore hiển thị dùng Lục Trầm. |
+| Gameplay id | `luc_tram` | Runtime id hiện hành của Lục Trầm; không giữ alias `lucia`. |
 | Ultimate | `12 · THIÊN KIẾM ĐỊNH GIỚI` | Runtime giữ 60-hit Ultimate cũ như gameplay projection, đổi presentation sang Thiên Kiếm Định Giới. |
 
 ### Relationship locks
