@@ -813,6 +813,122 @@ def review_compiled_interactions(
     return downgrade_interactions_to_linear(compiled), "deterministic-review-fallback"
 
 
+def build_final_audit_prompt(chapter, segments, compiled, established_story_state):
+    candidates = []
+    for index, segment in enumerate(segments):
+        spec = compiled.get(segment["id"]) or {}
+        if spec.get("mode") != "INTERACTIVE":
+            continue
+        candidates.append({
+            "id": segment["id"],
+            "pauseAnchor": segment["text"][-900:],
+            "currentSegment": segment["text"],
+            "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
+            "choices": spec.get("choices") or [],
+        })
+    payload = {
+        "chapter": {
+            "id": chapter.get("id"),
+            "title": chapter.get("title"),
+            "thread": chapter.get("thread"),
+            "visibility": chapter.get("visibility"),
+            "requiredFacts": chapter.get("requiredFacts") or [],
+            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
+        },
+        "establishedStoryState": established_story_state,
+        "candidates": candidates,
+    }
+    return """You are the FINAL INDEPENDENT SAFETY AUDITOR for BACKROOMsV2 Story Compiler v1.
+
+You are NOT allowed to rewrite, repair, improve, paraphrase, or replace any choice.
+For each candidate, output only KEEP or LINEAR.
+
+KEEP only if ALL three existing choices are clearly valid at the exact pause represented by pauseAnchor.
+If even ONE choice is questionable, output LINEAR.
+
+A choice is invalid if it:
+- repeats or preempts an action/dialogue/test that already happened in currentSegment or is immediately authored in nextSegment;
+- requires moving back to an earlier room/object/clue that is no longer present at pauseAnchor;
+- invents or assumes an object, phenomenon, capability, terminology, history, knowledge, location, relationship, or fact not established before the pause;
+- assumes a character knows Backrooms terminology or prior Backrooms experience not established in the manuscript;
+- gives a cultivation system, weapon, skill or character an unsupported sensing/mechanical ability;
+- changes route, destination, pacing, authored event, Party state, resource outcome, combat result, Level progression, or mandatory dialogue;
+- is awkward, corrupted, vague, semantically wrong, or unnatural Vietnamese;
+- cannot receive one short local reaction and then continue nextSegment unchanged.
+
+Do not be generous. False positives are worse than fewer interactions.
+Do not reject merely because all three choices converge to the same authored path; convergence is required.
+
+Return JSON only:
+{
+  "audits": [
+    {"id":"exact candidate id","verdict":"KEEP|LINEAR"}
+  ]
+}
+Every candidate id must appear exactly once and in the same order.
+
+INPUT:
+""" + json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def sanitize_final_audit(compiled, raw_result):
+    result = extract_json(raw_result)
+    rows = result.get("audits")
+    if not isinstance(rows, list):
+        raise CompileError("final audit output missing audits array.")
+
+    expected_ids = [
+        segment_id for segment_id, spec in compiled.items()
+        if spec.get("mode") == "INTERACTIVE"
+    ]
+    returned_ids = [row.get("id") for row in rows if isinstance(row, dict)]
+    if returned_ids != expected_ids:
+        raise CompileError("final audit ids/order do not match candidates.")
+
+    audited = json.loads(json.dumps(compiled, ensure_ascii=False))
+    for row in rows:
+        segment_id = row["id"]
+        verdict = str(row.get("verdict", "LINEAR")).strip().upper()
+        if verdict != "KEEP":
+            audited[segment_id] = {
+                "mode": "LINEAR",
+                "choices": [],
+                "interactionGuard": "",
+            }
+    return audited
+
+
+def final_audit_compiled_interactions(
+        chapter, segments, compiled, established_story_state):
+    if not any(spec.get("mode") == "INTERACTIVE" for spec in compiled.values()):
+        return compiled, "no-final-audit-needed"
+
+    prompt = build_final_audit_prompt(
+        chapter, segments, compiled, established_story_state)
+    errors = []
+
+    # Use a different model family first so the final gate is not merely
+    # asking the generator to approve its own homework.
+    try:
+        raw = call_gemini(prompt)
+        return sanitize_final_audit(compiled, raw), "gemini-final-audit"
+    except Exception as exc:
+        errors.append(f"Gemini: {exc}")
+
+    try:
+        raw, provider = generate(prompt)
+        return sanitize_final_audit(compiled, raw), provider + "-final-audit"
+    except Exception as exc:
+        errors.append(f"fallback: {exc}")
+
+    print(
+        f"[story-compiler] WARNING {chapter.get('id', '')}: final audit failed; "
+        f"downgrading interactions to LINEAR. {' | '.join(errors)}",
+        file=sys.stderr,
+    )
+    return downgrade_interactions_to_linear(compiled), "deterministic-final-audit-fallback"
+
+
 def compile_chapter(chapter, target, maximum, established_story_state):
     chapter_id = chapter.get("id", "")
     manuscript = chapter_source(chapter)
@@ -834,7 +950,9 @@ def compile_chapter(chapter, target, maximum, established_story_state):
             chapter, segments, forced_locked, prompt, established_story_state)
         compiled, review_provider = review_compiled_interactions(
             chapter, segments, compiled, established_story_state)
-        provider = provider + "+" + review_provider
+        compiled, audit_provider = final_audit_compiled_interactions(
+            chapter, segments, compiled, established_story_state)
+        provider = provider + "+" + review_provider + "+" + audit_provider
 
     interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
     return {
