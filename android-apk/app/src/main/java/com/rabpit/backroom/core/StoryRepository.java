@@ -87,8 +87,14 @@ final class StoryRepository {
     final String guard;
 
     InteractionSpec(String mode, JSONArray choices, String guard) {
-      this.mode = normalizeMode(mode);
-      this.choices = sanitizeChoices(this.mode, choices);
+      String normalizedMode = normalizeMode(mode);
+      JSONArray sanitized = sanitizeChoices(normalizedMode, choices);
+      if (MODE_INTERACTIVE.equals(normalizedMode) && sanitized.length() < 2) {
+        normalizedMode = MODE_LINEAR;
+        sanitized = new JSONArray();
+      }
+      this.mode = normalizedMode;
+      this.choices = sanitized;
       this.guard = this.mode.equals(MODE_INTERACTIVE)
           ? (guard == null ? "" : guard.trim())
           : "";
