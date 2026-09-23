@@ -582,21 +582,23 @@ def compile_model_decisions(
         "No markdown fence, no commentary, no preface, no suffix. Preserve every segment id exactly."
     )
 
+    # Gemini owns the primary lane. Each call rotates through keys 1..5.
+    # Haiku is intentionally the final provider and is never followed by Gemini again.
     for attempt in range(2):
         retry_prompt = prompt if attempt == 0 else prompt + strict_suffix
         try:
-            raw, provider = generate(retry_prompt)
+            raw = call_gemini(retry_prompt)
             return sanitize_model_chapter(
-                chapter, segments, raw, forced_locked, established_story_state), provider
+                chapter, segments, raw, forced_locked, established_story_state), "gemini"
         except Exception as exc:
-            errors.append(f"Haiku attempt {attempt + 1}: {exc}")
+            errors.append(f"Gemini pass {attempt + 1}: {exc}")
 
     try:
-        raw = call_gemini(prompt + strict_suffix)
+        raw = call_haiku(prompt + strict_suffix)
         return sanitize_model_chapter(
-            chapter, segments, raw, forced_locked, established_story_state), "gemini"
+            chapter, segments, raw, forced_locked, established_story_state), "haiku"
     except Exception as exc:
-        errors.append(f"Gemini repair: {exc}")
+        errors.append(f"Haiku final fallback: {exc}")
 
     chapter_id = chapter.get("id", "")
     print(
