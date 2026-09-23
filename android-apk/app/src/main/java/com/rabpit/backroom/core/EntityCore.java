@@ -25,6 +25,22 @@ final class EntityCore {
     loadRegistry(context);
   }
 
+  void prepareAuthoredEncounter(JSONObject state, String rawEntityKey) throws Exception {
+    String entityKey = rawEntityKey == null ? "" : rawEntityKey.trim().toLowerCase();
+    EntityDefinition entity = entities.get(entityKey);
+    if (entity == null) {
+      throw new IllegalArgumentException("Unknown authored Entity key: " + entityKey);
+    }
+    JSONObject flags = flags(state);
+    flags.put(ENCOUNTER_KEY, entity.key);
+    flags.remove(RESOLVED_KEY);
+    flags.put("entityEncounterSource", "story_authored");
+    flags.put("entityEncounterRatePercent", 100);
+    flags.put("entityEncounterLevel", state.optInt("currentLevel", 0));
+    flags.put("entityEncounterStartedTurn", Math.max(1, state.optInt("turn", 1)));
+    state.put("flags", flags);
+  }
+
   void prepareEncounter(JSONObject state) throws Exception {
     JSONObject flags = flags(state);
     String activeKey = flags.optString(ENCOUNTER_KEY, "").trim();
