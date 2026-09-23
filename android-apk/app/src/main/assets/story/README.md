@@ -13,8 +13,6 @@ Implemented runtime foundation:
 - authored character events can move a character through `PARALLEL_STORY`, `REUNITED`, `ACCOMPANYING` and `PARTY_MEMBER`;
 - reunion does not automatically mean Party join;
 - Party mutation remains Core-owned;
-- old saves that already contain Lục Trầm in Party keep her;
-- legacy pending random-intro state for Lục Trầm is discarded instead of re-triggering a random reunion;
 - StoryCore context is included in the compact GM narrative packet;
 - AI candidate state cannot overwrite StoryCore state.
 
@@ -797,24 +795,13 @@ The prose remains the authored source.
 
 ---
 
-## Save compatibility
+## Save policy
 
-Generated Chapter IDs, StoryNode IDs, flags, and schema versions may become save-facing data.
+Old saves are not a compatibility requirement for this story-system transition.
 
-Therefore the implementation must eventually support:
+The new story runtime should optimize for a clean, deterministic state model rather than carrying migration logic for obsolete saves.
 
-- stable generated identifiers;
-- schema versioning;
-- save migration;
-- missing-node recovery;
-- safe fallback behavior;
-- backward compatibility with older saves.
-
-Older saves may still contain legacy route/streak state.
-
-Do not delete or reinterpret legacy fields merely because the novelist-first pipeline is introduced.
-
-Migration must be explicit and tested.
+Generated Chapter IDs, StoryNode IDs, flags, and schema versions may still become save-facing data for saves created **after** the new story system ships. From that point onward, stable identifiers and safe regeneration matter so an in-progress new-format game is not corrupted by later manuscript recompilation.
 
 ---
 
@@ -866,7 +853,7 @@ Inspect manuscript
 → generate runtime metadata
 → validate references
 → run regression tests
-→ preserve save compatibility
+→ preserve current-format save integrity
 ~~~
 
 Do not make the novelist manually solve technical problems that the pipeline can solve deterministically.
@@ -918,7 +905,7 @@ At minimum validate:
 - valid Level references;
 - safe terminal nodes;
 - preservation of required authored events;
-- save compatibility where IDs already exist.
+- current-format save integrity where generated IDs are already in use.
 
 Compiler uncertainty should be surfaced instead of silently inventing major story logic.
 
@@ -945,9 +932,8 @@ Preferred order:
 13. preserve LevelCore transition authority;
 14. add scripted Entity API;
 15. add roaming suppression/grace;
-16. migrate legacy progression only after regression confidence;
-17. add old-save migration;
-18. add CI and APK verification.
+16. replace legacy progression only after regression confidence;
+17. add CI and APK verification.
 
 ---
 
