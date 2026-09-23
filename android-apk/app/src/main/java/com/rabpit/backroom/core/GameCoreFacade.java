@@ -584,7 +584,12 @@ public final class GameCoreFacade implements AutoCloseable {
           .put("storyMode", resolution.authoredTurn.mode)
           .put("authored", true);
     } else {
-      mergeObject(gm, storyCore.logMetadata(state));
+      JSONObject metadata = storyCore.logMetadata(state);
+      java.util.Iterator<String> keys = metadata.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        gm.put(key, metadata.get(key));
+      }
       gm.put("authored", false);
     }
     log.put(gm);
