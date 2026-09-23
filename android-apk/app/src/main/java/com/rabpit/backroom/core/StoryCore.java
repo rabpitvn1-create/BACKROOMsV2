@@ -141,6 +141,18 @@ final class StoryCore {
     }
   }
 
+  boolean blocksFreePlayerAction(JSONObject state) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      return story.optBoolean("active", false)
+          && !story.optBoolean("arcComplete", false)
+          && "cutaway".equals(story.optString("visibility", ""));
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
   static boolean isAdvanceAction(String action) {
     String text = action == null ? "" : action.trim().toLowerCase(Locale.ROOT);
     return ADVANCE_ACTION_VI.equals(text) || "continue story".equals(text);
