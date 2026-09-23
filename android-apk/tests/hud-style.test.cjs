@@ -61,3 +61,11 @@ test('normal rectangular UI elements use consistent light rounded corners while 
   assert.match(index,/\.message\{[^}]*border-radius:0/);
   assert.match(gmChoice,/\.message\.gm\{[^}]*border-radius:0/);
 });
+
+test('mobile header uses packaged Backrooms artwork without changing snapshot assets',()=>{
+  assert.match(index,/BACKROOM_HEADER_ART_V2/);
+  assert.match(index,/url\('level_snapshots\/drive\/level_0\/01\.webp'\)/);
+  assert.match(index,/\.topbar\{[^}]*background-image:/);
+  assert.match(index,/\.topbar \.eyebrow,\.topbar h1\{[^}]*text-shadow:/);
+  assert.doesNotMatch(snapshot,/BACKROOM_HEADER_ART_V2/);
+});
