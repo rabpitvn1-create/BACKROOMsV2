@@ -30,13 +30,16 @@ Implemented by Story Compiler v2 + Decision Prefetch Runtime:
 - a `DECISION` contains only a compiler-owned canon contract: `canonChoiceText`, `loopAnchor`, and `decisionGuard`;
 - the compiler does **not** generate the final three player choices;
 - the compiler permits at most one `DECISION` per Chapter and audits that the canon intent belongs to Cao Minh, has not already happened, and genuinely enters the next authored beat;
+- the current Level 0 generated revision exposes three clean decision anchors after audit: `L0_C02_P005`, `L0_C04_P001`, and `L0_C12_P002`;
 - each compiled Chapter is SHA-256 bound to its manuscript source and the generated file carries a compiler fingerprint;
 - when a DECISION segment is displayed, Android immediately starts one background prefetch while the player is reading;
 - runtime provider order is **Gemini key 1 → 2 → 3 → 4 → 5**, then **Haiku fallback** only after all Gemini keys fail;
+- Story Compiler v2 follows the same provider order: Gemini keys are exhausted first, then Haiku is the final fallback and control never returns to Gemini afterward;
 - that single prefetch call receives the fixed canon intent and creates exactly two additional branches: `TRAP_LOOP` and `CONVERGE`, including their complete prepared reactions;
 - `CANON_PROGRESS` uses the already-authored next manuscript segment as its prepared result;
 - all three outcomes are fully prepared before choices become clickable, so tapping a choice performs no model call;
 - public UI state contains only opaque `choiceId + text`; hidden `CANON_PROGRESS / TRAP_LOOP / CONVERGE` mappings remain private inside Android Core state and are stripped before state reaches WebView/localStorage;
+- public choice IDs are generated as random UUID-backed opaque tokens when the private package is created; they are not derivable from contextHash, decisionId, position, or hidden outcome type;
 - choices are deterministically shuffled for the current decision package so no screen position identifies canon;
 - story choices render as three visually equal **•** rows with no A/B/C labels and no canon/trap styling;
 - `TRAP_LOOP` plays its prefetched consequence and returns to the same story anchor without announcing that the player was wrong;
