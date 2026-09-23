@@ -1,4 +1,5 @@
 name: Compile Story Decision Contracts
+# Keep workflow-file updates as an explicit health-check trigger.
 
 on:
   workflow_dispatch:
