@@ -207,10 +207,10 @@ final class StoryCore {
     normalizeState(state);
     if (!isCompiledInteractionChoice(state, action)) return false;
     JSONObject story = state.getJSONObject(ROOT_KEY);
-    story.put("awaitingInteraction", false);
+    // Keep awaitingInteraction + choices intact until the AI reaction is validated.
+    // If both providers fail, the player can retry instead of losing the authored decision point.
     story.put("interactionResolutionPending", true);
     story.put("selectedInteractionAction", action == null ? "" : action.trim());
-    story.put("interactionChoices", new JSONArray());
     state.put(ROOT_KEY, story);
     return true;
   }
@@ -219,6 +219,7 @@ final class StoryCore {
     normalizeState(state);
     JSONObject story = state.getJSONObject(ROOT_KEY);
     if (!story.optBoolean("interactionResolutionPending", false)) return;
+    story.put("awaitingInteraction", false);
     story.put("interactionResolutionPending", false);
     story.put("selectedInteractionAction", "");
     story.put("interactionGuard", "");
