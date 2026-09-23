@@ -44,6 +44,18 @@
     }
   }
 
+  function storyBootstrapPending(){
+    try {
+      var story = state && state.story;
+      return !!(story && story.active === true && story.arcComplete !== true
+        && story.segmentDelivered !== true && story.awaitingDecision !== true
+        && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
+        && !(state.combat && state.combat.active));
+    } catch (_) {
+      return false;
+    }
+  }
+
   function storyEntityAttackActive(){
     try {
       return !!(state && state.story && state.story.active === true
@@ -90,18 +102,20 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing() || storyCutawayActive() || storyDecisionActive()
+    if (combatActive() || processing() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
         || storyEntityAttackActive() || storyAdvancePending()) {
       if (typeof statusEl !== 'undefined' && statusEl) {
         statusEl.textContent = combatActive()
           ? 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.'
-          : (storyEntityAttackActive()
+          : (storyBootstrapPending()
+              ? 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.'
+              : (storyEntityAttackActive()
               ? 'Encounter cốt truyện: hãy chọn Tấn công trong khung GAME MASTER.'
               : (storyDecisionActive()
                   ? 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.'
                   : (storyCutawayActive()
                       ? 'Đang ở đoạn cắt cảnh cốt truyện.'
-                      : 'Đang xử lý lượt hiện tại.')));
+                      : 'Đang xử lý lượt hiện tại.'))));
       }
       return;
     }
@@ -121,15 +135,23 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing() || storyCutawayActive() || storyDecisionActive()
+    var locked = combatActive() || processing() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
       || storyEntityAttackActive() || storyAdvancePending();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyCutawayActive() || storyDecisionActive()
+    if ((combatActive() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
         || storyEntityAttackActive() || storyAdvancePending()) && !modal.hidden) closePlayerAction(true);
   }
 
   openButton.addEventListener('click', openPlayerAction);
+  form.addEventListener('submit', function(event){
+    if (!storyBootstrapPending()) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (typeof statusEl !== 'undefined' && statusEl)
+      statusEl.textContent = 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.';
+    closePlayerAction(true);
+  }, true);
   if (closeButton) closeButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (cancelButton) cancelButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (backdrop) backdrop.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });

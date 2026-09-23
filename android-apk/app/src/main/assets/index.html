@@ -43,7 +43,7 @@
 </main>
 <script>
 // Main authored opening is served from story/source by StoryCore.
-const storyBootMessage="CỐT TRUYỆN CHÍNH — LEVEL 0\n\nNhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01.";
+const storyBootMessage="CỐT TRUYỆN CHÍNH — LEVEL 0\n\nNhấn vào để bắt đầu khám phá thế giới Backrooms";
 
 const CURRENT_CHARACTER_CANON={
   "version": "cao-minh-r15-2026-09-20",
@@ -148,8 +148,8 @@ function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{
 function render(){titleEl.textContent=levelTitle();if(turnEl)turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");statusEl.textContent="Save được lưu riêng trên thiết bị này."}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
 function load(){state=normalizeCoreState(ensureCurrentLevel(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial));state.characterCanon=CURRENT_CHARACTER_CANON;save();render()}
-function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
-function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
+function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=normalizeCoreState(JSON.parse(JSON.stringify(initial)));save();render()}}
+function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=normalizeCoreState(JSON.parse(JSON.stringify(initial)));render()}}
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="GAME MASTER đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
 window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" · "+levelTitle()+" đã lưu trên máy.";render()};
 window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi AI: "+message};

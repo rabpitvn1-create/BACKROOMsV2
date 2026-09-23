@@ -234,6 +234,29 @@
     } catch (_) { return false; }
   }
 
+  function storyBootstrapPending() {
+    try {
+      var story = state && state.story;
+      return !!(story && story.active === true && story.arcComplete !== true
+        && story.segmentDelivered !== true && story.awaitingDecision !== true
+        && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
+        && !(state.combat && state.combat.active));
+    } catch (_) { return false; }
+  }
+
+  function submitStoryBootstrap() {
+    if (!storyBootstrapPending() || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
+    if (!window.Android || typeof Android.submitTurn !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (typeof window.render === 'function') window.render();
+    Android.submitTurn(JSON.stringify(state), 'tiếp tục cốt truyện');
+  }
+
   function storyEntityAttackChoice() {
     if (!storyAwaitingEntityAttack()) return null;
     var gate = state.story && state.story.entityGate ? state.story.entityGate : {};
@@ -347,6 +370,19 @@
     if (!entry) return;
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
+    if (latest && storyBootstrapPending()) {
+      var bootstrapBox = document.createElement('div');
+      bootstrapBox.className = 'gm-choices story-bootstrap';
+      var bootstrapButton = document.createElement('button');
+      bootstrapButton.type = 'button';
+      bootstrapButton.className = 'gm-choice';
+      bootstrapButton.textContent = 'Nhấn vào để bắt đầu khám phá thế giới Backrooms';
+      bootstrapButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+      bootstrapButton.addEventListener('click', submitStoryBootstrap);
+      bootstrapBox.appendChild(bootstrapButton);
+      article.appendChild(bootstrapBox);
+      return;
+    }
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();

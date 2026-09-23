@@ -136,7 +136,7 @@ public final class GameCoreFacade implements AutoCloseable {
         incrementTurn(legacy);
         advanceGameTime(legacy, text);
         characterProgressionCore.applyExplorerTurnRecovery(legacy);
-        appendStoryLog(legacy, text, authored);
+        appendStoryLog(legacy, authored);
         legacy.put("saveVersion", CURRENT_SAVE_VERSION);
         persist(legacy);
         return response(true, legacy, null, "authored_story_committed", authored.reply);
@@ -800,10 +800,9 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private void appendStoryLog(
-      JSONObject state, String action, StoryCore.AuthoredTurn authored) throws Exception {
+      JSONObject state, StoryCore.AuthoredTurn authored) throws Exception {
     JSONArray log = state.optJSONArray("log");
     if (log == null) log = new JSONArray();
-    log.put(new JSONObject().put("role", "player").put("text", action));
     JSONObject gm = new JSONObject()
         .put("role", "gm")
         .put("text", authored.reply)
