@@ -31,6 +31,7 @@ Implemented by Story Compiler v1:
 - Haiku is the primary candidate generator; Gemini performs the rewrite/QA pass, and Haiku performs an independent final KEEP/LINEAR audit with Gemini fallback;
 - V1 permits at most one authored `INTERACTIVE` segment per Chapter and never forces a choice where the manuscript has no clean decision pause;
 - compiler/reviewer decisions are anchored to the exact end-state of each segment (`pauseAnchor`), so choices cannot reach backward to rooms, objects, dialogue or actions that have already passed;
+- V1 deterministically rejects re-check intents such as “xác nhận”, “kiểm tra lại”, “xem lại”, “thử lại”, “đo lại”, or “đếm lại” so an A/B/C choice cannot disguise repetition of a fact the manuscript already resolved;
 - a final auditor may only keep the complete A/B/C set or downgrade the segment to `LINEAR`; it cannot invent replacement choices;
 - each compiled chapter is SHA-256 bound to its exact manuscript source, so stale A/B/C metadata is ignored at runtime;
 - generated interaction data also carries a compiler fingerprint; unchanged manuscript + unchanged compiler do not call the model again or reroll A/B/C;
