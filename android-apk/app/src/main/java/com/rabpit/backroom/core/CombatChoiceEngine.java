@@ -1033,9 +1033,26 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     return fallback;
   }
 
-  private static int stableSeed(JSONObject state, String entityKey, JSONArray participants) {
+  static int stableSeed(JSONObject state, String entityKey, JSONArray participants) throws Exception {
+    JSONArray canonicalParticipants = new JSONArray();
+    for (int i = 0; i < participants.length(); i++) {
+      JSONObject participant = participants.optJSONObject(i);
+      if (participant == null) continue;
+      canonicalParticipants.put(new JSONObject()
+          .put("id", participant.optString("id", ""))
+          .put("name", participant.optString("name", ""))
+          .put("sourceIndex", participant.optInt("sourceIndex", -1))
+          .put("hp", participant.optInt("hp", 0))
+          .put("maxHp", participant.optInt("maxHp", 1))
+          .put("baseAttack", participant.optInt("baseAttack", CAO_MINH_BASE_ATTACK))
+          .put("STR", participant.optInt("STR", CharacterProgressionCore.BASE_STAT))
+          .put("DEF", participant.optInt("DEF", CharacterProgressionCore.BASE_STAT))
+          .put("SKL", participant.optInt("SKL", CharacterProgressionCore.BASE_STAT))
+          .put("VIT", participant.optInt("VIT", CharacterProgressionCore.BASE_STAT)));
+    }
+
     String basis = entityKey + "|" + state.optInt("turn", 1) + "|"
-        + state.optString(LevelCore.LEVEL_KEY, "0") + "|" + participants.toString();
+        + state.optString(LevelCore.LEVEL_KEY, "0") + "|" + canonicalParticipants.toString();
     int hash = basis.hashCode();
     return hash == Integer.MIN_VALUE ? 1 : Math.abs(hash);
   }
