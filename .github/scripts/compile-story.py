@@ -452,6 +452,47 @@ def compile_cutaway(chapter, segments):
     }
 
 
+def compile_safe_linear(segments, forced_locked):
+    return {
+        segment["id"]: {
+            "mode": "LOCKED_EVENT" if index in forced_locked else "LINEAR",
+            "choices": [],
+            "interactionGuard": "",
+        }
+        for index, segment in enumerate(segments)
+    }
+
+
+def compile_model_interactions(chapter, segments, forced_locked, prompt):
+    errors = []
+    strict_suffix = (
+        "\n\nSTRICT RETRY: Your previous response was unusable. Return one valid JSON object only. "
+        "No markdown fence, no commentary, no preface, no suffix. Preserve every segment id exactly."
+    )
+
+    for attempt in range(2):
+        retry_prompt = prompt if attempt == 0 else prompt + strict_suffix
+        try:
+            raw, provider = generate(retry_prompt)
+            return sanitize_model_chapter(chapter, segments, raw, forced_locked), provider
+        except Exception as exc:
+            errors.append(f"Haiku attempt {attempt + 1}: {exc}")
+
+    try:
+        raw = call_gemini(prompt + strict_suffix)
+        return sanitize_model_chapter(chapter, segments, raw, forced_locked), "gemini"
+    except Exception as exc:
+        errors.append(f"Gemini repair: {exc}")
+
+    chapter_id = chapter.get("id", "")
+    print(
+        f"[story-compiler] WARNING {chapter_id}: model output remained invalid; "
+        f"falling back to safe LINEAR/LOCKED_EVENT. {' | '.join(errors)}",
+        file=sys.stderr,
+    )
+    return compile_safe_linear(segments, forced_locked), "deterministic-safe-fallback"
+
+
 def compile_chapter(chapter, target, maximum):
     chapter_id = chapter.get("id", "")
     manuscript = chapter_source(chapter)
@@ -469,8 +510,8 @@ def compile_chapter(chapter, target, maximum):
         provider = "deterministic"
     else:
         prompt = build_prompt(chapter, segments, forced_locked)
-        raw, provider = generate(prompt)
-        compiled = sanitize_model_chapter(chapter, segments, raw, forced_locked)
+        compiled, provider = compile_model_interactions(
+            chapter, segments, forced_locked, prompt)
 
     interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
     return {
