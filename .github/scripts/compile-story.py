@@ -464,7 +464,33 @@ def choice_changes_authored_path(text):
     return any(pattern.search(value) for pattern in FORBIDDEN_CHOICE_PATTERNS)
 
 
-def sanitize_model_chapter(chapter, segments, raw_result, forced_locked):
+def choice_addresses_unavailable_character(text, established_story_state):
+    value = str(text or "").strip()
+    characters = (established_story_state or {}).get("characters") or {}
+    for character_id, character in characters.items():
+        presence = str((character or {}).get("presence", "UNKNOWN")).strip().upper()
+        if presence == "PRESENT":
+            continue
+        name = str((character or {}).get("name") or character_id).strip()
+        if not name or not re.search(r"(?iu)\b" + re.escape(name) + r"\b", value):
+            continue
+        direct_patterns = [
+            r"(?iu)\bhỏi\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bbảo\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bgọi(?:\s+to)?(?:\s+lên)?(?:\s+hỏi)?\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bnói\s+với\s+" + re.escape(name) + r"\b",
+            r"(?iu)\byêu\s+cầu\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bnhờ\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bquan\s+sát(?:\s+kỹ)?\s+" + re.escape(name) + r"\b",
+            r"(?iu)\bkiểm\s+tra(?:\s+tình\s+trạng)?\s+" + re.escape(name) + r"\b",
+        ]
+        if any(re.search(pattern, value) for pattern in direct_patterns):
+            return True
+    return False
+
+
+def sanitize_model_chapter(
+        chapter, segments, raw_result, forced_locked, established_story_state):
     result = extract_json(raw_result)
     rows = result.get("segments")
     if not isinstance(rows, list):
@@ -505,7 +531,9 @@ def sanitize_model_chapter(chapter, segments, raw_result, forced_locked):
                 normalized = re.sub(r"\\s+", " ", text).casefold()
                 if (not text or len(text) > 180 or normalized in seen
                         or normalized in {"tiếp tục cốt truyện", "continue story"}
-                        or choice_changes_authored_path(text)):
+                        or choice_changes_authored_path(text)
+                        or choice_addresses_unavailable_character(
+                            text, established_story_state)):
                     clean_choices = []
                     break
                 seen.add(normalized)
@@ -550,7 +578,8 @@ def compile_safe_linear(segments, forced_locked):
     }
 
 
-def compile_model_interactions(chapter, segments, forced_locked, prompt):
+def compile_model_interactions(
+        chapter, segments, forced_locked, prompt, established_story_state):
     errors = []
     strict_suffix = (
         "\n\nSTRICT RETRY: Your previous response was unusable. Return one valid JSON object only. "
@@ -561,13 +590,15 @@ def compile_model_interactions(chapter, segments, forced_locked, prompt):
         retry_prompt = prompt if attempt == 0 else prompt + strict_suffix
         try:
             raw, provider = generate(retry_prompt)
-            return sanitize_model_chapter(chapter, segments, raw, forced_locked), provider
+            return sanitize_model_chapter(
+                chapter, segments, raw, forced_locked, established_story_state), provider
         except Exception as exc:
             errors.append(f"Haiku attempt {attempt + 1}: {exc}")
 
     try:
         raw = call_gemini(prompt + strict_suffix)
-        return sanitize_model_chapter(chapter, segments, raw, forced_locked), "gemini"
+        return sanitize_model_chapter(
+            chapter, segments, raw, forced_locked, established_story_state), "gemini"
     except Exception as exc:
         errors.append(f"Gemini repair: {exc}")
 
@@ -598,7 +629,7 @@ def compile_chapter(chapter, target, maximum, established_story_state):
     else:
         prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
         compiled, provider = compile_model_interactions(
-            chapter, segments, forced_locked, prompt)
+            chapter, segments, forced_locked, prompt, established_story_state)
 
     interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
     return {
@@ -697,6 +728,7 @@ def validate_generated(generated=None, metadata=None):
 
     target = max(800, int(metadata.get("segmentTargetChars", 1900)))
     maximum = max(target, int(metadata.get("segmentMaxChars", 2400)))
+    story_state_snapshots = build_story_state_snapshots(metadata)
 
     for chapter in metadata["chapters"]:
         chapter_id = chapter["id"]
@@ -743,6 +775,11 @@ def validate_generated(generated=None, metadata=None):
                         raise CompileError(f"{segment_id}: action must equal visible Vietnamese choice text.")
                     if choice_changes_authored_path(str(choice.get("text", ""))):
                         raise CompileError(f"{segment_id}: route/outcome-changing choice is forbidden in compiler v1.")
+                    if choice_addresses_unavailable_character(
+                            str(choice.get("text", "")),
+                            story_state_snapshots.get(chapter_id, {})):
+                        raise CompileError(
+                            f"{segment_id}: choice directly addresses a missing/unknown character.")
                 if guard != STANDARD_INTERACTION_GUARD:
                     raise CompileError(f"{segment_id}: interaction guard must be compiler-owned.")
             elif choices or guard:
