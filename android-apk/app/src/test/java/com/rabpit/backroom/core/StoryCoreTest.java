@@ -25,14 +25,19 @@ public class StoryCoreTest {
 
   private static StoryRepository decisionFixtureRepository() {
     String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
+    StringBuilder pause = new StringBuilder(
+        "Cao Minh dừng lại trước một đoạn hành lang tối, nghe tiếng ù đèn kéo dài.");
+    while (pause.length() < 920) {
+      pause.append(" Hắn giữ nguyên vị trí, quan sát tường, thảm và ánh đèn mà không tiến thêm.");
+    }
     String source = "# Level 0 — Chương 01: Quyết định\n\n"
-        + "Cao Minh dừng lại trước một đoạn hành lang tối, nghe tiếng ù đèn kéo dài.\n\n"
+        + pause + "\n\n"
         + "Hắn nghiêng người, áp sát mép tường rồi bước tiếp theo dấu cũ.";
     String metadata = "{"
         + "\"schemaVersion\":1,"
         + "\"sourceRevision\":\"decision-r2\","
-        + "\"segmentTargetChars\":80,"
-        + "\"segmentMaxChars\":160,"
+        + "\"segmentTargetChars\":800,"
+        + "\"segmentMaxChars\":1200,"
         + "\"startChapter\":\"L0_C01\","
         + "\"chapters\":[{"
         + "\"id\":\"L0_C01\","
