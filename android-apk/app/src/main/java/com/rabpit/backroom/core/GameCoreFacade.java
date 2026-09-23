@@ -53,6 +53,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(legacy);
       itemCore.normalizeInventory(legacy);
       characterEncounterCore.normalizeState(legacy);
+      storyCore.normalizeState(legacy);
       CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
@@ -130,6 +131,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(before);
       itemCore.normalizeInventory(before);
       characterEncounterCore.normalizeState(before);
+      storyCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
@@ -260,6 +262,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -275,6 +278,7 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       characterDetailCore.projectState(state);
@@ -306,6 +310,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       CombatChoiceEngine.normalizeTerminalEncounter(state);
       characterProgressionCore.applyExplorerTurnRecovery(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
