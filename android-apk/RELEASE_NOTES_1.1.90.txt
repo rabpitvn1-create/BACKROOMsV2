@@ -1,0 +1,8 @@
+Backroom 1.1.90
+
+- Sửa luồng hậu chiến để UI cuộn đúng về nội dung GAME MASTER mới nhất thay vì tiếp tục bám đáy khung combat.
+- Cho phép nâng Core ngoài combat ngay cả khi cốt truyện đang chờ lựa chọn, đồng thời bảo toàn decision package ẩn để không làm hỏng nhánh truyện.
+- Cải thiện Poker Dice: xúc xắc hiển thị lớn hơn, có animation xoay khi ROLL; kéo dài thời gian hiển thị DMG Floating để dễ đọc hơn.
+- Giữ font kể chuyện bình thường cho các từ hiệu ứng/damage/buff trong khung GAME MASTER.
+- Ẩn Set Equip mặc định của nhân vật khỏi Inventory nhưng vẫn giữ dữ liệu để truyện/canon và gameplay tiếp tục sử dụng.
+- Bổ sung Ponytail cùng systematic-debugging và verification-before-completion vào quy tắc phát triển repository để giảm code thừa, sửa đúng root cause và bắt buộc xác minh trước khi báo hoàn tất.
