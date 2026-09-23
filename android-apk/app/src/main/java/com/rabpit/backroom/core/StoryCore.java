@@ -80,6 +80,7 @@ final class StoryCore {
     if (characterId.isEmpty()) throw new IllegalArgumentException("Invalid story character id.");
 
     JSONObject story = state.getJSONObject(ROOT_KEY);
+    story.put("active", true);
     JSONObject characters = story.getJSONObject(CHARACTERS_KEY);
     JSONObject character = ensureCharacterState(characters, characterId);
     String before = character.optString("status", STATUS_UNSEEN);
