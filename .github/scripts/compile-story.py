@@ -796,14 +796,23 @@ def review_compiled_interactions(
         "No markdown, commentary, preface or suffix. Preserve candidate ids exactly."
     )
     errors = []
+    # Use Gemini as the rewrite/QA pass so the generator is not grading itself.
+    try:
+        raw = call_gemini(prompt)
+        reviewed = sanitize_review_result(
+            compiled, raw, established_story_state)
+        return reviewed, "gemini-review"
+    except Exception as exc:
+        errors.append(f"Gemini: {exc}")
+
     for attempt in range(2):
         try:
             raw, provider = generate(prompt if attempt == 0 else prompt + strict_suffix)
             reviewed = sanitize_review_result(
                 compiled, raw, established_story_state)
-            return reviewed, provider + "-review"
+            return reviewed, provider + "-review-fallback"
         except Exception as exc:
-            errors.append(str(exc))
+            errors.append(f"fallback {attempt + 1}: {exc}")
 
     print(
         f"[story-compiler] WARNING {chapter.get('id', '')}: QA review failed; "
@@ -856,13 +865,15 @@ A choice is invalid if it:
 - is awkward, corrupted, vague, semantically wrong, or unnatural Vietnamese;
 - cannot receive one short local reaction and then continue nextSegment unchanged.
 
-Do not be generous. False positives are worse than fewer interactions.
-Do not reject merely because all three choices converge to the same authored path; convergence is required.
+Do not reject a candidate merely because you are uncertain or because the choices converge; convergence is required.
+Choose LINEAR only when you can identify a concrete violation from the supplied manuscript/context.
+For KEEP, reason may be "all three grounded and convergent".
+For LINEAR, reason must briefly name the concrete invalid choice/fact/timing conflict.
 
 Return JSON only:
 {
   "audits": [
-    {"id":"exact candidate id","verdict":"KEEP|LINEAR"}
+    {"id":"exact candidate id","verdict":"KEEP|LINEAR","reason":"brief concrete reason"}
   ]
 }
 Every candidate id must appear exactly once and in the same order.
@@ -907,19 +918,20 @@ def final_audit_compiled_interactions(
         chapter, segments, compiled, established_story_state)
     errors = []
 
-    # Use a different model family first so the final gate is not merely
-    # asking the generator to approve its own homework.
+    # Haiku generated the original candidates, but Gemini performed the
+    # rewrite/QA pass. Use Haiku here as an independent binary auditor of
+    # Gemini's reviewed output, with Gemini only as fallback.
     try:
-        raw = call_gemini(prompt)
-        return sanitize_final_audit(compiled, raw), "gemini-final-audit"
+        raw = call_haiku(prompt)
+        return sanitize_final_audit(compiled, raw), "haiku-final-audit"
     except Exception as exc:
-        errors.append(f"Gemini: {exc}")
+        errors.append(f"Haiku: {exc}")
 
     try:
-        raw, provider = generate(prompt)
-        return sanitize_final_audit(compiled, raw), provider + "-final-audit"
+        raw = call_gemini(prompt)
+        return sanitize_final_audit(compiled, raw), "gemini-final-audit-fallback"
     except Exception as exc:
-        errors.append(f"fallback: {exc}")
+        errors.append(f"Gemini fallback: {exc}")
 
     print(
         f"[story-compiler] WARNING {chapter.get('id', '')}: final audit failed; "
