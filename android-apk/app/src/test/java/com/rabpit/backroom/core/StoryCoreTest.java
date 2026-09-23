@@ -19,8 +19,18 @@ import static org.junit.Assert.fail;
 
 public class StoryCoreTest {
   @Test public void freshBootstrapRendersCanonicalManuscriptAndArmsDecision() throws Exception {
-    Path assets = Paths.get("app/src/main/assets");
-    if (!Files.isDirectory(assets)) assets = Paths.get("android-apk/app/src/main/assets");
+    Path assets = null;
+    for (Path dir = Paths.get("").toAbsolutePath(); dir != null && assets == null; dir = dir.getParent()) {
+      for (String candidate : new String[]{"src/main/assets", "app/src/main/assets",
+          "android-apk/app/src/main/assets"}) {
+        Path found = dir.resolve(candidate);
+        if (Files.isRegularFile(found.resolve(StoryRepository.LEVEL_ZERO_METADATA_ASSET))) {
+          assets = found;
+          break;
+        }
+      }
+    }
+    assertTrue("Canonical story assets must be available from the test checkout", assets != null);
     final Path assetRoot = assets;
     StoryRepository repository = new StoryRepository(path ->
         new String(Files.readAllBytes(assetRoot.resolve(path)), StandardCharsets.UTF_8));
