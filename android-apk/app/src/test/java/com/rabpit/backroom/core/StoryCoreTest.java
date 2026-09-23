@@ -264,7 +264,7 @@ public class StoryCoreTest {
     assertTrue(core.isCompiledInteractionChoice(state, action));
     assertFalse(core.isCompiledInteractionChoice(state, "Tự ý bỏ đi"));
     assertTrue(core.consumeCompiledInteractionChoice(state, action));
-    assertFalse(core.awaitingInteraction(state));
+    assertTrue(core.awaitingInteraction(state));
 
     String prompt = core.promptContext(state);
     assertTrue(prompt.contains("COMPILED STORY INTERACTION RESPONSE"));
@@ -272,6 +272,7 @@ public class StoryCoreTest {
     assertTrue(prompt.contains("Không rời khu vực"));
 
     core.finishInteractionResponse(state);
+    assertFalse(core.awaitingInteraction(state));
     String after = core.promptContext(state);
     assertFalse(after.contains("COMPILED STORY INTERACTION RESPONSE"));
   }
