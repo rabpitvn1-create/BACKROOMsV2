@@ -1,0 +1,72 @@
+name: Compile Story Interactions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - story-compiler-v1
+      - 'feature/**'
+    paths:
+      - 'android-apk/app/src/main/assets/story/source/**'
+      - 'android-apk/app/src/main/assets/story/generated/level_0/level0.story.json'
+      - '.github/scripts/compile-story.py'
+      - '.github/workflows/compile-story.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compile-story-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compile-story:
+    runs-on: ubuntu-latest
+    env:
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
+      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
+      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compile manuscript interactions
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/compile-story.py
+
+      - name: Validate generated interactions
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/compile-story.py --validate-generated
+
+      - name: Commit generated interactions
+        run: |
+          set -euo pipefail
+          GENERATED='android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json'
+          cp "$GENERATED" /tmp/level0.interactions.json
+          git fetch origin "${GITHUB_REF_NAME}"
+          git reset --hard "origin/${GITHUB_REF_NAME}"
+          cp /tmp/level0.interactions.json "$GENERATED"
+
+          # The branch may have advanced while the model was compiling. Validate again
+          # against the latest compiler/source before creating a generated commit.
+          python3 .github/scripts/compile-story.py --validate-generated
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$GENERATED"
+          if git diff --cached --quiet; then
+            echo 'Story interactions are already current.'
+          else
+            git commit -m 'Compile Level 0 story interactions'
+            git push origin HEAD:"${GITHUB_REF_NAME}"
+          fi

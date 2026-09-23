@@ -183,10 +183,26 @@
     try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
   }
 
+  function storyAwaitingInteraction() {
+    try {
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true
+        && state.story.awaitingInteraction === true);
+    } catch (_) { return false; }
+  }
+
+  function storyInteractionChoices() {
+    try {
+      return storyAwaitingInteraction() && Array.isArray(state.story.interactionChoices)
+        ? state.story.interactionChoices : [];
+    } catch (_) { return []; }
+  }
+
   function storyAdvanceAvailable() {
     try {
       return !!(state && state.story && state.story.active === true
-        && state.story.arcComplete !== true && state.story.currentChapter);
+        && state.story.arcComplete !== true && state.story.currentChapter
+        && state.story.awaitingInteraction !== true);
     } catch (_) { return false; }
   }
 
@@ -255,10 +271,14 @@
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
     var cutaway = latest && storyCutawayActive();
+    var awaitingStoryChoice = latest && storyAwaitingInteraction();
     var storyAvailable = latest && storyAdvanceAvailable();
-    var hasChest = latest && chestPresent() && !cutaway;
-    var choices = cutaway ? [] : (Array.isArray(entry.choices) ? entry.choices : []);
-    if (latest && !choices.length && !cutaway && !(state.combat && state.combat.active)) {
+    var hasChest = latest && chestPresent() && !cutaway && !awaitingStoryChoice;
+    var choices = awaitingStoryChoice
+      ? storyInteractionChoices()
+      : (cutaway ? [] : (Array.isArray(entry.choices) ? entry.choices : []));
+    if (latest && !choices.length && !cutaway && !awaitingStoryChoice
+        && !(state.combat && state.combat.active)) {
       choices = fallbackExplorerChoices();
     }
     if (!hasChest && !storyAvailable && !choices.length) return;

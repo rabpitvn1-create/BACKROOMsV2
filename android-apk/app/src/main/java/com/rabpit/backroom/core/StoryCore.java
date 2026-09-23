@@ -39,13 +39,27 @@ final class StoryCore {
     final String segmentId;
     final String thread;
     final String visibility;
+    final String mode;
+    final JSONArray choices;
+    final String interactionGuard;
 
-    AuthoredTurn(String reply, String chapterId, String segmentId, String thread, String visibility) {
+    AuthoredTurn(
+        String reply,
+        String chapterId,
+        String segmentId,
+        String thread,
+        String visibility,
+        String mode,
+        JSONArray choices,
+        String interactionGuard) {
       this.reply = reply;
       this.chapterId = chapterId;
       this.segmentId = segmentId;
       this.thread = thread;
       this.visibility = visibility;
+      this.mode = mode;
+      this.choices = copyArray(choices);
+      this.interactionGuard = interactionGuard == null ? "" : interactionGuard.trim();
     }
   }
 
@@ -100,6 +114,12 @@ final class StoryCore {
     if (!story.has("thread")) story.put("thread", "cao_minh");
     if (!story.has("visibility")) story.put("visibility", "player");
     if (!story.has("eventSequence")) story.put("eventSequence", 0);
+    if (!story.has("awaitingInteraction")) story.put("awaitingInteraction", false);
+    if (story.optJSONArray("interactionChoices") == null) story.put("interactionChoices", new JSONArray());
+    if (!story.has("interactionGuard")) story.put("interactionGuard", "");
+    if (!story.has("interactionSegmentId")) story.put("interactionSegmentId", "");
+    if (!story.has("interactionResolutionPending")) story.put("interactionResolutionPending", false);
+    if (!story.has("selectedInteractionAction")) story.put("selectedInteractionAction", "");
     if (story.optJSONObject(FLAGS_KEY) == null) story.put(FLAGS_KEY, new JSONObject());
 
     JSONArray managed = story.optJSONArray(MANAGED_CHARACTERS_KEY);
@@ -147,10 +167,65 @@ final class StoryCore {
       JSONObject story = state.getJSONObject(ROOT_KEY);
       return story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
-          && "cutaway".equals(story.optString("visibility", ""));
+          && ("cutaway".equals(story.optString("visibility", ""))
+              || story.optBoolean("awaitingInteraction", false));
     } catch (Exception ignored) {
       return false;
     }
+  }
+
+  boolean awaitingInteraction(JSONObject state) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      return story.optBoolean("active", false)
+          && !story.optBoolean("arcComplete", false)
+          && story.optBoolean("awaitingInteraction", false);
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
+  boolean isCompiledInteractionChoice(JSONObject state, String action) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      if (!story.optBoolean("awaitingInteraction", false)) return false;
+      String expected = action == null ? "" : action.trim();
+      if (expected.isEmpty()) return false;
+      JSONArray choices = story.optJSONArray("interactionChoices");
+      if (choices == null) return false;
+      for (int i = 0; i < choices.length(); i++) {
+        JSONObject choice = choices.optJSONObject(i);
+        if (choice != null && expected.equals(choice.optString("action", "").trim())) return true;
+      }
+    } catch (Exception ignored) {}
+    return false;
+  }
+
+  boolean consumeCompiledInteractionChoice(JSONObject state, String action) throws Exception {
+    normalizeState(state);
+    if (!isCompiledInteractionChoice(state, action)) return false;
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    // Keep awaitingInteraction + choices intact until the AI reaction is validated.
+    // If both providers fail, the player can retry instead of losing the authored decision point.
+    story.put("interactionResolutionPending", true);
+    story.put("selectedInteractionAction", action == null ? "" : action.trim());
+    state.put(ROOT_KEY, story);
+    return true;
+  }
+
+  void finishInteractionResponse(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("interactionResolutionPending", false)) return;
+    story.put("awaitingInteraction", false);
+    story.put("interactionResolutionPending", false);
+    story.put("selectedInteractionAction", "");
+    story.put("interactionGuard", "");
+    story.put("interactionSegmentId", "");
+    story.put("interactionChoices", new JSONArray());
+    state.put(ROOT_KEY, story);
   }
 
   static boolean isAdvanceAction(String action) {
@@ -164,6 +239,9 @@ final class StoryCore {
     if (!isAdvanceAction(action)) return null;
 
     JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (story.optBoolean("awaitingInteraction", false)) {
+      throw new IllegalStateException("Story interaction choice must be resolved before advancing.");
+    }
     if (!story.optBoolean("active", false) || story.optBoolean("arcComplete", false)
         || repository == null || !repository.available()) {
       return null;
@@ -214,6 +292,15 @@ final class StoryCore {
     story.put("currentSegmentCount", segment.count);
     story.put("currentScene", segment.id);
     story.put("segmentDelivered", true);
+    boolean interactive = StoryRepository.MODE_INTERACTIVE.equals(segment.mode)
+        && segment.choices != null && segment.choices.length() >= 2
+        && !"cutaway".equals(chapter.visibility);
+    story.put("awaitingInteraction", interactive);
+    story.put("interactionChoices", interactive ? copyArray(segment.choices) : new JSONArray());
+    story.put("interactionGuard", interactive ? segment.interactionGuard : "");
+    story.put("interactionSegmentId", interactive ? segment.id : "");
+    story.put("interactionResolutionPending", false);
+    story.put("selectedInteractionAction", "");
     state.put(ROOT_KEY, story);
 
     if (index == segment.count - 1) {
@@ -225,7 +312,15 @@ final class StoryCore {
       state.put(ROOT_KEY, story);
     }
 
-    return new AuthoredTurn(segment.text, chapter.id, segment.id, chapter.thread, chapter.visibility);
+    return new AuthoredTurn(
+        segment.text,
+        chapter.id,
+        segment.id,
+        chapter.thread,
+        chapter.visibility,
+        segment.mode,
+        segment.choices,
+        segment.interactionGuard);
   }
 
   void applyCharacterEvent(
@@ -309,6 +404,17 @@ final class StoryCore {
         output.append("Story-local Nam presence: ")
             .append(nam.optString("presence", PRESENCE_UNKNOWN)).append(".\n");
       }
+      if (story.optBoolean("interactionResolutionPending", false)) {
+        output.append("COMPILED STORY INTERACTION RESPONSE:\n");
+        output.append("Selected action: ")
+            .append(story.optString("selectedInteractionAction", "")).append(".\n");
+        String guard = story.optString("interactionGuard", "").trim();
+        if (!guard.isEmpty()) {
+          output.append("INTERACTION GUARD: ").append(guard).append("\n");
+        }
+        output.append("Respond only to this local approach. Do not advance manuscript position, resolve a future authored event, ")
+            .append("change Party membership, create major discoveries, or contradict the next authored segment.\n");
+      }
       if (story.optBoolean("arcComplete", false)) {
         output.append("Level 0 authored arc boundary has been reached. This is NOT a validated Level 1 transition.\n");
       }
@@ -329,6 +435,9 @@ final class StoryCore {
       result.put("storyVisibility", story.optString("visibility", "player"));
       result.put("storyChapter", story.optString("currentChapter", ""));
       result.put("storySegmentId", story.optString("currentScene", ""));
+      result.put("storyMode", story.optBoolean("awaitingInteraction", false)
+          ? StoryRepository.MODE_INTERACTIVE
+          : "");
     } catch (Exception ignored) {}
     return result;
   }
@@ -482,6 +591,14 @@ final class StoryCore {
       if (expected.equals(values.optString(i, "").trim().toLowerCase(Locale.ROOT))) return true;
     }
     return false;
+  }
+
+  private static JSONArray copyArray(JSONArray source) {
+    try {
+      return source == null ? new JSONArray() : new JSONArray(source.toString());
+    } catch (Exception ignored) {
+      return new JSONArray();
+    }
   }
 
   private static void appendArray(StringBuilder output, String label, JSONArray values) {

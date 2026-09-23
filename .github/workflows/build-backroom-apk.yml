@@ -151,7 +151,16 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryCoreTest.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryRepositoryTest.java
+          test -s android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json
+          test -s .github/scripts/compile-story.py
+          python3 .github/scripts/compile-story.py --validate-generated
+          grep -Fq 'LEVEL_ZERO_INTERACTIONS_ASSET' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
+          grep -Fq 'interactionResolutionPending' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'storyInteractionActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           ! grep -Fq 'LUC_TRAM_RATE_PERCENT' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           grep -Fq 'storyPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java

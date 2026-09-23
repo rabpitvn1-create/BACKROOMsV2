@@ -652,6 +652,9 @@ public class MainActivity extends Activity {
 
           JSONObject state = localResult.optJSONObject("state");
           if (state == null) state = submitted;
+          JSONObject storyBeforeAi = state.optJSONObject("story");
+          boolean compiledStoryReaction = storyBeforeAi != null
+              && storyBeforeAi.optBoolean("interactionResolutionPending", false);
           committedBeforeGemini = new JSONObject(state.toString());
           String coreBeforeJson = state.toString();
 
@@ -690,9 +693,18 @@ public class MainActivity extends Activity {
           if (encounterDialogue == null) encounterDialogue = new JSONArray();
           String transitionTarget = generated.optString("transitionTarget", "").trim();
 
+          if (compiledStoryReaction) {
+            // A compiled A/B/C response is performance-only. It cannot become a second story director.
+            encounterDialogue = new JSONArray();
+            transitionTarget = null;
+            generated.put("choices", new JSONArray());
+            generated.put("transitionTarget", "");
+            generated.put("sceneLabel", "");
+          }
+
           state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
           String sceneLabel = generated.optString("sceneLabel", "").trim();
-          if (!sceneLabel.isEmpty()) state.put("location", sceneLabel);
+          if (!compiledStoryReaction && !sceneLabel.isEmpty()) state.put("location", sceneLabel);
           long tParseEnd = System.currentTimeMillis();
 
           long tValStart = System.currentTimeMillis();

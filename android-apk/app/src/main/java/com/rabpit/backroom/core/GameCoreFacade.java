@@ -58,11 +58,32 @@ public final class GameCoreFacade implements AutoCloseable {
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
-      if (storyCore.blocksFreePlayerAction(legacy) && !StoryCore.isAdvanceAction(text)) {
+      boolean compiledStoryChoice = storyCore.isCompiledInteractionChoice(legacy, text);
+      if (storyCore.awaitingInteraction(legacy) && StoryCore.isAdvanceAction(text)) {
         JSONObject result = deepCopy(legacy);
-        String reply = "Đang ở đoạn cắt cảnh của cốt truyện. Hãy chọn “Tiếp tục cốt truyện” để tiếp tục.";
+        String reply = "Hãy chọn một trong các lựa chọn cốt truyện trước khi tiếp tục.";
         persist(result);
-        return response(true, result, "story_cutaway_locked", "story_cutaway_locked", reply);
+        return response(true, result, "story_interaction_required", "story_interaction_required", reply);
+      }
+      if (storyCore.blocksFreePlayerAction(legacy)
+          && !StoryCore.isAdvanceAction(text)
+          && !compiledStoryChoice) {
+        JSONObject result = deepCopy(legacy);
+        String reply = storyCore.awaitingInteraction(legacy)
+            ? "Đang ở điểm tương tác cốt truyện. Hãy chọn một trong các lựa chọn A/B/C."
+            : "Đang ở đoạn cắt cảnh của cốt truyện. Hãy chọn “Tiếp tục cốt truyện” để tiếp tục.";
+        persist(result);
+        return response(true, result,
+            storyCore.awaitingInteraction(legacy) ? "story_interaction_required" : "story_cutaway_locked",
+            storyCore.awaitingInteraction(legacy) ? "story_interaction_required" : "story_cutaway_locked",
+            reply);
+      }
+
+      if (compiledStoryChoice) {
+        storyCore.consumeCompiledInteractionChoice(legacy, text);
+        legacy.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(legacy);
+        return response(false, legacy, null, "fallback_required", null);
       }
 
       if (itemCore.isOpenChestAction(text)) {
@@ -180,6 +201,7 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.validateAndApply(before, sanitized);
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
       storyCore.normalizeState(sanitized);
+      storyCore.finishInteractionResponse(sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
       characterProgressionCore.applyExplorerTurnRecovery(sanitized);
@@ -505,7 +527,12 @@ public final class GameCoreFacade implements AutoCloseable {
         .put("storyVisibility", authored.visibility)
         .put("storyChapter", authored.chapterId)
         .put("storySegmentId", authored.segmentId)
+        .put("storyMode", authored.mode)
         .put("authored", true);
+    if (authored.choices != null && authored.choices.length() >= 2
+        && StoryRepository.MODE_INTERACTIVE.equals(authored.mode)) {
+      gm.put("choices", new JSONArray(authored.choices.toString()));
+    }
     log.put(gm);
     state.put("log", log);
   }

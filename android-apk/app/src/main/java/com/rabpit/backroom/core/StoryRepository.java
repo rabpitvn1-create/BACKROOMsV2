@@ -7,14 +7,23 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-/** Loads generated story metadata and exact authored Markdown from APK assets. */
+/** Loads generated story metadata, compiled interactions, and exact authored Markdown from APK assets. */
 final class StoryRepository {
   static final String LEVEL_ZERO_METADATA_ASSET = "story/generated/level_0/level0.story.json";
+  static final String LEVEL_ZERO_INTERACTIONS_ASSET = "story/generated/level_0/level0.interactions.json";
+
+  static final String MODE_LINEAR = "LINEAR";
+  static final String MODE_INTERACTIVE = "INTERACTIVE";
+  static final String MODE_CUTAWAY = "CUTAWAY";
+  static final String MODE_LOCKED_EVENT = "LOCKED_EVENT";
 
   static final class Chapter {
     final String id;
@@ -48,13 +57,47 @@ final class StoryRepository {
     final int index;
     final int count;
     final String text;
+    final String mode;
+    final JSONArray choices;
+    final String interactionGuard;
 
-    Segment(String id, String chapterId, int index, int count, String text) {
+    Segment(
+        String id,
+        String chapterId,
+        int index,
+        int count,
+        String text,
+        String mode,
+        JSONArray choices,
+        String interactionGuard) {
       this.id = id;
       this.chapterId = chapterId;
       this.index = index;
       this.count = count;
       this.text = text;
+      this.mode = mode;
+      this.choices = copyArray(choices);
+      this.interactionGuard = interactionGuard == null ? "" : interactionGuard.trim();
+    }
+  }
+
+  private static final class InteractionSpec {
+    final String mode;
+    final JSONArray choices;
+    final String guard;
+
+    InteractionSpec(String mode, JSONArray choices, String guard) {
+      String normalizedMode = normalizeMode(mode);
+      JSONArray sanitized = sanitizeChoices(normalizedMode, choices);
+      if (MODE_INTERACTIVE.equals(normalizedMode) && sanitized.length() < 2) {
+        normalizedMode = MODE_LINEAR;
+        sanitized = new JSONArray();
+      }
+      this.mode = normalizedMode;
+      this.choices = sanitized;
+      this.guard = this.mode.equals(MODE_INTERACTIVE)
+          ? (guard == null ? "" : guard.trim())
+          : "";
     }
   }
 
@@ -65,6 +108,8 @@ final class StoryRepository {
   private final AssetReader reader;
   private final Map<String, Chapter> chapters = new LinkedHashMap<>();
   private final Map<String, List<Segment>> segmentCache = new LinkedHashMap<>();
+  private final Map<String, String> interactionChapterDigests = new LinkedHashMap<>();
+  private final Map<String, InteractionSpec> interactionBySegment = new LinkedHashMap<>();
   private String sourceRevision = "";
   private String startChapter = "";
   private int targetChars = 1900;
@@ -79,19 +124,31 @@ final class StoryRepository {
     if (reader != null) {
       try {
         loadMetadata(reader.read(LEVEL_ZERO_METADATA_ASSET));
+        try {
+          loadInteractions(reader.read(LEVEL_ZERO_INTERACTIONS_ASSET));
+        } catch (Exception ignored) {
+          clearInteractions();
+        }
       } catch (Exception ignored) {
         chapters.clear();
+        clearInteractions();
       }
     }
   }
 
   static StoryRepository fromText(String metadataJson, Map<String, String> sources) {
+    return fromText(metadataJson, sources, null);
+  }
+
+  static StoryRepository fromText(
+      String metadataJson, Map<String, String> sources, String interactionsJson) {
     StoryRepository repository = new StoryRepository(path -> {
       String value = sources.get(path);
       if (value == null) throw new IllegalArgumentException("Missing test story asset: " + path);
       return value;
     });
     repository.loadMetadata(metadataJson);
+    if (interactionsJson != null) repository.loadInteractions(interactionsJson);
     return repository;
   }
 
@@ -135,10 +192,18 @@ final class StoryRepository {
 
     try {
       String manuscript = reader.read(chapter.source);
+      String digest = sourceDigest(manuscript);
+      boolean interactionsFresh = digest.equals(interactionChapterDigests.get(key));
       List<String> blocks = splitMarkdown(manuscript, targetChars, maxChars);
       for (int i = 0; i < blocks.size(); i++) {
-        String id = chapter.id + "_P" + String.format(java.util.Locale.ROOT, "%03d", i + 1);
-        result.add(new Segment(id, chapter.id, i, blocks.size(), blocks.get(i)));
+        String id = chapter.id + "_P" + String.format(Locale.ROOT, "%03d", i + 1);
+        InteractionSpec compiled = interactionsFresh ? interactionBySegment.get(id) : null;
+        String fallbackMode = "cutaway".equals(chapter.visibility) ? MODE_CUTAWAY : MODE_LINEAR;
+        String mode = compiled == null ? fallbackMode : compiled.mode;
+        if ("cutaway".equals(chapter.visibility)) mode = MODE_CUTAWAY;
+        JSONArray choices = compiled == null ? new JSONArray() : compiled.choices;
+        String guard = compiled == null ? "" : compiled.guard;
+        result.add(new Segment(id, chapter.id, i, blocks.size(), blocks.get(i), mode, choices, guard));
       }
     } catch (Exception ignored) {
       result.clear();
@@ -151,6 +216,7 @@ final class StoryRepository {
   void loadMetadata(String json) {
     chapters.clear();
     segmentCache.clear();
+    clearInteractions();
     try {
       JSONObject root = new JSONObject(json == null ? "{}" : json);
       if (root.optInt("schemaVersion", 0) != 1) return;
@@ -175,6 +241,47 @@ final class StoryRepository {
     } catch (Exception ignored) {
       chapters.clear();
       startChapter = "";
+    }
+  }
+
+  void loadInteractions(String json) {
+    clearInteractions();
+    segmentCache.clear();
+    try {
+      JSONObject root = new JSONObject(json == null ? "{}" : json);
+      if (root.optInt("schemaVersion", 0) != 1) return;
+      if (!sourceRevision.equals(root.optString("sourceRevision", "").trim())) return;
+      JSONObject compiledChapters = root.optJSONObject("chapters");
+      if (compiledChapters == null) return;
+
+      java.util.Iterator<String> chapterIds = compiledChapters.keys();
+      while (chapterIds.hasNext()) {
+        String chapterId = chapterIds.next();
+        if (!chapters.containsKey(chapterId)) continue;
+        JSONObject compiledChapter = compiledChapters.optJSONObject(chapterId);
+        if (compiledChapter == null) continue;
+        String digest = compiledChapter.optString("sourceDigest", "").trim().toLowerCase(Locale.ROOT);
+        if (!digest.matches("[0-9a-f]{64}")) continue;
+        interactionChapterDigests.put(chapterId, digest);
+
+        JSONObject segments = compiledChapter.optJSONObject("segments");
+        if (segments == null) continue;
+        java.util.Iterator<String> segmentIds = segments.keys();
+        while (segmentIds.hasNext()) {
+          String segmentId = segmentIds.next();
+          if (!segmentId.startsWith(chapterId + "_P")) continue;
+          JSONObject spec = segments.optJSONObject(segmentId);
+          if (spec == null) continue;
+          interactionBySegment.put(
+              segmentId,
+              new InteractionSpec(
+                  spec.optString("mode", MODE_LINEAR),
+                  spec.optJSONArray("choices"),
+                  spec.optString("interactionGuard", "")));
+        }
+      }
+    } catch (Exception ignored) {
+      clearInteractions();
     }
   }
 
@@ -206,6 +313,57 @@ final class StoryRepository {
     }
     if (current.length() > 0) output.add(current.toString());
     return output;
+  }
+
+  static String sourceDigest(String source) {
+    try {
+      String canonical = canonicalSource(source);
+      MessageDigest digest = MessageDigest.getInstance("SHA-256");
+      byte[] hash = digest.digest(canonical.getBytes(StandardCharsets.UTF_8));
+      StringBuilder output = new StringBuilder();
+      for (byte value : hash) output.append(String.format(Locale.ROOT, "%02x", value & 0xff));
+      return output.toString();
+    } catch (Exception ignored) {
+      return "";
+    }
+  }
+
+  private static String canonicalSource(String source) {
+    String normalized = source == null ? "" : source.replace("\r\n", "\n").replace('\r', '\n').trim();
+    return normalized + "\n";
+  }
+
+  private static String normalizeMode(String raw) {
+    String mode = raw == null ? "" : raw.trim().toUpperCase(Locale.ROOT);
+    if (MODE_INTERACTIVE.equals(mode)
+        || MODE_CUTAWAY.equals(mode)
+        || MODE_LOCKED_EVENT.equals(mode)) {
+      return mode;
+    }
+    return MODE_LINEAR;
+  }
+
+  private static JSONArray sanitizeChoices(String mode, JSONArray raw) {
+    JSONArray output = new JSONArray();
+    if (!MODE_INTERACTIVE.equals(mode) || raw == null) return output;
+    for (int i = 0; i < raw.length() && output.length() < 3; i++) {
+      JSONObject item = raw.optJSONObject(i);
+      if (item == null) continue;
+      String text = item.optString("text", "").trim();
+      String action = item.optString("action", text).trim();
+      if (text.isEmpty() || action.isEmpty() || text.length() > 180 || action.length() > 220) continue;
+      try {
+        output.put(new JSONObject().put("text", text).put("action", action));
+      } catch (Exception ignored) {
+        continue;
+      }
+    }
+    return output.length() >= 2 ? output : new JSONArray();
+  }
+
+  private void clearInteractions() {
+    interactionChapterDigests.clear();
+    interactionBySegment.clear();
   }
 
   private static JSONArray copyArray(JSONArray source) {
