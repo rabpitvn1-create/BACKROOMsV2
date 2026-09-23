@@ -25,6 +25,21 @@ public final class GmNarrativePacket {
       JSONObject state,
       String action,
       String gmStyleExamples) throws Exception {
+    return build(
+        levelContext, entityContext, itemContext, characterContext, "",
+        recentStory, state, action, gmStyleExamples);
+  }
+
+  public static String build(
+      String levelContext,
+      String entityContext,
+      String itemContext,
+      String characterContext,
+      String storyContext,
+      String recentStory,
+      JSONObject state,
+      String action,
+      String gmStyleExamples) throws Exception {
     JSONObject promptState = projectState(state);
     String recent = clip(recentStory, MAX_RECENT_STORY_CHARS);
     String style = clip(gmStyleExamples, 1800);
@@ -35,7 +50,7 @@ public final class GmNarrativePacket {
         + "NGÔN NGỮ HIỂN THỊ: reply, sceneLabel, choices và encounterDialogue phải là tiếng Việt tự nhiên. "
         + "Chỉ giữ tiếng Anh cho tên riêng/tên chính thức cần thiết.\n"
         + style + "\n"
-        + "CORE-OWNED: Java Core sở hữu Level/route, Entity spawn, Loot, Inventory, Party, Survival, Progression và Combat. "
+        + "CORE-OWNED: Java Core sở hữu Level/route, authored Story state, Entity spawn, Loot, Inventory, Party, Survival, Progression và Combat. "
         + "AI không được sửa các state này. sceneLabel chỉ là nhãn mô tả và không bao giờ tự chuyển Level.\n"
         + "EXPLORER CHOICES: trả 0-3 gợi ý ngắn; nếu Entity đang đối đầu trực tiếp thì choices=[].\n"
         + "ENCOUNTER DIALOGUE: chỉ khi Character Core có pending intro; khi đó trả đúng 2-5 câu thoại. Nếu không thì [].\n"
@@ -43,6 +58,7 @@ public final class GmNarrativePacket {
         + safe(entityContext) + "\n"
         + safe(itemContext) + "\n"
         + safe(characterContext) + "\n"
+        + safe(storyContext) + "\n"
         + "RECENT STORY (chỉ giữ continuity, không lặp nguyên văn):\n" + recent + "\n"
         + "READ-ONLY STATE: " + promptState.toString() + "\n"
         + "PLAYER ACTION: " + safe(action) + "\n"
