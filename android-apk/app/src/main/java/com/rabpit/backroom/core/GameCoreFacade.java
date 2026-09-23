@@ -271,6 +271,7 @@ public final class GameCoreFacade implements AutoCloseable {
       characterProgressionCore.applyExplorerTurnRecovery(state);
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
+      if (resolution.looped) storyCore.refreshLoopDecisionContext(state);
       appendDecisionLog(state, resolution);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
