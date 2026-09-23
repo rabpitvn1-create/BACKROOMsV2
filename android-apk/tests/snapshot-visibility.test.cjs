@@ -53,3 +53,10 @@ test('combat floating overlay only accepts numeric HP damage',()=>{
  assert.match(source,/if\(!\/\^-\\d\+ HP\$\/i\.test\(text\)\)return;/);
  assert.doesNotMatch(source,/floater\.textContent=.*PROC/);
 });
+
+
+test('combat floating damage stays readable long enough on mobile',()=>{
+ assert.match(source,/animation:combat-float-up 1\.6s ease-out forwards/);
+ assert.match(source,/12%\{opacity:1\}80%\{opacity:1\}100%\{opacity:0/);
+ assert.match(source,/setTimeout\(function\(\)\{floater\.remove\(\);\},1800\)/);
+});

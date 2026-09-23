@@ -510,17 +510,18 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String processCoreUpgrade(String stateJson, String characterId, String stat) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (state.length() == 0) state = submitted;
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
-      if (storyCore.awaitingDecision(state) || storyCore.awaitingEntityAttack(state)
-          || storyCore.hasPendingStoryAdvance(state)) {
+      if (CombatChoiceEngine.isActive(state)) {
         return response(false, state,
-            "Hãy xử lý lượt cốt truyện hiện tại trước khi nâng chỉ số.",
-            "story_decision_locked", null);
+            "Battle đang hoạt động. Hãy hoàn tất Poker Dice trước khi nâng chỉ số.",
+            "combat_locked", null);
       }
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);

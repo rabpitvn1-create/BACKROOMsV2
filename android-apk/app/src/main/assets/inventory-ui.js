@@ -31,6 +31,17 @@
   var selectedItem=null;
   var selectedOwnerId='cao_minh';
   var itemBusy=false;
+  var CHARACTER_SET_EQUIPMENT={
+    'huyết ma kiếm':true,
+    'huyết ma chiến khải':true,
+    'vạn tàng giới':true,
+    'tịch quang kiếm':true,
+    'thiên cơ bạch kim kiếm khải':true,
+    'sru recon frame r03':true,
+    'ivory & ebony':true,
+    'godkiller':true,
+    'lucifer armor':true
+  };
   window.__inventoryBusy=false;
   function setItemBusy(value){itemBusy=!!value;window.__inventoryBusy=itemBusy}
 
@@ -63,6 +74,15 @@
     return Array.isArray(member&&member.inventory)?member.inventory:[];
   }
   function itemId(item){return String(item&&item.id||item&&item.name||'').trim()}
+  function itemNameKey(item){return String(item&&item.name||'').trim().toLocaleLowerCase('vi')}
+  function isCharacterSetEquipment(item){
+    if(!item)return false;
+    if(item.characterSet===true||item.setEquipment===true)return true;
+    return CHARACTER_SET_EQUIPMENT[itemNameKey(item)]===true;
+  }
+  function visibleInventoryItems(id){
+    return ownerInventory(id).filter(function(item){return item&&!isCharacterSetEquipment(item);});
+  }
   function qty(item){return Math.max(1,Number(item&&item.quantity||1)||1)}
   function effectText(item){
     if(item&&item.kind==='equipment'){
@@ -164,7 +184,7 @@
     inventory.className='inventory-grid';
     inventory.textContent='';
     if(inventoryTitle)inventoryTitle.textContent='Inventory · '+ownerName(selectedOwnerId);
-    var items=ownerInventory(selectedOwnerId);
+    var items=visibleInventoryItems(selectedOwnerId);
     if(!items.length){var empty=document.createElement('span');empty.textContent='Trống.';inventory.appendChild(empty);return}
     items.forEach(function(item){
       if(!item)return;
