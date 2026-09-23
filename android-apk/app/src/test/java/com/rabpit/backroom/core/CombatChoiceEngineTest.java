@@ -595,6 +595,55 @@ public class CombatChoiceEngineTest {
     assertEquals(2, entity.getInt("armorBreakTurns"));
   }
 
+  @Test public void secondaryCombatMathUsesResistanceAndCriticalMultiplier() {
+    assertEquals(150, CombatChoiceEngine.criticalDamage(100));
+    assertEquals(5, CombatChoiceEngine.effectiveChance(15, 10));
+    assertEquals(0, CombatChoiceEngine.effectiveChance(5, 10));
+    assertEquals(100, CombatChoiceEngine.effectiveChance(200, 0));
+
+    int roll = CombatChoiceEngine.secondaryStatRoll(12345, 3, 1, "critical");
+    assertTrue(roll >= 0 && roll < 100);
+    assertEquals(roll, CombatChoiceEngine.secondaryStatRoll(12345, 3, 1, "critical"));
+  }
+
+  @Test public void forcedCharacterCriticalUsesProjectedCriticalPath() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
+    JSONObject entity = combat.getJSONObject("entity");
+
+    actor.put("criticalChancePercent", 100);
+    entity.put("evasionPercent", 0).put("resCriticalPercent", 0);
+    int before = entity.getInt("hp");
+
+    finalizeAs(state, 1,3,4,5,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(before - 45, entity.getInt("hp"));
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    assertTrue(battleLog.getJSONObject(0).getString("text").contains("[CRITICAL]"));
+  }
+
+  @Test public void forcedPassiveEvasionSkipsEntityDamage() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
+    JSONObject entity = combat.getJSONObject("entity");
+
+    actor.put("evasionPercent", 100);
+    entity.put("resEvasionPercent", 0).put("evasionPercent", 0);
+    int hpBefore = actor.getInt("hp");
+
+    finalizeAs(state, 1,3,4,5,6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(hpBefore, actor.getInt("hp"));
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    assertTrue(battleLog.getJSONObject(1).getString("text").contains("Evasion"));
+  }
+
   private static void finalizeAs(JSONObject state, int... values) throws Exception {
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     JSONArray array = new JSONArray();
