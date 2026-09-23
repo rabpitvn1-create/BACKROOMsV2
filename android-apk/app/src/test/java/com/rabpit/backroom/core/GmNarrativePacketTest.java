@@ -29,12 +29,14 @@ public class GmNarrativePacketTest {
         .put("currentLevelKey", "0")
         .put("characterCanon", "FULL_CANON_MARKER".repeat(200))
         .put("levelRoute", new JSONObject().put("streak", 9))
+        .put(StoryCore.ROOT_KEY, new JSONObject().put("hiddenReveal", "DO_NOT_LEAK"))
         .put("log", new org.json.JSONArray().put(new JSONObject().put("text", "secret history")));
 
     JSONObject projected = GmNarrativePacket.projectState(state);
 
     assertFalse(projected.has("characterCanon"));
     assertFalse(projected.has("levelRoute"));
+    assertFalse(projected.has(StoryCore.ROOT_KEY));
     assertFalse(projected.has("log"));
     assertTrue(state.has("characterCanon"));
   }
