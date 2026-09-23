@@ -430,9 +430,13 @@ final class StoryCore {
 
     JSONObject outcomes = new JSONObject();
     List<JSONObject> publicChoices = new ArrayList<>();
-    addOutcome(publicChoices, outcomes, decisionId + ":canon", canonText, OUTCOME_CANON, "");
-    addOutcome(publicChoices, outcomes, decisionId + ":trap", trapText, OUTCOME_TRAP, trapReply);
-    addOutcome(publicChoices, outcomes, decisionId + ":converge", convergeText, OUTCOME_CONVERGE, convergeReply);
+    addOutcome(publicChoices, outcomes,
+        opaqueChoiceId(actualHash, decisionId, OUTCOME_CANON), canonText, OUTCOME_CANON, "");
+    addOutcome(publicChoices, outcomes,
+        opaqueChoiceId(actualHash, decisionId, OUTCOME_TRAP), trapText, OUTCOME_TRAP, trapReply);
+    addOutcome(publicChoices, outcomes,
+        opaqueChoiceId(actualHash, decisionId, OUTCOME_CONVERGE),
+        convergeText, OUTCOME_CONVERGE, convergeReply);
 
     publicChoices.sort(Comparator.comparing(choice ->
         StoryRepository.sourceDigest(actualHash + "|" + choice.optString("id", ""))));
@@ -687,6 +691,14 @@ final class StoryCore {
     } catch (Exception ignored) {
       return "";
     }
+  }
+
+  private static String opaqueChoiceId(String contextHash, String decisionId, String outcomeType) {
+    String digest = StoryRepository.sourceDigest(
+        (contextHash == null ? "" : contextHash) + "|"
+            + (decisionId == null ? "" : decisionId) + "|"
+            + (outcomeType == null ? "" : outcomeType));
+    return "choice_" + (digest.length() >= 20 ? digest.substring(0, 20) : digest);
   }
 
   private static void addOutcome(
