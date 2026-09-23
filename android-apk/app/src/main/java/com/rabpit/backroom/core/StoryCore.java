@@ -56,12 +56,6 @@ final class StoryCore {
     if (characters == null) characters = new JSONObject();
     ensureCharacterState(characters, "luc_tram");
 
-    // Backward-compatible migration: if an older save already has Lục Trầm joined,
-    // preserve that fact and project the authored-story status forward.
-    if (containsPartyId(state.optJSONArray("party"), "luc_tram")) {
-      characterState(characters, "luc_tram").put("status", STATUS_PARTY_MEMBER);
-    }
-
     story.put(CHARACTERS_KEY, characters);
     state.put(ROOT_KEY, story);
   }
@@ -168,10 +162,6 @@ final class StoryCore {
     return character;
   }
 
-  private static JSONObject characterState(JSONObject characters, String rawId) throws Exception {
-    return ensureCharacterState(characters, rawId);
-  }
-
   private static void advanceStatus(JSONObject character, String target) throws Exception {
     String current = normalizeStatus(character.optString("status", STATUS_UNSEEN));
     if (statusRank(target) > statusRank(current)) character.put("status", target);
@@ -213,18 +203,4 @@ final class StoryCore {
     return false;
   }
 
-  private static boolean containsPartyId(JSONArray party, String expected) {
-    if (party == null) return false;
-    for (int i = 0; i < party.length(); i++) {
-      JSONObject member = party.optJSONObject(i);
-      if (member == null) continue;
-      String id = normalizeCharacterId(member.optString("id", ""));
-      String name = member.optString("name", "").trim().toLowerCase(Locale.ROOT);
-      if (expected.equals(id)
-          || ("luc_tram".equals(expected) && ("lục trầm".equals(name) || "luc tram".equals(name)))) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
