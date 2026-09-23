@@ -54,4 +54,4 @@ Mỗi lần tái xuất, hắn vẫn nhận ra Cao Minh và giữ ký ức cốt
 - Không thêm `ratePercent` và không đưa hắn vào mảng auto-spawn `entities` nếu chưa có retcon gameplay riêng.
 - Khi một save hoặc authored event đã kích hoạt `entityEncounterKey=diep_minh`, GM phải giữ đúng visual/lore canon ở tài liệu này.
 - Asset hiển thị hiện hành là `entity/diep_minh.png`.
-- Đánh bại một manifestation không đồng nghĩa xóa vĩnh viễn Diệp Minh khỏi continuity.
+- Đánh bại một hiện thân không đồng nghĩa xóa vĩnh viễn Diệp Minh khỏi continuity.
