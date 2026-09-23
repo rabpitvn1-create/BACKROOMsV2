@@ -553,16 +553,36 @@ public class MainActivity extends Activity {
     JSONArray log = state == null ? null : state.optJSONArray("log");
     if (log == null || log.length() == 0) return "(chưa có lượt trước)";
 
-    StringBuilder recent = new StringBuilder();
-    int start = Math.max(0, log.length() - 4);
-    for (int i = start; i < log.length(); i++) {
+    JSONObject story = state.optJSONObject("story");
+    String currentVisibility = story == null ? "player" : story.optString("visibility", "player");
+    String currentThread = story == null ? "cao_minh" : story.optString("thread", "cao_minh");
+    boolean cutaway = "cutaway".equals(currentVisibility);
+
+    java.util.ArrayList<String> visible = new java.util.ArrayList<>();
+    for (int i = log.length() - 1; i >= 0 && visible.size() < 4; i--) {
       JSONObject entry = log.optJSONObject(i);
       if (entry == null) continue;
+      String role = entry.optString("role", "");
+      if ("player".equals(role)) {
+        if (cutaway) continue;
+      } else {
+        String entryVisibility = entry.optString("storyVisibility", "");
+        String entryThread = entry.optString("storyThread", "");
+        if (cutaway) {
+          if (!"cutaway".equals(entryVisibility) || !currentThread.equals(entryThread)) continue;
+        } else if ("cutaway".equals(entryVisibility)) {
+          continue;
+        }
+      }
+
       String text = entry.optString("text", "").trim();
       if (text.isEmpty()) continue;
-      String line = ("player".equals(entry.optString("role", "")) ? "PLAYER: " : "GM: ")
-          + clipped(text, 680);
-      if (recent.length() > 0) line = "\n" + line;
+      visible.add(0, ("player".equals(role) ? "PLAYER: " : "GM: ") + clipped(text, 680));
+    }
+
+    StringBuilder recent = new StringBuilder();
+    for (String line : visible) {
+      if (recent.length() > 0) recent.append('\n');
       if (recent.length() + line.length() > GmNarrativePacket.MAX_RECENT_STORY_CHARS) break;
       recent.append(line);
     }
@@ -688,6 +708,7 @@ public class MainActivity extends Activity {
           if (log == null) log = new JSONArray();
           log.put(new JSONObject().put("role", "player").put("text", action));
           JSONObject gmEntry = GmChoiceContract.gmEntry(reply, generated, state);
+          mergeObject(gmEntry, new JSONObject(gameCore.storyLogMetadata(state.toString())));
           log.put(gmEntry);
           state.put("log", log);
 
