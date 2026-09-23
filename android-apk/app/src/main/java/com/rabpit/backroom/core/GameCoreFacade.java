@@ -48,6 +48,8 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String processRule(String legacyStateJson, String action) {
     JSONObject legacy = parseState(legacyStateJson);
     try {
+      restoreHiddenDecisionPackage(
+          legacy, parseState(preferences.getString(STATE_KEY, "{}")));
       levelCore.normalizeState(legacy);
       characterProgressionCore.normalizeState(legacy);
       survivalCore.normalizeState(legacy);
@@ -381,6 +383,11 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      if (storyCore.awaitingDecision(state)) {
+        return response(false, state,
+            "Hãy xử lý điểm quyết định cốt truyện trước khi thay đổi Inventory.",
+            "story_decision_locked", null);
+      }
       String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -397,6 +404,11 @@ public final class GameCoreFacade implements AutoCloseable {
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      if (storyCore.awaitingDecision(state)) {
+        return response(false, state,
+            "Hãy xử lý điểm quyết định cốt truyện trước khi nâng chỉ số.",
+            "story_decision_locked", null);
+      }
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       characterDetailCore.projectState(state);
