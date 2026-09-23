@@ -52,7 +52,9 @@ public class StoryCoreTest {
     String manuscript = new String(Files.readAllBytes(
         assets.resolve("story/source/level_0/LEVEL0_CH01.md")), StandardCharsets.UTF_8);
     assertEquals("L0_C01_P001", turn.segmentId);
-    assertTrue(manuscript.contains(turn.reply.trim()));
+    assertTrue(manuscript.contains("Ma Sơn. Không có đại chiến."));
+    assertTrue(turn.reply.startsWith("Level 0 — Chương 01: Nơi Không Có Tên"));
+    assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));
     JSONObject after = state.getJSONObject(StoryCore.ROOT_KEY);
     assertTrue(after.getBoolean("segmentDelivered"));
     assertTrue(after.getBoolean("awaitingDecision"));
