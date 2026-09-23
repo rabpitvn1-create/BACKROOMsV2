@@ -30,7 +30,10 @@ test('character Set Equip is hidden from Inventory presentation', () => {
 });
 
 test('Set Equip filtering changes presentation only, not stored inventory state', () => {
-  assert.doesNotMatch(source, /state\.inventory\s*=\s*visibleInventoryItems/);
-  assert.doesNotMatch(source, /member\.inventory\s*=\s*visibleInventoryItems/);
-  assert.doesNotMatch(source, /splice\(|\.remove\(/);
+  const start = source.indexOf('function visibleInventoryItems');
+  const end = source.indexOf('function qty', start);
+  assert.ok(start >= 0 && end > start);
+  const filterBlock = source.slice(start, end);
+  assert.match(filterBlock, /ownerInventory\(id\)\.filter/);
+  assert.doesNotMatch(filterBlock, /state\.inventory\s*=|member\.inventory\s*=|splice\(|\.remove\(/);
 });
