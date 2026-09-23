@@ -3,7 +3,7 @@
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
 Đồng bộ: 2026-09-23.
 
-Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu.
+Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` là ngoại lệ có phạm vi hẹp và thay thế riêng cạnh quan hệ Cao Minh ↔ Diệp Minh từng để OPEN.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
@@ -77,7 +77,19 @@ Cao Minh **không được mặc định biết** tên/số Level, Entity, quy l
 
 ### Hội thoại — CAO-DLG-01
 
-Cao Minh nói tự nhiên, đủ ý, hay dùng hài hước/châm chọc; không cần liên tục xưng “bổn tọa”, không nói như cổ thư biết đi và không dùng câu tối nghĩa chỉ để tỏ ra thâm sâu. Với **Diệp Minh**, chỉ khóa việc hai người có một mối thù đã được xác lập; nguyên nhân, quá khứ, diễn tiến, mức độ, cán cân thắng bại và kết cục vẫn **OPEN**.
+Cao Minh nói tự nhiên, đủ ý, hay dùng hài hước/châm chọc; không cần liên tục xưng “bổn tọa”, không nói như cổ thư biết đi và không dùng câu tối nghĩa chỉ để tỏ ra thâm sâu. Với **Diệp Minh**, quan hệ đã được retcon thành **huyết hải thâm cừu**: Diệp Minh trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố ấy đẩy Cao Minh vào tuyệt vọng và là một nguyên nhân quyết định khiến hắn bước vào ma đạo. Không mặc định Diệp Minh là chủ mưu duy nhất. Chủ mưu cuối cùng, động cơ, mức độ sát hại từng người, quan hệ trước đại kiếp, cán cân thắng bại và kết cục vẫn **OPEN**. Xem `DIEP_MINH_CANON.md`.
+
+### Diệp Minh — USER RETCON R01
+
+Nguồn hiện hành: `DIEP_MINH_CANON.md`.
+
+**Quan hệ:** Diệp Minh là tử địch không đội trời chung của Cao Minh. Hắn từng trực tiếp góp phần vào cuộc thảm sát Cao gia; đây là biến cố phá nát nền tảng đời Cao Minh, đẩy hắn vào tuyệt vọng và trở thành một nguyên nhân quyết định khiến hắn bước vào ma đạo. Canon không khóa Diệp Minh là chủ mưu duy nhất.
+
+**Khóa thị giác:** nam tử trẻ tóc đen; nửa phải cơ thể còn hình người trong pháp giáp đen–vàng, nửa trái dị hóa thành ma thể đen–đỏ với hồng quang, tua/nhánh quỷ dị và chân vuốt; mắt trái đỏ; tay phải cầm trường kiếm dài tỏa kim quang; quanh thân có phù vàng chữ đỏ, họa tiết âm dương/bát quái và dây xích. Những chi tiết giống cơ khí là tạo hình pháp giáp tiên hiệp, không phải công nghệ.
+
+**Backrooms:** Diệp Minh nguyên bản đã chết trước các lần xuất hiện trong Backrooms. Thực thể hiện tại giữ dung mạo, nhận ra Cao Minh và nhớ huyết cừu Cao gia, nhưng bản chất thật vẫn OPEN: tàn hồn, bản sao/tái tạo, một hiện thân khác của cùng cá thể hoặc cơ chế chưa biết. Không khẳng định Backrooms có ý chí hay chủ động hồi sinh hắn. Một hiện thân có thể bị tiêu diệt nhưng không xóa Diệp Minh vĩnh viễn; thời gian và nơi tái xuất không cố định.
+
+**Runtime:** `diep_minh` là legacy/boss-only, không thuộc auto-spawn registry và không có `ratePercent` nếu chưa có retcon gameplay riêng.
 
 ## Campaign relationship override — Cao Minh R15
 

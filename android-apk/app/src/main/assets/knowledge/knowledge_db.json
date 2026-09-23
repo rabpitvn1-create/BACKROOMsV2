@@ -358,27 +358,91 @@
       ]
     },
     {
-      "id": "REL.CAO_MINH.DIEP_MINH.OPEN",
+      "id": "REL.CAO_MINH.DIEP_MINH.BLOOD_FEUD",
       "domain": "RELATIONSHIP",
-      "kind": "open-edge",
-      "text": "Cao Minh and Diệp Minh have an established enmity, but its cause, history, responsibility, balance of victories and eventual outcome are OPEN. Do not invent betrayal, murdered relatives, former brotherhood, reincarnation or any other explanation until explicitly retconned.",
+      "kind": "hard-lock",
+      "text": "Cao Minh và Diệp Minh là tử địch không đội trời chung. Diệp Minh đã trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố ấy phá nát nền tảng đời Cao Minh, đẩy hắn vào tuyệt vọng và là một nguyên nhân quyết định khiến hắn bước vào ma đạo. Không mặc định Diệp Minh là chủ mưu duy nhất. Kẻ chủ mưu cuối cùng, động cơ của Diệp Minh, mức độ hắn trực tiếp sát hại từng người, quan hệ trước đại kiếp, các thế lực liên quan, cán cân thắng bại và kết cục cuối cùng vẫn OPEN.",
       "source": {
-        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-REL-DIEP-MINH-OPEN-01"
+        "document": "android-apk/DIEP_MINH_CANON.md",
+        "anchor": "DIEP-MINH-CAO-REL-01"
       },
-      "authority": "CHARACTER_CANON",
-      "mutability": "OPEN",
-      "priority": 32,
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
       "tags": [
         "cao minh",
         "diệp minh",
-        "enmity",
-        "open"
+        "diep minh",
+        "huyết hải thâm cừu",
+        "cao gia",
+        "ma đạo",
+        "tử địch"
       ],
       "references": [],
       "affordances": [
         "dialogue",
-        "high_tier_target"
+        "high_tier_target",
+        "relationship_context"
+      ]
+    },
+    {
+      "id": "ENTITY.DIEP_MINH.VISUAL_R01",
+      "domain": "ENTITY",
+      "kind": "visual",
+      "text": "Visual R01 theo entity/diep_minh.png: Diệp Minh là nam tử trẻ tóc đen, dung mạo sắc lạnh. Nửa phải cơ thể còn hình người trong pháp giáp đen-vàng và chiến bào có phù văn, âm dương/bát quái, dây xích và phù vàng chữ đỏ. Nửa trái dị hóa thành ma thể đen-đỏ với hồng quang, các đường đỏ phát sáng, tua/nhánh quỷ dị và chân vuốt; mắt trái phát đỏ. Tay phải cầm trường kiếm dài tỏa kim quang vàng cam, có ký hiệu/phù văn sáng dọc lưỡi. Các chi tiết cơ khí chỉ là tạo hình pháp giáp tiên hiệp; không suy thành công nghệ hoặc tự biến hiệu ứng thị giác thành kỹ năng.",
+      "source": {
+        "document": "android-apk/DIEP_MINH_CANON.md",
+        "anchor": "DIEP-MINH-VIS-01"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "diệp minh",
+        "diep minh",
+        "diep_minh",
+        "visual lock",
+        "pháp giáp",
+        "ma thể",
+        "phù chú"
+      ],
+      "references": [
+        "REL.CAO_MINH.DIEP_MINH.BLOOD_FEUD"
+      ],
+      "affordances": [
+        "visual_description",
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "ENTITY.DIEP_MINH.BACKROOMS_R01",
+      "domain": "ENTITY",
+      "kind": "legacy-boss",
+      "text": "Diệp Minh nguyên bản đã chết tại thế giới nguyên sinh trước các lần xuất hiện trong Backrooms. Thực thể mang tên Diệp Minh trong Backrooms giữ dung mạo, nhận ra Cao Minh, nhớ huyết cừu Cao gia và duy trì sát ý cũ. Bản chất thật vẫn OPEN: có thể là tàn hồn, bản sao/tái tạo từ ký ức và chấp niệm, một biểu hiện khác của cùng cá thể hoặc cơ chế chưa biết; không được khẳng định Backrooms có ý chí hay chủ động hồi sinh hắn. Một hiện thân có thể bị tiêu diệt nhưng không xóa Diệp Minh vĩnh viễn; thời gian và địa điểm tái xuất không cố định. Runtime key diep_minh là legacy/boss-only và không được auto-spawn nếu chưa có retcon gameplay riêng.",
+      "source": {
+        "document": "android-apk/DIEP_MINH_CANON.md",
+        "anchor": "DIEP-MINH-BACKROOMS-01; DIEP-MINH-RUNTIME-01"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "diệp minh",
+        "diep minh",
+        "diep_minh",
+        "backrooms",
+        "legacy boss",
+        "respawn",
+        "ontology open"
+      ],
+      "references": [
+        "ENTITY.DIEP_MINH.VISUAL_R01",
+        "REL.CAO_MINH.DIEP_MINH.BLOOD_FEUD"
+      ],
+      "affordances": [
+        "direct_threat",
+        "identity_check",
+        "trace_analysis"
       ]
     },
     {
@@ -498,7 +562,7 @@
       "id": "CHAR.IRIS.IVORY_EBONY",
       "domain": "CHARACTER",
       "kind": "equipment",
-      "text": "Ivory & Ebony are Iris's two signature mechanical pistols, synchronized with Belial Core. Each shot forms directly from Iris's demon power, so carried ammunition quantity is not the limiting factor. Infinite source does not imply infinite rate of fire, weapon durability, per-shot damage or guaranteed hits; projectiles do not self-target or automatically distinguish manifestation from true body.",
+      "text": "Ivory & Ebony are Iris's two signature mechanical pistols, synchronized with Belial Core. Each shot forms directly from Iris's demon power, so carried ammunition quantity is not the limiting factor. Infinite source does not imply infinite rate of fire, weapon durability, per-shot damage or guaranteed hits; projectiles do not self-target or automatically distinguish hiện thân from true body.",
       "source": {
         "document": "02_CHARACTERS/Iris_Codex.docx",
         "anchor": "IRIS-COMBAT-TWIN-01; IRIS-AMMO-DEMONIC-01; IRIS-CANON-GATE-01"
@@ -858,7 +922,7 @@
       "id": "LEVEL.00",
       "domain": "LEVEL",
       "kind": "level",
-      "text": "Level 0 / The Lobby: endless-feeling yellow rooms, damp carpet, fluorescent hum, suspended ceiling and non-linear geometry. Main dangers are dehydration, exhaustion, disorientation and perceptual effects. Fluorescent Pressure can cause headache/sleeplessness/misheard footsteps; Memory Rooms can echo or corrupt memories; Layout Resistance can break detailed mapping. No resident Entity is confirmed; distant figures/voices should first be treated as hallucination, memory manifestation, perceptual copy or unclassified phenomenon unless evidence proves an incursion. Transition toward Level 1 may emerge gradually as concrete/columns/parking features replace the yellow rooms; it cannot be forced on demand.",
+      "text": "Level 0 / The Lobby: endless-feeling yellow rooms, damp carpet, fluorescent hum, suspended ceiling and non-linear geometry. Main dangers are dehydration, exhaustion, disorientation and perceptual effects. Fluorescent Pressure can cause headache/sleeplessness/misheard footsteps; Memory Rooms can echo or corrupt memories; Layout Resistance can break detailed mapping. No resident Entity is confirmed; distant figures/voices should first be treated as hallucination, memory hiện thân, perceptual copy or unclassified phenomenon unless evidence proves an incursion. Transition toward Level 1 may emerge gradually as concrete/columns/parking features replace the yellow rooms; it cannot be forced on demand.",
       "source": {
         "document": "01_WORLD/level.md + 01_WORLD/entity.md",
         "anchor": "Level 0; entity 1.3"
@@ -944,7 +1008,7 @@
       "id": "LEVEL.0.7",
       "domain": "LEVEL",
       "kind": "level",
-      "text": "Level 0.7 / The Reminiscence District: a vast preserved collection of historical manifestations of Level 0, with sections reflecting forms of the level from ancient periods through the modern era. Architecture can differ radically between preserved periods, sustaining supplies are unreliable, and blocked or anomalous exits are part of its documented hazards. In BACKROOMsV2 it follows Level 0.5 and leads only to Manila Room.",
+      "text": "Level 0.7 / The Reminiscence District: a vast preserved collection of historical hiện thâns of Level 0, with sections reflecting forms of the level from ancient periods through the modern era. Architecture can differ radically between preserved periods, sustaining supplies are unreliable, and blocked or anomalous exits are part of its documented hazards. In BACKROOMsV2 it follows Level 0.5 and leads only to Manila Room.",
       "source": {
         "document": "Backrooms Wiki",
         "anchor": "Level 0.7 — The Reminiscence District"
@@ -1382,7 +1446,7 @@
       "id": "ENTITY.JEFF",
       "domain": "ENTITY",
       "kind": "entity",
-      "text": "Jeff the Killer is a very rare roaming humanoid predator permitted as an incursion across Levels 0-6, not a resident of Levels 0/4/6. Origin remains UNKNOWN; Project does not confirm creepypasta-original identity, former Frontrooms humanity, Backrooms copy, or that all sightings are one metaphysical individual. Gameplay continuity does lock that killing one manifestation never permanently removes Jeff; the ontology of respawn remains OPEN. Jeff only hunts humans, uses long-term tactical observation and must never become neutral ally/trader/rescuer.",
+      "text": "Jeff the Killer is a very rare roaming humanoid predator permitted as an incursion across Levels 0-6, not a resident of Levels 0/4/6. Origin remains UNKNOWN; Project does not confirm creepypasta-original identity, former Frontrooms humanity, Backrooms copy, or that all sightings are one metaphysical individual. Gameplay continuity does lock that killing one hiện thân never permanently removes Jeff; the ontology of respawn remains OPEN. Jeff only hunts humans, uses long-term tactical observation and must never become neutral ally/trader/rescuer.",
       "source": {
         "document": "01_WORLD/entity.md",
         "anchor": "ENT-R01 — JEFF THE KILLER"

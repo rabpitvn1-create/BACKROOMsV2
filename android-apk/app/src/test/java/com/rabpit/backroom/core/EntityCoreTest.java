@@ -17,4 +17,14 @@ public class EntityCoreTest {
     assertTrue(EntityCore.roamingAllowedOn(99));
     assertFalse(EntityCore.roamingAllowedOn(-1));
   }
+
+  @Test public void legacyBossPromptCarriesCanonWithoutAutoSpawnSemantics() {
+    String prompt = EntityCore.legacyPromptContext(
+        "diep_minh", "Diệp Minh", "Huyết cừu Cao gia; ontology Backrooms vẫn OPEN.");
+
+    assertTrue(prompt.contains("Diệp Minh"));
+    assertTrue(prompt.contains("Huyết cừu Cao gia"));
+    assertTrue(prompt.contains("legacy/boss-only"));
+    assertTrue(prompt.contains("must not be treated as an auto-spawn Entity"));
+  }
 }
