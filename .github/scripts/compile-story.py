@@ -95,6 +95,24 @@ def split_markdown(markdown, target_chars, max_chars):
     return output
 
 
+def compiler_fingerprint():
+    source = Path(__file__).read_bytes()
+    return hashlib.sha256(source).hexdigest()
+
+
+def existing_output_is_current(metadata):
+    if not OUTPUT_PATH.is_file():
+        return False
+    try:
+        generated = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+        if generated.get("compilerFingerprint") != compiler_fingerprint():
+            return False
+        validate_generated(generated, metadata)
+        return True
+    except Exception:
+        return False
+
+
 def read_metadata():
     with METADATA_PATH.open("r", encoding="utf-8") as fh:
         metadata = json.load(fh)
@@ -598,11 +616,15 @@ def compile_chapter(chapter, target, maximum, established_story_state):
 
 def compile_story():
     metadata = read_metadata()
+    if existing_output_is_current(metadata):
+        print("[story-compiler] committed interactions already match current compiler + manuscript; skipping model calls.")
+        return
     target = max(800, int(metadata.get("segmentTargetChars", 1900)))
     maximum = max(target, int(metadata.get("segmentMaxChars", 2400)))
     result = {
         "schemaVersion": SCHEMA_VERSION,
         "compilerVersion": COMPILER_VERSION,
+        "compilerFingerprint": compiler_fingerprint(),
         "sourceRevision": metadata["sourceRevision"],
         "generatedBy": "story-compiler-v1",
         "chapters": {},
@@ -660,6 +682,8 @@ def validate_generated(generated=None, metadata=None):
 
     if generated.get("schemaVersion") != SCHEMA_VERSION:
         raise CompileError("Generated interaction schemaVersion mismatch.")
+    if generated.get("compilerFingerprint") != compiler_fingerprint():
+        raise CompileError("Generated interactions were produced by a different compiler revision.")
     if generated.get("sourceRevision") != metadata.get("sourceRevision"):
         raise CompileError("Generated interactions are stale for sourceRevision.")
 
