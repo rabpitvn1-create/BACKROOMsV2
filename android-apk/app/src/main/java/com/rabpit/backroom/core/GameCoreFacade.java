@@ -35,7 +35,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
-    this.storyCore = new StoryCore();
+    this.storyCore = new StoryCore(appContext);
     this.characterProgressionCore = new CharacterProgressionCore();
     this.survivalCore = new SurvivalCore();
     this.characterDetailCore = new CharacterDetailCore();
@@ -104,7 +104,21 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
-      levelCore.rollRouteForExplorerAction(legacy, text);
+      StoryCore.AuthoredTurn authored =
+          storyCore.advanceAndRender(legacy, text, characterEncounterCore);
+      if (authored != null) {
+        incrementTurn(legacy);
+        advanceGameTime(legacy, text);
+        characterProgressionCore.applyExplorerTurnRecovery(legacy);
+        appendStoryLog(legacy, text, authored);
+        legacy.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(legacy);
+        return response(true, legacy, null, "authored_story_committed", authored.reply);
+      }
+
+      if (!storyCore.ownsLevelProgression(legacy)) {
+        levelCore.rollRouteForExplorerAction(legacy, text);
+      }
       itemCore.prepareExplorationLoot(legacy);
       entityCore.prepareEncounter(legacy);
       characterEncounterCore.rollForExplorerAction(legacy, text);
@@ -206,6 +220,17 @@ public final class GameCoreFacade implements AutoCloseable {
       return storyCore.promptContext(state);
     } catch (Exception e) {
       return "STORY CORE: unavailable. Do not invent authored story progression or Party changes.";
+    }
+  }
+
+  public synchronized String storyLogMetadata(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      return storyCore.logMetadata(state).toString();
+    } catch (Exception e) {
+      return "{}";
     }
   }
 
@@ -458,6 +483,23 @@ public final class GameCoreFacade implements AutoCloseable {
     if (log == null) log = new JSONArray();
     log.put(new JSONObject().put("role", "player").put("text", action));
     log.put(new JSONObject().put("role", "gm").put("text", reply));
+    state.put("log", log);
+  }
+
+  private void appendStoryLog(
+      JSONObject state, String action, StoryCore.AuthoredTurn authored) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    log.put(new JSONObject().put("role", "player").put("text", action));
+    JSONObject gm = new JSONObject()
+        .put("role", "gm")
+        .put("text", authored.reply)
+        .put("storyThread", authored.thread)
+        .put("storyVisibility", authored.visibility)
+        .put("storyChapter", authored.chapterId)
+        .put("storySegmentId", authored.segmentId)
+        .put("authored", true);
+    log.put(gm);
     state.put("log", log);
   }
 
