@@ -71,7 +71,8 @@ final class CharacterDetailCore {
         .put("presence", nonEmpty(source.optString("presence", ""), "ACTIVE"))
         .put("isLeader", leader);
 
-    JSONObject progression = characterStatCore.project(state, id, characterProgressionCore);
+    JSONObject progression =
+        characterStatCore.project(state, source, id, characterProgressionCore);
 
     String avatar = firstString(source, previous, "avatar", "avatarRef");
     if (!avatar.isEmpty()) member.put("avatar", avatar);
@@ -86,6 +87,8 @@ final class CharacterDetailCore {
     member.put("currentHp", hp).put("hp", hp).put("maxHp", maxHp);
     member.put("baseMaxHp", progression.getInt("baseMaxHp"));
     member.put("stats", new JSONObject(progression.getJSONObject("stats").toString()));
+    member.put("combatStatus",
+        new JSONObject(progression.getJSONObject("combatStatus").toString()));
     member.put("progressionSource", progression.getString("source"));
 
     copyStringIfPresent(source, previous, member, "role");
