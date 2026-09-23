@@ -24,9 +24,21 @@ Implemented:
 - Chapter 30 sets `LEVEL0_ARC_BOUNDARY_REACHED` but does **not** claim or perform a Level 1 transition;
 - regression tests validate the 30 source files, metadata, paragraph segmentation and a complete Chapter 1 → Chapter 30 StoryCore run.
 
+Implemented by Story Compiler v1:
+
+- `.github/scripts/compile-story.py` compiles authored chapters into conservative `LINEAR / INTERACTIVE / CUTAWAY / LOCKED_EVENT` segment metadata;
+- `.github/workflows/compile-story.yml` automatically recompiles story interactions when manuscript/source metadata or compiler logic changes;
+- Haiku is the primary compiler model with Gemini fallback;
+- each compiled chapter is SHA-256 bound to its exact manuscript source, so stale A/B/C metadata is ignored at runtime;
+- cutaways are deterministic and never receive player choices;
+- authored event boundaries are forced to `LOCKED_EVENT`;
+- each `INTERACTIVE` segment has exactly three convergent Vietnamese choices and an `interactionGuard`;
+- compiled choices do not advance manuscript position and do not roll route, loot, Entity, or random character encounters;
+- player free-text input and `Tiếp tục cốt truyện` are locked while an authored A/B/C decision is pending;
+- if the narration provider fails after a choice, the choice remains retryable until a validated response commits.
+
 Still intentionally not implemented:
 
-- automatic manuscript-to-A/B/C generation;
 - scripted Entity encounter events authored from manuscript metadata;
 - automatic snapshot binding per authored segment;
 - roaming encounter grace/suppression policies beyond authored turns themselves;
@@ -201,7 +213,9 @@ The author may also choose one Markdown file per Chapter for convenience, but th
 
 ## Story compilation
 
-The intended Story Compiler converts authored prose into runtime-friendly structure.
+Story Compiler v1 now converts authored prose into runtime-friendly interaction metadata.
+
+The committed manuscript remains the creative source of truth. The compiler writes only derived data under `story/generated/`.
 
 Conceptually:
 
