@@ -65,11 +65,7 @@ jobs:
           }
 
           encode_ref() {
-            python3 - "$1" <<'PY'
-import sys
-from urllib.parse import quote
-print(quote(sys.argv[1], safe=""))
-PY
+            jq -rn --arg value "$1" '$value | @uri'
           }
 
           deleted=0
