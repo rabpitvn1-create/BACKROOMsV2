@@ -91,20 +91,26 @@
       "equipment": "GodKiller is a massive purely mechanical greatsword, not a gun or gunblade. It is linked to Syvial and may be recalled unless a sufficiently strong mechanism directly blocks that link. Lucifer Armor is a mobile full-body high-tech/mecha armor in black/gunmetal/silver with magenta light accents. Its pointed headgear modules are mechanical sensors, not biological horns. The armor is very durable and rapidly self-repairing but is not canonically absolutely indestructible."
     },
     "lucia": {
-      "name": "Hứa Thuý Mai / Lucia Lục",
-      "source": "02_CHARACTERS/Lucia_Codex.docx",
-      "driveId": "1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ",
-      "revision": "R03",
+      "name": "Lục Trầm",
+      "source": "02_CHARACTERS/Lục_Trầm_Codex",
+      "driveId": "1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s",
+      "revision": "R01",
       "aliases": [
+        "lục trầm",
+        "luc tram",
         "lucia",
         "lucia lục",
         "hứa thuý mai",
-        "thúy mai",
-        "thuý mai"
+        "hứa thúy mai",
+        "thuý mai",
+        "thúy mai"
       ],
-      "runtime": "Legal/real name: Hứa Thuý Mai. Lucia Lục is a military nickname/callsign, not her legal name. She is a 19-year-old human Vietnamese woman of Hoa Kiều background and a great-great-granddaughter of the Hứa family. She has one year of military service/training through a Vietnam plus United States program and achieved an excellent entrance result. She is a capable young human tactical riflewoman, not a supernatural UR+ combatant. Lucia can only be encountered through CharacterEncounterCore's Level 0 Explorer roll and must not be auto-created by the model. She is not part of Cao Minh's Prologue; any encounter with Cao Minh must be created by CharacterEncounterCore and valid campaign continuity. Her initial Level 0 objective is to find a route toward Level 1.",
-      "gameplay": "Locked gameplay baseline: HP 100, STR 7, DF 7, AGI 8, CRIT 7; regenerate +2 HP after every 3 separately completed turns, persisted across save/load. Current main weapon is a personalized M4A1 with physical ammunition: 60 rounds in main magazines plus 90 reserve, total 150 at baseline. She also carries a combat dagger and military navigation watch. A black handgun is visible in the thigh holster reference, but exact model/ammunition/gameplay behavior remain OPEN. Current inventory capacity baseline: 8 item types, maximum 100 units per type; equipment is managed separately.",
-      "visual": "R03 visual lock: young adult face, long black hair in a high ponytail, warm brown eyes, modern camouflage/tactical kit, no helmet, personalized M4A1 with adjustable stock/rail/optic/foregrip/suppressor/light/laser as visual components. Exact height/body measurements remain OPEN. Relationship and address with Cao Minh remain OPEN."
+      "runtime": "Current canon name is Lục Trầm. She is a human cultivation-world swordswoman, Chân truyền đệ tử of Thiên Kiếm Môn and a Chính Đạo Kiếm Tu from the same origin world as Cao Minh. She and Cao Minh already knew and fought each other before Backrooms, so their Backrooms encounter is a reunion, not first contact. She initially regards Cao Minh as an irreconcilable enemy because of Táng Kiếm Cốc, but the relationship must develop slowly through evidence and repeated behavior: hostility -> reluctant cooperation -> companionship -> trust -> only then possible romantic feelings. Internal runtime/save id remains 'lucia' solely for backward compatibility. CharacterEncounterCore exclusively owns materialization/join and allows the 10% reunion roll only after Level 0.",
+      "gameplay": "Preserve the existing Poker Dice numerical mechanics. Skill presentation is retconned only: M4A1 Joint Attack -> Tịch Quang Hợp Kích at the same 150% damage. The five proc slots retain their exact proc percentages, bonus damage, statuses, durations and values while displaying as Tịch Quang Phản Kiếm, Nhất Tuyến Phá Vọng, Thiên Kiếm Chấn, Bạch Hồng Quán Nhật and Vạn Kiếm Quy Tâm. Too Young To Die -> Thiên Kiếm Định Giới, retaining the 60-hit Ultimate projection and the same current-DMG +15% bonus-per-hit rule. Gameplay poison/bleed/stun/armor-pierce statuses are runtime projections and do not independently create new cultivation lore.",
+      "abilities": "Thiên Kiếm Linh Tâm unifies divine sense, spiritual power, spatial awareness and sword intent to read motion, balance, spiritual-flow changes and unstable points in sword forms, formations or defenses. It does not read minds, determine morality, identify Entities automatically, know Backrooms rules in advance, grant memory-manipulation immunity or make every space a formation she understands. Thiên Kiếm Thất Thức currently locks Nhất Tuyến Phá Vọng, Bạch Hồng Quán Nhật, Tịch Quang Phản Kiếm and Vạn Kiếm Quy Tâm. Thiên Kiếm Định Giới establishes a local sword-domain through linked sword seals; Backrooms can disrupt its anchors and geometry.",
+      "equipment": "Tịch Quang Kiếm is Lục Trầm's bonded double-edged longsword: long, straight, silver, precise and relatively narrow compared with Cao Minh's Huyết Ma Kiếm; it can be recalled by sword intent within valid perception range but does not regenerate infinitely. Thiên Cơ Bạch Kim Kiếm Khải is a high-grade Thiên Kiếm Môn artifact armor in ivory/silver, charcoal and restrained gold; it improves impact resistance, movement and force distribution. Mechanical-looking joints are cultivation-artifact design, not AI, electronics, reactor, servos, hidden guns, missiles or HUD.",
+      "visual": "R01 visual lock: young adult female swordswoman; tall, balanced and agile silhouette; very long thick black hair in a high ponytail; gold sword-crown accessory; reddish-brown eyes; full-body white/black/gold segmented sword armor; layered waist armor and long split battle-cloth panels; silver Tịch Quang longsword with gold-black multi-layer guard. No helmet. Do not add energy wings, halo, mask, guns, strong neon glow or change the primary white-black-gold palette. Exact height, weight and measurements remain OPEN. Avatar/overlay assets are intentionally unchanged for now.",
+      "relationship": "Before Backrooms Lục Trầm repeatedly hunted Cao Minh and considered him a sworn enemy. The Táng Kiếm Cốc truth is backstage knowledge and must not be handed to her automatically. Cao Minh calls her 'Lục tiên tử' with a teasing edge; she uses 'Cao Minh' when serious and 'ma đầu' when angry. Do not switch to anh/em automatically. Do not resolve their hostility with one rescue, one argument or instant romance."
     }
   }
 }

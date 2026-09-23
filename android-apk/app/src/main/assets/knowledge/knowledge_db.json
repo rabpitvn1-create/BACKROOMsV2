@@ -1403,25 +1403,104 @@
       ]
     },
     {
-      "id": "CHAR.LUCIA.TOO_YOUNG_TO_DIE",
+      "id": "CHAR.LUC_TRAM.IDENTITY",
       "domain": "CHARACTER",
-      "kind": "ultimate",
-      "text": "Too Young To Die is Lucia Lục / Hứa Thuý Mai's Poker Dice Ultimate. It fires exactly 60 M4A1 shots. Each shot deals 100% of Lucia's current DMG + 15% Bonus DMG. Damage scales from current character DMG and is not locked to a fixed HP amount. This is a gameplay projection and does not grant supernatural power or infinite ammunition.",
+      "kind": "identity",
+      "text": "Lục Trầm is a Chân truyền đệ tử of Thiên Kiếm Môn, a Chính Đạo Kiếm Tu from the same origin world as Cao Minh. She and Cao Minh already knew and fought each other before Backrooms. Internal runtime/save id 'lucia' is retained only for backward compatibility and must not be treated as her current name.",
       "source": {
-        "document": "02_CHARACTERS/Lucia_Codex.docx",
-        "anchor": "09 · KỸ NĂNG GAMEPLAY HIỆN HÀNH / Too Young To Die"
+        "document": "02_CHARACTERS/Lục_Trầm_Codex",
+        "anchor": "00-01 · HỒ SƠ / ĐỊNH DANH"
       },
       "authority": "USER_RETCON",
       "mutability": "IMMUTABLE",
       "priority": 55,
       "tags": [
-        "lucia",
-        "hứa thuý mai",
-        "too young to die",
-        "ultimate",
-        "m4a1"
+        "lục trầm",
+        "luc tram",
+        "thiên kiếm môn",
+        "chính đạo kiếm tu",
+        "lucia"
       ],
       "references": [],
+      "affordances": [
+        "character_identity",
+        "relationship_context"
+      ]
+    },
+    {
+      "id": "CHAR.LUC_TRAM.VISUAL_R01",
+      "domain": "CHARACTER",
+      "kind": "visual",
+      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar and overlay assets are intentionally unchanged until a later art pass.",
+      "source": {
+        "document": "02_CHARACTERS/Lục_Trầm_Codex",
+        "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R01"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "lục trầm",
+        "visual lock",
+        "tịch quang",
+        "thiên cơ bạch kim kiếm khải"
+      ],
+      "references": [
+        "CHAR.LUC_TRAM.IDENTITY"
+      ],
+      "affordances": [
+        "visual_description"
+      ]
+    },
+    {
+      "id": "CHAR.LUC_TRAM.CAO_MINH_RELATIONSHIP",
+      "domain": "CHARACTER",
+      "kind": "relationship",
+      "text": "Lục Trầm initially regards Cao Minh as a sworn enemy because of Táng Kiếm Cốc. Their Backrooms meeting is a reunion, not first contact. Relationship progression must be slow and evidence-driven: hostility, reluctant cooperation, companionship, trust, then only later possible romantic feelings. The hidden truth of Táng Kiếm Cốc is backstage knowledge and must not be automatically known by Lục Trầm.",
+      "source": {
+        "document": "02_CHARACTERS/Lục_Trầm_Codex",
+        "anchor": "13-20 · CAO MINH / QUAN HỆ / XƯNG HÔ"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "lục trầm",
+        "cao minh",
+        "táng kiếm cốc",
+        "tử địch",
+        "relationship"
+      ],
+      "references": [
+        "CHAR.LUC_TRAM.IDENTITY"
+      ],
+      "affordances": [
+        "relationship_context",
+        "dialogue_constraint"
+      ]
+    },
+    {
+      "id": "CHAR.LUC_TRAM.THIEN_KIEM_DINH_GIOI",
+      "domain": "CHARACTER",
+      "kind": "ultimate",
+      "text": "Thiên Kiếm Định Giới is Lục Trầm's current Poker Dice Ultimate presentation. Runtime mechanics are deliberately preserved from the retired Lucia Ultimate: exactly 60 hits, each using 100% of Lục Trầm's current DMG + 15% Bonus DMG in SSF, with existing FSF multiplier behavior unchanged. The 60-hit count is a gameplay projection; canonically Thiên Kiếm Định Giới establishes a local sword-domain through linked sword seals and does not grant absolute control over Backrooms space.",
+      "source": {
+        "document": "02_CHARACTERS/Lục_Trầm_Codex",
+        "anchor": "12 · TUYỆT KỸ — THIÊN KIẾM ĐỊNH GIỚI"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 55,
+      "tags": [
+        "lục trầm",
+        "thiên kiếm định giới",
+        "ultimate",
+        "60 hit",
+        "lucia"
+      ],
+      "references": [
+        "CHAR.LUC_TRAM.IDENTITY"
+      ],
       "affordances": [
         "direct_threat"
       ]

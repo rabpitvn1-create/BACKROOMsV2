@@ -1,14 +1,14 @@
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-21.
+Đồng bộ: 2026-09-23.
 
 Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
-- Lucia: `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ`
+- Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
 
@@ -91,14 +91,50 @@ Iris giữ canon độc lập từ tài liệu riêng. Trong campaign R15, khôn
 
 Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Syvial và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-## Hứa Thuý Mai / Lucia Lục
+## Lục Trầm — R01
 
-Lucia chỉ xuất hiện qua encounter do **CharacterEncounterCore** sở hữu. Gemini không được tự spawn hoặc mutate Party. Quan hệ và xưng hô với Cao Minh vẫn OPEN cho đến khi continuity trong campaign xác lập.
+Nguồn trực tiếp: `02_CHARACTERS/Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`.
 
-### Gameplay override — Ultimate
+Lục Trầm là **Chân truyền đệ tử Thiên Kiếm Môn**, một **Chính Đạo Kiếm Tu** cùng thế giới nguyên sinh với Cao Minh. Cô từng xem **Vạn Giới Ma Tôn** là tử địch không đội trời chung và đã nhiều lần truy sát hắn trước Backrooms. Vì vậy lần gặp trong Backrooms là **tái ngộ**, không phải first contact.
 
-- **Too Young To Die — ULTIMATE:** Lucia xả đúng 60 phát M4A1. Mỗi phát bắn gây **100% DMG hiện tại của Lucia + 15% Bonus DMG**. Damage lấy từ DMG hiện tại ở thời điểm kích hoạt, không khóa ở một mức HP cố định.
-- Retcon này thay vai trò AUTO legacy của Too Young To Die trong runtime Poker Dice; Lucia vẫn là con người bình thường được huấn luyện tốt, không nhận thêm năng lực siêu nhiên.
+**POWER SCALE HARD LOCK:** Lục Trầm là thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. Cô có thể khiến hắn nghiêm túc khi giao thủ, nhưng không được tự nâng thành đệ nhất cường giả hoặc ép hai người thành “cặp cân sức” chỉ để phục vụ romance.
+
+### Thiên Kiếm Môn và Táng Kiếm Cốc
+
+Giáo nghĩa cốt lõi của Thiên Kiếm Môn là **kiếm phải chịu trách nhiệm cho nơi nó chém xuống**. Điểm gãy lớn nhất giữa Lục Trầm và Cao Minh là **Táng Kiếm Cốc**: theo điều cô biết, Cao Minh phá đại trận và sư phụ cô chết trong biến cố. Sự thật hậu trường về **Huyết Tế Kiếm Trận** thuộc KNOWLEDGE LOCK và không được tự tiết lộ cho Lục Trầm.
+
+Quan hệ động phải phát triển chậm: **tử địch → hợp tác bất đắc dĩ → đồng hành → tín nhiệm → tình cảm hình thành**. Không dùng một lần cứu mạng hoặc một cuộc tranh luận để biến thù thành yêu. Không biến Thiên Kiếm Môn thành phe ác toàn diện, cũng không biến Cao Minh thành người tốt hoàn hảo.
+
+### Ngoại hình — Visual Lock R01
+
+Silhouette chính: nữ kiếm tu trưởng thành trẻ tuổi, cao ráo và thanh thoát; tóc đen cực dài buộc đuôi ngựa cao; kiếm quan vàng; **Thiên Cơ Bạch Kim Kiếm Khải** trắng–đen–vàng phủ gần toàn thân; hệ chiến bào phân mảnh tỏa từ hông; **Tịch Quang Kiếm** là trường kiếm hai lưỡi thân bạc, dài, thẳng và cân đối.
+
+Các chi tiết giống cơ khí trên Kiếm Khải chỉ là hình thức của **pháp bảo tiên hiệp**, không phải AI, reactor, servo, exoskeleton công nghệ, súng ẩn, tên lửa hoặc HUD. Không tự thêm cánh năng lượng, halo, mũ giáp, mặt nạ hoặc đổi bảng màu trắng–đen–vàng.
+
+### Năng lực và trang bị
+
+**Thiên Kiếm Linh Tâm:** hợp nhất thần niệm, linh lực, cảm giác không gian và kiếm ý; hỗ trợ đọc quỹ đạo, trọng tâm, dao động linh lực và điểm bất ổn trong thế kiếm/trận pháp/hộ thể. Không đọc suy nghĩ, không xác định thiện ác, không tự nhận dạng Entity, không biết trước luật Backrooms và không miễn nhiễm thao túng ký ức.
+
+**Tịch Quang Kiếm:** bản mệnh linh kiếm, thiên về đường kiếm sạch, đổi góc nhanh, phá điểm mất cân bằng, dẫn lực và bảo hộ. Có thể triệu hồi bằng kiếm niệm trong phạm vi cảm nhận hợp lệ; không tự tái sinh vô hạn.
+
+**Thiên Cơ Bạch Kim Kiếm Khải:** pháp bảo chiến đấu cấp cao của Thiên Kiếm Môn, tăng chịu lực, hỗ trợ thân pháp và phân phối phản lực; không phải powered armor công nghệ.
+
+**Thiên Kiếm Thất Thức:** hiện khóa các biểu hiện **Nhất Tuyến Phá Vọng**, **Bạch Hồng Quán Nhật**, **Tịch Quang Phản Kiếm** và **Vạn Kiếm Quy Tâm**.
+
+### Backrooms và encounter
+
+Lục Trầm rơi vào Level 0 ở vị trí khác Cao Minh và không gặp hắn ngay tại đây. Runtime giữ **10% encounter roll** nhưng chỉ cho phép tái ngộ sau khi đã rời Level 0; Gemini không được tự spawn hoặc mutate Party.
+
+Khi tái ngộ, hai người phải nhận ra nhau từ thế giới cũ và bắt đầu trong trạng thái cảnh giác/thù địch. Không cho Lục Trầm tự biết Entity, Level, Almond Water hoặc quy luật Backrooms nếu chưa quan sát, được cung cấp thông tin hoặc suy luận có căn cứ.
+
+### Gameplay presentation — giữ nguyên cơ chế, thay tên/cách thể hiện
+
+Internal save/runtime id vẫn là `lucia` để giữ tương thích save cũ. Đây chỉ là khóa kỹ thuật; tên canon và tên hiển thị là **Lục Trầm**.
+
+- **Tịch Quang Hợp Kích — Skill:** giữ nguyên projection **150% damage** của M4A1 Joint Attack.
+- Năm proc giữ nguyên toàn bộ tỷ lệ, bonus damage, status, duration và value; chỉ đổi cách thể hiện thành **Tịch Quang Phản Kiếm**, **Nhất Tuyến Phá Vọng**, **Thiên Kiếm Chấn**, **Bạch Hồng Quán Nhật**, **Vạn Kiếm Quy Tâm**.
+- **Thiên Kiếm Định Giới — Ultimate:** giữ nguyên cơ chế Ultimate **60 hit**. Mỗi hit dùng **100% DMG hiện tại của Lục Trầm + 15% Bonus DMG** trong SSF; FSF vẫn dùng multiplier của Poker Dice. Con số 60 hit và các status proc là **gameplay projection**, không tự biến thành lore mới ngoài Codex.
+- Avatar và combat overlay hiện **giữ nguyên asset legacy**; retcon hình ảnh sẽ xử lý riêng sau.
 
 ## Runtime contract
 
