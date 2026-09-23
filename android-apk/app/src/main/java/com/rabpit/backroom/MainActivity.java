@@ -640,10 +640,11 @@ public class MainActivity extends Activity {
           String entityContext = gameCore.entityPromptContext(coreBeforeJson);
           String itemContext = gameCore.itemPromptContext(coreBeforeJson);
           String characterContext = gameCore.characterPromptContext(coreBeforeJson);
+          String storyContext = gameCore.storyPromptContext(coreBeforeJson);
           String recentStory = recentStoryContext(state);
           String gmStyleExamples = gmStyleExamplesContext();
           String prompt = GmNarrativePacket.build(
-              levelContext, entityContext, itemContext, characterContext,
+              levelContext, entityContext, itemContext, characterContext, storyContext,
               recentStory, state, action, gmStyleExamples);
           long tCtxEnd = System.currentTimeMillis();
 
