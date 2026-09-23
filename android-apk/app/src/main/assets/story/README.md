@@ -30,9 +30,11 @@ Implemented by Story Compiler v1:
 - `.github/workflows/compile-story.yml` automatically recompiles story interactions when manuscript/source metadata or compiler logic changes;
 - Haiku is the primary compiler model with Gemini fallback;
 - each compiled chapter is SHA-256 bound to its exact manuscript source, so stale A/B/C metadata is ignored at runtime;
+- generated interaction data also carries a compiler fingerprint; unchanged manuscript + unchanged compiler do not call the model again or reroll A/B/C;
 - cutaways are deterministic and never receive player choices;
 - authored event boundaries are forced to `LOCKED_EVENT`;
-- each `INTERACTIVE` segment has exactly three convergent Vietnamese choices and an `interactionGuard`;
+- each `INTERACTIVE` segment has exactly three convergent Vietnamese choices and a compiler-owned `interactionGuard`;
+- Story Compiler v1 only permits observational, conversational and preparatory choices; route-changing, leave/return, attack, consume-item and other outcome-changing choices are rejected and downgraded to `LINEAR`;
 - compiled choices do not advance manuscript position and do not roll route, loot, Entity, or random character encounters;
 - player free-text input and `Tiếp tục cốt truyện` are locked while an authored A/B/C decision is pending;
 - if the narration provider fails after a choice, the choice remains retryable until a validated response commits.
