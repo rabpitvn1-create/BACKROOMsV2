@@ -644,6 +644,30 @@ public class CombatChoiceEngineTest {
     assertTrue(battleLog.getJSONObject(1).getString("text").contains("Evasion"));
   }
 
+  @Test public void derivedCombatFieldsDoNotChangeStableSeed() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    JSONObject legacy = new JSONObject()
+        .put("id", "cao_minh")
+        .put("name", "Cao Minh")
+        .put("sourceIndex", -1)
+        .put("hp", 50)
+        .put("maxHp", 50)
+        .put("baseAttack", 30)
+        .put("STR", 5)
+        .put("DEF", 5)
+        .put("SKL", 5)
+        .put("VIT", 5);
+    JSONObject enriched = new JSONObject(legacy.toString())
+        .put("criticalChancePercent", 5)
+        .put("evasionPercent", 0)
+        .put("resCriticalPercent", 0)
+        .put("resEvasionPercent", 0);
+
+    assertEquals(
+        CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(legacy)),
+        CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(enriched)));
+  }
+
   private static void finalizeAs(JSONObject state, int... values) throws Exception {
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     JSONArray array = new JSONArray();
