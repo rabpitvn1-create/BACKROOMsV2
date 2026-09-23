@@ -313,7 +313,53 @@ def forced_locked_indices(chapter, segment_count):
     return locked
 
 
-def build_prompt(chapter, segments, forced_locked):
+def apply_story_event_snapshot(state, event):
+    event_type = str((event or {}).get("type", "")).strip().upper()
+    character_id = str((event or {}).get("characterId", "")).strip()
+    if event_type == "CHARACTER_PARALLEL_STORY" and character_id:
+        state["characters"].setdefault(character_id, {})["status"] = "PARALLEL_STORY"
+        state["characters"][character_id]["presence"] = "PRESENT"
+    elif event_type == "CHARACTER_REUNION" and character_id:
+        state["characters"].setdefault(character_id, {})["status"] = "REUNITED"
+        state["characters"][character_id]["presence"] = "PRESENT"
+    elif event_type == "CHARACTER_ACCOMPANY" and character_id:
+        state["characters"].setdefault(character_id, {})["status"] = "ACCOMPANYING"
+        state["characters"][character_id]["presence"] = "PRESENT"
+    elif event_type == "CHARACTER_JOIN_PARTY" and character_id:
+        state["characters"].setdefault(character_id, {})["status"] = "PARTY_MEMBER"
+        state["characters"][character_id]["presence"] = "PRESENT"
+    elif event_type == "CHARACTER_PRESENT" and character_id:
+        state["characters"].setdefault(character_id, {})["presence"] = "PRESENT"
+    elif event_type == "CHARACTER_MISSING" and character_id:
+        state["characters"].setdefault(character_id, {})["presence"] = "MISSING"
+    elif event_type == "STORY_FLAG_SET":
+        key = str((event or {}).get("key", "")).strip()
+        if key:
+            state["flags"][key] = (event or {}).get("value", True)
+    elif event_type == "LEVEL0_ARC_BOUNDARY_REACHED":
+        state["arcBoundaryReached"] = True
+
+
+def build_story_state_snapshots(metadata):
+    state = {
+        "characters": {
+            "luc_tram": {"name": "Lục Trầm", "status": "UNSEEN_IN_STORY", "presence": "UNKNOWN"},
+            "nam": {"name": "Nam", "status": "STORY_LOCAL", "presence": "UNKNOWN"},
+        },
+        "flags": {},
+        "arcBoundaryReached": False,
+    }
+    snapshots = {}
+    for chapter in metadata.get("chapters", []):
+        for event in chapter.get("eventsOnEnter") or []:
+            apply_story_event_snapshot(state, event)
+        snapshots[chapter.get("id", "")] = json.loads(json.dumps(state, ensure_ascii=False))
+        for event in chapter.get("eventsOnExit") or []:
+            apply_story_event_snapshot(state, event)
+    return snapshots
+
+
+def build_prompt(chapter, segments, forced_locked, established_story_state):
     payload = {
         "chapter": {
             "id": chapter.get("id"),
@@ -326,6 +372,7 @@ def build_prompt(chapter, segments, forced_locked):
             "eventsOnExit": chapter.get("eventsOnExit") or [],
         },
         "forcedLockedSegmentIds": [segments[i]["id"] for i in sorted(forced_locked)],
+        "establishedStoryState": established_story_state,
         "segments": segments,
     }
     return """You are the BACKROOMsV2 Story Compiler. Convert authored Vietnamese novel prose into conservative gameplay interaction metadata.
@@ -335,7 +382,10 @@ AUTHORIAL AUTHORITY:
 - A player choice may only vary HOW Cao Minh approaches, observes, checks, waits, speaks, or prepares.
 - Choices MUST converge back to the authored manuscript. Never create alternate plot outcomes.
 - Never add a new character, item, Entity, route, revelation, relationship change, death, survival outcome, Level transition, combat result, or lore fact.
-- Never contradict requiredFacts or forbiddenClaims.
+- Never contradict requiredFacts, forbiddenClaims, or establishedStoryState.
+- establishedStoryState is authoritative runtime continuity at the start of this chapter.
+- If a character presence is MISSING or UNKNOWN, choices may search for evidence or discuss that person but MUST NOT address them, ask them to act, or assume they are physically present.
+- If a character is not PARTY_MEMBER, do not give them Party/gameplay authority.
 - Do not rewrite manuscript prose.
 
 CLASSIFICATION:
@@ -493,7 +543,7 @@ def compile_model_interactions(chapter, segments, forced_locked, prompt):
     return compile_safe_linear(segments, forced_locked), "deterministic-safe-fallback"
 
 
-def compile_chapter(chapter, target, maximum):
+def compile_chapter(chapter, target, maximum, established_story_state):
     chapter_id = chapter.get("id", "")
     manuscript = chapter_source(chapter)
     blocks = split_markdown(manuscript, target, maximum)
@@ -509,7 +559,7 @@ def compile_chapter(chapter, target, maximum):
         compiled = compile_cutaway(chapter, segments)
         provider = "deterministic"
     else:
-        prompt = build_prompt(chapter, segments, forced_locked)
+        prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
         compiled, provider = compile_model_interactions(
             chapter, segments, forced_locked, prompt)
 
@@ -540,11 +590,18 @@ def compile_story():
     }
     providers = set()
     compiled_by_id = {}
+    story_state_snapshots = build_story_state_snapshots(metadata)
 
     max_workers = max(1, min(4, int(os.environ.get("STORY_COMPILER_WORKERS", "4"))))
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_by_id = {
-            chapter.get("id", ""): executor.submit(compile_chapter, chapter, target, maximum)
+            chapter.get("id", ""): executor.submit(
+                compile_chapter,
+                chapter,
+                target,
+                maximum,
+                story_state_snapshots.get(chapter.get("id", ""), {}),
+            )
             for chapter in metadata["chapters"]
         }
         for chapter in metadata["chapters"]:
