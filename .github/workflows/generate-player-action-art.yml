@@ -1,0 +1,184 @@
+name: Generate Player Action Backrooms Art
+
+on:
+  push:
+    branches:
+      - feat/backrooms-header-art
+    paths:
+      - '.github/workflows/generate-player-action-art.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-player-action-backrooms-art
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/hud
+      OUT_FILE: android-apk/app/src/main/assets/hud/player_action_backrooms.png
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate IMG API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+          mkdir -p "$OUT_DIR"
+
+      - name: Generate Backrooms artwork for Player Action
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.request, urllib.error
+
+          api = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint = base if base.endswith("/images/generations") else (
+              base + "/images/generations" if base.endswith("/v1") else base + "/v1/images/generations"
+          )
+          out_dir = pathlib.Path(os.environ["OUT_DIR"])
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          prompt = (
+              "A wide cinematic environmental banner for a mobile dark survival game UI, inspired by liminal Backrooms aesthetics. "
+              "Empty endless yellow-beige office corridors, faded patterned wallpaper, stained carpet, repeating rectangular openings, "
+              "cold fluorescent ceiling lights with subtle uneven flicker, impossible perspective and quiet architectural wrongness. "
+              "Atmosphere should feel uncanny, lonely and oppressive rather than action-heavy. "
+              "Composition must be horizontally readable after a very wide crop: preserve recognizable corridor detail across the full width, "
+              "keep the central area moderately calm and lower contrast so a UI label can sit over it, with richer environmental detail toward the sides. "
+              "Muted dirty mustard, olive, nicotine-yellow and charcoal palette, realistic game concept art, restrained cinematic lighting, "
+              "fine grime and texture, no people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI elements, "
+              "no border frame, no excessive bloom, no neon, no gore."
+          )
+
+          payload = {"model": model, "prompt": prompt, "n": 1, "response_format": "b64_json"}
+          req = urllib.request.Request(
+              endpoint,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Authorization": f"Bearer {api}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/json",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=300) as response:
+                  body = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as exc:
+              detail = exc.read().decode("utf-8", errors="replace")
+              raise SystemExit(f"IMG API HTTP {exc.code}: {detail[:2000]}")
+
+          data = body.get("data")
+          if not isinstance(data, list) or not data:
+              raise SystemExit("IMG API response has no data[0]")
+          item = data[0]
+          if item.get("b64_json"):
+              raw = base64.b64decode(item["b64_json"])
+          elif item.get("url"):
+              dl = urllib.request.Request(item["url"], headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"})
+              with urllib.request.urlopen(dl, timeout=300) as response:
+                  raw = response.read()
+          else:
+              raise SystemExit("IMG API response has neither b64_json nor url")
+
+          if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+              ext = "png"
+          elif raw.startswith(b"\xff\xd8\xff"):
+              ext = "jpg"
+          elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+              ext = "webp"
+          elif raw.startswith((b"GIF87a", b"GIF89a")):
+              ext = "gif"
+          elif len(raw) >= 12 and raw[4:8] == b"ftyp":
+              ext = "avif"
+          else:
+              raise SystemExit(f"Unsupported IMG API format; magic={raw[:16].hex()} length={len(raw)}")
+
+          source = out_dir / f"player_action_backrooms.source.{ext}"
+          source.write_bytes(raw)
+          (out_dir / "player_action_backrooms.generated.json").write_text(
+              json.dumps({"model": model, "prompt": prompt}, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          src="$(find "$OUT_DIR" -maxdepth 1 -type f -name 'player_action_backrooms.source.*' -print -quit)"
+          test -n "$src"
+          convert "$src" -auto-orient -resize '1200x260^' -gravity center -extent 1200x260 "$OUT_FILE"
+          rm "$src"
+          identify "$OUT_FILE"
+
+      - name: Wire generated artwork into Player Action
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          index = Path("android-apk/app/src/main/assets/index.html")
+          html = index.read_text(encoding="utf-8")
+          html = html.replace(
+              "/* BACKROOM_ACTION_ART_V1: dedicated artwork asset for PLAYER ACTION. */",
+              "/* BACKROOM_ACTION_ART_V2: IMG_API-generated artwork for PLAYER ACTION. */",
+          )
+          html = html.replace(
+              "url('hud/player_action_backrooms.svg')",
+              "url('hud/player_action_backrooms.png')",
+          )
+          if "BACKROOM_ACTION_ART_V2" not in html or "player_action_backrooms.png" not in html:
+              raise SystemExit("Player Action IMG_API artwork wiring failed")
+          index.write_text(html, encoding="utf-8")
+
+          test = Path("android-apk/tests/hud-style.test.cjs")
+          text = test.read_text(encoding="utf-8")
+          old = """test('PLAYER ACTION uses its own newly-authored Backrooms artwork asset',()=>{\n  const art=path.join(assets,'hud/player_action_backrooms.svg');\n  assert.equal(fs.existsSync(art),true);\n  assert.match(fs.readFileSync(art,'utf8'),/<svg[\\s>]/);\n  assert.match(index,/BACKROOM_ACTION_ART_V1/);\n  assert.match(index,/url\\('hud\\/player_action_backrooms\\.svg'\\)/);\n  assert.match(index,/\\.player-action-bar #playerActionOpen\\{[^}]*background-image:/);\n});"""
+          new = """test('PLAYER ACTION uses dedicated IMG_API-generated Backrooms artwork',()=>{\n  const art=path.join(assets,'hud/player_action_backrooms.png');\n  assert.equal(fs.existsSync(art),true);\n  assert.equal(fs.statSync(art).size>10000,true);\n  assert.match(index,/BACKROOM_ACTION_ART_V2/);\n  assert.match(index,/url\\('hud\\/player_action_backrooms\\.png'\\)/);\n  assert.match(index,/\\.player-action-bar #playerActionOpen\\{[^}]*background-image:/);\n});"""
+          if old not in text:
+              raise SystemExit("Player Action regression-test anchor not found")
+          test.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+          rm -f android-apk/app/src/main/assets/hud/player_action_backrooms.svg
+
+      - name: Verify generated asset
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$OUT_FILE"
+          test "$(identify -format '%wx%h' "$OUT_FILE")" = "1200x260"
+          test -s "$OUT_DIR/player_action_backrooms.generated.json"
+          grep -Fq 'BACKROOM_ACTION_ART_V2' android-apk/app/src/main/assets/index.html
+          grep -Fq "url('hud/player_action_backrooms.png')" android-apk/app/src/main/assets/index.html
+          node --test android-apk/tests/hud-style.test.cjs
+
+      - name: Commit IMG API artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/assets/index.html \
+                  android-apk/app/src/main/assets/hud/player_action_backrooms.png \
+                  android-apk/app/src/main/assets/hud/player_action_backrooms.generated.json \
+                  android-apk/tests/hud-style.test.cjs
+          git rm -f --ignore-unmatch android-apk/app/src/main/assets/hud/player_action_backrooms.svg
+          git diff --cached --quiet && { echo 'Player Action artwork unchanged.'; exit 0; }
+          git commit -m 'Generate Player Action art with IMG API'
+          git push origin HEAD:feat/backrooms-header-art
