@@ -17,10 +17,9 @@ STORY_ROOT = ROOT / "android-apk/app/src/main/assets/story"
 METADATA_PATH = STORY_ROOT / "generated/level_0/level0.story.json"
 OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"
 
-SCHEMA_VERSION = 2
-COMPILER_VERSION = 2
-MAX_DECISIONS_PER_CHAPTER = 1
-VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "LOCKED_EVENT"}
+SCHEMA_VERSION = 3
+COMPILER_VERSION = 3
+VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "ENTITY_GATE"}
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
     re.compile(r"(?iu)\b(?:chọn|đổi|thay đổi)\s+(?:lối|hướng|đường)\b"),
@@ -564,13 +563,62 @@ def compile_cutaway(chapter, segments):
     }
 
 
+def authored_entity_gate_map(chapter):
+    gates = {}
+    for raw in chapter.get("authoredEntityEncounters") or []:
+        try:
+            segment_index = int((raw or {}).get("segmentIndex", 0))
+        except Exception:
+            segment_index = 0
+        entity_key = str((raw or {}).get("entityKey", "")).strip().lower()
+        if segment_index > 0 and entity_key:
+            gates[segment_index - 1] = entity_key
+    return gates
+
+
+def compile_player_turns(chapter, segments):
+    gates = authored_entity_gate_map(chapter)
+    has_next_chapter = bool(str(chapter.get("nextChapter", "")).strip())
+    output = {}
+    for index, segment in enumerate(segments):
+        entity_key = gates.get(index, "")
+        if entity_key:
+            output[segment["id"]] = {
+                "mode": "ENTITY_GATE",
+                "decisionContract": {
+                    "entityKey": entity_key,
+                    "attackText": "Tấn công",
+                    "loopAnchor": segment["id"],
+                },
+            }
+            continue
+
+        has_next_authored_turn = index + 1 < len(segments) or has_next_chapter
+        if has_next_authored_turn:
+            output[segment["id"]] = {
+                "mode": "DECISION",
+                "decisionContract": {
+                    "loopAnchor": segment["id"],
+                    "decisionGuard": STANDARD_INTERACTION_GUARD,
+                },
+            }
+        else:
+            output[segment["id"]] = {
+                "mode": "LINEAR",
+                "decisionContract": {},
+            }
+    return output
+
+
 def compile_safe_linear(segments, forced_locked):
+    # Legacy helper kept for compatibility with old call sites. Player-visible
+    # compilation no longer uses it: turn decisions are deterministic.
     return {
         segment["id"]: {
-            "mode": "LOCKED_EVENT" if index in forced_locked else "LINEAR",
+            "mode": "LINEAR",
             "decisionContract": {},
         }
-        for index, segment in enumerate(segments)
+        for segment in segments
     }
 
 
@@ -697,24 +745,21 @@ def compile_chapter(chapter, target, maximum, established_story_state):
     if not segments:
         raise CompileError(f"{chapter_id}: manuscript produced no segments.")
 
-    forced_locked = forced_locked_indices(chapter, len(segments))
     if chapter.get("visibility") == "cutaway":
         compiled = compile_cutaway(chapter, segments)
-        provider = "deterministic"
+        provider = "deterministic-cutaway"
     else:
-        prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
-        compiled, provider = compile_model_decisions(
-            chapter, segments, forced_locked, prompt, established_story_state)
-        compiled, audit_provider = audit_decision_contract(
-            chapter, segments, compiled, established_story_state)
-        provider = provider + "+" + audit_provider
+        compiled = compile_player_turns(chapter, segments)
+        provider = "deterministic-turn-loop-v3"
 
     decision_count = sum(1 for item in compiled.values() if item["mode"] == "DECISION")
+    entity_gate_count = sum(1 for item in compiled.values() if item["mode"] == "ENTITY_GATE")
     return {
         "chapterId": chapter_id,
         "provider": provider,
         "segmentCount": len(segments),
         "decisionCount": decision_count,
+        "entityGateCount": entity_gate_count,
         "compiledChapter": {
             "source": chapter.get("source"),
             "sourceDigest": source_digest(manuscript),
@@ -735,7 +780,7 @@ def compile_story():
         "compilerVersion": COMPILER_VERSION,
         "compilerFingerprint": compiler_fingerprint(),
         "sourceRevision": metadata["sourceRevision"],
-        "generatedBy": "story-compiler-v2",
+        "generatedBy": "story-compiler-v3-turn-loop",
         "chapters": {},
     }
     providers = set()
@@ -770,7 +815,7 @@ def compile_story():
         result["chapters"][chapter_id] = item["compiledChapter"]
         print(
             f"[story-compiler] {chapter_id}: {item['segmentCount']} segments, "
-            f"{item['decisionCount']} decisions, provider={item['provider']}"
+            f"{item['decisionCount']} decisions, {item['entityGateCount']} entity gates, provider={item['provider']}"
         )
 
     result["providersUsed"] = sorted(providers)
@@ -819,51 +864,51 @@ def validate_generated(generated=None, metadata=None):
         if not isinstance(segments, dict) or list(segments.keys()) != expected_ids:
             raise CompileError(f"{chapter_id}: generated segment IDs/order are stale.")
 
-        decision_count = 0
+        gates = authored_entity_gate_map(chapter)
         for index, segment_id in enumerate(expected_ids):
             spec = segments[segment_id]
             mode = spec.get("mode")
+            contract = spec.get("decisionContract")
             if mode not in VALID_MODES:
                 raise CompileError(f"{segment_id}: invalid mode {mode}.")
-            contract = spec.get("decisionContract")
             if not isinstance(contract, dict):
                 raise CompileError(f"{segment_id}: decisionContract must be an object.")
 
             if chapter.get("visibility") == "cutaway":
                 if mode != "CUTAWAY" or contract:
-                    raise CompileError(f"{segment_id}: cutaway must be deterministic and decision-free.")
+                    raise CompileError(f"{segment_id}: cutaway must be decision-free.")
                 continue
 
-            locked = forced_locked_indices(chapter, len(expected_ids))
-            if index in locked and mode != "LOCKED_EVENT":
-                raise CompileError(f"{segment_id}: authored event boundary must be LOCKED_EVENT.")
+            if index in gates:
+                if mode != "ENTITY_GATE":
+                    raise CompileError(f"{segment_id}: authored Entity turn must be ENTITY_GATE.")
+                if contract.get("entityKey") != gates[index]:
+                    raise CompileError(f"{segment_id}: authored Entity key mismatch.")
+                if contract.get("attackText") != "Tấn công":
+                    raise CompileError(f"{segment_id}: Entity gate must expose only Tấn công.")
+                continue
 
-            if mode == "DECISION":
-                decision_count += 1
-                if index + 1 >= len(expected_ids):
-                    raise CompileError(f"{segment_id}: DECISION requires a next authored segment.")
-                canon_text = str(contract.get("canonChoiceText", "")).strip()
-                if not canon_text or len(canon_text) > 160:
-                    raise CompileError(f"{segment_id}: invalid canonChoiceText.")
-                if canon_text.casefold() in {"tiếp tục cốt truyện", "continue story"}:
-                    raise CompileError(f"{segment_id}: meta canon choice is forbidden.")
+            has_next_authored_turn = index + 1 < len(expected_ids) or bool(str(chapter.get("nextChapter", "")).strip())
+            if has_next_authored_turn:
+                if mode != "DECISION":
+                    raise CompileError(f"{segment_id}: every player-controlled story turn must be DECISION.")
                 if contract.get("loopAnchor") != segment_id:
-                    raise CompileError(f"{segment_id}: loopAnchor must equal decision segment id.")
+                    raise CompileError(f"{segment_id}: loopAnchor must equal current story turn.")
                 if contract.get("decisionGuard") != STANDARD_INTERACTION_GUARD:
                     raise CompileError(f"{segment_id}: decision guard must be compiler-owned.")
-            elif contract:
-                raise CompileError(f"{segment_id}: non-decision modes cannot carry decisionContract.")
+                if "canonChoiceText" in contract:
+                    raise CompileError(f"{segment_id}: canon wording is runtime-prefetched in v3.")
+            else:
+                if mode != "LINEAR" or contract:
+                    raise CompileError(f"{segment_id}: terminal authored segment must be LINEAR.")
 
-        if decision_count > MAX_DECISIONS_PER_CHAPTER:
-            raise CompileError(f"{chapter_id}: too many DECISION segments ({decision_count}).")
-
-    print("[story-compiler] generated decisions validated against current manuscript.")
+    print("[story-compiler] generated turn loop validated: every player story turn has a decision or authored Entity gate.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compile novelist manuscript into canon-locked decision contracts.")
+    parser = argparse.ArgumentParser(description="Compile novelist manuscript into mandatory per-turn story decisions.")
     parser.add_argument("--validate-generated", action="store_true",
-                        help="Validate committed generated decision contracts without calling any model.")
+                        help="Validate mandatory per-turn story decisions without calling any model.")
     args = parser.parse_args()
     try:
         if args.validate_generated:

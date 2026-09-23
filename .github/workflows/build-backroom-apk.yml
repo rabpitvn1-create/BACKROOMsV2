@@ -91,7 +91,8 @@ jobs:
           grep -Fq 'file:///android_asset/entity/' android-apk/app/src/main/assets/snapshot-ui.js
           ! grep -Fq 'generatedFlags = generated.optJSONObject("flags")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'generated.optString("transitionTarget", "")' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'CombatChoiceEngine.resolveFinalized' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'gameCore.processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'CombatChoiceEngine.resolveFinalized(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'backroomCombatTurn' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
@@ -157,16 +158,30 @@ jobs:
           test -s android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json
           test -s .github/scripts/compile-story.py
           python3 .github/scripts/compile-story.py --validate-generated
+          jq -e '.schemaVersion == 3 and .compilerVersion == 3' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json >/dev/null
+          test "$(jq '[.chapters[].segments[] | select(.mode == "DECISION")] | length' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json)" -gt 100
+          test "$(jq '[.chapters[].segments[] | select(.mode == "LINEAR")] | length' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json)" -eq 1
           grep -Fq 'LEVEL_ZERO_INTERACTIONS_ASSET' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
           grep -Fq 'MODE_DECISION = "DECISION"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
+          grep -Fq 'MODE_ENTITY_GATE = "ENTITY_GATE"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
           grep -Fq 'DECISION_PREFETCH_REQUIRED = "PREFETCH_REQUIRED"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'OUTCOME_TRAP = "TRAP_LOOP"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'pendingStoryAdvance' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          grep -Fq 'processStoryEntityAttack' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'entityCore.prepareEncounter(state);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'storyDecisionPrefetchRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq '@JavascriptInterface public void resolveStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq '@JavascriptInterface public void attackStoryEntity' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'storyAwaitingDecision' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'storyAwaitingEntityAttack' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq "document.createTextNode('• ')" android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq "action:'Tiếp tục cốt truyện'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'storyDecisionActive' android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq 'storyEntityAttackActive' android-apk/app/src/main/assets/player-action-ui.js
           ! grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'storyInteractionActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java

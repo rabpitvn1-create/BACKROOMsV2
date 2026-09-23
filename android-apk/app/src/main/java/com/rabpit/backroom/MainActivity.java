@@ -809,6 +809,22 @@ public class MainActivity extends Activity {
       });
     }
 
+    @JavascriptInterface public void attackStoryEntity(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject result = new JSONObject(gameCore.processStoryEntityAttack(stateJson));
+          if (!result.optBoolean("handled", false)) {
+            throw new Exception(result.optString(
+                "error", "Authored Entity gate bị Core từ chối."));
+          }
+          emit("backroomTurn", result.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomError",
+              e.getMessage() == null ? "Không thể bắt đầu authored Entity combat." : e.getMessage());
+        }
+      });
+    }
+
     @JavascriptInterface public void combatRoll(String stateJson) {
       io.execute(() -> {
         try {
@@ -851,10 +867,11 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatResolve(String stateJson) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(stateJson);
-          JSONObject resolved = CombatChoiceEngine.resolveFinalized(submitted);
-          resolved = new JSONObject(gameCore.normalizeState(resolved.toString()));
-          emit("backroomCombatTurn", resolved.toString());
+          JSONObject result = new JSONObject(gameCore.processCombatResolution(stateJson));
+          if (!result.optBoolean("handled", false)) {
+            throw new Exception(result.optString("error", "Không thể resolve combat hand."));
+          }
+          emit("backroomCombatTurn", result.getJSONObject("state").toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể resolve combat hand." : e.getMessage());
         }
