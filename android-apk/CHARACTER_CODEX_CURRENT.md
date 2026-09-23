@@ -131,7 +131,7 @@ Khi tái ngộ, hai người phải nhận ra nhau từ thế giới cũ và b�
 
 Internal save/runtime id vẫn là `lucia` để giữ tương thích save cũ. Đây chỉ là khóa kỹ thuật; tên canon và tên hiển thị là **Lục Trầm**.
 
-- **Tịch Quang Hợp Kích — Skill:** giữ nguyên projection **150% damage** của M4A1 Joint Attack.
+- **Tịch Quang Hợp Kích — Skill:** giữ nguyên projection **150% damage** của kỹ năng active legacy tương ứng.
 - Năm proc giữ nguyên toàn bộ tỷ lệ, bonus damage, status, duration và value; chỉ đổi cách thể hiện thành **Tịch Quang Phản Kiếm**, **Nhất Tuyến Phá Vọng**, **Thiên Kiếm Chấn**, **Bạch Hồng Quán Nhật**, **Vạn Kiếm Quy Tâm**.
 - **Thiên Kiếm Định Giới — Ultimate:** giữ nguyên cơ chế Ultimate **60 hit**. Mỗi hit dùng **100% DMG hiện tại của Lục Trầm + 15% Bonus DMG** trong SSF; FSF vẫn dùng multiplier của Poker Dice. Con số 60 hit và các status proc là **gameplay projection**, không tự biến thành lore mới ngoài Codex.
 - Avatar và combat overlay hiện **giữ nguyên asset legacy**; retcon hình ảnh sẽ xử lý riêng sau.

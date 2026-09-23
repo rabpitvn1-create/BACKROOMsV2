@@ -16,7 +16,7 @@ public class GmChoiceContractTest {
         .put("party", new JSONArray().put(new JSONObject().put("id", "lucia").put("name", "Lục Trầm")))
         .put("inventory", new JSONArray().put(new JSONObject().put("id", "almond-water").put("name", "Almond Water")));
 
-    String reply = "Cao Minh gặp Clump tại Level 0. Lucia Lục dùng Thiên Ma Bộ trong khi "
+    String reply = "Cao Minh gặp Clump tại Level 0. Lục Trầm dùng Tịch Quang Phản Kiếm trong khi "
         + "Almond Water vẫn còn. HP 50/50, EXP 10 và trạng thái Chảy máu xuất hiện.";
     JSONObject entry = GmChoiceContract.gmEntry(reply, new JSONObject(), state);
     JSONArray highlights = entry.getJSONArray("highlights");
