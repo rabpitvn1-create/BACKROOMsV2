@@ -53,7 +53,7 @@ public class StoryCoreTest {
         + "}]}";
     String digest = StoryRepository.sourceDigest(source);
     String decisions = "{"
-        + "\"schemaVersion\":2,"
+        + "\"schemaVersion\":3,"
         + "\"sourceRevision\":\"decision-r2\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
@@ -62,7 +62,6 @@ public class StoryCoreTest {
         + "\"L0_C01_P001\":{"
         + "\"mode\":\"DECISION\","
         + "\"decisionContract\":{"
-        + "\"canonChoiceText\":\"Bám theo dấu cũ rồi bước tiếp\","
         + "\"loopAnchor\":\"L0_C01_P001\","
         + "\"decisionGuard\":\"Không thay đổi authored plot.\""
         + "}},"
@@ -250,6 +249,8 @@ public class StoryCoreTest {
 
   private static JSONObject preparedAlternates() throws Exception {
     return new JSONObject()
+        .put("canon", new JSONObject()
+            .put("text", "Bám theo dấu cũ rồi bước tiếp"))
         .put("trap", new JSONObject()
             .put("text", "Theo tiếng ù rẽ sang khoảng tối bên cạnh")
             .put("reply", "Tiếng ù kéo dài thêm một nhịp. Những vệt ố quen thuộc lại hiện ra trước mắt như thể khoảng hành lang vừa tự khép vòng."))
@@ -285,7 +286,7 @@ public class StoryCoreTest {
     JSONObject request = core.decisionPrefetchRequest(state, "(context)");
     assertTrue(request.getBoolean("needed"));
     String contextHash = request.getString("contextHash");
-    assertTrue(request.getString("prompt").contains("TWO additional plausible choices"));
+    assertTrue(request.getString("prompt").contains("COMPLETE three-choice package"));
 
     core.installDecisionPackage(state, contextHash, preparedAlternates());
     assertTrue(core.decisionReady(state));
@@ -313,7 +314,7 @@ public class StoryCoreTest {
     }
   }
 
-  @Test public void canonDecisionAdvancesImmediatelyIntoAuthoredBeat() throws Exception {
+  @Test public void canonDecisionQueuesNextAuthoredTurnUntilGateClears() throws Exception {
     JSONObject state = state();
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
@@ -328,11 +329,16 @@ public class StoryCoreTest {
 
     assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
     assertFalse(resolution.looped);
-    assertTrue(resolution.reply.contains("áp sát mép tường"));
+    assertEquals("", resolution.reply);
     assertFalse(core.awaitingDecision(state));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("áp sát mép tường"));
+    assertFalse(core.hasPendingStoryAdvance(state));
   }
 
-  @Test public void convergeUsesPreparedReactionThenCanonicalBeat() throws Exception {
+  @Test public void convergeQueuesAuthoredBeatAfterPreparedReaction() throws Exception {
     JSONObject state = state();
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
@@ -348,8 +354,11 @@ public class StoryCoreTest {
     assertEquals(StoryCore.OUTCOME_CONVERGE, resolution.outcome);
     assertFalse(resolution.looped);
     assertTrue(resolution.reply.startsWith("Cao Minh giữ nguyên vị trí"));
-    assertTrue(resolution.reply.contains("áp sát mép tường"));
-    assertFalse(core.awaitingDecision(state));
+    assertFalse(resolution.reply.contains("áp sát mép tường"));
+    assertTrue(core.hasPendingStoryAdvance(state));
+
+    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
+    assertTrue(next.reply.contains("áp sát mép tường"));
   }
 
   @Test public void trapUsesPreparedReactionAndReturnsToSameDecisionAnchor() throws Exception {
