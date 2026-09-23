@@ -1,7 +1,38 @@
 # BACKROOMsV2 — Novelist-First Story Pipeline
 
-> **Status:** Architecture contract for the future story pipeline.  
-> **Important:** This README describes the intended workflow. It does **not** mean the Story Compiler, StoryCore, generated story graph, story-driven exits, scripted encounters, save migration, or legacy route-streak replacement are already implemented in runtime code.
+> **Status:** Level 0 novelist-first runtime is implemented on the current branch.  
+> **Source revision:** `level0-final-2026-09-23`.
+
+## Current implementation status
+
+Implemented:
+
+- all 30 final Level 0 Chapters are committed verbatim under `story/source/level_0/`;
+- `StoryRepository` loads generated metadata plus the authored Markdown directly from APK assets;
+- authored prose is split only at paragraph boundaries and emitted verbatim by Java Core;
+- the runtime exposes **Tiếp tục cốt truyện** as a deterministic authored-story action;
+- free exploration remains available between authored sections;
+- Level 0 hidden route-streak rolls are suppressed while StoryCore owns the active Level 0 story;
+- `StoryCore` owns save-facing chapter, segment, thread, visibility, story flags and story-character state;
+- Lục Trầm is permanently removed from random character encounter rolls;
+- Lục Trầm progresses through `PARALLEL_STORY → REUNITED → ACCOMPANYING → PARTY_MEMBER` only through authored events;
+- Nam is tracked as a story-local character and becomes `MISSING` at the authored Chapter 19 event;
+- Chapters 3, 5, 7 and 9 are explicit Lục Trầm cutaways;
+- cutaway facts are excluded from Cao Minh's recent-context knowledge;
+- free player input is disabled and Core-rejected while a cutaway is active;
+- AI candidate state cannot overwrite StoryCore state;
+- Chapter 30 sets `LEVEL0_ARC_BOUNDARY_REACHED` but does **not** claim or perform a Level 1 transition;
+- regression tests validate the 30 source files, metadata, paragraph segmentation and a complete Chapter 1 → Chapter 30 StoryCore run.
+
+Still intentionally not implemented:
+
+- automatic manuscript-to-A/B/C generation;
+- scripted Entity encounter events authored from manuscript metadata;
+- automatic snapshot binding per authored segment;
+- roaming encounter grace/suppression policies beyond authored turns themselves;
+- a post-Chapter-30 Level transition, because the current manuscript does not establish that the unnamed metal region is Level 1.
+
+The existing `LevelCore` route-streak code still exists for non-story-owned progression, but it is not allowed to advance Level 0 while the authored Level 0 story is active.
 
 ## Core principle
 
@@ -81,19 +112,18 @@ Recommended layout:
 story/
 ├── README.md
 ├── source/
-│   ├── level_0.md
-│   ├── level_1.md
-│   └── ...
+│   └── level_0/
+│       ├── LEVEL0_CH01.md
+│       ├── LEVEL0_CH02.md
+│       ├── ...
+│       └── LEVEL0_CH30.md
 └── generated/
     ├── story_manifest.json
-    ├── level_0/
-    │   ├── chapter_01.story.json
-    │   ├── chapter_02.story.json
-    │   └── ...
-    └── ...
+    └── level_0/
+        └── level0.story.json
 ~~~
 
-The exact generated layout may change when StoryCore is implemented, but the separation must remain:
+The current implementation uses this separation, and future Levels should preserve it:
 
 ~~~text
 source/     = human-authored manuscript
@@ -767,24 +797,13 @@ The prose remains the authored source.
 
 ---
 
-## Save compatibility
+## Save policy
 
-Generated Chapter IDs, StoryNode IDs, flags, and schema versions may become save-facing data.
+Old saves are not a compatibility requirement for this story-system transition.
 
-Therefore the implementation must eventually support:
+The new story runtime should optimize for a clean, deterministic state model rather than carrying migration logic for obsolete saves.
 
-- stable generated identifiers;
-- schema versioning;
-- save migration;
-- missing-node recovery;
-- safe fallback behavior;
-- backward compatibility with older saves.
-
-Older saves may still contain legacy route/streak state.
-
-Do not delete or reinterpret legacy fields merely because the novelist-first pipeline is introduced.
-
-Migration must be explicit and tested.
+Generated Chapter IDs, StoryNode IDs, flags, and schema versions may still become save-facing data for saves created **after** the new story system ships. From that point onward, stable identifiers and safe regeneration matter so an in-progress new-format game is not corrupted by later manuscript recompilation.
 
 ---
 
@@ -836,7 +855,7 @@ Inspect manuscript
 → generate runtime metadata
 → validate references
 → run regression tests
-→ preserve save compatibility
+→ preserve current-format save integrity
 ~~~
 
 Do not make the novelist manually solve technical problems that the pipeline can solve deterministically.
@@ -888,7 +907,7 @@ At minimum validate:
 - valid Level references;
 - safe terminal nodes;
 - preservation of required authored events;
-- save compatibility where IDs already exist.
+- current-format save integrity where generated IDs are already in use.
 
 Compiler uncertainty should be surfaced instead of silently inventing major story logic.
 
@@ -915,9 +934,8 @@ Preferred order:
 13. preserve LevelCore transition authority;
 14. add scripted Entity API;
 15. add roaming suppression/grace;
-16. migrate legacy progression only after regression confidence;
-17. add old-save migration;
-18. add CI and APK verification.
+16. replace legacy progression only after regression confidence;
+17. add CI and APK verification.
 
 ---
 

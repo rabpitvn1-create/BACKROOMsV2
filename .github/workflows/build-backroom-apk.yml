@@ -150,6 +150,12 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryCoreTest.java
+          grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          ! grep -Fq 'LUC_TRAM_RATE_PERCENT' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          grep -Fq 'storyPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'copyField(before, sanitized, StoryCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
@@ -346,9 +352,13 @@ jobs:
           test "$(find android-apk/app/src/main/assets/dice -type f -name 'die-*.svg' | wc -l)" -eq 6
           ! grep -R -Fq 'ACTION_A' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -R -Fq 'Math.random' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq '6. PROLOGUE — MANDATORY NEW GAME OPENING' android-apk/app/src/main/assets/index.html
-          grep -Fq 'Ma Sơn.' android-apk/app/src/main/assets/index.html
-          grep -Fq 'Và lần đầu tiên sau rất nhiều năm, Vạn Giới Ma Tôn cảm thấy chuyến đi phía trước có lẽ sẽ không nhàm chán.' android-apk/app/src/main/assets/index.html
+          grep -Fq 'Main authored opening is served from story/source by StoryCore.' android-apk/app/src/main/assets/index.html
+          test -s android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
+          grep -Fq '# Level 0 — Chương 01: Nơi Không Có Tên' android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
+          grep -Fq 'Ma Sơn. Không có đại chiến. Không có thiên kiếp.' android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
+          test -s android-apk/app/src/main/assets/story/generated/level_0/level0.story.json
+          grep -Fq '"sourceRevision": "level0-final-2026-09-23"' android-apk/app/src/main/assets/story/generated/level_0/level0.story.json
+          grep -Fq '"chapterCount": 30' android-apk/app/src/main/assets/story/generated/story_manifest.json
           grep -Fq 'player:{name:"Cao Minh",condition:"Ổn định"}' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'Theo đúng mệnh lệnh nhiệm vụ, Kai, Iris và Syvial chủ động bước qua cùng một cổng không gian.' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'Việc Kai xuất hiện trong Backrooms không tự động chứng minh bất kỳ giả thuyết nào về Async.' android-apk/app/src/main/assets/index.html
@@ -395,7 +405,7 @@ jobs:
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/SurvivalCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/SurvivalCoreTest.java
-          grep -Fq 'CURRENT_SAVE_VERSION = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 11' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'survivalCore.projectPhysiology(state, id)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'copyField(before, sanitized, SurvivalCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ItemCore.grantEntityLootItem' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java

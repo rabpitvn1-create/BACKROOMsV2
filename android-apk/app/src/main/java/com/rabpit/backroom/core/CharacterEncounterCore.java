@@ -10,10 +10,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Owns companion encounter rolls, joins, migration and pending GM introductions. */
+/** Owns random companion encounters, Party joins, migration and pending GM introductions. */
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
-  static final int LUC_TRAM_RATE_PERCENT = 10;
   static final int RARE_ENCOUNTER_BOUND = 4000;
 
   interface IntRng {
@@ -96,13 +95,8 @@ final class CharacterEncounterCore {
     JSONArray party = state.getJSONArray("party");
     List<String> hits = new ArrayList<>();
 
-    String currentLevelKey = state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)));
-    // Lục Trầm's current canon requires the reunion to happen only after Level 0.
-    if (!containsPartyId(party, "luc_tram")
-        && isLucTramEncounterLevel(currentLevelKey)
-        && shouldEncounterLucTram(currentLevelKey, nextRoll(100))) {
-      hits.add("luc_tram");
-    }
+    // Story-managed characters such as Lục Trầm are deliberately excluded from RNG.
+    // Their appearance/reunion/join timing is owned by authored story events.
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("iris");
     }
@@ -166,52 +160,63 @@ final class CharacterEncounterCore {
       JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
       JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
       List<String> joined = new ArrayList<>();
-      List<String> notMet = new ArrayList<>();
+      List<String> randomNotMet = new ArrayList<>();
       for (String id : CANONICAL_ORDER) {
-        if (containsPartyId(party, id)) joined.add(displayName(id));
-        else notMet.add(displayName(id));
+        if (containsPartyId(party, id)) {
+          joined.add(displayName(id));
+        } else if (!StoryCore.isStoryManagedCharacter(id)) {
+          randomNotMet.add(displayName(id));
+        }
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
-      boolean lucTramPending = containsString(pending, "luc_tram");
-      String encounterRule = lucTramPending
-          ? "Lục Trầm is a REUNION, not first contact: she and Cao Minh knew and fought each other before Backrooms. " +
-              "Begin with wary/hostile recognition consistent with their old rivalry. Do not jump directly to trust, romance, forgiveness or the hidden truth of Táng Kiếm Cốc. "
-          : "For Iris/Syvial, depict first contact in the current location. ";
+      String lucTramStatus = StoryCore.characterStatus(state, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
-          "Not met: " + listText(notMet) + ".\n" +
-          "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
-          "Pending intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
-          "Core exclusively owns encounter rolls and Party membership. Never spawn a character, add/remove/reorder Party, or change joined state. " +
-          "Joined characters may be treated as already accompanying Cao Minh. Pending-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
+          "Story-managed: Lục Trầm (" + lucTramStatus + "); never random-roll her appearance/reunion/join.\n" +
+          "Random encounter pool not met: " + listText(randomNotMet) + ".\n" +
+          "Just randomly encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
+          "Pending random intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
+          "Core exclusively owns random encounter rolls and Party membership. StoryCore owns authored character timing. " +
+          "Never spawn a story-managed character, add/remove/reorder Party, or change joined state from narration. " +
+          "Joined characters may be treated as already accompanying Cao Minh. Pending random-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "A pending character encounter has triggered. Depict the encounter in the current location before any spoken line. " +
-                  encounterRule +
+              : "A random character encounter has triggered. Depict first contact in the current location before any spoken line. " +
                   "Do not imply the character was already walking with Cao Minh, already in his Party, or present in earlier Backrooms turns. " +
                   "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
-                  "After this validated encounter scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
+                  "After this validated random encounter scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
   }
 
-  static boolean isLucTramEncounterLevel(String levelKey) {
-    String normalized = levelKey == null ? "" : levelKey.trim().toLowerCase(Locale.ROOT);
-    return !normalized.isEmpty()
-        && !"0".equals(normalized)
-        && !normalized.startsWith("0.")
-        && !normalized.startsWith("0-");
-  }
-
-  static boolean shouldEncounterLucTram(String levelKey, int roll) {
-    return isLucTramEncounterLevel(levelKey)
-        && roll >= 0 && roll < LUC_TRAM_RATE_PERCENT;
-  }
-
   static boolean shouldEncounterRare(int roll) {
     return roll == 0;
+  }
+
+  boolean joinFromStory(JSONObject state, String rawId) throws Exception {
+    normalizeState(state);
+    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
+    if (!isEncounterCharacter(id)) {
+      throw new IllegalArgumentException("Unsupported story Party character: " + rawId);
+    }
+
+    JSONArray party = state.getJSONArray("party");
+    if (containsPartyId(party, id)) return false;
+    if (party.length() >= MAX_COMPANIONS) {
+      throw new IllegalStateException("Party đã đầy trước khi hoàn tất authored story join.");
+    }
+
+    party.put(normalizedMember(id, null));
+    state.put("party", party);
+    normalizeState(state);
+
+    JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
+    encounter.put("lastStoryJoined", id);
+    encounter.put("lastStoryJoinedTurn", Math.max(1, state.optInt("turn", 1)));
+    state.put(ENCOUNTER_STATE, encounter);
+    return true;
   }
 
   static boolean isJoinedMember(JSONObject member) {
@@ -285,7 +290,7 @@ final class CharacterEncounterCore {
     JSONArray result = new JSONArray();
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
-      if (containsString(ids, id)) result.put(id);
+      if (!StoryCore.isStoryManagedCharacter(id) && containsString(ids, id)) result.put(id);
     }
     return result;
   }

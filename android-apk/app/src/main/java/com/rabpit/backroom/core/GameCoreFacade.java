@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 10;
+  private static final int CURRENT_SAVE_VERSION = 11;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -22,6 +22,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private final EntityCore entityCore;
   private final ItemCore itemCore;
   private final CharacterEncounterCore characterEncounterCore;
+  private final StoryCore storyCore;
   private final CharacterProgressionCore characterProgressionCore;
   private final SurvivalCore survivalCore;
   private final CharacterDetailCore characterDetailCore;
@@ -34,6 +35,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.entityCore = new EntityCore(appContext);
     this.itemCore = new ItemCore();
     this.characterEncounterCore = new CharacterEncounterCore();
+    this.storyCore = new StoryCore(appContext);
     this.characterProgressionCore = new CharacterProgressionCore();
     this.survivalCore = new SurvivalCore();
     this.characterDetailCore = new CharacterDetailCore();
@@ -51,9 +53,17 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(legacy);
       itemCore.normalizeInventory(legacy);
       characterEncounterCore.normalizeState(legacy);
+      storyCore.normalizeState(legacy);
       CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
+
+      if (storyCore.blocksFreePlayerAction(legacy) && !StoryCore.isAdvanceAction(text)) {
+        JSONObject result = deepCopy(legacy);
+        String reply = "Đang ở đoạn cắt cảnh của cốt truyện. Hãy chọn “Tiếp tục cốt truyện” để tiếp tục.";
+        persist(result);
+        return response(true, result, "story_cutaway_locked", "story_cutaway_locked", reply);
+      }
 
       if (itemCore.isOpenChestAction(text)) {
         JSONObject result = deepCopy(legacy);
@@ -101,7 +111,21 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
-      levelCore.rollRouteForExplorerAction(legacy, text);
+      StoryCore.AuthoredTurn authored =
+          storyCore.advanceAndRender(legacy, text, characterEncounterCore);
+      if (authored != null) {
+        incrementTurn(legacy);
+        advanceGameTime(legacy, text);
+        characterProgressionCore.applyExplorerTurnRecovery(legacy);
+        appendStoryLog(legacy, text, authored);
+        legacy.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(legacy);
+        return response(true, legacy, null, "authored_story_committed", authored.reply);
+      }
+
+      if (!storyCore.ownsLevelProgression(legacy)) {
+        levelCore.rollRouteForExplorerAction(legacy, text);
+      }
       itemCore.prepareExplorationLoot(legacy);
       entityCore.prepareEncounter(legacy);
       characterEncounterCore.rollForExplorerAction(legacy, text);
@@ -128,11 +152,13 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(before);
       itemCore.normalizeInventory(before);
       characterEncounterCore.normalizeState(before);
+      storyCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
 
       copyField(before, sanitized, "inventory");
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
+      copyField(before, sanitized, StoryCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
       int beforeStageIndex = LevelCore.stageIndex(before);
@@ -153,6 +179,7 @@ public final class GameCoreFacade implements AutoCloseable {
       entityCore.validateAndApply(before, sanitized);
       itemCore.validateAndApply(before, sanitized);
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
+      storyCore.normalizeState(sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
       characterProgressionCore.applyExplorerTurnRecovery(sanitized);
@@ -192,6 +219,28 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String storyPromptContext(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      return storyCore.promptContext(state);
+    } catch (Exception e) {
+      return "STORY CORE: unavailable. Do not invent authored story progression or Party changes.";
+    }
+  }
+
+  public synchronized String storyLogMetadata(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    try {
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      return storyCore.logMetadata(state).toString();
+    } catch (Exception e) {
+      return "{}";
+    }
+  }
+
   public synchronized String entityPromptContext(String stateJson) {
     JSONObject state = parseState(stateJson);
     try {
@@ -212,6 +261,25 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String processStoryCharacterEvent(
+      String stateJson, String characterId, String eventType) {
+    JSONObject state = parseState(stateJson);
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      storyCore.applyCharacterEvent(state, characterId, eventType, characterEncounterCore);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "story_event_committed", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_event_rejected", null);
+    }
+  }
+
   public synchronized String processItemAction(String stateJson, String itemId, String operation,
                                                String targetId, int quantity) {
     return processItemAction(stateJson, "cao_minh", itemId, operation, targetId, quantity);
@@ -226,6 +294,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -241,6 +310,7 @@ public final class GameCoreFacade implements AutoCloseable {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       characterDetailCore.projectState(state);
@@ -272,6 +342,7 @@ public final class GameCoreFacade implements AutoCloseable {
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
       CombatChoiceEngine.normalizeTerminalEncounter(state);
       characterProgressionCore.applyExplorerTurnRecovery(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
@@ -422,6 +493,23 @@ public final class GameCoreFacade implements AutoCloseable {
     state.put("log", log);
   }
 
+  private void appendStoryLog(
+      JSONObject state, String action, StoryCore.AuthoredTurn authored) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    log.put(new JSONObject().put("role", "player").put("text", action));
+    JSONObject gm = new JSONObject()
+        .put("role", "gm")
+        .put("text", authored.reply)
+        .put("storyThread", authored.thread)
+        .put("storyVisibility", authored.visibility)
+        .put("storyChapter", authored.chapterId)
+        .put("storySegmentId", authored.segmentId)
+        .put("authored", true);
+    log.put(gm);
+    state.put("log", log);
+  }
+
   private void persist(JSONObject state) {
     if (state != null) {
       try {
@@ -429,6 +517,7 @@ public final class GameCoreFacade implements AutoCloseable {
         survivalCore.normalizeState(state);
         itemCore.normalizeInventory(state);
         characterDetailCore.projectState(state);
+        storyCore.normalizeState(state);
       } catch (Exception e) {
         debug("Character detail projection failed: " + e.getMessage());
       }

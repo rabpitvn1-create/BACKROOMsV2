@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "storyId": "level_0_main",
+  "sourceRevision": "level0-final-2026-09-23",
+  "segmentTargetChars": 1900,
+  "segmentMaxChars": 2400,
+  "startChapter": "L0_C01",
+  "commonRules": {
+    "authoredProseMode": "verbatim",
+    "choices": "derived_at_runtime_only_when_useful",
+    "levelTransitionAuthority": "LevelCore",
+    "storyKnowledgeRule": "cutaway facts are reader-visible but not Cao Minh knowledge until authored disclosure"
+  },
+  "chapters": [
+    {
+      "id": "L0_C01",
+      "title": "Nơi Không Có Tên",
+      "source": "story/source/level_0/LEVEL0_CH01.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C02",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C02",
+      "title": "Sáu Căn Phòng Và Một Góc Tường",
+      "source": "story/source/level_0/LEVEL0_CH02.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C03",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C03",
+      "title": "Người Của Thiên Kiếm Môn",
+      "source": "story/source/level_0/LEVEL0_CH03.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C04",
+      "eventsOnEnter": [
+        {
+          "type": "CHARACTER_PARALLEL_STORY",
+          "characterId": "luc_tram"
+        }
+      ],
+      "eventsOnExit": [],
+      "requiredFacts": [
+        "Lục Trầm exists in a parallel story thread and has not reunited with Cao Minh."
+      ],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ]
+    },
+    {
+      "id": "L0_C04",
+      "title": "Tiếng Động Đi Cùng Hành Lang",
+      "source": "story/source/level_0/LEVEL0_CH04.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C05",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C05",
+      "title": "Bên Kia Khoảng Tối",
+      "source": "story/source/level_0/LEVEL0_CH05.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C06",
+      "eventsOnEnter": [
+        {
+          "type": "CHARACTER_PRESENT",
+          "characterId": "nam",
+          "scope": "story_local"
+        }
+      ],
+      "eventsOnExit": [],
+      "requiredFacts": [
+        "Lục Trầm encounters the injured human Nam."
+      ],
+      "forbiddenClaims": [
+        "Do not promote Nam to Party membership or invent combat stats."
+      ]
+    },
+    {
+      "id": "L0_C06",
+      "title": "Vết Kiếm Không Phải Của Hắn",
+      "source": "story/source/level_0/LEVEL0_CH06.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C07",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C07",
+      "title": "Một Người Biết Quá Ít",
+      "source": "story/source/level_0/LEVEL0_CH07.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C08",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ]
+    },
+    {
+      "id": "L0_C08",
+      "title": "Những Hố Không Có Đáy",
+      "source": "story/source/level_0/LEVEL0_CH08.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C09",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C09",
+      "title": "Dấu Ma Trên Tường",
+      "source": "story/source/level_0/LEVEL0_CH09.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C10",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ]
+    },
+    {
+      "id": "L0_C10",
+      "title": "Hai Dấu Hiệu Trên Cùng Một Bức Tường",
+      "source": "story/source/level_0/LEVEL0_CH10.md",
+      "thread": "convergence",
+      "visibility": "player",
+      "nextChapter": "L0_C11",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "CHARACTER_REUNION",
+          "characterId": "luc_tram"
+        }
+      ],
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm physically reunite by the end of this chapter; Nam is present."
+      ],
+      "forbiddenClaims": [
+        "Do not turn reunion into immediate trust, romance, forgiveness, or Party membership."
+      ]
+    },
+    {
+      "id": "L0_C11",
+      "title": "Tử Địch Ở Một Nơi Không Có Trời",
+      "source": "story/source/level_0/LEVEL0_CH11.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C12",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "CHARACTER_ACCOMPANY",
+          "characterId": "luc_tram"
+        }
+      ],
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm choose to continue together for practical survival reasons."
+      ],
+      "forbiddenClaims": [
+        "Do not rewrite their old-enemy relationship as resolved friendship."
+      ]
+    },
+    {
+      "id": "L0_C12",
+      "title": "Hợp Tác Tạm Thời",
+      "source": "story/source/level_0/LEVEL0_CH12.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C13",
+      "eventsOnEnter": [
+        {
+          "type": "CHARACTER_JOIN_PARTY",
+          "characterId": "luc_tram"
+        }
+      ],
+      "eventsOnExit": [],
+      "requiredFacts": [
+        "Their temporary cooperation is stable enough for Lục Trầm to be represented as an active gameplay companion."
+      ],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C13",
+      "title": "Giọng Nói Trong Bóng Tối",
+      "source": "story/source/level_0/LEVEL0_CH13.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C14",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "personalized_voice_echo_observed",
+          "value": true
+        }
+      ],
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not identify the voice phenomenon as one confirmed entity or one confirmed mechanism."
+      ]
+    },
+    {
+      "id": "L0_C14",
+      "title": "Rượu Không Phải Nước",
+      "source": "story/source/level_0/LEVEL0_CH14.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C15",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C15",
+      "title": "Giữ Thế",
+      "source": "story/source/level_0/LEVEL0_CH15.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C16",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C16",
+      "title": "Tuyến Kim Loại",
+      "source": "story/source/level_0/LEVEL0_CH16.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C17",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "metal_route_evidence",
+          "value": true
+        }
+      ],
+      "requiredFacts": [
+        "Repeated metal, airflow and mechanical-vibration clues form a usable trend."
+      ],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C17",
+      "title": "Căn Phòng Nhớ Sai",
+      "source": "story/source/level_0/LEVEL0_CH17.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C18",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "memory_like_room_observed",
+          "value": true
+        }
+      ],
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not claim the room definitely reads minds or memories; the source keeps the mechanism uncertain."
+      ]
+    },
+    {
+      "id": "L0_C18",
+      "title": "Nước Có Mùi Hạnh Nhân",
+      "source": "story/source/level_0/LEVEL0_CH18.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C19",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "suspected_almond_water_trial_observed",
+          "value": true
+        }
+      ],
+      "requiredFacts": [
+        "Nam voluntarily tests a very small amount of almond-scented liquid and shows no immediate harmful reaction."
+      ],
+      "forbiddenClaims": [
+        "Do not declare the liquid universally safe, magical, curative, or definitively identical to every Almond Water account."
+      ]
+    },
+    {
+      "id": "L0_C19",
+      "title": "Người Thứ Ba Biến Mất",
+      "source": "story/source/level_0/LEVEL0_CH19.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C20",
+      "eventsOnEnter": [
+        {
+          "type": "CHARACTER_MISSING",
+          "characterId": "nam"
+        }
+      ],
+      "eventsOnExit": [],
+      "requiredFacts": [
+        "Nam disappears without a confirmed attacker, death, destination, or mechanism."
+      ],
+      "forbiddenClaims": [
+        "Do not declare Nam dead, rescued, captured by a known entity, or located unless later authored story establishes it."
+      ]
+    },
+    {
+      "id": "L0_C20",
+      "title": "Không Bỏ Lại",
+      "source": "story/source/level_0/LEVEL0_CH20.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C21",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C21",
+      "title": "Đường Dấu Cho Người Mất",
+      "source": "story/source/level_0/LEVEL0_CH21.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C22",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C22",
+      "title": "Khoảng Nghỉ Không An Toàn",
+      "source": "story/source/level_0/LEVEL0_CH22.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C23",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C23",
+      "title": "Nơi Tiếng Ù Biến Mất",
+      "source": "story/source/level_0/LEVEL0_CH23.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C24",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C24",
+      "title": "Cánh Cửa Không Chờ Người",
+      "source": "story/source/level_0/LEVEL0_CH24.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C25",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "stable_metal_boundary_evidence",
+          "value": true
+        }
+      ],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C25",
+      "title": "Bức Tường Trong Suốt",
+      "source": "story/source/level_0/LEVEL0_CH25.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C26",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C26",
+      "title": "Thứ Không Chịu Biến Mất",
+      "source": "story/source/level_0/LEVEL0_CH26.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C27",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C27",
+      "title": "Giọng Gọi Không Được Trả Lời",
+      "source": "story/source/level_0/LEVEL0_CH27.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C28",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C28",
+      "title": "Đường Biên Không Có Tên",
+      "source": "story/source/level_0/LEVEL0_CH28.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C29",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "unnamed_boundary_observed",
+          "value": true
+        }
+      ],
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not name the new metal region as Level 1 or call it safe."
+      ]
+    },
+    {
+      "id": "L0_C29",
+      "title": "Cánh Cửa Đứng Yên",
+      "source": "story/source/level_0/LEVEL0_CH29.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C30",
+      "eventsOnEnter": [],
+      "eventsOnExit": [],
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C30",
+      "title": "Sau Cánh Cửa Lớn",
+      "source": "story/source/level_0/LEVEL0_CH30.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "",
+      "eventsOnEnter": [],
+      "eventsOnExit": [
+        {
+          "type": "STORY_FLAG_SET",
+          "key": "level0_arc_boundary_reached",
+          "value": true
+        },
+        {
+          "type": "LEVEL0_ARC_BOUNDARY_REACHED"
+        }
+      ],
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm cross the large door into an unnamed large metal region."
+      ],
+      "forbiddenClaims": [
+        "Do not claim a validated Level 0 -> Level 1 transition. The manuscript does not establish that."
+      ]
+    }
+  ]
+}
