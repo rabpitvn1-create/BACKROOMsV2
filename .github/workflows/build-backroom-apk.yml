@@ -430,8 +430,8 @@ jobs:
           test "$(sha256sum android-apk/app/src/main/assets/avatars/cao_minh_avatar.jpg | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           test "$(sha256sum android-apk/app/src/main/assets/cao_minh_snapshot_overlay.png | awk '{print $1}')" = 'e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e'
           test "$(sha256sum android-apk/app/src/main/assets/cao_minh_entity_overlay.png | awk '{print $1}')" = '980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47'
-          test "$(git hash-object android-apk/app/src/main/assets/avatars/lucia_avatar.png)" = 'e87ba8a420346fac12dc5129d5619b958b85f518'
-          test "$(git hash-object android-apk/app/src/main/assets/lucia_entity_overlay.png)" = 'aeafc7403ce4845fe5bd64825f7ba3ef52b62a82'
+          test "$(git hash-object android-apk/app/src/main/assets/avatars/lucia_avatar.png)" = '1ce0362afa76281c0dc1fac0e414954ac28ee484'
+          test "$(git hash-object android-apk/app/src/main/assets/lucia_entity_overlay.png)" = '5040709dc73f63185ed7c857af3a6589d0a0aa7b'
 
       - name: Validate Game Master configuration
         run: |

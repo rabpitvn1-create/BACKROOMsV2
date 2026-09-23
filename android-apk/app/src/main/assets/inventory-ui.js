@@ -37,7 +37,7 @@
   function norm(raw){
     var value=String(raw||'').trim().toLowerCase();
     if(value.indexOf('cao_minh')>=0||value.indexOf('cao minh')>=0)return 'cao_minh';
-    if(value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
+    if(value.indexOf('lục trầm')>=0||value.indexOf('luc tram')>=0||value.indexOf('lucia')>=0||value.indexOf('hứa thuý mai')>=0||value.indexOf('hứa thúy mai')>=0||value.indexOf('hua thuy mai')>=0)return 'lucia';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
     return value.replace(/\s+/g,'_');

@@ -126,7 +126,8 @@ final class CharacterDetailCore {
     String raw = (member.optString("id", "") + " " + member.optString("name", ""))
         .trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
-    if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
+    if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("lucia")
+        || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
         || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
@@ -134,7 +135,7 @@ final class CharacterDetailCore {
   }
 
   private static String displayName(String id) {
-    if ("lucia".equals(id)) return "Lucia Lục";
+    if ("lucia".equals(id)) return "Lục Trầm";
     if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
     return "Cao Minh";

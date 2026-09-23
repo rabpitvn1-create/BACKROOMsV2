@@ -259,7 +259,7 @@ Example:
 
 ~~~text
 A → Cao Minh opens the door directly
-B → Lucia checks the door first
+B → Lục Trầm checks the door first
 C → the party listens before opening it
                     ↓
         AUTHORED EVENT: the door opens

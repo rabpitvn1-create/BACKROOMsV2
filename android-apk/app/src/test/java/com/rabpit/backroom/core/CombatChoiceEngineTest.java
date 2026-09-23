@@ -181,7 +181,7 @@ public class CombatChoiceEngineTest {
 
   @Test public void downedCharacterIsSkippedAndFourSlotOrderWrapsRound() throws Exception {
     JSONArray party = new JSONArray()
-        .put(member("lucia", "Lucia Lục"))
+        .put(member("lucia", "Lục Trầm"))
         .put(member("iris", "Iris"))
         .put(member("syvial", "Syvial"));
     JSONObject state = combatState(party);
@@ -194,7 +194,7 @@ public class CombatChoiceEngineTest {
 
     finalizeAs(state, 2,2,1,4,6);
     CombatChoiceEngine.resolveFinalized(state);
-    assertEquals("Lucia Lục", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals("Lục Trầm", state.getJSONObject("combat").getString("currentActor"));
 
     finalizeAs(state, 2,2,1,4,6);
     CombatChoiceEngine.resolveFinalized(state);
@@ -257,20 +257,20 @@ public class CombatChoiceEngineTest {
     }
   }
 
-  @Test public void caoMinhAndLuciaHaveAuthoritativeUltimateMappings() {
+  @Test public void caoMinhAndLucTramHaveAuthoritativeUltimateMappings() {
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
   }
 
-  @Test public void luciaSsfUsesDynamicTooYoungToDieUltimate() throws Exception {
-    JSONObject state = combatState(new JSONArray().put(member("lucia", "Lucia Lục")));
+  @Test public void lucTramSsfUsesDynamicThienKiemDinhGioiUltimate() throws Exception {
+    JSONObject state = combatState(new JSONArray().put(member("lucia", "Lục Trầm")));
     CombatChoiceEngine.start(state, "diep_minh", 0);
 
     finalizeAs(state, 2,2,4,4,6);
     CombatChoiceEngine.resolveFinalized(state);
-    assertEquals("Lucia Lục", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals("Lục Trầm", state.getJSONObject("combat").getString("currentActor"));
 
     JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
     int before = entity.getInt("hp");
@@ -283,7 +283,7 @@ public class CombatChoiceEngineTest {
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     boolean foundUltimate = false;
     for (int i = 0; i < battleLog.length(); i++) {
-      if (battleLog.getJSONObject(i).getString("text").contains("Too Young To Die")) {
+      if (battleLog.getJSONObject(i).getString("text").contains("Thiên Kiếm Định Giới")) {
         foundUltimate = true;
         break;
       }
@@ -342,7 +342,7 @@ public class CombatChoiceEngineTest {
     }
   }
 
-  @Test public void caoMinhAndLuciaEachHaveFiveCharacterProcsAndKaiHasNone() {
+  @Test public void caoMinhAndLucTramEachHaveFiveCharacterProcsAndKaiHasNone() {
     assertEquals(5, CombatChoiceEngine.characterProcCount("cao_minh"));
     assertEquals(5, CombatChoiceEngine.characterProcCount("lucia"));
     assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));

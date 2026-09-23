@@ -14,14 +14,14 @@
 - `app/src/main/assets/knowledge/characters_current.json`
 - `app/src/main/assets/knowledge/knowledge_db.json`
 
-Hai file trên đã được đồng bộ sang **Cao Minh R15**. Không được phục hồi dữ kiện player-character từ mirror hoặc save cũ nếu mâu thuẫn.
+Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Trầm R01**. Không được phục hồi dữ kiện player-character từ mirror hoặc save cũ nếu mâu thuẫn.
 
 ## Character Drive audit
 
 - `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
 - `Iris_Codex.docx` — nguồn riêng của Iris.
 - `Syvial_Codex.docx` — nguồn riêng của Syvial.
-- `Lucia_Codex.docx` — nguồn riêng của Hứa Thuý Mai / Lucia Lục.
+- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R01.
 
 ### Cao Minh source map
 
@@ -37,11 +37,27 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15**. Không được
 | Ultimate | `CAO-ULT-HUYETMA24-01` | Huyết Ma Nhị Thập Tứ Trảm: đúng 24 trảm, ngoại giới dừng hoàn toàn. |
 | Diệp Minh | `CAO-REL-DIEP-MINH-OPEN-01` | Có thù; nguyên nhân/quá khứ/kết cục OPEN. |
 
+
+### Lục Trầm source map
+
+| Domain | Anchor / runtime key | Current lock |
+| --- | --- | --- |
+| Identity | `LUC-TRAM-THIEN-KIEM-CODEX-R01` | Chân truyền đệ tử Thiên Kiếm Môn; Chính Đạo Kiếm Tu; cùng thế giới nguyên sinh với Cao Minh. |
+| Power scale | `01 · ĐỊNH DANH VÀ VỊ TRÍ` | Thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. |
+| Visual | `04 · NGOẠI HÌNH · VISUAL LOCK R01` | Tóc đen cực dài buộc cao, kiếm quan vàng, Kiếm Khải trắng–đen–vàng, chiến bào phân mảnh, Tịch Quang trường kiếm bạc. |
+| Core ability | `07 · THIÊN KIẾM LINH TÂM` | Đọc quỹ đạo/trọng tâm/linh lực/điểm bất ổn; không toàn tri, không tự biết Entity/Level/quy luật. |
+| Weapon | `08 · TỊCH QUANG KIẾM` | Bản mệnh linh kiếm; kiếm niệm triệu hồi; không tự tái sinh vô hạn. |
+| Armor | `09 · THIÊN CƠ BẠCH KIM KIẾM KHẢI` | Pháp bảo tiên hiệp, không phải công nghệ/mecha thuần khoa học. |
+| Relationship | `13-20` | Cao Minh và Lục Trầm từng giao chiến nhiều lần; Backrooms là tái ngộ, không first contact; romance phải phát triển chậm. |
+| Backrooms | `14-15, 21` | Rơi vào Level 0 khác vị trí; runtime encounter chỉ sau Level 0; không có knowledge preload. |
+| Gameplay id | `lucia` | Giữ stable id cho save compatibility; mọi tên/lore hiển thị dùng Lục Trầm. |
+| Ultimate | `12 · THIÊN KIẾM ĐỊNH GIỚI` | Runtime giữ 60-hit Ultimate cũ như gameplay projection, đổi presentation sang Thiên Kiếm Định Giới. |
+
 ### Relationship locks
 
 - Cao Minh ↔ Iris: không có quan hệ có sẵn; first contact nếu gặp.
 - Cao Minh ↔ Syvial: không có quan hệ có sẵn; first contact nếu gặp.
-- Cao Minh ↔ Lucia: OPEN cho đến khi live continuity xác lập.
+- Cao Minh ↔ Lục Trầm: đã là tử địch/đối thủ từ thế giới nguyên sinh; trong Backrooms quan hệ phát triển chậm từ đối đầu đến hợp tác, tín nhiệm rồi mới có khả năng nảy sinh tình cảm. Không phải first contact.
 - Cao Minh ↔ Diệp Minh: có thù, chi tiết OPEN.
 
 ## Runtime notes
