@@ -427,8 +427,12 @@ INTERACTION RULES:
 - At most 2 INTERACTIVE segments in this chapter.
 - An INTERACTIVE segment MUST have exactly 3 concise Vietnamese choices.
 - Each choice is only an INTENT/APPROACH, never a claimed outcome.
+- IMPORTANT TIMING: every action, line of dialogue and observation written inside the current segment has ALREADY happened before the choice appears. Never offer a choice that repeats, redoes or "decides" an action already completed in that segment.
 - Choice text may use only facts, characters, objects and observations already present in the current segment or earlier segments in this chapter. Never mention a reveal, destination, encounter, person, object or result that first appears later.
+- Never ask a character about an earlier event, shared history, technical fact or memory unless the manuscript before this choice explicitly establishes that they know it.
+- Never introduce a new theory or interpretation as a choice unless that theory has already been raised in the manuscript before this pause.
 - The three choices must all be plausible at that exact pause and must be able to receive a short local reaction before returning to the exact authored path.
+- Write natural, grammatical Vietnamese with correct spelling. Reject awkward, corrupted or nonsensical wording rather than trying to preserve it.
 - V1 choices should be observational/conversational/preparatory: observe, inspect, ask, listen, wait, mark, compare, warn, prepare, or focus.
 - Do NOT make navigation/outcome choices: no choosing another route, entering/leaving an area, turning back, forcing a door, consuming an item, attacking, forcing a meeting, or forcing a discovery.
 - Do not offer "leave", "refuse the plot", "attack an ally", "change destination", "force a meeting", "force a discovery", "call a person who has not been confirmed present", or any choice that would invalidate the next authored segment.
