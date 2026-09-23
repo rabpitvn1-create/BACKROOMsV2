@@ -163,7 +163,7 @@ public final class CombatChoiceEngine {
         skill("Lucifer Breaker", "", 155, "Choáng", 1, 0),
         skill("Spatial Dominion", "", 210, "Mất phương hướng", 2, 25));
 
-    skills("lucia",
+    skills("luc_tram",
         skill("Tịch Quang Hợp Kích",
             "Kiếm thế hợp kích bằng Tịch Quang; giữ nguyên projection 150% damage.", 150, "", 0, 0));
 
@@ -175,7 +175,7 @@ public final class CombatChoiceEngine {
         characterProc("Ma Tâm Chấn", 45, 15, "Choáng", 1, 0),
         characterProc("Huyết Độc Ma Khí", 47, 20, "Trúng độc", 2, 3),
         characterProc("Huyết Liệt Ma Ấn", 51, 20, "Chảy máu", 2, 4));
-    characterProcs("lucia",
+    characterProcs("luc_tram",
         characterProc("Tịch Quang Phản Kiếm", 52, 25, "Trúng độc", 2, 3),
         characterProc("Nhất Tuyến Phá Vọng", 55, 20, "Xuyên giáp", 2, 10),
         characterProc("Thiên Kiếm Chấn", 46, 15, "Choáng", 1, 0),
@@ -187,7 +187,7 @@ public final class CombatChoiceEngine {
     ULTIMATES.put("cao_minh",
         new Ultimate("Huyết Ma Nhị Thập Tứ Trảm", HUYET_MA_24_HIT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
-    ULTIMATES.put("lucia",
+    ULTIMATES.put("luc_tram",
         new Ultimate("Thiên Kiếm Định Giới", LUC_TRAM_THIEN_KIEM_HIT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
   }
