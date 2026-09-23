@@ -70,11 +70,11 @@ test('mobile header uses packaged Backrooms artwork without changing snapshot as
   assert.doesNotMatch(snapshot,/BACKROOM_HEADER_ART_V2/);
 });
 
-test('PLAYER ACTION uses its own newly-authored Backrooms artwork asset',()=>{
-  const art=path.join(assets,'hud/player_action_backrooms.svg');
+test('PLAYER ACTION uses dedicated IMG_API-generated Backrooms artwork',()=>{
+  const art=path.join(assets,'hud/player_action_backrooms.png');
   assert.equal(fs.existsSync(art),true);
-  assert.match(fs.readFileSync(art,'utf8'),/<svg[\s>]/);
-  assert.match(index,/BACKROOM_ACTION_ART_V1/);
-  assert.match(index,/url\('hud\/player_action_backrooms\.svg'\)/);
+  assert.equal(fs.statSync(art).size>10000,true);
+  assert.match(index,/BACKROOM_ACTION_ART_V2/);
+  assert.match(index,/url\('hud\/player_action_backrooms\.png'\)/);
   assert.match(index,/\.player-action-bar #playerActionOpen\{[^}]*background-image:/);
 });
