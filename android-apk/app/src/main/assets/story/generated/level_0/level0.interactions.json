@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "compilerVersion": 1,
-  "compilerFingerprint": "47d4a5fa94e4ddd4d7c2eda3fe6270adb7dae4112406b973bb13725ce0a9a24c",
+  "compilerFingerprint": "517614a7cec25f5d171fc05c60494121c528c58b2ac261496069f9ffe80e02bb",
   "sourceRevision": "level0-final-2026-09-23",
   "generatedBy": "story-compiler-v1",
   "chapters": {
@@ -20,22 +20,9 @@
           "interactionGuard": ""
         },
         "L0_C01_P003": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Săm soi kỹ lớp giấy tường màu vàng nhạt ngay trước mặt.",
-              "action": "Săm soi kỹ lớp giấy tường màu vàng nhạt ngay trước mặt."
-            },
-            {
-              "text": "Mở rộng thần thức cảm nhận không gian phía sau bức tường.",
-              "action": "Mở rộng thần thức cảm nhận không gian phía sau bức tường."
-            },
-            {
-              "text": "Tập trung lắng nghe xem có âm thanh nào khác phát ra quanh vách tường.",
-              "action": "Tập trung lắng nghe xem có âm thanh nào khác phát ra quanh vách tường."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C01_P004": {
           "mode": "LINEAR",
@@ -440,9 +427,22 @@
           "interactionGuard": ""
         },
         "L0_C13_P003": {
-          "mode": "LINEAR",
-          "choices": [],
-          "interactionGuard": ""
+          "mode": "INTERACTIVE",
+          "choices": [
+            {
+              "text": "Lặng lẽ quan sát hành lang vàng phía trước.",
+              "action": "Lặng lẽ quan sát hành lang vàng phía trước."
+            },
+            {
+              "text": "Để ý biểu cảm và sắc mặt của Nam lúc này.",
+              "action": "Để ý biểu cảm và sắc mặt của Nam lúc này."
+            },
+            {
+              "text": "Lắng nghe nhịp tiếng ù đèn huỳnh quang xung quanh.",
+              "action": "Lắng nghe nhịp tiếng ù đèn huỳnh quang xung quanh."
+            }
+          ],
+          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
         },
         "L0_C13_P004": {
           "mode": "LINEAR",
@@ -476,22 +476,9 @@
           "interactionGuard": ""
         },
         "L0_C14_P003": {
-          "mode": "INTERACTIVE",
-          "choices": [
-            {
-              "text": "Nhìn xuống lớp thảm dưới chân để tự mình xác nhận độ khô.",
-              "action": "Nhìn xuống lớp thảm dưới chân để tự mình xác nhận độ khô."
-            },
-            {
-              "text": "Quan sát biểu cảm của Nam sau đoạn đường dài vừa đi.",
-              "action": "Quan sát biểu cảm của Nam sau đoạn đường dài vừa đi."
-            },
-            {
-              "text": "Để mắt đến các lối ra trong khi Lục Trầm hoàn tất kiểm tra.",
-              "action": "Để mắt đến các lối ra trong khi Lục Trầm hoàn tất kiểm tra."
-            }
-          ],
-          "interactionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+          "mode": "LINEAR",
+          "choices": [],
+          "interactionGuard": ""
         },
         "L0_C14_P004": {
           "mode": "LINEAR",
@@ -803,12 +790,12 @@
           "interactionGuard": ""
         },
         "L0_C23_P002": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         },
         "L0_C23_P003": {
-          "mode": "LOCKED_EVENT",
+          "mode": "LINEAR",
           "choices": [],
           "interactionGuard": ""
         },
