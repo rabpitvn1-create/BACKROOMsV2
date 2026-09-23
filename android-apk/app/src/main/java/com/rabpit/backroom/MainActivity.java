@@ -652,9 +652,6 @@ public class MainActivity extends Activity {
 
           JSONObject state = localResult.optJSONObject("state");
           if (state == null) state = submitted;
-          JSONObject storyBeforeAi = state.optJSONObject("story");
-          boolean compiledStoryReaction = storyBeforeAi != null
-              && storyBeforeAi.optBoolean("interactionResolutionPending", false);
           committedBeforeGemini = new JSONObject(state.toString());
           String coreBeforeJson = state.toString();
 
@@ -693,18 +690,9 @@ public class MainActivity extends Activity {
           if (encounterDialogue == null) encounterDialogue = new JSONArray();
           String transitionTarget = generated.optString("transitionTarget", "").trim();
 
-          if (compiledStoryReaction) {
-            // A compiled A/B/C response is performance-only. It cannot become a second story director.
-            encounterDialogue = new JSONArray();
-            transitionTarget = null;
-            generated.put("choices", new JSONArray());
-            generated.put("transitionTarget", "");
-            generated.put("sceneLabel", "");
-          }
-
           state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
           String sceneLabel = generated.optString("sceneLabel", "").trim();
-          if (!compiledStoryReaction && !sceneLabel.isEmpty()) state.put("location", sceneLabel);
+          if (!sceneLabel.isEmpty()) state.put("location", sceneLabel);
           long tParseEnd = System.currentTimeMillis();
 
           long tValStart = System.currentTimeMillis();
@@ -757,6 +745,64 @@ public class MainActivity extends Activity {
           } else {
             emit("backroomError", message);
           }
+        }
+      });
+    }
+
+    @JavascriptInterface public void prefetchStoryDecision(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          String recentStory = recentStoryContext(submitted);
+          JSONObject request = new JSONObject(
+              gameCore.storyDecisionPrefetchRequest(stateJson, recentStory));
+          if (!request.optBoolean("needed", false)) return;
+
+          String prompt = request.optString("prompt", "").trim();
+          String contextHash = request.optString("contextHash", "").trim();
+          if (prompt.isEmpty() || contextHash.isEmpty()) {
+            throw new Exception("Story decision prefetch request không hợp lệ.");
+          }
+
+          String rawOutput;
+          try {
+            rawOutput = haikuText(prompt);
+          } catch (Exception haikuError) {
+            Log.w(TAG, "Story decision Haiku prefetch failed ("
+                + providerErrorSummary(haikuError) + "); falling back to Gemini.");
+            rawOutput = geminiText(prompt);
+          }
+
+          JSONObject generated = parseModelJson(rawOutput);
+          JSONObject committed = new JSONObject(
+              gameCore.commitStoryDecisionPackage(
+                  stateJson, contextHash, generated.toString()));
+          if (!committed.optBoolean("handled", false)) {
+            throw new Exception(committed.optString(
+                "error", "Story decision package bị Core từ chối."));
+          }
+          emit("backroomStoryDecisionPrepared",
+              committed.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomStoryDecisionPrefetchError",
+              e.getMessage() == null ? "Không thể chuẩn bị lựa chọn cốt truyện." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void resolveStoryDecision(String stateJson, String choiceId) {
+      io.execute(() -> {
+        try {
+          JSONObject result = new JSONObject(
+              gameCore.processStoryDecision(stateJson, choiceId));
+          if (!result.optBoolean("handled", false)) {
+            throw new Exception(result.optString(
+                "error", "Story decision bị Core từ chối."));
+          }
+          emit("backroomTurn", result.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomError",
+              e.getMessage() == null ? "Không thể xử lý lựa chọn cốt truyện." : e.getMessage());
         }
       });
     }
