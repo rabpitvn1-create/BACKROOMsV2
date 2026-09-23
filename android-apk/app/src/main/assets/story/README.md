@@ -10,7 +10,7 @@ Implemented:
 - all 30 final Level 0 Chapters are committed verbatim under `story/source/level_0/`;
 - `StoryRepository` loads generated metadata plus the authored Markdown directly from APK assets;
 - authored prose is split only at paragraph boundaries and emitted verbatim by Java Core;
-- the runtime exposes **Tiếp tục cốt truyện** as a deterministic authored-story action;
+- linear authored segments expose a single neutral **• Tiếp tục** control; decision scenes never mix this control with gameplay choices;
 - free exploration remains available between authored sections;
 - Level 0 hidden route-streak rolls are suppressed while StoryCore owns the active Level 0 story;
 - `StoryCore` owns save-facing chapter, segment, thread, visibility, story flags and story-character state;
@@ -24,24 +24,32 @@ Implemented:
 - Chapter 30 sets `LEVEL0_ARC_BOUNDARY_REACHED` but does **not** claim or perform a Level 1 transition;
 - regression tests validate the 30 source files, metadata, paragraph segmentation and a complete Chapter 1 → Chapter 30 StoryCore run.
 
-Implemented by Story Compiler v1:
+Implemented by Story Compiler v2 + Decision Prefetch Runtime:
 
-- `.github/scripts/compile-story.py` compiles authored chapters into conservative `LINEAR / INTERACTIVE / CUTAWAY / LOCKED_EVENT` segment metadata;
-- `.github/workflows/compile-story.yml` automatically recompiles story interactions when manuscript/source metadata or compiler logic changes;
-- Haiku is the primary candidate generator; Gemini performs the rewrite/QA pass, and Haiku performs an independent final KEEP/LINEAR audit with Gemini fallback;
-- V1 permits at most one authored `INTERACTIVE` segment per Chapter and never forces a choice where the manuscript has no clean decision pause;
-- compiler/reviewer decisions are anchored to the exact end-state of each segment (`pauseAnchor`), so choices cannot reach backward to rooms, objects, dialogue or actions that have already passed;
-- V1 deterministically rejects re-check intents such as “xác nhận”, “kiểm tra lại”, “xem lại”, “thử lại”, “đo lại”, or “đếm lại” so an A/B/C choice cannot disguise repetition of a fact the manuscript already resolved;
-- a final auditor may only keep the complete A/B/C set or downgrade the segment to `LINEAR`; it cannot invent replacement choices;
-- each compiled chapter is SHA-256 bound to its exact manuscript source, so stale A/B/C metadata is ignored at runtime;
-- generated interaction data also carries a compiler fingerprint; unchanged manuscript + unchanged compiler do not call the model again or reroll A/B/C;
-- cutaways are deterministic and never receive player choices;
-- authored event boundaries are forced to `LOCKED_EVENT`;
-- each `INTERACTIVE` segment has exactly three convergent Vietnamese choices and a compiler-owned `interactionGuard`;
-- Story Compiler v1 only permits observational, conversational and preparatory choices; route-changing, leave/return, attack, consume-item and other outcome-changing choices are rejected and downgraded to `LINEAR`;
-- compiled choices do not advance manuscript position and do not roll route, loot, Entity, or random character encounters;
-- player free-text input and `Tiếp tục cốt truyện` are locked while an authored A/B/C decision is pending;
-- if the narration provider fails after a choice, the choice remains retryable until a validated response commits.
+- `.github/scripts/compile-story.py` compiles authored chapters into conservative `LINEAR / DECISION / CUTAWAY / LOCKED_EVENT` metadata;
+- a `DECISION` contains only a compiler-owned canon contract: `canonChoiceText`, `loopAnchor`, and `decisionGuard`;
+- the compiler does **not** generate the final three player choices;
+- the compiler permits at most one `DECISION` per Chapter and audits that the canon intent belongs to Cao Minh, has not already happened, and genuinely enters the next authored beat;
+- the current Level 0 generated revision exposes three clean decision anchors after audit: `L0_C02_P005`, `L0_C04_P001`, and `L0_C12_P002`;
+- each compiled Chapter is SHA-256 bound to its manuscript source and the generated file carries a compiler fingerprint;
+- when a DECISION segment is displayed, Android immediately starts one background prefetch while the player is reading;
+- runtime provider order is **Gemini key 1 → 2 → 3 → 4 → 5**, then **Haiku fallback** only after all Gemini keys fail;
+- Story Compiler v2 follows the same provider order: Gemini keys are exhausted first, then Haiku is the final fallback and control never returns to Gemini afterward;
+- that single prefetch call receives the fixed canon intent and creates exactly two additional branches: `TRAP_LOOP` and `CONVERGE`, including their complete prepared reactions;
+- `CANON_PROGRESS` uses the already-authored next manuscript segment as its prepared result;
+- all three outcomes are fully prepared before choices become clickable, so tapping a choice performs no model call;
+- public UI state contains only opaque `choiceId + text`; hidden `CANON_PROGRESS / TRAP_LOOP / CONVERGE` mappings remain private inside Android Core state and are stripped before state reaches WebView/localStorage;
+- public choice IDs are generated as random UUID-backed opaque tokens when the private package is created; they are not derivable from contextHash, decisionId, position, or hidden outcome type;
+- choices are deterministically shuffled for the current decision package so no screen position identifies canon;
+- story choices render as three visually equal **•** rows with no A/B/C labels and no canon/trap styling;
+- `TRAP_LOOP` plays its prefetched consequence and returns to the same story anchor without announcing that the player was wrong;
+- `CONVERGE` plays its prefetched local consequence and then rejoins the exact authored next beat;
+- `CANON_PROGRESS` advances directly into the authored next beat;
+- free text, inventory mutation and stat upgrades are locked while a story decision is unresolved so the prefetched package cannot be invalidated by unrelated state changes;
+- decision packages are bound to a context hash; stale packages are rejected instead of being applied to changed state;
+- cutaways remain deterministic and never receive player decisions;
+- authored event boundaries remain `LOCKED_EVENT`;
+- decision resolution does not roll route, loot, Entity, or random character encounters.
 
 Still intentionally not implemented:
 
@@ -220,103 +228,113 @@ The author may also choose one Markdown file per Chapter for convenience, but th
 
 ## Story compilation
 
-Story Compiler v1 now converts authored prose into runtime-friendly interaction metadata.
+Story Compiler v2 converts authored prose into runtime-safe **decision contracts**, not final multiple-choice dialogue.
 
-The committed manuscript remains the creative source of truth. The compiler writes only derived data under `story/generated/`.
+The committed manuscript remains the creative source of truth. The compiler writes only derived metadata under `story/generated/`.
 
 Conceptually:
 
 ~~~text
 manuscript
-→ detect Chapters
-→ detect scenes
-→ identify important story beats
-→ identify interactive opportunities
-→ derive gameplay choices where appropriate
-→ build deterministic story graph
-→ derive required facts
-→ derive forbidden reveals
-→ bind relevant characters
-→ bind snapshots where configured
-→ bind scripted encounters where justified
-→ produce generated story data
-→ validate graph
+→ detect Chapters / paragraph-safe segments
+→ preserve mandatory authored events
+→ identify a clean decision anchor
+→ derive ONE hidden canon intent that enters the next authored beat
+→ audit ownership/timing against Cao Minh and the manuscript
+→ bind source digest + compiler fingerprint
+→ emit LINEAR / DECISION / CUTAWAY / LOCKED_EVENT metadata
 ~~~
 
-The compiler must preserve authorial intent.
+At runtime:
 
-It is a translator, not a replacement author.
+~~~text
+DECISION segment appears
+→ player starts reading
+→ background prefetch starts immediately
+→ Gemini keys 1..5, then Haiku fallback
+→ generate TRAP_LOOP + CONVERGE choice/reaction
+→ combine with compiler-fixed CANON_PROGRESS
+→ validate + cache all 3 outcomes
+→ expose only three anonymous • choices
+→ tap resolves instantly from cache
+~~~
+
+The compiler and runtime must preserve authorial intent.
+
+They translate the novel into gameplay without turning the model into a second story director.
 
 ---
 
-## A/B/C choices are generated, not authored by default
+## Player decisions are generated, not authored by default
 
-The novelist does not need to write A/B/C.
+The novelist does not write A/B/C and the runtime does not show A/B/C labels.
 
-The compiler may derive choices from natural decision points already present or implied by the manuscript.
+The compiler only identifies a decision anchor and the hidden canon intent. While the player reads the current prose, the runtime prepares the other two possibilities.
 
-Example authored prose:
-
-~~~text
-Cao Minh dừng trước ngã ba.
-
-Một hành lang bên trái chìm trong bóng tối.
-Bên phải, ánh đèn huỳnh quang chớp tắt liên tục.
-Hắn đứng im vài giây, lắng nghe.
-~~~
-
-Generated gameplay may become:
+Visible UI:
 
 ~~~text
-A. Đi vào hành lang bên trái.
-B. Kiểm tra hành lang bên phải.
-C. Đứng lại và lắng nghe kỹ hơn.
+• Kiểm tra dấu vừa để lại trước khi di chuyển.
+
+• Lắng nghe thêm một nhịp ở giao lộ.
+
+• Tiến sát mép tường để quan sát hành lang.
 ~~~
 
-These choices belong to generated game data, not necessarily to the manuscript.
+There is no public indication of which row is canon, convergent, or a trap.
 
-### Do not force choices everywhere
+### Hidden outcome classes
 
-If a scene does not contain a meaningful decision, do not fabricate three buttons merely to satisfy a format.
+Internally a prepared package contains exactly:
 
-Linear scenes are valid.
+~~~text
+CANON_PROGRESS
+CONVERGE
+TRAP_LOOP
+~~~
 
-Important dialogue may be linear.
+- `CANON_PROGRESS`: immediately enters the already-authored next beat.
+- `CONVERGE`: plays a cached local reaction, then enters the same authored next beat.
+- `TRAP_LOOP`: plays a cached consequence and returns to the current decision anchor.
 
-A mandatory story event may be linear.
+Outcome classes never belong in visible WebView/localStorage state.
 
-A/B/C should exist where interaction improves the experience.
+### Do not force decisions everywhere
 
-The game must not turn ordinary prose into a constant multiple-choice exam.
+If a scene has no clean decision pause, keep it `LINEAR`.
+
+Important dialogue, reveals and mandatory events may be linear or `LOCKED_EVENT`.
+
+A decision should exist because reading the situation can matter, not because a UI template demands three buttons.
 
 ---
 
-## Choice generation must not rewrite the plot
+## Decision generation must not rewrite the plot
 
-Generated choices may vary:
+The runtime may vary the local route **to** the next authored beat, but the authored beat itself remains fixed.
 
-- approach;
-- order of investigation;
-- tone;
-- method;
-- minor tactical behavior;
-- roleplay expression.
+A good trap is not an obviously stupid option. It should look reasonable and fail because the player missed or misread a rule/clue already established by the story.
 
-They must not casually invent major alternate plot branches unsupported by the authored story.
-
-If the manuscript requires an event to happen, choices may converge on that event.
-
-Example:
+Conceptual flow:
 
 ~~~text
-A → Cao Minh opens the door directly
-B → Lục Trầm checks the door first
-C → the party listens before opening it
-                    ↓
-        AUTHORED EVENT: the door opens
+                    hidden outcomes
+
+• plausible action  ─────→ TRAP_LOOP ─────→ decision anchor
+• plausible action  ─────→ CONVERGE  ─────→ authored next beat
+• plausible action  ─────→ CANON      ─────→ authored next beat
 ~~~
 
-This preserves interactivity without surrendering plot control.
+All three public choices should have comparable length, tone and plausibility.
+
+The player should infer danger from the fictional world, never from:
+- A/B/C position;
+- color or icon;
+- wording that obviously marks a “wrong” option;
+- instant-versus-slow response timing;
+- a visible “continue canon” button beside two AI-generated options.
+
+At click time there must be no narration-provider request. All three results are already cached.
 
 ---
 
@@ -359,52 +377,51 @@ It does not own the story.
 
 ## Generated story data
 
-Generated files may contain technical structures such as:
+Generated story metadata contains technical structures such as:
 
-- Chapter IDs;
-- StoryNode IDs;
-- scene boundaries;
-- A/B/C definitions;
-- graph edges;
-- flags;
-- required facts;
-- forbidden reveals;
-- character-presence metadata;
-- snapshot references;
-- scripted encounter requests;
-- exit-readiness conditions.
+- Chapter and segment IDs;
+- source digests;
+- compiler fingerprint;
+- `LINEAR / DECISION / CUTAWAY / LOCKED_EVENT` classification;
+- canon decision intent;
+- loop anchor;
+- decision guard;
+- authored events and story facts.
 
-Conceptual generated example:
+Conceptual compiler artifact:
 
 ~~~json
 {
-  "chapterId": "L0_C01",
-  "source": "../source/level_0.md",
-  "startNode": "L0_C01_S001",
-  "nodes": {
-    "L0_C01_S001": {
-      "choices": {
-        "A": {
-          "text": "Đi vào hành lang bên trái",
-          "nextNode": "L0_C01_S002A"
-        },
-        "B": {
-          "text": "Kiểm tra hành lang bên phải",
-          "nextNode": "L0_C01_S002B"
-        },
-        "C": {
-          "text": "Đứng lại và lắng nghe",
-          "nextNode": "L0_C01_S002C"
-        }
-      }
+  "L0_C06_P003": {
+    "mode": "DECISION",
+    "decisionContract": {
+      "canonChoiceText": "Lặng lẽ tiến về hướng phát ra tiếng kim loại.",
+      "loopAnchor": "L0_C06_P003",
+      "decisionGuard": "Do not change authored progression."
     }
   }
 }
 ~~~
 
-This file is a technical artifact.
+The runtime package is different and transient. It combines the canon contract with two prefetched alternatives, then keeps hidden outcomes inside Android Core.
 
-It is not the novel.
+The WebView receives only:
+
+~~~json
+{
+  "choices": [
+    {"id": "opaque-1", "text": "..."},
+    {"id": "opaque-2", "text": "..."},
+    {"id": "opaque-3", "text": "..."}
+  ]
+}
+~~~
+
+It must not receive the hidden outcome map.
+
+Generated compiler files and runtime decision packages are technical artifacts.
+
+They are not the novel.
 
 ---
 
@@ -855,7 +872,7 @@ The intended human workflow is deliberately simple:
 1. Write the novel.
 2. Put the manuscript in story/source/.
 3. Run the story compilation pipeline.
-4. Review important generated choices/branches if needed.
+4. Review important generated decision anchors/canon intents if needed.
 5. Validate.
 6. Build the game.
 ~~~
@@ -871,7 +888,7 @@ For developers or AI agents working on the pipeline:
 ~~~text
 Inspect manuscript
 → parse structure
-→ derive gameplay graph
+→ derive canon-locked decision contracts
 → preserve authored truth
 → generate runtime metadata
 → validate references
@@ -921,7 +938,7 @@ At minimum validate:
 - unique Chapter/StoryNode IDs;
 - valid start node;
 - valid graph edges;
-- no dangling choice targets;
+- valid decision anchors and next authored beats;
 - valid character references;
 - valid snapshot references;
 - valid scripted encounter references;

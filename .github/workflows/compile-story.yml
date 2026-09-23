@@ -1,4 +1,4 @@
-name: Compile Story Interactions
+name: Compile Story Decision Contracts
 
 on:
   workflow_dispatch:
@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - story-compiler-v1
+      - 'story-*'
       - 'feature/**'
     paths:
       - 'android-apk/app/src/main/assets/story/source/**'
@@ -38,17 +39,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Compile manuscript interactions
+      - name: Compile manuscript decision contracts
         run: |
           set -euo pipefail
           python3 .github/scripts/compile-story.py
 
-      - name: Validate generated interactions
+      - name: Validate generated decision contracts
         run: |
           set -euo pipefail
           python3 .github/scripts/compile-story.py --validate-generated
 
-      - name: Commit generated interactions
+      - name: Commit generated decision contracts
         run: |
           set -euo pipefail
           GENERATED='android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json'
@@ -65,8 +66,8 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add "$GENERATED"
           if git diff --cached --quiet; then
-            echo 'Story interactions are already current.'
+            echo 'Story decision contracts are already current.'
           else
-            git commit -m 'Compile Level 0 story interactions'
+            git commit -m 'Compile Level 0 story decision contracts'
             git push origin HEAD:"${GITHUB_REF_NAME}"
           fi

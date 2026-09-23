@@ -34,11 +34,11 @@
     }
   }
 
-  function storyInteractionActive(){
+  function storyDecisionActive(){
     try {
       return !!(state && state.story && state.story.active === true
         && state.story.arcComplete !== true
-        && state.story.awaitingInteraction === true);
+        && state.story.awaitingDecision === true);
     } catch (_) {
       return false;
     }
@@ -72,12 +72,12 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing() || storyCutawayActive() || storyInteractionActive()) {
+    if (combatActive() || processing() || storyCutawayActive() || storyDecisionActive()) {
       if (typeof statusEl !== 'undefined' && statusEl) {
         statusEl.textContent = combatActive()
-          ? 'Đang chiến đấu. Hãy chọn A, B hoặc C trong khung GAME MASTER.'
-          : (storyInteractionActive()
-              ? 'Đang ở điểm tương tác cốt truyện. Hãy chọn A/B/C trong khung GAME MASTER.'
+          ? 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.'
+          : (storyDecisionActive()
+              ? 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.'
               : (storyCutawayActive()
                   ? 'Đang ở đoạn cắt cảnh. Hãy chọn “Tiếp tục cốt truyện” trong khung GAME MASTER.'
                   : 'Đang xử lý lượt hiện tại.'));
@@ -100,10 +100,10 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing() || storyCutawayActive() || storyInteractionActive();
+    var locked = combatActive() || processing() || storyCutawayActive() || storyDecisionActive();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyCutawayActive() || storyInteractionActive()) && !modal.hidden) closePlayerAction(true);
+    if ((combatActive() || storyCutawayActive() || storyDecisionActive()) && !modal.hidden) closePlayerAction(true);
   }
 
   openButton.addEventListener('click', openPlayerAction);

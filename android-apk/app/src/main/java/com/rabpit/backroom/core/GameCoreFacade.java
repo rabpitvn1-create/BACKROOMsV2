@@ -48,6 +48,8 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String processRule(String legacyStateJson, String action) {
     JSONObject legacy = parseState(legacyStateJson);
     try {
+      restoreHiddenDecisionPackage(
+          legacy, parseState(preferences.getString(STATE_KEY, "{}")));
       levelCore.normalizeState(legacy);
       characterProgressionCore.normalizeState(legacy);
       survivalCore.normalizeState(legacy);
@@ -58,32 +60,20 @@ public final class GameCoreFacade implements AutoCloseable {
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
-      boolean compiledStoryChoice = storyCore.isCompiledInteractionChoice(legacy, text);
-      if (storyCore.awaitingInteraction(legacy) && StoryCore.isAdvanceAction(text)) {
+      if (storyCore.awaitingDecision(legacy)) {
         JSONObject result = deepCopy(legacy);
-        String reply = "Hãy chọn một trong các lựa chọn cốt truyện trước khi tiếp tục.";
+        String reply = storyCore.decisionReady(legacy)
+            ? "Hãy chọn một hành động đang hiển thị trong khung GAME MASTER."
+            : "Các lựa chọn đang được chuẩn bị trong lúc bạn đọc đoạn hiện tại.";
         persist(result);
-        return response(true, result, "story_interaction_required", "story_interaction_required", reply);
-      }
-      if (storyCore.blocksFreePlayerAction(legacy)
-          && !StoryCore.isAdvanceAction(text)
-          && !compiledStoryChoice) {
-        JSONObject result = deepCopy(legacy);
-        String reply = storyCore.awaitingInteraction(legacy)
-            ? "Đang ở điểm tương tác cốt truyện. Hãy chọn một trong các lựa chọn A/B/C."
-            : "Đang ở đoạn cắt cảnh của cốt truyện. Hãy chọn “Tiếp tục cốt truyện” để tiếp tục.";
-        persist(result);
-        return response(true, result,
-            storyCore.awaitingInteraction(legacy) ? "story_interaction_required" : "story_cutaway_locked",
-            storyCore.awaitingInteraction(legacy) ? "story_interaction_required" : "story_cutaway_locked",
-            reply);
+        return response(true, result, "story_decision_required", "story_decision_required", reply);
       }
 
-      if (compiledStoryChoice) {
-        storyCore.consumeCompiledInteractionChoice(legacy, text);
-        legacy.put("saveVersion", CURRENT_SAVE_VERSION);
-        persist(legacy);
-        return response(false, legacy, null, "fallback_required", null);
+      if (storyCore.blocksFreePlayerAction(legacy) && !StoryCore.isAdvanceAction(text)) {
+        JSONObject result = deepCopy(legacy);
+        String reply = "Đang ở đoạn cắt cảnh của cốt truyện. Hãy tiếp tục cốt truyện để quay lại lượt của Cao Minh.";
+        persist(result);
+        return response(true, result, "story_cutaway_locked", "story_cutaway_locked", reply);
       }
 
       if (itemCore.isOpenChestAction(text)) {
@@ -201,7 +191,6 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.validateAndApply(before, sanitized);
       characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
       storyCore.normalizeState(sanitized);
-      storyCore.finishInteractionResponse(sanitized);
       sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
       advanceGameTimeFromBefore(before, sanitized, action);
       characterProgressionCore.applyExplorerTurnRecovery(sanitized);
@@ -213,6 +202,101 @@ public final class GameCoreFacade implements AutoCloseable {
     } catch (Exception e) {
       debug("processValidatedCandidate failed: " + e.getMessage());
       return response(false, before, safeMessage(e), "ai_delta_rejected", null);
+    }
+  }
+
+  public synchronized String storyDecisionPrefetchRequest(String stateJson, String recentStory) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        return new JSONObject().put("needed", false).put("error", "stale_story_decision").toString();
+      }
+      return storyCore.decisionPrefetchRequest(state, recentStory).toString();
+    } catch (Exception e) {
+      JSONObject output = new JSONObject();
+      try {
+        output.put("needed", false).put("error", safeMessage(e));
+      } catch (Exception ignored) {}
+      return output.toString();
+    }
+  }
+
+  public synchronized String commitStoryDecisionPackage(
+      String stateJson, String contextHash, String generatedPackageJson) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        return response(false, state, "Story decision prefetch đã cũ.",
+            "story_decision_prefetch_stale", null);
+      }
+      JSONObject generated = parseState(generatedPackageJson);
+      storyCore.installDecisionPackage(state, contextHash, generated);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "story_decision_prefetched", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_decision_prefetch_rejected", null);
+    }
+  }
+
+  public synchronized String processStoryDecision(String stateJson, String choiceId) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      restoreHiddenDecisionPackage(submitted, state);
+      levelCore.normalizeState(state);
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterEncounterCore.normalizeState(state);
+      storyCore.normalizeState(state);
+
+      JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
+      String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
+      if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
+        throw new IllegalStateException("Story decision trên UI đã cũ.");
+      }
+
+      StoryCore.DecisionResolution resolution =
+          storyCore.resolveDecision(state, choiceId, characterEncounterCore);
+      incrementTurn(state);
+      advanceGameTime(state, resolution.visibleChoice);
+      characterProgressionCore.applyExplorerTurnRecovery(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      if (resolution.looped) storyCore.refreshLoopDecisionContext(state);
+      appendDecisionLog(state, resolution);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null,
+          resolution.looped ? "story_decision_looped" : "story_decision_committed",
+          resolution.reply);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_decision_rejected", null);
     }
   }
 
@@ -317,6 +401,11 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      if (storyCore.awaitingDecision(state)) {
+        return response(false, state,
+            "Hãy xử lý điểm quyết định cốt truyện trước khi thay đổi Inventory.",
+            "story_decision_locked", null);
+      }
       String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -333,6 +422,11 @@ public final class GameCoreFacade implements AutoCloseable {
       characterProgressionCore.normalizeState(state);
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
+      if (storyCore.awaitingDecision(state)) {
+        return response(false, state,
+            "Hãy xử lý điểm quyết định cốt truyện trước khi nâng chỉ số.",
+            "story_decision_locked", null);
+      }
       JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       characterDetailCore.projectState(state);
@@ -359,6 +453,8 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String normalizeState(String stateJson) {
     JSONObject state = parseState(stateJson);
     try {
+      JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+      restoreHiddenDecisionPackage(state, persisted);
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
@@ -372,11 +468,11 @@ public final class GameCoreFacade implements AutoCloseable {
     } catch (Exception e) {
       debug("normalizeState failed: " + e.getMessage());
     }
-    return state.toString();
+    return clientSafeState(state).toString();
   }
 
   public synchronized String currentCoreState() {
-    return preferences.getString(STATE_KEY, "{}");
+    return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
   }
 
   public synchronized void clear() {
@@ -515,6 +611,33 @@ public final class GameCoreFacade implements AutoCloseable {
     state.put("log", log);
   }
 
+  private void appendDecisionLog(
+      JSONObject state, StoryCore.DecisionResolution resolution) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    log.put(new JSONObject().put("role", "player").put("text", resolution.visibleChoice));
+
+    JSONObject gm = new JSONObject().put("role", "gm").put("text", resolution.reply);
+    if (resolution.authoredTurn != null) {
+      gm.put("storyThread", resolution.authoredTurn.thread)
+          .put("storyVisibility", resolution.authoredTurn.visibility)
+          .put("storyChapter", resolution.authoredTurn.chapterId)
+          .put("storySegmentId", resolution.authoredTurn.segmentId)
+          .put("storyMode", resolution.authoredTurn.mode)
+          .put("authored", true);
+    } else {
+      JSONObject metadata = storyCore.logMetadata(state);
+      java.util.Iterator<String> keys = metadata.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        gm.put(key, metadata.get(key));
+      }
+      gm.put("authored", false);
+    }
+    log.put(gm);
+    state.put("log", log);
+  }
+
   private void appendStoryLog(
       JSONObject state, String action, StoryCore.AuthoredTurn authored) throws Exception {
     JSONArray log = state.optJSONArray("log");
@@ -529,10 +652,6 @@ public final class GameCoreFacade implements AutoCloseable {
         .put("storySegmentId", authored.segmentId)
         .put("storyMode", authored.mode)
         .put("authored", true);
-    if (authored.choices != null && authored.choices.length() >= 2
-        && StoryRepository.MODE_INTERACTIVE.equals(authored.mode)) {
-      gm.put("choices", new JSONArray(authored.choices.toString()));
-    }
     log.put(gm);
     state.put("log", log);
   }
@@ -556,12 +675,44 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject output = new JSONObject();
     try {
       output.put("handled", handled);
-      output.put("state", state == null ? new JSONObject() : state);
+      output.put("state", clientSafeState(state == null ? new JSONObject() : state));
       output.put("reason", reason == null ? "" : reason);
       if (error != null && !error.isEmpty()) output.put("error", error);
       if (reply != null && !reply.isEmpty()) output.put("reply", reply);
     } catch (Exception ignored) {}
     return output.toString();
+  }
+
+  private JSONObject clientSafeState(JSONObject source) {
+    JSONObject safe = deepCopy(source);
+    try {
+      JSONObject story = safe.optJSONObject(StoryCore.ROOT_KEY);
+      if (story == null) return safe;
+      JSONObject pack = story.optJSONObject("decisionPackage");
+      if (pack != null) {
+        pack.remove("outcomes");
+        story.put("decisionPackage", pack);
+      }
+      safe.put(StoryCore.ROOT_KEY, story);
+    } catch (Exception ignored) {}
+    return safe;
+  }
+
+  private void restoreHiddenDecisionPackage(JSONObject submitted, JSONObject persisted) {
+    try {
+      JSONObject submittedStory = submitted == null ? null : submitted.optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject persistedStory = persisted == null ? null : persisted.optJSONObject(StoryCore.ROOT_KEY);
+      if (submittedStory == null || persistedStory == null) return;
+      if (!submittedStory.optBoolean("awaitingDecision", false)
+          || !persistedStory.optBoolean("awaitingDecision", false)) return;
+      String submittedId = submittedStory.optString("decisionId", "").trim();
+      String persistedId = persistedStory.optString("decisionId", "").trim();
+      if (submittedId.isEmpty() || !submittedId.equals(persistedId)) return;
+      JSONObject persistedPack = persistedStory.optJSONObject("decisionPackage");
+      if (persistedPack == null || persistedPack.optJSONObject("outcomes") == null) return;
+      submittedStory.put("decisionPackage", new JSONObject(persistedPack.toString()));
+      submitted.put(StoryCore.ROOT_KEY, submittedStory);
+    } catch (Exception ignored) {}
   }
 
   private String safeMessage(Exception e) {

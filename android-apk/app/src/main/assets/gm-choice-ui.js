@@ -179,30 +179,75 @@
     else form.dispatchEvent(new Event('submit', {bubbles:true,cancelable:true}));
   }
 
+  function submitStoryDecisionChoice(choice) {
+    if (!choice || !choice.id || !storyDecisionReady()
+        || window.__combatBusy || (state.combat && state.combat.active)) return;
+    if (!window.Android || typeof Android.resolveStoryDecision !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android story bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
+    if (typeof window.render === 'function') window.render();
+    Android.resolveStoryDecision(JSON.stringify(state), String(choice.id));
+  }
+
   function chestPresent() {
     try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
   }
 
-  function storyAwaitingInteraction() {
+  function storyAwaitingDecision() {
     try {
       return !!(state && state.story && state.story.active === true
         && state.story.arcComplete !== true
-        && state.story.awaitingInteraction === true);
+        && state.story.awaitingDecision === true);
     } catch (_) { return false; }
   }
 
-  function storyInteractionChoices() {
+  function storyDecisionReady() {
     try {
-      return storyAwaitingInteraction() && Array.isArray(state.story.interactionChoices)
-        ? state.story.interactionChoices : [];
+      var pack = state && state.story && state.story.decisionPackage;
+      return storyAwaitingDecision()
+        && String(state.story.decisionStatus || '') === 'READY'
+        && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
+    } catch (_) { return false; }
+  }
+
+  function storyDecisionNeedsPrefetch() {
+    try {
+      return storyAwaitingDecision()
+        && String(state.story.decisionStatus || '') === 'PREFETCH_REQUIRED';
+    } catch (_) { return false; }
+  }
+
+  function storyDecisionChoices() {
+    try {
+      return storyDecisionReady() ? state.story.decisionPackage.choices : [];
     } catch (_) { return []; }
+  }
+
+  function requestStoryDecisionPrefetch() {
+    if (!storyDecisionNeedsPrefetch()) return;
+    if (!window.Android || typeof Android.prefetchStoryDecision !== 'function') return;
+    var key = String(state.story.decisionId || state.story.currentScene || '');
+    if (!key || window.__storyDecisionPrefetchKey === key) return;
+    window.__storyDecisionPrefetchKey = key;
+    setTimeout(function(){
+      try {
+        Android.prefetchStoryDecision(JSON.stringify(state));
+      } catch (_) {
+        window.__storyDecisionPrefetchKey = '';
+      }
+    }, 0);
   }
 
   function storyAdvanceAvailable() {
     try {
       return !!(state && state.story && state.story.active === true
         && state.story.arcComplete !== true && state.story.currentChapter
-        && state.story.awaitingInteraction !== true);
+        && state.story.awaitingDecision !== true);
     } catch (_) { return false; }
   }
 
@@ -242,7 +287,7 @@
     button.type = 'button';
     button.className = 'gm-choice' + (selected ? ' selected' : '');
     button.disabled = !!disabled;
-    button.appendChild(document.createTextNode(prefix + '. '));
+    button.appendChild(document.createTextNode('• '));
     appendRichText(button, text, entry, extra);
     button.addEventListener('click', onClick);
     return button;
@@ -271,30 +316,37 @@
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
     var cutaway = latest && storyCutawayActive();
-    var awaitingStoryChoice = latest && storyAwaitingInteraction();
+    var awaitingDecision = latest && storyAwaitingDecision();
+    var decisionReady = awaitingDecision && storyDecisionReady();
     var storyAvailable = latest && storyAdvanceAvailable();
-    var hasChest = latest && chestPresent() && !cutaway && !awaitingStoryChoice;
-    var choices = awaitingStoryChoice
-      ? storyInteractionChoices()
-      : (cutaway ? [] : (Array.isArray(entry.choices) ? entry.choices : []));
-    if (latest && !choices.length && !cutaway && !awaitingStoryChoice
+    var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision;
+
+    if (latest && storyDecisionNeedsPrefetch()) requestStoryDecisionPrefetch();
+
+    var choices = decisionReady
+      ? storyDecisionChoices()
+      : (cutaway || awaitingDecision ? [] : (Array.isArray(entry.choices) ? entry.choices : []));
+    if (latest && !choices.length && !cutaway && !awaitingDecision && !storyAvailable
         && !(state.combat && state.combat.active)) {
       choices = fallbackExplorerChoices();
     }
     if (!hasChest && !storyAvailable && !choices.length) return;
+
     var actionable = latest && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
     box.className = 'gm-choices explorer-choices';
     var choiceOffset = 0;
+
     if (hasChest) {
-      box.appendChild(makeChoiceButton('A', 'Mở Rương', entry, [{text:'Rương',type:'item'}], !actionable, false,
+      box.appendChild(makeChoiceButton('', 'Mở Rương', entry, [{text:'Rương',type:'item'}], !actionable, false,
         function(){ submitChestChoice(); }));
       choiceOffset++;
     }
+
     if (storyAvailable && choiceOffset < 3) {
-      var storyChoice = {text:'Tiếp tục cốt truyện',action:'Tiếp tục cốt truyện'};
+      var storyChoice = {text:'Tiếp tục',action:'Tiếp tục cốt truyện'};
       box.appendChild(makeChoiceButton(
-        String.fromCharCode(65 + choiceOffset),
+        '',
         storyChoice.text,
         entry,
         [],
@@ -303,11 +355,14 @@
         function(){ submitExplorerChoice(entry, storyChoice); }));
       choiceOffset++;
     }
-    choices.slice(0, 3 - choiceOffset).forEach(function(choice, choiceIndex){
-      var id = String.fromCharCode(65 + choiceOffset + choiceIndex);
+
+    choices.slice(0, 3 - choiceOffset).forEach(function(choice){
       var disabled = !actionable || !!choice.disabled || !!choice.selected;
-      box.appendChild(makeChoiceButton(id, choice.text || choice.action || '', entry, choice.highlights || [],
-        disabled, !!choice.selected, function(){ submitExplorerChoice(entry, choice); }));
+      var onClick = decisionReady
+        ? function(){ submitStoryDecisionChoice(choice); }
+        : function(){ submitExplorerChoice(entry, choice); };
+      box.appendChild(makeChoiceButton('', choice.text || choice.action || '', entry, choice.highlights || [],
+        disabled, !!choice.selected, onClick));
     });
     article.appendChild(box);
   }
@@ -372,12 +427,19 @@
   function syncComposer() {
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
-    form.classList.toggle('battle-locked', combat);
-    action.disabled = combat;
-    action.readOnly = combat;
+    var storyLocked = storyAwaitingDecision() || storyCutawayActive();
+    form.classList.toggle('battle-locked', combat || storyLocked);
+    action.disabled = combat || storyLocked;
+    action.readOnly = combat || storyLocked;
     if (combat) {
       action.value = '';
       action.placeholder = 'Đang chiến đấu — hoàn tất Poker Dice trong khung bên trên.';
+      submit.disabled = true;
+    } else if (storyLocked) {
+      action.value = '';
+      action.placeholder = storyAwaitingDecision()
+        ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
+        : 'Đang ở đoạn cắt cảnh cốt truyện.';
       submit.disabled = true;
     } else {
       action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';
@@ -573,6 +635,32 @@
       }
     }, true);
   }
+
+  window.backroomStoryDecisionPrepared = function(json){
+    try {
+      state = JSON.parse(json);
+      if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
+      window.__storyDecisionPrefetchKey = '';
+      window.__storyDecisionPrefetchRetries = 0;
+      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
+      if (typeof window.render === 'function') window.render();
+      syncComposer();
+      if (status) status.textContent = 'Các lựa chọn đã sẵn sàng.';
+    } catch (_) {
+      window.__storyDecisionPrefetchKey = '';
+      if (status) status.textContent = 'Decision package không hợp lệ.';
+    }
+  };
+
+  window.backroomStoryDecisionPrefetchError = function(message){
+    window.__storyDecisionPrefetchKey = '';
+    window.__storyDecisionPrefetchRetries = (window.__storyDecisionPrefetchRetries || 0) + 1;
+    if (window.__storyDecisionPrefetchRetries <= 2 && storyDecisionNeedsPrefetch()) {
+      setTimeout(function(){ requestStoryDecisionPrefetch(); }, 900);
+      return;
+    }
+    if (status) status.textContent = 'Không thể chuẩn bị lựa chọn: ' + String(message || 'provider error');
+  };
 
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){

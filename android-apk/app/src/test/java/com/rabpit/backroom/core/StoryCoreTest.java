@@ -23,18 +23,25 @@ public class StoryCoreTest {
         .put("flags", new JSONObject());
   }
 
-  private static StoryRepository interactiveFixtureRepository() {
+  private static StoryRepository decisionFixtureRepository() {
     String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
-    String source = "# Level 0 — Chương 01: Tương tác\n\nCao Minh dừng trước hai lối đi.";
+    StringBuilder pause = new StringBuilder(
+        "Cao Minh dừng lại trước một đoạn hành lang tối, nghe tiếng ù đèn kéo dài.");
+    while (pause.length() < 920) {
+      pause.append(" Hắn giữ nguyên vị trí, quan sát tường, thảm và ánh đèn mà không tiến thêm.");
+    }
+    String source = "# Level 0 — Chương 01: Quyết định\n\n"
+        + pause + "\n\n"
+        + "Hắn nghiêng người, áp sát mép tường rồi bước tiếp theo dấu cũ.";
     String metadata = "{"
         + "\"schemaVersion\":1,"
-        + "\"sourceRevision\":\"interactive-r1\","
-        + "\"segmentTargetChars\":1900,"
-        + "\"segmentMaxChars\":2400,"
+        + "\"sourceRevision\":\"decision-r2\","
+        + "\"segmentTargetChars\":800,"
+        + "\"segmentMaxChars\":1200,"
         + "\"startChapter\":\"L0_C01\","
         + "\"chapters\":[{"
         + "\"id\":\"L0_C01\","
-        + "\"title\":\"Tương tác\","
+        + "\"title\":\"Quyết định\","
         + "\"source\":\"" + sourcePath + "\","
         + "\"thread\":\"cao_minh\","
         + "\"visibility\":\"player\","
@@ -45,26 +52,27 @@ public class StoryCoreTest {
         + "\"forbiddenClaims\":[]"
         + "}]}";
     String digest = StoryRepository.sourceDigest(source);
-    String interactions = "{"
-        + "\"schemaVersion\":1,"
-        + "\"sourceRevision\":\"interactive-r1\","
+    String decisions = "{"
+        + "\"schemaVersion\":2,"
+        + "\"sourceRevision\":\"decision-r2\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
         + "\"sourceDigest\":\"" + digest + "\","
         + "\"segments\":{"
         + "\"L0_C01_P001\":{"
-        + "\"mode\":\"INTERACTIVE\","
-        + "\"choices\":["
-        + "{\"text\":\"Nhìn trái\",\"action\":\"Quan sát kỹ lối bên trái\"},"
-        + "{\"text\":\"Nhìn phải\",\"action\":\"Quan sát kỹ lối bên phải\"},"
-        + "{\"text\":\"Đứng nghe\",\"action\":\"Đứng yên lắng nghe trước khi đi tiếp\"}"
-        + "],"
-        + "\"interactionGuard\":\"Không rời khu vực và không quyết định lối đi thay cho đoạn authored tiếp theo.\""
-        + "}}}}}";
+        + "\"mode\":\"DECISION\","
+        + "\"decisionContract\":{"
+        + "\"canonChoiceText\":\"Bám theo dấu cũ rồi bước tiếp\","
+        + "\"loopAnchor\":\"L0_C01_P001\","
+        + "\"decisionGuard\":\"Không thay đổi authored plot.\""
+        + "}},"
+        + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
+        + "}}}}";
     Map<String, String> sources = new LinkedHashMap<>();
     sources.put(sourcePath, source);
-    return StoryRepository.fromText(metadata, sources, interactions);
+    return StoryRepository.fromText(metadata, sources, decisions);
   }
+
 
   private static StoryRepository fixtureRepository() {
     String metadata = "{"
@@ -240,41 +248,152 @@ public class StoryCoreTest {
     assertTrue(prompt.contains("AI must not advance manuscript position"));
   }
 
-  @Test public void compiledInteractionBlocksAdvanceUntilChoiceResponseFinishes() throws Exception {
+  private static JSONObject preparedAlternates() throws Exception {
+    return new JSONObject()
+        .put("trap", new JSONObject()
+            .put("text", "Theo tiếng ù rẽ sang khoảng tối bên cạnh")
+            .put("reply", "Tiếng ù kéo dài thêm một nhịp. Những vệt ố quen thuộc lại hiện ra trước mắt như thể khoảng hành lang vừa tự khép vòng."))
+        .put("converge", new JSONObject()
+            .put("text", "Đứng yên nghe thêm một nhịp trước khi di chuyển")
+            .put("reply", "Cao Minh giữ nguyên vị trí thêm một nhịp. Tiếng ù vẫn đều, không cho hắn thêm dữ kiện chắc chắn."));
+  }
+
+  private static String choiceIdForOutcome(JSONObject state, String type) throws Exception {
+    JSONObject pack = state.getJSONObject(StoryCore.ROOT_KEY).getJSONObject("decisionPackage");
+    JSONObject outcomes = pack.getJSONObject("outcomes");
+    java.util.Iterator<String> ids = outcomes.keys();
+    while (ids.hasNext()) {
+      String id = ids.next();
+      if (type.equals(outcomes.getJSONObject(id).getString("type"))) return id;
+    }
+    return "";
+  }
+
+  @Test public void decisionPrefetchBuildsThreeOpaquePublicChoices() throws Exception {
     JSONObject state = state();
-    StoryCore core = StoryCore.withRepository(interactiveFixtureRepository());
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
     StoryCore.AuthoredTurn turn =
         core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
 
-    assertEquals(StoryRepository.MODE_INTERACTIVE, turn.mode);
-    assertEquals(3, turn.choices.length());
-    assertTrue(core.awaitingInteraction(state));
+    assertEquals(StoryRepository.MODE_DECISION, turn.mode);
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionNeedsPrefetch(state));
     assertTrue(core.blocksFreePlayerAction(state));
+
+    JSONObject request = core.decisionPrefetchRequest(state, "(context)");
+    assertTrue(request.getBoolean("needed"));
+    String contextHash = request.getString("contextHash");
+    assertTrue(request.getString("prompt").contains("TWO additional plausible choices"));
+
+    core.installDecisionPackage(state, contextHash, preparedAlternates());
+    assertTrue(core.decisionReady(state));
+
+    JSONArray publicChoices = core.decisionChoices(state);
+    assertEquals(3, publicChoices.length());
+    for (int i = 0; i < publicChoices.length(); i++) {
+      JSONObject choice = publicChoices.getJSONObject(i);
+      assertTrue(choice.has("id"));
+      assertTrue(choice.has("text"));
+      String publicId = choice.getString("id").toLowerCase(java.util.Locale.ROOT);
+      assertTrue(publicId.startsWith("choice_"));
+      assertFalse(publicId.contains("canon"));
+      assertFalse(publicId.contains("trap"));
+      assertFalse(publicId.contains("converge"));
+      assertFalse(choice.has("type"));
+      assertFalse(choice.has("reply"));
+    }
 
     try {
       core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-      fail("Expected story advance to be blocked until compiled interaction is resolved");
+      fail("Expected authored progression to remain blocked until a decision is resolved");
     } catch (IllegalStateException expected) {
-      assertTrue(expected.getMessage().contains("interaction choice"));
+      assertTrue(expected.getMessage().contains("decision"));
     }
+  }
 
-    String action = turn.choices.getJSONObject(0).getString("action");
-    assertTrue(core.isCompiledInteractionChoice(state, action));
-    assertFalse(core.isCompiledInteractionChoice(state, "Tự ý bỏ đi"));
-    assertTrue(core.consumeCompiledInteractionChoice(state, action));
-    assertTrue(core.awaitingInteraction(state));
+  @Test public void canonDecisionAdvancesImmediatelyIntoAuthoredBeat() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
-    String prompt = core.promptContext(state);
-    assertTrue(prompt.contains("COMPILED STORY INTERACTION RESPONSE"));
-    assertTrue(prompt.contains(action));
-    assertTrue(prompt.contains("Không rời khu vực"));
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    JSONObject request = core.decisionPrefetchRequest(state, "");
+    core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
 
-    core.finishInteractionResponse(state);
-    assertFalse(core.awaitingInteraction(state));
-    String after = core.promptContext(state);
-    assertFalse(after.contains("COMPILED STORY INTERACTION RESPONSE"));
+    String canonId = choiceIdForOutcome(state, StoryCore.OUTCOME_CANON);
+    StoryCore.DecisionResolution resolution =
+        core.resolveDecision(state, canonId, characterCore);
+
+    assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+    assertFalse(resolution.looped);
+    assertTrue(resolution.reply.contains("áp sát mép tường"));
+    assertFalse(core.awaitingDecision(state));
+  }
+
+  @Test public void convergeUsesPreparedReactionThenCanonicalBeat() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    JSONObject request = core.decisionPrefetchRequest(state, "");
+    core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
+
+    String convergeId = choiceIdForOutcome(state, StoryCore.OUTCOME_CONVERGE);
+    StoryCore.DecisionResolution resolution =
+        core.resolveDecision(state, convergeId, characterCore);
+
+    assertEquals(StoryCore.OUTCOME_CONVERGE, resolution.outcome);
+    assertFalse(resolution.looped);
+    assertTrue(resolution.reply.startsWith("Cao Minh giữ nguyên vị trí"));
+    assertTrue(resolution.reply.contains("áp sát mép tường"));
+    assertFalse(core.awaitingDecision(state));
+  }
+
+  @Test public void trapUsesPreparedReactionAndReturnsToSameDecisionAnchor() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    StoryCore.AuthoredTurn anchor =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    JSONObject request = core.decisionPrefetchRequest(state, "");
+    core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
+
+    String trapId = choiceIdForOutcome(state, StoryCore.OUTCOME_TRAP);
+    StoryCore.DecisionResolution resolution =
+        core.resolveDecision(state, trapId, characterCore);
+
+    assertEquals(StoryCore.OUTCOME_TRAP, resolution.outcome);
+    assertTrue(resolution.looped);
+    assertTrue(resolution.reply.contains("tự khép vòng"));
+    assertTrue(resolution.reply.contains(anchor.reply));
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionReady(state));
+    assertEquals("L0_C01_P001",
+        state.getJSONObject(StoryCore.ROOT_KEY).getString("currentScene"));
+    assertEquals(1,
+        state.getJSONObject(StoryCore.ROOT_KEY)
+            .getJSONObject("loopHistory").getInt("L0_C01_P001"));
+  }
+
+  @Test public void stalePrefetchPackageIsRejectedByContextHash() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    JSONObject request = core.decisionPrefetchRequest(state, "");
+    state.put("inventory", new JSONArray().put(new JSONObject().put("id", "changed")));
+
+    try {
+      core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
+      fail("Expected stale decision package to be rejected");
+    } catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("context changed"));
+    }
   }
 
 }

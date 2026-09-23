@@ -17,10 +17,10 @@ STORY_ROOT = ROOT / "android-apk/app/src/main/assets/story"
 METADATA_PATH = STORY_ROOT / "generated/level_0/level0.story.json"
 OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"
 
-SCHEMA_VERSION = 1
-COMPILER_VERSION = 1
-MAX_INTERACTIVE_PER_CHAPTER = 1
-VALID_MODES = {"LINEAR", "INTERACTIVE", "CUTAWAY", "LOCKED_EVENT"}
+SCHEMA_VERSION = 2
+COMPILER_VERSION = 2
+MAX_DECISIONS_PER_CHAPTER = 1
+VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "LOCKED_EVENT"}
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
     re.compile(r"(?iu)\b(?:chọn|đổi|thay đổi)\s+(?:lối|hướng|đường)\b"),
@@ -328,10 +328,13 @@ def call_gemini(prompt):
 
 def generate(prompt):
     try:
-        return call_haiku(prompt), "haiku"
-    except Exception as haiku_error:
-        print(f"[story-compiler] Haiku failed, using Gemini fallback: {haiku_error}", file=sys.stderr)
         return call_gemini(prompt), "gemini"
+    except Exception as gemini_error:
+        print(
+            f"[story-compiler] All Gemini keys failed, using Haiku fallback: {gemini_error}",
+            file=sys.stderr,
+        )
+        return call_haiku(prompt), "haiku"
 
 
 def forced_locked_indices(chapter, segment_count):
@@ -392,6 +395,13 @@ def build_story_state_snapshots(metadata):
 
 
 def build_prompt(chapter, segments, forced_locked, established_story_state):
+    enriched = []
+    for index, segment in enumerate(segments):
+        enriched.append({
+            **segment,
+            "pauseAnchor": segment["text"][-900:],
+            "nextSegment": segments[index + 1]["text"][:1800] if index + 1 < len(segments) else "",
+        })
     payload = {
         "chapter": {
             "id": chapter.get("id"),
@@ -405,69 +415,52 @@ def build_prompt(chapter, segments, forced_locked, established_story_state):
         },
         "forcedLockedSegmentIds": [segments[i]["id"] for i in sorted(forced_locked)],
         "establishedStoryState": established_story_state,
-        "segments": [
-            {
-                **segment,
-                "pauseAnchor": segment["text"][-900:],
-            }
-            for segment in segments
-        ],
+        "segments": enriched,
     }
-    return """You are the BACKROOMsV2 Story Compiler. Convert authored Vietnamese novel prose into conservative gameplay interaction metadata.
+    return """You are the BACKROOMsV2 Story Compiler v2.
+
+The novelist writes canon. Your job is NOT to invent A/B/C. Your job is only to identify a clean decision anchor and phrase the ONE hidden canon intent that naturally leads into the next authored segment.
 
 AUTHORIAL AUTHORITY:
-- The manuscript decides WHAT happens.
-- A player choice may only vary HOW Cao Minh approaches, observes, checks, waits, speaks, or prepares.
-- Choices MUST converge back to the authored manuscript. Never create alternate plot outcomes.
-- Never add a new character, item, Entity, route, revelation, relationship change, death, survival outcome, Level transition, combat result, or lore fact.
-- Never contradict requiredFacts, forbiddenClaims, or establishedStoryState.
-- establishedStoryState is authoritative runtime continuity at the start of this chapter.
-- If a character presence is MISSING or UNKNOWN, choices may search for evidence or discuss that person but MUST NOT address them, ask them to act, or assume they are physically present.
-- If a character is not PARTY_MEMBER, do not give them Party/gameplay authority.
+- The manuscript decides exactly what canon does next.
+- Never alter, branch, summarize away, or replace authored events.
+- Never add characters, items, Entities, routes, revelations, relationships, deaths, Level transitions, combat results, or lore.
+- establishedStoryState, requiredFacts and forbiddenClaims are authoritative.
 - Do not rewrite manuscript prose.
 
 CLASSIFICATION:
-- LINEAR: no useful player decision after this segment.
-- INTERACTIVE: there is a natural pause after this segment where Cao Minh can make a small local decision before the next authored segment.
-- LOCKED_EVENT: this segment contains or directly anchors mandatory plot/dialogue/revelation. No choices.
-- CUTAWAY is reserved for compiler-forced reader-only parallel scenes. Do not output CUTAWAY here unless input visibility is cutaway.
+- LINEAR: no clean player decision can be inserted after this segment.
+- DECISION: a clean pause exists after this segment and the NEXT authored segment begins with an action/intent that can be phrased as a natural player-facing canon choice.
+- LOCKED_EVENT: mandatory plot/dialogue/revelation boundary. No decision.
+- CUTAWAY is compiler-forced elsewhere.
 
-INTERACTION RULES:
-- At most 1 INTERACTIVE segment in this chapter. Do not force a choice into every chapter.
-- An INTERACTIVE segment MUST have exactly 3 concise Vietnamese choices.
-- Each choice is only an INTENT/APPROACH, never a claimed outcome.
-- IMPORTANT TIMING: every action, line of dialogue and observation written inside the current segment has ALREADY happened before the choice appears. Never offer a choice that repeats, redoes or "decides" an action already completed in that segment.
-- pauseAnchor is the END of that segment and represents the exact physical/conversational state when choices appear. Ground choices in pauseAnchor. An object/place mentioned earlier in the segment is NOT available if the characters have moved away from it by pauseAnchor.
-- If the segment ends in the middle of a conversation/action and the next authored segment directly continues it, prefer LINEAR instead of inserting A/B/C into the middle.
-- Choice text may use only facts, characters, objects and observations already present in the current segment or earlier segments in this chapter. Never mention a reveal, destination, encounter, person, object or result that first appears later.
-- Never ask a character about an earlier event, shared history, technical fact or memory unless the manuscript before this choice explicitly establishes that they know it.
-- Never introduce a new theory or interpretation as a choice unless that theory has already been raised in the manuscript before this pause.
-- The three choices must all be plausible at that exact pause and must be able to receive a short local reaction before returning to the exact authored path.
-- Write natural, grammatical Vietnamese with correct spelling. Reject awkward, corrupted or nonsensical wording rather than trying to preserve it.
-- V1 choices should be observational/conversational/preparatory: observe, inspect, ask, listen, wait, mark, compare, warn, prepare, or focus.
-- Do NOT make navigation/outcome choices: no choosing another route, entering/leaving an area, turning back, forcing a door, consuming an item, attacking, forcing a meeting, or forcing a discovery.
-- Do not offer "leave", "refuse the plot", "attack an ally", "change destination", "force a meeting", "force a discovery", "call a person who has not been confirmed present", or any choice that would invalidate the next authored segment.
-- Prefer LINEAR over a weak, fake, spoiler-prone, or artificial choice.
-- Any forcedLockedSegmentId MUST be LOCKED_EVENT.
-- interactionGuard is ignored by the compiler. Return it as an empty string.
+DECISION RULES:
+- At most 1 DECISION per chapter. Do not force one into every chapter.
+- DECISION requires a non-empty nextSegment in the same chapter.
+- pauseAnchor is the exact state when the three runtime bullets will later appear.
+- canonChoiceText describes ONLY the immediate player intent/action that naturally enters nextSegment. It must not reveal the result of nextSegment.
+- The player controls Cao Minh. canonChoiceText must be something Cao Minh chooses/does, never dialogue or an action belonging to Lục Trầm, Nam, or another character.
+- If currentSegment already contains Cao Minh making that decision, stating that intention, agreeing to it, or effectively committing to it, classify LINEAR instead of repeating it as a choice.
+- canonChoiceText must be concise, natural Vietnamese, <= 160 characters.
+- Never use "Tiếp tục cốt truyện", "continue story", A/B/C labels, outcome labels, or meta language.
+- If currentSegment ends mid-dialogue/mid-action and nextSegment directly continues it, prefer LINEAR.
+- Anything already completed in currentSegment is past. Do not phrase canonChoiceText as redoing it.
+- A forcedLockedSegmentId MUST be LOCKED_EVENT.
+- loopAnchor is compiler-owned and will be the current segment id.
+- decisionGuard is compiler-owned. Return neither field yourself.
 
 Return JSON only:
 {
   "segments": [
     {
       "id": "exact input segment id",
-      "mode": "LINEAR|INTERACTIVE|LOCKED_EVENT",
-      "choices": [
-        {"text":"...", "action":"..."},
-        {"text":"...", "action":"..."},
-        {"text":"...", "action":"..."}
-      ],
-      "interactionGuard":""
+      "mode": "LINEAR|DECISION|LOCKED_EVENT",
+      "canonChoiceText": ""
     }
   ]
 }
 
-For every mode, interactionGuard must be "". The compiler supplies its own deterministic guard for INTERACTIVE.
+For LINEAR/LOCKED_EVENT canonChoiceText must be "".
 Every input segment must appear exactly once and in the same order.
 
 INPUT:
@@ -521,58 +514,42 @@ def sanitize_model_chapter(
         raise CompileError(f"{chapter['id']}: model segment IDs/order do not match compiler segmentation.")
 
     output = {}
-    interactive_count = 0
+    decision_count = 0
     for index, (segment, row) in enumerate(zip(segments, rows)):
         if not isinstance(row, dict):
             raise CompileError(f"{chapter['id']}: invalid segment output at index {index}.")
         mode = str(row.get("mode", "LINEAR")).strip().upper()
-        if mode not in {"LINEAR", "INTERACTIVE", "LOCKED_EVENT"}:
+        if mode not in {"LINEAR", "DECISION", "LOCKED_EVENT"}:
             mode = "LINEAR"
         if index in forced_locked:
             mode = "LOCKED_EVENT"
 
-        choices = row.get("choices") if isinstance(row.get("choices"), list) else []
-        guard = ""
-
-        if mode == "INTERACTIVE":
-            if interactive_count >= MAX_INTERACTIVE_PER_CHAPTER:
+        canon_text = str(row.get("canonChoiceText", "") or "").strip()
+        if mode == "DECISION":
+            if decision_count >= MAX_DECISIONS_PER_CHAPTER:
                 mode = "LINEAR"
-            elif len(choices) != 3:
+            elif index + 1 >= len(segments):
                 mode = "LINEAR"
-
-        clean_choices = []
-        if mode == "INTERACTIVE":
-            seen = set()
-            for choice in choices:
-                if not isinstance(choice, dict):
-                    clean_choices = []
-                    break
-                text = str(choice.get("text", "") or "").strip()
-                normalized = re.sub(r"\\s+", " ", text).casefold()
-                if (not text or len(text) > 180 or normalized in seen
-                        or normalized in {"tiếp tục cốt truyện", "continue story"}
-                        or choice_changes_authored_path(text)
-                        or choice_is_recheck_intent(text)
-                        or choice_addresses_unavailable_character(
-                            text, established_story_state)):
-                    clean_choices = []
-                    break
-                seen.add(normalized)
-                clean_choices.append({"text": text, "action": text})
-            if len(clean_choices) != 3:
+            elif (not canon_text or len(canon_text) > 160
+                  or canon_text.casefold() in {"tiếp tục cốt truyện", "continue story"}
+                  or choice_is_recheck_intent(canon_text)
+                  or choice_addresses_unavailable_character(
+                      canon_text, established_story_state)):
                 mode = "LINEAR"
 
-        if mode == "INTERACTIVE":
-            interactive_count += 1
-            guard = STANDARD_INTERACTION_GUARD
+        if mode == "DECISION":
+            decision_count += 1
+            contract = {
+                "canonChoiceText": canon_text,
+                "loopAnchor": segment["id"],
+                "decisionGuard": STANDARD_INTERACTION_GUARD,
+            }
         else:
-            clean_choices = []
-            guard = ""
+            contract = {}
 
         output[segment["id"]] = {
             "mode": mode,
-            "choices": clean_choices,
-            "interactionGuard": guard,
+            "decisionContract": contract,
         }
     return output
 
@@ -581,8 +558,7 @@ def compile_cutaway(chapter, segments):
     return {
         segment["id"]: {
             "mode": "CUTAWAY",
-            "choices": [],
-            "interactionGuard": "",
+            "decisionContract": {},
         }
         for segment in segments
     }
@@ -592,14 +568,13 @@ def compile_safe_linear(segments, forced_locked):
     return {
         segment["id"]: {
             "mode": "LOCKED_EVENT" if index in forced_locked else "LINEAR",
-            "choices": [],
-            "interactionGuard": "",
+            "decisionContract": {},
         }
         for index, segment in enumerate(segments)
     }
 
 
-def compile_model_interactions(
+def compile_model_decisions(
         chapter, segments, forced_locked, prompt, established_story_state):
     errors = []
     strict_suffix = (
@@ -607,21 +582,23 @@ def compile_model_interactions(
         "No markdown fence, no commentary, no preface, no suffix. Preserve every segment id exactly."
     )
 
+    # Gemini owns the primary lane. Each call rotates through keys 1..5.
+    # Haiku is intentionally the final provider and is never followed by Gemini again.
     for attempt in range(2):
         retry_prompt = prompt if attempt == 0 else prompt + strict_suffix
         try:
-            raw, provider = generate(retry_prompt)
+            raw = call_gemini(retry_prompt)
             return sanitize_model_chapter(
-                chapter, segments, raw, forced_locked, established_story_state), provider
+                chapter, segments, raw, forced_locked, established_story_state), "gemini"
         except Exception as exc:
-            errors.append(f"Haiku attempt {attempt + 1}: {exc}")
+            errors.append(f"Gemini pass {attempt + 1}: {exc}")
 
     try:
-        raw = call_gemini(prompt + strict_suffix)
+        raw = call_haiku(prompt + strict_suffix)
         return sanitize_model_chapter(
-            chapter, segments, raw, forced_locked, established_story_state), "gemini"
+            chapter, segments, raw, forced_locked, established_story_state), "haiku"
     except Exception as exc:
-        errors.append(f"Gemini repair: {exc}")
+        errors.append(f"Haiku final fallback: {exc}")
 
     chapter_id = chapter.get("id", "")
     print(
@@ -632,20 +609,23 @@ def compile_model_interactions(
     return compile_safe_linear(segments, forced_locked), "deterministic-safe-fallback"
 
 
-def build_review_prompt(chapter, segments, compiled, established_story_state):
-    candidates = []
+def audit_decision_contract(chapter, segments, compiled, established_story_state):
+    decision_rows = []
     for index, segment in enumerate(segments):
         spec = compiled.get(segment["id"]) or {}
-        if spec.get("mode") != "INTERACTIVE":
+        if spec.get("mode") != "DECISION":
             continue
-        candidates.append({
+        contract = spec.get("decisionContract") or {}
+        decision_rows.append({
             "id": segment["id"],
             "currentSegment": segment["text"],
             "pauseAnchor": segment["text"][-900:],
-            "previousSegment": segments[index - 1]["text"] if index > 0 else "",
             "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
-            "choices": spec.get("choices") or [],
+            "canonChoiceText": contract.get("canonChoiceText", ""),
         })
+
+    if not decision_rows:
+        return compiled, "no-audit-needed"
 
     payload = {
         "chapter": {
@@ -653,304 +633,57 @@ def build_review_prompt(chapter, segments, compiled, established_story_state):
             "title": chapter.get("title"),
             "thread": chapter.get("thread"),
             "visibility": chapter.get("visibility"),
-            "requiredFacts": chapter.get("requiredFacts") or [],
-            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
         },
         "establishedStoryState": established_story_state,
-        "allChapterSegments": segments,
-        "interactiveCandidates": candidates,
+        "decisions": decision_rows,
     }
-    return """You are the strict QA reviewer for BACKROOMsV2 Story Compiler v1.
-Review ONLY the candidate A/B/C choices. The manuscript is authoritative.
+    prompt = """You are the FINAL AUDITOR for BACKROOMsV2 Story Compiler v2.
 
-CRITICAL TIMING:
-- A choice appears AFTER currentSegment is fully completed and BEFORE nextSegment begins.
-- pauseAnchor is the end of currentSegment and is the authoritative physical/conversational state at the decision point.
-- Ground every retained/rewritten choice in pauseAnchor plus stable facts already established. Do NOT send characters back to an object, room, liquid, door, device, voice or clue that occurred earlier in currentSegment if pauseAnchor shows they have already moved on.
-- Anything already done, said, observed, tested, decided or called in currentSegment is in the past and MUST NOT be offered again.
-- Treat re-check wording such as "xác nhận", "kiểm tra lại", "xem lại", "thử lại", "đo lại", or "đếm lại" as invalid in V1; these often disguise repetition of a fact the manuscript already established.
-- If currentSegment ends mid-conversation or mid-action and nextSegment directly continues that same exchange/action, use LINEAR rather than inserting a choice into the middle.
-- nextSegment is visible to you ONLY to check convergence. A choice MUST NOT leak or assume facts that first appear in nextSegment or later.
+The player controls Cao Minh. For each proposed DECISION, output KEEP or LINEAR only. You may NOT rewrite the canonChoiceText.
 
-REVIEWER ROLE:
-- You are QA, not a second story designer. The first compiler has already selected this as a candidate pause.
-- Do NOT downgrade merely because nextSegment continues the story. A short local reaction is allowed between currentSegment and nextSegment.
-- First try to REWRITE all three choices into safe micro-intents grounded in the current pause.
-- Use LINEAR only when there is genuinely no way to offer three distinct, natural, local approaches without inventing facts or changing authored progression.
-- It is acceptable for choices to inspect, listen, compare, ask a present character about something they demonstrably know, mark a detail, prepare, or briefly observe.
-- The three choices do not need different outcomes. They only need different local approaches before convergence.
+KEEP only when ALL are true:
+- canonChoiceText describes an immediate action/intention Cao Minh himself can choose at the END of currentSegment.
+- That action has NOT already happened, been stated, agreed, decided, or effectively committed to in currentSegment.
+- nextSegment actually begins by carrying out that Cao Minh action/intention, or a direct shared action initiated by him.
+- The text does not steal dialogue/action that belongs to Lục Trầm, Nam, or another character.
+- The text does not reveal the result/consequence of nextSegment.
+- The text does not add lore, knowledge, route facts, objects, capabilities, or outcomes not already available at the pause.
+- The decision sits at a genuine pause, not in the middle of an unfinished exchange.
 
-A candidate is INVALID unless rewritten or downgraded when a choice:
-- repeats or redoes an action already completed in currentSegment;
-- invents or assumes an object, liquid, sign, route, person, mechanism, injury, sound, ability or fact not actually available at that pause;
-- assumes a character knows something the manuscript has not established they know;
-- gives a weapon/item an unsupported sensing or reasoning capability;
-- introduces a new theory, interpretation, diagnosis or lore claim not already raised before the pause;
-- changes route, timing, destination, authored event, relationship, Party state, resource outcome, combat outcome or Level progression;
-- asks to wait until a condition that would materially change authored pacing is satisfied;
-- is awkward, corrupted, misspelled, vague, redundant, or not natural Vietnamese;
-- cannot receive a short local reaction and then return unchanged to nextSegment.
-
-Rewrite bad choices whenever a safe rewrite exists. Downgrade to LINEAR only as the last resort.
+Use LINEAR if any criterion fails. Prefer fewer clean decisions over fake interactivity.
 
 Return JSON only:
-{
-  "reviews": [
-    {
-      "id": "exact candidate segment id",
-      "mode": "INTERACTIVE|LINEAR",
-      "choices": [
-        {"text":"...","action":"..."},
-        {"text":"...","action":"..."},
-        {"text":"...","action":"..."}
-      ]
-    }
-  ]
-}
+{"audits":[{"id":"exact id","verdict":"KEEP|LINEAR","reason":"brief concrete reason"}]}
 
-For LINEAR, choices must be [].
-For INTERACTIVE, exactly 3 concise Vietnamese choices are required.
-Every interactiveCandidate id must appear exactly once and in the same order.
+Every decision id must appear exactly once and in input order.
 
 INPUT:
 """ + json.dumps(payload, ensure_ascii=False, indent=2)
 
-
-def sanitize_review_result(
-        compiled, raw_result, established_story_state):
-    result = extract_json(raw_result)
-    rows = result.get("reviews")
-    if not isinstance(rows, list):
-        raise CompileError("review output missing reviews array.")
-
-    expected_ids = [
-        segment_id for segment_id, spec in compiled.items()
-        if spec.get("mode") == "INTERACTIVE"
-    ]
-    returned_ids = [row.get("id") for row in rows if isinstance(row, dict)]
-    if returned_ids != expected_ids:
-        raise CompileError("review segment IDs/order do not match interactive candidates.")
-
-    reviewed = json.loads(json.dumps(compiled, ensure_ascii=False))
-    for row in rows:
-        segment_id = row["id"]
-        mode = str(row.get("mode", "LINEAR")).strip().upper()
-        if mode != "INTERACTIVE":
-            reviewed[segment_id] = {
-                "mode": "LINEAR",
-                "choices": [],
-                "interactionGuard": "",
-            }
-            continue
-
-        choices = row.get("choices") if isinstance(row.get("choices"), list) else []
-        clean_choices = []
-        seen = set()
-        if len(choices) == 3:
-            for choice in choices:
-                if not isinstance(choice, dict):
-                    clean_choices = []
-                    break
-                text = str(choice.get("text", "") or "").strip()
-                normalized = re.sub(r"\\s+", " ", text).casefold()
-                if (not text or len(text) > 180 or normalized in seen
-                        or normalized in {"tiếp tục cốt truyện", "continue story"}
-                        or choice_changes_authored_path(text)
-                        or choice_is_recheck_intent(text)
-                        or choice_addresses_unavailable_character(
-                            text, established_story_state)):
-                    clean_choices = []
-                    break
-                seen.add(normalized)
-                clean_choices.append({"text": text, "action": text})
-
-        if len(clean_choices) != 3:
-            reviewed[segment_id] = {
-                "mode": "LINEAR",
-                "choices": [],
-                "interactionGuard": "",
-            }
-        else:
-            reviewed[segment_id] = {
-                "mode": "INTERACTIVE",
-                "choices": clean_choices,
-                "interactionGuard": STANDARD_INTERACTION_GUARD,
-            }
-    return reviewed
-
-
-def downgrade_interactions_to_linear(compiled):
-    safe = json.loads(json.dumps(compiled, ensure_ascii=False))
-    for segment_id, spec in safe.items():
-        if spec.get("mode") == "INTERACTIVE":
-            safe[segment_id] = {
-                "mode": "LINEAR",
-                "choices": [],
-                "interactionGuard": "",
-            }
-    return safe
-
-
-def review_compiled_interactions(
-        chapter, segments, compiled, established_story_state):
-    interactive_ids = [
-        segment_id for segment_id, spec in compiled.items()
-        if spec.get("mode") == "INTERACTIVE"
-    ]
-    if not interactive_ids:
-        return compiled, "no-review-needed"
-
-    prompt = build_review_prompt(
-        chapter, segments, compiled, established_story_state)
-    strict_suffix = (
-        "\n\nSTRICT RETRY: Return one valid JSON object only. "
-        "No markdown, commentary, preface or suffix. Preserve candidate ids exactly."
-    )
-    errors = []
-    # Use Gemini as the rewrite/QA pass so the generator is not grading itself.
     try:
-        raw = call_gemini(prompt)
-        reviewed = sanitize_review_result(
-            compiled, raw, established_story_state)
-        return reviewed, "gemini-review"
+        raw, provider = generate(prompt)
+        parsed = extract_json(raw)
+        rows = parsed.get("audits")
+        expected = [row["id"] for row in decision_rows]
+        returned = [row.get("id") for row in rows] if isinstance(rows, list) else []
+        if returned != expected:
+            raise CompileError("decision audit ids/order mismatch")
+
+        audited = json.loads(json.dumps(compiled, ensure_ascii=False))
+        for row in rows:
+            if str(row.get("verdict", "LINEAR")).strip().upper() != "KEEP":
+                audited[row["id"]] = {"mode": "LINEAR", "decisionContract": {}}
+        return audited, provider + "-audit"
     except Exception as exc:
-        errors.append(f"Gemini: {exc}")
-
-    for attempt in range(2):
-        try:
-            raw, provider = generate(prompt if attempt == 0 else prompt + strict_suffix)
-            reviewed = sanitize_review_result(
-                compiled, raw, established_story_state)
-            return reviewed, provider + "-review-fallback"
-        except Exception as exc:
-            errors.append(f"fallback {attempt + 1}: {exc}")
-
-    print(
-        f"[story-compiler] WARNING {chapter.get('id', '')}: QA review failed; "
-        f"downgrading all interactive candidates to LINEAR. {' | '.join(errors)}",
-        file=sys.stderr,
-    )
-    return downgrade_interactions_to_linear(compiled), "deterministic-review-fallback"
-
-
-def build_final_audit_prompt(chapter, segments, compiled, established_story_state):
-    candidates = []
-    for index, segment in enumerate(segments):
-        spec = compiled.get(segment["id"]) or {}
-        if spec.get("mode") != "INTERACTIVE":
-            continue
-        candidates.append({
-            "id": segment["id"],
-            "pauseAnchor": segment["text"][-900:],
-            "currentSegment": segment["text"],
-            "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
-            "choices": spec.get("choices") or [],
-        })
-    payload = {
-        "chapter": {
-            "id": chapter.get("id"),
-            "title": chapter.get("title"),
-            "thread": chapter.get("thread"),
-            "visibility": chapter.get("visibility"),
-            "requiredFacts": chapter.get("requiredFacts") or [],
-            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
-        },
-        "establishedStoryState": established_story_state,
-        "candidates": candidates,
-    }
-    return """You are the FINAL INDEPENDENT SAFETY AUDITOR for BACKROOMsV2 Story Compiler v1.
-
-You are NOT allowed to rewrite, repair, improve, paraphrase, or replace any choice.
-For each candidate, output only KEEP or LINEAR.
-
-KEEP only if ALL three existing choices are clearly valid at the exact pause represented by pauseAnchor.
-If even ONE choice is questionable, output LINEAR.
-
-A choice is invalid if it:
-- repeats or preempts an action/dialogue/test that already happened in currentSegment or is immediately authored in nextSegment;
-- uses re-check wording such as "xác nhận", "kiểm tra lại", "xem lại", "thử lại", "đo lại", or "đếm lại";
-- requires moving back to an earlier room/object/clue that is no longer present at pauseAnchor;
-- invents or assumes an object, phenomenon, capability, terminology, history, knowledge, location, relationship, or fact not established before the pause;
-- assumes a character knows Backrooms terminology or prior Backrooms experience not established in the manuscript;
-- gives a cultivation system, weapon, skill or character an unsupported sensing/mechanical ability;
-- changes route, destination, pacing, authored event, Party state, resource outcome, combat result, Level progression, or mandatory dialogue;
-- is awkward, corrupted, vague, semantically wrong, or unnatural Vietnamese;
-- cannot receive one short local reaction and then continue nextSegment unchanged.
-
-Do not reject a candidate merely because you are uncertain or because the choices converge; convergence is required.
-Choose LINEAR only when you can identify a concrete violation from the supplied manuscript/context.
-For KEEP, reason may be "all three grounded and convergent".
-For LINEAR, reason must briefly name the concrete invalid choice/fact/timing conflict.
-
-Return JSON only:
-{
-  "audits": [
-    {"id":"exact candidate id","verdict":"KEEP|LINEAR","reason":"brief concrete reason"}
-  ]
-}
-Every candidate id must appear exactly once and in the same order.
-
-INPUT:
-""" + json.dumps(payload, ensure_ascii=False, indent=2)
-
-
-def sanitize_final_audit(compiled, raw_result):
-    result = extract_json(raw_result)
-    rows = result.get("audits")
-    if not isinstance(rows, list):
-        raise CompileError("final audit output missing audits array.")
-
-    expected_ids = [
-        segment_id for segment_id, spec in compiled.items()
-        if spec.get("mode") == "INTERACTIVE"
-    ]
-    returned_ids = [row.get("id") for row in rows if isinstance(row, dict)]
-    if returned_ids != expected_ids:
-        raise CompileError("final audit ids/order do not match candidates.")
-
-    audited = json.loads(json.dumps(compiled, ensure_ascii=False))
-    for row in rows:
-        segment_id = row["id"]
-        verdict = str(row.get("verdict", "LINEAR")).strip().upper()
-        if verdict != "KEEP":
-            audited[segment_id] = {
-                "mode": "LINEAR",
-                "choices": [],
-                "interactionGuard": "",
-            }
-    return audited
-
-
-def final_audit_compiled_interactions(
-        chapter, segments, compiled, established_story_state):
-    if not any(spec.get("mode") == "INTERACTIVE" for spec in compiled.values()):
-        return compiled, "no-final-audit-needed"
-
-    prompt = build_final_audit_prompt(
-        chapter, segments, compiled, established_story_state)
-    errors = []
-
-    # Haiku generated the original candidates, but Gemini performed the
-    # rewrite/QA pass. Use Haiku here as an independent binary auditor of
-    # Gemini's reviewed output, with Gemini only as fallback.
-    try:
-        raw = call_haiku(prompt)
-        return sanitize_final_audit(compiled, raw), "haiku-final-audit"
-    except Exception as exc:
-        errors.append(f"Haiku: {exc}")
-
-    try:
-        raw = call_gemini(prompt)
-        return sanitize_final_audit(compiled, raw), "gemini-final-audit-fallback"
-    except Exception as exc:
-        errors.append(f"Gemini fallback: {exc}")
-
-    print(
-        f"[story-compiler] WARNING {chapter.get('id', '')}: final audit failed; "
-        f"downgrading interactions to LINEAR. {' | '.join(errors)}",
-        file=sys.stderr,
-    )
-    return downgrade_interactions_to_linear(compiled), "deterministic-final-audit-fallback"
+        print(
+            f"[story-compiler] WARNING {chapter.get('id', '')}: decision audit failed; "
+            f"downgrading decision candidates to LINEAR. {exc}",
+            file=sys.stderr,
+        )
+        safe = json.loads(json.dumps(compiled, ensure_ascii=False))
+        for row in decision_rows:
+            safe[row["id"]] = {"mode": "LINEAR", "decisionContract": {}}
+        return safe, "deterministic-audit-fallback"
 
 
 def compile_chapter(chapter, target, maximum, established_story_state):
@@ -970,20 +703,18 @@ def compile_chapter(chapter, target, maximum, established_story_state):
         provider = "deterministic"
     else:
         prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
-        compiled, provider = compile_model_interactions(
+        compiled, provider = compile_model_decisions(
             chapter, segments, forced_locked, prompt, established_story_state)
-        compiled, review_provider = review_compiled_interactions(
+        compiled, audit_provider = audit_decision_contract(
             chapter, segments, compiled, established_story_state)
-        compiled, audit_provider = final_audit_compiled_interactions(
-            chapter, segments, compiled, established_story_state)
-        provider = provider + "+" + review_provider + "+" + audit_provider
+        provider = provider + "+" + audit_provider
 
-    interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
+    decision_count = sum(1 for item in compiled.values() if item["mode"] == "DECISION")
     return {
         "chapterId": chapter_id,
         "provider": provider,
         "segmentCount": len(segments),
-        "interactiveCount": interactive,
+        "decisionCount": decision_count,
         "compiledChapter": {
             "source": chapter.get("source"),
             "sourceDigest": source_digest(manuscript),
@@ -1004,7 +735,7 @@ def compile_story():
         "compilerVersion": COMPILER_VERSION,
         "compilerFingerprint": compiler_fingerprint(),
         "sourceRevision": metadata["sourceRevision"],
-        "generatedBy": "story-compiler-v1",
+        "generatedBy": "story-compiler-v2",
         "chapters": {},
     }
     providers = set()
@@ -1039,7 +770,7 @@ def compile_story():
         result["chapters"][chapter_id] = item["compiledChapter"]
         print(
             f"[story-compiler] {chapter_id}: {item['segmentCount']} segments, "
-            f"{item['interactiveCount']} interactive, provider={item['provider']}"
+            f"{item['decisionCount']} decisions, provider={item['provider']}"
         )
 
     result["providersUsed"] = sorted(providers)
@@ -1059,23 +790,22 @@ def validate_generated(generated=None, metadata=None):
         generated = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
 
     if generated.get("schemaVersion") != SCHEMA_VERSION:
-        raise CompileError("Generated interaction schemaVersion mismatch.")
+        raise CompileError("Generated decision schemaVersion mismatch.")
     if generated.get("compilerFingerprint") != compiler_fingerprint():
-        raise CompileError("Generated interactions were produced by a different compiler revision.")
+        raise CompileError("Generated decisions were produced by a different compiler revision.")
     if generated.get("sourceRevision") != metadata.get("sourceRevision"):
-        raise CompileError("Generated interactions are stale for sourceRevision.")
+        raise CompileError("Generated decisions are stale for sourceRevision.")
 
     generated_chapters = generated.get("chapters")
     if not isinstance(generated_chapters, dict):
-        raise CompileError("Generated interactions chapters must be an object.")
+        raise CompileError("Generated decisions chapters must be an object.")
 
     expected_chapters = [chapter.get("id") for chapter in metadata["chapters"]]
     if set(generated_chapters.keys()) != set(expected_chapters):
-        raise CompileError("Generated interaction chapter set does not match story metadata.")
+        raise CompileError("Generated decision chapter set does not match story metadata.")
 
     target = max(800, int(metadata.get("segmentTargetChars", 1900)))
     maximum = max(target, int(metadata.get("segmentMaxChars", 2400)))
-    story_state_snapshots = build_story_state_snapshots(metadata)
 
     for chapter in metadata["chapters"]:
         chapter_id = chapter["id"]
@@ -1089,59 +819,51 @@ def validate_generated(generated=None, metadata=None):
         if not isinstance(segments, dict) or list(segments.keys()) != expected_ids:
             raise CompileError(f"{chapter_id}: generated segment IDs/order are stale.")
 
-        interactive_count = 0
+        decision_count = 0
         for index, segment_id in enumerate(expected_ids):
             spec = segments[segment_id]
             mode = spec.get("mode")
             if mode not in VALID_MODES:
                 raise CompileError(f"{segment_id}: invalid mode {mode}.")
-            choices = spec.get("choices")
-            if not isinstance(choices, list):
-                raise CompileError(f"{segment_id}: choices must be an array.")
-            guard = spec.get("interactionGuard")
-            if not isinstance(guard, str):
-                raise CompileError(f"{segment_id}: interactionGuard must be a string.")
+            contract = spec.get("decisionContract")
+            if not isinstance(contract, dict):
+                raise CompileError(f"{segment_id}: decisionContract must be an object.")
 
             if chapter.get("visibility") == "cutaway":
-                if mode != "CUTAWAY" or choices or guard:
-                    raise CompileError(f"{segment_id}: cutaway must be deterministic and non-interactive.")
+                if mode != "CUTAWAY" or contract:
+                    raise CompileError(f"{segment_id}: cutaway must be deterministic and decision-free.")
                 continue
 
             locked = forced_locked_indices(chapter, len(expected_ids))
             if index in locked and mode != "LOCKED_EVENT":
                 raise CompileError(f"{segment_id}: authored event boundary must be LOCKED_EVENT.")
 
-            if mode == "INTERACTIVE":
-                interactive_count += 1
-                if len(choices) != 3 or not guard.strip():
-                    raise CompileError(f"{segment_id}: INTERACTIVE requires exactly 3 choices and a guard.")
-                for choice in choices:
-                    if not isinstance(choice, dict) or not str(choice.get("text", "")).strip():
-                        raise CompileError(f"{segment_id}: invalid interaction choice.")
-                    if str(choice.get("action", "")).strip() != str(choice.get("text", "")).strip():
-                        raise CompileError(f"{segment_id}: action must equal visible Vietnamese choice text.")
-                    if choice_changes_authored_path(str(choice.get("text", ""))):
-                        raise CompileError(f"{segment_id}: route/outcome-changing choice is forbidden in compiler v1.")
-                    if choice_addresses_unavailable_character(
-                            str(choice.get("text", "")),
-                            story_state_snapshots.get(chapter_id, {})):
-                        raise CompileError(
-                            f"{segment_id}: choice directly addresses a missing/unknown character.")
-                if guard != STANDARD_INTERACTION_GUARD:
-                    raise CompileError(f"{segment_id}: interaction guard must be compiler-owned.")
-            elif choices or guard:
-                raise CompileError(f"{segment_id}: non-interactive modes cannot carry choices/guard.")
+            if mode == "DECISION":
+                decision_count += 1
+                if index + 1 >= len(expected_ids):
+                    raise CompileError(f"{segment_id}: DECISION requires a next authored segment.")
+                canon_text = str(contract.get("canonChoiceText", "")).strip()
+                if not canon_text or len(canon_text) > 160:
+                    raise CompileError(f"{segment_id}: invalid canonChoiceText.")
+                if canon_text.casefold() in {"tiếp tục cốt truyện", "continue story"}:
+                    raise CompileError(f"{segment_id}: meta canon choice is forbidden.")
+                if contract.get("loopAnchor") != segment_id:
+                    raise CompileError(f"{segment_id}: loopAnchor must equal decision segment id.")
+                if contract.get("decisionGuard") != STANDARD_INTERACTION_GUARD:
+                    raise CompileError(f"{segment_id}: decision guard must be compiler-owned.")
+            elif contract:
+                raise CompileError(f"{segment_id}: non-decision modes cannot carry decisionContract.")
 
-        if interactive_count > MAX_INTERACTIVE_PER_CHAPTER:
-            raise CompileError(f"{chapter_id}: too many INTERACTIVE segments ({interactive_count}).")
+        if decision_count > MAX_DECISIONS_PER_CHAPTER:
+            raise CompileError(f"{chapter_id}: too many DECISION segments ({decision_count}).")
 
-    print("[story-compiler] generated interactions validated against current manuscript.")
+    print("[story-compiler] generated decisions validated against current manuscript.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compile novelist manuscript into conservative story interactions.")
+    parser = argparse.ArgumentParser(description="Compile novelist manuscript into canon-locked decision contracts.")
     parser.add_argument("--validate-generated", action="store_true",
-                        help="Validate committed generated interactions without calling any model.")
+                        help="Validate committed generated decision contracts without calling any model.")
     args = parser.parse_args()
     try:
         if args.validate_generated:

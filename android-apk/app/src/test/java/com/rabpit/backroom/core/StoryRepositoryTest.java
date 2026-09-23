@@ -101,6 +101,27 @@ public class StoryRepositoryTest {
     assertEquals(4, cutaways);
   }
 
+  private static JSONObject deterministicAlternates() throws Exception {
+    return new JSONObject()
+        .put("trap", new JSONObject()
+            .put("text", "Dừng lại quan sát một chi tiết khác trong khu vực")
+            .put("reply", "Không gian quanh Cao Minh khép lại theo một nhịp khó nhận ra. Những dấu hiệu quen thuộc lại trở về đúng vị trí trước đó."))
+        .put("converge", new JSONObject()
+            .put("text", "Chậm lại một nhịp để lắng nghe môi trường")
+            .put("reply", "Cao Minh giữ yên thêm một nhịp. Không có dữ kiện chắc chắn nào mới xuất hiện."));
+  }
+
+  private static String canonChoiceId(JSONObject state) throws Exception {
+    JSONObject outcomes = state.getJSONObject(StoryCore.ROOT_KEY)
+        .getJSONObject("decisionPackage").getJSONObject("outcomes");
+    java.util.Iterator<String> ids = outcomes.keys();
+    while (ids.hasNext()) {
+      String id = ids.next();
+      if (StoryCore.OUTCOME_CANON.equals(outcomes.getJSONObject(id).optString("type"))) return id;
+    }
+    return "";
+  }
+
   @Test public void finalLevelZeroStoryRunsEndToEndWithAuthoredMilestones() throws Exception {
     String metadata = readRepoAsset("story/generated/level_0/level0.story.json");
     Map<String, String> sources = new LinkedHashMap<>();
@@ -110,9 +131,9 @@ public class StoryRepositoryTest {
       sources.put(path, readRepoAsset(path));
     }
 
-    String interactions =
+    String decisions =
         readRepoAsset("story/generated/level_0/level0.interactions.json");
-    StoryRepository repository = StoryRepository.fromText(metadata, sources, interactions);
+    StoryRepository repository = StoryRepository.fromText(metadata, sources, decisions);
     StoryCore core = StoryCore.withRepository(repository);
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
     JSONObject state = new JSONObject()
@@ -130,7 +151,7 @@ public class StoryRepositoryTest {
     String firstNamPresentChapter = "";
     String firstNamMissingChapter = "";
     int delivered = 0;
-    int compiledInteractions = 0;
+    int compiledDecisions = 0;
 
     while (core.hasPendingAuthoredStory(state)) {
       StoryCore.AuthoredTurn turn =
@@ -139,17 +160,23 @@ public class StoryRepositoryTest {
       delivered++;
       if ("cutaway".equals(turn.visibility)) cutawayChapters.add(turn.chapterId);
 
-      if (core.awaitingInteraction(state)) {
-        compiledInteractions++;
-        assertEquals(StoryRepository.MODE_INTERACTIVE, turn.mode);
-        assertEquals(3, turn.choices.length());
-        String compiledAction = turn.choices.getJSONObject(0).getString("action");
-        assertEquals(turn.choices.getJSONObject(0).getString("text"), compiledAction);
-        assertTrue(core.isCompiledInteractionChoice(state, compiledAction));
-        assertTrue(core.consumeCompiledInteractionChoice(state, compiledAction));
-        assertTrue(core.promptContext(state).contains("COMPILED STORY INTERACTION RESPONSE"));
-        core.finishInteractionResponse(state);
-        assertFalse(core.awaitingInteraction(state));
+      if (core.awaitingDecision(state)) {
+        compiledDecisions++;
+        assertEquals(StoryRepository.MODE_DECISION, turn.mode);
+        assertTrue(core.decisionNeedsPrefetch(state));
+        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue(request.getBoolean("needed"));
+        core.installDecisionPackage(
+            state, request.getString("contextHash"), deterministicAlternates());
+        assertTrue(core.decisionReady(state));
+        String canonId = canonChoiceId(state);
+        assertFalse(canonId.isEmpty());
+        StoryCore.DecisionResolution resolution =
+            core.resolveDecision(state, canonId, characterCore);
+        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+        delivered++;
+        turn = resolution.authoredTurn;
+        assertTrue(turn != null);
       }
 
       String lucStatus = StoryCore.characterStatus(state, "luc_tram");
@@ -184,8 +211,8 @@ public class StoryRepositoryTest {
     }
 
     assertTrue("No authored segments were delivered", delivered > 30);
-    assertTrue("Compiler produced no playable story interactions", compiledInteractions > 0);
-    assertTrue("Compiler exceeded the two-per-non-cutaway-chapter ceiling", compiledInteractions <= 52);
+    assertTrue("Compiler produced no story decision contracts", compiledDecisions > 0);
+    assertTrue("Compiler exceeded the one-per-non-cutaway-chapter ceiling", compiledDecisions <= 26);
     assertEquals(new LinkedHashSet<>(java.util.Arrays.asList(
         "L0_C03", "L0_C05", "L0_C07", "L0_C09")), cutawayChapters);
     assertEquals("L0_C03", firstParallelChapter);
@@ -211,14 +238,14 @@ public class StoryRepositoryTest {
   }
 
 
-  @Test public void compiledInteractionRequiresFreshSourceDigest() throws Exception {
+  @Test public void compiledDecisionRequiresFreshSourceDigest() throws Exception {
     String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
-    String source = "# Level 0 — Chương 01: Test\n\nĐoạn một.";
+    String source = "# Level 0 — Chương 01: Test\n\nĐoạn một.\n\nĐoạn hai.";
     String metadata = "{"
         + "\"schemaVersion\":1,"
         + "\"sourceRevision\":\"digest-test\","
-        + "\"segmentTargetChars\":1900,"
-        + "\"segmentMaxChars\":2400,"
+        + "\"segmentTargetChars\":20,"
+        + "\"segmentMaxChars\":50,"
         + "\"startChapter\":\"L0_C01\","
         + "\"chapters\":[{"
         + "\"id\":\"L0_C01\","
@@ -234,35 +261,36 @@ public class StoryRepositoryTest {
         + "}]}";
 
     String digest = StoryRepository.sourceDigest(source);
-    String interactions = "{"
-        + "\"schemaVersion\":1,"
+    String decisions = "{"
+        + "\"schemaVersion\":2,"
         + "\"sourceRevision\":\"digest-test\","
         + "\"chapters\":{"
         + "\"L0_C01\":{"
         + "\"sourceDigest\":\"" + digest + "\","
         + "\"segments\":{"
         + "\"L0_C01_P001\":{"
-        + "\"mode\":\"INTERACTIVE\","
-        + "\"choices\":["
-        + "{\"text\":\"A\",\"action\":\"Quan sát A\"},"
-        + "{\"text\":\"B\",\"action\":\"Quan sát B\"},"
-        + "{\"text\":\"C\",\"action\":\"Quan sát C\"}"
-        + "],"
-        + "\"interactionGuard\":\"Không thay đổi sự kiện kế tiếp.\""
-        + "}}}}}";
+        + "\"mode\":\"DECISION\","
+        + "\"decisionContract\":{"
+        + "\"canonChoiceText\":\"Tiến theo dấu vừa nhận ra\","
+        + "\"loopAnchor\":\"L0_C01_P001\","
+        + "\"decisionGuard\":\"Không thay đổi sự kiện kế tiếp.\""
+        + "}},"
+        + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
+        + "}}}}";
 
     Map<String, String> sources = new LinkedHashMap<>();
     sources.put(sourcePath, source);
-    StoryRepository fresh = StoryRepository.fromText(metadata, sources, interactions);
+    StoryRepository fresh = StoryRepository.fromText(metadata, sources, decisions);
     StoryRepository.Segment freshSegment = fresh.segment("L0_C01", 0);
-    assertEquals(StoryRepository.MODE_INTERACTIVE, freshSegment.mode);
-    assertEquals(3, freshSegment.choices.length());
+    assertEquals(StoryRepository.MODE_DECISION, freshSegment.mode);
+    assertEquals("Tiến theo dấu vừa nhận ra",
+        freshSegment.decisionContract.getString("canonChoiceText"));
 
     sources.put(sourcePath, source + "\n\nĐã sửa bản thảo.");
-    StoryRepository stale = StoryRepository.fromText(metadata, sources, interactions);
+    StoryRepository stale = StoryRepository.fromText(metadata, sources, decisions);
     StoryRepository.Segment staleSegment = stale.segment("L0_C01", 0);
     assertEquals(StoryRepository.MODE_LINEAR, staleSegment.mode);
-    assertEquals(0, staleSegment.choices.length());
+    assertEquals(0, staleSegment.decisionContract.length());
   }
 
 }
