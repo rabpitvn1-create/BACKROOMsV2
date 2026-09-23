@@ -32,6 +32,18 @@ public class CoreRewardEconomyTest {
         CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 10_000));
   }
 
+  @Test public void coreBalanceSaturatesInsteadOfOverflowing() throws Exception {
+    JSONObject state = baseState("0");
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+
+    assertEquals(Integer.MAX_VALUE, progression.grantCore(state, Integer.MAX_VALUE));
+    assertEquals(Integer.MAX_VALUE, progression.coreCount(state));
+    assertEquals(0, progression.grantCore(state, 10));
+    assertEquals(0, progression.rewardStageCompletion(state, 1));
+    assertEquals(Integer.MAX_VALUE, progression.coreCount(state));
+  }
+
   @Test public void entityVictoryAlwaysGrantsCoreExactlyOnce() throws Exception {
     JSONObject state = combatState("0");
     CharacterProgressionCore progression = new CharacterProgressionCore();
