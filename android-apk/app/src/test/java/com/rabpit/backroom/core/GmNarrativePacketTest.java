@@ -70,4 +70,32 @@ public class GmNarrativePacketTest {
     assertTrue(packet.contains("\"transitionTarget\""));
     assertTrue(packet.contains("sceneLabel chỉ là nhãn mô tả"));
   }
+
+  @Test public void packetIncludesStoryCoreContextWithoutRequiringCompiledStory() throws Exception {
+    JSONObject state = new JSONObject()
+        .put("currentLevel", 0)
+        .put("currentLevelKey", "0")
+        .put("turn", 1)
+        .put("party", new org.json.JSONArray());
+
+    StoryCore storyCore = new StoryCore();
+    storyCore.normalizeState(state);
+    String storyContext = storyCore.promptContext(state);
+
+    String packet = GmNarrativePacket.build(
+        "LEVEL",
+        "ENTITY",
+        "ITEM",
+        "CHARACTER",
+        storyContext,
+        "(chưa có lượt trước)",
+        state,
+        "Cao Minh quan sát",
+        "");
+
+    assertTrue(packet.contains("STORY CORE:"));
+    assertTrue(packet.contains("No compiled manuscript scene is bound yet"));
+    assertTrue(packet.contains("authored Story state"));
+  }
+
 }
