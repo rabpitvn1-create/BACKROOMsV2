@@ -754,7 +754,7 @@
     if (typeof busy !== 'undefined') busy = false;
     if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
     if (typeof window.render === 'function') window.render();
-    scrollCombatToBottom();
+    scrollForCurrentMode();
     if (status) {
       status.textContent = state.combat && state.combat.active
         ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
@@ -779,7 +779,7 @@
         if (typeof window.backroomClearCombatVisualActor === 'function') window.backroomClearCombatVisualActor();
         if (typeof window.render === 'function') window.render();
         syncComposer();
-        scrollCombatToBottom();
+        scrollForCurrentMode();
         return;
       }
 

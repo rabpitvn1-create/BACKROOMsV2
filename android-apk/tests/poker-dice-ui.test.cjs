@@ -5,6 +5,8 @@ const assert = require('node:assert/strict');
 
 const uiPath = path.join(__dirname, '..', 'app', 'src', 'main', 'assets', 'gm-choice-ui.js');
 const source = fs.readFileSync(uiPath, 'utf8');
+const coreFacadePath = path.join(__dirname, '..', 'app', 'src', 'main', 'java', 'com', 'rabpit', 'backroom', 'core', 'GameCoreFacade.java');
+const coreFacadeSource = fs.readFileSync(coreFacadePath, 'utf8');
 
 test('Poker Dice uses one reusable inline panel inside the GM log', () => {
   assert.equal((source.match(/dicePanel=document\.createElement\('section'\)/g) || []).length, 1);
@@ -59,4 +61,23 @@ test('battle log uses semantic font for Cao Minh title and compact hand tokens',
   assert.match(source, /knownHandTokens\.forEach\(function\(x\)\{ addTerm\(map,x,'stat'\); \}\)/);
   assert.match(source, /Trúng độc/);
   assert.match(source, /Xuyên giáp/);
+});
+
+
+test('combat completion scrolls to the start of the next GM narration', () => {
+  const start = source.indexOf('function finishCombatAnimation');
+  const end = source.indexOf('window.backroomCombatTurn', start);
+  assert.ok(start >= 0 && end > start);
+  const finishBlock = source.slice(start, end);
+  assert.match(finishBlock, /scrollForCurrentMode\(\)/);
+  assert.doesNotMatch(finishBlock, /scrollCombatToBottom\(\)/);
+});
+
+test('Core upgrades are locked by active combat, not pending story gates', () => {
+  const start = coreFacadeSource.indexOf('public synchronized String processCoreUpgrade');
+  const end = coreFacadeSource.indexOf('public synchronized String levelSnapshotDescriptor', start);
+  assert.ok(start >= 0 && end > start);
+  const upgradeBlock = coreFacadeSource.slice(start, end);
+  assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(state\)/);
+  assert.doesNotMatch(upgradeBlock, /storyCore\.awaitingDecision|storyCore\.awaitingEntityAttack|storyCore\.hasPendingStoryAdvance/);
 });
