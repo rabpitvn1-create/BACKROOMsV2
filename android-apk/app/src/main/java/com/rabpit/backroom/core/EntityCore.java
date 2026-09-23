@@ -14,6 +14,9 @@ import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 final class EntityCore {
+  static final double MIN_AUTO_SPAWN_RATE_PERCENT = 3.0d;
+  static final double MAX_AUTO_SPAWN_RATE_PERCENT = 3.5d;
+
   private static final String REGISTRY_ASSET = "knowledge/entity_encounters.json";
   private static final String ENCOUNTER_KEY = "entityEncounterKey";
   private static final String RESOLVED_KEY = "entityEncounterResolved";
@@ -175,7 +178,7 @@ final class EntityCore {
         String name = record.optString("name", key).trim();
         double rate = record.optDouble("ratePercent", 0.0);
         String canon = record.optString("canon", "").trim();
-        if (key.isEmpty() || rate < 1.0 || rate > 1.5) continue;
+        if (key.isEmpty() || !validAutoSpawnRatePercent(rate)) continue;
         entities.put(key, new EntityDefinition(key, name, rate, canon));
       }
 
@@ -206,6 +209,11 @@ final class EntityCore {
 
   static boolean roamingAllowedOn(int level) {
     return level >= 0;
+  }
+
+  static boolean validAutoSpawnRatePercent(double ratePercent) {
+    return ratePercent >= MIN_AUTO_SPAWN_RATE_PERCENT
+        && ratePercent <= MAX_AUTO_SPAWN_RATE_PERCENT;
   }
 
   private static final class LegacyEntityDefinition {
