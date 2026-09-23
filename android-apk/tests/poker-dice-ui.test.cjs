@@ -96,3 +96,11 @@ test('dice fill their cells and animate visibly while ROLL is resolving', () => 
   assert.match(source, /animationDelay=String\(index\*-55\)\+'ms'/);
   assert.match(source, /DICE_ROLL_ANIMATION_MS-\(Date\.now\(\)-diceRollStartedAt\)/);
 });
+
+
+test('GM effect highlights keep the normal narration font', () => {
+  assert.match(source, /\.message\.gm \.semantic-effect,\.message\.gm \.semantic-damage,\.message\.gm \.semantic-buff\{font-family:inherit\}/);
+  assert.match(source, /\.semantic-effect\{color:#ff9f43\}/);
+  assert.match(source, /\.semantic-damage\{color:#ff5c5c\}/);
+  assert.match(source, /\.semantic-buff\{color:#73e6a2\}/);
+});

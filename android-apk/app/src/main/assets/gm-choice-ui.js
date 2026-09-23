@@ -18,6 +18,7 @@
     ".semantic-stat{color:#ffd166}",
     ".semantic-damage{color:#ff5c5c}",
     ".semantic-buff{color:#73e6a2}",
+    ".message.gm .semantic-effect,.message.gm .semantic-damage,.message.gm .semantic-buff{font-family:inherit}",
     ".semantic-generic{color:#e5e9ed}",
     ".gm-choice:disabled .semantic{opacity:.72}",
     ".gm-main-text{white-space:pre-wrap;line-height:1.55}",
