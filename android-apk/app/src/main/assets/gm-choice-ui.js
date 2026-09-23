@@ -183,6 +183,19 @@
     try { return !!(state && state.flags && state.flags.chestPresent === true); } catch (_) { return false; }
   }
 
+  function storyAdvanceAvailable() {
+    try {
+      return !!(state && state.story && state.story.active === true
+        && state.story.arcComplete !== true && state.story.currentChapter);
+    } catch (_) { return false; }
+  }
+
+  function storyCutawayActive() {
+    try {
+      return storyAdvanceAvailable() && String(state.story.visibility || '') === 'cutaway';
+    } catch (_) { return false; }
+  }
+
   function fallbackExplorerChoices() {
     var level = Number.isInteger(state && state.currentLevel) ? state.currentLevel : 0;
     var levelText = 'Level ' + level;
@@ -241,12 +254,14 @@
     if (!entry) return;
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
-    var hasChest = latest && chestPresent();
-    var choices = Array.isArray(entry.choices) ? entry.choices : [];
-    if (latest && !choices.length && !(state.combat && state.combat.active)) {
+    var cutaway = latest && storyCutawayActive();
+    var storyAvailable = latest && storyAdvanceAvailable();
+    var hasChest = latest && chestPresent() && !cutaway;
+    var choices = cutaway ? [] : (Array.isArray(entry.choices) ? entry.choices : []);
+    if (latest && !choices.length && !cutaway && !(state.combat && state.combat.active)) {
       choices = fallbackExplorerChoices();
     }
-    if (!hasChest && !choices.length) return;
+    if (!hasChest && !storyAvailable && !choices.length) return;
     var actionable = latest && !(state.combat && state.combat.active) && !window.__combatBusy;
     var box = document.createElement('div');
     box.className = 'gm-choices explorer-choices';
@@ -254,7 +269,19 @@
     if (hasChest) {
       box.appendChild(makeChoiceButton('A', 'Mở Rương', entry, [{text:'Rương',type:'item'}], !actionable, false,
         function(){ submitChestChoice(); }));
-      choiceOffset = 1;
+      choiceOffset++;
+    }
+    if (storyAvailable && choiceOffset < 3) {
+      var storyChoice = {text:'Tiếp tục cốt truyện',action:'Tiếp tục cốt truyện'};
+      box.appendChild(makeChoiceButton(
+        String.fromCharCode(65 + choiceOffset),
+        storyChoice.text,
+        entry,
+        [],
+        !actionable,
+        false,
+        function(){ submitExplorerChoice(entry, storyChoice); }));
+      choiceOffset++;
     }
     choices.slice(0, 3 - choiceOffset).forEach(function(choice, choiceIndex){
       var id = String.fromCharCode(65 + choiceOffset + choiceIndex);
