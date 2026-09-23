@@ -20,7 +20,10 @@ final class CharacterProgressionCore {
   static final int BASE_STAT = 5;
   static final int DEFAULT_BASE_MAX_HP = 50;
   static final int COMPANION_REVIVE_TURNS = 10;
+  static final int ENTITY_VICTORY_BASE_CORE = 2;
+  static final int STORY_PROGRESS_BASE_CORE = 5;
 
+  private static final double CORE_STAGE_MULTIPLIER = 1.5d;
   private static final String[] STAT_KEYS = {"STR", "DEF", "SKL", "VIT"};
 
   void normalizeState(JSONObject state) throws Exception {
@@ -106,6 +109,15 @@ final class CharacterProgressionCore {
     return 1 + Math.max(0, stageIndex) / 10;
   }
 
+  static int scaledCoreReward(int baseReward, int stageIndex) {
+    int base = Math.max(0, baseReward);
+    if (base == 0) return 0;
+    int stage = Math.max(0, stageIndex);
+    double scaled = base * Math.pow(CORE_STAGE_MULTIPLIER, stage);
+    if (!Double.isFinite(scaled) || scaled >= Integer.MAX_VALUE) return Integer.MAX_VALUE;
+    return Math.max(base, (int)Math.round(scaled));
+  }
+
   static int statPercent(int stat) {
     return 100 + 10 * (Math.max(BASE_STAT, stat) - BASE_STAT);
   }
@@ -153,8 +165,10 @@ final class CharacterProgressionCore {
     normalizeState(state);
     JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
     int current = Math.max(0, resource.optInt("quantity", 0));
-    resource.put("quantity", current + amount);
-    return amount;
+    long next = (long)current + amount;
+    int granted = (int)Math.min((long)Integer.MAX_VALUE - current, (long)amount);
+    resource.put("quantity", (int)Math.min(Integer.MAX_VALUE, next));
+    return granted;
   }
 
   int rewardStageCompletion(JSONObject state, int stageIndex) throws Exception {
@@ -164,9 +178,11 @@ final class CharacterProgressionCore {
     int highest = resource.optInt("highestRewardedStageIndex", -1);
     if (normalizedStage <= highest) return 0;
     int reward = bundleSize(normalizedStage);
-    resource.put("quantity", Math.max(0, resource.optInt("quantity", 0)) + reward);
+    int current = Math.max(0, resource.optInt("quantity", 0));
+    int granted = (int)Math.min((long)reward, (long)Integer.MAX_VALUE - current);
+    resource.put("quantity", current + granted);
     resource.put("highestRewardedStageIndex", normalizedStage);
-    return reward;
+    return granted;
   }
 
   void applyCaoMinhDeathPenalty(JSONObject state) throws Exception {

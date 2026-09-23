@@ -291,6 +291,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
       StoryCore.DecisionResolution resolution =
           storyCore.resolveDecision(state, choiceId, characterEncounterCore);
+      grantStoryProgressCore(state, resolution);
       incrementTurn(state);
       advanceGameTime(state, resolution.visibleChoice);
       characterProgressionCore.applyExplorerTurnRecovery(state);
@@ -703,6 +704,35 @@ public final class GameCoreFacade implements AutoCloseable {
     log.put(new JSONObject().put("role", "player").put("text", action));
     log.put(new JSONObject().put("role", "gm").put("text", reply));
     state.put("log", log);
+  }
+
+  static int grantStoryProgressCore(
+      JSONObject state, StoryCore.DecisionResolution resolution) throws Exception {
+    if (state == null || resolution == null) return 0;
+
+    int stageIndex = LevelCore.stageIndex(state);
+    JSONObject flags = state.optJSONObject("flags");
+    if (flags == null) flags = new JSONObject();
+
+    boolean rewardable = !resolution.looped
+        && (StoryCore.OUTCOME_CANON.equals(resolution.outcome)
+            || StoryCore.OUTCOME_CONVERGE.equals(resolution.outcome));
+    if (!rewardable) {
+      flags.put("lastStoryCoreReward", 0);
+      flags.put("lastStoryCoreStageIndex", stageIndex);
+      state.put("flags", flags);
+      return 0;
+    }
+
+    int requested = CharacterProgressionCore.scaledCoreReward(
+        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, stageIndex);
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    int granted = progression.grantCore(state, requested);
+
+    flags.put("lastStoryCoreReward", granted);
+    flags.put("lastStoryCoreStageIndex", stageIndex);
+    state.put("flags", flags);
+    return granted;
   }
 
   private String encounterKey(JSONObject state) {

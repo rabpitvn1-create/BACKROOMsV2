@@ -32,12 +32,6 @@ public class ItemCoreTest {
     }
   }
 
-  @Test public void entityCoreDropBoundaryIsExactlyTenPercent() {
-    assertTrue(ItemCore.shouldDropCore(0, ItemCore.CORE_ENTITY_DROP_PERCENT));
-    assertTrue(ItemCore.shouldDropCore(9, ItemCore.CORE_ENTITY_DROP_PERCENT));
-    assertFalse(ItemCore.shouldDropCore(10, ItemCore.CORE_ENTITY_DROP_PERCENT));
-  }
-
   @Test public void chestCoreDropBoundaryIsExactlyFiftyPercent() {
     assertTrue(ItemCore.shouldDropCore(49, ItemCore.CORE_CHEST_DROP_PERCENT));
     assertFalse(ItemCore.shouldDropCore(50, ItemCore.CORE_CHEST_DROP_PERCENT));

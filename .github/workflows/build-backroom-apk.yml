@@ -379,7 +379,11 @@ jobs:
           grep -Fq 'Android.combatResolve' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'combat-dice-modal' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'static int stageIndexForKey(String levelKey)' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
-          grep -Fq 'CORE_ENTITY_DROP_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_VICTORY_BASE_CORE = 2' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'STORY_PROGRESS_BASE_CORE = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'CORE_STAGE_MULTIPLIER = 1.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
+          grep -Fq 'coreDropRatePercent", 100' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CoreRewardEconomyTest.java
           grep -Fq 'CORE_CHEST_DROP_PERCENT = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           test "$(find android-apk/app/src/main/assets/dice -type f -name 'die-*.svg' | wc -l)" -eq 6
           ! grep -R -Fq 'ACTION_A' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
