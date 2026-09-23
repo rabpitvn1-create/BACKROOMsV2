@@ -33,7 +33,7 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/assets/knowledge/entity_encounters.json`.
 
 - There is no shared spawn-rate pool.
-- Every registered auto-spawn Entity has its own fixed independent roll between **1.00% and 1.50%** on each eligible world-advancing gameplay turn.
+- Every registered auto-spawn Entity has its own fixed independent roll between **3.00% and 3.50%** on each eligible world-advancing gameplay turn.
 - Every registered auto-spawn Entity is now **roaming on every valid Backrooms Level**. Original canon habitat/Level restrictions are reference metadata only and do not block runtime spawning.
 - Entity canon still governs behavior, capabilities and encounter portrayal after the Core has spawned it.
 - If an Entity encounter is already active, Core does not roll a replacement Entity.
