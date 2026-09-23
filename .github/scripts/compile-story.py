@@ -24,6 +24,11 @@ VALID_MODES = {"LINEAR", "INTERACTIVE", "CUTAWAY", "LOCKED_EVENT"}
 HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages"
 HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 GEMINI_DEFAULT_MODEL = "gemini-3.6-flash"
+STANDARD_INTERACTION_GUARD = (
+    "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi "
+    "nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. "
+    "Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+)
 
 
 class CompileError(RuntimeError):
@@ -342,11 +347,13 @@ CLASSIFICATION:
 INTERACTION RULES:
 - At most 2 INTERACTIVE segments in this chapter.
 - An INTERACTIVE segment MUST have exactly 3 concise Vietnamese choices.
-- Each choice must be a local approach that can receive a short AI reaction and then return to the same manuscript path.
-- Do not offer "leave", "refuse the plot", "attack an ally", "change destination", or any choice that would invalidate the next segment.
-- interactionGuard must state what must remain unchanged before the next authored segment.
-- Prefer LINEAR over a weak or artificial choice.
+- Each choice is only an INTENT/APPROACH, never a claimed outcome.
+- Choice text may use only facts, characters, objects and observations already present in the current segment or earlier segments in this chapter. Never mention a reveal, destination, encounter, person, object or result that first appears later.
+- The three choices must all be plausible at that exact pause and must be able to receive a short local reaction before returning to the exact authored path.
+- Do not offer "leave", "refuse the plot", "attack an ally", "change destination", "force a meeting", "force a discovery", "call a person who has not been confirmed present", or any choice that would invalidate the next authored segment.
+- Prefer LINEAR over a weak, fake, spoiler-prone, or artificial choice.
 - Any forcedLockedSegmentId MUST be LOCKED_EVENT.
+- interactionGuard is ignored by the compiler. Return it as an empty string.
 
 Return JSON only:
 {
@@ -359,12 +366,12 @@ Return JSON only:
         {"text":"...", "action":"..."},
         {"text":"...", "action":"..."}
       ],
-      "interactionGuard":"..."
+      "interactionGuard":""
     }
   ]
 }
 
-For LINEAR/LOCKED_EVENT, choices must be [] and interactionGuard must be "".
+For every mode, interactionGuard must be "". The compiler supplies its own deterministic guard for INTERACTIVE.
 Every input segment must appear exactly once and in the same order.
 
 INPUT:
@@ -393,34 +400,35 @@ def sanitize_model_chapter(chapter, segments, raw_result, forced_locked):
             mode = "LOCKED_EVENT"
 
         choices = row.get("choices") if isinstance(row.get("choices"), list) else []
-        guard = str(row.get("interactionGuard", "") or "").strip()
+        guard = ""
 
         if mode == "INTERACTIVE":
             if interactive_count >= MAX_INTERACTIVE_PER_CHAPTER:
                 mode = "LINEAR"
-            elif len(choices) != 3 or not guard:
+            elif len(choices) != 3:
                 mode = "LINEAR"
 
         clean_choices = []
         if mode == "INTERACTIVE":
+            seen = set()
             for choice in choices:
                 if not isinstance(choice, dict):
                     clean_choices = []
                     break
                 text = str(choice.get("text", "") or "").strip()
-                action = str(choice.get("action", text) or "").strip()
-                if not text or not action or len(text) > 180 or len(action) > 220:
+                normalized = re.sub(r"\\s+", " ", text).casefold()
+                if (not text or len(text) > 180 or normalized in seen
+                        or normalized in {"tiếp tục cốt truyện", "continue story"}):
                     clean_choices = []
                     break
-                if action.lower() in {"tiếp tục cốt truyện", "continue story"}:
-                    clean_choices = []
-                    break
-                clean_choices.append({"text": text, "action": action})
+                seen.add(normalized)
+                clean_choices.append({"text": text, "action": text})
             if len(clean_choices) != 3:
                 mode = "LINEAR"
 
         if mode == "INTERACTIVE":
             interactive_count += 1
+            guard = STANDARD_INTERACTION_GUARD
         else:
             clean_choices = []
             guard = ""
@@ -588,8 +596,12 @@ def validate_generated(generated=None, metadata=None):
                 if len(choices) != 3 or not guard.strip():
                     raise CompileError(f"{segment_id}: INTERACTIVE requires exactly 3 choices and a guard.")
                 for choice in choices:
-                    if not isinstance(choice, dict) or not str(choice.get("text", "")).strip() or not str(choice.get("action", "")).strip():
+                    if not isinstance(choice, dict) or not str(choice.get("text", "")).strip():
                         raise CompileError(f"{segment_id}: invalid interaction choice.")
+                    if str(choice.get("action", "")).strip() != str(choice.get("text", "")).strip():
+                        raise CompileError(f"{segment_id}: action must equal visible Vietnamese choice text.")
+                if guard != STANDARD_INTERACTION_GUARD:
+                    raise CompileError(f"{segment_id}: interaction guard must be compiler-owned.")
             elif choices or guard:
                 raise CompileError(f"{segment_id}: non-interactive modes cannot carry choices/guard.")
 
