@@ -150,6 +150,12 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryCoreTest.java
+          grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          ! grep -Fq 'LUC_TRAM_RATE_PERCENT' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
+          grep -Fq 'storyPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'copyField(before, sanitized, StoryCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
@@ -395,7 +401,7 @@ jobs:
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/SurvivalCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/SurvivalCoreTest.java
-          grep -Fq 'CURRENT_SAVE_VERSION = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 11' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'survivalCore.projectPhysiology(state, id)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'copyField(before, sanitized, SurvivalCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ItemCore.grantEntityLootItem' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
