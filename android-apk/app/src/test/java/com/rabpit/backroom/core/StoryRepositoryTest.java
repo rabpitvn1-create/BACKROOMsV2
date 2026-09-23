@@ -110,7 +110,9 @@ public class StoryRepositoryTest {
       sources.put(path, readRepoAsset(path));
     }
 
-    StoryRepository repository = StoryRepository.fromText(metadata, sources);
+    String interactions =
+        readRepoAsset("story/generated/level_0/level0.interactions.json");
+    StoryRepository repository = StoryRepository.fromText(metadata, sources, interactions);
     StoryCore core = StoryCore.withRepository(repository);
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
     JSONObject state = new JSONObject()
@@ -128,6 +130,7 @@ public class StoryRepositoryTest {
     String firstNamPresentChapter = "";
     String firstNamMissingChapter = "";
     int delivered = 0;
+    int compiledInteractions = 0;
 
     while (core.hasPendingAuthoredStory(state)) {
       StoryCore.AuthoredTurn turn =
@@ -135,6 +138,19 @@ public class StoryRepositoryTest {
       if (turn == null) break;
       delivered++;
       if ("cutaway".equals(turn.visibility)) cutawayChapters.add(turn.chapterId);
+
+      if (core.awaitingInteraction(state)) {
+        compiledInteractions++;
+        assertEquals(StoryRepository.MODE_INTERACTIVE, turn.mode);
+        assertEquals(3, turn.choices.length());
+        String compiledAction = turn.choices.getJSONObject(0).getString("action");
+        assertEquals(turn.choices.getJSONObject(0).getString("text"), compiledAction);
+        assertTrue(core.isCompiledInteractionChoice(state, compiledAction));
+        assertTrue(core.consumeCompiledInteractionChoice(state, compiledAction));
+        assertTrue(core.promptContext(state).contains("COMPILED STORY INTERACTION RESPONSE"));
+        core.finishInteractionResponse(state);
+        assertFalse(core.awaitingInteraction(state));
+      }
 
       String lucStatus = StoryCore.characterStatus(state, "luc_tram");
       if (firstParallelChapter.isEmpty() && StoryCore.STATUS_PARALLEL.equals(lucStatus)) {
@@ -168,6 +184,8 @@ public class StoryRepositoryTest {
     }
 
     assertTrue("No authored segments were delivered", delivered > 30);
+    assertTrue("Compiler produced no playable story interactions", compiledInteractions > 0);
+    assertTrue("Compiler exceeded the two-per-non-cutaway-chapter ceiling", compiledInteractions <= 52);
     assertEquals(new LinkedHashSet<>(java.util.Arrays.asList(
         "L0_C03", "L0_C05", "L0_C07", "L0_C09")), cutawayChapters);
     assertEquals("L0_C03", firstParallelChapter);
