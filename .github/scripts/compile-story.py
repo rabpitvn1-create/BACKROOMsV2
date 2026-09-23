@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import concurrent.futures
 import hashlib
 import json
 import os
@@ -443,6 +444,40 @@ def compile_cutaway(chapter, segments):
     }
 
 
+def compile_chapter(chapter, target, maximum):
+    chapter_id = chapter.get("id", "")
+    manuscript = chapter_source(chapter)
+    blocks = split_markdown(manuscript, target, maximum)
+    segments = [
+        {"id": f"{chapter_id}_P{index + 1:03d}", "text": text}
+        for index, text in enumerate(blocks)
+    ]
+    if not segments:
+        raise CompileError(f"{chapter_id}: manuscript produced no segments.")
+
+    forced_locked = forced_locked_indices(chapter, len(segments))
+    if chapter.get("visibility") == "cutaway":
+        compiled = compile_cutaway(chapter, segments)
+        provider = "deterministic"
+    else:
+        prompt = build_prompt(chapter, segments, forced_locked)
+        raw, provider = generate(prompt)
+        compiled = sanitize_model_chapter(chapter, segments, raw, forced_locked)
+
+    interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
+    return {
+        "chapterId": chapter_id,
+        "provider": provider,
+        "segmentCount": len(segments),
+        "interactiveCount": interactive,
+        "compiledChapter": {
+            "source": chapter.get("source"),
+            "sourceDigest": source_digest(manuscript),
+            "segments": compiled,
+        },
+    }
+
+
 def compile_story():
     metadata = read_metadata()
     target = max(800, int(metadata.get("segmentTargetChars", 1900)))
@@ -455,35 +490,32 @@ def compile_story():
         "chapters": {},
     }
     providers = set()
+    compiled_by_id = {}
+
+    max_workers = max(1, min(4, int(os.environ.get("STORY_COMPILER_WORKERS", "4"))))
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_by_id = {
+            chapter.get("id", ""): executor.submit(compile_chapter, chapter, target, maximum)
+            for chapter in metadata["chapters"]
+        }
+        for chapter in metadata["chapters"]:
+            chapter_id = chapter.get("id", "")
+            try:
+                compiled_by_id[chapter_id] = future_by_id[chapter_id].result()
+            except Exception as exc:
+                for future in future_by_id.values():
+                    future.cancel()
+                raise CompileError(f"{chapter_id}: compilation failed: {exc}") from exc
 
     for chapter in metadata["chapters"]:
         chapter_id = chapter.get("id", "")
-        manuscript = chapter_source(chapter)
-        blocks = split_markdown(manuscript, target, maximum)
-        segments = [
-            {"id": f"{chapter_id}_P{index + 1:03d}", "text": text}
-            for index, text in enumerate(blocks)
-        ]
-        if not segments:
-            raise CompileError(f"{chapter_id}: manuscript produced no segments.")
-
-        forced_locked = forced_locked_indices(chapter, len(segments))
-        if chapter.get("visibility") == "cutaway":
-            compiled = compile_cutaway(chapter, segments)
-            provider = "deterministic"
-        else:
-            prompt = build_prompt(chapter, segments, forced_locked)
-            raw, provider = generate(prompt)
-            compiled = sanitize_model_chapter(chapter, segments, raw, forced_locked)
-        providers.add(provider)
-
-        result["chapters"][chapter_id] = {
-            "source": chapter.get("source"),
-            "sourceDigest": source_digest(manuscript),
-            "segments": compiled,
-        }
-        interactive = sum(1 for item in compiled.values() if item["mode"] == "INTERACTIVE")
-        print(f"[story-compiler] {chapter_id}: {len(segments)} segments, {interactive} interactive, provider={provider}")
+        item = compiled_by_id[chapter_id]
+        providers.add(item["provider"])
+        result["chapters"][chapter_id] = item["compiledChapter"]
+        print(
+            f"[story-compiler] {chapter_id}: {item['segmentCount']} segments, "
+            f"{item['interactiveCount']} interactive, provider={item['provider']}"
+        )
 
     result["providersUsed"] = sorted(providers)
     validate_generated(result, metadata)
