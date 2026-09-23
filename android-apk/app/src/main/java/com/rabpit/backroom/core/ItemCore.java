@@ -13,7 +13,6 @@ final class ItemCore {
   static final int CHEST_SPAWN_RATE_PERCENT = 3;
   static final int ENTITY_DROP_MIN_PERCENT = 10;
   static final int ENTITY_DROP_MAX_PERCENT = 20;
-  static final int CORE_ENTITY_DROP_PERCENT = 10;
   static final int CORE_CHEST_DROP_PERCENT = 50;
   static final String OPEN_CHEST_ACTION = "__loot:open_chest";
 
