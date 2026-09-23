@@ -242,7 +242,7 @@ public class CombatChoiceEngineTest {
   @Test public void asyncEnemiesHaveDistinctCombatProfiles() throws Exception {
     String[] keys = {"async_rifleman", "async_vanguard", "async_tactical", "async_decon"};
     String[] names = {"ASYNC Rifleman", "ASYNC Vanguard", "ASYNC Tactical Operative", "ASYNC Decon Specialist"};
-    int[] hp = {300, 330, 270, 315};
+    int[] hp = {180, 200, 165, 190};
     int[] damage = {20, 21, 18, 19};
 
     for (int i = 0; i < keys.length; i++) {
