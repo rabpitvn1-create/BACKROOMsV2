@@ -1,0 +1,119 @@
+name: Cleanup Known Stale Branches
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DELETE_STALE_BRANCHES to confirm branch deletion'
+        required: true
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cleanup-known-stale-branches.yml'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate manual confirmation
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${CONFIRM}" != "DELETE_STALE_BRANCHES" ]]; then
+            echo "::error::Confirmation must be exactly DELETE_STALE_BRANCHES"
+            exit 1
+          fi
+
+      - name: Delete vetted stale branches
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          readonly KEEP_MAIN="main"
+          readonly KEEP_MANUSCRIPT="automation/ingest-level0-1-ch01"
+
+          TARGETS=(
+            "feat/combat-secondary-status"
+            "fix/restore-default-ui-rounded-corners-17635799453697431859"
+            "refactor/gm-narrative-pipeline-7698536920246711584"
+            "refactor/remove-equipment-system"
+          )
+
+          mapfile -t OPEN_PR_HEADS < <(
+            gh api --paginate               -H 'Accept: application/vnd.github+json'               "/repos/${REPO}/pulls?state=open&per_page=100"               --jq '.[].head.ref'
+          )
+
+          has_open_pr() {
+            local branch="$1"
+            local ref
+            for ref in "${OPEN_PR_HEADS[@]}"; do
+              [[ "${ref}" == "${branch}" ]] && return 0
+            done
+            return 1
+          }
+
+          encode_ref() {
+            python3 - "$1" <<'PY'
+import sys
+from urllib.parse import quote
+print(quote(sys.argv[1], safe=""))
+PY
+          }
+
+          deleted=0
+          missing=0
+          blocked=0
+
+          for branch in "${TARGETS[@]}"; do
+            if [[ "${branch}" == "${KEEP_MAIN}" || "${branch}" == "${KEEP_MANUSCRIPT}" ]]; then
+              echo "::error::Protected keep-branch appeared in delete target list: ${branch}"
+              exit 1
+            fi
+
+            encoded="$(encode_ref "${branch}")"
+
+            if ! gh api               -H 'Accept: application/vnd.github+json'               "/repos/${REPO}/git/ref/heads/${encoded}" >/dev/null 2>&1; then
+              echo "Already absent: ${branch}"
+              missing=$((missing + 1))
+              continue
+            fi
+
+            if has_open_pr "${branch}"; then
+              echo "::warning::Preserving ${branch}: an open PR still uses this branch."
+              blocked=$((blocked + 1))
+              continue
+            fi
+
+            compare="$(gh api               -H 'Accept: application/vnd.github+json'               "/repos/${REPO}/compare/main...${encoded}")"
+            ahead_by="$(jq -r '.ahead_by' <<< "${compare}")"
+            behind_by="$(jq -r '.behind_by' <<< "${compare}")"
+
+            echo "Deleting vetted stale branch ${branch} [ahead=${ahead_by}, behind=${behind_by}]"
+            gh api --method DELETE               -H 'Accept: application/vnd.github+json'               "/repos/${REPO}/git/refs/heads/${encoded}" >/dev/null
+            deleted=$((deleted + 1))
+          done
+
+          echo
+          echo "Deleted: ${deleted}"
+          echo "Already absent: ${missing}"
+          echo "Blocked by open PR: ${blocked}"
+          echo
+          echo "Remaining branches:"
+          gh api --paginate             -H 'Accept: application/vnd.github+json'             "/repos/${REPO}/branches?per_page=100"             --jq '.[].name'
+
+          if (( blocked != 0 )); then
+            echo "::error::One or more vetted stale branches were preserved because an open PR still references them."
+            exit 1
+          fi
