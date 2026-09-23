@@ -439,6 +439,8 @@ DECISION RULES:
 - DECISION requires a non-empty nextSegment in the same chapter.
 - pauseAnchor is the exact state when the three runtime bullets will later appear.
 - canonChoiceText describes ONLY the immediate player intent/action that naturally enters nextSegment. It must not reveal the result of nextSegment.
+- The player controls Cao Minh. canonChoiceText must be something Cao Minh chooses/does, never dialogue or an action belonging to Lục Trầm, Nam, or another character.
+- If currentSegment already contains Cao Minh making that decision, stating that intention, agreeing to it, or effectively committing to it, classify LINEAR instead of repeating it as a choice.
 - canonChoiceText must be concise, natural Vietnamese, <= 160 characters.
 - Never use "Tiếp tục cốt truyện", "continue story", A/B/C labels, outcome labels, or meta language.
 - If currentSegment ends mid-dialogue/mid-action and nextSegment directly continues it, prefer LINEAR.
@@ -605,6 +607,83 @@ def compile_model_decisions(
     return compile_safe_linear(segments, forced_locked), "deterministic-safe-fallback"
 
 
+def audit_decision_contract(chapter, segments, compiled, established_story_state):
+    decision_rows = []
+    for index, segment in enumerate(segments):
+        spec = compiled.get(segment["id"]) or {}
+        if spec.get("mode") != "DECISION":
+            continue
+        contract = spec.get("decisionContract") or {}
+        decision_rows.append({
+            "id": segment["id"],
+            "currentSegment": segment["text"],
+            "pauseAnchor": segment["text"][-900:],
+            "nextSegment": segments[index + 1]["text"] if index + 1 < len(segments) else "",
+            "canonChoiceText": contract.get("canonChoiceText", ""),
+        })
+
+    if not decision_rows:
+        return compiled, "no-audit-needed"
+
+    payload = {
+        "chapter": {
+            "id": chapter.get("id"),
+            "title": chapter.get("title"),
+            "thread": chapter.get("thread"),
+            "visibility": chapter.get("visibility"),
+        },
+        "establishedStoryState": established_story_state,
+        "decisions": decision_rows,
+    }
+    prompt = """You are the FINAL AUDITOR for BACKROOMsV2 Story Compiler v2.
+
+The player controls Cao Minh. For each proposed DECISION, output KEEP or LINEAR only. You may NOT rewrite the canonChoiceText.
+
+KEEP only when ALL are true:
+- canonChoiceText describes an immediate action/intention Cao Minh himself can choose at the END of currentSegment.
+- That action has NOT already happened, been stated, agreed, decided, or effectively committed to in currentSegment.
+- nextSegment actually begins by carrying out that Cao Minh action/intention, or a direct shared action initiated by him.
+- The text does not steal dialogue/action that belongs to Lục Trầm, Nam, or another character.
+- The text does not reveal the result/consequence of nextSegment.
+- The text does not add lore, knowledge, route facts, objects, capabilities, or outcomes not already available at the pause.
+- The decision sits at a genuine pause, not in the middle of an unfinished exchange.
+
+Use LINEAR if any criterion fails. Prefer fewer clean decisions over fake interactivity.
+
+Return JSON only:
+{"audits":[{"id":"exact id","verdict":"KEEP|LINEAR","reason":"brief concrete reason"}]}
+
+Every decision id must appear exactly once and in input order.
+
+INPUT:
+""" + json.dumps(payload, ensure_ascii=False, indent=2)
+
+    try:
+        raw, provider = generate(prompt)
+        parsed = extract_json(raw)
+        rows = parsed.get("audits")
+        expected = [row["id"] for row in decision_rows]
+        returned = [row.get("id") for row in rows] if isinstance(rows, list) else []
+        if returned != expected:
+            raise CompileError("decision audit ids/order mismatch")
+
+        audited = json.loads(json.dumps(compiled, ensure_ascii=False))
+        for row in rows:
+            if str(row.get("verdict", "LINEAR")).strip().upper() != "KEEP":
+                audited[row["id"]] = {"mode": "LINEAR", "decisionContract": {}}
+        return audited, provider + "-audit"
+    except Exception as exc:
+        print(
+            f"[story-compiler] WARNING {chapter.get('id', '')}: decision audit failed; "
+            f"downgrading decision candidates to LINEAR. {exc}",
+            file=sys.stderr,
+        )
+        safe = json.loads(json.dumps(compiled, ensure_ascii=False))
+        for row in decision_rows:
+            safe[row["id"]] = {"mode": "LINEAR", "decisionContract": {}}
+        return safe, "deterministic-audit-fallback"
+
+
 def compile_chapter(chapter, target, maximum, established_story_state):
     chapter_id = chapter.get("id", "")
     manuscript = chapter_source(chapter)
@@ -624,6 +703,9 @@ def compile_chapter(chapter, target, maximum, established_story_state):
         prompt = build_prompt(chapter, segments, forced_locked, established_story_state)
         compiled, provider = compile_model_decisions(
             chapter, segments, forced_locked, prompt, established_story_state)
+        compiled, audit_provider = audit_decision_contract(
+            chapter, segments, compiled, established_story_state)
+        provider = provider + "+" + audit_provider
 
     decision_count = sum(1 for item in compiled.values() if item["mode"] == "DECISION")
     return {
