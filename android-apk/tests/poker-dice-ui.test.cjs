@@ -83,3 +83,16 @@ test('Core upgrades use persisted state and are locked only by active combat', (
   assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(state\)/);
   assert.doesNotMatch(upgradeBlock, /storyCore\.awaitingDecision|storyCore\.awaitingEntityAttack|storyCore\.hasPendingStoryAdvance/);
 });
+
+
+test('dice fill their cells and animate visibly while ROLL is resolving', () => {
+  assert.match(source, /\.combat-dice-row\{[^}]*gap:5px;perspective:720px/);
+  assert.match(source, /\.combat-die\{padding:1px;/);
+  assert.match(source, /\.combat-die img\{width:104%;height:104%/);
+  assert.match(source, /@keyframes combat-die-roll/);
+  assert.match(source, /var DICE_ROLL_ANIMATION_MS=650;/);
+  assert.match(source, /diceRollAnimating=true;/);
+  assert.match(source, /rolling=diceRollAnimating&&held\[index\]!==true/);
+  assert.match(source, /animationDelay=String\(index\*-55\)\+'ms'/);
+  assert.match(source, /DICE_ROLL_ANIMATION_MS-\(Date\.now\(\)-diceRollStartedAt\)/);
+});

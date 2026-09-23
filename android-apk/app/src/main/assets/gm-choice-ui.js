@@ -35,7 +35,7 @@
     ".battle-separator{height:1px;background:#262d33;margin-top:10px}",
     ".combat-dice-panel[hidden]{display:none}.combat-dice-panel{width:100%;box-sizing:border-box;margin-top:12px;background:#0e1114;border:1px solid #46515a;padding:14px;display:grid;gap:12px;touch-action:manipulation;border-radius:10px}",
     ".combat-dice-title{font-family:'Play',system-ui,sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em}.combat-dice-meta{font-size:11px;color:#9ba6af}",
-    ".combat-dice-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.combat-die{padding:5px;aspect-ratio:1/1;border:1px solid #343d45;background:#151a1f;display:grid;place-items:center;min-width:0;border-radius:8px}.combat-die img{width:100%;height:100%;object-fit:contain}.combat-die.held{border-color:#f6c85f;background:#211e14;box-shadow:inset 0 0 0 1px #f6c85f55}.combat-die:disabled{opacity:.85}",
+    ".combat-dice-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;perspective:720px}.combat-die{padding:1px;aspect-ratio:1/1;border:1px solid #343d45;background:#151a1f;display:grid;place-items:center;min-width:0;border-radius:9px;transform-style:preserve-3d;will-change:transform}.combat-die img{width:104%;height:104%;object-fit:contain;pointer-events:none}.combat-die.held{border-color:#f6c85f;background:#211e14;box-shadow:inset 0 0 0 1px #f6c85f55}.combat-die.rolling{border-color:#72808b;box-shadow:0 0 12px #91a1ad33;animation:combat-die-roll .46s cubic-bezier(.25,.7,.35,1) infinite}.combat-die:disabled{opacity:.85}@keyframes combat-die-roll{0%{transform:rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(.94)}25%{transform:rotateX(120deg) rotateY(70deg) rotateZ(45deg) scale(1.04)}50%{transform:rotateX(230deg) rotateY(160deg) rotateZ(120deg) scale(.96)}75%{transform:rotateX(320deg) rotateY(260deg) rotateZ(220deg) scale(1.04)}100%{transform:rotateX(360deg) rotateY(360deg) rotateZ(360deg) scale(.94)}}@media(prefers-reduced-motion:reduce){.combat-die.rolling{animation:none}}",
     ".combat-dice-result{min-height:22px;text-align:center;font-family:'Play',system-ui,sans-serif;font-size:16px;font-weight:700;color:#f6c85f}",
     ".combat-dice-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.combat-roll,.combat-finish{width:100%;padding:12px 8px;background:#1b2126;border:1px solid #46515a;color:#f0f3f5;font-family:'Play',system-ui,sans-serif;font-weight:700;letter-spacing:.12em;border-radius:8px}.combat-roll:disabled,.combat-finish:disabled{opacity:.45}"
   ].join('');
@@ -528,6 +528,10 @@
   var diceFinish=dicePanel.querySelector('#combatDiceFinish');
   var finalizeTimer=0;
   var finalizeKey='';
+  var diceRollAnimating=false;
+  var diceRollStartedAt=0;
+  var diceRollToken=0;
+  var DICE_ROLL_ANIMATION_MS=650;
 
   function diceAsset(value){
     return 'file:///android_asset/dice/die-'+String(value)+'.svg';
@@ -586,6 +590,9 @@
   function sendCombatRoll(){
     if(window.__combatBusy||!window.Android||typeof Android.combatRoll!=='function')return;
     window.__combatBusy=true;
+    diceRollAnimating=true;
+    diceRollStartedAt=Date.now();
+    ++diceRollToken;
     renderCombatPanel();
     Android.combatRoll(JSON.stringify(state));
   }
@@ -634,14 +641,17 @@
       (function(index){
         var button=document.createElement('button');
         button.type='button';
-        button.className='combat-die'+(held[index]===true?' held':'');
+        var rolling=diceRollAnimating&&held[index]!==true;
+        button.className='combat-die'+(held[index]===true?' held':'')+(rolling?' rolling':'');
+        if(rolling)button.style.animationDelay=String(index*-55)+'ms';
         button.disabled=!hasRolled||dice.finalized===true||window.__combatBusy;
         button.setAttribute('aria-label','Die '+String(index+1)+(held[index]===true?' HOLD':''));
         var value=Number(values[index])||0;
-        if(value>=1&&value<=6){
+        var visualValue=value>=1&&value<=6?value:(rolling?(index%6)+1:0);
+        if(visualValue>=1&&visualValue<=6){
           var img=document.createElement('img');
-          img.src=diceAsset(value);
-          img.alt=String(value);
+          img.src=diceAsset(visualValue);
+          img.alt=value>=1&&value<=6?String(value):'';
           button.appendChild(img);
         }else{
           var blank=document.createElement('span');blank.textContent='?';button.appendChild(blank);
@@ -664,21 +674,36 @@
 
   window.backroomCombatDiceState=function(json){
     try{
-      state=JSON.parse(json);
-      if(typeof CURRENT_CHARACTER_CANON!=='undefined')state.characterCanon=CURRENT_CHARACTER_CANON;
-      try{localStorage.setItem('backroom-apk-state',JSON.stringify(state));}catch(_){}
-      window.__combatBusy=false;
-      if(typeof busy!=='undefined')busy=false;
-      if(typeof window.render==='function')window.render();
-      syncComposer();
-      renderCombatPanel();
-      if(status){
-        var dice=combatDiceState();
-        status.textContent=dice&&dice.finalized===true
-          ? 'Đã chốt '+String(dice.hand||'hand')+'.'
-          : 'Poker Dice · '+String(state.combat&&state.combat.currentActor||'Nhân vật');
+      var nextState=JSON.parse(json);
+      var applyDiceState=function(){
+        diceRollAnimating=false;
+        state=nextState;
+        if(typeof CURRENT_CHARACTER_CANON!=='undefined')state.characterCanon=CURRENT_CHARACTER_CANON;
+        try{localStorage.setItem('backroom-apk-state',JSON.stringify(state));}catch(_){}
+        window.__combatBusy=false;
+        if(typeof busy!=='undefined')busy=false;
+        if(typeof window.render==='function')window.render();
+        syncComposer();
+        renderCombatPanel();
+        if(status){
+          var dice=combatDiceState();
+          status.textContent=dice&&dice.finalized===true
+            ? 'Đã chốt '+String(dice.hand||'hand')+'.'
+            : 'Poker Dice · '+String(state.combat&&state.combat.currentActor||'Nhân vật');
+        }
+      };
+      if(diceRollAnimating){
+        var token=diceRollToken;
+        var wait=Math.max(0,DICE_ROLL_ANIMATION_MS-(Date.now()-diceRollStartedAt));
+        if(wait>0){
+          setTimeout(function(){if(token===diceRollToken)applyDiceState();},wait);
+          return;
+        }
       }
+      applyDiceState();
     }catch(_){
+      diceRollAnimating=false;
+      ++diceRollToken;
       window.__combatBusy=false;
       if(status)status.textContent='Combat dice state không hợp lệ.';
     }
@@ -821,6 +846,8 @@
 
   var previousError = window.backroomError;
   window.backroomError = function(message){
+    diceRollAnimating=false;
+    ++diceRollToken;
     window.__combatFeedbackBusy = false;
     window.__combatBusy = false;
     if (typeof previousError === 'function') previousError(message);
