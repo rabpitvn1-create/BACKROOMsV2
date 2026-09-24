@@ -457,6 +457,29 @@ public class OfflineStoryLoopTest {
     assertTrue(java.contains("rawOutput = haikuText(prompt)"));
   }
 
+  @Test public void providerFailureAllowsOneAutomaticUiRetryBeforeManualFallback() throws Exception {
+    String ui = new String(Files.readAllBytes(assets().resolve("gm-choice-ui.js")), StandardCharsets.UTF_8);
+
+    assertTrue(ui.contains("function allowSingleAutomaticProviderRetry()"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey !== decisionKey"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey = decisionKey;"));
+    assertTrue(ui.contains("window.__storyDecisionRequestKey = '';"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey = returnKey;"));
+    assertTrue(ui.contains("window.__returnJourneyRequestKey = '';"));
+    assertTrue(ui.contains("preparingButton.addEventListener('click', function(){ requestStoryDecision(true); });"));
+    assertTrue(ui.contains("retryReturn.addEventListener('click', function(){ requestReturnJourneyTurn(true); });"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey = '';"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey = '';"));
+
+    int errorHandler = ui.indexOf("window.backroomError = function(message)");
+    int retry = ui.indexOf("allowSingleAutomaticProviderRetry();", errorHandler);
+    int previousError = ui.indexOf("previousError(message)", errorHandler);
+    assertTrue(errorHandler >= 0);
+    assertTrue(retry > errorHandler);
+    assertTrue(previousError > retry);
+  }
+
   @Test public void providerProseCannotExposeLoopMechanicsOrReplayLongAuthoredText() {
     String anchor = "Cao Minh dừng bên ngưỡng cửa kim loại. " + "đoạn đã đọc ".repeat(12);
     String next = "Nam xuất hiện trong lối đi tiếp theo. " + "diễn biến kế ".repeat(12);
