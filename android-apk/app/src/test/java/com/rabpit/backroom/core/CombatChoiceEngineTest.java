@@ -393,6 +393,14 @@ public class CombatChoiceEngineTest {
       proc.setAccessible(true);
       assertEquals(expected[i], proc.getInt(skills.get(i)));
     }
+
+    JSONObject nextStage = combatState(new JSONArray());
+    nextStage.put(LevelCore.LEVEL_KEY, "0.1");
+    CombatChoiceEngine.start(nextStage, "tam_ma_cao_minh", 0);
+    JSONObject scaled = nextStage.getJSONObject("combat").getJSONObject("entity");
+    assertEquals(330, scaled.getInt("maxHp"));
+    assertEquals(33, scaled.getInt("attack"));
+    assertEquals(110, scaled.getInt("stagePercent"));
   }
 
   @Test public void entityFallsBackToBasicAttackWhenNoSkillProcs() throws Exception {
