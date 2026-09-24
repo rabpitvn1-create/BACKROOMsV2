@@ -179,7 +179,14 @@ final class LevelCore {
   static void returnToCurrentLevelStart(JSONObject state) throws Exception {
     if (state == null) return;
     String key = new LevelCore((Context)null, bound -> 0).resolveLevelKey(state);
+    state.put(LEVEL_KEY, key);
     state.put("location", defaultLocation(key));
+  }
+
+  static String returnJourneyLocation(String levelKey) {
+    String key = levelKey == null ? "" : levelKey.trim();
+    String start = defaultLocation(key);
+    return start + " — khu vực đang đi qua trong cùng vùng";
   }
 
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {
