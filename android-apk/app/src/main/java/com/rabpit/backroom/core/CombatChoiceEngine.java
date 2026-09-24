@@ -43,6 +43,18 @@ public final class CombatChoiceEngine {
     }
   }
 
+  private static final class TreasureRewardPolicy {
+    final int firstKillBaseCore;
+    final int repeatBaseCore;
+    final boolean scaleWithStage;
+
+    TreasureRewardPolicy(int firstKillBaseCore, int repeatBaseCore, boolean scaleWithStage) {
+      this.firstKillBaseCore = Math.max(0, firstKillBaseCore);
+      this.repeatBaseCore = Math.max(0, repeatBaseCore);
+      this.scaleWithStage = scaleWithStage;
+    }
+  }
+
   private static final class Skill {
     final String name;
     final String description;
@@ -106,6 +118,7 @@ public final class CombatChoiceEngine {
   }
 
   private static final Map<String, EntityProfile> ENTITIES = new LinkedHashMap<>();
+  private static final Map<String, TreasureRewardPolicy> TREASURE_REWARDS = new LinkedHashMap<>();
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
   private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
   private static final Map<String, List<CharacterProc>> CHARACTER_PROCS = new LinkedHashMap<>();
@@ -270,6 +283,14 @@ public final class CombatChoiceEngine {
 
   private static void entity(String key, String name, int hp, int damage) {
     ENTITIES.put(key, new EntityProfile(key, name, hp, damage));
+  }
+
+  private static void treasureEntity(String key, String name, int hp, int damage,
+                                     int firstKillBaseCore, int repeatBaseCore,
+                                     boolean scaleRewardWithStage) {
+    entity(key, name, hp, damage);
+    TREASURE_REWARDS.put(key,
+        new TreasureRewardPolicy(firstKillBaseCore, repeatBaseCore, scaleRewardWithStage));
   }
 
   private static Skill skill(String name, String description, int damage, String effect, int turns,
@@ -1341,12 +1362,27 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
     if (!combat.optBoolean("coreDropResolved", false)) {
       int stageIndex = Math.max(0, combat.optInt("stageIndex", LevelCore.stageIndex(state)));
-      int reward = CharacterProgressionCore.scaledCoreReward(
-          CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
-      new CharacterProgressionCore().grantCore(state, reward);
+      CharacterProgressionCore progression = new CharacterProgressionCore();
+      TreasureRewardPolicy treasure = TREASURE_REWARDS.get(entityKey);
+      int reward;
+      if (treasure == null) {
+        reward = CharacterProgressionCore.scaledCoreReward(
+            CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
+        progression.grantCore(state, reward);
+      } else {
+        int firstKillReward = treasure.scaleWithStage
+            ? EntityStatCore.scale(treasure.firstKillBaseCore, stageIndex)
+            : treasure.firstKillBaseCore;
+        int repeatReward = treasure.scaleWithStage
+            ? EntityStatCore.scale(treasure.repeatBaseCore, stageIndex)
+            : treasure.repeatBaseCore;
+        reward = progression.rewardTreasureEntityVictory(
+            state, entityKey, firstKillReward, repeatReward);
+      }
       combat.remove("coreDropRoll");
       combat.put("coreDropRatePercent", 100)
           .put("coreDropReward", reward)
+          .put("coreDropRewardType", treasure == null ? "standard" : "treasure")
           .put("coreDropResolved", true);
     }
 
