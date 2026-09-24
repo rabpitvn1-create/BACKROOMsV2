@@ -1,0 +1,84 @@
+name: Sync Entity Assets
+
+on:
+  push:
+    paths:
+      - ".github/workflows/sync-entity-assets.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download Entity and A-SYNC assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="android-apk/app/src/main/assets/entity"
+          mkdir -p "$target"
+
+          download() {
+            local id="$1"
+            local name="$2"
+            local tmp
+            tmp="$(mktemp)"
+            curl -L --fail --retry 3 --retry-delay 2 \
+              "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
+              -o "$tmp"
+            python3 - "$tmp" "$name" <<'PY'
+import pathlib, sys
+p = pathlib.Path(sys.argv[1])
+name = sys.argv[2]
+data = p.read_bytes()
+if not data.startswith(b"\x89PNG\r\n\x1a\n"):
+    raise SystemExit(f"{name}: downloaded file is not PNG")
+print(f"{name}: {len(data)} bytes")
+PY
+            mv -f "$tmp" "$target/$name"
+          }
+
+          download "1iVod4TXfRjKhEeOKdMYbMkCkPxYrj0AP" "hound.png"
+          download "1o_E6MCDCC4pZu_HpQGTXGNx_evoGw5wU" "clump.png"
+          download "1swd7CwscCiCcJcvPXvB54XgJDpvJW658" "duller.png"
+          download "1JcA7Xw3Uy-Vm_l9me73xKlMTevjKiuBM" "deathmoth.png"
+          download "1uNbLNw8nEiqFCnyaFzUOgTsyDcoduEqN" "hostile_faceling.png"
+          download "1Rhi-1oRjcUjz_pJZ-EXTW99vIiWhrLv0" "false_puddle.png"
+          download "1EG9mdZAVa-YMTlhN9KV8GXGxdVMXB1cr" "paintings.png"
+          download "1tN2s9n7ZTrFiKKUk08PmGpvNTXT_66fO" "smiler.png"
+          download "1svH2ohpMy4V6winJMFLyqRSrGud8Tzrb" "skin-stealer.png"
+          download "1hLV8gKjCXcB7VnueDDjg9M8CJ_LyezsN" "predatory_window.png"
+          download "1cKWnaMSs00bpOM9W1pr1DvC1AFhGJQwy" "biological_pipeline.png"
+          download "1AeN0HOtHMoNbYWnHp8w6o8NEgLLcalHM" "wretch.png"
+          download "17M-G_htGBwKEiXpJWWmHMvggHfbQjKtx" "cable_mimic.png"
+          download "1AwSmNRVUtngIJo-hvhmMpMiZJNv7FXt3" "the_beast_of_level_5.png"
+          download "14Sl7i6YNFCSlZV8jGIsQCAwqar4k1lKe" "hotel_corpse_lure.png"
+          download "1_9uNtlk1TGBF6iTUew_IzE2GENflXc4C" "jeff_the_killer.png"
+          download "1-9yGgrlNx7RPCw2QmmtFbzG_tjGibHNK" "jane_the_killer.png"
+          download "1gwABRH-hg-nwe-0idxDRi_6PDHqx85tN" "slenderman.png"
+
+          download "1nFvMyj0IWbcgf_UwTS2YargtyMyaz3bc" "hazmat_rifle_A_01.png"
+          download "1ku45kqkX6YiecAs9i-JfayvXhsXUonqe" "hazmat_rifle_ASNC_02.png"
+          download "1Hu35_AQbROjDjd3bGceeE1oPRBLCgpNc" "hazmat_pistol_tactical_03.png"
+          download "12LMO4Pp0T_KWAyUEZRnZ2-IeUbZZf7qC" "hazmat_pistol_tank_04.png"
+          download "1QLdwXwXNcFNrGLgr-qJl0cBuNBnUw0WI" "Anysc.png"
+
+      - name: Commit assets and remove temporary workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/sync-entity-assets.yml
+          git add -A android-apk/app/src/main/assets/entity .github/workflows/sync-entity-assets.yml
+          if git diff --cached --quiet; then
+            echo "No asset changes"
+            exit 0
+          fi
+          git commit -m "Replace Entity and A-SYNC assets"
+          git push origin HEAD:main
