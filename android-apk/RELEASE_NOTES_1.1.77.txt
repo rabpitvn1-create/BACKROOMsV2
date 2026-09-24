@@ -1,0 +1,11 @@
+Backroom 1.1.77
+
+- Tích hợp toàn bộ snapshot riêng của các Level 0 sub-level vào runtime in-game thay vì chỉ lưu chúng trong assets.
+- Level 0.1, 0.2, 0.5, 0.7 và Manila Room hiện xoay vòng 4 snapshot riêng theo turn.
+- The Torment và Red Rooms hiện xoay vòng 5 snapshot riêng theo turn.
+- Mở rộng snapshot manifest lên version 4 với mapping theo currentLevelKey và sublevelRoot riêng.
+- Giữ nguyên cơ chế snapshot hiện tại của các Level chính 0–6, tránh regression sang pool sub-level.
+- Bổ sung regression tests cho sub-level snapshot rotation và main-level snapshot rotation.
+- Cập nhật CI baseline để xác minh đủ 30 WebP sub-level cùng 21 snapshot Level chính.
+- Bao gồm toàn bộ batch ảnh môi trường mới được tạo và kiểm tra trước đó cho các Level 0 sub-level.
+- Đã xác minh Java unit tests, debug APK build và package verification trên GitHub Actions.

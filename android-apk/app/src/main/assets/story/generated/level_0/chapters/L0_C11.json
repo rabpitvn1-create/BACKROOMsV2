@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "id": "L0_C11",
+  "title": "Level 0 — Chương 11: Tử Địch Ở Một Nơi Không Có Trời",
+  "source": "story/source/level_0/LEVEL0_CH11.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C12",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "CHARACTER_ACCOMPANY",
+      "characterId": "luc_tram"
+    }
+  ],
+  "eventsAfterSegment": {},
+  "requiredFacts": [
+    "Cao Minh and Lục Trầm choose to continue together for practical survival reasons."
+  ],
+  "forbiddenClaims": [
+    "Do not rewrite their old-enemy relationship as resolved friendship."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "591dfe9fc7d5002027d215f471b6fab1800b08aeab587f693218b8622f4f046f",
+  "segmentIds": [
+    "L0_C11_Sfb7e5e603da28793",
+    "L0_C11_S96cc25bf6bbfbc4d",
+    "L0_C11_Sff61edb16c2fc209",
+    "L0_C11_S92895294dd13665b",
+    "L0_C11_S6095ae2479086e1c",
+    "L0_C11_S5a66654aefde17fb"
+  ]
+}

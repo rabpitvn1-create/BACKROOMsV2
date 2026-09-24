@@ -1,0 +1,8 @@
+Backroom 1.1.81
+
+- Chuyển protagonist canon/runtime từ Kai Akechi / Twilight sang Cao Minh / Vạn Giới Ma Tôn R15 trên opening, Game Master prompt, UI, Party, Character Detail, semantic catalog, Item Core và Combat labels.
+- Đồng bộ Cao Minh Codex R15 mới nhất từ Google Drive vào character codex, knowledge source map, machine-readable character knowledge và runtime canon trong WebView.
+- Cập nhật Level 0 entry canon theo Cao Minh, loại bỏ các tham chiếu SRU/Async opening cũ còn ảnh hưởng tới mạch truyện.
+- Cập nhật tên kỹ năng combat của Cao Minh sang Huyết Ma Tứ Liên, Ma Tâm Trấn Hồn, Huyết Ảnh Ma Độn, Thiên Ma Bộ và Huyết Ma Nhị Thập Tứ Trảm, giữ nguyên combat input/Choice C hiện hành.
+- Loại bỏ các nhánh overlay/avatar mapping Kai không còn dùng và cập nhật regression fixtures/tests tương ứng cho Cao Minh.
+- Không thay đổi công thức combat, cơ chế Choice C hay progression ngoài các thay đổi canon/name migration nêu trên.

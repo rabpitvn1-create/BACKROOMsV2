@@ -1,0 +1,7 @@
+{
+  "model": "mgr/grok-imagine-image",
+  "prompts": {
+    "snapshot_frame": "Game UI asset only, no scene and no characters. A premium ornate rectangular viewport frame for a dark xianxia cultivation game lost inside the Backrooms. Four-sided frame, antique blackened metal and obsidian, aged muted brass, deep dried-blood crimson accents, subtle talisman engravings and formation-array geometry concentrated at the four corners. Slight worn fluorescent-yellow Backrooms contamination, liminal industrial corrosion, sinister ancient immortal-artifact feeling. Strong readable silhouette on a phone screen, sophisticated and restrained, not baroque, not cyberpunk, not sci-fi military. The center must be visually empty/plain so it can be cut out later. No words, no letters, no numbers, no logos, no watermark, no people, no weapons, no scenery.",
+    "action_plate": "Game UI asset only. A single wide horizontal action-button plate for a dark xianxia cultivation game inside the Backrooms. Ancient blackened metal and lacquered obsidian body, aged brass edge pieces, deep blood-red inner energy, restrained talisman lines and formation sigils at both ends, slight fluorescent-yellow liminal contamination and worn industrial texture. Premium mobile RPG HUD, strong readable silhouette, wide and low, symmetrical, elegant, ominous, not cyberpunk, not military, no glow overload. Absolutely no text, no letters, no numbers, no icons, no logos, no watermark."
+  }
+}

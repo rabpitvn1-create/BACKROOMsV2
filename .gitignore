@@ -1,0 +1,12 @@
+node_modules/
+.next/
+.env*
+!.env.example
+npm-debug.log*
+__pycache__/
+*.pyc
+.gradle/
+build/
+**/build/**
+**/.gradle/**
+*.apk

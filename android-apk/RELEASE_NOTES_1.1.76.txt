@@ -1,0 +1,12 @@
+Backroom 1.1.76
+
+- Khôi phục Explorer fallback choices khi Game Master/Core không trả choices, gồm cả Prologue đầu game và các tình huống local Core để người chơi không bị ép nhập tay.
+- Loại bỏ hoàn toàn pipeline API Snapshot runtime khỏi APK; Snapshot giờ chỉ dùng local Level assets và các overlay hiện có.
+- Thêm progression bắt buộc: Level 0 -> Level 0.1 -> Level 0.2 -> Level 0.5 -> Level 0.7 -> Manila Room -> The Torment -> Red Rooms -> Level 1.
+- Loại Level 0.3 khỏi route gameplay và chặn việc skip trực tiếp từ Level 0 sang Level 1.
+- Thêm currentLevelKey để decimal sub-level và các node không đánh số tồn tại như Level gameplay riêng mà vẫn giữ currentLevel số nguyên cho các hệ thống cũ.
+- Rebuild Level Knowledge thành asset có cấu trúc cho 14 node hiện có, tách canon môi trường khỏi Entity/item/combat/route state do Core sở hữu.
+- Nâng riêng Level 0 thành deep simulation knowledge với micro-location, structural aberration, environment state/event, navigation, persistence, evidence rules, interaction consequences, anti-repetition và scene variation.
+- LevelCore chỉ nạp knowledge bundle của Level hiện tại và xoay các scene/event pool theo turn để giảm lặp mà không làm prompt phình quá mức.
+- Giữ Lucia encounter roll chỉ ở Level 0 gốc; các sub-level mới không tiêu thụ Lucia RNG.
+- Đã kiểm tra bằng Java unit tests, debug APK build, APK package verification và artifact upload trên GitHub Actions.

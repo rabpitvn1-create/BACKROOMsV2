@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "startChapter": "L0_C01",
+  "chapterCount": 30,
+  "chapters": [
+    {
+      "id": "L0_C01",
+      "metadata": "story/generated/level_0/chapters/L0_C01.json",
+      "interactions": "story/generated/level_0/interactions/L0_C01.json",
+      "source": "story/source/level_0/LEVEL0_CH01.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C02"
+    },
+    {
+      "id": "L0_C02",
+      "metadata": "story/generated/level_0/chapters/L0_C02.json",
+      "interactions": "story/generated/level_0/interactions/L0_C02.json",
+      "source": "story/source/level_0/LEVEL0_CH02.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C03"
+    },
+    {
+      "id": "L0_C03",
+      "metadata": "story/generated/level_0/chapters/L0_C03.json",
+      "interactions": "story/generated/level_0/interactions/L0_C03.json",
+      "source": "story/source/level_0/LEVEL0_CH03.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C04"
+    },
+    {
+      "id": "L0_C04",
+      "metadata": "story/generated/level_0/chapters/L0_C04.json",
+      "interactions": "story/generated/level_0/interactions/L0_C04.json",
+      "source": "story/source/level_0/LEVEL0_CH04.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C05"
+    },
+    {
+      "id": "L0_C05",
+      "metadata": "story/generated/level_0/chapters/L0_C05.json",
+      "interactions": "story/generated/level_0/interactions/L0_C05.json",
+      "source": "story/source/level_0/LEVEL0_CH05.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C06"
+    },
+    {
+      "id": "L0_C06",
+      "metadata": "story/generated/level_0/chapters/L0_C06.json",
+      "interactions": "story/generated/level_0/interactions/L0_C06.json",
+      "source": "story/source/level_0/LEVEL0_CH06.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C07"
+    },
+    {
+      "id": "L0_C07",
+      "metadata": "story/generated/level_0/chapters/L0_C07.json",
+      "interactions": "story/generated/level_0/interactions/L0_C07.json",
+      "source": "story/source/level_0/LEVEL0_CH07.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C08"
+    },
+    {
+      "id": "L0_C08",
+      "metadata": "story/generated/level_0/chapters/L0_C08.json",
+      "interactions": "story/generated/level_0/interactions/L0_C08.json",
+      "source": "story/source/level_0/LEVEL0_CH08.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L0_C09"
+    },
+    {
+      "id": "L0_C09",
+      "metadata": "story/generated/level_0/chapters/L0_C09.json",
+      "interactions": "story/generated/level_0/interactions/L0_C09.json",
+      "source": "story/source/level_0/LEVEL0_CH09.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "nextChapter": "L0_C10"
+    },
+    {
+      "id": "L0_C10",
+      "metadata": "story/generated/level_0/chapters/L0_C10.json",
+      "interactions": "story/generated/level_0/interactions/L0_C10.json",
+      "source": "story/source/level_0/LEVEL0_CH10.md",
+      "thread": "convergence",
+      "visibility": "player",
+      "nextChapter": "L0_C11"
+    },
+    {
+      "id": "L0_C11",
+      "metadata": "story/generated/level_0/chapters/L0_C11.json",
+      "interactions": "story/generated/level_0/interactions/L0_C11.json",
+      "source": "story/source/level_0/LEVEL0_CH11.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C12"
+    },
+    {
+      "id": "L0_C12",
+      "metadata": "story/generated/level_0/chapters/L0_C12.json",
+      "interactions": "story/generated/level_0/interactions/L0_C12.json",
+      "source": "story/source/level_0/LEVEL0_CH12.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C13"
+    },
+    {
+      "id": "L0_C13",
+      "metadata": "story/generated/level_0/chapters/L0_C13.json",
+      "interactions": "story/generated/level_0/interactions/L0_C13.json",
+      "source": "story/source/level_0/LEVEL0_CH13.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C14"
+    },
+    {
+      "id": "L0_C14",
+      "metadata": "story/generated/level_0/chapters/L0_C14.json",
+      "interactions": "story/generated/level_0/interactions/L0_C14.json",
+      "source": "story/source/level_0/LEVEL0_CH14.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C15"
+    },
+    {
+      "id": "L0_C15",
+      "metadata": "story/generated/level_0/chapters/L0_C15.json",
+      "interactions": "story/generated/level_0/interactions/L0_C15.json",
+      "source": "story/source/level_0/LEVEL0_CH15.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C16"
+    },
+    {
+      "id": "L0_C16",
+      "metadata": "story/generated/level_0/chapters/L0_C16.json",
+      "interactions": "story/generated/level_0/interactions/L0_C16.json",
+      "source": "story/source/level_0/LEVEL0_CH16.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C17"
+    },
+    {
+      "id": "L0_C17",
+      "metadata": "story/generated/level_0/chapters/L0_C17.json",
+      "interactions": "story/generated/level_0/interactions/L0_C17.json",
+      "source": "story/source/level_0/LEVEL0_CH17.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C18"
+    },
+    {
+      "id": "L0_C18",
+      "metadata": "story/generated/level_0/chapters/L0_C18.json",
+      "interactions": "story/generated/level_0/interactions/L0_C18.json",
+      "source": "story/source/level_0/LEVEL0_CH18.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C19"
+    },
+    {
+      "id": "L0_C19",
+      "metadata": "story/generated/level_0/chapters/L0_C19.json",
+      "interactions": "story/generated/level_0/interactions/L0_C19.json",
+      "source": "story/source/level_0/LEVEL0_CH19.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C20"
+    },
+    {
+      "id": "L0_C20",
+      "metadata": "story/generated/level_0/chapters/L0_C20.json",
+      "interactions": "story/generated/level_0/interactions/L0_C20.json",
+      "source": "story/source/level_0/LEVEL0_CH20.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C21"
+    },
+    {
+      "id": "L0_C21",
+      "metadata": "story/generated/level_0/chapters/L0_C21.json",
+      "interactions": "story/generated/level_0/interactions/L0_C21.json",
+      "source": "story/source/level_0/LEVEL0_CH21.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C22"
+    },
+    {
+      "id": "L0_C22",
+      "metadata": "story/generated/level_0/chapters/L0_C22.json",
+      "interactions": "story/generated/level_0/interactions/L0_C22.json",
+      "source": "story/source/level_0/LEVEL0_CH22.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C23"
+    },
+    {
+      "id": "L0_C23",
+      "metadata": "story/generated/level_0/chapters/L0_C23.json",
+      "interactions": "story/generated/level_0/interactions/L0_C23.json",
+      "source": "story/source/level_0/LEVEL0_CH23.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C24"
+    },
+    {
+      "id": "L0_C24",
+      "metadata": "story/generated/level_0/chapters/L0_C24.json",
+      "interactions": "story/generated/level_0/interactions/L0_C24.json",
+      "source": "story/source/level_0/LEVEL0_CH24.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C25"
+    },
+    {
+      "id": "L0_C25",
+      "metadata": "story/generated/level_0/chapters/L0_C25.json",
+      "interactions": "story/generated/level_0/interactions/L0_C25.json",
+      "source": "story/source/level_0/LEVEL0_CH25.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C26"
+    },
+    {
+      "id": "L0_C26",
+      "metadata": "story/generated/level_0/chapters/L0_C26.json",
+      "interactions": "story/generated/level_0/interactions/L0_C26.json",
+      "source": "story/source/level_0/LEVEL0_CH26.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C27"
+    },
+    {
+      "id": "L0_C27",
+      "metadata": "story/generated/level_0/chapters/L0_C27.json",
+      "interactions": "story/generated/level_0/interactions/L0_C27.json",
+      "source": "story/source/level_0/LEVEL0_CH27.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C28"
+    },
+    {
+      "id": "L0_C28",
+      "metadata": "story/generated/level_0/chapters/L0_C28.json",
+      "interactions": "story/generated/level_0/interactions/L0_C28.json",
+      "source": "story/source/level_0/LEVEL0_CH28.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C29"
+    },
+    {
+      "id": "L0_C29",
+      "metadata": "story/generated/level_0/chapters/L0_C29.json",
+      "interactions": "story/generated/level_0/interactions/L0_C29.json",
+      "source": "story/source/level_0/LEVEL0_CH29.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": "L0_C30"
+    },
+    {
+      "id": "L0_C30",
+      "metadata": "story/generated/level_0/chapters/L0_C30.json",
+      "interactions": "story/generated/level_0/interactions/L0_C30.json",
+      "source": "story/source/level_0/LEVEL0_CH30.md",
+      "thread": "merged",
+      "visibility": "player",
+      "nextChapter": ""
+    }
+  ]
+}

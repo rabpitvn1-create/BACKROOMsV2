@@ -1,0 +1,88 @@
+name: Compile Story Decision Contracts
+
+on:
+  push:
+    paths:
+      - 'android-apk/app/src/main/assets/story/source/**'
+      - '.github/scripts/compile-story.py'
+      - '.github/workflows/compile-story.yml'
+  workflow_dispatch:
+    inputs:
+      story_id:
+        description: 'Optional storyId to rebuild; blank means all'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: story-compiler-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  compile:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Determine affected authored content
+        id: changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.story_id || '' }}" ]; then
+            printf '%s\n' "--story-id" "${{ inputs.story_id }}" > /tmp/compiler.args
+            : > /tmp/story.changed
+            exit 0
+          fi
+          BEFORE="${{ github.event.before || '' }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            printf '%s\n' "--all" > /tmp/compiler.args
+            : > /tmp/story.changed
+          else
+            git diff --name-only "$BEFORE" "${{ github.sha }}" > /tmp/story.changed
+            : > /tmp/compiler.args
+          fi
+
+      - name: Compile affected stories atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t ARGS < /tmp/compiler.args
+          if [ "${#ARGS[@]}" -gt 0 ]; then
+            python .github/scripts/compile-story.py "${ARGS[@]}"
+            python .github/scripts/compile-story.py "${ARGS[@]}" --validate-generated
+          else
+            python .github/scripts/compile-story.py --changed-file-list /tmp/story.changed
+            python .github/scripts/compile-story.py --changed-file-list /tmp/story.changed --validate-generated
+          fi
+
+      - name: Refuse stale artifact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="${GITHUB_REF_NAME}"
+          git fetch origin "$BRANCH"
+          test "$(git rev-parse "origin/$BRANCH")" = "${GITHUB_SHA}"
+
+      - name: Commit generated artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add android-apk/app/src/main/assets/story/generated/
+          if git diff --cached --quiet; then
+            echo "Generated Story artifacts are already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(story): compile authored artifacts"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

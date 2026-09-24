@@ -1,0 +1,6 @@
+Backroom 1.1.68
+
+- Khôi phục Party avatar UI đã mất sau khi chuyển runtime sang Java.
+- Chạm vào nhân vật trong Party để xem trạng thái, HP/chỉ số, hiệu ứng, trang bị và Inventory.
+- Thêm avatar Kai và Lucia mới vào APK; giữ avatar Iris/Syvial hiện có.
+- Liên kết Lucia combat overlay với hệ overlay động, virtual ground và combat feedback hiện tại.

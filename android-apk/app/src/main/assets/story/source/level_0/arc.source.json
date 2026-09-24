@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 1,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-return-journey-r2",
+  "startChapter": "L0_C01",
+  "segmentTargetChars": 1900,
+  "segmentMaxChars": 2400,
+  "chapters": [
+    {
+      "id": "L0_C01",
+      "source": "story/source/level_0/LEVEL0_CH01.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C02",
+      "source": "story/source/level_0/LEVEL0_CH02.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C03",
+      "source": "story/source/level_0/LEVEL0_CH03.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "requiredFacts": [
+        "Lục Trầm exists in a parallel story thread and has not reunited with Cao Minh."
+      ],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ],
+      "events": [
+        {
+          "when": "ENTER",
+          "type": "CHARACTER_PARALLEL_STORY",
+          "characterId": "luc_tram"
+        }
+      ]
+    },
+    {
+      "id": "L0_C04",
+      "source": "story/source/level_0/LEVEL0_CH04.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C05",
+      "source": "story/source/level_0/LEVEL0_CH05.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "requiredFacts": [
+        "Lục Trầm encounters the injured human Nam."
+      ],
+      "forbiddenClaims": [
+        "Do not promote Nam to Party membership or invent combat stats."
+      ],
+      "events": [
+        {
+          "when": "ENTER",
+          "type": "CHARACTER_PRESENT",
+          "characterId": "nam",
+          "scope": "story_local"
+        }
+      ]
+    },
+    {
+      "id": "L0_C06",
+      "source": "story/source/level_0/LEVEL0_CH06.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C07",
+      "source": "story/source/level_0/LEVEL0_CH07.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ]
+    },
+    {
+      "id": "L0_C08",
+      "source": "story/source/level_0/LEVEL0_CH08.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C09",
+      "source": "story/source/level_0/LEVEL0_CH09.md",
+      "thread": "luc_tram",
+      "visibility": "cutaway",
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not treat this cutaway as knowledge Cao Minh possesses."
+      ]
+    },
+    {
+      "id": "L0_C10",
+      "source": "story/source/level_0/LEVEL0_CH10.md",
+      "thread": "convergence",
+      "visibility": "player",
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm physically reunite by the end of this chapter; Nam is present."
+      ],
+      "forbiddenClaims": [
+        "Do not turn reunion into immediate trust, romance, forgiveness, or Party membership."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "CHARACTER_REUNION",
+          "characterId": "luc_tram"
+        }
+      ]
+    },
+    {
+      "id": "L0_C11",
+      "source": "story/source/level_0/LEVEL0_CH11.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm choose to continue together for practical survival reasons."
+      ],
+      "forbiddenClaims": [
+        "Do not rewrite their old-enemy relationship as resolved friendship."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "CHARACTER_ACCOMPANY",
+          "characterId": "luc_tram"
+        }
+      ]
+    },
+    {
+      "id": "L0_C12",
+      "source": "story/source/level_0/LEVEL0_CH12.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Their temporary cooperation is stable enough for Lục Trầm to be represented as an active gameplay companion."
+      ],
+      "forbiddenClaims": [],
+      "events": [
+        {
+          "when": "ENTER",
+          "type": "CHARACTER_JOIN_PARTY",
+          "characterId": "luc_tram"
+        }
+      ]
+    },
+    {
+      "id": "L0_C13",
+      "source": "story/source/level_0/LEVEL0_CH13.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not identify the voice phenomenon as one confirmed entity or one confirmed mechanism."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "personalized_voice_echo_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C14",
+      "source": "story/source/level_0/LEVEL0_CH14.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C15",
+      "source": "story/source/level_0/LEVEL0_CH15.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C16",
+      "source": "story/source/level_0/LEVEL0_CH16.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Repeated metal, airflow and mechanical-vibration clues form a usable trend."
+      ],
+      "forbiddenClaims": [],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "metal_route_evidence",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C17",
+      "source": "story/source/level_0/LEVEL0_CH17.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not claim the room definitely reads minds or memories; the source keeps the mechanism uncertain."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "memory_like_room_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C18",
+      "source": "story/source/level_0/LEVEL0_CH18.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Nam voluntarily tests a very small amount of almond-scented liquid and shows no immediate harmful reaction."
+      ],
+      "forbiddenClaims": [
+        "Do not declare the liquid universally safe, magical, curative, or definitively identical to every Almond Water account."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "suspected_almond_water_trial_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C19",
+      "source": "story/source/level_0/LEVEL0_CH19.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Nam disappears without a confirmed attacker, death, destination, or mechanism."
+      ],
+      "forbiddenClaims": [
+        "Do not declare Nam dead, rescued, captured by a known entity, or located unless later authored story establishes it."
+      ],
+      "events": [
+        {
+          "when": "ENTER",
+          "type": "CHARACTER_MISSING",
+          "characterId": "nam"
+        }
+      ]
+    },
+    {
+      "id": "L0_C20",
+      "source": "story/source/level_0/LEVEL0_CH20.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C21",
+      "source": "story/source/level_0/LEVEL0_CH21.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C22",
+      "source": "story/source/level_0/LEVEL0_CH22.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C23",
+      "source": "story/source/level_0/LEVEL0_CH23.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C24",
+      "source": "story/source/level_0/LEVEL0_CH24.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": [],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "stable_metal_boundary_evidence",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C25",
+      "source": "story/source/level_0/LEVEL0_CH25.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C26",
+      "source": "story/source/level_0/LEVEL0_CH26.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C27",
+      "source": "story/source/level_0/LEVEL0_CH27.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C28",
+      "source": "story/source/level_0/LEVEL0_CH28.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": [
+        "Do not name the new metal region as Level 1 or call it safe."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "unnamed_boundary_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L0_C29",
+      "source": "story/source/level_0/LEVEL0_CH29.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L0_C30",
+      "source": "story/source/level_0/LEVEL0_CH30.md",
+      "thread": "merged",
+      "visibility": "player",
+      "requiredFacts": [
+        "Cao Minh and Lục Trầm cross the large door into an unnamed large metal region."
+      ],
+      "forbiddenClaims": [
+        "Do not claim a validated Level 0 -> Level 1 transition. The manuscript does not establish that."
+      ],
+      "events": [
+        {
+          "when": "EXIT",
+          "type": "STORY_FLAG_SET",
+          "key": "level0_arc_boundary_reached",
+          "value": true
+        },
+        {
+          "when": "EXIT",
+          "type": "LEVEL0_ARC_BOUNDARY_REACHED"
+        }
+      ]
+    }
+  ]
+}

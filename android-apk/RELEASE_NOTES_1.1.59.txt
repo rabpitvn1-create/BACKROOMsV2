@@ -1,0 +1,4 @@
+Backroom 1.1.59 Debug
+- Snapshot cache gắn với Level và location, không còn giữ cảnh cũ khi sang khu vực mới.
+- Nhận diện Level từ cả state, title và location cốt truyện.
+- Mỗi Level cần tối thiểu 6 lượt gameplay và một Exit hợp lệ trước khi chuyển vùng.

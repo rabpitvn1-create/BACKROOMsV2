@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-return-journey-r2",
+  "startChapter": "L01_C01",
+  "segmentTargetChars": 1900,
+  "segmentMaxChars": 2400,
+  "chapters": [
+    {
+      "id": "L01_C01",
+      "source": "story/source/level_0_1/LEVEL0.1_CH01_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Nam dies from the severe injury already shown in the manuscript."
+      ],
+      "forbiddenClaims": [
+        "Do not keep Nam in MISSING state after his death is shown."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Nam đã chết.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "nam",
+          "scope": "story_local",
+          "presence": "DECEASED"
+        }
+      ]
+    },
+    {
+      "id": "L01_C02",
+      "source": "story/source/level_0_1/LEVEL0.1_CH02_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C03",
+      "source": "story/source/level_0_1/LEVEL0.1_CH03_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C04",
+      "source": "story/source/level_0_1/LEVEL0.1_CH04_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "A manifestation with Diệp Minh's face and memories is observed; its ontology remains unresolved."
+      ],
+      "forbiddenClaims": [
+        "Do not classify the Diệp Minh manifestation as an EntityCore encounter or prove it is the original Diệp Minh."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Một kẻ mang mặt Diệp Minh, ký ức của Diệp Minh và huyết cừu của Diệp Minh vừa xuất hiện trong một hành lang không nên có hắn.",
+          "type": "STORY_FACT_SET",
+          "key": "diep_minh_manifestation_ch04_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L01_C05",
+      "source": "story/source/level_0_1/LEVEL0.1_CH05_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C06",
+      "source": "story/source/level_0_1/LEVEL0.1_CH06_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C07",
+      "source": "story/source/level_0_1/LEVEL0.1_CH07_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C08",
+      "source": "story/source/level_0_1/LEVEL0.1_CH08_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Khải is a story-local survivor and is not a Party member."
+      ],
+      "forbiddenClaims": [
+        "Do not add Khải to Party."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Khải nhìn hai người thêm một lúc rồi bước ra khỏi chỗ nấp.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "khai",
+          "scope": "story_local",
+          "presence": "PRESENT"
+        },
+        {
+          "when": "EXIT",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "khai",
+          "scope": "story_local",
+          "presence": "MISSING"
+        }
+      ]
+    },
+    {
+      "id": "L01_C09",
+      "source": "story/source/level_0_1/LEVEL0.1_CH09_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C10",
+      "source": "story/source/level_0_1/LEVEL0.1_CH10_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Khải is found alive again and remains story-local."
+      ],
+      "forbiddenClaims": [
+        "Do not add Khải to Party."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Khải nhìn họ, đôi mắt đỏ vì thiếu ngủ hoặc kích ứng.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "khai",
+          "scope": "story_local",
+          "presence": "PRESENT"
+        }
+      ]
+    },
+    {
+      "id": "L01_C11",
+      "source": "story/source/level_0_1/LEVEL0.1_CH11_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C12",
+      "source": "story/source/level_0_1/LEVEL0.1_CH12_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C13",
+      "source": "story/source/level_0_1/LEVEL0.1_CH13_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "A second Diệp Minh manifestation is observed; identity and ontology remain unresolved."
+      ],
+      "forbiddenClaims": [
+        "Do not classify the Diệp Minh manifestation as an EntityCore encounter or reveal hidden ontology."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Diệp Minh dừng cách họ hơn mười bước.",
+          "type": "STORY_FACT_SET",
+          "key": "diep_minh_manifestation_ch13_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L01_C14",
+      "source": "story/source/level_0_1/LEVEL0.1_CH14_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C15",
+      "source": "story/source/level_0_1/LEVEL0.1_CH15_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C16",
+      "source": "story/source/level_0_1/LEVEL0.1_CH16_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C17",
+      "source": "story/source/level_0_1/LEVEL0.1_CH17_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L01_C18",
+      "source": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Khải dies before Cao Minh and Lục Trầm cross the threshold beyond Zenith Station.",
+        "The place beyond the threshold is not named by Story."
+      ],
+      "forbiddenClaims": [
+        "Do not keep Khải in MISSING state after death.",
+        "Do not name or choose the destination Level in Story metadata."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Khải đã chết.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "khai",
+          "scope": "story_local",
+          "presence": "DECEASED"
+        },
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Lần này cả hai bước qua.",
+          "type": "STORY_FACT_SET",
+          "key": "zenith_threshold_crossed",
+          "value": true
+        },
+        {
+          "when": "EXIT",
+          "type": "ARC_BOUNDARY_REACHED"
+        }
+      ]
+    }
+  ]
+}

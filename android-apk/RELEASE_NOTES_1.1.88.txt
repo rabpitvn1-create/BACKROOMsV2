@@ -1,0 +1,6 @@
+Backroom 1.1.88
+
+- Thêm đúng 3 EntitySkill tự động cho mỗi Entity combat, bao gồm các Entity legacy/boss trong combat registry.
+- Đồng bộ tên, damagePercent và procPercent của 69 skill giữa CombatChoiceEngine và entity_encounters.json.
+- Mỗi skill có procPercent từ 20% đến 35%; giữ cơ chế roll độc lập và fallback sang đòn đánh thường.
+- Không thay đổi tỉ lệ xuất hiện, cơ chế auto-spawn, lượt combat hoặc hiệu ứng trạng thái.

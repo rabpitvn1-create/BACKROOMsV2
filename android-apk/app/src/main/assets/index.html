@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Backroom</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#eef1f3;font:15px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{min-height:100vh;padding:10px;background:radial-gradient(circle at top,#161b20,#07090b 75%)}.game,.card{border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007;border-radius:12px}.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px;border-bottom:1px solid #2b3137}.eyebrow,.role{color:#8f9aa4;font-size:9px;font-weight:800;letter-spacing:.16em}h1{margin:2px 0 0;font-size:18px;line-height:1.15}.game-menu-trigger{width:40px;height:40px;flex:0 0 40px;padding:0;display:grid;place-items:center;border:1px solid #3a4249;background:#171c20;color:#eef1f3;border-radius:9px;font-size:19px;line-height:1;touch-action:manipulation}.game-menu-trigger:active{transform:scale(.96);background:#252c32}.game-menu-trigger[aria-expanded="true"]{border-color:#707b84;background:#20272d}.snapshot{height:250px;margin:8px 10px 10px;border:1px solid #252b31;display:grid;place-items:center;background:#0b0d0f;color:#69737c;border-radius:10px;overflow:hidden}.snapshot img{width:100%;height:100%;object-fit:cover}.log{height:clamp(320px,48vh,540px);overflow:auto;padding:10px;display:grid;gap:10px}.message{border-left:3px solid #454e56;padding:11px;background:#111519;border-radius:0}.message.player{border-left-color:#8b949e;background:#15191d;border-radius:0}.message.gm{border-radius:0}.role{margin-bottom:6px}.text{white-space:pre-wrap;line-height:1.55}.player-action-bar{padding:8px 10px 10px;border-top:1px solid #252b31;background:linear-gradient(180deg,rgba(8,10,12,.72),rgba(3,4,5,.94))}.player-action-bar button{width:100%;letter-spacing:.12em}.player-action-bar #playerActionOpen,#submit{border:1px solid #3a4249;background:#1a2025;color:#eff2f4;font-weight:800;border-radius:10px}.player-action-bar #playerActionOpen{min-height:64px;font-size:16px}.player-action-bar #playerActionOpen:active:not(:disabled),#submit:active:not(:disabled){transform:scale(.985);filter:brightness(1.12)}#submit{min-height:52px;letter-spacing:.12em}.player-action-modal[hidden]{display:none}.player-action-modal{position:fixed;inset:0;z-index:120;display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.player-action-backdrop{position:absolute;inset:0;background:#000b}.player-action-sheet{position:relative;width:min(100%,680px);max-height:100%;overflow:auto;background:#0e1114;border:1px solid #3a4249;border-bottom:0;border-radius:12px 12px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -24px 60px #000b}.player-action-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.player-action-head h2{margin:0;font:800 14px/1.2 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:.1em}.player-action-close{width:auto;min-width:42px;padding:8px 10px;border-radius:8px}.composer{display:grid;gap:10px;padding:0}.composer label{font-weight:700;font-size:13px}.composer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}textarea,button{font:inherit}textarea{min-height:150px;max-height:42vh;resize:vertical;background:#090c0f;color:white;border:1px solid #30373e;padding:12px;line-height:1.45;border-radius:8px}button{border:1px solid #3a4249;background:#1a2025;color:#eff2f4;padding:12px;font-weight:700;border-radius:8px}.status{border-top:1px solid #252b31;padding:10px;color:#9aa4ad;font-size:12px}.side{display:grid;gap:10px;margin-top:10px}.card{padding:14px;border-radius:10px}.card h2{font-size:13px;letter-spacing:.1em;margin:0 0 10px}.row{display:grid;grid-template-columns:90px 1fr;padding:6px 0;border-bottom:1px solid #22282d;color:#dce2e5}.row b{color:#78838c;font-weight:400}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions .wide{grid-column:1/-1}.danger{background:#241616;color:#e6b1b1;border-color:#663b3b}.chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{border:1px solid #313940;padding:5px 7px;font-size:12px;border-radius:6px}.game-menu-modal[hidden]{display:none}.game-menu-modal{position:fixed;inset:0;z-index:110;display:flex;align-items:flex-end;justify-content:center;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.game-menu-backdrop{position:absolute;inset:0;background:#000b}.game-menu-sheet{position:relative;width:min(100%,680px);max-height:min(88dvh,760px);overflow:auto;overscroll-behavior:contain;background:#0e1114;border:1px solid #3a4249;border-bottom:0;border-radius:14px 14px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -24px 60px #000b}.game-menu-head{position:sticky;top:-14px;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-14px -14px 10px;padding:14px;background:#0e1114;border-bottom:1px solid #252b31}.game-menu-head h2{margin:0;font-size:13px;letter-spacing:.12em}.game-menu-close{width:44px;height:44px;min-width:44px;padding:0;font-size:22px;line-height:1;border-radius:9px}.game-menu-sheet .side{margin-top:0}.game-menu-sheet .card{box-shadow:none}body.player-action-open,body.game-menu-open{overflow:hidden}
+/* BACKROOM_HEADER_ART_V2: offline Backrooms artwork from packaged Level 0 assets. */
+.topbar{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background-color:#0e1114;
+  background-image:
+    linear-gradient(90deg,rgba(5,7,8,.92) 0%,rgba(6,8,9,.72) 52%,rgba(5,6,7,.88) 100%),
+    url('level_snapshots/drive/level_0/01.webp');
+  background-size:cover;
+  background-position:center 46%;
+  background-repeat:no-repeat;
+}
+.topbar>div,.topbar>.game-menu-trigger{position:relative;z-index:1}
+.topbar .eyebrow,.topbar h1{text-shadow:0 1px 2px #000,0 0 8px #000c}
+.topbar .eyebrow{color:#d6d0aa}
+.topbar .game-menu-trigger{background:rgba(13,16,18,.82);box-shadow:0 0 0 1px #0007,0 3px 12px #0006}
+
+/* BACKROOM_ACTION_ART_V2: IMG_API-generated artwork for PLAYER ACTION. */
+.player-action-bar #playerActionOpen{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+  border-color:#756d43;
+  background-color:#171812;
+  background-image:
+    linear-gradient(90deg,rgba(8,9,7,.90) 0%,rgba(12,12,8,.60) 50%,rgba(8,9,7,.88) 100%),
+    url('hud/player_action_backrooms.png');
+  background-size:cover,cover;
+  background-position:center,center 52%;
+  background-repeat:no-repeat;
+  color:#fff7cf;
+  text-shadow:0 1px 2px #000,0 0 9px #000;
+  box-shadow:inset 0 0 0 1px rgba(220,200,102,.08),inset 0 0 22px rgba(162,145,62,.10),0 5px 18px #0008;
+}
+.player-action-bar #playerActionOpen:focus-visible{
+  outline:2px solid #b9ab6a;
+  outline-offset:2px;
+}
+
+</style>
+</head>
+<body>
+<main class="shell">
+<section class="game">
+<header class="topbar"><div><div class="eyebrow">BACKROOM TEXT GAME</div><h1 id="title"></h1></div><button class="game-menu-trigger" id="gameMenuOpen" type="button" aria-label="Mở menu game" aria-haspopup="dialog" aria-controls="gameMenuModal" aria-expanded="false">☰</button></header>
+<div class="snapshot" id="snapshot">LEVEL SNAPSHOT — LOCAL ASSET</div>
+<div class="log" id="log"></div>
+<div class="player-action-bar"><button id="playerActionOpen" type="button">PLAYER ACTION</button></div>
+<div class="player-action-modal" id="playerActionModal" hidden aria-hidden="true">
+  <div class="player-action-backdrop" id="playerActionBackdrop"></div>
+  <section class="player-action-sheet" role="dialog" aria-modal="true" aria-labelledby="playerActionTitle">
+    <div class="player-action-head"><h2 id="playerActionTitle">PLAYER ACTION</h2><button class="player-action-close" id="playerActionClose" type="button" aria-label="Đóng">×</button></div>
+    <form class="composer" id="form">
+      <label for="action">Cao Minh sẽ làm gì?</label>
+      <textarea id="action" placeholder="Nhập hành động của Cao Minh…" rows="5"></textarea>
+      <div class="composer-actions"><button id="playerActionCancel" type="button">HỦY</button><button id="submit" type="submit">THỰC HIỆN</button></div>
+    </form>
+  </section>
+</div>
+<div class="status" id="status"></div>
+</section>
+<div class="game-menu-modal" id="gameMenuModal" hidden aria-hidden="true">
+  <div class="game-menu-backdrop" id="gameMenuBackdrop"></div>
+  <section class="game-menu-sheet" role="dialog" aria-modal="true" aria-labelledby="gameMenuTitle">
+    <div class="game-menu-head"><h2 id="gameMenuTitle">GAME MENU</h2><button class="game-menu-close" id="gameMenuClose" type="button" aria-label="Đóng menu">×</button></div>
+    <aside class="side" id="managementPanel">
+<div class="card"><h2>Trạng thái</h2><div class="row"><b>Vị trí</b><span id="location"></span></div><div class="row"><b>Chế độ</b><span id="mode"></span></div><div class="row"><b>Nhân vật</b><span id="player"></span></div></div>
+<div class="card"><h2>Save / Load</h2><div class="actions"><button onclick="save()">Lưu</button><button onclick="load()">Tải</button><button class="wide" onclick="resetGame()">Bắt đầu lại từ đầu</button><button class="wide danger" onclick="clearSave()">Xóa save trên máy</button></div></div>
+<div class="card"><h2>Party</h2><div class="chips" id="party"></div></div>
+<div class="card"><h2>Inventory</h2><div class="chips" id="inventory"></div></div>
+</aside>
+  </section>
+</div>
+</main>
+<script>
+// Main authored opening is served from story/source by StoryCore.
+const storyBootMessage="CỐT TRUYỆN CHÍNH — LEVEL 0\n\nNhấn vào để bắt đầu khám phá thế giới Backrooms";
+
+const CURRENT_CHARACTER_CANON={
+  "version": "cao-minh-r15-2026-09-20",
+  "source": "Google Drive 02_CHARACTERS/Cao_Minh_Codex.docx · 1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq · CAO-MINH-VAN-GIOI-MA-TON-CODEX-20260920-R15",
+  "instruction": "Cao Minh R15 is the current protagonist canon and overrides conflicting Kai/SRU/Async protagonist legacy. KNOWLEDGE_LOCK remains backstage knowledge only; OPEN/UNKNOWN fields stay open. Cao Minh has no default knowledge of Backrooms level names, Entity identities, rules or origin. Gameplay values are internal projection only and must not be turned into cultivation lore or dialogue terminology.",
+  "caoMinh": "Cao Minh / Vạn Giới Ma Tôn is a Ma Đạo Kiếm Tu and the strongest known cultivator of his original world before falling into Backrooms. He belongs to no sect, empire or organization. Original-world name, era and detailed cultivation realms remain OPEN. He is confident but not blindly arrogant; relaxed, lazy, wine-loving and sarcastic outside serious danger. He does not intentionally harm innocents. KNOWLEDGE_LOCK: half-human/half-demon with ancient inheritance linked to Vạn Quỷ Ma Tôn; Vạn Quỷ Ma Tôn is the inheritance source, not Cao Minh's title. Vạn Quỷ Ma Tâm is his Đạo Cơ, Ma Hải and central origin, with no canonically locked intrinsic ma-nguyên ceiling. Vạn Quỷ Ma Thân does not inherently remove control, corrupt him, impose a duration cap or cause backlash. Huyết Ma Nhị Thập Tứ Trảm completely stops external time and performs exactly 24 strikes before time resumes.",
+  "equipment": "Bound equipment: Huyết Ma Kiếm, Huyết Ma Chiến Khải and Vạn Tàng Giới. Huyết Ma Kiếm and Huyết Ma Chiến Khải can progressively regenerate the existing artifact; regeneration never creates duplicates. Vạn Tàng Giới stores inanimate matter. Phản Bổn restores the same existing artifact to the best state that exact artifact genuinely reached; no copy, create-from-nothing, upgrade beyond history or living storage. After successful Phản Bổn, that same artifact has a one-day-one-night Phản Bổn cooldown; this does not block natural bound-artifact regeneration.",
+  "visual": "R15 visual lock: apparent male around thirty, true age unknown; very long thick black hair in a high ponytail, dark-red eyes and exposed face; black-red Huyết Ma Chiến Khải with blood-red inscriptions; large straight broad black Huyết Ma Kiếm with red inscriptions and Ma Luân.",
+  "backrooms": "Immediately before transition Cao Minh was on Ma Sơn drinking spirit wine with Huyết Ma Kiếm nearby. The ground vanished without a recognized formation, spatial turbulence or warning. He lands in the yellow environment and tests it with divine sense and a demonic mark. He must not know Level names/numbers, Entity identities, rules or origin without valid in-story evidence. Current first priority: investigate local rules and the nature of Backrooms. Returning to his original world is second.",
+  "dialogue": "Speak naturally and completely, often with humor/sarcasm. Do not make Cao Minh constantly say 'bổn tọa', speak like an ancient manual, or use vague pseudo-philosophy to sound profound. With Diệp Minh only an established feud is locked; cause, history, intensity, win-loss balance and outcome remain OPEN.",
+  "gameplay": "R15 internal projection: Huyết Ma Tứ Liên AUTO 30%, exactly 4 hits, 170% weapon damage total, Bleeding 3 combat turns at 5% Max HP per turn, refresh-only. Ma Tâm Trấn Hồn AUTO 20%, exactly 4 hits, 130% weapon damage total, Stun 1 turn scoped to reaction/counterattack of the triggering turn. Huyết Ảnh Ma Độn AUTO 20%, exactly 2 hits, 147% weapon damage total. Thiên Ma Bộ AUTO 30%, +50 percentage points Evasion for 3 combat turns including proc turn, refresh-only, does not automatically null mandatory AoE. AUTO rolls are independent; multiple may proc; successful proc hits without another accuracy/evasion roll. Ultimate priority on combat turn 3 and multiples of 3: Huyết Ma Nhị Thập Tứ Trảm = exactly 24 hits, 10 HP each, Accuracy 200%, ignores Evasion; AUTO skills do not roll on an Ultimate turn."
+};
+
+const LEVEL_NODE_TITLES={
+  "0":"Level 0 : The Lobby",
+  "0.1":"Level 0.1 : Zenith Station",
+  "0.2":"Level 0.2 : Remodeled Mess",
+  "0.5":"Level 0.5 : Aquaclaustrophobic Infirmary",
+  "0.7":"Level 0.7 : The Reminiscence District",
+  "manila_room":"Manila Room",
+  "the_torment":"The Torment",
+  "red_rooms":"Red Rooms",
+  "1":"Level 1 : Parking Zone",
+  "2":"Level 2 : Pipe Dreams",
+  "3":"Level 3 : The Electrical Station",
+  "4":"Level 4 : The Abandoned Office",
+  "5":"Level 5 : Terror Hotel",
+  "6":"Level 6 : Lights Out"
+};
+
+const initial={
+  title:"Level 0 : The Lobby",
+  turn:1,
+  mode:"local APK",
+  currentLevel:0,
+  currentLevelKey:"0",
+  location:"Hành lang vàng nhạt — khu vực chưa xác định",
+  player:{name:"Cao Minh",condition:"Ổn định"},
+  party:[],
+  inventory:[
+    {name:"Huyết Ma Kiếm"},
+    {name:"Huyết Ma Chiến Khải"},
+    {name:"Vạn Tàng Giới"}
+  ],
+  flags:{},
+  characterCanon:CURRENT_CHARACTER_CANON,
+  log:[
+    {role:"gm",text:storyBootMessage}
+  ]
+};
+
+const byId=id=>document.getElementById(id);
+const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
+function normalizeCoreState(value){try{return window.Android&&typeof Android.normalizeState==="function"?JSON.parse(Android.normalizeState(JSON.stringify(value))):value}catch(_){return value}}
+let state=normalizeCoreState(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial);
+let busy=false;
+
+function inferLevelKey(s){
+  const existing=String(s?.currentLevelKey||"").trim();
+  if(existing)return existing;
+  const location=String(s?.location||"").toLowerCase();
+  if(location.includes("manila room"))return "manila_room";
+  if(location.includes("the torment")||/\btorment\b/.test(location))return "the_torment";
+  if(location.includes("red rooms")||location.includes("red room"))return "red_rooms";
+  const m=String(s?.location||"").match(/\bLevel\s*([0-6](?:\.[0-9]+)?)\b/i);
+  if(m)return m[1];
+  return String(Number.isInteger(s?.currentLevel)?s.currentLevel:0);
+}
+function ensureCurrentLevel(s){
+  if(!Number.isInteger(s?.currentLevel)||s.currentLevel<0||s.currentLevel>6){
+    const m=String(s?.location||"").match(/\bLevel\s*([0-6])\b/i);
+    s.currentLevel=m?Number(m[1]):0;
+  }
+  s.currentLevelKey=inferLevelKey(s);
+  return s;
+}
+ensureCurrentLevel(state);
+state.characterCanon=CURRENT_CHARACTER_CANON;
+if(state.turn===1){
+  const currentOpening=String(state.log?.[0]?.text||"");
+  const playerName=String(state.player?.name||"").trim().toLowerCase();
+  const legacyOpening=currentOpening!==initial.log[0].text||playerName.includes("kai")||playerName.includes("twilight");
+  if(legacyOpening){
+    state.title=initial.title;
+    state.currentLevel=initial.currentLevel;
+    state.currentLevelKey=initial.currentLevelKey;
+    state.location=initial.location;
+    state.player=JSON.parse(JSON.stringify(initial.player));
+    state.party=[];
+    state.inventory=JSON.parse(JSON.stringify(initial.inventory));
+    state.flags={};
+    state.log=JSON.parse(JSON.stringify(initial.log));
+    state.characterCanon=CURRENT_CHARACTER_CANON;
+  }
+}
+localStorage.setItem("backroom-apk-state",JSON.stringify(state));
+
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
+function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
+function levelTitle(){const key=String(state?.currentLevelKey||state?.currentLevel||0);return LEVEL_NODE_TITLES[key]||("Level "+key)}
+function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{if(!x)return;const name=typeof x==="string"?x:String(x.name||x.id||"").trim();if(!name)return;const key=name.toLocaleLowerCase("vi");if(seen.has(key))return;seen.add(key);result.push(typeof x==="string"?{name}:x)};add(state?.player||{name:"Cao Minh"});(Array.isArray(state?.party)?state.party:[]).filter(x=>x&&x.joined===true).forEach(add);return result}
+function render(){titleEl.textContent=levelTitle();if(turnEl)turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");statusEl.textContent="Save được lưu riêng trên thiết bị này."}
+function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
+function load(){state=normalizeCoreState(ensureCurrentLevel(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial));state.characterCanon=CURRENT_CHARACTER_CANON;save();render()}
+function freshCoreGame(){const fresh=JSON.parse(JSON.stringify(initial));return window.Android&&typeof Android.startNewGame==="function"?JSON.parse(Android.startNewGame(JSON.stringify(fresh))):fresh}
+function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=freshCoreGame();save();render()}}
+function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=freshCoreGame();render()}}
+formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="GAME MASTER đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
+window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;window.__combatBusy=false;window.__storyDecisionRequestKey="";window.__returnJourneyRequestKey="";submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" · "+levelTitle()+" đã lưu trên máy.";render()};
+window.backroomError=message=>{busy=false;window.__combatBusy=false;submitEl.disabled=false;statusEl.textContent="Lỗi AI: "+message;if(typeof render==="function")render()};
+window.backroomCommittedError=json=>{const payload=JSON.parse(json);state=ensureCurrentLevel(payload.state||state);state.characterCanon=CURRENT_CHARACTER_CANON;busy=false;submitEl.disabled=false;save();render();const pending=Array.isArray(state?.characterEncounter?.pendingIntro)&&state.characterEncounter.pendingIntro.length>0;statusEl.textContent="Lỗi AI: "+String(payload.message||"Không thể xử lý lượt.")+(pending?" Character encounter đã được lưu và hội thoại đang chờ thử lại.":" Trạng thái Core trước lần gọi AI đã được giữ nguyên.")};
+render();
+</script>
+</body>
+</html>

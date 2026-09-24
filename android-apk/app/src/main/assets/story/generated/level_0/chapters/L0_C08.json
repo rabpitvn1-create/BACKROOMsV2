@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "id": "L0_C08",
+  "title": "Level 0 — Chương 08: Những Hố Không Có Đáy",
+  "source": "story/source/level_0/LEVEL0_CH08.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L0_C09",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "355643a00a780b7c77c8143edfde88a41e0772af1bc7787157f97f26954c27a3",
+  "segmentIds": [
+    "L0_C08_S9336b107a568fb43",
+    "L0_C08_S03782bc46ffb05f4",
+    "L0_C08_Sa06ec3ef3264f261",
+    "L0_C08_S58861084a5dbeee1",
+    "L0_C08_S785a179c51717bef"
+  ]
+}

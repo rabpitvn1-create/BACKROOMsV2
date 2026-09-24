@@ -1,0 +1,6 @@
+Backroom 1.1.63 Debug
+- Thêm bộ kỹ năng tự động mới cho Kai: The Last Requiem, Silent Lullaby, Salvation và Quick Step, giữ Guilty Crown Override là kỹ thuật ưu tiên mỗi 3 lượt combat.
+- Thêm bộ kỹ năng gameplay cho Iris với ARGUS Terrain Read, Thousandfold Cognition, Twosome Time, Rain Storm, Honeycomb Fire, Charged Shot, Dead Angle và ARGUS // Thousandfold Execution.
+- Thêm bộ kỹ năng gameplay cho Syvial với Lucifer Core, Killing Intent Read, Rift Sever, Crimson Guillotine, Lucifer Breaker, Counterphase, GodKiller Recall, Devil Trigger, Spatial Dominion và GodKiller Override // Twenty-Four Severance.
+- Thêm nút Kỹ năng trong Character Detail. Danh sách skill mở thành bảng riêng để không làm rối Status, Equipment và Inventory.
+- Đưa Companion Skill Catalog, skill projection và UI contracts vào patch chain cuối để tránh bị các patch Character Detail cũ ghi đè.
