@@ -15,7 +15,9 @@
     "roamingAllLevels": true,
     "canonLevelRestrictionsApplied": false,
     "levelMetadataMeaning": "reference_only_not_runtime_eligibility",
-    "entitySkillProcPolicy": "Each skill rolls independently once per valid Entity response; if none proc, use the normal basic attack."
+    "entitySkillProcPolicy": "Each skill rolls independently once per valid Entity response; if none proc, use the normal basic attack.",
+    "treasureMaximumRatePercent": 4,
+    "treasurePriorityBeforeStandardPool": true
   },
   "entities": [
     {
@@ -481,6 +483,39 @@
           "name": "Crossfire Burst",
           "damagePercent": 120,
           "procPercent": 28
+        }
+      ]
+    },
+    {
+      "key": "tam_ma_cao_minh",
+      "name": "Tâm Ma Cao Minh",
+      "spawnClass": "treasure",
+      "ratePercent": 4,
+      "levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "canon": "A rare hostile mirror-manifestation of Cao Minh. It resembles and echoes Cao Minh but acts as an independent predatory Entity; its exact origin remains unresolved. Treat it as a roaming Treasure Entity, not a resident population.",
+      "autoProcSkills": [
+        {
+          "name": "Tâm Ma Trảm",
+          "damagePercent": 120,
+          "procPercent": 35
+        },
+        {
+          "name": "Huyết Ảnh Phản Kích",
+          "damagePercent": 115,
+          "procPercent": 40
+        },
+        {
+          "name": "Ma Hổ Phệ",
+          "damagePercent": 110,
+          "procPercent": 45
         }
       ]
     }
