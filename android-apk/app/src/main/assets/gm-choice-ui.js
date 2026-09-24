@@ -222,20 +222,63 @@
   }
 
   function storyReturnPending() {
-    return !!(state && state.story && state.story.returnJourneyPending === true);
+    try {
+      var journey = state && state.story && state.story.returnJourney;
+      return !!(journey && journey.active === true);
+    } catch (_) { return false; }
   }
 
-  function submitStoryReturn() {
-    if (!storyReturnPending() || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
-    if (!window.Android || typeof Android.resumeStoryReturn !== 'function') {
-      if (status) status.textContent = 'Không tìm thấy Android story bridge.';
+  function returnJourneyNeedsProvider() {
+    try {
+      var journey = state && state.story && state.story.returnJourney;
+      return storyReturnPending() && String(journey.turnStatus || '') === 'PROVIDER_REQUIRED';
+    } catch (_) { return false; }
+  }
+
+  function returnJourneyReady() {
+    try {
+      var journey = state && state.story && state.story.returnJourney;
+      var pack = journey && journey.turnPackage;
+      return storyReturnPending() && String(journey.turnStatus || '') === 'READY'
+        && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
+    } catch (_) { return false; }
+  }
+
+  function returnJourneyChoices() {
+    try {
+      return returnJourneyReady() ? state.story.returnJourney.turnPackage.choices : [];
+    } catch (_) { return []; }
+  }
+
+  function requestReturnJourneyTurn(force) {
+    if (!returnJourneyNeedsProvider() || window.__combatBusy
+        || (typeof busy !== 'undefined' && busy)) return;
+    var journey = state.story.returnJourney || {};
+    var key = String(journey.journeyId || '') + ':' + String(journey.turnIndex || 0);
+    if (!force && window.__returnJourneyRequestKey === key) return;
+    if (!window.Android || typeof Android.prepareReturnJourneyTurn !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android return journey bridge.';
+      return;
+    }
+    window.__returnJourneyRequestKey = key;
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = 'GAME MASTER đang dựng lượt hiện tại…';
+    Android.prepareReturnJourneyTurn(JSON.stringify(state));
+  }
+
+  function submitReturnJourneyChoice(choice) {
+    if (!choice || !choice.id || !returnJourneyReady() || window.__combatBusy
+        || (typeof busy !== 'undefined' && busy)) return;
+    if (!window.Android || typeof Android.resolveReturnJourneyChoice !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android return journey bridge.';
       return;
     }
     window.__combatBusy = true;
     if (typeof busy !== 'undefined') busy = true;
     if (submit) submit.disabled = true;
-    if (typeof window.render === 'function') window.render();
-    Android.resumeStoryReturn(JSON.stringify(state));
+    Android.resolveReturnJourneyChoice(JSON.stringify(state), String(choice.id));
   }
 
   function storyAwaitingEntityAttack() {
@@ -322,9 +365,34 @@
     } catch (_) { return []; }
   }
 
+  function storyDecisionNeedsProvider() {
+    try {
+      return storyAwaitingDecision() && !storyReturnPending()
+        && String(state.story.decisionStatus || '') === 'PROVIDER_REQUIRED';
+    } catch (_) { return false; }
+  }
+
+  function requestStoryDecision(force) {
+    if (!storyDecisionNeedsProvider() || window.__combatBusy
+        || (typeof busy !== 'undefined' && busy)) return;
+    var key = String(state.story.decisionId || '');
+    if (!force && window.__storyDecisionRequestKey === key) return;
+    if (!window.Android || typeof Android.prepareStoryDecision !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android Story choice bridge.';
+      return;
+    }
+    window.__storyDecisionRequestKey = key;
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (status) status.textContent = 'GAME MASTER đang chuẩn bị ba lựa chọn…';
+    Android.prepareStoryDecision(JSON.stringify(state));
+  }
+
   function storyAdvanceAvailable() {
     var story = state && state.story;
     return !!(story && story.active === true && story.arcComplete !== true
+      && !storyReturnPending()
       && story.segmentDelivered === true && story.awaitingDecision !== true
       && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
       && !(state.combat && state.combat.active));
@@ -438,13 +506,22 @@
     if (latest && storyReturnPending()) {
       var returnBox = document.createElement('div');
       returnBox.className = 'gm-choices story-return';
-      var returnButton = document.createElement('button');
-      returnButton.type = 'button';
-      returnButton.className = 'gm-choice';
-      returnButton.textContent = 'Tiếp tục khám phá';
-      returnButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
-      returnButton.addEventListener('click', submitStoryReturn);
-      returnBox.appendChild(returnButton);
+      if (returnJourneyReady()) {
+        returnJourneyChoices().forEach(function(choice){
+          returnBox.appendChild(makeChoiceButton('', choice.text || '', entry, choice.highlights || [],
+            !!window.__combatBusy || (typeof busy !== 'undefined' && busy), false,
+            function(){ submitReturnJourneyChoice(choice); }));
+        });
+      } else {
+        var retryReturn = document.createElement('button');
+        retryReturn.type = 'button';
+        retryReturn.className = 'gm-choice';
+        retryReturn.textContent = 'Đang chuẩn bị ba hướng đi…';
+        retryReturn.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+        retryReturn.addEventListener('click', function(){ requestReturnJourneyTurn(true); });
+        returnBox.appendChild(retryReturn);
+        if (returnJourneyNeedsProvider()) setTimeout(function(){ requestReturnJourneyTurn(false); }, 0);
+      }
       article.appendChild(returnBox);
       return;
     }
@@ -452,6 +529,20 @@
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
     var decisionReady = awaitingDecision && storyDecisionReady();
+    if (latest && awaitingDecision && !decisionReady && storyDecisionNeedsProvider()) {
+      var preparingBox = document.createElement('div');
+      preparingBox.className = 'gm-choices story-decision-preparing';
+      var preparingButton = document.createElement('button');
+      preparingButton.type = 'button';
+      preparingButton.className = 'gm-choice';
+      preparingButton.textContent = 'Đang chuẩn bị ba lựa chọn…';
+      preparingButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+      preparingButton.addEventListener('click', function(){ requestStoryDecision(true); });
+      preparingBox.appendChild(preparingButton);
+      article.appendChild(preparingBox);
+      setTimeout(function(){ requestStoryDecision(false); }, 0);
+      return;
+    }
     var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision && !awaitingEntity;
 
     var choices = [];
@@ -553,7 +644,7 @@
   function syncComposer() {
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
-    var storyLocked = storyAwaitingDecision() || storyAwaitingEntityAttack()
+    var storyLocked = storyReturnPending() || storyAwaitingDecision() || storyAwaitingEntityAttack()
       || storyPendingAdvance() || storyCutawayActive() || storyHandoffPending()
       || storyAdvanceAvailable();
     form.classList.toggle('battle-locked', combat || storyLocked);
