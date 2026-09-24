@@ -4,7 +4,7 @@
     {
       "storyId": "level_0_main",
       "levelKey": "0",
-      "sourceRevision": "level0-final-2026-09-23-offline-decisions-r1",
+      "sourceRevision": "level0-return-journey-r2",
       "sourceRoot": "story/source/level_0",
       "annotations": "story/source/level_0/arc.source.json",
       "generatedRoot": "story/generated/level_0"
@@ -12,7 +12,7 @@
     {
       "storyId": "level_0_1_zenith_station",
       "levelKey": "0.1",
-      "sourceRevision": "zenith-station-r1-offline-decisions-r1",
+      "sourceRevision": "zenith-return-journey-r2",
       "sourceRoot": "story/source/level_0_1",
       "annotations": "story/source/level_0_1/arc.source.json",
       "generatedRoot": "story/generated/level_0_1"
