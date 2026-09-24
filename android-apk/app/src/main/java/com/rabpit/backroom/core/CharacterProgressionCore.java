@@ -27,7 +27,7 @@ final class CharacterProgressionCore {
   static final int STORY_PROGRESS_BASE_CORE = 5;
 
   private static final double CORE_STAGE_MULTIPLIER = 1.5d;
-  private static final String TREASURE_FIRST_KILLS_KEY = "treasureEntityFirstKills";
+  private static final String TREASURE_STAGE_KILLS_KEY = "treasureEntityStageKills";
   private static final String[] STAT_KEYS = {"STR", "DEF", "SKL", "VIT"};
 
   void normalizeState(JSONObject state) throws Exception {
@@ -181,22 +181,29 @@ final class CharacterProgressionCore {
     return granted;
   }
 
-  int rewardTreasureEntityVictory(JSONObject state, String rawEntityKey, int firstKillReward,
-                                  int repeatKillReward) throws Exception {
+  int rewardTreasureEntityVictory(JSONObject state, String rawEntityKey, int stageIndex,
+                                  int firstKillReward, int repeatKillReward) throws Exception {
     normalizeState(state);
     String entityKey = rawEntityKey == null ? "" : rawEntityKey.trim().toLowerCase(Locale.ROOT);
     if (entityKey.isEmpty()) throw new IllegalArgumentException("entity key is required");
+    int normalizedStage = Math.max(0, stageIndex);
+    String stageKey = String.valueOf(normalizedStage);
 
     JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
-    JSONObject firstKills = resource.optJSONObject(TREASURE_FIRST_KILLS_KEY);
-    if (firstKills == null) {
-      firstKills = new JSONObject();
-      resource.put(TREASURE_FIRST_KILLS_KEY, firstKills);
+    JSONObject entityStages = resource.optJSONObject(TREASURE_STAGE_KILLS_KEY);
+    if (entityStages == null) {
+      entityStages = new JSONObject();
+      resource.put(TREASURE_STAGE_KILLS_KEY, entityStages);
+    }
+    JSONObject clearedStages = entityStages.optJSONObject(entityKey);
+    if (clearedStages == null) {
+      clearedStages = new JSONObject();
+      entityStages.put(entityKey, clearedStages);
     }
 
-    boolean firstKill = !firstKills.optBoolean(entityKey, false);
-    int reward = Math.max(0, firstKill ? firstKillReward : repeatKillReward);
-    if (firstKill) firstKills.put(entityKey, true);
+    boolean firstKillForStage = !clearedStages.optBoolean(stageKey, false);
+    int reward = Math.max(0, firstKillForStage ? firstKillReward : repeatKillReward);
+    if (firstKillForStage) clearedStages.put(stageKey, true);
     grantCore(state, reward);
     return reward;
   }
