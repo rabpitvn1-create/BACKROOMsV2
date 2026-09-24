@@ -462,10 +462,22 @@ public class OfflineStoryLoopTest {
 
     assertTrue(ui.contains("function allowSingleAutomaticProviderRetry()"));
     assertTrue(ui.contains("window.__storyDecisionRetryKey !== decisionKey"));
-    assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey = decisionKey;"));
     assertTrue(ui.contains("window.__storyDecisionRequestKey = '';"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey = returnKey;"));
     assertTrue(ui.contains("window.__returnJourneyRequestKey = '';"));
-    assertTrue(ui.contains("allowSingleAutomaticProviderRetry();"));
+    assertTrue(ui.contains("preparingButton.addEventListener('click', function(){ requestStoryDecision(true); });"));
+    assertTrue(ui.contains("retryReturn.addEventListener('click', function(){ requestReturnJourneyTurn(true); });"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey = '';"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey = '';"));
+
+    int errorHandler = ui.indexOf("window.backroomError = function(message)");
+    int retry = ui.indexOf("allowSingleAutomaticProviderRetry();", errorHandler);
+    int previousError = ui.indexOf("previousError(message)", errorHandler);
+    assertTrue(errorHandler >= 0);
+    assertTrue(retry > errorHandler);
+    assertTrue(previousError > retry);
   }
 
   @Test public void providerProseCannotExposeLoopMechanicsOrReplayLongAuthoredText() {
