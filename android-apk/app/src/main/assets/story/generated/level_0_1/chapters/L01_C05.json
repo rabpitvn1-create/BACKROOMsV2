@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C05",
+  "title": "Level 0.1 — Chương 05: Nơi Lạnh Không Có Gió",
+  "source": "story/source/level_0_1/LEVEL0.1_CH05_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C06",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "3f4730df0a80e2d6b049b54f702462a827d85e670cd38d198039d894e984acb7",
+  "segmentIds": [
+    "L01_C05_Sf6863cf7579aeaa8",
+    "L01_C05_S95befc4407bf28ff",
+    "L01_C05_Sc6809957ad472b23",
+    "L01_C05_Sb50716be58dd0886",
+    "L01_C05_S2129e8268881a15e",
+    "L01_C05_S02e23123d3769100",
+    "L01_C05_Sd334af01060beae1"
+  ]
+}

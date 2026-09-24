@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C07",
+  "title": "Level 0.1 — Chương 07: Nhịp Máy Sau Vách",
+  "source": "story/source/level_0_1/LEVEL0.1_CH07_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C08",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "c1f1dc6788f4652be2f0ffcc4ddff3770b421844dad28b52ae6ced00273d14b0",
+  "segmentIds": [
+    "L01_C07_Sbfcd4c3507eddc2d",
+    "L01_C07_S2f328973a08bd531",
+    "L01_C07_S53f3cbada70115b8",
+    "L01_C07_Sdba608fe95082b94",
+    "L01_C07_S3e3692a19806ef00",
+    "L01_C07_S244172190ebd6b19",
+    "L01_C07_Scaf7f5d950e70b80"
+  ]
+}

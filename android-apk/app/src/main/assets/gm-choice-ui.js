@@ -258,6 +258,31 @@
     Android.submitTurn(JSON.stringify(state), 'tiếp tục cốt truyện');
   }
 
+  function storyHandoffPending() {
+    try {
+      var story = state && state.story;
+      var route = state && state.levelRoute;
+      return !!(story && story.active === true && story.arcComplete === true
+        && route && route.storyExitReady === true
+        && story.awaitingDecision !== true && story.awaitingEntityAttack !== true
+        && story.pendingStoryAdvance !== true
+        && !(state.combat && state.combat.active));
+    } catch (_) { return false; }
+  }
+
+  function submitStoryHandoff() {
+    if (!storyHandoffPending() || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
+    if (!window.Android || typeof Android.submitTurn !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (typeof window.render === 'function') window.render();
+    Android.submitTurn(JSON.stringify(state), 'tiếp tục cốt truyện');
+  }
+
   function storyEntityAttackChoice() {
     if (!storyAwaitingEntityAttack()) return null;
     var gate = state.story && state.story.entityGate ? state.story.entityGate : {};
@@ -384,6 +409,19 @@
       article.appendChild(bootstrapBox);
       return;
     }
+    if (latest && storyHandoffPending()) {
+      var handoffBox = document.createElement('div');
+      handoffBox.className = 'gm-choices story-handoff';
+      var handoffButton = document.createElement('button');
+      handoffButton.type = 'button';
+      handoffButton.className = 'gm-choice';
+      handoffButton.textContent = 'Tiếp tục qua ranh giới';
+      handoffButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+      handoffButton.addEventListener('click', submitStoryHandoff);
+      handoffBox.appendChild(handoffButton);
+      article.appendChild(handoffBox);
+      return;
+    }
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
@@ -492,7 +530,7 @@
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
     var storyLocked = storyAwaitingDecision() || storyAwaitingEntityAttack()
-      || storyPendingAdvance() || storyCutawayActive();
+      || storyPendingAdvance() || storyCutawayActive() || storyHandoffPending();
     form.classList.toggle('battle-locked', combat || storyLocked);
     action.disabled = combat || storyLocked;
     action.readOnly = combat || storyLocked;
@@ -508,7 +546,9 @@
             ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
             : (storyPendingAdvance()
                 ? 'Đang chờ kết quả cuối turn trước khi mở turn kế.'
-                : 'Đang ở đoạn cắt cảnh cốt truyện.'));
+                : (storyHandoffPending()
+                    ? 'Ranh giới cốt truyện đã sẵn sàng. Chọn nút Tiếp tục qua ranh giới.'
+                    : 'Đang ở đoạn cắt cảnh cốt truyện.')));
       submit.disabled = true;
     } else {
       action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';

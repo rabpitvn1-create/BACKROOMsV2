@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C20",
+  "title": "Level 0 — Chương 20: Không Bỏ Lại",
+  "source": "story/source/level_0/LEVEL0_CH20.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C21",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "3d2d7026a1dc1f4d56dae3bc2f20580160de478f4bd476be34cee4df730a9901",
+  "segmentIds": [
+    "L0_C20_S899163c7e89182c6",
+    "L0_C20_S1466bd2e1022a1ae",
+    "L0_C20_S21b26a3a53c33982",
+    "L0_C20_Se22ff7a685371ad6",
+    "L0_C20_Sb47ddbf4476fdf09",
+    "L0_C20_S732de73b92b7a4b6"
+  ]
+}

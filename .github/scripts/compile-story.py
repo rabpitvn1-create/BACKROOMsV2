@@ -14,11 +14,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 STORY_ROOT = ROOT / "android-apk/app/src/main/assets/story"
-METADATA_PATH = STORY_ROOT / "generated/level_0/level0.story.json"
-OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"
+METADATA_PATH = STORY_ROOT / "generated/level_0/level0.story.json"  # legacy fixture only
+OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"  # legacy fixture only
+SOURCE_CATALOG_PATH = STORY_ROOT / "source/story_catalog.source.json"
+GENERATED_CATALOG_PATH = STORY_ROOT / "generated/story_catalog.json"
 
 SCHEMA_VERSION = 3
 COMPILER_VERSION = 3
+ARTIFACT_SCHEMA_VERSION = 2
+INTERACTION_SCHEMA_VERSION = 4
+COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-decisions-v3-events-v1"
 VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "ENTITY_GATE"}
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
@@ -59,6 +64,8 @@ def java_len(text):
 
 
 def canonical_source(text):
+    if text.startswith("\ufeff"):
+        text = text[1:]
     return text.replace("\r\n", "\n").replace("\r", "\n").strip() + "\n"
 
 
@@ -67,7 +74,7 @@ def source_digest(text):
 
 
 def split_markdown(markdown, target_chars, max_chars):
-    source = markdown.replace("\r\n", "\n").replace("\r", "\n").strip()
+    source = canonical_source(markdown).strip()
     if not source:
         return []
     paragraphs = []
@@ -98,8 +105,9 @@ def split_markdown(markdown, target_chars, max_chars):
 
 
 def compiler_fingerprint():
-    source = Path(__file__).read_bytes()
-    return hashlib.sha256(source).hexdigest()
+    # Artifact compatibility is semantic. An implementation-only refactor must
+    # not invalidate every installed story pack.
+    return hashlib.sha256(COMPILER_SEMANTICS.encode("utf-8")).hexdigest()
 
 
 def existing_output_is_current(metadata):
@@ -905,18 +913,425 @@ def validate_generated(generated=None, metadata=None):
     print("[story-compiler] generated turn loop validated: every player story turn has a decision or authored Entity gate.")
 
 
+
+def atomic_write_json(path, payload):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    temporary.replace(path)
+
+
+def read_source_catalog():
+    if not SOURCE_CATALOG_PATH.is_file():
+        raise CompileError("Missing story/source/story_catalog.source.json")
+    catalog = json.loads(SOURCE_CATALOG_PATH.read_text(encoding="utf-8"))
+    if catalog.get("schemaVersion") != 1:
+        raise CompileError("Unsupported source catalog schemaVersion.")
+    stories = catalog.get("stories")
+    if not isinstance(stories, list):
+        raise CompileError("Source catalog stories must be an array.")
+    seen_story = set()
+    seen_level = set()
+    seen_generated = set()
+    for entry in stories:
+        story_id = str(entry.get("storyId", "")).strip()
+        level_key = str(entry.get("levelKey", "")).strip()
+        generated_root = str(entry.get("generatedRoot", "")).strip()
+        if not story_id or not level_key or not generated_root:
+            raise CompileError("Every source catalog entry requires storyId, levelKey and generatedRoot.")
+        if story_id in seen_story or level_key in seen_level or generated_root in seen_generated:
+            raise CompileError("Duplicate storyId, levelKey or generatedRoot in source catalog.")
+        if not generated_root.startswith("story/generated/"):
+            raise CompileError("Unsafe generatedRoot: " + generated_root)
+        seen_story.add(story_id)
+        seen_level.add(level_key)
+        seen_generated.add(generated_root)
+    return catalog
+
+
+def source_asset_path(raw):
+    raw = str(raw or "").strip()
+    if not raw.startswith("story/"):
+        raise CompileError("Unsafe story asset path: " + raw)
+    return STORY_ROOT / raw[len("story/"):]
+
+
+def read_arc_source(entry):
+    annotation_path = source_asset_path(entry.get("annotations"))
+    if not annotation_path.is_file():
+        raise CompileError("Missing arc annotations: " + str(entry.get("annotations")))
+    arc = json.loads(annotation_path.read_text(encoding="utf-8"))
+    for key in ("storyId", "levelKey", "sourceRevision"):
+        if str(arc.get(key, "")) != str(entry.get(key, "")):
+            raise CompileError("Catalog/annotation identity mismatch for " + key + ": " + str(entry.get("storyId")))
+    if arc.get("schemaVersion") != 1:
+        raise CompileError("Unsupported arc annotation schemaVersion: " + str(entry.get("storyId")))
+    chapters = arc.get("chapters")
+    if not isinstance(chapters, list) or not chapters:
+        raise CompileError("Arc has no chapters: " + str(entry.get("storyId")))
+    start = str(arc.get("startChapter", "")).strip()
+    ids = [str(ch.get("id", "")).strip() for ch in chapters]
+    if not start or start not in ids or any(not value for value in ids) or len(ids) != len(set(ids)):
+        raise CompileError("Invalid or duplicate chapter ids for " + str(entry.get("storyId")))
+    sources = [str(ch.get("source", "")).strip() for ch in chapters]
+    if len(sources) != len(set(sources)):
+        raise CompileError("Duplicate chapter source path for " + str(entry.get("storyId")))
+    for chapter in chapters:
+        if chapter.get("segmentIndex") is not None or chapter.get("authoredEntityEncounters"):
+            raise CompileError("Hand-written segment indexes/entity gates are forbidden; use a unique text anchor.")
+        if chapter.get("visibility") not in ("player", "cutaway"):
+            raise CompileError("Unsupported visibility for " + str(chapter.get("id")))
+        if not str(chapter.get("thread", "")).strip():
+            raise CompileError("Missing thread for " + str(chapter.get("id")))
+        source = source_asset_path(chapter.get("source"))
+        if not source.is_file():
+            raise CompileError("Missing manuscript source: " + str(chapter.get("source")))
+        for event in chapter.get("events") or []:
+            if event.get("segmentIndex") is not None:
+                raise CompileError("Hand-written segmentIndex is forbidden in " + str(chapter.get("id")))
+            event_type = str(event.get("type", "")).upper()
+            if event_type == "LEVEL_TRANSITION":
+                raise CompileError("Story events must not own Level destinations.")
+            forbidden_keys = {"destination", "targetLevel", "targetLevelKey", "nextLevel", "toLevel"}
+            if any(key in event for key in forbidden_keys):
+                raise CompileError("Story event carries a forbidden Level destination in " + str(chapter.get("id")))
+    return arc
+
+
+def stable_segments(chapter_id, manuscript, target, maximum):
+    blocks = split_markdown(manuscript, target, maximum)
+    if not blocks:
+        raise CompileError(chapter_id + ": manuscript produced no segments.")
+    seen = {}
+    segments = []
+    for text_value in blocks:
+        digest = hashlib.sha256(text_value.encode("utf-8")).hexdigest()[:16]
+        occurrence = seen.get(digest, 0) + 1
+        seen[digest] = occurrence
+        suffix = "" if occurrence == 1 else "_R" + str(occurrence)
+        segments.append({"id": chapter_id + "_S" + digest + suffix, "text": text_value})
+    return segments
+
+
+def chapter_title(manuscript, fallback):
+    source = canonical_source(manuscript)
+    first = source.split("\n", 1)[0].strip()
+    if first.startswith("# "):
+        return first[2:].strip()
+    return fallback
+
+
+def resolved_events(chapter, manuscript, segments):
+    enter = []
+    exit_events = []
+    after = {}
+    canonical = canonical_source(manuscript)
+    for raw in chapter.get("events") or []:
+        event = dict(raw)
+        when = str(event.pop("when", "")).upper()
+        anchor = str(event.pop("anchor", ""))
+        if when == "ENTER":
+            enter.append(event)
+        elif when == "EXIT":
+            exit_events.append(event)
+        elif when == "AFTER_TEXT":
+            if not anchor:
+                raise CompileError(chapter["id"] + ": AFTER_TEXT requires anchor.")
+            count = canonical.count(anchor)
+            if count != 1:
+                raise CompileError(chapter["id"] + ": AFTER_TEXT anchor must occur exactly once; got " + str(count))
+            matches = [item["id"] for item in segments if anchor in item["text"]]
+            if len(matches) != 1:
+                raise CompileError(chapter["id"] + ": anchor crossed/failed segment resolution.")
+            after.setdefault(matches[0], []).append(event)
+        else:
+            raise CompileError(chapter["id"] + ": unsupported event timing " + when)
+    return enter, exit_events, after
+
+
+def prepare_story(entry):
+    arc = read_arc_source(entry)
+    source_revision = str(entry["sourceRevision"])
+    target = max(800, int(arc.get("segmentTargetChars", 1900)))
+    maximum = max(target, int(arc.get("segmentMaxChars", 2400)))
+    prepared = []
+    raw_chapters = arc["chapters"]
+    for index, raw in enumerate(raw_chapters):
+        chapter = dict(raw)
+        chapter_id = str(chapter["id"])
+        manuscript_path = source_asset_path(chapter["source"])
+        manuscript = manuscript_path.read_text(encoding="utf-8")
+        segments = stable_segments(chapter_id, manuscript, target, maximum)
+        enter, exit_events, after = resolved_events(chapter, manuscript, segments)
+        next_id = str(raw_chapters[index + 1]["id"]) if index + 1 < len(raw_chapters) else ""
+        runtime = {
+            "id": chapter_id,
+            "title": chapter_title(manuscript, chapter_id),
+            "source": chapter["source"],
+            "thread": chapter["thread"],
+            "visibility": chapter["visibility"],
+            "nextChapter": next_id,
+            "eventsOnEnter": enter,
+            "eventsOnExit": exit_events,
+            "eventsAfterSegment": after,
+            "requiredFacts": chapter.get("requiredFacts") or [],
+            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
+        }
+        prepared.append({
+            "runtime": runtime,
+            "manuscript": manuscript,
+            "segments": segments,
+            "sourceDigest": source_digest(manuscript),
+        })
+    return arc, prepared, target, maximum
+
+
+def compile_prepared_chapter(entry, prepared):
+    chapter = prepared["runtime"]
+    segments = prepared["segments"]
+    if chapter.get("visibility") == "cutaway":
+        compiled = compile_cutaway(chapter, segments)
+        provider = "deterministic-cutaway"
+    else:
+        compiled = compile_player_turns(chapter, segments)
+        provider = "deterministic-turn-loop-v3"
+    interaction = {
+        "schemaVersion": INTERACTION_SCHEMA_VERSION,
+        "storyId": entry["storyId"],
+        "levelKey": entry["levelKey"],
+        "sourceRevision": entry["sourceRevision"],
+        "compilerFingerprint": compiler_fingerprint(),
+        "chapterId": chapter["id"],
+        "source": chapter["source"],
+        "sourceDigest": prepared["sourceDigest"],
+        "segmentIds": [segment["id"] for segment in segments],
+        "provider": provider,
+        "segments": compiled,
+    }
+    metadata = {
+        "schemaVersion": ARTIFACT_SCHEMA_VERSION,
+        "storyId": entry["storyId"],
+        "levelKey": entry["levelKey"],
+        "sourceRevision": entry["sourceRevision"],
+        "compilerFingerprint": compiler_fingerprint(),
+        **chapter,
+        "sourceDigest": prepared["sourceDigest"],
+        "segmentIds": [segment["id"] for segment in segments],
+    }
+    return metadata, interaction
+
+
+def generated_paths(entry, chapter_id):
+    root = source_asset_path(entry["generatedRoot"])
+    return (
+        root / "arc.json",
+        root / "chapters" / (chapter_id + ".json"),
+        root / "interactions" / (chapter_id + ".json"),
+    )
+
+
+def write_generated_catalog(catalog):
+    levels = {}
+    for entry in catalog["stories"]:
+        levels[str(entry["levelKey"])] = {
+            "storyId": entry["storyId"],
+            "metadata": entry["generatedRoot"] + "/arc.json",
+        }
+    atomic_write_json(GENERATED_CATALOG_PATH, {
+        "schemaVersion": ARTIFACT_SCHEMA_VERSION,
+        "compilerFingerprint": compiler_fingerprint(),
+        "levels": levels,
+    })
+
+
+def write_arc_index(entry, arc, prepared):
+    chapters = []
+    for item in prepared:
+        chapter = item["runtime"]
+        chapters.append({
+            "id": chapter["id"],
+            "metadata": entry["generatedRoot"] + "/chapters/" + chapter["id"] + ".json",
+            "interactions": entry["generatedRoot"] + "/interactions/" + chapter["id"] + ".json",
+            "source": chapter["source"],
+            "thread": chapter["thread"],
+            "visibility": chapter["visibility"],
+            "nextChapter": chapter["nextChapter"],
+        })
+    arc_path = source_asset_path(entry["generatedRoot"]) / "arc.json"
+    atomic_write_json(arc_path, {
+        "schemaVersion": ARTIFACT_SCHEMA_VERSION,
+        "storyId": entry["storyId"],
+        "levelKey": entry["levelKey"],
+        "sourceRevision": entry["sourceRevision"],
+        "compilerFingerprint": compiler_fingerprint(),
+        "startChapter": arc["startChapter"],
+        "chapterCount": len(chapters),
+        "chapters": chapters,
+    })
+
+
+def impacted_selection(catalog, story_ids, changed_paths, force_all):
+    entries = {entry["storyId"]: entry for entry in catalog["stories"]}
+    if story_ids:
+        unknown = sorted(set(story_ids) - set(entries))
+        if unknown:
+            raise CompileError("Unknown storyId(s): " + ", ".join(unknown))
+        return {story_id: None for story_id in story_ids}
+    if force_all or not changed_paths:
+        return {story_id: None for story_id in entries}
+
+    normalized = {path.replace("\\", "/").lstrip("./") for path in changed_paths if path.strip()}
+    wide_prefixes = (
+        ".github/scripts/compile-story.py",
+        "android-apk/app/src/main/assets/story/source/schema/",
+        "android-apk/app/src/main/assets/story/source/story_catalog.source.json",
+    )
+    if any(path == wide_prefixes[0] or path.startswith(wide_prefixes[1]) or path == wide_prefixes[2]
+           for path in normalized):
+        return {story_id: None for story_id in entries}
+
+    selected = {}
+    for story_id, entry in entries.items():
+        annotation_repo = "android-apk/app/src/main/assets/" + entry["annotations"]
+        source_root_repo = "android-apk/app/src/main/assets/" + entry["sourceRoot"].rstrip("/") + "/"
+        if annotation_repo in normalized:
+            selected[story_id] = None
+            continue
+        chapter_ids = set()
+        arc = read_arc_source(entry)
+        source_to_id = {
+            "android-apk/app/src/main/assets/" + str(ch["source"]): str(ch["id"])
+            for ch in arc["chapters"]
+        }
+        for path in normalized:
+            if path in source_to_id:
+                chapter_ids.add(source_to_id[path])
+            elif path.startswith(source_root_repo):
+                selected[story_id] = None
+                chapter_ids.clear()
+                break
+        if story_id not in selected and chapter_ids:
+            selected[story_id] = chapter_ids
+    return selected
+
+
+def compile_v2(selection, catalog):
+    write_generated_catalog(catalog)
+    entries = {entry["storyId"]: entry for entry in catalog["stories"]}
+    for story_id, chapter_filter in selection.items():
+        entry = entries[story_id]
+        arc, prepared, _, _ = prepare_story(entry)
+        write_arc_index(entry, arc, prepared)
+        selected = prepared if chapter_filter is None else [
+            item for item in prepared if item["runtime"]["id"] in chapter_filter
+        ]
+        max_workers = max(1, min(4, int(os.environ.get("STORY_COMPILER_WORKERS", "4"))))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                item["runtime"]["id"]: executor.submit(compile_prepared_chapter, entry, item)
+                for item in selected
+            }
+            by_id = {chapter_id: future.result() for chapter_id, future in futures.items()}
+        for item in selected:
+            chapter_id = item["runtime"]["id"]
+            metadata, interaction = by_id[chapter_id]
+            _, metadata_path, interaction_path = generated_paths(entry, chapter_id)
+            atomic_write_json(metadata_path, metadata)
+            atomic_write_json(interaction_path, interaction)
+            print("[story-compiler] {0}/{1}: {2} stable segments".format(
+                story_id, chapter_id, len(item["segments"])))
+
+
+def validate_v2(selection, catalog):
+    generated_catalog = json.loads(GENERATED_CATALOG_PATH.read_text(encoding="utf-8"))
+    if generated_catalog.get("schemaVersion") != ARTIFACT_SCHEMA_VERSION:
+        raise CompileError("Generated catalog schemaVersion mismatch.")
+    if generated_catalog.get("compilerFingerprint") != compiler_fingerprint():
+        raise CompileError("Generated catalog compilerFingerprint mismatch.")
+    entries = {entry["storyId"]: entry for entry in catalog["stories"]}
+    for entry in catalog["stories"]:
+        mapped = (generated_catalog.get("levels") or {}).get(str(entry["levelKey"])) or {}
+        if mapped.get("storyId") != entry["storyId"] or mapped.get("metadata") != entry["generatedRoot"] + "/arc.json":
+            raise CompileError("Generated catalog mapping mismatch for level " + str(entry["levelKey"]))
+
+    for story_id, chapter_filter in selection.items():
+        entry = entries[story_id]
+        arc, prepared, _, _ = prepare_story(entry)
+        arc_path = source_asset_path(entry["generatedRoot"]) / "arc.json"
+        generated_arc = json.loads(arc_path.read_text(encoding="utf-8"))
+        if generated_arc.get("storyId") != story_id or generated_arc.get("levelKey") != entry["levelKey"]:
+            raise CompileError(story_id + ": generated arc identity mismatch.")
+        if generated_arc.get("sourceRevision") != entry["sourceRevision"]:
+            raise CompileError(story_id + ": generated arc sourceRevision mismatch.")
+        expected_order = [item["runtime"]["id"] for item in prepared]
+        actual_order = [str(ch.get("id")) for ch in generated_arc.get("chapters") or []]
+        if expected_order != actual_order:
+            raise CompileError(story_id + ": generated arc chapter order mismatch.")
+        selected = prepared if chapter_filter is None else [
+            item for item in prepared if item["runtime"]["id"] in chapter_filter
+        ]
+        for item in selected:
+            chapter_id = item["runtime"]["id"]
+            _, metadata_path, interaction_path = generated_paths(entry, chapter_id)
+            if not metadata_path.is_file() or not interaction_path.is_file():
+                raise CompileError(story_id + "/" + chapter_id + ": missing generated artifact.")
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            interaction = json.loads(interaction_path.read_text(encoding="utf-8"))
+            expected_ids = [segment["id"] for segment in item["segments"]]
+            for payload, label, schema in (
+                    (metadata, "metadata", ARTIFACT_SCHEMA_VERSION),
+                    (interaction, "interactions", INTERACTION_SCHEMA_VERSION)):
+                if payload.get("schemaVersion") != schema:
+                    raise CompileError(chapter_id + ": " + label + " schemaVersion mismatch.")
+                if payload.get("sourceRevision") != entry["sourceRevision"]:
+                    raise CompileError(chapter_id + ": " + label + " sourceRevision mismatch.")
+                if payload.get("sourceDigest") != item["sourceDigest"]:
+                    raise CompileError(chapter_id + ": " + label + " sourceDigest mismatch.")
+                if payload.get("compilerFingerprint") != compiler_fingerprint():
+                    raise CompileError(chapter_id + ": " + label + " compilerFingerprint mismatch.")
+                if payload.get("segmentIds") != expected_ids:
+                    raise CompileError(chapter_id + ": " + label + " segment set/order mismatch.")
+            segments = interaction.get("segments")
+            if not isinstance(segments, dict) or list(segments.keys()) != expected_ids:
+                raise CompileError(chapter_id + ": interaction segment order mismatch.")
+            for segment_id in expected_ids:
+                spec = segments[segment_id]
+                if spec.get("mode") not in VALID_MODES or not isinstance(spec.get("decisionContract"), dict):
+                    raise CompileError(segment_id + ": invalid interaction contract.")
+    print("[story-compiler] generated multi-arc artifacts validated.")
+
+
+def load_changed_paths(args):
+    values = list(args.changed_path or [])
+    if args.changed_file_list:
+        path = Path(args.changed_file_list)
+        if path.is_file():
+            values.extend(line.strip() for line in path.read_text(encoding="utf-8").splitlines())
+    return [value for value in values if value]
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Compile novelist manuscript into mandatory per-turn story decisions.")
-    parser.add_argument("--validate-generated", action="store_true",
-                        help="Validate mandatory per-turn story decisions without calling any model.")
+    parser = argparse.ArgumentParser(description="Compile every authored story arc through one generic compiler.")
+    parser.add_argument("--story-id", action="append", default=[])
+    parser.add_argument("--changed-path", action="append", default=[])
+    parser.add_argument("--changed-file-list")
+    parser.add_argument("--all", action="store_true")
+    parser.add_argument("--validate-generated", action="store_true")
     args = parser.parse_args()
     try:
+        catalog = read_source_catalog()
+        changed = load_changed_paths(args)
+        selection = impacted_selection(catalog, args.story_id, changed, args.all)
+        if not selection:
+            print("[story-compiler] no authored story affected by this change set.")
+            return 0
         if args.validate_generated:
-            validate_generated()
+            validate_v2(selection, catalog)
         else:
-            compile_story()
+            compile_v2(selection, catalog)
+            validate_v2(selection, catalog)
     except Exception as exc:
-        print(f"[story-compiler] ERROR: {exc}", file=sys.stderr)
+        print("[story-compiler] ERROR: " + str(exc), file=sys.stderr)
         return 1
     return 0
 

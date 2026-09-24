@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "chapterId": "L0_C03",
+  "source": "story/source/level_0/LEVEL0_CH03.md",
+  "sourceDigest": "b655a5d1dd146392c4329d50768c0aa3d58e2473cb73b23fdeff4cb923e72827",
+  "segmentIds": [
+    "L0_C03_S432f20f7b2d6cf9e",
+    "L0_C03_S4dcdab6f1df58d36",
+    "L0_C03_Sb6715b66406bb211",
+    "L0_C03_Sc94022f1e25f7f5a",
+    "L0_C03_S5631d49bb01ce92c"
+  ],
+  "provider": "deterministic-cutaway",
+  "segments": {
+    "L0_C03_S432f20f7b2d6cf9e": {
+      "mode": "CUTAWAY",
+      "decisionContract": {}
+    },
+    "L0_C03_S4dcdab6f1df58d36": {
+      "mode": "CUTAWAY",
+      "decisionContract": {}
+    },
+    "L0_C03_Sb6715b66406bb211": {
+      "mode": "CUTAWAY",
+      "decisionContract": {}
+    },
+    "L0_C03_Sc94022f1e25f7f5a": {
+      "mode": "CUTAWAY",
+      "decisionContract": {}
+    },
+    "L0_C03_S5631d49bb01ce92c": {
+      "mode": "CUTAWAY",
+      "decisionContract": {}
+    }
+  }
+}

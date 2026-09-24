@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C17",
+  "title": "Level 0 — Chương 17: Căn Phòng Nhớ Sai",
+  "source": "story/source/level_0/LEVEL0_CH17.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C18",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "STORY_FLAG_SET",
+      "key": "memory_like_room_observed",
+      "value": true
+    }
+  ],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [
+    "Do not claim the room definitely reads minds or memories; the source keeps the mechanism uncertain."
+  ],
+  "sourceDigest": "cb3f99bc36ba3358f04ac83ef35d3bea0256127cd44039a9421a9ce48ac80d0a",
+  "segmentIds": [
+    "L0_C17_S692792c04518f400",
+    "L0_C17_S1d62881c481498be",
+    "L0_C17_S17f48af3efbf6264",
+    "L0_C17_Sfb9c3dc7a435230c",
+    "L0_C17_Scb9219c938335620"
+  ]
+}

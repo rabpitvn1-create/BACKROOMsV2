@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "chapterId": "L0_C30",
+  "source": "story/source/level_0/LEVEL0_CH30.md",
+  "sourceDigest": "3c2ff8cdfbb86278e62771d2605cfdd6465c28478a9b7eebcc2f1d9acb357d46",
+  "segmentIds": [
+    "L0_C30_S3dbf7ea00eb922c5",
+    "L0_C30_S782052a11e5fe9d4",
+    "L0_C30_Sa1dd608886a954ea",
+    "L0_C30_Sd7b682b95c3e3168",
+    "L0_C30_S93f5be5f92fc8a8c"
+  ],
+  "provider": "deterministic-turn-loop-v3",
+  "segments": {
+    "L0_C30_S3dbf7ea00eb922c5": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L0_C30_S3dbf7ea00eb922c5",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L0_C30_S782052a11e5fe9d4": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L0_C30_S782052a11e5fe9d4",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L0_C30_Sa1dd608886a954ea": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L0_C30_Sa1dd608886a954ea",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L0_C30_Sd7b682b95c3e3168": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L0_C30_Sd7b682b95c3e3168",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L0_C30_S93f5be5f92fc8a8c": {
+      "mode": "LINEAR",
+      "decisionContract": {}
+    }
+  }
+}

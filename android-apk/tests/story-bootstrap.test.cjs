@@ -35,6 +35,8 @@ function context(state) {
   vm.createContext(ctx);
   vm.runInContext([functionSource(gm,'storyBootstrapPending'),
     functionSource(gm,'submitStoryBootstrap'),
+    functionSource(gm,'storyHandoffPending'),
+    functionSource(gm,'submitStoryHandoff'),
     functionSource(gm,'appendExplorerChoices')].join('\n'), ctx);
   return {ctx,submissions};
 }
@@ -73,3 +75,21 @@ test('CTA disappears once Turn 1 is delivered and cannot bypass another story ga
   assert.match(player,/openButton\.disabled = locked/);
   assert.match(player,/storyBootstrapPending\(\) \|\| storyCutawayActive\(\)/);
 });
+
+test('arc boundary exposes one handoff CTA instead of random explorer choices', () => {
+  const state=bootstrapState();
+  state.story.arcComplete=true;
+  state.story.segmentDelivered=true;
+  state.levelRoute={storyExitReady:true,exitAvailable:true};
+  const {ctx,submissions}=context(state);
+  const article=element('article');
+  ctx.appendExplorerChoices(article,state.log[0],0);
+  assert.equal(article.children.length,1);
+  const buttons=article.children[0].children;
+  assert.equal(buttons.length,1);
+  assert.equal(buttons[0].textContent,'Tiếp tục qua ranh giới');
+  buttons[0].listeners.click();
+  assert.equal(submissions.length,1);
+  assert.equal(submissions[0][1],'tiếp tục cốt truyện');
+});
+

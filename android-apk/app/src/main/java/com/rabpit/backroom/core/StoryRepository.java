@@ -17,8 +17,10 @@ import java.util.Map;
 
 /** Loads authored Markdown plus compiler-owned story decision contracts. */
 final class StoryRepository {
+  static final String STORY_CATALOG_ASSET = "story/generated/story_catalog.json";
   static final String LEVEL_ZERO_METADATA_ASSET = "story/generated/level_0/level0.story.json";
   static final String LEVEL_ZERO_INTERACTIONS_ASSET = "story/generated/level_0/level0.interactions.json";
+  private static final int MAX_CACHED_CHAPTERS = 3;
 
   static final String MODE_LINEAR = "LINEAR";
   static final String MODE_DECISION = "DECISION";
@@ -37,8 +39,18 @@ final class StoryRepository {
     final JSONArray eventsOnExit;
     final JSONArray requiredFacts;
     final JSONArray forbiddenClaims;
+    final JSONObject eventsAfterSegment;
+    final JSONArray segmentIds;
+    final String sourceDigest;
+    final String compilerFingerprint;
+    final String metadataPath;
+    final String interactionsPath;
 
     Chapter(JSONObject json) {
+      this(json, "", "");
+    }
+
+    Chapter(JSONObject json, String metadataPath, String interactionsPath) {
       id = json.optString("id", "").trim();
       title = json.optString("title", "").trim();
       source = json.optString("source", "").trim();
@@ -49,6 +61,28 @@ final class StoryRepository {
       eventsOnExit = copyArray(json.optJSONArray("eventsOnExit"));
       requiredFacts = copyArray(json.optJSONArray("requiredFacts"));
       forbiddenClaims = copyArray(json.optJSONArray("forbiddenClaims"));
+      eventsAfterSegment = copyObject(json.optJSONObject("eventsAfterSegment"));
+      segmentIds = copyArray(json.optJSONArray("segmentIds"));
+      sourceDigest = json.optString("sourceDigest", "").trim().toLowerCase(Locale.ROOT);
+      compilerFingerprint = json.optString("compilerFingerprint", "").trim();
+      this.metadataPath = metadataPath == null ? "" : metadataPath.trim();
+      this.interactionsPath = interactionsPath == null ? "" : interactionsPath.trim();
+    }
+
+    boolean isLazyDescriptor() {
+      return !metadataPath.isEmpty() && segmentIds.length() == 0;
+    }
+  }
+
+  private static final class CatalogEntry {
+    final String storyId;
+    final String levelKey;
+    final String metadataPath;
+
+    CatalogEntry(String levelKey, JSONObject json) {
+      this.levelKey = levelKey == null ? "" : levelKey.trim();
+      storyId = json == null ? "" : json.optString("storyId", "").trim();
+      metadataPath = json == null ? "" : json.optString("metadata", "").trim();
     }
   }
 
@@ -101,12 +135,28 @@ final class StoryRepository {
   }
 
   private final AssetReader reader;
+  private final Map<String, CatalogEntry> catalog = new LinkedHashMap<>();
   private final Map<String, Chapter> chapters = new LinkedHashMap<>();
-  private final Map<String, List<Segment>> segmentCache = new LinkedHashMap<>();
+  private final Map<String, List<Segment>> segmentCache =
+      new LinkedHashMap<String, List<Segment>>(8, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<String, List<Segment>> eldest) {
+          return size() > MAX_CACHED_CHAPTERS;
+        }
+      };
+  private final Map<String, Map<String, DecisionSpec>> v2DecisionCache =
+      new LinkedHashMap<String, Map<String, DecisionSpec>>(8, 0.75f, true) {
+        @Override protected boolean removeEldestEntry(Map.Entry<String, Map<String, DecisionSpec>> eldest) {
+          return size() > MAX_CACHED_CHAPTERS;
+        }
+      };
   private final Map<String, String> decisionChapterDigests = new LinkedHashMap<>();
   private final Map<String, DecisionSpec> decisionBySegment = new LinkedHashMap<>();
   private String sourceRevision = "";
   private String startChapter = "";
+  private String storyId = "";
+  private String levelKey = "";
+  private String compilerFingerprint = "";
+  private boolean v2Bound = false;
   private int targetChars = 1900;
   private int maxChars = 2400;
 
@@ -117,6 +167,13 @@ final class StoryRepository {
   StoryRepository(AssetReader reader) {
     this.reader = reader;
     if (reader != null) {
+      try {
+        loadCatalog(reader.read(STORY_CATALOG_ASSET));
+        bindLevel("0");
+        return;
+      } catch (Exception ignored) {
+        catalog.clear();
+      }
       try {
         loadMetadata(reader.read(LEVEL_ZERO_METADATA_ASSET));
         try {
@@ -151,8 +208,73 @@ final class StoryRepository {
     return !chapters.isEmpty() && !startChapter.isEmpty();
   }
 
+  boolean hasStoryForLevel(String requestedLevelKey) {
+    if (catalog.isEmpty()) return "0".equals(requestedLevelKey) && available();
+    return catalog.containsKey(requestedLevelKey == null ? "" : requestedLevelKey.trim());
+  }
+
+  synchronized boolean bindLevel(String requestedLevelKey) {
+    String requested = requestedLevelKey == null ? "" : requestedLevelKey.trim();
+    if (catalog.isEmpty()) return "0".equals(requested) && available();
+    if (v2Bound && requested.equals(levelKey) && available()) return true;
+    CatalogEntry entry = catalog.get(requested);
+    clearBoundArc();
+    if (entry == null || reader == null) return false;
+    try {
+      JSONObject root = new JSONObject(reader.read(entry.metadataPath));
+      if (root.optInt("schemaVersion", 0) != 2) return false;
+      if (!entry.storyId.equals(root.optString("storyId", "").trim())) return false;
+      if (!entry.levelKey.equals(root.optString("levelKey", "").trim())) return false;
+      sourceRevision = root.optString("sourceRevision", "").trim();
+      compilerFingerprint = root.optString("compilerFingerprint", "").trim();
+      startChapter = root.optString("startChapter", "").trim();
+      storyId = entry.storyId;
+      levelKey = entry.levelKey;
+      if (sourceRevision.isEmpty() || compilerFingerprint.isEmpty() || startChapter.isEmpty()) {
+        clearBoundArc();
+        return false;
+      }
+      JSONArray list = root.optJSONArray("chapters");
+      if (list == null) {
+        clearBoundArc();
+        return false;
+      }
+      for (int i = 0; i < list.length(); i++) {
+        JSONObject raw = list.optJSONObject(i);
+        if (raw == null) continue;
+        String metadataPath = raw.optString("metadata", "").trim();
+        String interactionsPath = raw.optString("interactions", "").trim();
+        Chapter chapter = new Chapter(raw, metadataPath, interactionsPath);
+        if (chapter.id.isEmpty() || chapter.source.isEmpty()
+            || metadataPath.isEmpty() || interactionsPath.isEmpty()
+            || chapters.containsKey(chapter.id)) {
+          clearBoundArc();
+          return false;
+        }
+        chapters.put(chapter.id, chapter);
+      }
+      if (!chapters.containsKey(startChapter)) {
+        clearBoundArc();
+        return false;
+      }
+      v2Bound = true;
+      return true;
+    } catch (Exception ignored) {
+      clearBoundArc();
+      return false;
+    }
+  }
+
   String sourceRevision() {
     return sourceRevision;
+  }
+
+  String storyId() {
+    return storyId;
+  }
+
+  String levelKey() {
+    return levelKey;
   }
 
   String startChapter() {
@@ -160,7 +282,25 @@ final class StoryRepository {
   }
 
   Chapter chapter(String id) {
-    return chapters.get(id == null ? "" : id.trim());
+    String key = id == null ? "" : id.trim();
+    Chapter current = chapters.get(key);
+    if (current == null || !v2Bound || !current.isLazyDescriptor()) return current;
+    Chapter loaded = loadV2Chapter(current);
+    if (loaded != null) {
+      chapters.put(key, loaded);
+      return loaded;
+    }
+    return null;
+  }
+
+  String rawMarkdown(String chapterId) {
+    Chapter value = chapter(chapterId);
+    if (value == null || reader == null || value.source.isEmpty()) return "";
+    try {
+      return reader.read(value.source);
+    } catch (Exception ignored) {
+      return "";
+    }
   }
 
   Segment segment(String chapterId, int index) {
@@ -183,13 +323,23 @@ final class StoryRepository {
     return segments(chapterId).size();
   }
 
+  int segmentIndex(String chapterId, String segmentId) {
+    String requested = segmentId == null ? "" : segmentId.trim();
+    if (requested.isEmpty()) return -1;
+    List<Segment> values = segments(chapterId);
+    for (int i = 0; i < values.size(); i++) {
+      if (requested.equals(values.get(i).id)) return i;
+    }
+    return -1;
+  }
+
   private List<Segment> segments(String chapterId) {
     String key = chapterId == null ? "" : chapterId.trim();
     List<Segment> cached = segmentCache.get(key);
     if (cached != null) return cached;
 
     List<Segment> result = new ArrayList<>();
-    Chapter chapter = chapters.get(key);
+    Chapter chapter = chapter(key);
     if (chapter == null || reader == null || chapter.source.isEmpty()) {
       segmentCache.put(key, result);
       return result;
@@ -198,16 +348,43 @@ final class StoryRepository {
     try {
       String manuscript = reader.read(chapter.source);
       String digest = sourceDigest(manuscript);
-      boolean decisionsFresh = digest.equals(decisionChapterDigests.get(key));
       List<String> blocks = splitMarkdown(manuscript, targetChars, maxChars);
-      for (int i = 0; i < blocks.size(); i++) {
-        String id = chapter.id + "_P" + String.format(Locale.ROOT, "%03d", i + 1);
-        DecisionSpec compiled = decisionsFresh ? decisionBySegment.get(id) : null;
-        String fallbackMode = "cutaway".equals(chapter.visibility) ? MODE_CUTAWAY : MODE_LINEAR;
-        String mode = compiled == null ? fallbackMode : compiled.mode;
-        if ("cutaway".equals(chapter.visibility)) mode = MODE_CUTAWAY;
-        JSONObject contract = compiled == null ? new JSONObject() : compiled.contract;
-        result.add(new Segment(id, chapter.id, i, blocks.size(), blocks.get(i), mode, contract));
+      if (v2Bound) {
+        if (!digest.equals(chapter.sourceDigest) || chapter.segmentIds.length() != blocks.size()) {
+          segmentCache.put(key, result);
+          return result;
+        }
+        Map<String, DecisionSpec> compiledById = loadV2Decisions(chapter, digest);
+        if (compiledById == null) {
+          segmentCache.put(key, result);
+          return result;
+        }
+        for (int i = 0; i < blocks.size(); i++) {
+          String id = chapter.segmentIds.optString(i, "").trim();
+          if (id.isEmpty()) {
+            result.clear();
+            break;
+          }
+          DecisionSpec compiled = compiledById.get(id);
+          if (compiled == null) {
+            result.clear();
+            break;
+          }
+          String mode = "cutaway".equals(chapter.visibility) ? MODE_CUTAWAY : compiled.mode;
+          JSONObject contract = compiled.contract;
+          result.add(new Segment(id, chapter.id, i, blocks.size(), blocks.get(i), mode, contract));
+        }
+      } else {
+        boolean decisionsFresh = digest.equals(decisionChapterDigests.get(key));
+        for (int i = 0; i < blocks.size(); i++) {
+          String id = chapter.id + "_P" + String.format(Locale.ROOT, "%03d", i + 1);
+          DecisionSpec compiled = decisionsFresh ? decisionBySegment.get(id) : null;
+          String fallbackMode = "cutaway".equals(chapter.visibility) ? MODE_CUTAWAY : MODE_LINEAR;
+          String mode = compiled == null ? fallbackMode : compiled.mode;
+          if ("cutaway".equals(chapter.visibility)) mode = MODE_CUTAWAY;
+          JSONObject contract = compiled == null ? new JSONObject() : compiled.contract;
+          result.add(new Segment(id, chapter.id, i, blocks.size(), blocks.get(i), mode, contract));
+        }
       }
     } catch (Exception ignored) {
       result.clear();
@@ -218,13 +395,15 @@ final class StoryRepository {
   }
 
   void loadMetadata(String json) {
-    chapters.clear();
-    segmentCache.clear();
-    clearDecisions();
+    clearBoundArc();
+    catalog.clear();
+    v2Bound = false;
     try {
       JSONObject root = new JSONObject(json == null ? "{}" : json);
       if (root.optInt("schemaVersion", 0) != 1) return;
       sourceRevision = root.optString("sourceRevision", "").trim();
+      storyId = "level_0_main";
+      levelKey = "0";
       startChapter = root.optString("startChapter", "").trim();
       targetChars = Math.max(800, root.optInt("segmentTargetChars", 1900));
       maxChars = Math.max(targetChars, root.optInt("segmentMaxChars", 2400));
@@ -289,7 +468,7 @@ final class StoryRepository {
   }
 
   static List<String> splitMarkdown(String markdown, int targetChars, int maxChars) {
-    String source = markdown == null ? "" : markdown.replace("\r\n", "\n").replace('\r', '\n').trim();
+    String source = canonicalSource(markdown).trim();
     List<String> paragraphs = new ArrayList<>();
     if (source.isEmpty()) return paragraphs;
 
@@ -332,8 +511,96 @@ final class StoryRepository {
   }
 
   private static String canonicalSource(String source) {
-    String normalized = source == null ? "" : source.replace("\r\n", "\n").replace('\r', '\n').trim();
+    String normalized = source == null ? "" : source;
+    if (!normalized.isEmpty() && normalized.charAt(0) == '\ufeff') {
+      normalized = normalized.substring(1);
+    }
+    normalized = normalized.replace("\r\n", "\n").replace('\r', '\n').trim();
     return normalized + "\n";
+  }
+
+  private void loadCatalog(String json) throws Exception {
+    catalog.clear();
+    JSONObject root = new JSONObject(json == null ? "{}" : json);
+    if (root.optInt("schemaVersion", 0) != 2) {
+      throw new IllegalArgumentException("Unsupported story catalog schema");
+    }
+    compilerFingerprint = root.optString("compilerFingerprint", "").trim();
+    JSONObject levels = root.optJSONObject("levels");
+    if (levels == null || compilerFingerprint.isEmpty()) {
+      throw new IllegalArgumentException("Story catalog is incomplete");
+    }
+    java.util.Iterator<String> keys = levels.keys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      CatalogEntry entry = new CatalogEntry(key, levels.optJSONObject(key));
+      if (entry.storyId.isEmpty() || entry.metadataPath.isEmpty() || catalog.containsKey(entry.levelKey)) {
+        throw new IllegalArgumentException("Invalid story catalog entry");
+      }
+      catalog.put(entry.levelKey, entry);
+    }
+  }
+
+  private Chapter loadV2Chapter(Chapter descriptor) {
+    try {
+      JSONObject root = new JSONObject(reader.read(descriptor.metadataPath));
+      if (root.optInt("schemaVersion", 0) != 2) return null;
+      if (!storyId.equals(root.optString("storyId", "").trim())) return null;
+      if (!levelKey.equals(root.optString("levelKey", "").trim())) return null;
+      if (!sourceRevision.equals(root.optString("sourceRevision", "").trim())) return null;
+      if (!compilerFingerprint.equals(root.optString("compilerFingerprint", "").trim())) return null;
+      if (!descriptor.id.equals(root.optString("id", "").trim())) return null;
+      Chapter loaded = new Chapter(root, descriptor.metadataPath, descriptor.interactionsPath);
+      if (loaded.segmentIds.length() == 0 || !loaded.sourceDigest.matches("[0-9a-f]{64}")) return null;
+      return loaded;
+    } catch (Exception ignored) {
+      return null;
+    }
+  }
+
+  private Map<String, DecisionSpec> loadV2Decisions(Chapter chapter, String digest) {
+    Map<String, DecisionSpec> cached = v2DecisionCache.get(chapter.id);
+    if (cached != null) return cached;
+    try {
+      JSONObject root = new JSONObject(reader.read(chapter.interactionsPath));
+      if (root.optInt("schemaVersion", 0) != 4) return null;
+      if (!storyId.equals(root.optString("storyId", "").trim())) return null;
+      if (!levelKey.equals(root.optString("levelKey", "").trim())) return null;
+      if (!sourceRevision.equals(root.optString("sourceRevision", "").trim())) return null;
+      if (!compilerFingerprint.equals(root.optString("compilerFingerprint", "").trim())) return null;
+      if (!chapter.id.equals(root.optString("chapterId", "").trim())) return null;
+      if (!digest.equals(root.optString("sourceDigest", "").trim().toLowerCase(Locale.ROOT))) return null;
+      JSONArray ids = root.optJSONArray("segmentIds");
+      JSONObject specs = root.optJSONObject("segments");
+      if (ids == null || specs == null || ids.length() != chapter.segmentIds.length()) return null;
+      Map<String, DecisionSpec> output = new LinkedHashMap<>();
+      for (int i = 0; i < ids.length(); i++) {
+        String segmentId = ids.optString(i, "").trim();
+        if (!segmentId.equals(chapter.segmentIds.optString(i, "").trim())) return null;
+        JSONObject spec = specs.optJSONObject(segmentId);
+        if (spec == null) return null;
+        output.put(segmentId, new DecisionSpec(
+            spec.optString("mode", MODE_LINEAR), spec.optJSONObject("decisionContract")));
+      }
+      v2DecisionCache.put(chapter.id, output);
+      return output;
+    } catch (Exception ignored) {
+      return null;
+    }
+  }
+
+  private void clearBoundArc() {
+    chapters.clear();
+    segmentCache.clear();
+    v2DecisionCache.clear();
+    clearDecisions();
+    sourceRevision = "";
+    startChapter = "";
+    storyId = "";
+    levelKey = "";
+    v2Bound = false;
+    targetChars = 1900;
+    maxChars = 2400;
   }
 
   private static String normalizeMode(String raw) {

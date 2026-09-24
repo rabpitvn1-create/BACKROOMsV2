@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C15",
+  "title": "Level 0 — Chương 15: Giữ Thế",
+  "source": "story/source/level_0/LEVEL0_CH15.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C16",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "97b2f643f6a4e0abece96afb3f5679707a013b68999aa17288b7cf699c7261ee",
+  "segmentIds": [
+    "L0_C15_S57de2c8df8456540",
+    "L0_C15_Sc5787add69a90395",
+    "L0_C15_S6d32c4eea1923956",
+    "L0_C15_S21dea1e634814710",
+    "L0_C15_S9c9846102b9d9df1",
+    "L0_C15_S7279accf5e4e1d84"
+  ]
+}

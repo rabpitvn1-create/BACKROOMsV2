@@ -56,9 +56,38 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(legacy);
       characterEncounterCore.normalizeState(legacy);
       storyCore.normalizeState(legacy);
+      syncStoryBoundaryReadiness(legacy);
       CombatChoiceEngine.normalizeTerminalEncounter(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
+
+      if (storyArcComplete(legacy) && StoryCore.isAdvanceAction(text)) {
+        if (!levelCore.storyHandoffAvailable(legacy)) {
+          persist(legacy);
+          return response(true, legacy, "story_handoff_locked", "story_handoff_locked",
+              "Ranh giới cốt truyện đã tới nhưng LevelCore chưa xác nhận được cạnh chuyển hợp lệ.");
+        }
+        int beforeStageIndex = levelCore.stageIndexForState(legacy);
+        levelCore.applyStoryArcTransition(legacy);
+        int afterStageIndex = levelCore.stageIndexForState(legacy);
+        if (afterStageIndex != beforeStageIndex) {
+          int stageCoreReward = characterProgressionCore.rewardStageCompletion(legacy, afterStageIndex);
+          JSONObject flags = legacy.optJSONObject("flags");
+          if (flags == null) flags = new JSONObject();
+          flags.put("lastStageCoreReward", stageCoreReward);
+          flags.put("lastStageRewardIndex", afterStageIndex);
+          legacy.put("flags", flags);
+        }
+        storyCore.normalizeState(legacy);
+        incrementTurn(legacy);
+        advanceGameTime(legacy, text);
+        characterProgressionCore.applyExplorerTurnRecovery(legacy);
+        String reply = "Cao Minh và Lục Trầm tiếp tục qua ranh giới đã được xác nhận.";
+        appendLog(legacy, text, reply);
+        legacy.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(legacy);
+        return response(true, legacy, null, "story_handoff_committed", reply);
+      }
 
       if (storyCore.awaitingEntityAttack(legacy)) {
         JSONObject result = deepCopy(legacy);
@@ -133,6 +162,7 @@ public final class GameCoreFacade implements AutoCloseable {
       StoryCore.AuthoredTurn authored =
           storyCore.advanceAndRender(legacy, text, characterEncounterCore);
       if (authored != null) {
+        syncStoryBoundaryReadiness(legacy);
         incrementTurn(legacy);
         advanceGameTime(legacy, text);
         characterProgressionCore.applyExplorerTurnRecovery(legacy);
@@ -183,13 +213,13 @@ public final class GameCoreFacade implements AutoCloseable {
       copyField(before, sanitized, StoryCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
-      int beforeStageIndex = LevelCore.stageIndex(before);
+      int beforeStageIndex = levelCore.stageIndexForState(before);
       if (transitionTarget == null) {
         levelCore.validateAndApplyTransition(before, sanitized);
       } else {
         levelCore.applyNarrativeTransition(before, sanitized, transitionTarget);
       }
-      int afterStageIndex = LevelCore.stageIndex(sanitized);
+      int afterStageIndex = levelCore.stageIndexForState(sanitized);
       if (afterStageIndex != beforeStageIndex) {
         int stageCoreReward = characterProgressionCore.rewardStageCompletion(sanitized, afterStageIndex);
         JSONObject flags = sanitized.optJSONObject("flags");
@@ -705,6 +735,18 @@ public final class GameCoreFacade implements AutoCloseable {
     }
     reply.append('.');
     return reply.toString();
+  }
+
+  private boolean storyArcComplete(JSONObject state) {
+    JSONObject story = state == null ? null : state.optJSONObject(StoryCore.ROOT_KEY);
+    return story != null && story.optBoolean("active", false) && story.optBoolean("arcComplete", false);
+  }
+
+  private void syncStoryBoundaryReadiness(JSONObject state) throws Exception {
+    if (!storyArcComplete(state)) return;
+    JSONObject route = state.optJSONObject(LevelCore.ROUTE_STATE);
+    if (route != null && route.optBoolean("storyExitReady", false)) return;
+    levelCore.markStoryBoundaryReady(state);
   }
 
   private void appendLog(JSONObject state, String action, String reply) throws Exception {

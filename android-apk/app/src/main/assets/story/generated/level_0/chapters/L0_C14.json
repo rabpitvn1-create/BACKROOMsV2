@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C14",
+  "title": "Level 0 — Chương 14: Rượu Không Phải Nước",
+  "source": "story/source/level_0/LEVEL0_CH14.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C15",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "a0dfbc63c25ee3fe802d6047623109787146a1b8e4203f87bee608c8c1d1380f",
+  "segmentIds": [
+    "L0_C14_Sf8dd822b36bbe539",
+    "L0_C14_S83ff82947f25e592",
+    "L0_C14_S7aeab42fab61f09c",
+    "L0_C14_S0985c55db1e23c2c",
+    "L0_C14_S4696730b3af31d0b",
+    "L0_C14_S98b8dc4b4409d23f"
+  ]
+}

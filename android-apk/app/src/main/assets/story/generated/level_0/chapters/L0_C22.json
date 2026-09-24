@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C22",
+  "title": "Level 0 — Chương 22: Khoảng Nghỉ Không An Toàn",
+  "source": "story/source/level_0/LEVEL0_CH22.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C23",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "321d843228ac5cd38cdfd45a23f7b9b69e5c93639908854cfe1edcc7e9172782",
+  "segmentIds": [
+    "L0_C22_S6e339c4ef85a5aab",
+    "L0_C22_S3cce4a98a48cbaf4",
+    "L0_C22_S6c0341a613e3b64e",
+    "L0_C22_S643ee45542d20722",
+    "L0_C22_S4fc8daa1411c0d6d",
+    "L0_C22_Scd46f0f8760a47f9"
+  ]
+}

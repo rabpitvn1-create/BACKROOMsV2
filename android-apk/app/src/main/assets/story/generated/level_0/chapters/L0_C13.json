@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C13",
+  "title": "Level 0 — Chương 13: Giọng Nói Trong Bóng Tối",
+  "source": "story/source/level_0/LEVEL0_CH13.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C14",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "STORY_FLAG_SET",
+      "key": "personalized_voice_echo_observed",
+      "value": true
+    }
+  ],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [
+    "Do not identify the voice phenomenon as one confirmed entity or one confirmed mechanism."
+  ],
+  "sourceDigest": "ed9d73a2bacdeaf7c7c6ec2a0dc53d70bc1bdf09d2cfb331a7dce29e6f928916",
+  "segmentIds": [
+    "L0_C13_S0e068d315cb7ce9d",
+    "L0_C13_S5d84f8181ce97f98",
+    "L0_C13_Sd3dfbc4b9320874b",
+    "L0_C13_Se77d1602836901a4",
+    "L0_C13_Sd49c7a10feb8d6b7",
+    "L0_C13_S1cd7b653667d1f74"
+  ]
+}

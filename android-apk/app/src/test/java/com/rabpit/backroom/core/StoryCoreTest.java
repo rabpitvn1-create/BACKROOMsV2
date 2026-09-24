@@ -51,7 +51,7 @@ public class StoryCoreTest {
         state, "tiếp tục cốt truyện", new CharacterEncounterCore(bound -> bound - 1));
     String manuscript = new String(Files.readAllBytes(
         assets.resolve("story/source/level_0/LEVEL0_CH01.md")), StandardCharsets.UTF_8);
-    assertEquals("L0_C01_P001", turn.segmentId);
+    assertTrue(turn.segmentId.startsWith("L0_C01_S"));
     assertTrue(manuscript.contains("Ma Sơn. Không có đại chiến."));
     assertTrue(turn.reply.startsWith("Level 0 — Chương 01: Nơi Không Có Tên"));
     assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));
@@ -173,9 +173,13 @@ public class StoryCoreTest {
 
 
   private static StoryRepository fixtureRepository() {
+    return fixtureRepository("fixture-r1");
+  }
+
+  private static StoryRepository fixtureRepository(String revision) {
     String metadata = "{"
         + "\"schemaVersion\":1,"
-        + "\"sourceRevision\":\"fixture-r1\","
+        + "\"sourceRevision\":\"" + revision + "\","
         + "\"segmentTargetChars\":1900,"
         + "\"segmentMaxChars\":2400,"
         + "\"startChapter\":\"L0_C01\","
@@ -203,6 +207,23 @@ public class StoryCoreTest {
     sources.put("story/source/level_0/LEVEL0_CH02.md",
         "# Level 0 — Chương 02: Hai\n\nĐây là tuyến Lục Trầm.");
     return StoryRepository.fromText(metadata, sources);
+  }
+
+  @Test public void compatibleSourceRevisionChangePreservesCurrentChapter() throws Exception {
+    JSONObject state = state();
+    StoryCore oldCore = StoryCore.withRepository(fixtureRepository("fixture-r1"));
+    oldCore.normalizeState(state);
+    JSONObject oldStory = state.getJSONObject(StoryCore.ROOT_KEY);
+    oldStory.put("currentChapter", "L0_C02");
+    oldStory.put("currentSegmentIndex", 0);
+    oldStory.put("segmentDelivered", false);
+
+    StoryCore revisedCore = StoryCore.withRepository(fixtureRepository("fixture-r2"));
+    revisedCore.normalizeState(state);
+
+    JSONObject migrated = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertEquals("L0_C02", migrated.getString("currentChapter"));
+    assertEquals("fixture-r2", migrated.getString("sourceRevision"));
   }
 
   @Test public void normalizeWithoutRepositoryKeepsContentAgnosticState() throws Exception {
@@ -275,7 +296,7 @@ public class StoryCoreTest {
     assertEquals(StoryCore.PRESENCE_PRESENT, nam.getString("presence"));
 
     String prompt = core.promptContext(state);
-    assertTrue(prompt.contains("NOT a validated Level 1 transition"));
+    assertTrue(prompt.contains("does not choose or apply a Level destination"));
   }
 
   @Test public void parallelStoryPresenceDoesNotAddLucTramToParty() throws Exception {

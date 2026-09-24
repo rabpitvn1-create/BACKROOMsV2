@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C15",
+  "title": "Level 0.1 — Chương 15: Cây Cầu Chưa Được Phép Qua",
+  "source": "story/source/level_0_1/LEVEL0.1_CH15_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C16",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "202b1f43e8191a338e424ebcf1d3bb2401c5a17e1d1164dbe4c273eccc8f0c2e",
+  "segmentIds": [
+    "L01_C15_Se374b62f2c46cf87",
+    "L01_C15_Sfcf07773803c1950",
+    "L01_C15_S70d3e8c06677d497",
+    "L01_C15_Sf38a54186e7ffdf2",
+    "L01_C15_S0d9f22e31693dbb5",
+    "L01_C15_S48d358f10c7e6193",
+    "L01_C15_S227e8f1c7de629ba"
+  ]
+}
