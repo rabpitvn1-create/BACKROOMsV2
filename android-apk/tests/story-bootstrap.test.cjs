@@ -242,7 +242,8 @@ test('active return journey blocks arc handoff in both UI and Core dispatch orde
   ctx.appendExplorerChoices(article,state.log[0],0);
   assert.equal(article.children.length,1);
   assert.notEqual(article.children[0].children[0].textContent,'Tiếp tục qua ranh giới');
-  assert.equal(submissions.length,0);
+  assert.equal(submissions.some(x=>x[0]==='submit'),false);
+  assert.equal(submissions.filter(x=>x[0]==='prepare-return').length,1);
 
   const returnGuard=facade.indexOf('if (storyCore.returnJourneyActive(legacy)) {');
   const handoff=facade.indexOf('if (storyArcComplete(legacy) && StoryCore.isAdvanceAction(text)) {');
