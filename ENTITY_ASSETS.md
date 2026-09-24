@@ -25,6 +25,7 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 | `hotel_corpse_lure` | `hotel_corpse_lure.webp` |
 | `jeff_the_killer` | `jeff_the_killer.webp` |
 | `async_rifleman` | `async_rifleman.webp` |
+| `tam_ma_cao_minh` | `tam_ma_cao_minh.webp` |
 | `jane_the_killer` | `jane_the_killer.webp` |
 | `slenderman` | `slenderman.webp` |
 | `diep_minh` | `diep_minh.webp` |
@@ -34,7 +35,8 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/assets/knowledge/entity_encounters.json`.
 
 - There is no shared spawn-rate pool.
-- Every registered auto-spawn Entity has its own fixed independent roll between **3.00% and 3.50%** on each eligible world-advancing gameplay turn.
+- Standard auto-spawn Entities keep their own fixed independent roll between **3.00% and 3.50%** on each eligible world-advancing gameplay turn.
+- Treasure Entities use a separate priority roll capped at **4.00%** before the standard collision pool. `tam_ma_cao_minh` is currently the only Treasure Entity and therefore has an effective **4.00%** encounter rate.
 - Every registered auto-spawn Entity is now **roaming on every valid Backrooms Level**. Original canon habitat/Level restrictions are reference metadata only and do not block runtime spawning.
 - Entity canon still governs behavior, capabilities and encounter portrayal after the Core has spawned it.
 - If an Entity encounter is already active, Core does not roll a replacement Entity.
@@ -53,3 +55,5 @@ Ngoại lệ tên nguồn: `Novel/ENTITY/hazmat_rifle_A_01.webp` được map sa
 Snapshot overlay reads:
 
 `file:///android_asset/entity/<canonical-key>.webp`
+
+Treasure asset source mapping: Google Drive `Novel/ENTITY/Tam_Ma_Cao_Minh.webp` is packaged as canonical runtime asset `entity/tam_ma_cao_minh.webp`.
