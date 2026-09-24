@@ -584,7 +584,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
-      if (persisted.length() > 0) state = persisted;
+      state = persisted.length() > 0 ? persisted : newGameState(state);
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
@@ -621,6 +621,26 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String startNewGame(String initialJson) {
     preferences.edit().remove(STATE_KEY).commit();
     return normalizeState(initialJson);
+  }
+
+  static JSONObject newGameState(JSONObject initial) throws Exception {
+    if (initial == null) initial = new JSONObject();
+    JSONObject fresh = new JSONObject()
+        .put("title", initial.optString("title", "Level 0 : The Lobby"))
+        .put("turn", 1).put("mode", "local APK")
+        .put("currentLevel", 0).put("currentLevelKey", "0")
+        .put("location", initial.optString("location", "Hành lang vàng nhạt — khu vực chưa xác định"))
+        .put("player", new JSONObject().put("name", "Cao Minh").put("condition", "Ổn định"))
+        .put("party", new JSONArray())
+        .put("inventory", new JSONArray()
+            .put(new JSONObject().put("name", "Huyết Ma Kiếm"))
+            .put(new JSONObject().put("name", "Huyết Ma Chiến Khải"))
+            .put(new JSONObject().put("name", "Vạn Tàng Giới")))
+        .put("flags", new JSONObject());
+    if (initial.has("characterCanon")) fresh.put("characterCanon", initial.get("characterCanon"));
+    JSONArray log = initial.optJSONArray("log");
+    if (log != null) fresh.put("log", new JSONArray(log.toString()));
+    return fresh;
   }
 
   public synchronized void clear() {
