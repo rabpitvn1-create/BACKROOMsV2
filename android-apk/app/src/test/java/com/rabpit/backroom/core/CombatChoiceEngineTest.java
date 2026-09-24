@@ -366,7 +366,8 @@ public class CombatChoiceEngineTest {
         proc.setAccessible(true);
         assertTrue("Damage for " + key, damage.getInt(skill) > 0);
         assertTrue("Proc for " + key, proc.getInt(skill) >= 20);
-        assertTrue("Proc for " + key, proc.getInt(skill) <= 45);
+        int maxProc = "tam_ma_cao_minh".equals(key) ? 45 : 35;
+        assertTrue("Proc for " + key, proc.getInt(skill) <= maxProc);
       }
     }
   }
