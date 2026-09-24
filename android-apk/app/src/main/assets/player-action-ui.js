@@ -34,10 +34,20 @@
     }
   }
 
+  function storyReturnActive(){
+    try {
+      return !!(state && state.story && state.story.returnJourney
+        && state.story.returnJourney.active === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function storyDecisionActive(){
     try {
       return !!(state && state.story && state.story.active === true
         && state.story.arcComplete !== true
+        && !storyReturnActive()
         && state.story.awaitingDecision === true);
     } catch (_) {
       return false;
@@ -48,6 +58,7 @@
     try {
       var story = state && state.story;
       return !!(story && story.active === true && story.arcComplete !== true
+        && !(story.returnJourney && story.returnJourney.active === true)
         && story.segmentDelivered !== true && story.awaitingDecision !== true
         && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
         && !(state.combat && state.combat.active));
@@ -102,20 +113,17 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
+    if (combatActive() || processing() || storyReturnActive() || storyBootstrapPending()
+        || storyCutawayActive() || storyDecisionActive()
         || storyEntityAttackActive() || storyAdvancePending()) {
       if (typeof statusEl !== 'undefined' && statusEl) {
-        statusEl.textContent = combatActive()
-          ? 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.'
-          : (storyBootstrapPending()
-              ? 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.'
-              : (storyEntityAttackActive()
-              ? 'Encounter cốt truyện: hãy chọn Tấn công trong khung GAME MASTER.'
-              : (storyDecisionActive()
-                  ? 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.'
-                  : (storyCutawayActive()
-                      ? 'Đang ở đoạn cắt cảnh cốt truyện.'
-                      : 'Đang xử lý lượt hiện tại.'))));
+        if (combatActive()) statusEl.textContent = 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.';
+        else if (storyReturnActive()) statusEl.textContent = 'Hãy chọn một hướng đi trong khung GAME MASTER.';
+        else if (storyBootstrapPending()) statusEl.textContent = 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.';
+        else if (storyEntityAttackActive()) statusEl.textContent = 'Encounter cốt truyện: hãy chọn Tấn công trong khung GAME MASTER.';
+        else if (storyDecisionActive()) statusEl.textContent = 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.';
+        else if (storyCutawayActive()) statusEl.textContent = 'Đang ở đoạn cắt cảnh cốt truyện.';
+        else statusEl.textContent = 'Đang xử lý lượt hiện tại.';
       }
       return;
     }
@@ -135,12 +143,13 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
-      || storyEntityAttackActive() || storyAdvancePending();
+    var locked = combatActive() || processing() || storyReturnActive() || storyBootstrapPending()
+      || storyCutawayActive() || storyDecisionActive() || storyEntityAttackActive() || storyAdvancePending();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyBootstrapPending() || storyCutawayActive() || storyDecisionActive()
-        || storyEntityAttackActive() || storyAdvancePending()) && !modal.hidden) closePlayerAction(true);
+    if ((combatActive() || storyReturnActive() || storyBootstrapPending() || storyCutawayActive()
+        || storyDecisionActive() || storyEntityAttackActive() || storyAdvancePending())
+        && !modal.hidden) closePlayerAction(true);
   }
 
   openButton.addEventListener('click', openPlayerAction);

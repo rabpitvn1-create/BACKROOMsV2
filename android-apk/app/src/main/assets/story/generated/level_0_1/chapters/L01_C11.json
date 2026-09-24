@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-station-r1",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "zenith-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L01_C11",
   "title": "Level 0.1 — Chương 11: Khoảng Trống Giữa Ba Người",
   "source": "story/source/level_0_1/LEVEL0.1_CH11_ZENITH_STATION.md",
@@ -15,6 +15,7 @@
   "eventsAfterSegment": {},
   "requiredFacts": [],
   "forbiddenClaims": [],
+  "offlineDecisions": [],
   "sourceDigest": "44e96f26261b8bcaa103eab5a8349495b7313bf157a24891d7c8781702c69265",
   "segmentIds": [
     "L01_C11_S6ec5729a680c581e",

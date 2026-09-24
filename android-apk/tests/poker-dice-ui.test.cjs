@@ -116,14 +116,14 @@ test('encounter stays on the current Explorer Turn until victory opens the next 
   assert.match(decisionBlock, /if \(CombatChoiceEngine\.isKnownEntity\(encounter\)\)[\s\S]*CombatChoiceEngine\.start\(state, encounter[\s\S]*\} else \{[\s\S]*incrementTurn\(state\)/);
 
   const validatedStart = coreFacadeSource.indexOf('public synchronized String processValidatedCandidate');
-  const validatedEnd = coreFacadeSource.indexOf('public synchronized String storyDecisionPrefetchRequest', validatedStart);
+  const validatedEnd = coreFacadeSource.indexOf('public synchronized String processStoryDecision', validatedStart);
   const validatedBlock = coreFacadeSource.slice(validatedStart, validatedEnd);
   assert.match(validatedBlock, /CombatChoiceEngine\.isKnownEntity\(encounterKey\(before\)\)[\s\S]*sanitized\.put\("turn", Math\.max\(1, before\.optInt\("turn", 1\)\)\)/);
 
   const combatStart = coreFacadeSource.indexOf('public synchronized String processCombatResolution');
   const combatEnd = coreFacadeSource.indexOf('public synchronized String levelPromptContext', combatStart);
   const combatBlock = coreFacadeSource.slice(combatStart, combatEnd);
-  assert.match(combatBlock, /wasActive && !active && "victory"\.equals\(outcome\)[\s\S]*incrementTurn\(state\)/);
+  assert.match(combatBlock, /wasActive && !active && \("victory"\.equals\(outcome\) \|\| "defeat"\.equals\(outcome\)\)[\s\S]*incrementTurn\(state\)/);
   assert.match(combatBlock, /storyCore\.awaitingDecision\(state\)[\s\S]*storyCore\.refreshLoopDecisionContext\(state\)/);
   assert.match(source, /Entity bị tiêu diệt\. Bắt đầu Turn/);
 });

@@ -754,43 +754,36 @@ public class MainActivity extends Activity {
       });
     }
 
-    @JavascriptInterface public void prefetchStoryDecision(String stateJson) {
+    @JavascriptInterface public void prepareStoryDecision(String stateJson) {
       io.execute(() -> {
         try {
           JSONObject submitted = new JSONObject(stateJson);
-          String recentStory = recentStoryContext(submitted);
           JSONObject request = new JSONObject(
-              gameCore.storyDecisionPrefetchRequest(stateJson, recentStory));
+              gameCore.storyDecisionGenerationRequest(stateJson, recentStoryContext(submitted)));
           if (!request.optBoolean("needed", false)) return;
-
           String prompt = request.optString("prompt", "").trim();
           String contextHash = request.optString("contextHash", "").trim();
           if (prompt.isEmpty() || contextHash.isEmpty()) {
-            throw new Exception("Story decision prefetch request không hợp lệ.");
+            throw new Exception("Story choice request không hợp lệ.");
           }
 
           String rawOutput;
           try {
             rawOutput = geminiText(prompt);
           } catch (Exception geminiError) {
-            Log.w(TAG, "All Gemini keys failed for story decision prefetch ("
-                + providerErrorSummary(geminiError) + "); falling back to Haiku.");
+            Log.w(TAG, "All Gemini keys failed for current Story choice; falling back to Haiku.");
             rawOutput = haikuText(prompt);
           }
-
           JSONObject generated = parseModelJson(rawOutput);
           JSONObject committed = new JSONObject(
-              gameCore.commitStoryDecisionPackage(
-                  stateJson, contextHash, generated.toString()));
+              gameCore.commitStoryDecisionPackage(stateJson, contextHash, generated.toString()));
           if (!committed.optBoolean("handled", false)) {
-            throw new Exception(committed.optString(
-                "error", "Story decision package bị Core từ chối."));
+            throw new Exception(committed.optString("error", "Story choice package bị Core từ chối."));
           }
-          emit("backroomStoryDecisionPrepared",
-              committed.getJSONObject("state").toString());
+          emit("backroomTurn", committed.getJSONObject("state").toString());
         } catch (Exception e) {
-          emit("backroomStoryDecisionPrefetchError",
-              e.getMessage() == null ? "Không thể chuẩn bị lựa chọn cốt truyện." : e.getMessage());
+          emit("backroomError", e.getMessage() == null
+              ? "Không thể tạo ba lựa chọn Story. Hãy thử lại." : e.getMessage());
         }
       });
     }
@@ -808,6 +801,61 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
           emit("backroomError",
               e.getMessage() == null ? "Không thể xử lý lựa chọn cốt truyện." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void prepareReturnJourneyTurn(String stateJson) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject request = new JSONObject(
+              gameCore.returnJourneyTurnRequest(stateJson, recentStoryContext(submitted)));
+          if (!request.optBoolean("needed", false)) return;
+
+          String prompt = request.optString("prompt", "").trim();
+          String journeyId = request.optString("journeyId", "").trim();
+          int turnIndex = request.optInt("turnIndex", -1);
+          String contextHash = request.optString("contextHash", "").trim();
+          if (prompt.isEmpty() || journeyId.isEmpty() || turnIndex < 0 || contextHash.isEmpty()) {
+            throw new Exception("Return journey request không hợp lệ.");
+          }
+
+          String rawOutput;
+          try {
+            rawOutput = geminiText(prompt);
+          } catch (Exception geminiError) {
+            Log.w(TAG, "All Gemini keys failed for current return journey turn; falling back to Haiku.");
+            rawOutput = haikuText(prompt);
+          }
+          JSONObject generated = parseModelJson(rawOutput);
+          JSONObject committed = new JSONObject(gameCore.commitReturnJourneyTurn(
+              stateJson, journeyId, turnIndex, contextHash, generated.toString()));
+          if (!committed.optBoolean("handled", false)) {
+            throw new Exception(committed.optString(
+                "error", "Return journey turn bị Core từ chối."));
+          }
+          emit("backroomTurn", committed.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null
+              ? "Không thể tạo lượt hành trình hiện tại. Hãy thử lại." : e.getMessage());
+        }
+      });
+    }
+
+    @JavascriptInterface public void resolveReturnJourneyChoice(String stateJson, String choiceId) {
+      io.execute(() -> {
+        try {
+          JSONObject result = new JSONObject(
+              gameCore.processReturnJourneyChoice(stateJson, choiceId));
+          if (!result.optBoolean("handled", false)) {
+            throw new Exception(result.optString(
+                "error", "Lựa chọn hành trình bị Core từ chối."));
+          }
+          emit("backroomTurn", result.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null
+              ? "Không thể xử lý lựa chọn hành trình." : e.getMessage());
         }
       });
     }

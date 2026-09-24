@@ -115,10 +115,10 @@ public class StoryRepositoryTest {
     return new JSONObject()
         .put("canon", new JSONObject()
             .put("text", "Thực hiện hành động dẫn sang diễn biến kế tiếp"))
-        .put("trap", new JSONObject()
-            .put("text", "Dừng lại quan sát một chi tiết khác trong khu vực")
-            .put("reply", "Không gian quanh Cao Minh khép lại theo một nhịp khó nhận ra. Những dấu hiệu quen thuộc lại trở về đúng vị trí trước đó."))
-        .put("converge", new JSONObject()
+        .put("return", new JSONObject()
+            .put("text", "Dừng lại quan sát một lối rẽ khác trong khu vực")
+            .put("reply", "Không gian quanh Cao Minh khép lại theo một nhịp khó nhận ra. Những dấu hiệu quen thuộc lại trở về gần khu vực xuất phát."))
+        .put("stay", new JSONObject()
             .put("text", "Chậm lại một nhịp để lắng nghe môi trường")
             .put("reply", "Cao Minh giữ yên thêm một nhịp. Không có dữ kiện chắc chắn nào mới xuất hiện."));
   }
@@ -201,8 +201,8 @@ public class StoryRepositoryTest {
       if (core.awaitingDecision(state)) {
         compiledDecisions++;
         assertEquals(StoryRepository.MODE_DECISION, turn.mode);
-        assertTrue(core.decisionNeedsPrefetch(state));
-        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue(core.decisionNeedsProvider(state));
+        JSONObject request = core.decisionGenerationRequest(state, "");
         assertTrue(request.getBoolean("needed"));
         core.installDecisionPackage(
             state, request.getString("contextHash"), deterministicAlternates());
@@ -301,10 +301,13 @@ public class StoryRepositoryTest {
       }
 
       if (core.awaitingDecision(state)) {
-        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue("The current Story decision must request provider wording on demand",
+            core.decisionNeedsProvider(state));
+        JSONObject request = core.decisionGenerationRequest(state, "");
         assertTrue(request.getBoolean("needed"));
         core.installDecisionPackage(
             state, request.getString("contextHash"), deterministicAlternates());
+        assertTrue(core.decisionReady(state));
         String canonId = canonChoiceId(state);
         assertFalse(canonId.isEmpty());
         StoryCore.DecisionResolution resolution =

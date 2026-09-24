@@ -500,6 +500,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         .put("rngSequence", 0)
         .put("seed", stableSeed(state, normalized, participants))
         .put("logIndex", Math.max(0, gmLogIndex))
+        .put("deathReturnAnchorLocation", state.optString("location", ""))
+        .put("deathReturnLevelKey", state.optString(
+            LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0))))
+        .put("deathReturnJourneyPending", false)
         .put("participants", participants)
         .put("stageIndex", stageIndex)
         .put("entity", new JSONObject()
@@ -1357,10 +1361,28 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   private static void finishDefeat(JSONObject state, JSONObject combat) throws Exception {
     combat.put("active", false).put("outcome", "defeat");
     if (!combat.optBoolean("deathRecoveryApplied", false)) {
+      String targetLocation = combat.optString(
+          "deathReturnAnchorLocation", state.optString("location", "")).trim();
+      String targetLevelKey = combat.optString("deathReturnLevelKey",
+          state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)))).trim();
+
+      // The death sentence is the first player-visible consequence. Penalty/recovery remains Core-owned
+      // and is guarded by deathRecoveryApplied so normalize/load cannot apply it twice.
+      JSONArray log = state.optJSONArray("log");
+      if (log == null) log = new JSONArray();
+      log.put(new JSONObject().put("role", "gm")
+          .put("text", "Backrooms nuốt chửng lấy bạn khi bạn ngã xuống."));
+      state.put("log", log);
+
       CharacterProgressionCore progression = new CharacterProgressionCore();
       progression.applyCaoMinhDeathPenalty(state);
-      LevelCore.resetToLevelZeroStart(state);
-      combat.put("deathRecoveryApplied", true).put("playerRespawned", true);
+      state.put(LevelCore.LEVEL_KEY, targetLevelKey);
+      LevelCore.returnToCurrentLevelStart(state);
+      combat.put("deathReturnAnchorLocation", targetLocation)
+          .put("deathReturnLevelKey", targetLevelKey)
+          .put("deathReturnJourneyPending", true)
+          .put("deathRecoveryApplied", true)
+          .put("playerRespawned", true);
     }
     clearEncounterFlag(state);
   }

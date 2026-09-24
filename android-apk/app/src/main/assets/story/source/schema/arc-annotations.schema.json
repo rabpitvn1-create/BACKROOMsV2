@@ -24,6 +24,26 @@
           "nextChapter": {"type": "string"},
           "requiredFacts": {"type": "array", "items": {"type": "string"}},
           "forbiddenClaims": {"type": "array", "items": {"type": "string"}},
+          "offlineDecisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["anchor", "variants"],
+              "properties": {
+                "anchor": {"type": "string", "minLength": 1},
+                "variants": {"type": "array", "minItems": 3, "items": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["canon", "trap", "converge"],
+                  "properties": {
+                    "canon": {"type": "string", "minLength": 1},
+                    "trap": {"$ref": "#/$defs/choiceReaction"},
+                    "converge": {"$ref": "#/$defs/choiceReaction"}
+                  }
+                }}
+              }
+            }
+          },
           "events": {
             "type": "array",
             "items": {
@@ -42,5 +62,8 @@
         }
       }
     }
-  }
+  },
+  "$defs": {"choiceReaction": {"type": "object", "additionalProperties": false,
+    "required": ["text", "reply"], "properties": {"text": {"type": "string", "minLength": 1},
+      "reply": {"type": "string", "minLength": 1}}}}
 }

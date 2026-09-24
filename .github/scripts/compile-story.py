@@ -23,7 +23,7 @@ SCHEMA_VERSION = 3
 COMPILER_VERSION = 3
 ARTIFACT_SCHEMA_VERSION = 2
 INTERACTION_SCHEMA_VERSION = 4
-COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-decisions-v3-events-v1"
+COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-offline-decisions-v1-events-v1"
 VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "ENTITY_GATE"}
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
@@ -601,6 +601,9 @@ def compile_player_turns(chapter, segments):
             }
             continue
 
+        # Every player-visible authored beat that has another authored beat after it is a real
+        # decision gate. Runtime Core owns the three hidden outcomes; Gemini/Haiku only phrases
+        # the current gate on demand, so generated assets never need provider-authored choices.
         has_next_authored_turn = index + 1 < len(segments) or has_next_chapter
         if has_next_authored_turn:
             output[segment["id"]] = {
@@ -1076,6 +1079,7 @@ def prepare_story(entry):
             "eventsAfterSegment": after,
             "requiredFacts": chapter.get("requiredFacts") or [],
             "forbiddenClaims": chapter.get("forbiddenClaims") or [],
+            "offlineDecisions": chapter.get("offlineDecisions") or [],
         }
         prepared.append({
             "runtime": runtime,

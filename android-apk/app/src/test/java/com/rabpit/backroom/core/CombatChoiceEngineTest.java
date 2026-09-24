@@ -37,6 +37,41 @@ public class CombatChoiceEngineTest {
     assertEquals(0, progression.profile(state, "cao_minh")
         .getJSONArray("statusEffects").length());
   }
+  @Test public void defeatAtSublevelPreservesStoryAndRouteAndAnnouncesOnlyOnce() throws Exception {
+    JSONObject state = combatState(new JSONArray())
+        .put("currentLevel", 0).put("currentLevelKey", "0.1")
+        .put("location", "Level 0.1 / hành lang sâu")
+        .put("story", new JSONObject().put("currentChapter", "L01_C08")
+            .put("currentSegmentIndex", 3).put("eventSequence", 9));
+    JSONObject route = new JSONObject().put("levelKey", "0.1").put("streak", 4);
+    state.put("levelRoute", route);
+    JSONObject combat = new JSONObject().put("active", false).put("outcome", "defeat");
+    state.put("combat", combat);
+
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+    assertEquals("0.1", state.getString("currentLevelKey"));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    assertEquals("L01_C08", state.getJSONObject("story").getString("currentChapter"));
+    assertEquals(3, state.getJSONObject("story").getInt("currentSegmentIndex"));
+    assertEquals(9, state.getJSONObject("story").getInt("eventSequence"));
+    assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
+    assertEquals("Backrooms nuốt chửng lấy bạn khi bạn ngã xuống.",
+        state.getJSONArray("log").getJSONObject(state.getJSONArray("log").length() - 1).getString("text"));
+    JSONObject resolvedCombat = state.getJSONObject("combat");
+    assertEquals("Level 0.1 / hành lang sâu", resolvedCombat.getString("deathReturnAnchorLocation"));
+    assertEquals("0.1", resolvedCombat.getString("deathReturnLevelKey"));
+    assertTrue(resolvedCombat.getBoolean("deathReturnJourneyPending"));
+    assertTrue(resolvedCombat.getBoolean("deathRecoveryApplied"));
+
+    int logSize = state.getJSONArray("log").length();
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.setCurrentHp(state, "cao_minh", 7);
+    CombatChoiceEngine.normalizeTerminalEncounter(new JSONObject(state.toString()));
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+    assertEquals(logSize, state.getJSONArray("log").length());
+    assertEquals(7, progression.profile(state, "cao_minh").getInt("currentHp"));
+  }
+
   @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);

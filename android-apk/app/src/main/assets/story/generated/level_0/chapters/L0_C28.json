@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C28",
   "title": "Level 0 — Chương 28: Đường Biên Không Có Tên",
   "source": "story/source/level_0/LEVEL0_CH28.md",
@@ -23,6 +23,7 @@
   "forbiddenClaims": [
     "Do not name the new metal region as Level 1 or call it safe."
   ],
+  "offlineDecisions": [],
   "sourceDigest": "5ec40ae0dbaee4299e95caaa0e8119f9e0e59b5e6e8a64f3d543c78aec9e6db4",
   "segmentIds": [
     "L0_C28_S6fcde5c959a08e49",

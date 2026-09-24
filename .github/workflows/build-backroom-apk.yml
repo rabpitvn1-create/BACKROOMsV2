@@ -40,6 +40,27 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Compile Story generated assets from source
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/compile-story.py
+
+      - name: Commit compiler-owned Story generated assets
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-apk/app/src/main/assets/story/generated
+          if git diff --cached --quiet; then
+            echo 'Story generated assets already match source/compiler.'
+          else
+            git commit -m 'Regenerate Story assets'
+            git push origin HEAD:${GITHUB_HEAD_REF}
+          fi
 
       - name: Apply Entity Core runtime
         run: |
@@ -60,7 +81,8 @@ jobs:
             echo 'Entity Core runtime already connected.'
           else
             git commit -m 'Connect Entity Core to gameplay runtime'
-            git push origin HEAD:${GITHUB_REF_NAME}
+            TARGET_BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+            git push origin HEAD:"${TARGET_BRANCH}"
           fi
 
       - name: Verify Java-only baseline
@@ -164,15 +186,24 @@ jobs:
           grep -Fq 'LEVEL_ZERO_INTERACTIONS_ASSET' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
           grep -Fq 'MODE_DECISION = "DECISION"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
           grep -Fq 'MODE_ENTITY_GATE = "ENTITY_GATE"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
-          grep -Fq 'DECISION_PREFETCH_REQUIRED = "PREFETCH_REQUIRED"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'OUTCOME_TRAP = "TRAP_LOOP"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'DECISION_PROVIDER_REQUIRED = "PROVIDER_REQUIRED"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'OUTCOME_RETURN = "RETURN_TO_LEVEL_START"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'OUTCOME_STAY = "STAY_IN_PLACE"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'RETURN_CAUSE_DEATH = "DEATH"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'pendingStoryAdvance' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'processStoryEntityAttack' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter(state);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'storyDecisionPrefetchRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'prepareOfflineDecision(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'storyDecisionGenerationRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'returnJourneyTurnRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          ! grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq '@JavascriptInterface public void prepareStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq '@JavascriptInterface public void prepareReturnJourneyTurn' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'Android.prepareStoryDecision' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'Android.prepareReturnJourneyTurn' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'Android.prefetchStoryDecision' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '@JavascriptInterface public void resolveStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq '@JavascriptInterface public void attackStoryEntity' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'storyAwaitingDecision' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -266,7 +297,7 @@ jobs:
           grep -Fq '.put("leaderId", "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'ensureProfileObject(state, characters, "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'applyCaoMinhDeathPenalty(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          grep -Fq 'LevelCore.resetToLevelZeroStart(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'LevelCore.returnToCurrentLevelStart(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.applyExplorerTurnRecovery(sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'CombatChoiceEngine.normalizeTerminalEncounter(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
@@ -451,7 +482,7 @@ jobs:
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/SurvivalCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/SurvivalCoreTest.java
-          grep -Fq 'CURRENT_SAVE_VERSION = 11' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 12' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'survivalCore.projectPhysiology(state, id)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'copyField(before, sanitized, SurvivalCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ItemCore.grantEntityLootItem' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java

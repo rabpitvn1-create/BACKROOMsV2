@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-station-r1",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "zenith-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L01_C17",
   "title": "Level 0.1 — Chương 17: Đường Gió Quay Về",
   "source": "story/source/level_0_1/LEVEL0.1_CH17_ZENITH_STATION.md",
@@ -15,6 +15,7 @@
   "eventsAfterSegment": {},
   "requiredFacts": [],
   "forbiddenClaims": [],
+  "offlineDecisions": [],
   "sourceDigest": "7906b0dfebea44ee7cd7792f087bb51835c87176170aa17e5a965ab42fa845eb",
   "segmentIds": [
     "L01_C17_S064590b172c5f93b",

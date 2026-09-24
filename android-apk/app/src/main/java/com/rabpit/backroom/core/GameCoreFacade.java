@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 11;
+  private static final int CURRENT_SAVE_VERSION = 12;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -60,8 +60,16 @@ public final class GameCoreFacade implements AutoCloseable {
       storyCore.normalizeState(legacy);
       syncStoryBoundaryReadiness(legacy);
       CombatChoiceEngine.normalizeTerminalEncounter(legacy);
+      armDeathReturnIfNeeded(legacy);
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
+
+      if (storyCore.returnJourneyActive(legacy)) {
+        persist(legacy);
+        return response(true, legacy, "return_journey_choice_required",
+            "return_journey_choice_required",
+            "Hành trình hiện tại phải được xử lý bằng ba lựa chọn trong khung GAME MASTER.");
+      }
 
       if (storyArcComplete(legacy) && StoryCore.isAdvanceAction(text)) {
         if (!levelCore.storyHandoffAvailable(legacy)) {
@@ -248,15 +256,10 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  public synchronized String storyDecisionPrefetchRequest(String stateJson, String recentStory) {
+  public synchronized String storyDecisionGenerationRequest(String stateJson, String recentStory) {
     JSONObject submitted = parseState(stateJson);
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      survivalCore.normalizeState(state);
-      itemCore.normalizeInventory(state);
-      characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
       JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
       JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
@@ -265,12 +268,18 @@ public final class GameCoreFacade implements AutoCloseable {
       if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
         return new JSONObject().put("needed", false).put("error", "stale_story_decision").toString();
       }
-      return storyCore.decisionPrefetchRequest(state, recentStory).toString();
+      JSONObject request = storyCore.decisionGenerationRequest(state, recentStory);
+      if (request.optBoolean("needed", false)) {
+        request.put("prompt", request.optString("prompt", "") + "\n\nCORE CANON CONTEXT:\n"
+            + levelCore.promptContext(state) + "\n"
+            + entityCore.promptContext(state) + "\n"
+            + itemCore.promptContext(state) + "\n"
+            + characterEncounterCore.promptContext(state));
+      }
+      return request.toString();
     } catch (Exception e) {
       JSONObject output = new JSONObject();
-      try {
-        output.put("needed", false).put("error", safeMessage(e));
-      } catch (Exception ignored) {}
+      try { output.put("needed", false).put("error", safeMessage(e)); } catch (Exception ignored) {}
       return output.toString();
     }
   }
@@ -280,27 +289,21 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject submitted = parseState(stateJson);
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      survivalCore.normalizeState(state);
-      itemCore.normalizeInventory(state);
-      characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
       JSONObject submittedStory = submitted.optJSONObject(StoryCore.ROOT_KEY);
       JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
       String submittedDecisionId = submittedStory == null ? "" : submittedStory.optString("decisionId", "").trim();
       String storedDecisionId = storedStory == null ? "" : storedStory.optString("decisionId", "").trim();
       if (submittedDecisionId.isEmpty() || !submittedDecisionId.equals(storedDecisionId)) {
-        return response(false, state, "Story decision prefetch đã cũ.",
-            "story_decision_prefetch_stale", null);
+        return response(false, state, "Story choice generation is stale.",
+            "story_decision_generation_stale", null);
       }
-      JSONObject generated = parseState(generatedPackageJson);
-      storyCore.installDecisionPackage(state, contextHash, generated);
+      storyCore.installDecisionPackage(state, contextHash, parseState(generatedPackageJson));
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
-      return response(true, state, null, "story_decision_prefetched", null);
+      return response(true, state, null, "story_decision_generated", null);
     } catch (Exception e) {
-      return response(false, state, safeMessage(e), "story_decision_prefetch_rejected", null);
+      return response(false, state, safeMessage(e), "story_decision_generation_rejected", null);
     }
   }
 
@@ -326,6 +329,12 @@ public final class GameCoreFacade implements AutoCloseable {
 
       StoryCore.DecisionResolution resolution =
           storyCore.resolveDecision(state, choiceId, characterEncounterCore);
+      if (resolution.looped) {
+        appendDecisionLog(state, resolution);
+        state.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(state);
+        return response(true, state, null, "story_decision_looped", resolution.reply);
+      }
       grantStoryProgressCore(state, resolution);
       advanceGameTime(state, resolution.visibleChoice);
       characterProgressionCore.applyExplorerTurnRecovery(state);
@@ -342,20 +351,104 @@ public final class GameCoreFacade implements AutoCloseable {
         incrementTurn(state);
         if (storyCore.hasPendingStoryAdvance(state)) {
           advancePendingStorySequence(state);
-        } else if (resolution.looped) {
-          storyCore.refreshLoopDecisionContext(state);
         }
       }
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
       return response(true, state, null,
-          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat"
-              : (resolution.looped ? "story_decision_looped" : "story_turn_committed"),
+          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat" : "story_turn_committed",
           resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_rejected", null);
     }
+  }
+
+  public synchronized String returnJourneyTurnRequest(String stateJson, String recentStory) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      storyCore.normalizeState(state);
+      JSONObject submittedJourney = returnJourney(submitted);
+      JSONObject storedJourney = returnJourney(state);
+      if (!sameReturnTurn(submittedJourney, storedJourney)) {
+        return new JSONObject().put("needed", false).put("error", "stale_return_journey").toString();
+      }
+      JSONObject request = storyCore.returnJourneyTurnRequest(state, recentStory);
+      if (request.optBoolean("needed", false)) {
+        request.put("prompt", request.optString("prompt", "") + "\n\nCORE CANON CONTEXT:\n"
+            + levelCore.promptContext(state) + "\n"
+            + entityCore.promptContext(state) + "\n"
+            + itemCore.promptContext(state) + "\n"
+            + characterEncounterCore.promptContext(state) + "\n"
+            + storyCore.promptContext(state));
+      }
+      return request.toString();
+    } catch (Exception e) {
+      JSONObject output = new JSONObject();
+      try { output.put("needed", false).put("error", safeMessage(e)); } catch (Exception ignored) {}
+      return output.toString();
+    }
+  }
+
+  public synchronized String commitReturnJourneyTurn(
+      String stateJson, String journeyId, int turnIndex,
+      String contextHash, String generatedPackageJson) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      storyCore.normalizeState(state);
+      if (!sameReturnTurn(returnJourney(submitted), returnJourney(state))) {
+        return response(false, state, "Return journey generation is stale.",
+            "return_journey_generation_stale", null);
+      }
+      String narration = storyCore.installReturnJourneyTurn(
+          state, journeyId, turnIndex, contextHash, parseState(generatedPackageJson));
+      appendGeneratedReturnNarration(state, narration);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "return_journey_turn_generated", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "return_journey_generation_rejected", null);
+    }
+  }
+
+  public synchronized String processReturnJourneyChoice(String stateJson, String choiceId) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      storyCore.normalizeState(state);
+      if (!sameReturnTurn(returnJourney(submitted), returnJourney(state))) {
+        return response(false, state, "Return journey choice is stale.",
+            "return_journey_choice_stale", null);
+      }
+      StoryCore.ReturnJourneyResolution resolution =
+          storyCore.resolveReturnJourneyChoice(state, choiceId);
+      appendReturnJourneyResolution(state, resolution);
+      incrementTurn(state);
+      if (resolution.arrived && StoryCore.RETURN_CAUSE_DEATH.equals(resolution.cause)
+          && storyCore.hasPendingStoryAdvance(state)) {
+        advancePendingStorySequence(state);
+      }
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null,
+          resolution.arrived ? "return_journey_arrived" : "return_journey_turn_resolved",
+          resolution.reply);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "return_journey_choice_rejected", null);
+    }
+  }
+
+  public synchronized String storyLoopNarrationPrompt() throws Exception {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    return storyCore.loopNarrationPrompt(state);
+  }
+
+  public synchronized String completeStoryReturn(String expectedStateJson, String narration)
+      throws Exception {
+    throw new IllegalStateException(
+        "Single-step Story return is disabled; return journeys resolve through three Core-owned choices.");
   }
 
   public synchronized String processStoryEntityAttack(String stateJson) {
@@ -402,16 +495,19 @@ public final class GameCoreFacade implements AutoCloseable {
       boolean wasActive = CombatChoiceEngine.isActive(state);
       CombatChoiceEngine.resolveFinalized(state);
       CombatChoiceEngine.normalizeTerminalEncounter(state);
+      armDeathReturnIfNeeded(state);
       boolean active = CombatChoiceEngine.isActive(state);
       JSONObject combat = state.optJSONObject("combat");
       String outcome = combat == null ? "" : combat.optString("outcome", "");
 
-      if (wasActive && !active && "victory".equals(outcome)) {
+      if (wasActive && !active && ("victory".equals(outcome) || "defeat".equals(outcome))) {
         incrementTurn(state);
-        if (storyCore.hasPendingStoryAdvance(state)) {
-          advancePendingStorySequence(state);
-        } else if (storyCore.awaitingDecision(state)) {
-          storyCore.refreshLoopDecisionContext(state);
+        if ("victory".equals(outcome)) {
+          if (storyCore.hasPendingStoryAdvance(state)) {
+            advancePendingStorySequence(state);
+          } else if (storyCore.awaitingDecision(state)) {
+            storyCore.refreshLoopDecisionContext(state);
+          }
         }
       }
 
@@ -592,6 +688,7 @@ public final class GameCoreFacade implements AutoCloseable {
       characterEncounterCore.normalizeState(state);
       storyCore.normalizeState(state);
       CombatChoiceEngine.normalizeTerminalEncounter(state);
+      armDeathReturnIfNeeded(state);
       characterProgressionCore.applyExplorerTurnRecovery(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
@@ -952,6 +1049,15 @@ public final class GameCoreFacade implements AutoCloseable {
         pack.remove("outcomes");
         story.put("decisionPackage", pack);
       }
+      JSONObject journey = story.optJSONObject("returnJourney");
+      if (journey != null) {
+        JSONObject turnPack = journey.optJSONObject("turnPackage");
+        if (turnPack != null) {
+          turnPack.remove("outcomes");
+          journey.put("turnPackage", turnPack);
+        }
+        story.put("returnJourney", journey);
+      }
       safe.put(StoryCore.ROOT_KEY, story);
     } catch (Exception ignored) {}
     return safe;
@@ -972,6 +1078,76 @@ public final class GameCoreFacade implements AutoCloseable {
       submittedStory.put("decisionPackage", new JSONObject(persistedPack.toString()));
       submitted.put(StoryCore.ROOT_KEY, submittedStory);
     } catch (Exception ignored) {}
+  }
+
+  private void armDeathReturnIfNeeded(JSONObject state) throws Exception {
+    JSONObject combat = state == null ? null : state.optJSONObject("combat");
+    if (combat == null || !"defeat".equals(combat.optString("outcome", ""))
+        || !combat.optBoolean("deathReturnJourneyPending", false)) return;
+    if (!storyCore.returnJourneyActive(state)) {
+      storyCore.rearmAuthoredEncounterAfterDeath(state);
+      storyCore.beginDeathReturnJourney(
+          state,
+          combat.optString("deathReturnAnchorLocation", state.optString("location", "")),
+          combat.optString("deathReturnLevelKey",
+              state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)))));
+    }
+    combat.put("deathReturnJourneyPending", false);
+    combat.put("deathReturnJourneyStarted", true);
+    state.put("combat", combat);
+  }
+
+  private static JSONObject returnJourney(JSONObject state) {
+    JSONObject story = state == null ? null : state.optJSONObject(StoryCore.ROOT_KEY);
+    return story == null ? null : story.optJSONObject("returnJourney");
+  }
+
+  private static boolean sameReturnTurn(JSONObject submitted, JSONObject stored) {
+    if (submitted == null || stored == null) return false;
+    return submitted.optBoolean("active", false)
+        && stored.optBoolean("active", false)
+        && submitted.optString("journeyId", "").equals(stored.optString("journeyId", ""))
+        && submitted.optInt("turnIndex", -1) == stored.optInt("turnIndex", -2);
+  }
+
+  private void appendGeneratedReturnNarration(JSONObject state, String narration) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    JSONObject gm = new JSONObject()
+        .put("role", "gm")
+        .put("text", narration)
+        .put("authored", false)
+        .put("returnJourney", true);
+    JSONObject metadata = storyCore.logMetadata(state);
+    java.util.Iterator<String> keys = metadata.keys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      gm.put(key, metadata.get(key));
+    }
+    log.put(gm);
+    state.put("log", log);
+  }
+
+  private void appendReturnJourneyResolution(
+      JSONObject state, StoryCore.ReturnJourneyResolution resolution) throws Exception {
+    JSONArray log = state.optJSONArray("log");
+    if (log == null) log = new JSONArray();
+    log.put(new JSONObject().put("role", "player").put("text", resolution.visibleChoice));
+    if (resolution.reply != null && !resolution.reply.trim().isEmpty()) {
+      JSONObject gm = new JSONObject()
+          .put("role", "gm")
+          .put("text", resolution.reply)
+          .put("authored", false)
+          .put("returnJourney", true);
+      JSONObject metadata = storyCore.logMetadata(state);
+      java.util.Iterator<String> keys = metadata.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        gm.put(key, metadata.get(key));
+      }
+      log.put(gm);
+    }
+    state.put("log", log);
   }
 
   private String safeMessage(Exception e) {

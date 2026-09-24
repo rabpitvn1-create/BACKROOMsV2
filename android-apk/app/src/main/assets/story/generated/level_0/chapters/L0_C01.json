@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C01",
   "title": "Level 0 — Chương 01: Nơi Không Có Tên",
   "source": "story/source/level_0/LEVEL0_CH01.md",
@@ -15,6 +15,7 @@
   "eventsAfterSegment": {},
   "requiredFacts": [],
   "forbiddenClaims": [],
+  "offlineDecisions": [],
   "sourceDigest": "42abde5bfa266cec579d1e1240da6898deb128d88f064aee5954c7e08bb10433",
   "segmentIds": [
     "L0_C01_S677bb7d55e5d596a",

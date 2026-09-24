@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-return-journey-r2",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C27",
   "title": "Level 0 — Chương 27: Giọng Gọi Không Được Trả Lời",
   "source": "story/source/level_0/LEVEL0_CH27.md",
@@ -15,6 +15,7 @@
   "eventsAfterSegment": {},
   "requiredFacts": [],
   "forbiddenClaims": [],
+  "offlineDecisions": [],
   "sourceDigest": "b8489b7e33d2945e565f2d5b020bf4d357e8d23f75d2cebc47b22e9bf0234cd3",
   "segmentIds": [
     "L0_C27_S534fabd5fd6f0383",
