@@ -27,6 +27,7 @@ final class CharacterProgressionCore {
   static final int STORY_PROGRESS_BASE_CORE = 5;
 
   private static final double CORE_STAGE_MULTIPLIER = 1.5d;
+  private static final String TREASURE_FIRST_KILLS_KEY = "treasureEntityFirstKills";
   private static final String[] STAT_KEYS = {"STR", "DEF", "SKL", "VIT"};
 
   void normalizeState(JSONObject state) throws Exception {
@@ -178,6 +179,26 @@ final class CharacterProgressionCore {
     int granted = (int)Math.min((long)Integer.MAX_VALUE - current, (long)amount);
     resource.put("quantity", (int)Math.min(Integer.MAX_VALUE, next));
     return granted;
+  }
+
+  int rewardTreasureEntityVictory(JSONObject state, String rawEntityKey, int firstKillReward,
+                                  int repeatKillReward) throws Exception {
+    normalizeState(state);
+    String entityKey = rawEntityKey == null ? "" : rawEntityKey.trim().toLowerCase(Locale.ROOT);
+    if (entityKey.isEmpty()) throw new IllegalArgumentException("entity key is required");
+
+    JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
+    JSONObject firstKills = resource.optJSONObject(TREASURE_FIRST_KILLS_KEY);
+    if (firstKills == null) {
+      firstKills = new JSONObject();
+      resource.put(TREASURE_FIRST_KILLS_KEY, firstKills);
+    }
+
+    boolean firstKill = !firstKills.optBoolean(entityKey, false);
+    int reward = Math.max(0, firstKill ? firstKillReward : repeatKillReward);
+    if (firstKill) firstKills.put(entityKey, true);
+    grantCore(state, reward);
+    return reward;
   }
 
   int rewardStageCompletion(JSONObject state, int stageIndex) throws Exception {
