@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C23",
+  "title": "Level 0 — Chương 23: Nơi Tiếng Ù Biến Mất",
+  "source": "story/source/level_0/LEVEL0_CH23.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C24",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "df6dc4d96ffef53872203062f5ac8c4318878332d2d32329ea232b8264f1f2a9",
+  "segmentIds": [
+    "L0_C23_S7879a798cf6267cf",
+    "L0_C23_S2be9d53a98eb80b9",
+    "L0_C23_S1abb57442a4b6bfe",
+    "L0_C23_Sd186aecb2c8b9ee9",
+    "L0_C23_S42905a49ec5eecd1",
+    "L0_C23_Sb32fcea3f2063a45"
+  ]
+}

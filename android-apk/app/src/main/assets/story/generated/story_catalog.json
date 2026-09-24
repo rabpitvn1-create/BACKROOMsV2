@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "levels": {
+    "0": {
+      "storyId": "level_0_main",
+      "metadata": "story/generated/level_0/arc.json"
+    },
+    "0.1": {
+      "storyId": "level_0_1_zenith_station",
+      "metadata": "story/generated/level_0_1/arc.json"
+    }
+  }
+}

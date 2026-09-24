@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C02",
+  "title": "Level 0.1 — Chương 02: Những Tầng Không Còn Người",
+  "source": "story/source/level_0_1/LEVEL0.1_CH02_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C03",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "d5db61ef2ed25d320a7ddc0fe409c88e43fb01a7220cd1bcda8d5c8ff6041879",
+  "segmentIds": [
+    "L01_C02_S38fa8d863599326c",
+    "L01_C02_S86e70f920d02fb3e",
+    "L01_C02_S0408b70559b3df07",
+    "L01_C02_Saabce899f9f6b531",
+    "L01_C02_Sa4e859e77b08cef7",
+    "L01_C02_Se369eafefb6757f3",
+    "L01_C02_S80a9a425f8372e47"
+  ]
+}

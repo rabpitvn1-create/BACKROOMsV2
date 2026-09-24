@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C08",
+  "title": "Level 0.1 — Chương 08: Tầng Không Có Trong Độ Cao",
+  "source": "story/source/level_0_1/LEVEL0.1_CH08_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C09",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "CHARACTER_PRESENCE",
+      "characterId": "khai",
+      "scope": "story_local",
+      "presence": "MISSING"
+    }
+  ],
+  "eventsAfterSegment": {
+    "L01_C08_S38177703dcdcdd17": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "khai",
+        "scope": "story_local",
+        "presence": "PRESENT"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Khải is a story-local survivor and is not a Party member."
+  ],
+  "forbiddenClaims": [
+    "Do not add Khải to Party."
+  ],
+  "sourceDigest": "395a7bdfd0bba1a58abd49cee69a3926d50eeb7fb18c3de95307445826ece815",
+  "segmentIds": [
+    "L01_C08_S25b3b5c3b0beba2c",
+    "L01_C08_S568e0b499ee72430",
+    "L01_C08_S1da01b433f002352",
+    "L01_C08_Sdadf1f006d596152",
+    "L01_C08_S38177703dcdcdd17",
+    "L01_C08_S2e52e6c405f5e473",
+    "L01_C08_S86fd9262d5e1373c",
+    "L01_C08_S40752666ada0214f"
+  ]
+}

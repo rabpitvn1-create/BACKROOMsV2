@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "startChapter": "L01_C01",
+  "chapterCount": 18,
+  "chapters": [
+    {
+      "id": "L01_C01",
+      "metadata": "story/generated/level_0_1/chapters/L01_C01.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C01.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH01_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C02"
+    },
+    {
+      "id": "L01_C02",
+      "metadata": "story/generated/level_0_1/chapters/L01_C02.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C02.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH02_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C03"
+    },
+    {
+      "id": "L01_C03",
+      "metadata": "story/generated/level_0_1/chapters/L01_C03.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C03.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH03_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C04"
+    },
+    {
+      "id": "L01_C04",
+      "metadata": "story/generated/level_0_1/chapters/L01_C04.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C04.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH04_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C05"
+    },
+    {
+      "id": "L01_C05",
+      "metadata": "story/generated/level_0_1/chapters/L01_C05.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C05.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH05_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C06"
+    },
+    {
+      "id": "L01_C06",
+      "metadata": "story/generated/level_0_1/chapters/L01_C06.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C06.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH06_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C07"
+    },
+    {
+      "id": "L01_C07",
+      "metadata": "story/generated/level_0_1/chapters/L01_C07.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C07.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH07_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C08"
+    },
+    {
+      "id": "L01_C08",
+      "metadata": "story/generated/level_0_1/chapters/L01_C08.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C08.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH08_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C09"
+    },
+    {
+      "id": "L01_C09",
+      "metadata": "story/generated/level_0_1/chapters/L01_C09.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C09.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH09_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C10"
+    },
+    {
+      "id": "L01_C10",
+      "metadata": "story/generated/level_0_1/chapters/L01_C10.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C10.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH10_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C11"
+    },
+    {
+      "id": "L01_C11",
+      "metadata": "story/generated/level_0_1/chapters/L01_C11.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C11.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH11_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C12"
+    },
+    {
+      "id": "L01_C12",
+      "metadata": "story/generated/level_0_1/chapters/L01_C12.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C12.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH12_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C13"
+    },
+    {
+      "id": "L01_C13",
+      "metadata": "story/generated/level_0_1/chapters/L01_C13.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C13.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH13_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C14"
+    },
+    {
+      "id": "L01_C14",
+      "metadata": "story/generated/level_0_1/chapters/L01_C14.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C14.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH14_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C15"
+    },
+    {
+      "id": "L01_C15",
+      "metadata": "story/generated/level_0_1/chapters/L01_C15.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C15.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH15_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C16"
+    },
+    {
+      "id": "L01_C16",
+      "metadata": "story/generated/level_0_1/chapters/L01_C16.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C16.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH16_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C17"
+    },
+    {
+      "id": "L01_C17",
+      "metadata": "story/generated/level_0_1/chapters/L01_C17.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C17.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH17_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L01_C18"
+    },
+    {
+      "id": "L01_C18",
+      "metadata": "story/generated/level_0_1/chapters/L01_C18.json",
+      "interactions": "story/generated/level_0_1/interactions/L01_C18.json",
+      "source": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": ""
+    }
+  ]
+}

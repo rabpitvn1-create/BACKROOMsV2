@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C14",
+  "title": "Level 0.1 — Chương 14: Phía Sau Lớp Kính Cong",
+  "source": "story/source/level_0_1/LEVEL0.1_CH14_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L01_C15",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "1516f6ccb8ab004de268568898e1802bf82ec3dbde1a7da2197983ff00591878",
+  "segmentIds": [
+    "L01_C14_S3737a3e72a84ce11",
+    "L01_C14_Saebedd795f0b3aca",
+    "L01_C14_S264534a3dc8c539a",
+    "L01_C14_S42ae232cebd4830e",
+    "L01_C14_S15de13cd2697b773",
+    "L01_C14_S0d93acb88cb67a12",
+    "L01_C14_S00f630bdd817612c"
+  ]
+}

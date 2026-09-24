@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_main",
+  "levelKey": "0",
+  "sourceRevision": "level0-final-2026-09-23",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L0_C24",
+  "title": "Level 0 — Chương 24: Cánh Cửa Không Chờ Người",
+  "source": "story/source/level_0/LEVEL0_CH24.md",
+  "thread": "merged",
+  "visibility": "player",
+  "nextChapter": "L0_C25",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "STORY_FLAG_SET",
+      "key": "stable_metal_boundary_evidence",
+      "value": true
+    }
+  ],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "sourceDigest": "c6565bc7afafaf9551387848a4bee549ab273d0656d0f39dcc69426623b096a7",
+  "segmentIds": [
+    "L0_C24_S13166c5443e134f2",
+    "L0_C24_S276895eb76fca0e1",
+    "L0_C24_S217b744d670ebb21",
+    "L0_C24_S53570487c305121b",
+    "L0_C24_S2aacec1ee6eb1463",
+    "L0_C24_Sec2044bf997497fb"
+  ]
+}

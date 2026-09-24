@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "id": "L01_C18",
+  "title": "Level 0.1 — Chương 18: Người Ở Lại Trước Ngưỡng",
+  "source": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "ARC_BOUNDARY_REACHED"
+    }
+  ],
+  "eventsAfterSegment": {
+    "L01_C18_Se1c8875e138f4813": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "khai",
+        "scope": "story_local",
+        "presence": "DECEASED"
+      }
+    ],
+    "L01_C18_Sf3f98fcd1d8b8a65": [
+      {
+        "type": "STORY_FACT_SET",
+        "key": "zenith_threshold_crossed",
+        "value": true
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Khải dies before Cao Minh and Lục Trầm cross the threshold beyond Zenith Station.",
+    "The place beyond the threshold is not named by Story."
+  ],
+  "forbiddenClaims": [
+    "Do not keep Khải in MISSING state after death.",
+    "Do not name or choose the destination Level in Story metadata."
+  ],
+  "sourceDigest": "a63cb29c58a933cb719b0dcf0958f9357ff002be957d223cff6168527c7615e2",
+  "segmentIds": [
+    "L01_C18_Sfaee0ac27b0b8395",
+    "L01_C18_Sacd00ab9a2b05c16",
+    "L01_C18_S45b48a7c111a3608",
+    "L01_C18_Sc72731c4658778c4",
+    "L01_C18_Se1c8875e138f4813",
+    "L01_C18_Sf3f98fcd1d8b8a65",
+    "L01_C18_S0901bfbad46780d1"
+  ]
+}

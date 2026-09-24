@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_1_zenith_station",
+  "levelKey": "0.1",
+  "sourceRevision": "zenith-station-r1",
+  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "chapterId": "L01_C05",
+  "source": "story/source/level_0_1/LEVEL0.1_CH05_ZENITH_STATION.md",
+  "sourceDigest": "3f4730df0a80e2d6b049b54f702462a827d85e670cd38d198039d894e984acb7",
+  "segmentIds": [
+    "L01_C05_Sf6863cf7579aeaa8",
+    "L01_C05_S95befc4407bf28ff",
+    "L01_C05_Sc6809957ad472b23",
+    "L01_C05_Sb50716be58dd0886",
+    "L01_C05_S2129e8268881a15e",
+    "L01_C05_S02e23123d3769100",
+    "L01_C05_Sd334af01060beae1"
+  ],
+  "provider": "deterministic-turn-loop-v3",
+  "segments": {
+    "L01_C05_Sf6863cf7579aeaa8": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_Sf6863cf7579aeaa8",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_S95befc4407bf28ff": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_S95befc4407bf28ff",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_Sc6809957ad472b23": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_Sc6809957ad472b23",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_Sb50716be58dd0886": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_Sb50716be58dd0886",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_S2129e8268881a15e": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_S2129e8268881a15e",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_S02e23123d3769100": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_S02e23123d3769100",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    },
+    "L01_C05_Sd334af01060beae1": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L01_C05_Sd334af01060beae1",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+      }
+    }
+  }
+}
