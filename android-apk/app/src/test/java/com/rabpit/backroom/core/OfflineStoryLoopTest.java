@@ -167,6 +167,8 @@ public class OfflineStoryLoopTest {
       assertTrue(core.returnJourneyReady(state));
       assertFalse(core.returnJourneyNeedsProvider(state));
       assertEquals(savedChoices, core.returnJourneyChoices(state).toString());
+      assertEquals(3, state.getJSONObject("story").getJSONObject("returnJourney")
+          .getJSONObject("turnPackage").getJSONObject("outcomes").length());
 
       String staleReturnChoice = returnOutcomeId(state, StoryCore.RETURN_STAY);
       StoryCore.ReturnJourneyResolution stayJourney =
@@ -235,6 +237,127 @@ public class OfflineStoryLoopTest {
         assertTrue(expected.getMessage().contains("not ready"));
       }
     }
+  }
+
+  @Test public void deathReturnAtPointZeroOneUsesAllThreeOutcomesBeforeResumingPausedStory()
+      throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    CharacterEncounterCore characters = new CharacterEncounterCore(bound -> bound - 1);
+    JSONObject state = storyState("0.1").put("location", "Level 0.1 / nơi Cao Minh ngã xuống");
+    core.normalizeState(state);
+    StoryCore.AuthoredTurn first =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characters);
+    assertEquals(StoryRepository.MODE_DECISION, first.mode);
+
+    JSONObject story = state.getJSONObject("story");
+    String chapter = story.getString("currentChapter");
+    String segment = story.getString("currentSegmentId");
+    int segmentIndex = story.getInt("currentSegmentIndex");
+    int eventSequence = story.getInt("eventSequence");
+    String inventory = state.getJSONArray("inventory").toString();
+    String flags = state.getJSONObject("flags").toString();
+
+    core.beginDeathReturnJourney(
+        state, "Level 0.1 / nơi Cao Minh ngã xuống", "0.1");
+    assertTrue(core.returnJourneyActive(state));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    assertEquals(StoryCore.RETURN_CAUSE_DEATH,
+        state.getJSONObject("story").getJSONObject("returnJourney").getString("cause"));
+
+    // Repeated STAY outcomes cannot secretly move the player or authored cursor.
+    for (int i = 0; i < 2; i++) {
+      installReturnTurn(core, state, "tử-trận-dừng-" + i);
+      StoryCore.ReturnJourneyResolution result = core.resolveReturnJourneyChoice(
+          state, returnOutcomeId(state, StoryCore.RETURN_STAY));
+      assertFalse(result.arrived);
+      assertEquals(0, state.getJSONObject("story").getJSONObject("returnJourney").getInt("progress"));
+      assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    }
+
+    // Move away, then repeatedly fold back to the exact 0.1 start.
+    for (int i = 0; i < 2; i++) {
+      installReturnTurn(core, state, "tử-trận-tiến-thử-" + i);
+      core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+      assertNotEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+
+      installReturnTurn(core, state, "tử-trận-quay-đầu-" + i);
+      StoryCore.ReturnJourneyResolution returned = core.resolveReturnJourneyChoice(
+          state, returnOutcomeId(state, StoryCore.RETURN_TO_START));
+      assertFalse(returned.arrived);
+      assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+      assertEquals(0, state.getJSONObject("story").getJSONObject("returnJourney").getInt("progress"));
+    }
+
+    // Only three uninterrupted Core-owned progress outcomes can reach the saved death location.
+    for (int step = 1; step <= 3; step++) {
+      installReturnTurn(core, state, "tử-trận-về-đích-" + step);
+      StoryCore.ReturnJourneyResolution moved = core.resolveReturnJourneyChoice(
+          state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+      assertEquals(step == 3, moved.arrived);
+    }
+
+    assertFalse(core.returnJourneyActive(state));
+    assertEquals("0.1", state.getString("currentLevelKey"));
+    assertEquals("Level 0.1 / nơi Cao Minh ngã xuống", state.getString("location"));
+    assertEquals(chapter, state.getJSONObject("story").getString("currentChapter"));
+    assertEquals(segment, state.getJSONObject("story").getString("currentSegmentId"));
+    assertEquals(segmentIndex, state.getJSONObject("story").getInt("currentSegmentIndex"));
+    assertEquals(eventSequence, state.getJSONObject("story").getInt("eventSequence"));
+    assertEquals(inventory, state.getJSONArray("inventory").toString());
+    assertEquals(flags, state.getJSONObject("flags").toString());
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionNeedsProvider(state));
+  }
+
+  @Test public void invalidOrRepeatedProviderPackageLeavesReturnStateRetryable() throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    JSONObject state = storyState("0.1").put("location", "đích lỗi provider");
+    core.normalizeState(state);
+    core.beginDeathReturnJourney(state, "đích lỗi provider", "0.1");
+
+    JSONObject request = core.returnJourneyTurnRequest(state, "");
+    JSONObject bad = returnTurn("không-hợp-lệ");
+    bad.getJSONObject("progress").put("text", "reset checkpoint");
+    try {
+      core.installReturnJourneyTurn(
+          state, request.getString("journeyId"), request.getInt("turnIndex"),
+          request.getString("contextHash"), bad);
+      fail("Meta-leaking provider text must be rejected.");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("unsafe"));
+    }
+    JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
+    assertEquals(StoryCore.RETURN_PROVIDER_REQUIRED, journey.getString("turnStatus"));
+    assertEquals(0, journey.getJSONObject("turnPackage").length());
+    assertEquals(0, journey.getInt("progress"));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+
+    JSONObject accepted = returnTurn("bộ-lựa-chọn-cũ");
+    request = core.returnJourneyTurnRequest(state, "");
+    core.installReturnJourneyTurn(
+        state, request.getString("journeyId"), request.getInt("turnIndex"),
+        request.getString("contextHash"), accepted);
+    core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_STAY));
+
+    request = core.returnJourneyTurnRequest(state, "");
+    try {
+      core.installReturnJourneyTurn(
+          state, request.getString("journeyId"), request.getInt("turnIndex"),
+          request.getString("contextHash"), accepted);
+      fail("A complete choice set must not be replayed verbatim.");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("repeats"));
+    }
+    journey = state.getJSONObject("story").getJSONObject("returnJourney");
+    assertEquals(StoryCore.RETURN_PROVIDER_REQUIRED, journey.getString("turnStatus"));
+    assertEquals(0, journey.getJSONObject("turnPackage").length());
+    assertEquals(0, journey.getInt("progress"));
+
+    request = core.returnJourneyTurnRequest(state, "");
+    core.installReturnJourneyTurn(
+        state, request.getString("journeyId"), request.getInt("turnIndex"),
+        request.getString("contextHash"), returnTurn("bộ-lựa-chọn-mới"));
+    assertTrue(core.returnJourneyReady(state));
   }
 
   @Test public void deathReturnStartsAtExactCurrentLevelKeyForEveryKnownSublevel() throws Exception {
