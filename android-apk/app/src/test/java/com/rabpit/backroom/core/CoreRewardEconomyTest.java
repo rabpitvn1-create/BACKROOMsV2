@@ -68,6 +68,53 @@ public class CoreRewardEconomyTest {
     assertEquals(2, progression.coreCount(state));
   }
 
+  @Test public void tamMaPaysStageScaledJackpotOncePerStage() throws Exception {
+    JSONObject state = combatState("0");
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+
+    CombatChoiceEngine.start(state, "tam_ma_cao_minh", 0);
+    JSONObject firstCombat = state.getJSONObject("combat");
+    firstCombat.getJSONObject("entity").put("hp", 1);
+    finalizeAs(state, 2, 2, 1, 4, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(100, firstCombat.getInt("coreDropReward"));
+    assertEquals("treasure", firstCombat.getString("coreDropRewardType"));
+    assertEquals(100, progression.coreCount(state));
+
+    CombatChoiceEngine.start(state, "tam_ma_cao_minh", 0);
+    JSONObject repeatCombat = state.getJSONObject("combat");
+    repeatCombat.getJSONObject("entity").put("hp", 1);
+    finalizeAs(state, 2, 2, 1, 4, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(10, repeatCombat.getInt("coreDropReward"));
+    assertEquals("treasure", repeatCombat.getString("coreDropRewardType"));
+    assertEquals(110, progression.coreCount(state));
+
+    state.put(LevelCore.LEVEL_KEY, "0.1");
+    CombatChoiceEngine.start(state, "tam_ma_cao_minh", 0);
+    JSONObject nextStageFirstCombat = state.getJSONObject("combat");
+    nextStageFirstCombat.getJSONObject("entity").put("hp", 1);
+    finalizeAs(state, 2, 2, 1, 4, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(1, nextStageFirstCombat.getInt("stageIndex"));
+    assertEquals(110, nextStageFirstCombat.getInt("coreDropReward"));
+    assertEquals("treasure", nextStageFirstCombat.getString("coreDropRewardType"));
+    assertEquals(220, progression.coreCount(state));
+
+    CombatChoiceEngine.start(state, "tam_ma_cao_minh", 0);
+    JSONObject nextStageRepeatCombat = state.getJSONObject("combat");
+    nextStageRepeatCombat.getJSONObject("entity").put("hp", 1);
+    finalizeAs(state, 2, 2, 1, 4, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(11, nextStageRepeatCombat.getInt("coreDropReward"));
+    assertEquals(231, progression.coreCount(state));
+  }
+
   @Test public void storyProgressRewardsCanonAndConvergeButNeverTrapLoop() throws Exception {
     JSONObject state = baseState("0");
     CharacterProgressionCore progression = new CharacterProgressionCore();

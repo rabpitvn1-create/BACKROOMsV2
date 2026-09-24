@@ -397,7 +397,24 @@ jobs:
           grep -Fq 'MAX_COMBAT_PARTICIPANTS = 4' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'output.length() < MAX_COMBAT_PARTICIPANTS' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'feedbackEvents' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          jq -e '.rollMode == "independent_per_entity" and .rules.sharedPool == false and .rules.roamingAllLevels == true and .rules.canonLevelRestrictionsApplied == false and .rules.minimumRatePercent == 3 and .rules.maximumRatePercent == 3.5 and (.entities | length == 17) and ([.entities[].key] | contains(["async_rifleman"])) and ([.entities[].key] | index("async_vanguard") == null and index("async_tactical") == null and index("async_decon") == null) and ([.entities[].ratePercent | select(. < 3 or . > 3.5)] | length == 0)' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
+          jq -e '
+            .rollMode == "independent_per_entity" and
+            .rules.sharedPool == false and
+            .rules.roamingAllLevels == true and
+            .rules.canonLevelRestrictionsApplied == false and
+            .rules.minimumRatePercent == 3 and
+            .rules.maximumRatePercent == 3.5 and
+            .rules.treasureMaximumRatePercent == 4 and
+            .rules.treasurePriorityBeforeStandardPool == true and
+            (.entities | length == 18) and
+            ([.entities[] | select((.spawnClass // "standard") == "standard")] | length == 17) and
+            ([.entities[] | select(.spawnClass == "treasure")] | length == 1) and
+            ([.entities[].key] | contains(["async_rifleman", "tam_ma_cao_minh"])) and
+            ([.entities[].key] | index("async_vanguard") == null and index("async_tactical") == null and index("async_decon") == null) and
+            ([.entities[] | select((.spawnClass // "standard") == "standard") | .ratePercent | select(. < 3 or . > 3.5)] | length == 0) and
+            ([.entities[] | select(.spawnClass == "treasure") | .ratePercent | select(. <= 0 or . > 4)] | length == 0) and
+            ([.entities[] | select(.key == "tam_ma_cao_minh" and .spawnClass == "treasure" and .ratePercent == 4)] | length == 1)
+          ' android-apk/app/src/main/assets/knowledge/entity_encounters.json >/dev/null
           grep -Fq 'static boolean roamingAllowedOn(int level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'ROAMING POLICY: this registered Entity is valid on every Backrooms Level.' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           ! grep -Fq 'entity.allowedOn(level)' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
@@ -587,6 +604,7 @@ jobs:
           unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/slenderman.webp'
           unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/diep_minh.webp'
           unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/async_rifleman.webp'
+          unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/tam_ma_cao_minh.webp'
           ! unzip -l Backroom-1.1.91.apk | grep -E -q 'assets/entity/.*\.png$'
           ! unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/async_vanguard.webp'
           ! unzip -l Backroom-1.1.91.apk | grep -q 'assets/entity/async_tactical.webp'

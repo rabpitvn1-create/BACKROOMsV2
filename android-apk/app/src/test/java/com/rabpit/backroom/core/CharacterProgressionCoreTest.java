@@ -147,6 +147,29 @@ public class CharacterProgressionCoreTest {
     assertEquals(0, core.coreCount(state));
   }
 
+  @Test public void treasureEntityJackpotPersistsPerStageAcrossReloads() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject state = baseState();
+    core.normalizeState(state);
+
+    assertEquals(100, core.rewardTreasureEntityVictory(
+        state, "tam_ma_cao_minh", 0, 100, 10));
+    assertEquals(100, core.coreCount(state));
+
+    JSONObject reloaded = new JSONObject(state.toString());
+    CharacterProgressionCore reloadedCore = new CharacterProgressionCore();
+    assertEquals(10, reloadedCore.rewardTreasureEntityVictory(
+        reloaded, "tam_ma_cao_minh", 0, 100, 10));
+    assertEquals(110, reloadedCore.coreCount(reloaded));
+
+    assertEquals(110, reloadedCore.rewardTreasureEntityVictory(
+        reloaded, "tam_ma_cao_minh", 1, 110, 11));
+    assertEquals(220, reloadedCore.coreCount(reloaded));
+    assertEquals(11, reloadedCore.rewardTreasureEntityVictory(
+        reloaded, "tam_ma_cao_minh", 1, 110, 11));
+    assertEquals(231, reloadedCore.coreCount(reloaded));
+  }
+
   @Test public void stageCompletionRewardsOnlyNewHighestStageOnce() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();

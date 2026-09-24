@@ -366,9 +366,41 @@ public class CombatChoiceEngineTest {
         proc.setAccessible(true);
         assertTrue("Damage for " + key, damage.getInt(skill) > 0);
         assertTrue("Proc for " + key, proc.getInt(skill) >= 20);
-        assertTrue("Proc for " + key, proc.getInt(skill) <= 35);
+        int maxProc = "tam_ma_cao_minh".equals(key) ? 45 : 35;
+        assertTrue("Proc for " + key, proc.getInt(skill) <= maxProc);
       }
     }
+  }
+
+  @Test public void tamMaUsesDoubleHoundStatsAndTreasureProcRates() throws Exception {
+    assertTrue(CombatChoiceEngine.isKnownEntity("tam_ma_cao_minh"));
+
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "tam_ma_cao_minh", 0);
+    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+    assertEquals("Tâm Ma Cao Minh", entity.getString("name"));
+    assertEquals(300, entity.getInt("baseHp"));
+    assertEquals(30, entity.getInt("baseDamage"));
+    assertEquals(3, CombatChoiceEngine.entitySkillCount("tam_ma_cao_minh"));
+
+    Field skillsField = CombatChoiceEngine.class.getDeclaredField("ENTITY_SKILLS");
+    skillsField.setAccessible(true);
+    Map<?, ?> pools = (Map<?, ?>) skillsField.get(null);
+    List<?> skills = (List<?>) pools.get("tam_ma_cao_minh");
+    int[] expected = {35, 40, 45};
+    for (int i = 0; i < expected.length; i++) {
+      Field proc = skills.get(i).getClass().getDeclaredField("procPercent");
+      proc.setAccessible(true);
+      assertEquals(expected[i], proc.getInt(skills.get(i)));
+    }
+
+    JSONObject nextStage = combatState(new JSONArray());
+    nextStage.put(LevelCore.LEVEL_KEY, "0.1");
+    CombatChoiceEngine.start(nextStage, "tam_ma_cao_minh", 0);
+    JSONObject scaled = nextStage.getJSONObject("combat").getJSONObject("entity");
+    assertEquals(330, scaled.getInt("maxHp"));
+    assertEquals(33, scaled.getInt("attack"));
+    assertEquals(110, scaled.getInt("stagePercent"));
   }
 
   @Test public void entityFallsBackToBasicAttackWhenNoSkillProcs() throws Exception {
