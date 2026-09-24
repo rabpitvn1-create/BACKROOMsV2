@@ -1,0 +1,8 @@
+Backroom 1.1.92
+
+- Bump phiên bản ứng dụng lên 1.1.92 với versionCode 92.
+- Thêm Treasure Entity Tâm Ma Cao Minh với tỷ lệ xuất hiện thực tế 4% theo priority roll riêng.
+- Tâm Ma Cao Minh dùng base 300 HP / 30 DMG, ba proc độc lập 35% / 40% / 45% và scale +10% theo stage/sublevel.
+- Mỗi stage/sublevel có jackpot lần hạ đầu tiên: 100 Core base; các lần sau nhận 10 Core base, cùng scale theo stage.
+- Lưu trạng thái jackpot theo Entity + stageIndex để reload không farm lại jackpot cũ nhưng sang stage mới vẫn mở jackpot mới.
+- Đóng gói sprite WebP Tâm Ma Cao Minh, metadata overlay và regression/CI guards tương ứng.
