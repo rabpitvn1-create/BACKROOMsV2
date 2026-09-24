@@ -171,8 +171,10 @@ jobs:
           grep -Fq 'processStoryEntityAttack' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter(state);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'storyDecisionPrefetchRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'prepareOfflineDecision(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          ! grep -Fq 'storyDecisionPrefetchRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          ! grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          ! grep -Fq 'Android.prefetchStoryDecision' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq '@JavascriptInterface public void resolveStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq '@JavascriptInterface public void attackStoryEntity' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'storyAwaitingDecision' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -266,7 +268,7 @@ jobs:
           grep -Fq '.put("leaderId", "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'ensureProfileObject(state, characters, "cao_minh")' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'applyCaoMinhDeathPenalty(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
-          grep -Fq 'LevelCore.resetToLevelZeroStart(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
+          grep -Fq 'LevelCore.returnToCurrentLevelStart(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'characterProgressionCore.applyExplorerTurnRecovery(sanitized)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'CombatChoiceEngine.normalizeTerminalEncounter(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'testImplementation '\''org.json:json:20240303'\''' android-apk/app/build.gradle
