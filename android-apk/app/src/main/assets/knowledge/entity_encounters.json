@@ -489,14 +489,14 @@
     {
       "key": "diep_minh",
       "name": "Diệp Minh",
-      "asset": "entity/diep_minh.png",
+      "asset": "entity/diep_minh.webp",
       "autoSpawn": false,
       "canonRefs": [
         "DIEP-MINH-VIS-01",
         "DIEP-MINH-CAO-REL-01",
         "DIEP-MINH-BACKROOMS-01"
       ],
-      "canon": "Diệp Minh là tử địch không đội trời chung của Cao Minh. Hắn từng trực tiếp góp phần vào đại kiếp thảm sát Cao gia, biến cố đã đẩy Cao Minh vào tuyệt vọng và trở thành một nguyên nhân quyết định khiến hắn bước vào ma đạo; Diệp Minh không mặc định là chủ mưu duy nhất. Ngoại hình khóa theo entity/diep_minh.png: nam tử trẻ tóc đen, pháp giáp đen-vàng; nửa phải còn hình người, nửa trái dị hóa thành ma thể đen-đỏ với hồng quang, tua nhánh và vuốt; tay phải cầm trường kiếm tỏa kim quang, quanh thân có phù vàng chữ đỏ và họa tiết âm dương/bát quái. Diệp Minh nguyên bản đã chết trước các lần xuất hiện trong Backrooms. Thực thể hiện tại nhận ra Cao Minh và giữ ký ức cốt lõi về huyết cừu, nhưng việc nó là tàn hồn, bản sao, tái tạo hay một cơ chế khác của Backrooms vẫn OPEN. Một manifestation có thể bị tiêu diệt nhưng không bị xóa vĩnh viễn; không có thời gian hoặc địa điểm tái xuất cố định.",
+      "canon": "Diệp Minh là tử địch không đội trời chung của Cao Minh. Hắn từng trực tiếp góp phần vào đại kiếp thảm sát Cao gia, biến cố đã đẩy Cao Minh vào tuyệt vọng và trở thành một nguyên nhân quyết định khiến hắn bước vào ma đạo; Diệp Minh không mặc định là chủ mưu duy nhất. Ngoại hình khóa theo entity/diep_minh.webp: nam tử trẻ tóc đen, pháp giáp đen-vàng; nửa phải còn hình người, nửa trái dị hóa thành ma thể đen-đỏ với hồng quang, tua nhánh và vuốt; tay phải cầm trường kiếm tỏa kim quang, quanh thân có phù vàng chữ đỏ và họa tiết âm dương/bát quái. Diệp Minh nguyên bản đã chết trước các lần xuất hiện trong Backrooms. Thực thể hiện tại nhận ra Cao Minh và giữ ký ức cốt lõi về huyết cừu, nhưng việc nó là tàn hồn, bản sao, tái tạo hay một cơ chế khác của Backrooms vẫn OPEN. Một manifestation có thể bị tiêu diệt nhưng không bị xóa vĩnh viễn; không có thời gian hoặc địa điểm tái xuất cố định.",
       "autoProcSkills": [
         {
           "name": "Golden Sword Slash",

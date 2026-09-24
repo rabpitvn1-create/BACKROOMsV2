@@ -33,11 +33,11 @@ for(const [w,h] of [[280,250],[350,250],[372,250],[620,450],[240,400],[800,250]]
   if(w===350)await page.locator('#snapshot').screenshot({path:path.join(output,mode+'-preview.png')});
  }
  const poses=results.filter(r=>r.w===w&&['standing','aiming','lucia'].includes(r.mode));
- const heights=poses.map(r=>r.data.find(d=>!['deathmoth.png','hound.png'].includes(d.src)).height);
+ const heights=poses.map(r=>r.data.find(d=>!['deathmoth.webp','hound.webp'].includes(d.src)).height);
  assert.ok(Math.max(...heights)-Math.min(...heights)<.01);
 }
 // All current entity assets fit their lane with the same anchor contract.
-for(const file of fs.readdirSync(assets+'/entity').filter(x=>x.endsWith('.png'))){
+for(const file of fs.readdirSync(assets+'/entity').filter(x=>x.endsWith('.webp'))){
  await page.evaluate(key=>backroomSetCombatVisualActor(0,key),file.slice(0,-4));
  await page.waitForFunction(()=>[...document.querySelectorAll('.snapshot-grounded')].every(i=>i.complete&&i.naturalWidth&&i.style.visibility==='visible'));
 }
@@ -46,6 +46,6 @@ assert.equal(await page.locator('.combat-float').count(),1);
 assert.deepEqual(errors,[]);
 fs.writeFileSync(path.join(output,'browser-results.json'),JSON.stringify(results,null,2));
 console.log('Evidence:',output);
-console.log('PASS: 36 pose/size combinations, 19 entity assets, actor feedback, no JS errors');
+console.log('PASS: 36 pose/size combinations, 20 entity assets, actor feedback, no JS errors');
 await browser.close();
 })();

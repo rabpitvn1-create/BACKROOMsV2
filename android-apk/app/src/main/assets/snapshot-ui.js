@@ -162,7 +162,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
     var key=activeEntityKey(),img;
     if(key){
       appendCombatCharacter(box,combatVisualParticipant());
-      img=document.createElement('img');img.className='snapshot-entity snapshot-grounded';img.src='file:///android_asset/entity/'+key+'.png';img.alt=key;box.appendChild(img);alignOverlayToGround(img,'left','entity');return;
+      img=document.createElement('img');img.className='snapshot-entity snapshot-grounded';img.src='file:///android_asset/entity/'+key+'.webp';img.alt=key;box.appendChild(img);alignOverlayToGround(img,'left','entity');return;
     }
     if(chestPresent()){img=document.createElement('img');img.className='snapshot-chest';img.src='file:///android_asset/chest_overlay.png';img.alt='Rương';box.appendChild(img);return;}
     if(shouldShowCaoMinhOverlay()){

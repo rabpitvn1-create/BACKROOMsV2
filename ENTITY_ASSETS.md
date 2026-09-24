@@ -4,30 +4,30 @@ Toàn bộ sprite Entity dùng trong APK nằm trực tiếp tại:
 
 `android-apk/app/src/main/assets/entity/`
 
-Runtime overlay dùng canonical Entity key trùng chính xác với tên file bỏ phần mở rộng `.png`. Không có manifest từ xa và không tải ảnh Entity từ mạng.
+Runtime overlay dùng canonical Entity key trùng chính xác với tên file bỏ phần mở rộng `.webp`. Không có manifest từ xa và không tải ảnh Entity từ mạng.
 
 | Canonical Entity key | Local asset |
 |---|---|
-| `hound` | `hound.png` |
-| `clump` | `clump.png` |
-| `duller` | `duller.png` |
-| `deathmoth` | `deathmoth.png` |
-| `hostile_faceling` | `hostile_faceling.png` |
-| `false_puddle` | `false_puddle.png` |
-| `paintings` | `paintings.png` |
-| `smiler` | `smiler.png` |
-| `skin-stealer` | `skin-stealer.png` |
-| `predatory_window` | `predatory_window.png` |
-| `biological_pipeline` | `biological_pipeline.png` |
-| `wretch` | `wretch.png` |
-| `cable_mimic` | `cable_mimic.png` |
-| `the_beast_of_level_5` | `the_beast_of_level_5.png` |
-| `hotel_corpse_lure` | `hotel_corpse_lure.png` |
-| `jeff_the_killer` | `jeff_the_killer.png` |
-| `async_rifleman` | `async_rifleman.png` |
-| `jane_the_killer` | `jane_the_killer.png` |
-| `slenderman` | `slenderman.png` |
-| `diep_minh` | `diep_minh.png` |
+| `hound` | `hound.webp` |
+| `clump` | `clump.webp` |
+| `duller` | `duller.webp` |
+| `deathmoth` | `deathmoth.webp` |
+| `hostile_faceling` | `hostile_faceling.webp` |
+| `false_puddle` | `false_puddle.webp` |
+| `paintings` | `paintings.webp` |
+| `smiler` | `smiler.webp` |
+| `skin-stealer` | `skin-stealer.webp` |
+| `predatory_window` | `predatory_window.webp` |
+| `biological_pipeline` | `biological_pipeline.webp` |
+| `wretch` | `wretch.webp` |
+| `cable_mimic` | `cable_mimic.webp` |
+| `the_beast_of_level_5` | `the_beast_of_level_5.webp` |
+| `hotel_corpse_lure` | `hotel_corpse_lure.webp` |
+| `jeff_the_killer` | `jeff_the_killer.webp` |
+| `async_rifleman` | `async_rifleman.webp` |
+| `jane_the_killer` | `jane_the_killer.webp` |
+| `slenderman` | `slenderman.webp` |
+| `diep_minh` | `diep_minh.webp` |
 
 ## Encounter runtime
 
@@ -46,4 +46,4 @@ Current fixed rates are stored only in `entity_encounters.json`; that file is th
 
 Snapshot overlay reads:
 
-`file:///android_asset/entity/<canonical-key>.png`
+`file:///android_asset/entity/<canonical-key>.webp`

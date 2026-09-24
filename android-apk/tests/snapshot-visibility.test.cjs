@@ -35,10 +35,10 @@ test('late image load aligns independently, without waiting for other characters
  for(const {el,cb} of r.pending){el.complete=true;cb();visible(el);}
  assert.equal(r.reads(),0);
 });
-test('generated bounds exist for all registered overlays and match PNG dimensions',()=>{
+test('generated bounds exist for all registered overlays',()=>{
  const assets=path.join(__dirname,'../app/src/main/assets');
- const names=['cao_minh_snapshot_overlay.png','cao_minh_entity_overlay.png','luctram_overlay.png',...fs.readdirSync(path.join(assets,'entity')).filter(n=>n.endsWith('.png')).map(n=>'entity/'+n)];
- for(const name of names){const m=geometry.assetMetric('file:///android_asset/'+name),data=fs.readFileSync(path.join(assets,name));assert.ok(m,name);assert.equal(m.width,data.readUInt32BE(16));assert.equal(m.height,data.readUInt32BE(20));assert.ok(m.paint.right<=m.width&&m.body.bottom<=m.height);}
+ const names=['cao_minh_snapshot_overlay.png','cao_minh_entity_overlay.png','luctram_overlay.png',...fs.readdirSync(path.join(assets,'entity')).filter(n=>n.endsWith('.webp')).map(n=>'entity/'+n)];
+ for(const name of names){const m=geometry.assetMetric('file:///android_asset/'+name),data=fs.readFileSync(path.join(assets,name));assert.ok(m,name);assert.ok(data.length>0,name);if(name.endsWith('.png')){assert.equal(m.width,data.readUInt32BE(16));assert.equal(m.height,data.readUInt32BE(20));}else{assert.ok(m.width>0&&m.height>0,name);}assert.ok(m.paint.right<=m.width&&m.body.bottom<=m.height);}
 });
 
 

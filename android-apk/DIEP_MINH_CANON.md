@@ -2,7 +2,7 @@
 
 **STATUS:** CURRENT USER RETCON / IMMUTABLE unless explicitly retconned again.  
 **Runtime key:** `diep_minh`  
-**Visual asset:** `app/src/main/assets/entity/diep_minh.png`
+**Visual asset:** `app/src/main/assets/entity/diep_minh.webp`
 
 Tài liệu này khóa riêng canon hiện hành của Diệp Minh và **thay thế phần OPEN cũ** về nguyên nhân mối thù Cao Minh ↔ Diệp Minh. Nó không tự thay đổi tỷ lệ spawn, không đưa Diệp Minh vào registry auto-spawn và không xác lập thêm cảnh giới, tông môn hay lai lịch chưa được khóa.
 
@@ -12,7 +12,7 @@ Diệp Minh là **tử địch không đội trời chung** của Cao Minh từ 
 
 ## 02 · KHÓA THỊ GIÁC R01 · DIEP-MINH-VIS-01
 
-Ảnh `entity/diep_minh.png` là khóa thị giác hiện hành.
+Ảnh `entity/diep_minh.webp` là khóa thị giác hiện hành.
 
 Diệp Minh mang dung mạo một nam tử trẻ tuổi, cao ráo, thân hình thon gọn nhưng rắn chắc. Gương mặt thanh và sắc, thần thái lạnh lẽo; tóc đen, dày, hơi rối và vuốt ngược ra sau.
 
@@ -53,5 +53,5 @@ Mỗi lần tái xuất, hắn vẫn nhận ra Cao Minh và giữ ký ức cốt
 - `diep_minh` là **legacy/boss encounter**, không phải Entity auto-spawn.
 - Không thêm `ratePercent` và không đưa hắn vào mảng auto-spawn `entities` nếu chưa có retcon gameplay riêng.
 - Khi một save hoặc authored event đã kích hoạt `entityEncounterKey=diep_minh`, GM phải giữ đúng visual/lore canon ở tài liệu này.
-- Asset hiển thị hiện hành là `entity/diep_minh.png`.
+- Asset hiển thị hiện hành là `entity/diep_minh.webp`.
 - Đánh bại một hiện thân không đồng nghĩa xóa vĩnh viễn Diệp Minh khỏi continuity.

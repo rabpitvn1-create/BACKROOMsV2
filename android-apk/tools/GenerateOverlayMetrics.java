@@ -28,7 +28,7 @@ class GenerateOverlayMetrics {
       }).forEach(files::add);
     }
     try(var paths=Files.list(ASSETS.resolve("entity"))) {
-      paths.filter(p->p.toString().endsWith(".png")).forEach(files::add);
+      paths.filter(p->p.toString().endsWith(".webp")).forEach(files::add);
     }
     files.sort(Comparator.comparing(Path::toString));
     if(files.isEmpty()) throw new IllegalStateException("No overlay assets found");
@@ -51,6 +51,6 @@ class GenerateOverlayMetrics {
     if(Arrays.asList(args).contains("--check")) {
       if(!source.equals(generated)) throw new IllegalStateException("Overlay metadata stale; run java android-apk/tools/GenerateOverlayMetrics.java");
     } else Files.writeString(script,generated);
-    System.out.println("Verified bounds and hashes for "+files.size()+" overlay PNGs");
+    System.out.println("Verified bounds and hashes for "+files.size()+" overlay assets");
   }
 }
