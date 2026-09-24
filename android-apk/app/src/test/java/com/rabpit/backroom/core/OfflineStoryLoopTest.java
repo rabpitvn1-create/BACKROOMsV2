@@ -138,6 +138,7 @@ public class OfflineStoryLoopTest {
     String next = "Nam xuất hiện trong lối đi tiếp theo. " + "diễn biến kế ".repeat(12);
     assertFalse(StoryCore.validLoopNarration(anchor, anchor, next));
     assertFalse(StoryCore.validLoopNarration(next, anchor, next));
+    assertFalse(StoryCore.validLoopNarration("Lối đi lặp lại. " + anchor.substring(28), anchor, next));
     assertFalse(StoryCore.validLoopNarration("Cao Minh chọn sai và reset. ".repeat(6), anchor, next));
     assertTrue(StoryCore.validLoopNarration(
         "Cao Minh trở về dãy phòng quen thuộc. Hắn dò theo các vệt sáng trên tường, "

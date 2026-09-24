@@ -771,8 +771,11 @@ final class StoryCore {
     if (reply.length() < 120 || reply.length() > 900 || lower.contains("chọn sai")
         || lower.contains("reset") || lower.contains("checkpoint")) return false;
     for (String source : new String[]{currentText, nextText}) {
-      String anchor = source == null ? "" : source.trim();
-      if (anchor.length() >= 100 && reply.contains(anchor.substring(0, 100))) return false;
+      String manuscript = source == null ? "" : source.replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+      String prose = lower.replaceAll("\\s+", " ");
+      for (int i = 0; i + 96 <= prose.length(); i++) {
+        if (manuscript.contains(prose.substring(i, i + 96))) return false;
+      }
     }
     return true;
   }
