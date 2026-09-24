@@ -338,8 +338,6 @@ final class StoryCore {
     story.put("segmentDelivered", false);
     story.put("chapterEntered", false);
     story.put("pendingStoryAdvance", false);
-    story.put("returnJourneyPending", false);
-    story.put("returnAnchorLocation", "");
     story.put("awaitingEntityAttack", false);
     story.put("entityGate", new JSONObject());
     clearDecision(story);
@@ -373,6 +371,7 @@ final class StoryCore {
     try {
       normalizeState(state);
       JSONObject story = state.getJSONObject(ROOT_KEY);
+      if (returnJourneyActive(state)) return true;
       return story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
           && ("cutaway".equals(story.optString("visibility", ""))
@@ -388,7 +387,8 @@ final class StoryCore {
     try {
       normalizeState(state);
       JSONObject story = state.getJSONObject(ROOT_KEY);
-      return story.optBoolean("active", false)
+      return !returnJourneyActive(state)
+          && story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
           && story.optBoolean("awaitingDecision", false);
     } catch (Exception ignored) {
@@ -400,7 +400,8 @@ final class StoryCore {
     try {
       normalizeState(state);
       JSONObject story = state.getJSONObject(ROOT_KEY);
-      return story.optBoolean("active", false)
+      return !returnJourneyActive(state)
+          && story.optBoolean("active", false)
           && !story.optBoolean("arcComplete", false)
           && story.optBoolean("awaitingEntityAttack", false);
     } catch (Exception ignored) {
