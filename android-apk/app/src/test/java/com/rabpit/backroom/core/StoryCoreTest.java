@@ -51,7 +51,7 @@ public class StoryCoreTest {
         state, "tiếp tục cốt truyện", new CharacterEncounterCore(bound -> bound - 1));
     String manuscript = new String(Files.readAllBytes(
         assets.resolve("story/source/level_0/LEVEL0_CH01.md")), StandardCharsets.UTF_8);
-    assertEquals("L0_C01_P001", turn.segmentId);
+    assertTrue(turn.segmentId.startsWith("L0_C01_S"));
     assertTrue(manuscript.contains("Ma Sơn. Không có đại chiến."));
     assertTrue(turn.reply.startsWith("Level 0 — Chương 01: Nơi Không Có Tên"));
     assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));

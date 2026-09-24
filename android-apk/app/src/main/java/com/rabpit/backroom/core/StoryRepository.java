@@ -323,6 +323,16 @@ final class StoryRepository {
     return segments(chapterId).size();
   }
 
+  int segmentIndex(String chapterId, String segmentId) {
+    String requested = segmentId == null ? "" : segmentId.trim();
+    if (requested.isEmpty()) return -1;
+    List<Segment> values = segments(chapterId);
+    for (int i = 0; i < values.size(); i++) {
+      if (requested.equals(values.get(i).id)) return i;
+    }
+    return -1;
+  }
+
   private List<Segment> segments(String chapterId) {
     String key = chapterId == null ? "" : chapterId.trim();
     List<Segment> cached = segmentCache.get(key);

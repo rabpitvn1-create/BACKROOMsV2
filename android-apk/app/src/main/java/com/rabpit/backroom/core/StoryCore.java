@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /** Owns authored-story state, deterministic progression, and prefetched hidden story decisions. */
 final class StoryCore {
   static final String ROOT_KEY = "story";
-  static final int SCHEMA_VERSION = 4;
+  static final int SCHEMA_VERSION = 5;
 
   static final String STATUS_UNSEEN = "UNSEEN_IN_STORY";
   static final String STATUS_PARALLEL = "PARALLEL_STORY";
@@ -25,6 +25,7 @@ final class StoryCore {
   static final String PRESENCE_UNKNOWN = "UNKNOWN";
   static final String PRESENCE_PRESENT = "PRESENT";
   static final String PRESENCE_MISSING = "MISSING";
+  static final String PRESENCE_DECEASED = "DECEASED";
 
   static final String EVENT_CHARACTER_PARALLEL = "CHARACTER_PARALLEL_STORY";
   static final String EVENT_CHARACTER_REUNION = "CHARACTER_REUNION";
@@ -32,7 +33,10 @@ final class StoryCore {
   static final String EVENT_CHARACTER_JOIN_PARTY = "CHARACTER_JOIN_PARTY";
   static final String EVENT_CHARACTER_PRESENT = "CHARACTER_PRESENT";
   static final String EVENT_CHARACTER_MISSING = "CHARACTER_MISSING";
+  static final String EVENT_CHARACTER_PRESENCE = "CHARACTER_PRESENCE";
   static final String EVENT_STORY_FLAG_SET = "STORY_FLAG_SET";
+  static final String EVENT_STORY_FACT_SET = "STORY_FACT_SET";
+  static final String EVENT_ARC_BOUNDARY_REACHED = "ARC_BOUNDARY_REACHED";
   static final String EVENT_LEVEL0_ARC_BOUNDARY_REACHED = "LEVEL0_ARC_BOUNDARY_REACHED";
 
   static final String ADVANCE_ACTION_VI = "tiếp tục cốt truyện";
@@ -117,27 +121,30 @@ final class StoryCore {
     if (state == null) return;
 
     JSONObject story = state.optJSONObject(ROOT_KEY);
-    boolean levelZeroRoot = "0".equals(state.optString(LevelCore.LEVEL_KEY,
-        String.valueOf(state.optInt("currentLevel", 0))).trim());
-
-    if (repository != null && repository.available() && levelZeroRoot) {
-      String revision = story == null ? "" : story.optString("sourceRevision", "").trim();
-      if (!repository.sourceRevision().equals(revision)) {
-        story = new JSONObject();
-      }
-    }
     if (story == null) story = new JSONObject();
+
+    String currentLevelKey = state.optString(
+        LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0))).trim();
+    boolean repositoryAvailableForLevel = repository != null
+        && repository.hasStoryForLevel(currentLevelKey)
+        && repository.bindLevel(currentLevelKey)
+        && repository.available();
 
     story.put("schemaVersion", SCHEMA_VERSION);
     if (!story.has("active")) story.put("active", false);
+    if (!story.has("storyId")) story.put("storyId", "");
+    if (!story.has("levelKey")) story.put("levelKey", "");
     if (!story.has("sourceRevision")) story.put("sourceRevision", "");
     if (!story.has("currentChapter")) story.put("currentChapter", "");
     if (!story.has("currentScene")) story.put("currentScene", "");
+    if (!story.has("currentSegmentId")) story.put("currentSegmentId", "");
     if (!story.has("currentSegmentIndex")) story.put("currentSegmentIndex", 0);
     if (!story.has("currentSegmentCount")) story.put("currentSegmentCount", 0);
     if (!story.has("segmentDelivered")) story.put("segmentDelivered", false);
     if (!story.has("chapterEntered")) story.put("chapterEntered", false);
     if (!story.has("arcComplete")) story.put("arcComplete", false);
+    if (!story.has("migrationBlocked")) story.put("migrationBlocked", false);
+    if (!story.has("migrationNotice")) story.put("migrationNotice", "");
     if (!story.has("thread")) story.put("thread", "cao_minh");
     if (!story.has("visibility")) story.put("visibility", "player");
     if (!story.has("eventSequence")) story.put("eventSequence", 0);
@@ -151,8 +158,9 @@ final class StoryCore {
     if (story.optJSONObject("entityGate") == null) story.put("entityGate", new JSONObject());
     if (story.optJSONObject("loopHistory") == null) story.put("loopHistory", new JSONObject());
     if (story.optJSONObject(FLAGS_KEY) == null) story.put(FLAGS_KEY, new JSONObject());
+    if (story.optJSONObject("crossArcFacts") == null) story.put("crossArcFacts", new JSONObject());
 
-    // Old v1 interaction fields are intentionally neutralized. Old save compatibility is not required.
+    // Old v1 interaction fields are intentionally neutralized.
     story.put("awaitingInteraction", false);
     story.put("interactionChoices", new JSONArray());
     story.put("interactionGuard", "");
@@ -170,20 +178,132 @@ final class StoryCore {
     ensureCharacterState(characters, "luc_tram");
     story.put(CHARACTERS_KEY, characters);
 
-    if (repository != null && repository.available() && levelZeroRoot && !story.optBoolean("arcComplete", false)) {
-      bindRepositoryStory(story);
+    if (!repositoryAvailableForLevel) {
+      story.put("active", false);
+      story.put("pendingStoryAdvance", false);
+      story.put("awaitingEntityAttack", false);
+      story.put("entityGate", new JSONObject());
+      clearDecision(story);
+      state.put(ROOT_KEY, story);
+      return;
     }
 
+    String savedStoryId = story.optString("storyId", "").trim();
+    String savedLevelKey = story.optString("levelKey", "").trim();
+    boolean legacySameArc = savedStoryId.isEmpty()
+        && (savedLevelKey.isEmpty() || currentLevelKey.equals(savedLevelKey))
+        && repository.chapter(story.optString("currentChapter", "")) != null;
+    boolean arcChanged = !legacySameArc
+        && (!repository.storyId().equals(savedStoryId) || !repository.levelKey().equals(savedLevelKey));
+
+    if (arcChanged) {
+      resetArcTransient(story);
+      story.put("storyId", repository.storyId());
+      story.put("levelKey", repository.levelKey());
+      story.put("sourceRevision", repository.sourceRevision());
+      story.put("active", true);
+      story.put("currentChapter", repository.startChapter());
+    } else {
+      story.put("storyId", repository.storyId());
+      story.put("levelKey", repository.levelKey());
+      migrateCompatibleRevision(story);
+    }
+
+    if (!story.optBoolean("migrationBlocked", false) && !story.optBoolean("arcComplete", false)) {
+      bindRepositoryStory(story);
+    }
     state.put(ROOT_KEY, story);
+  }
+
+  private void migrateCompatibleRevision(JSONObject story) throws Exception {
+    if (repository == null || !repository.available()) return;
+    String previousRevision = story.optString("sourceRevision", "").trim();
+    String chapterId = story.optString("currentChapter", "").trim();
+    StoryRepository.Chapter chapter = repository.chapter(chapterId);
+    if (chapterId.isEmpty()) {
+      story.put("sourceRevision", repository.sourceRevision());
+      return;
+    }
+    if (chapter == null) {
+      clearArcCursor(story);
+      story.put("active", false);
+      story.put("migrationBlocked", true);
+      story.put("migrationNotice", "Authored chapter no longer exists; story progression is blocked for safe migration.");
+      story.put("sourceRevision", repository.sourceRevision());
+      return;
+    }
+
+    int resolvedIndex = -1;
+    String stableId = story.optString("currentSegmentId",
+        story.optString("currentScene", "")).trim();
+    if (!stableId.isEmpty()) resolvedIndex = repository.segmentIndex(chapterId, stableId);
+
+    if (resolvedIndex < 0 && previousRevision.equals(repository.sourceRevision())) {
+      int legacyIndex = Math.max(0, story.optInt("currentSegmentIndex", 0));
+      if (legacyIndex < repository.segmentCount(chapterId)) resolvedIndex = legacyIndex;
+    }
+
+    if (resolvedIndex < 0 && !story.optBoolean("segmentDelivered", false)
+        && Math.max(0, story.optInt("currentSegmentIndex", 0)) == 0) {
+      resolvedIndex = 0;
+    }
+
+    if (resolvedIndex < 0) {
+      clearDecision(story);
+      story.put("awaitingEntityAttack", false);
+      story.put("entityGate", new JSONObject());
+      story.put("loopHistory", new JSONObject());
+      story.put("pendingStoryAdvance", false);
+      story.put("currentSegmentIndex", 0);
+      story.put("currentSegmentId", "");
+      story.put("currentScene", "");
+      story.put("segmentDelivered", false);
+      story.put("chapterEntered", false);
+      story.put("migrationNotice", "Authored source changed; rewound to the start of the current chapter.");
+    } else {
+      StoryRepository.Segment segment = repository.segment(chapterId, resolvedIndex);
+      story.put("currentSegmentIndex", resolvedIndex);
+      story.put("currentSegmentId", segment == null ? "" : segment.id);
+      if (segment != null && story.optBoolean("segmentDelivered", false)) {
+        story.put("currentScene", segment.id);
+      }
+    }
+    story.put("migrationBlocked", false);
+    story.put("sourceRevision", repository.sourceRevision());
+  }
+
+  private void resetArcTransient(JSONObject story) throws Exception {
+    clearArcCursor(story);
+    story.put(FLAGS_KEY, new JSONObject());
+    story.put("loopHistory", new JSONObject());
+    story.put("arcComplete", false);
+    story.put("migrationBlocked", false);
+    story.put("migrationNotice", "");
+  }
+
+  private void clearArcCursor(JSONObject story) throws Exception {
+    story.put("currentChapter", "");
+    story.put("currentScene", "");
+    story.put("currentSegmentId", "");
+    story.put("currentSegmentIndex", 0);
+    story.put("currentSegmentCount", 0);
+    story.put("segmentDelivered", false);
+    story.put("chapterEntered", false);
+    story.put("pendingStoryAdvance", false);
+    story.put("awaitingEntityAttack", false);
+    story.put("entityGate", new JSONObject());
+    clearDecision(story);
   }
 
   boolean ownsLevelProgression(JSONObject state) {
     try {
       normalizeState(state);
       JSONObject story = state.optJSONObject(ROOT_KEY);
+      String currentLevelKey = state.optString(LevelCore.LEVEL_KEY,
+          String.valueOf(state.optInt("currentLevel", 0))).trim();
       return story != null
           && story.optBoolean("active", false)
-          && "0".equals(state.optString(LevelCore.LEVEL_KEY, "").trim());
+          && currentLevelKey.equals(story.optString("levelKey", "").trim());
     } catch (Exception ignored) {
       return false;
     }
@@ -380,9 +500,17 @@ final class StoryCore {
     story.put("currentSegmentIndex", index);
     story.put("currentSegmentCount", segment.count);
     story.put("currentScene", segment.id);
+    story.put("currentSegmentId", segment.id);
     story.put("segmentDelivered", true);
     armTurnGate(story, chapter, segment);
     state.put(ROOT_KEY, story);
+
+    applyEvents(state, chapter.eventsAfterSegment.optJSONArray(segment.id), characterCore);
+    story = state.getJSONObject(ROOT_KEY);
+    syncChapterProjection(story, chapter, index);
+    story.put("currentScene", segment.id);
+    story.put("currentSegmentId", segment.id);
+    story.put("segmentDelivered", true);
 
     if (index == segment.count - 1) {
       applyEvents(state, chapter.eventsOnExit, characterCore);
@@ -661,10 +789,15 @@ final class StoryCore {
       output.append("Story-managed character Lục Trầm status: ")
           .append(characterStatus(state, "luc_tram")).append(".\n");
       JSONObject characters = story.optJSONObject(CHARACTERS_KEY);
-      JSONObject nam = characters == null ? null : characters.optJSONObject("nam");
-      if (nam != null) {
-        output.append("Story-local Nam presence: ")
-            .append(nam.optString("presence", PRESENCE_UNKNOWN)).append(".\n");
+      if (characters != null) {
+        java.util.Iterator<String> storyCharacterIds = characters.keys();
+        while (storyCharacterIds.hasNext()) {
+          String characterId = storyCharacterIds.next();
+          JSONObject character = characters.optJSONObject(characterId);
+          if (character == null || !"story_local".equals(character.optString("scope", ""))) continue;
+          output.append("Story-local ").append(characterId).append(" presence: ")
+              .append(character.optString("presence", PRESENCE_UNKNOWN)).append(".\n");
+        }
       }
       if (story.optBoolean("awaitingDecision", false)) {
         output.append("STORY DECISION: every player-controlled story turn owns exactly three hidden choices. ")
@@ -674,7 +807,7 @@ final class StoryCore {
         output.append("AUTHORED ENTITY GATE: story requires combat here. Only the Attack action is legal until combat starts.\n");
       }
       if (story.optBoolean("arcComplete", false)) {
-        output.append("Level 0 authored arc boundary has been reached. This is NOT a validated Level 1 transition.\n");
+        output.append("The authored arc boundary has been reached. StoryCore does not choose or apply a Level destination.\n");
       }
       output.append("RULE: authored prose is emitted verbatim by Java Core. AI handles only free interaction around it. ")
           .append("AI must not advance manuscript position, invent authored events, mutate Story state, or add/remove Party members.");
@@ -757,7 +890,9 @@ final class StoryCore {
       JSONObject story = state.optJSONObject(ROOT_KEY);
       if (story == null) return "";
       StringBuilder material = new StringBuilder();
-      material.append(story.optString("sourceRevision", "")).append('|')
+      material.append(story.optString("storyId", "")).append('|')
+          .append(story.optString("levelKey", "")).append('|')
+          .append(story.optString("sourceRevision", "")).append('|')
           .append(story.optString("currentChapter", "")).append('|')
           .append(story.optString("currentScene", "")).append('|')
           .append(story.optInt("currentSegmentIndex", 0)).append('|')
@@ -833,9 +968,12 @@ final class StoryCore {
     if (!repository.available()) return;
     if (!story.optBoolean("active", false) || story.optString("currentChapter", "").trim().isEmpty()) {
       story.put("active", true);
+      story.put("storyId", repository.storyId());
+      story.put("levelKey", repository.levelKey());
       story.put("sourceRevision", repository.sourceRevision());
       story.put("currentChapter", repository.startChapter());
       story.put("currentSegmentIndex", 0);
+      story.put("currentSegmentId", "");
       story.put("segmentDelivered", false);
       story.put("chapterEntered", false);
       story.put("arcComplete", false);
@@ -875,16 +1013,21 @@ final class StoryCore {
 
       JSONObject story = state.getJSONObject(ROOT_KEY);
       JSONObject characters = story.getJSONObject(CHARACTERS_KEY);
-      if (EVENT_CHARACTER_PRESENT.equals(type) || EVENT_CHARACTER_MISSING.equals(type)) {
+      if (EVENT_CHARACTER_PRESENT.equals(type)
+          || EVENT_CHARACTER_MISSING.equals(type)
+          || EVENT_CHARACTER_PRESENCE.equals(type)) {
         String id = normalizeCharacterId(event.optString("characterId", ""));
         if (id.isEmpty()) throw new IllegalArgumentException("Invalid story-local character id.");
         JSONObject character = ensureCharacterState(characters, id);
         character.put("scope", event.optString("scope", character.optString("scope", "story_local")));
-        character.put("presence", EVENT_CHARACTER_MISSING.equals(type) ? PRESENCE_MISSING : PRESENCE_PRESENT);
+        String presence = EVENT_CHARACTER_MISSING.equals(type) ? PRESENCE_MISSING
+            : (EVENT_CHARACTER_PRESENT.equals(type) ? PRESENCE_PRESENT
+                : normalizePresence(event.optString("presence", PRESENCE_UNKNOWN)));
+        character.put("presence", presence);
         story.put(CHARACTERS_KEY, characters);
         state.put(ROOT_KEY, story);
         recordEvent(state, type, id);
-      } else if (EVENT_STORY_FLAG_SET.equals(type)) {
+      } else if (EVENT_STORY_FLAG_SET.equals(type) || EVENT_STORY_FACT_SET.equals(type)) {
         String key = event.optString("key", "").trim();
         if (key.isEmpty()) throw new IllegalArgumentException("Story flag key is required.");
         JSONObject flags = story.getJSONObject(FLAGS_KEY);
@@ -893,9 +1036,13 @@ final class StoryCore {
         story.put(FLAGS_KEY, flags);
         state.put(ROOT_KEY, story);
         recordEvent(state, type, key);
-      } else if (EVENT_LEVEL0_ARC_BOUNDARY_REACHED.equals(type)) {
+      } else if (EVENT_ARC_BOUNDARY_REACHED.equals(type)
+          || EVENT_LEVEL0_ARC_BOUNDARY_REACHED.equals(type)) {
         JSONObject flags = story.getJSONObject(FLAGS_KEY);
-        flags.put("level0_arc_boundary_reached", true);
+        if (EVENT_LEVEL0_ARC_BOUNDARY_REACHED.equals(type)) {
+          flags.put("level0_arc_boundary_reached", true);
+        }
+        flags.put("arc_boundary_reached", true);
         story.put(FLAGS_KEY, flags);
         story.put("arcComplete", true);
         state.put(ROOT_KEY, story);
@@ -926,6 +1073,16 @@ final class StoryCore {
     if (!character.has("presence")) character.put("presence", PRESENCE_UNKNOWN);
     characters.put(id, character);
     return character;
+  }
+
+  private static String normalizePresence(String raw) {
+    String value = raw == null ? "" : raw.trim().toUpperCase(Locale.ROOT);
+    if (PRESENCE_PRESENT.equals(value)
+        || PRESENCE_MISSING.equals(value)
+        || PRESENCE_DECEASED.equals(value)) {
+      return value;
+    }
+    return PRESENCE_UNKNOWN;
   }
 
   private static void advanceStatus(JSONObject character, String target) throws Exception {
