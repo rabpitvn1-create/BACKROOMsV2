@@ -8,8 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +23,42 @@ public class OfflineStoryLoopTest {
     throw new IllegalStateException("Story assets unavailable");
   }
 
-  private static String outcomeId(JSONObject state, String type) throws Exception {
+  private static StoryRepository repository() {
+    Path root = assets();
+    return new StoryRepository(path ->
+        new String(Files.readAllBytes(root.resolve(path)), StandardCharsets.UTF_8));
+  }
+
+  private static JSONObject storyChoices(String tag) throws Exception {
+    return new JSONObject()
+        .put("canon", new JSONObject().put("text", "Đi theo dấu hiệu còn đáng tin " + tag))
+        .put("return", new JSONObject()
+            .put("text", "Rẽ qua khoảng sáng lệch bên trái " + tag)
+            .put("reply", "Khoảng sáng co lại sau lưng Cao Minh. Bố cục trước mắt đổi chỗ, nhưng không có sự kiện đã hoàn thành nào xảy ra lại."))
+        .put("stay", new JSONObject()
+            .put("text", "Dừng lại kiểm tra bề mặt gần nhất " + tag)
+            .put("reply", "Cao Minh giữ vị trí, kiểm tra những dấu vết quanh mình. Không có diễn biến canon, phần thưởng hay kết quả chiến đấu nào được kích hoạt thêm."));
+  }
+
+  private static JSONObject returnTurn(String tag) throws Exception {
+    String narration = "Cao Minh đi giữa những mảng kiến trúc quen mà không hoàn toàn trùng khớp. "
+        + "Một dấu cũ vẫn còn trên bề mặt gần đó, nhưng khoảng cách giữa các góc rẽ đã đổi. "
+        + "Hắn giữ nguyên những gì đã biết và chỉ đánh giá ba hướng có thể thử trong khu vực hiện tại. "
+        + tag;
+    return new JSONObject()
+        .put("narration", narration)
+        .put("progress", new JSONObject()
+            .put("text", "Theo dấu cũ xuyên qua lối hẹp " + tag)
+            .put("reply", "Cao Minh đi qua một đoạn không gian khác dạng nhưng vẫn thuộc cùng khu vực. Những dấu cũ bắt đầu có quan hệ rõ hơn với nhau."))
+        .put("return", new JSONObject()
+            .put("text", "Bám theo dãy đèn lệch nhịp " + tag)
+            .put("reply", "Dãy đèn dẫn qua vài góc rẽ rồi mở ra một bố cục quen thuộc ở khu vực xuất phát. Không có sự kiện cũ nào được phát lại."))
+        .put("stay", new JSONObject()
+            .put("text", "Kiểm tra khe tường trước mặt " + tag)
+            .put("reply", "Cao Minh kiểm tra kỹ nhưng không rời khu vực đang đứng. Dấu vết vẫn ở đó, không có phần thưởng hay tiến độ canon mới."));
+  }
+
+  private static String decisionOutcomeId(JSONObject state, String type) throws Exception {
     JSONObject outcomes = state.getJSONObject("story").getJSONObject("decisionPackage")
         .getJSONObject("outcomes");
     java.util.Iterator<String> keys = outcomes.keys();
@@ -33,107 +66,225 @@ public class OfflineStoryLoopTest {
       String key = keys.next();
       if (type.equals(outcomes.getJSONObject(key).getString("type"))) return key;
     }
-    throw new IllegalStateException("Missing " + type);
+    throw new IllegalStateException("Missing Story outcome " + type);
   }
 
-  @Test public void wrongChoicesStayInCurrentArcAndConvergeOnceAfterSaveLoad() throws Exception {
-    Path root = assets();
-    StoryRepository repository = new StoryRepository(path ->
-        new String(Files.readAllBytes(root.resolve(path)), StandardCharsets.UTF_8));
-    StoryCore core = StoryCore.withRepository(repository);
+  private static String returnOutcomeId(JSONObject state, String type) throws Exception {
+    JSONObject outcomes = state.getJSONObject("story").getJSONObject("returnJourney")
+        .getJSONObject("turnPackage").getJSONObject("outcomes");
+    java.util.Iterator<String> keys = outcomes.keys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      if (type.equals(outcomes.getJSONObject(key).getString("type"))) return key;
+    }
+    throw new IllegalStateException("Missing return outcome " + type);
+  }
+
+  private static void installStoryChoices(StoryCore core, JSONObject state, String tag)
+      throws Exception {
+    JSONObject request = core.decisionGenerationRequest(state, "");
+    assertTrue(request.getBoolean("needed"));
+    core.installDecisionPackage(state, request.getString("contextHash"), storyChoices(tag));
+  }
+
+  private static void installReturnTurn(StoryCore core, JSONObject state, String tag)
+      throws Exception {
+    JSONObject request = core.returnJourneyTurnRequest(state, "");
+    assertTrue(request.getBoolean("needed"));
+    core.installReturnJourneyTurn(
+        state,
+        request.getString("journeyId"),
+        request.getInt("turnIndex"),
+        request.getString("contextHash"),
+        returnTurn(tag));
+  }
+
+  private static JSONObject storyState(String level) throws Exception {
+    return new JSONObject()
+        .put("currentLevelKey", level)
+        .put("currentLevel", 0)
+        .put("location", "đích đã lưu " + level)
+        .put("turn", 6)
+        .put("party", new JSONArray())
+        .put("inventory", new JSONArray().put("existing"))
+        .put("flags", new JSONObject().put("canonFlag", true))
+        .put("levelRoute", new JSONObject().put("levelKey", level).put("streak", 4));
+  }
+
+  @Test public void wrongStoryChoiceRunsMultiTurnJourneyAndConvergesExactlyOnce() throws Exception {
     CharacterEncounterCore characters = new CharacterEncounterCore(bound -> bound - 1);
 
     for (String level : new String[]{"0", "0.1"}) {
-      JSONObject state = new JSONObject().put("currentLevelKey", level)
-          .put("currentLevel", 0).put("location", "deeper inside")
-          .put("turn", 6).put("party", new JSONArray())
-          .put("inventory", new JSONArray().put("existing"))
-          .put("flags", new JSONObject().put("canonFlag", true))
-          .put("levelRoute", new JSONObject().put("levelKey", level).put("streak", 4));
+      StoryCore core = StoryCore.withRepository(repository());
+      JSONObject state = storyState(level);
       core.normalizeState(state);
-      for (int i = 0; i < ("0".equals(level) ? 3 : 2); i++) {
-        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characters);
-      }
-      assertTrue(core.decisionReady(state));
-      assertFalse(core.decisionNeedsPrefetch(state));
-      JSONObject before = state.getJSONObject("story");
-      String chapter = before.getString("currentChapter");
-      String scene = before.getString("currentScene");
-      int eventSequence = before.getInt("eventSequence");
-      int index = before.getInt("currentSegmentIndex");
-      Set<String> packages = new HashSet<>();
-      String oldId = outcomeId(state, StoryCore.OUTCOME_TRAP);
-      for (int attempt = 0; attempt < 6; attempt++) {
-        JSONArray choices = core.decisionChoices(state);
-        Set<String> texts = new java.util.TreeSet<>();
-        for (int j = 0; j < choices.length(); j++) texts.add(choices.getJSONObject(j).getString("text"));
-        assertEquals(3, texts.size());
-        assertTrue("An earlier complete choice set was repeated", packages.add(texts.toString()));
-        StoryCore.DecisionResolution wrong = core.resolveDecision(
-            state, outcomeId(state, StoryCore.OUTCOME_TRAP), characters);
-        assertTrue(wrong.looped);
-        assertFalse(wrong.reply.contains("Ma Sơn. Không có đại chiến."));
-        assertEquals(level, state.getString("currentLevelKey"));
-        assertEquals(LevelCore.defaultLocation(level), state.getString("location"));
-        assertEquals(chapter, state.getJSONObject("story").getString("currentChapter"));
-        assertEquals(scene, state.getJSONObject("story").getString("currentScene"));
-        assertEquals(index, state.getJSONObject("story").getInt("currentSegmentIndex"));
-        assertEquals(eventSequence, state.getJSONObject("story").getInt("eventSequence"));
-        assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
-        assertEquals("existing", state.getJSONArray("inventory").getString(0));
-        assertTrue(state.getJSONObject("flags").getBoolean("canonFlag"));
-        assertTrue(state.getJSONObject("story").getBoolean("returnJourneyPending"));
-        assertFalse(core.decisionReady(state));
-        state = new JSONObject(state.toString());
-        core.normalizeState(state);
-        String prompt = core.loopNarrationPrompt(state);
-        assertTrue(prompt.contains("LEVEL: " + level));
-        assertTrue(prompt.contains("DIỄN BIẾN TIẾP THEO"));
-        try {
-          core.resolveDecision(state, outcomeId(state, StoryCore.OUTCOME_CANON), characters);
-          fail("Cannot pass the Story gate before returning from the level start");
-        } catch (IllegalStateException expected) {
-          assertTrue(expected.getMessage().contains("not ready"));
-        }
-        core.completeReturnJourney(state);
-        assertEquals("deeper inside", state.getString("location"));
-        assertTrue(core.decisionReady(state));
-      }
+      StoryCore.AuthoredTurn first =
+          core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characters);
+      assertEquals(StoryRepository.MODE_DECISION, first.mode);
+      installStoryChoices(core, state, "đầu-" + level);
+
+      JSONObject story = state.getJSONObject("story");
+      String chapter = story.getString("currentChapter");
+      String scene = story.getString("currentScene");
+      int segmentIndex = story.getInt("currentSegmentIndex");
+      int eventSequence = story.getInt("eventSequence");
+      String inventory = state.getJSONArray("inventory").toString();
+      String flags = state.getJSONObject("flags").toString();
+
+      // STAY is a real hidden outcome. It must not advance authored Story.
+      StoryCore.DecisionResolution stayed = core.resolveDecision(
+          state, decisionOutcomeId(state, StoryCore.OUTCOME_STAY), characters);
+      assertTrue(stayed.looped);
+      assertEquals("đích đã lưu " + level, state.getString("location"));
+      assertFalse(core.hasPendingStoryAdvance(state));
+      assertTrue(core.decisionNeedsProvider(state));
+      installStoryChoices(core, state, "sau-dừng-" + level);
+
+      String staleStoryChoice = decisionOutcomeId(state, StoryCore.OUTCOME_CANON);
+      StoryCore.DecisionResolution wrong = core.resolveDecision(
+          state, decisionOutcomeId(state, StoryCore.OUTCOME_RETURN), characters);
+      assertTrue(wrong.looped);
+      assertTrue(core.returnJourneyActive(state));
+      assertEquals(level, state.getString("currentLevelKey"));
+      assertEquals(LevelCore.defaultLocation(level), state.getString("location"));
+      assertFalse(core.awaitingDecision(state));
+
+      JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
+      assertEquals(StoryCore.RETURN_CAUSE_STORY, journey.getString("cause"));
+      assertEquals(level, journey.getString("levelKey"));
+      assertEquals("đích đã lưu " + level, journey.getString("targetLocation"));
+      assertEquals(chapter, story.getString("currentChapter"));
+      assertEquals(scene, story.getString("currentScene"));
+      assertEquals(segmentIndex, story.getInt("currentSegmentIndex"));
+      assertEquals(eventSequence, story.getInt("eventSequence"));
+
+      // A native save/load of a generated current turn must retain its exact public and hidden package.
+      installReturnTurn(core, state, "lượt-một-" + level);
+      String savedChoices = core.returnJourneyChoices(state).toString();
+      JSONObject loaded = new JSONObject(state.toString());
+      core.normalizeState(loaded);
+      state = loaded;
+      assertTrue(core.returnJourneyReady(state));
+      assertFalse(core.returnJourneyNeedsProvider(state));
+      assertEquals(savedChoices, core.returnJourneyChoices(state).toString());
+
+      String staleReturnChoice = returnOutcomeId(state, StoryCore.RETURN_STAY);
+      StoryCore.ReturnJourneyResolution stayJourney =
+          core.resolveReturnJourneyChoice(state, staleReturnChoice);
+      assertFalse(stayJourney.arrived);
+      assertEquals(0, state.getJSONObject("story").getJSONObject("returnJourney").getInt("progress"));
+      installReturnTurn(core, state, "lượt-hai-" + level);
+
       try {
-        core.resolveDecision(state, oldId, characters);
-        fail("Stale callback must not commit after a loop");
+        core.resolveReturnJourneyChoice(state, staleReturnChoice);
+        fail("Old return callback must not mutate a newer return turn.");
       } catch (IllegalArgumentException expected) {
         assertTrue(expected.getMessage().contains("Unknown"));
       }
-      core.resolveDecision(state, outcomeId(state, StoryCore.OUTCOME_CANON), characters);
+
+      StoryCore.ReturnJourneyResolution returned = core.resolveReturnJourneyChoice(
+          state, returnOutcomeId(state, StoryCore.RETURN_TO_START));
+      assertFalse(returned.arrived);
+      assertEquals(LevelCore.defaultLocation(level), state.getString("location"));
+      assertEquals(0, state.getJSONObject("story").getJSONObject("returnJourney").getInt("progress"));
+
+      // Three Core-owned progress outcomes are required. No narration can teleport to the target.
+      for (int step = 1; step <= 3; step++) {
+        installReturnTurn(core, state, "tiến-" + step + "-" + level);
+        StoryCore.ReturnJourneyResolution moved = core.resolveReturnJourneyChoice(
+            state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+        if (step < 3) {
+          assertFalse(moved.arrived);
+          assertTrue(core.returnJourneyActive(state));
+          assertNotEquals("đích đã lưu " + level, state.getString("location"));
+        } else {
+          assertTrue(moved.arrived);
+          assertFalse(core.returnJourneyActive(state));
+          assertEquals("đích đã lưu " + level, state.getString("location"));
+        }
+        assertEquals(inventory, state.getJSONArray("inventory").toString());
+        assertEquals(flags, state.getJSONObject("flags").toString());
+        assertEquals(eventSequence, state.getJSONObject("story").getInt("eventSequence"));
+        assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
+      }
+
+      // The exact authored gate is restored. Only a fresh correct choice may advance it once.
+      assertTrue(core.decisionNeedsProvider(state));
+      installStoryChoices(core, state, "hội-tụ-" + level);
+      String canonId = decisionOutcomeId(state, StoryCore.OUTCOME_CANON);
+      StoryCore.DecisionResolution canon = core.resolveDecision(state, canonId, characters);
+      assertFalse(canon.looped);
       assertTrue(core.hasPendingStoryAdvance(state));
+      assertEquals(segmentIndex, state.getJSONObject("story").getInt("currentSegmentIndex"));
+
       StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characters);
       assertNotNull(next);
-      assertEquals(chapter, next.chapterId);
-      assertEquals(index + 1, state.getJSONObject("story").getInt("currentSegmentIndex"));
+      assertEquals(segmentIndex + 1, state.getJSONObject("story").getInt("currentSegmentIndex"));
       assertFalse(core.hasPendingStoryAdvance(state));
-      assertEquals(eventSequence, state.getJSONObject("story").getInt("eventSequence"));
+
       try {
-        core.resolveDecision(state, oldId, characters);
-        fail("Committed decision must not trigger twice");
+        core.resolveDecision(state, staleStoryChoice, characters);
+        fail("Old Story callback must not commit after convergence.");
+      } catch (IllegalStateException expected) {
+        assertTrue(expected.getMessage().contains("not ready"));
+      }
+      try {
+        core.resolveDecision(state, canonId, characters);
+        fail("The correct authored outcome must not commit twice.");
       } catch (IllegalStateException expected) {
         assertTrue(expected.getMessage().contains("not ready"));
       }
     }
   }
 
-  @Test public void storyChoiceUiHasNoProviderPrefetchBridge() throws Exception {
+  @Test public void deathReturnStartsAtExactCurrentLevelKeyForEveryKnownSublevel() throws Exception {
+    StoryCore core = new StoryCore();
+    String[] keys = {
+        "0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms",
+        "1", "2", "3", "4", "5", "6"
+    };
+
+    for (String key : keys) {
+      JSONObject state = new JSONObject()
+          .put("currentLevelKey", key)
+          .put("currentLevel", 0)
+          .put("location", "vị trí tử trận " + key)
+          .put("turn", 9)
+          .put("party", new JSONArray())
+          .put("inventory", new JSONArray().put("kept"))
+          .put("flags", new JSONObject().put("completedCanon", true));
+      core.normalizeState(state);
+      core.beginDeathReturnJourney(state, "vị trí tử trận " + key, key);
+
+      JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
+      assertTrue(journey.getBoolean("active"));
+      assertEquals(StoryCore.RETURN_CAUSE_DEATH, journey.getString("cause"));
+      assertEquals(key, journey.getString("levelKey"));
+      assertEquals(key, state.getString("currentLevelKey"));
+      assertEquals(LevelCore.defaultLocation(key), state.getString("location"));
+      assertEquals("vị trí tử trận " + key, journey.getString("targetLocation"));
+      assertEquals("kept", state.getJSONArray("inventory").getString(0));
+      assertTrue(state.getJSONObject("flags").getBoolean("completedCanon"));
+    }
+  }
+
+  @Test public void choiceGenerationIsCurrentTurnOnlyAndUsesGeminiBridgeWithHaikuFallback() throws Exception {
     String ui = new String(Files.readAllBytes(assets().resolve("gm-choice-ui.js")), StandardCharsets.UTF_8);
     Path activity = assets().resolve("../java/com/rabpit/backroom/MainActivity.java").normalize();
     String java = new String(Files.readAllBytes(activity), StandardCharsets.UTF_8);
+
+    assertTrue(ui.contains("Android.prepareStoryDecision(JSON.stringify(state))"));
+    assertTrue(ui.contains("Android.prepareReturnJourneyTurn(JSON.stringify(state))"));
+    assertTrue(ui.contains("Android.resolveReturnJourneyChoice(JSON.stringify(state), String(choice.id))"));
+    assertFalse(ui.contains("Android.resumeStoryReturn"));
     assertFalse(ui.contains("Android.prefetchStoryDecision"));
-    assertFalse(java.contains("void prefetchStoryDecision("));
-    assertTrue(java.contains("gameCore.processStoryDecision(stateJson, choiceId)"));
-    assertTrue(java.contains("gameCore.completeStoryReturn(stateJson, narration)"));
-    assertTrue(ui.contains("Android.resumeStoryReturn(JSON.stringify(state))"));
+    assertTrue(java.contains("void prepareStoryDecision(String stateJson)"));
+    assertTrue(java.contains("void prepareReturnJourneyTurn(String stateJson)"));
+    assertTrue(java.contains("rawOutput = geminiText(prompt)"));
+    assertTrue(java.contains("rawOutput = haikuText(prompt)"));
   }
 
-  @Test public void providerProseCannotReplayOrExposeObviousStoryBoundary() {
+  @Test public void providerProseCannotExposeLoopMechanicsOrReplayLongAuthoredText() {
     String anchor = "Cao Minh dừng bên ngưỡng cửa kim loại. " + "đoạn đã đọc ".repeat(12);
     String next = "Nam xuất hiện trong lối đi tiếp theo. " + "diễn biến kế ".repeat(12);
     assertFalse(StoryCore.validLoopNarration(anchor, anchor, next));
