@@ -44,6 +44,12 @@ Main Game Core owns Entity spawning through `EntityCore` and `app/src/main/asset
 
 Current fixed rates are stored only in `entity_encounters.json`; that file is the machine-readable encounter authority so documentation and runtime cannot quietly grow two different probability systems.
 
+## Asset refresh source
+
+Nguồn refresh ảnh hiện hành: Google Drive `Novel/ENTITY`, dùng WebP trực tiếp. Runtime không chuyển ngược về PNG.
+
+Ngoại lệ tên nguồn: `Novel/ENTITY/hazmat_rifle_A_01.webp` được map sang canonical runtime asset `entity/async_rifleman.webp` vì game chỉ còn một Entity ASYNC Rifleman.
+
 Snapshot overlay reads:
 
 `file:///android_asset/entity/<canonical-key>.webp`
