@@ -1,0 +1,8 @@
+Backroom 1.1.93
+
+- Bump phiên bản ứng dụng lên 1.1.93 với versionCode 93.
+- Thêm Entity CopX với tỉ lệ roll độc lập 3% trên các Level hợp lệ, bộ stat/kỹ năng riêng và scale theo stage.
+- CopX luôn rớt Core khi bị hạ: 5 Core ở stage 0 và tăng theo đường cong Core stage hiện có; reward chỉ áp dụng một lần cho mỗi encounter.
+- Sửa Story choice để ba lựa chọn tiếp tục được tạo tự động: nếu provider lỗi, UI tự thử lại đúng một lần trước khi để người chơi retry thủ công.
+- Áp dụng cùng cơ chế retry giới hạn cho Return Journey, tránh vòng gọi API vô hạn và giữ fallback thủ công.
+- Bổ sung regression checks cho Story/Return Journey auto-retry và giữ toàn bộ Java tests, APK packaging verification trong CI.

@@ -1,6 +1,0 @@
-Backroom APK 1.1.26
-- Khôi phục đầy đủ APK độc lập: giao diện gốc, Prologue, save/load trên thiết bị, Kai overlay và snapshot theo sự kiện.
-- Tích hợp Drive canon R06 cho văn phong, kinh dị, tiến trình thế giới Level 0–6, Entity, tài nguyên, Iris và Syvial.
-- Lệnh meta không tăng turn và không phát sinh sự kiện ngẫu nhiên.
-- Luna vẫn là Game Master ưu tiên, fallback Gemini rồi GPT khi được cấu hình.
-- Snapshot chỉ tự tạo cho sự kiện hình ảnh đặc biệt đã được xác nhận.

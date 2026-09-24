@@ -1,3 +1,0 @@
-Backroom 1.1.56
-- Fixes local Entity PNG rendering on Snapshot. Successful Entity encounter rolls now deterministically persist the selected local Entity ID, and the overlay is positioned inside the Snapshot frame.
-- Keeps Entity artwork fully local under assets/entity with no Google Drive or remote Entity manifest dependency.

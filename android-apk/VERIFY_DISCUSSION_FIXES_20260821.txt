@@ -1,4 +1,0 @@
-Verification gate for discussed gameplay/UI fixes applied on main:
-- Equipment and inventory display hide internal namespaces and use readable uppercase labels.
-- Jeff the Killer encounter roll is 2% on eligible physical turns.
-- Normal entity encounter chances are increased by +8 percentage points per Level.

@@ -1,6 +1,0 @@
-Backroom 1.1.91
-
-- Bump phiên bản ứng dụng lên 1.1.91 với versionCode 91.
-- Giữ Entity encounter ở cuối Explorer Turn hiện tại; chỉ mở Turn mới sau khi Entity bị tiêu diệt.
-- Sau chiến thắng combat, làm mới Story decision context để lựa chọn tiếp tục hoạt động đúng ở Turn mới.
-- Tách vị trí Floating DMG theo lane dọc để các số sát thương đồng thời không còn dính chùm lên nhau.

@@ -1,8 +1,0 @@
-Backroom 1.1.71
-
-- Mở rộng Game Master runtime để dùng đủ 5 Gemini API key theo thứ tự, chuyển sang key tiếp theo khi gặp lỗi provider/network hoặc JSON không hợp lệ.
-- Thêm fallback Haiku sau khi toàn bộ Gemini key không khả dụng; hỗ trợ cấu hình HAIKU_API, HAIKU_BASE_URL và HAIKU_MODEL.
-- Giữ nguyên Core state đã chốt trước lần gọi provider, nên fallback AI không reroll encounter hoặc mutate gameplay state.
-- Sửa GAME MASTER log không còn tự nhảy xuống cuối sau mỗi render; lượt mới được neo ở đầu câu trả lời mới để đọc từ dòng đầu.
-- Giữ auto-scroll xuống cuối chỉ cho trạng thái tạm thời “Đang xử lý lượt…”, đồng thời bảo toàn vị trí đọc khi UI rerender không liên quan.
-- Đổi thông báo lỗi/trạng thái Game Master sang wording trung lập theo provider.
