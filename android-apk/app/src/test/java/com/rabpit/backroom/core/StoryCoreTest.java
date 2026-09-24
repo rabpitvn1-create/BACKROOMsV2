@@ -296,7 +296,7 @@ public class StoryCoreTest {
     assertEquals(StoryCore.PRESENCE_PRESENT, nam.getString("presence"));
 
     String prompt = core.promptContext(state);
-    assertTrue(prompt.contains("NOT a validated Level 1 transition"));
+    assertTrue(prompt.contains("does not choose or apply a Level destination"));
   }
 
   @Test public void parallelStoryPresenceDoesNotAddLucTramToParty() throws Exception {
