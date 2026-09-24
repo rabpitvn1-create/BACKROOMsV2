@@ -47,6 +47,23 @@ final class SurvivalCore {
     return derivePhysiology(sinceFood, sinceWater, sinceRest);
   }
 
+  int statPenalty(JSONObject state, String rawId, String stat) throws Exception {
+    JSONObject physiology = projectPhysiology(state, rawId);
+    if ("STR".equals(stat)) return bandPenalty(physiology.optString("hunger"));
+    if ("VIT".equals(stat)) return bandPenalty(physiology.optString("thirst"));
+    if ("DEF".equals(stat) || "SKL".equals(stat)) {
+      return bandPenalty(physiology.optString("sleepDeprivation"));
+    }
+    return 0;
+  }
+
+  private static int bandPenalty(String band) {
+    if ("CRITICAL".equals(band)) return -3;
+    if ("SEVERE".equals(band)) return -2;
+    if ("MODERATE".equals(band)) return -1;
+    return 0;
+  }
+
   int restoreFood(JSONObject state, String rawId, int percentPoints) throws Exception {
     return restore(state, rawId, "lastFoodMinute", FOOD_CRITICAL_MINUTES, percentPoints, "foodPercent");
   }

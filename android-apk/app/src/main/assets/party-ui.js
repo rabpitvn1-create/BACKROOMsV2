@@ -184,8 +184,7 @@
   function statCost(member,key){
     var value=member&&member.stats&&member.stats[key];
     if(value&&typeof value==='object'&&Number.isFinite(Number(value.nextCoreCost)))return Number(value.nextCoreCost);
-    var current=statValue(member,key);
-    return 1+Math.floor((Math.max(5,current||5)-5)/2);
+    return Infinity;
   }
 
   function mutationLocked(){
@@ -212,11 +211,14 @@
     ['STR','DEF','SKL','VIT'].forEach(function(key){
       var line=document.createElement('div');line.className='core-stat-line';
       var name=document.createElement('span');name.className='core-stat-name';name.textContent=key;
-      var current=Math.max(5,statValue(member,key)||5),cost=statCost(member,key);
+      var current=Math.max(1,statValue(member,key)||5),cost=statCost(member,key);
       var value=document.createElement('span');value.className='core-stat-value';
-      value.textContent=String(current)+' · tiếp theo: '+String(cost)+' Core';
+      var permanent=Number(member&&member.stats&&member.stats[key]&&member.stats[key].base);
+      value.textContent=(Number.isFinite(permanent)&&permanent!==current
+        ?String(permanent)+' → '+String(current):String(current))
+        +' · tiếp theo: '+(Number.isFinite(cost)?String(cost):'—')+' Core';
       var button=document.createElement('button');button.type='button';button.className='core-stat-upgrade';
-      button.textContent='+1 ('+cost+')';
+      button.textContent='+1 ('+(Number.isFinite(cost)?cost:'—')+')';
       button.disabled=mutationLocked()||coreCount()<cost;
       button.addEventListener('click',function(event){event.stopPropagation();requestCoreUpgrade(id,key);});
       line.appendChild(name);line.appendChild(value);line.appendChild(button);container.appendChild(line);
@@ -304,8 +306,12 @@
     sections.appendChild(combatStatusSection(member));
 
     var effects=[];
-    ['injuries','statuses','effects'].forEach(function(k){
-      if(Array.isArray(member&&member[k]))member[k].forEach(function(x){effects.push(typeof x==='string'?x:(x&&x.type)||(x&&x.name)||(x&&x.id)||'');});
+    ['injuries','statuses','effects','statusEffects'].forEach(function(k){
+      if(Array.isArray(member&&member[k]))member[k].forEach(function(x){
+        var label=typeof x==='string'?x:(x&&x.type)||(x&&x.name)||(x&&x.id)||'';
+        if(k==='statusEffects'&&x&&Number(x.remainingTurns)>0)label+=' · '+x.remainingTurns+' lượt';
+        effects.push(label);
+      });
     });
     effects=effects.filter(Boolean);
     if(effects.length)sections.appendChild(tagsSection('HIỆU ỨNG / THƯƠNG TÍCH',effects));

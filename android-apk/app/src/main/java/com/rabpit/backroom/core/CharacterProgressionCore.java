@@ -4,6 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Locale;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Core-owned party progression for the Poker Dice ruleset.
@@ -18,6 +20,7 @@ final class CharacterProgressionCore {
   static final String LEGACY_ROOT_KEY = "characterRpg";
 
   static final int BASE_STAT = 5;
+  static final int MAX_STAT = 999;
   static final int DEFAULT_BASE_MAX_HP = 50;
   static final int COMPANION_REVIVE_TURNS = 10;
   static final int ENTITY_VICTORY_BASE_CORE = 2;
@@ -34,10 +37,10 @@ final class CharacterProgressionCore {
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);
     if (characters == null) characters = new JSONObject();
 
-    ensureProfileObject(characters, "cao_minh");
-    ensureProfileObject(characters, "luc_tram");
-    ensureProfileObject(characters, "iris");
-    ensureProfileObject(characters, "syvial");
+    ensureProfileObject(state, characters, "cao_minh");
+    ensureProfileObject(state, characters, "luc_tram");
+    ensureProfileObject(state, characters, "iris");
+    ensureProfileObject(state, characters, "syvial");
 
     JSONObject resource = root.optJSONObject(RESOURCE_KEY);
     if (resource == null) {
@@ -59,6 +62,11 @@ final class CharacterProgressionCore {
     root.put(RESOURCE_KEY, resource);
     root.put("schema", "core_stats_v1");
     state.put(ROOT_KEY, root);
+    JSONObject player = state.optJSONObject("player");
+    if (player != null) {
+      JSONObject leader = characters.getJSONObject("cao_minh");
+      player.put("hp", leader.getInt("currentHp")).put("maxHp", leader.getInt("maxHp"));
+    }
 
     state.remove(LEGACY_ROOT_KEY);
     state.remove("equipment");
@@ -82,7 +90,7 @@ final class CharacterProgressionCore {
     String id = normalizeCharacterId(rawId);
     if (id.isEmpty()) throw new IllegalArgumentException("character id is required");
     JSONObject characters = state.getJSONObject(ROOT_KEY).getJSONObject(CHARACTERS_KEY);
-    return ensureProfileObject(characters, id);
+    return ensureProfileObject(state, characters, id);
   }
 
   JSONObject profile(JSONObject state, String rawId) throws Exception {
@@ -119,12 +127,12 @@ final class CharacterProgressionCore {
   }
 
   static int statPercent(int stat) {
-    return 100 + 10 * (Math.max(BASE_STAT, stat) - BASE_STAT);
+    return 100 + 10 * (Math.max(1, Math.min(MAX_STAT, stat)) - BASE_STAT);
   }
 
   static int scaledByStat(int baseValue, int stat) {
     long scaled = (long)Math.max(0, baseValue) * statPercent(stat);
-    return Math.max(0, (int)((scaled + 50L) / 100L));
+    return (int)Math.min(Integer.MAX_VALUE, Math.max(0L, (scaled + 50L) / 100L));
   }
 
   static int maxHpFor(int baseMaxHp, int vit) {
@@ -140,6 +148,7 @@ final class CharacterProgressionCore {
     JSONObject profile = ensureProfile(state, id);
     JSONObject stats = profile.getJSONObject("stats");
     int current = Math.max(BASE_STAT, stats.optInt(stat, BASE_STAT));
+    if (current >= MAX_STAT) throw new IllegalStateException("Chỉ số đã đạt giới hạn.");
     int cost = upgradeCost(current);
     JSONObject resource = state.getJSONObject(ROOT_KEY).getJSONObject(RESOURCE_KEY);
     int available = Math.max(0, resource.optInt("quantity", 0));
@@ -149,7 +158,7 @@ final class CharacterProgressionCore {
 
     resource.put("quantity", available - cost);
     stats.put(stat, current + 1);
-    normalizeHp(profile);
+    normalizeHp(state, id, profile);
     syncShadowHp(state, id, profile.getInt("currentHp"), profile.getInt("maxHp"));
 
     return new JSONObject()
@@ -241,7 +250,7 @@ final class CharacterProgressionCore {
 
   void setCurrentHp(JSONObject state, String rawId, int currentHp) throws Exception {
     JSONObject profile = ensureProfile(state, rawId);
-    normalizeHp(profile);
+    normalizeHp(state, normalizeCharacterId(rawId), profile);
     int maxHp = profile.getInt("maxHp");
     profile.put("currentHp", Math.max(0, Math.min(currentHp, maxHp)));
   }
@@ -249,16 +258,94 @@ final class CharacterProgressionCore {
   int healCurrentHp(JSONObject state, String rawId, int amount) throws Exception {
     String id = normalizeCharacterId(rawId);
     JSONObject profile = ensureProfile(state, id);
-    normalizeHp(profile);
+    normalizeHp(state, id, profile);
     int current = Math.max(0, profile.optInt("currentHp", 0));
     int maxHp = profile.getInt("maxHp");
     if (!"cao_minh".equals(id) && current <= 0) {
       throw new IllegalStateException("Nhân vật đang bị hạ và phải chờ đủ 10 Explorer Turn để hồi sinh.");
     }
-    int next = Math.min(maxHp, current + Math.max(0, amount));
+    int next = (int)Math.min((long)maxHp, (long)current + Math.max(0, amount));
     profile.put("currentHp", next);
     syncShadowHp(state, id, next, maxHp);
     return next - current;
+  }
+
+  void applyStatusEffect(JSONObject state, String rawId, String type, String source, String clock,
+                         int turns, String stat, int modifier) throws Exception {
+    if (type == null || type.trim().isEmpty() || source == null || source.trim().isEmpty()
+        || (!"explorer_turn".equals(clock) && !"actor_turn".equals(clock))
+        || normalizeStat(stat).isEmpty() || turns <= 0 || modifier == 0) {
+      throw new IllegalArgumentException("Status effect không hợp lệ.");
+    }
+    JSONObject profile = ensureProfile(state, rawId);
+    profile.getJSONArray("statusEffects").put(new JSONObject()
+        .put("type", type.trim()).put("source", source.trim()).put("clock", clock)
+        .put("remainingTurns", turns)
+        .put("modifiers", new JSONObject().put(normalizeStat(stat), modifier)));
+    normalizeStatusEffects(profile);
+    String id = normalizeCharacterId(rawId);
+    normalizeHp(state, id, profile);
+    syncShadowHp(state, id, profile.getInt("currentHp"), profile.getInt("maxHp"));
+  }
+
+  void advanceStatusEffects(JSONObject state, String rawId, String clock) throws Exception {
+    if (!"explorer_turn".equals(clock) && !"actor_turn".equals(clock)) {
+      throw new IllegalArgumentException("Status clock không hợp lệ.");
+    }
+    String id = normalizeCharacterId(rawId);
+    JSONObject profile = ensureProfile(state, id);
+    JSONArray effects = profile.getJSONArray("statusEffects");
+    JSONArray remaining = new JSONArray();
+    for (int i = 0; i < effects.length(); i++) {
+      JSONObject effect = effects.getJSONObject(i);
+      if (clock.equals(effect.optString("clock"))) {
+        int turns = effect.getInt("remainingTurns") - 1;
+        if (turns <= 0) continue;
+        effect.put("remainingTurns", turns);
+      }
+      remaining.put(effect);
+    }
+    profile.put("statusEffects", remaining);
+    normalizeHp(state, id, profile);
+    syncShadowHp(state, id, profile.getInt("currentHp"), profile.getInt("maxHp"));
+  }
+
+  private static void normalizeStatusEffects(JSONObject profile) throws Exception {
+    JSONArray input = profile.optJSONArray("statusEffects");
+    Map<String, JSONObject> unique = new LinkedHashMap<>();
+    if (input != null) for (int i = 0; i < input.length() && i < 64; i++) {
+      JSONObject effect = input.optJSONObject(i);
+      if (effect == null) continue;
+      String type = effect.optString("type", "").trim();
+      String source = effect.optString("source", "").trim();
+      String clock = effect.optString("clock", "");
+      if (type.isEmpty() || type.length() > 64 || source.isEmpty() || source.length() > 80
+          || (!"explorer_turn".equals(clock) && !"actor_turn".equals(clock))) continue;
+      int turns = Math.min(20, Math.max(0, effect.optInt("remainingTurns", 0)));
+      JSONObject inputModifiers = effect.optJSONObject("modifiers");
+      if (turns == 0 || inputModifiers == null) continue;
+      for (String stat : STAT_KEYS) {
+        if (!inputModifiers.has(stat)) continue;
+        int amount = Math.max(-5, Math.min(5, inputModifiers.optInt(stat, 0)));
+        if (amount == 0) continue;
+        String key = type + ":" + source + ":" + clock + ":" + stat;
+        JSONObject previous = unique.get(key);
+        int previousAmount = previous == null ? 0
+            : previous.getJSONObject("modifiers").getInt(stat);
+        int selected = Math.abs(amount) > Math.abs(previousAmount) ? amount : previousAmount;
+        unique.put(key, new JSONObject()
+            .put("type", type).put("source", source).put("clock", clock)
+            .put("remainingTurns", Math.max(turns,
+                previous == null ? 0 : previous.getInt("remainingTurns")))
+            .put("modifiers", new JSONObject().put(stat, selected)));
+      }
+    }
+    JSONArray output = new JSONArray();
+    for (JSONObject effect : unique.values()) {
+      if (output.length() >= 32) break;
+      output.put(effect);
+    }
+    profile.put("statusEffects", output);
   }
 
   void protectFromCandidate(JSONObject before, JSONObject candidate) throws Exception {
@@ -266,6 +353,18 @@ final class CharacterProgressionCore {
     normalizeState(before);
     candidate.put(ROOT_KEY, new JSONObject(before.getJSONObject(ROOT_KEY).toString()));
     candidate.remove(LEGACY_ROOT_KEY);
+    JSONObject sourcePlayer = before.optJSONObject("player");
+    JSONObject targetPlayer = candidate.optJSONObject("player");
+    if (sourcePlayer != null) {
+      if (targetPlayer == null) {
+        targetPlayer = new JSONObject(sourcePlayer.toString());
+        candidate.put("player", targetPlayer);
+      }
+      for (String key : new String[]{"hp", "currentHp", "maxHp", "attackMax", "attack", "ATK"}) {
+        if (sourcePlayer.has(key)) targetPlayer.put(key, sourcePlayer.get(key));
+        else targetPlayer.remove(key);
+      }
+    }
     stripLegacyProgression(candidate.optJSONObject("player"));
     JSONArray party = candidate.optJSONArray("party");
     if (party != null) {
@@ -273,7 +372,8 @@ final class CharacterProgressionCore {
     }
   }
 
-  private JSONObject ensureProfileObject(JSONObject characters, String id) throws Exception {
+  private JSONObject ensureProfileObject(JSONObject state, JSONObject characters, String id)
+      throws Exception {
     JSONObject profile = characters.optJSONObject(id);
     if (profile == null) profile = new JSONObject();
 
@@ -283,7 +383,9 @@ final class CharacterProgressionCore {
     if (stats == null || migrated) {
       stats = freshStats();
     } else {
-      for (String key : STAT_KEYS) stats.put(key, Math.max(BASE_STAT, stats.optInt(key, BASE_STAT)));
+      for (String key : STAT_KEYS) {
+        stats.put(key, Math.max(BASE_STAT, Math.min(MAX_STAT, stats.optInt(key, BASE_STAT))));
+      }
       stats.remove("DF");
       stats.remove("AGI");
       stats.remove("CRIT");
@@ -297,13 +399,14 @@ final class CharacterProgressionCore {
     profile.put("baseMaxHp", baseMaxHp);
     if (!profile.has("currentHp")) profile.put("currentHp", baseMaxHp);
     profile.put("schema", "core_stats_v1");
+    normalizeStatusEffects(profile);
 
     profile.remove("baseStats");
     profile.remove("explorer");
     profile.remove("exp");
     profile.remove("level");
     profile.remove("equipment");
-    normalizeHp(profile);
+    normalizeHp(state, id, profile);
 
     characters.put(id, profile);
     return profile;
@@ -321,10 +424,9 @@ final class CharacterProgressionCore {
     return DEFAULT_BASE_MAX_HP;
   }
 
-  private static void normalizeHp(JSONObject profile) throws Exception {
-    JSONObject stats = profile.getJSONObject("stats");
+  private static void normalizeHp(JSONObject state, String id, JSONObject profile) throws Exception {
     int maxHp = maxHpFor(profile.optInt("baseMaxHp", DEFAULT_BASE_MAX_HP),
-        stats.optInt("VIT", BASE_STAT));
+        CharacterStatCore.effectiveStat(state, profile, id, "VIT"));
     int current = profile.has("currentHp")
         ? profile.optInt("currentHp", maxHp)
         : maxHp;
