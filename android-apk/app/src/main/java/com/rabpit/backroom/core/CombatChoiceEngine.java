@@ -43,6 +43,18 @@ public final class CombatChoiceEngine {
     }
   }
 
+  private static final class TreasureRewardPolicy {
+    final int firstKillBaseCore;
+    final int repeatBaseCore;
+    final boolean scaleWithStage;
+
+    TreasureRewardPolicy(int firstKillBaseCore, int repeatBaseCore, boolean scaleWithStage) {
+      this.firstKillBaseCore = Math.max(0, firstKillBaseCore);
+      this.repeatBaseCore = Math.max(0, repeatBaseCore);
+      this.scaleWithStage = scaleWithStage;
+    }
+  }
+
   private static final class Skill {
     final String name;
     final String description;
@@ -106,6 +118,7 @@ public final class CombatChoiceEngine {
   }
 
   private static final Map<String, EntityProfile> ENTITIES = new LinkedHashMap<>();
+  private static final Map<String, TreasureRewardPolicy> TREASURE_REWARDS = new LinkedHashMap<>();
   private static final Map<String, List<Skill>> SKILLS = new LinkedHashMap<>();
   private static final Map<String, List<EntitySkill>> ENTITY_SKILLS = new LinkedHashMap<>();
   private static final Map<String, List<CharacterProc>> CHARACTER_PROCS = new LinkedHashMap<>();
@@ -129,6 +142,7 @@ public final class CombatChoiceEngine {
     entity("hotel_corpse_lure", "Hotel Corpse Lure", 190, 18);
     entity("jeff_the_killer", "Jeff", 240, 20);
     entity("async_rifleman", "ASYNC Rifleman", 180, 20);
+    treasureEntity("tam_ma_cao_minh", "Tâm Ma Cao Minh", 300, 30, 100, 10, true);
     entity("jane_the_killer", "Jane", 270, 20);
     entity("slenderman", "Slenderman", 360, 23);
     entity("diep_minh", "Diệp Minh", 1200, 42);
@@ -201,6 +215,10 @@ public final class CombatChoiceEngine {
         entitySkill("Controlled Burst", 110, 32),
         entitySkill("Cover Fire", 115, 32),
         entitySkill("Crossfire Burst", 120, 28));
+    entitySkills("tam_ma_cao_minh",
+        entitySkill("Tâm Ma Trảm", 120, 35),
+        entitySkill("Huyết Ảnh Phản Kích", 115, 40),
+        entitySkill("Ma Hổ Phệ", 110, 45));
     entitySkills("jane_the_killer",
         entitySkill("Stalking Strike", 110, 33),
         entitySkill("Close-Range Slash", 115, 27),
@@ -270,6 +288,14 @@ public final class CombatChoiceEngine {
 
   private static void entity(String key, String name, int hp, int damage) {
     ENTITIES.put(key, new EntityProfile(key, name, hp, damage));
+  }
+
+  private static void treasureEntity(String key, String name, int hp, int damage,
+                                     int firstKillBaseCore, int repeatBaseCore,
+                                     boolean scaleRewardWithStage) {
+    entity(key, name, hp, damage);
+    TREASURE_REWARDS.put(key,
+        new TreasureRewardPolicy(firstKillBaseCore, repeatBaseCore, scaleRewardWithStage));
   }
 
   private static Skill skill(String name, String description, int damage, String effect, int turns,
@@ -1345,9 +1371,25 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
     if (!combat.optBoolean("coreDropResolved", false)) {
       int stageIndex = Math.max(0, combat.optInt("stageIndex", LevelCore.stageIndex(state)));
-      int reward = CharacterProgressionCore.scaledCoreReward(
-          CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
-      new CharacterProgressionCore().grantCore(state, reward);
+      CharacterProgressionCore progression = new CharacterProgressionCore();
+      TreasureRewardPolicy treasure = TREASURE_REWARDS.get(entityKey);
+      int reward;
+      if (treasure == null) {
+        reward = CharacterProgressionCore.scaledCoreReward(
+            CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
+        progression.grantCore(state, reward);
+        combat.remove("coreDropRewardType");
+      } else {
+        int firstKillReward = treasure.scaleWithStage
+            ? EntityStatCore.scale(treasure.firstKillBaseCore, stageIndex)
+            : treasure.firstKillBaseCore;
+        int repeatReward = treasure.scaleWithStage
+            ? EntityStatCore.scale(treasure.repeatBaseCore, stageIndex)
+            : treasure.repeatBaseCore;
+        reward = progression.rewardTreasureEntityVictory(
+            state, entityKey, firstKillReward, repeatReward);
+        combat.put("coreDropRewardType", "treasure");
+      }
       combat.remove("coreDropRoll");
       combat.put("coreDropRatePercent", 100)
           .put("coreDropReward", reward)
