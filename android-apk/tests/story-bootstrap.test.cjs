@@ -227,3 +227,28 @@ test('arc boundary still exposes the handoff CTA', () => {
   assert.equal(submissions[0][0],'submit');
   assert.equal(submissions[0][2],'tiếp tục cốt truyện');
 });
+
+test('active return journey blocks arc handoff in both UI and Core dispatch order', () => {
+  const state=bootstrapState();
+  state.story.arcComplete=true;
+  state.story.segmentDelivered=true;
+  state.story.returnJourney={active:true,turnStatus:'PROVIDER_REQUIRED'};
+  state.levelRoute={storyExitReady:true,exitAvailable:true};
+
+  const {ctx,submissions}=context(state);
+  assert.equal(ctx.storyHandoffPending(),false);
+
+  const article=element('article');
+  ctx.appendExplorerChoices(article,state.log[0],0);
+  assert.equal(article.children.length,1);
+  assert.notEqual(article.children[0].children[0].textContent,'Tiếp tục qua ranh giới');
+  assert.equal(submissions.length,0);
+
+  const returnGuard=facade.indexOf('if (storyCore.returnJourneyActive(legacy)) {');
+  const handoff=facade.indexOf('if (storyArcComplete(legacy) && StoryCore.isAdvanceAction(text)) {');
+  assert.ok(returnGuard>=0);
+  assert.ok(handoff>returnGuard);
+  const guardBlock=facade.slice(returnGuard,handoff);
+  assert.match(guardBlock,/return_journey_choice_required/);
+  assert.match(guardBlock,/return response\(true, legacy/);
+});
