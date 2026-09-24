@@ -151,6 +151,8 @@ final class StoryCore {
     if (!story.has("awaitingDecision")) story.put("awaitingDecision", false);
     if (!story.has("awaitingEntityAttack")) story.put("awaitingEntityAttack", false);
     if (!story.has("pendingStoryAdvance")) story.put("pendingStoryAdvance", false);
+    if (!story.has("returnJourneyPending")) story.put("returnJourneyPending", false);
+    if (!story.has("returnAnchorLocation")) story.put("returnAnchorLocation", "");
     if (!story.has("decisionStatus")) story.put("decisionStatus", "");
     if (!story.has("decisionId")) story.put("decisionId", "");
     if (story.optJSONObject("decisionContract") == null) story.put("decisionContract", new JSONObject());
@@ -181,6 +183,8 @@ final class StoryCore {
     if (!repositoryAvailableForLevel) {
       story.put("active", false);
       story.put("pendingStoryAdvance", false);
+      story.put("returnJourneyPending", false);
+      story.put("returnAnchorLocation", "");
       story.put("awaitingEntityAttack", false);
       story.put("entityGate", new JSONObject());
       clearDecision(story);
@@ -264,6 +268,8 @@ final class StoryCore {
       story.put("entityGate", new JSONObject());
       story.put("loopHistory", new JSONObject());
       story.put("pendingStoryAdvance", false);
+      story.put("returnJourneyPending", false);
+      story.put("returnAnchorLocation", "");
       story.put("currentSegmentIndex", 0);
       story.put("currentSegmentId", "");
       story.put("currentScene", "");
@@ -300,6 +306,8 @@ final class StoryCore {
     story.put("segmentDelivered", false);
     story.put("chapterEntered", false);
     story.put("pendingStoryAdvance", false);
+    story.put("returnJourneyPending", false);
+    story.put("returnAnchorLocation", "");
     story.put("awaitingEntityAttack", false);
     story.put("entityGate", new JSONObject());
     clearDecision(story);
@@ -425,6 +433,7 @@ final class StoryCore {
       JSONObject story = state.getJSONObject(ROOT_KEY);
       JSONObject pack = story.optJSONObject("decisionPackage");
       return story.optBoolean("awaitingDecision", false)
+          && !story.optBoolean("returnJourneyPending", false)
           && DECISION_READY.equals(story.optString("decisionStatus", ""))
           && pack != null
           && pack.optJSONArray("choices") != null
@@ -702,6 +711,8 @@ final class StoryCore {
       int count = Math.max(0, history.optInt(story.optString("decisionId", current.id), 0)) + 1;
       history.put(story.optString("decisionId", current.id), count);
       story.put("loopHistory", history);
+      story.put("returnAnchorLocation", state.optString("location", ""));
+      story.put("returnJourneyPending", true);
       LevelCore.returnToCurrentLevelStart(state);
       state.put(ROOT_KEY, story);
       if (story.optJSONObject("decisionContract") != null
@@ -721,6 +732,72 @@ final class StoryCore {
     state.put(ROOT_KEY, story);
     String reply = OUTCOME_CONVERGE.equals(type) ? preparedReply : "";
     return new DecisionResolution(visibleChoice, reply, type, null, false);
+  }
+
+  String loopNarrationPrompt(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    String chapterId = story.optString("currentChapter", "");
+    int index = story.optInt("currentSegmentIndex", 0);
+    StoryRepository.Segment current = repository == null ? null : repository.segment(chapterId, index);
+    StoryRepository.Segment next = repository == null ? null : repository.nextSegment(chapterId, index);
+    JSONObject history = story.optJSONObject("loopHistory");
+    String decisionId = story.optString("decisionId", "");
+    if (!story.optBoolean("returnJourneyPending", false) || current == null || next == null
+        || !current.id.equals(decisionId) || history == null || history.optInt(decisionId, 0) < 1) {
+      throw new IllegalStateException("No returned Story decision is awaiting narration.");
+    }
+    return "Viết bằng tiếng Việt một đoạn văn mới (120–900 ký tự) kể Cao Minh từ khu vực xuất phát "
+        + "của level hiện tại đi qua một biến thể hợp lý của không gian và trở lại đúng khoảnh khắc "
+        + "Story đang chờ lựa chọn. Chỉ viết lời kể, không tạo lựa chọn. "
+        + "Không kể tiếp sang diễn biến tiếp theo, không giải quyết tình huống đang chờ, "
+        + "không thêm lore, Entity, vật phẩm, route, biến cố canon, phần thưởng hay thay đổi nhân vật. "
+        + "Không nhắc 'chọn sai', 'reset', 'checkpoint'; không lặp nguyên văn đoạn đã đọc "
+        + "hoặc bộ lựa chọn. Mỗi lần lặp phải khác nhau nhưng giữ đúng các dữ kiện bên dưới.\n\n"
+        + "LEVEL: " + state.optString(LevelCore.LEVEL_KEY, "") + "\n"
+        + "VỊ TRÍ XUẤT PHÁT: " + LevelCore.defaultLocation(state.optString(LevelCore.LEVEL_KEY, "")) + "\n"
+        + "VỊ TRÍ ĐÃ LƯU TRƯỚC KHI QUAY LẠI: " + story.optString("returnAnchorLocation", "") + "\n"
+        + "VỊ TRÍ STORY CẦN TRỞ LẠI, KHÔNG ĐƯỢC KỂ LẠI NGUYÊN VĂN: "
+        + clipTail(current.text, 1100) + "\n\n"
+        + "DIỄN BIẾN TIẾP THEO CHỈ ĐỂ BIẾT GIỚI HẠN, TUYỆT ĐỐI KHÔNG TIẾT LỘ: "
+        + clip(next.text, 900) + "\n\n"
+        + "SỐ LẦN TRỞ LẠI: " + history.optInt(decisionId, 0) + "\n"
+        + "Chỉ trả về văn bản thuần túy.";
+  }
+
+  static boolean validLoopNarration(String raw, String currentText, String nextText) {
+    String reply = raw == null ? "" : raw.trim();
+    String lower = reply.toLowerCase(Locale.ROOT);
+    if (reply.length() < 120 || reply.length() > 900 || lower.contains("chọn sai")
+        || lower.contains("reset") || lower.contains("checkpoint")) return false;
+    for (String source : new String[]{currentText, nextText}) {
+      String anchor = source == null ? "" : source.trim();
+      if (anchor.length() >= 100 && reply.contains(anchor.substring(0, 100))) return false;
+    }
+    return true;
+  }
+
+  boolean validLoopNarration(JSONObject state, String reply) throws Exception {
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    StoryRepository.Segment current = repository.segment(
+        story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
+    StoryRepository.Segment next = repository.nextSegment(
+        story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
+    return current != null && next != null && validLoopNarration(reply, current.text, next.text);
+  }
+
+  void completeReturnJourney(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("returnJourneyPending", false)) {
+      throw new IllegalStateException("No Story return journey is pending.");
+    }
+    String destination = story.optString("returnAnchorLocation", "").trim();
+    if (destination.isEmpty()) throw new IllegalStateException("Missing Story return destination.");
+    state.put("location", destination);
+    story.put("returnJourneyPending", false);
+    story.put("returnAnchorLocation", "");
+    state.put(ROOT_KEY, story);
   }
 
   void refreshLoopDecisionContext(JSONObject state) throws Exception {

@@ -305,6 +305,59 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String storyLoopNarrationPrompt() throws Exception {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    return storyCore.loopNarrationPrompt(state);
+  }
+
+  public synchronized String completeStoryReturn(String expectedStateJson, String narration)
+      throws Exception {
+    JSONObject expected = parseState(expectedStateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject actualStory = state.optJSONObject(StoryCore.ROOT_KEY);
+    JSONObject expectedStory = expected.optJSONObject(StoryCore.ROOT_KEY);
+    JSONObject actualHistory = actualStory == null ? null : actualStory.optJSONObject("loopHistory");
+    JSONObject expectedHistory = expectedStory == null ? null : expectedStory.optJSONObject("loopHistory");
+    JSONArray log = state.optJSONArray("log");
+    JSONArray expectedLog = expected.optJSONArray("log");
+    if (actualStory == null || expectedStory == null || actualHistory == null
+        || expectedHistory == null || log == null || expectedLog == null
+        || log.length() == 0 || log.length() != expectedLog.length()
+        || !actualStory.optBoolean("awaitingDecision", false)
+        || !actualStory.optBoolean("returnJourneyPending", false)
+        || !state.optString(LevelCore.LEVEL_KEY).equals(expected.optString(LevelCore.LEVEL_KEY))
+        || !actualStory.optString("currentChapter").equals(expectedStory.optString("currentChapter"))
+        || !actualStory.optString("currentSegmentId").equals(expectedStory.optString("currentSegmentId"))
+        || !actualStory.optString("decisionId").equals(expectedStory.optString("decisionId"))
+        || actualHistory.optInt(actualStory.optString("decisionId"), 0) < 1
+        || actualHistory.optInt(actualStory.optString("decisionId"), 0)
+            != expectedHistory.optInt(expectedStory.optString("decisionId"), 0)) {
+      throw new IllegalStateException("Story return request is stale.");
+    }
+    JSONObject last = log.optJSONObject(log.length() - 1);
+    JSONObject expectedLast = expectedLog.optJSONObject(expectedLog.length() - 1);
+    if (last == null || expectedLast == null || !"gm".equals(last.optString("role"))
+        || !last.optString("text").equals(expectedLast.optString("text"))) {
+      throw new IllegalStateException("Story return log has changed.");
+    }
+    if (!storyCore.validLoopNarration(state, narration)) {
+      throw new IllegalArgumentException("Story return narration is invalid.");
+    }
+    storyCore.completeReturnJourney(state);
+    JSONObject gm = new JSONObject().put("role", "gm").put("text", narration.trim())
+        .put("authored", false);
+    JSONObject metadata = storyCore.logMetadata(state);
+    java.util.Iterator<String> keys = metadata.keys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      gm.put(key, metadata.get(key));
+    }
+    log.put(gm);
+    state.put("log", log);
+    persist(state);
+    return clientSafeState(state).toString();
+  }
+
   public synchronized String processStoryEntityAttack(String stateJson) {
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {

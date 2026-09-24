@@ -82,9 +82,22 @@ public class OfflineStoryLoopTest {
         assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
         assertEquals("existing", state.getJSONArray("inventory").getString(0));
         assertTrue(state.getJSONObject("flags").getBoolean("canonFlag"));
-        assertTrue(core.decisionReady(state));
+        assertTrue(state.getJSONObject("story").getBoolean("returnJourneyPending"));
+        assertFalse(core.decisionReady(state));
         state = new JSONObject(state.toString());
         core.normalizeState(state);
+        String prompt = core.loopNarrationPrompt(state);
+        assertTrue(prompt.contains("LEVEL: " + level));
+        assertTrue(prompt.contains("DIỄN BIẾN TIẾP THEO"));
+        try {
+          core.resolveDecision(state, outcomeId(state, StoryCore.OUTCOME_CANON), characters);
+          fail("Cannot pass the Story gate before returning from the level start");
+        } catch (IllegalStateException expected) {
+          assertTrue(expected.getMessage().contains("not ready"));
+        }
+        core.completeReturnJourney(state);
+        assertEquals("deeper inside", state.getString("location"));
+        assertTrue(core.decisionReady(state));
       }
       try {
         core.resolveDecision(state, oldId, characters);
@@ -116,5 +129,19 @@ public class OfflineStoryLoopTest {
     assertFalse(ui.contains("Android.prefetchStoryDecision"));
     assertFalse(java.contains("void prefetchStoryDecision("));
     assertTrue(java.contains("gameCore.processStoryDecision(stateJson, choiceId)"));
+    assertTrue(java.contains("gameCore.completeStoryReturn(stateJson, narration)"));
+    assertTrue(ui.contains("Android.resumeStoryReturn(JSON.stringify(state))"));
+  }
+
+  @Test public void providerProseCannotReplayOrExposeObviousStoryBoundary() {
+    String anchor = "Cao Minh dừng bên ngưỡng cửa kim loại. " + "đoạn đã đọc ".repeat(12);
+    String next = "Nam xuất hiện trong lối đi tiếp theo. " + "diễn biến kế ".repeat(12);
+    assertFalse(StoryCore.validLoopNarration(anchor, anchor, next));
+    assertFalse(StoryCore.validLoopNarration(next, anchor, next));
+    assertFalse(StoryCore.validLoopNarration("Cao Minh chọn sai và reset. ".repeat(6), anchor, next));
+    assertTrue(StoryCore.validLoopNarration(
+        "Cao Minh trở về dãy phòng quen thuộc. Hắn dò theo các vệt sáng trên tường, "
+            + "đi qua vài khúc quanh giống nhau rồi dừng trước nơi câu chuyện còn bỏ ngỏ.",
+        anchor, next));
   }
 }

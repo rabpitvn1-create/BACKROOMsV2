@@ -25,7 +25,8 @@ function element(tag) {
 }
 function context(state) {
   const submissions = [];
-  const ctx = {state, window:{Android:{submitTurn:(s,a)=>submissions.push([JSON.parse(s),a])}},
+  const ctx = {state, window:{Android:{submitTurn:(s,a)=>submissions.push([JSON.parse(s),a]),
+    resumeStoryReturn:s=>submissions.push([JSON.parse(s),'story-return'])}},
     Android:null, document:{createElement:element}, status:null, submit:null,
     busy:false, log:null, storyDecisionNeedsPrefetch:()=>false,
     requestStoryDecisionPrefetch:()=>{}, storyCutawayActive:()=>false,
@@ -36,6 +37,8 @@ function context(state) {
   ctx.Android = ctx.window.Android;
   vm.createContext(ctx);
     vm.runInContext([functionSource(gm,'storyBootstrapPending'),
+    functionSource(gm,'storyReturnPending'),
+    functionSource(gm,'submitStoryReturn'),
     functionSource(gm,'storyAdvanceAvailable'),
     functionSource(gm,'submitStoryBootstrap'),
     functionSource(gm,'storyHandoffPending'),
@@ -82,6 +85,21 @@ test('a wrong Story choice returns before time and encounter processing', () => 
   assert.match(wrongBranch,/appendDecisionLog\(state, resolution\)/);
   assert.match(wrongBranch,/return response\(true, state, null, "story_decision_looped"/);
   assert.doesNotMatch(wrongBranch,/advanceGameTime|prepareEncounter|incrementTurn/);
+});
+test('return journey holds Story choices until narration rejoins the saved anchor', () => {
+  const state=bootstrapState();
+  Object.assign(state.story,{segmentDelivered:true,awaitingDecision:true,returnJourneyPending:true});
+  const {ctx,submissions}=context(state);
+  const article=element('article');
+  ctx.appendExplorerChoices(article,state.log[0],0);
+  assert.equal(article.children.length,1);
+  assert.equal(article.children[0].children.length,1);
+  assert.equal(article.children[0].children[0].textContent,'Tiếp tục khám phá');
+  article.children[0].children[0].listeners.click();
+  article.children[0].children[0].listeners.click();
+  assert.equal(submissions.length,1);
+  assert.equal(submissions[0][1],'story-return');
+  assert.equal(submissions[0][0].story.returnJourneyPending,true);
 });
 test('CTA disappears once Turn 1 is delivered and cannot bypass another story gate', () => {
   const state=bootstrapState();

@@ -771,6 +771,25 @@ public class MainActivity extends Activity {
       });
     }
 
+    @JavascriptInterface public void resumeStoryReturn(String stateJson) {
+      io.execute(() -> {
+        try {
+          String prompt = gameCore.storyLoopNarrationPrompt();
+          String narration;
+          try {
+            narration = geminiText(prompt);
+          } catch (Exception geminiError) {
+            Log.w(TAG, "Gemini Story return narration unavailable; trying Haiku.");
+            narration = haikuText(prompt);
+          }
+          emit("backroomTurn", gameCore.completeStoryReturn(stateJson, narration));
+        } catch (Exception e) {
+          emit("backroomError", e.getMessage() == null
+              ? "Không thể kể đoạn đường trở lại. Hãy thử lại." : e.getMessage());
+        }
+      });
+    }
+
     @JavascriptInterface public void attackStoryEntity(String stateJson) {
       io.execute(() -> {
         try {

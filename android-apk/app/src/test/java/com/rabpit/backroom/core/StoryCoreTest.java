@@ -482,7 +482,7 @@ public class StoryCoreTest {
   }
 
   @Test public void trapUsesPreparedReactionAndReturnsToSameDecisionAnchor() throws Exception {
-    JSONObject state = state();
+    JSONObject state = state().put("location", "bên hành lang sâu");
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
@@ -501,6 +501,10 @@ public class StoryCoreTest {
     assertFalse(resolution.reply.contains(anchor.reply));
     assertEquals(LevelCore.defaultLocation("0"), state.getString("location"));
     assertTrue(core.awaitingDecision(state));
+    assertFalse(core.decisionReady(state));
+    assertTrue(core.loopNarrationPrompt(state).contains("SỐ LẦN TRỞ LẠI: 1"));
+    core.completeReturnJourney(state);
+    assertEquals("bên hành lang sâu", state.getString("location"));
     assertTrue(core.decisionReady(state));
     assertEquals("L0_C01_P001",
         state.getJSONObject(StoryCore.ROOT_KEY).getString("currentScene"));

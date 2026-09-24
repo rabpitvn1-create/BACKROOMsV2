@@ -221,6 +221,23 @@
     } catch (_) { return false; }
   }
 
+  function storyReturnPending() {
+    return !!(state && state.story && state.story.returnJourneyPending === true);
+  }
+
+  function submitStoryReturn() {
+    if (!storyReturnPending() || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
+    if (!window.Android || typeof Android.resumeStoryReturn !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android story bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (typeof window.render === 'function') window.render();
+    Android.resumeStoryReturn(JSON.stringify(state));
+  }
+
   function storyAwaitingEntityAttack() {
     try {
       return !!(state && state.story && state.story.active === true
@@ -293,7 +310,7 @@
   function storyDecisionReady() {
     try {
       var pack = state && state.story && state.story.decisionPackage;
-      return storyAwaitingDecision()
+      return storyAwaitingDecision() && !storyReturnPending()
         && String(state.story.decisionStatus || '') === 'READY'
         && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
     } catch (_) { return false; }
@@ -418,6 +435,19 @@
       article.appendChild(advanceBox);
       return;
     }
+    if (latest && storyReturnPending()) {
+      var returnBox = document.createElement('div');
+      returnBox.className = 'gm-choices story-return';
+      var returnButton = document.createElement('button');
+      returnButton.type = 'button';
+      returnButton.className = 'gm-choice';
+      returnButton.textContent = 'Tiếp tục khám phá';
+      returnButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+      returnButton.addEventListener('click', submitStoryReturn);
+      returnBox.appendChild(returnButton);
+      article.appendChild(returnBox);
+      return;
+    }
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
@@ -535,7 +565,9 @@
       submit.disabled = true;
     } else if (storyLocked) {
       action.value = '';
-      action.placeholder = storyAwaitingEntityAttack()
+      action.placeholder = storyReturnPending()
+        ? 'Tiếp tục khám phá để tìm lại đoạn đường đang dở.'
+        : storyAwaitingEntityAttack()
         ? 'Encounter cốt truyện: chọn Tấn công trong khung GAME MASTER.'
         : (storyAwaitingDecision()
             ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
