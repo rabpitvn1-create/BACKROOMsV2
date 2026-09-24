@@ -457,6 +457,17 @@ public class OfflineStoryLoopTest {
     assertTrue(java.contains("rawOutput = haikuText(prompt)"));
   }
 
+  @Test public void providerFailureAllowsOneAutomaticUiRetryBeforeManualFallback() throws Exception {
+    String ui = new String(Files.readAllBytes(assets().resolve("gm-choice-ui.js")), StandardCharsets.UTF_8);
+
+    assertTrue(ui.contains("function allowSingleAutomaticProviderRetry()"));
+    assertTrue(ui.contains("window.__storyDecisionRetryKey !== decisionKey"));
+    assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
+    assertTrue(ui.contains("window.__storyDecisionRequestKey = '';"));
+    assertTrue(ui.contains("window.__returnJourneyRequestKey = '';"));
+    assertTrue(ui.contains("allowSingleAutomaticProviderRetry();"));
+  }
+
   @Test public void providerProseCannotExposeLoopMechanicsOrReplayLongAuthoredText() {
     String anchor = "Cao Minh dừng bên ngưỡng cửa kim loại. " + "đoạn đã đọc ".repeat(12);
     String next = "Nam xuất hiện trong lối đi tiếp theo. " + "diễn biến kế ".repeat(12);
