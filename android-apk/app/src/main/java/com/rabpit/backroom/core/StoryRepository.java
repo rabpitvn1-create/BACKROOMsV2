@@ -519,7 +519,7 @@ final class StoryRepository {
     return normalized + "\n";
   }
 
-  private void loadCatalog(String json) {
+  private void loadCatalog(String json) throws Exception {
     catalog.clear();
     JSONObject root = new JSONObject(json == null ? "{}" : json);
     if (root.optInt("schemaVersion", 0) != 2) {
