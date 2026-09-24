@@ -57,8 +57,9 @@ public class StoryCoreTest {
     assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));
     JSONObject after = state.getJSONObject(StoryCore.ROOT_KEY);
     assertTrue(after.getBoolean("segmentDelivered"));
-    assertFalse(after.getBoolean("awaitingDecision"));
-    assertEquals(StoryRepository.MODE_LINEAR, turn.mode);
+    assertTrue(after.getBoolean("awaitingDecision"));
+    assertTrue(core.decisionNeedsProvider(state));
+    assertEquals(StoryRepository.MODE_DECISION, turn.mode);
     assertFalse(after.getBoolean("awaitingEntityAttack"));
   }
 
@@ -368,14 +369,18 @@ public class StoryCoreTest {
   }
 
   private static JSONObject preparedAlternates() throws Exception {
+    return preparedAlternates("một");
+  }
+
+  private static JSONObject preparedAlternates(String suffix) throws Exception {
     return new JSONObject()
         .put("canon", new JSONObject()
-            .put("text", "Bám theo dấu cũ rồi bước tiếp"))
-        .put("trap", new JSONObject()
-            .put("text", "Theo tiếng ù rẽ sang khoảng tối bên cạnh")
+            .put("text", "Bám theo dấu cũ rồi bước tiếp " + suffix))
+        .put("return", new JSONObject()
+            .put("text", "Theo tiếng ù rẽ sang khoảng tối " + suffix)
             .put("reply", "Tiếng ù kéo dài thêm một nhịp. Những vệt ố quen thuộc lại hiện ra trước mắt như thể khoảng hành lang vừa tự khép vòng."))
-        .put("converge", new JSONObject()
-            .put("text", "Đứng yên nghe thêm một nhịp trước khi di chuyển")
+        .put("stay", new JSONObject()
+            .put("text", "Đứng yên nghe thêm một nhịp " + suffix)
             .put("reply", "Cao Minh giữ nguyên vị trí thêm một nhịp. Tiếng ù vẫn đều, không cho hắn thêm dữ kiện chắc chắn."));
   }
 
@@ -390,7 +395,7 @@ public class StoryCoreTest {
     return "";
   }
 
-  @Test public void decisionPrefetchBuildsThreeOpaquePublicChoices() throws Exception {
+  @Test public void decisionProviderBuildsThreeOpaquePublicChoices() throws Exception {
     JSONObject state = state();
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
@@ -400,13 +405,13 @@ public class StoryCoreTest {
 
     assertEquals(StoryRepository.MODE_DECISION, turn.mode);
     assertTrue(core.awaitingDecision(state));
-    assertTrue(core.decisionNeedsPrefetch(state));
+    assertTrue(core.decisionNeedsProvider(state));
     assertTrue(core.blocksFreePlayerAction(state));
 
-    JSONObject request = core.decisionPrefetchRequest(state, "(context)");
+    JSONObject request = core.decisionGenerationRequest(state, "(context)");
     assertTrue(request.getBoolean("needed"));
     String contextHash = request.getString("contextHash");
-    assertTrue(request.getString("prompt").contains("COMPLETE three-choice package"));
+    assertTrue(request.getString("prompt").contains("Write exactly three choices"));
 
     core.installDecisionPackage(state, contextHash, preparedAlternates());
     assertTrue(core.decisionReady(state));
@@ -420,8 +425,8 @@ public class StoryCoreTest {
       String publicId = choice.getString("id").toLowerCase(java.util.Locale.ROOT);
       assertTrue(publicId.startsWith("choice_"));
       assertFalse(publicId.contains("canon"));
-      assertFalse(publicId.contains("trap"));
-      assertFalse(publicId.contains("converge"));
+      assertFalse(publicId.contains("return"));
+      assertFalse(publicId.contains("stay"));
       assertFalse(choice.has("type"));
       assertFalse(choice.has("reply"));
     }
@@ -440,7 +445,7 @@ public class StoryCoreTest {
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
     core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-    JSONObject request = core.decisionPrefetchRequest(state, "");
+    JSONObject request = core.decisionGenerationRequest(state, "");
     core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
 
     String canonId = choiceIdForOutcome(state, StoryCore.OUTCOME_CANON);
@@ -458,59 +463,55 @@ public class StoryCoreTest {
     assertFalse(core.hasPendingStoryAdvance(state));
   }
 
-  @Test public void convergeQueuesAuthoredBeatAfterPreparedReaction() throws Exception {
-    JSONObject state = state();
+  @Test public void stayChoiceKeepsAuthoredGateAndDoesNotAdvanceStory() throws Exception {
+    JSONObject state = state().put("location", "bên hành lang sâu");
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
     core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-    JSONObject request = core.decisionPrefetchRequest(state, "");
+    JSONObject request = core.decisionGenerationRequest(state, "");
     core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
 
-    String convergeId = choiceIdForOutcome(state, StoryCore.OUTCOME_CONVERGE);
+    String stayId = choiceIdForOutcome(state, StoryCore.OUTCOME_STAY);
     StoryCore.DecisionResolution resolution =
-        core.resolveDecision(state, convergeId, characterCore);
+        core.resolveDecision(state, stayId, characterCore);
 
-    assertEquals(StoryCore.OUTCOME_CONVERGE, resolution.outcome);
-    assertFalse(resolution.looped);
+    assertEquals(StoryCore.OUTCOME_STAY, resolution.outcome);
+    assertTrue(resolution.looped);
     assertTrue(resolution.reply.startsWith("Cao Minh giữ nguyên vị trí"));
-    assertFalse(resolution.reply.contains("áp sát mép tường"));
-    assertTrue(core.hasPendingStoryAdvance(state));
-
-    StoryCore.AuthoredTurn next = core.advancePendingTurn(state, characterCore);
-    assertTrue(next.reply.contains("áp sát mép tường"));
+    assertEquals("bên hành lang sâu", state.getString("location"));
+    assertFalse(core.hasPendingStoryAdvance(state));
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionNeedsProvider(state));
   }
 
-  @Test public void trapUsesPreparedReactionAndReturnsToSameDecisionAnchor() throws Exception {
+  @Test public void returnChoiceStartsPlayableJourneyWithoutMovingStoryCursor() throws Exception {
     JSONObject state = state().put("location", "bên hành lang sâu");
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
     StoryCore.AuthoredTurn anchor =
         core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-    JSONObject request = core.decisionPrefetchRequest(state, "");
+    JSONObject request = core.decisionGenerationRequest(state, "");
     core.installDecisionPackage(state, request.getString("contextHash"), preparedAlternates());
 
-    String trapId = choiceIdForOutcome(state, StoryCore.OUTCOME_TRAP);
+    String returnId = choiceIdForOutcome(state, StoryCore.OUTCOME_RETURN);
     StoryCore.DecisionResolution resolution =
-        core.resolveDecision(state, trapId, characterCore);
+        core.resolveDecision(state, returnId, characterCore);
 
-    assertEquals(StoryCore.OUTCOME_TRAP, resolution.outcome);
+    assertEquals(StoryCore.OUTCOME_RETURN, resolution.outcome);
     assertTrue(resolution.looped);
     assertTrue(resolution.reply.contains("tự khép vòng"));
     assertFalse(resolution.reply.contains(anchor.reply));
     assertEquals(LevelCore.defaultLocation("0"), state.getString("location"));
-    assertTrue(core.awaitingDecision(state));
-    assertFalse(core.decisionReady(state));
-    assertTrue(core.loopNarrationPrompt(state).contains("SỐ LẦN TRỞ LẠI: 1"));
-    core.completeReturnJourney(state);
-    assertEquals("bên hành lang sâu", state.getString("location"));
-    assertTrue(core.decisionReady(state));
+    assertTrue(core.returnJourneyActive(state));
+    assertTrue(core.returnJourneyNeedsProvider(state));
+    assertFalse(core.awaitingDecision(state));
+    JSONObject journey = state.getJSONObject(StoryCore.ROOT_KEY).getJSONObject("returnJourney");
+    assertEquals("bên hành lang sâu", journey.getString("targetLocation"));
+    assertEquals("0", journey.getString("levelKey"));
     assertEquals("L0_C01_P001",
-        state.getJSONObject(StoryCore.ROOT_KEY).getString("currentScene"));
-    assertEquals(1,
-        state.getJSONObject(StoryCore.ROOT_KEY)
-            .getJSONObject("loopHistory").getInt("L0_C01_P001"));
+        journey.getJSONObject("pausedStory").getString("currentSegmentId"));
   }
 
   @Test public void stalePrefetchPackageIsRejectedByContextHash() throws Exception {
@@ -519,7 +520,7 @@ public class StoryCoreTest {
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
 
     core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
-    JSONObject request = core.decisionPrefetchRequest(state, "");
+    JSONObject request = core.decisionGenerationRequest(state, "");
     state.put("inventory", new JSONArray().put(new JSONObject().put("id", "changed")));
 
     try {
