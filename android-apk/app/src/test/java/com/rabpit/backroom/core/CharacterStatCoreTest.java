@@ -52,6 +52,47 @@ public class CharacterStatCoreTest {
     assertEquals(50, CharacterStatCore.evasionResistancePercent(999));
   }
 
+  @Test public void survivalPenaltyChangesBothProjectionAndMaxHpWithoutHealing() throws Exception {
+    JSONObject state = baseState().put("gameTime", new JSONObject()
+        .put("elapsedSubjectiveMinutes", 12L * 60L));
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+    progression.setCurrentHp(state, "cao_minh", 30);
+    JSONObject projected = new CharacterStatCore().project(
+        state, state.getJSONObject("player"), "cao_minh", progression);
+    assertEquals(4, projected.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
+    assertEquals(45, projected.getInt("maxHp"));
+    assertEquals(30, projected.getInt("currentHp"));
+    new SurvivalCore().restoreWater(state, "cao_minh", 100);
+    assertEquals(50, new CharacterStatCore().project(
+        state, state.getJSONObject("player"), "cao_minh", progression).getInt("maxHp"));
+    assertEquals(30, progression.profile(state, "cao_minh").getInt("currentHp"));
+  }
+
+  @Test public void activeStatusRefreshesOnceStacksBySourceAndExpiresByClock() throws Exception {
+    JSONObject state = baseState();
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.applyStatusEffect(state, "cao_minh", "focus", "item:a", "explorer_turn",
+        2, "STR", 2);
+    progression.applyStatusEffect(state, "cao_minh", "focus", "item:a", "explorer_turn",
+        2, "STR", 2);
+    progression.applyStatusEffect(state, "cao_minh", "focus", "item:b", "explorer_turn",
+        1, "STR", -1);
+    CharacterStatCore stats = new CharacterStatCore();
+    assertEquals(6, stats.project(state, "cao_minh", progression)
+        .getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+    String saved = state.toString();
+    state = new JSONObject(saved);
+    assertEquals(6, stats.project(state, "cao_minh", progression)
+        .getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+    progression.advanceStatusEffects(state, "cao_minh", "explorer_turn");
+    assertEquals(7, stats.project(state, "cao_minh", progression)
+        .getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+    progression.advanceStatusEffects(state, "cao_minh", "explorer_turn");
+    assertEquals(5, stats.project(state, "cao_minh", progression)
+        .getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+  }
+
   private static JSONObject baseState() throws Exception {
     return new JSONObject()
         .put("turn", 1)

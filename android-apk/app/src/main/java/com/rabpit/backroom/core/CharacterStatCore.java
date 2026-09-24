@@ -1,6 +1,7 @@
 package com.rabpit.backroom.core;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 /** Read-only projection of authoritative Poker Dice combat stats and derived combat status. */
 final class CharacterStatCore {
@@ -22,16 +23,16 @@ final class CharacterStatCore {
     JSONObject profile = progressionCore.profile(state, characterId);
     JSONObject source = profile.getJSONObject("stats");
 
-    int str = source.optInt("STR", CharacterProgressionCore.BASE_STAT);
-    int def = source.optInt("DEF", CharacterProgressionCore.BASE_STAT);
-    int skl = source.optInt("SKL", CharacterProgressionCore.BASE_STAT);
-    int vit = source.optInt("VIT", CharacterProgressionCore.BASE_STAT);
+    int str = effectiveStat(state, profile, characterId, "STR");
+    int def = effectiveStat(state, profile, characterId, "DEF");
+    int skl = effectiveStat(state, profile, characterId, "SKL");
+    int vit = effectiveStat(state, profile, characterId, "VIT");
 
     JSONObject stats = new JSONObject()
-        .put("STR", line(str))
-        .put("DEF", line(def))
-        .put("SKL", line(skl))
-        .put("VIT", line(vit));
+        .put("STR", line(source.optInt("STR", CharacterProgressionCore.BASE_STAT), str))
+        .put("DEF", line(source.optInt("DEF", CharacterProgressionCore.BASE_STAT), def))
+        .put("SKL", line(source.optInt("SKL", CharacterProgressionCore.BASE_STAT), skl))
+        .put("VIT", line(source.optInt("VIT", CharacterProgressionCore.BASE_STAT), vit));
 
     int baseAttack = CombatChoiceEngine.baseAttackFor(runtimeSource, characterId);
     JSONObject combatStatus = new JSONObject()
@@ -52,9 +53,8 @@ final class CharacterStatCore {
   }
 
   static int criticalChancePercent(int skl) {
-    return Math.min(MAX_CRITICAL_PERCENT,
-        BASE_CRITICAL_PERCENT + Math.max(0, skl - CharacterProgressionCore.BASE_STAT)
-            * CRITICAL_PER_SKL);
+    return Math.max(0, Math.min(MAX_CRITICAL_PERCENT,
+        BASE_CRITICAL_PERCENT + (skl - CharacterProgressionCore.BASE_STAT) * CRITICAL_PER_SKL));
   }
 
   static int evasionPercent(int vit) {
@@ -74,15 +74,32 @@ final class CharacterStatCore {
 
   static double defendPercent(int def) {
     int multiplier = CharacterProgressionCore.statPercent(def);
-    double percent = 100.0d - (10_000.0d / Math.max(100, multiplier));
-    return Math.max(0.0d, Math.round(percent * 10.0d) / 10.0d);
+    double percent = 100.0d - (10_000.0d / multiplier);
+    return Math.round(percent * 10.0d) / 10.0d;
   }
 
-  private JSONObject line(int value) throws Exception {
-    int normalized = Math.max(CharacterProgressionCore.BASE_STAT, value);
+  static int effectiveStat(JSONObject state, JSONObject profile, String characterId, String key)
+      throws Exception {
+    int base = profile.getJSONObject("stats").optInt(key, CharacterProgressionCore.BASE_STAT);
+    long value = base + new SurvivalCore().statPenalty(state, characterId, key);
+    JSONArray effects = profile.optJSONArray("statusEffects");
+    if (effects != null) {
+      for (int i = 0; i < effects.length(); i++) {
+        JSONObject effect = effects.optJSONObject(i);
+        if (effect != null && effect.optInt("remainingTurns", 0) > 0) {
+          JSONObject modifiers = effect.optJSONObject("modifiers");
+          if (modifiers != null) value += modifiers.optInt(key, 0);
+        }
+      }
+    }
+    return (int)Math.max(1L, Math.min(CharacterProgressionCore.MAX_STAT, value));
+  }
+
+  private JSONObject line(int base, int effective) throws Exception {
+    int normalized = Math.max(CharacterProgressionCore.BASE_STAT, base);
     return new JSONObject()
         .put("base", normalized)
-        .put("effective", normalized)
+        .put("effective", effective)
         .put("nextCoreCost", CharacterProgressionCore.upgradeCost(normalized));
   }
 }

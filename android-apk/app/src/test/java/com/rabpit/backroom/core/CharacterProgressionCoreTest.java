@@ -23,6 +23,8 @@ public class CharacterProgressionCoreTest {
       assertFalse(stats.has("AGI"));
       assertFalse(stats.has("CRIT"));
       assertFalse(stats.has("LUCK"));
+      assertEquals(50, core.profile(state, id).getInt("currentHp"));
+      assertEquals(0, core.profile(state, id).getJSONArray("statusEffects").length());
     }
   }
 
@@ -63,6 +65,42 @@ public class CharacterProgressionCoreTest {
     core.grantCore(state, 1);
     core.upgradeStat(state, "luc_tram", "VIT");
     assertEquals(55, core.profile(state, "luc_tram").getInt("maxHp"));
+  }
+
+  @Test public void maxHpChangesClampWithoutFreeHealingAndHealDoesNotOverflow() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject state = baseState();
+    core.normalizeState(state);
+    core.setCurrentHp(state, "cao_minh", 49);
+    core.applyStatusEffect(state, "cao_minh", "frail", "core:injury", "explorer_turn",
+        1, "VIT", -2);
+    assertEquals(40, core.profile(state, "cao_minh").getInt("maxHp"));
+    assertEquals(40, core.profile(state, "cao_minh").getInt("currentHp"));
+    core.advanceStatusEffects(state, "cao_minh", "explorer_turn");
+    assertEquals(50, core.profile(state, "cao_minh").getInt("maxHp"));
+    assertEquals(40, core.profile(state, "cao_minh").getInt("currentHp"));
+    assertEquals(10, core.healCurrentHp(state, "cao_minh", Integer.MAX_VALUE));
+    assertEquals(50, core.profile(state, "cao_minh").getInt("currentHp"));
+  }
+
+  @Test public void aiCandidateCannotChangePlayerNumericState() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject before = baseState().put("player", new JSONObject()
+        .put("name", "Cao Minh").put("attack", 24));
+    core.normalizeState(before);
+    core.setCurrentHp(before, "cao_minh", 27);
+    JSONObject candidate = new JSONObject(before.toString());
+    candidate.getJSONObject("player").put("hp", 999).put("maxHp", 999)
+        .put("attack", 999).put("ATK", 999);
+    candidate.getJSONObject(CharacterProgressionCore.ROOT_KEY)
+        .getJSONObject("characters").getJSONObject("cao_minh")
+        .getJSONObject("stats").put("STR", 999);
+    core.protectFromCandidate(before, candidate);
+    assertEquals(27, candidate.getJSONObject("player").getInt("hp"));
+    assertEquals(50, candidate.getJSONObject("player").getInt("maxHp"));
+    assertEquals(24, candidate.getJSONObject("player").getInt("attack"));
+    assertFalse(candidate.getJSONObject("player").has("ATK"));
+    assertEquals(5, core.profile(candidate, "cao_minh").getJSONObject("stats").getInt("STR"));
   }
 
   @Test public void statMultiplierUsesFiveAsOneHundredPercent() {

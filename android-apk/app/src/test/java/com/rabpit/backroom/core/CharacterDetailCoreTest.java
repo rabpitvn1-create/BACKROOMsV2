@@ -73,4 +73,19 @@ public class CharacterDetailCoreTest {
     assertEquals(75, physiology.getInt("waterPercent"));
     assertEquals(66, physiology.getInt("restPercent"));
   }
+
+  @Test public void statusProjectionUsesCoreEffectsAndHpCondition() throws Exception {
+    JSONObject state = new JSONObject().put("player", new JSONObject().put("name", "Cao Minh")
+        .put("condition", "Ổn định")).put("party", new JSONArray());
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.applyStatusEffect(state, "cao_minh", "focus", "core:event",
+        "explorer_turn", 2, "STR", 2);
+    progression.setCurrentHp(state, "cao_minh", 0);
+    new CharacterDetailCore().projectState(state);
+    JSONObject member = state.getJSONObject("partyDetails").getJSONArray("members").getJSONObject(0);
+    assertEquals("Bị hạ", member.getString("condition"));
+    assertEquals(7, member.getJSONObject("stats").getJSONObject("STR").getInt("effective"));
+    assertEquals(2, member.getJSONArray("statusEffects").getJSONObject(0)
+        .getInt("remainingTurns"));
+  }
 }
