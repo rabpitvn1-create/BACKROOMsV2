@@ -14,6 +14,27 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class LevelCoreTest {
+  @Test public void returnToEveryCurrentLevelStartOnlyMovesLocation() throws Exception {
+    JSONObject graph = new JSONObject(readRepoAsset("level_graph.json"));
+    org.json.JSONArray nodes = graph.getJSONArray("nodes");
+    for (int i = 0; i < nodes.length(); i++) {
+      JSONObject node = nodes.getJSONObject(i);
+      String key = node.getString("key");
+      JSONObject state = new JSONObject().put("currentLevelKey", key)
+          .put("currentLevel", node.getInt("parentLevel"))
+          .put("location", "away from the entrance")
+          .put("story", new JSONObject().put("currentChapter", "chapter"))
+          .put("levelRoute", new JSONObject().put("levelKey", key).put("streak", 7))
+          .put("inventory", new org.json.JSONArray().put("saved item"));
+      LevelCore.returnToCurrentLevelStart(state);
+      assertEquals(key, state.getString("currentLevelKey"));
+      assertEquals(node.getString("defaultLocation"), state.getString("location"));
+      assertEquals("chapter", state.getJSONObject("story").getString("currentChapter"));
+      assertEquals(7, state.getJSONObject("levelRoute").getInt("streak"));
+      assertEquals("saved item", state.getJSONArray("inventory").getString(0));
+    }
+  }
+
   private static final String ROUTE_ACTION = "Cao Minh đi tiếp theo hành lang";
 
   private static final class SequenceRng implements LevelCore.IntRng {

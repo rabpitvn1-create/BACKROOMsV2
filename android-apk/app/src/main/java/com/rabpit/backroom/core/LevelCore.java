@@ -176,12 +176,10 @@ final class LevelCore {
     state.put(ROUTE_STATE, route);
   }
 
-  static void resetToLevelZeroStart(JSONObject state) throws Exception {
+  static void returnToCurrentLevelStart(JSONObject state) throws Exception {
     if (state == null) return;
-    state.put("currentLevel", 0);
-    state.put(LEVEL_KEY, "0");
-    state.put("location", LEVEL_ZERO_START_LOCATION);
-    state.put(ROUTE_STATE, newRouteState("0"));
+    String key = new LevelCore((Context)null, bound -> 0).resolveLevelKey(state);
+    state.put("location", defaultLocation(key));
   }
 
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {

@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-final-2026-09-23-offline-decisions-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C01",
   "title": "Level 0 — Chương 01: Nơi Không Có Tên",
   "source": "story/source/level_0/LEVEL0_CH01.md",
@@ -15,6 +15,46 @@
   "eventsAfterSegment": {},
   "requiredFacts": [],
   "forbiddenClaims": [],
+  "offlineDecisions": [
+    {
+      "variants": [
+        {
+          "canon": "Nghe xem bức tường có đáp lại không",
+          "trap": {
+            "text": "Lần theo ma ấn vừa đặt",
+            "reply": "Dấu đỏ vẫn ở đó, nhưng góc tường cạnh nó không còn nối với hành lang Cao Minh vừa nhớ. Tiếng đèn kéo thành một dải mỏng. Khi hắn ngẩng lên, thảm ẩm trải dưới chân và dãy phòng vàng mở ra trước mặt theo một bố cục khác."
+          },
+          "converge": {
+            "text": "Đối chiếu vết trầy với tấm trần lệch",
+            "reply": "Cao Minh giữ hai dấu mốc trong trí nhớ. Chúng không còn đủ để dựng lại lộ tuyến, nhưng bức tường vàng trước mặt vẫn ở trong tầm mắt."
+          }
+        },
+        {
+          "canon": "Dừng lại trước mặt tường vàng",
+          "trap": {
+            "text": "Tin vào số lần rẽ đã ghi nhớ",
+            "reply": "Cao Minh đếm lại từng góc rẽ. Con số không đổi; khoảng cách giữa những bức tường thì có. Một tiếng ù đều kéo hắn qua khoảng sáng trắng. Dưới chân lại là thảm ẩm của khu phòng vàng, và các lối rẽ phía trước khác với lúc nãy."
+          },
+          "converge": {
+            "text": "Giữ dấu trên tường trong tầm thần thức",
+            "reply": "Ma ấn vẫn đáp lại. Cao Minh không vội gọi phần không gian quanh nó là một con đường; hắn nhìn bức tường vàng ngay trước mắt."
+          }
+        },
+        {
+          "canon": "Quan sát bức tường thêm một nhịp",
+          "trap": {
+            "text": "Dùng bóng đèn làm mốc phương hướng",
+            "reply": "Ánh sáng trên trần đều đến mức mọi góc rẽ trông như cùng một góc. Cao Minh dừng bước khi chân chạm lớp thảm ẩm quen thuộc. Các căn phòng vàng vẫn nối nhau, nhưng thứ tự hắn vừa đi qua không còn tìm thấy ở đây."
+          },
+          "converge": {
+            "text": "So lại vị trí ma ấn và mép tường",
+            "reply": "Dấu ấn không hề méo. Cao Minh hạ tay, chừa ra một nhịp lặng để quan sát bề mặt vàng trước mặt."
+          }
+        }
+      ],
+      "anchor": "Cao Minh không phá tường."
+    }
+  ],
   "sourceDigest": "42abde5bfa266cec579d1e1240da6898deb128d88f064aee5954c7e08bb10433",
   "segmentIds": [
     "L0_C01_S677bb7d55e5d596a",

@@ -1347,7 +1347,12 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     if (!combat.optBoolean("deathRecoveryApplied", false)) {
       CharacterProgressionCore progression = new CharacterProgressionCore();
       progression.applyCaoMinhDeathPenalty(state);
-      LevelCore.resetToLevelZeroStart(state);
+      LevelCore.returnToCurrentLevelStart(state);
+      JSONArray log = state.optJSONArray("log");
+      if (log == null) log = new JSONArray();
+      log.put(new JSONObject().put("role", "gm")
+          .put("text", "Backrooms nuốt chửng lấy bạn khi bạn ngã xuống."));
+      state.put("log", log);
       combat.put("deathRecoveryApplied", true).put("playerRespawned", true);
     }
     clearEncounterFlag(state);

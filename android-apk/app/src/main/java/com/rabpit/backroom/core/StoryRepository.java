@@ -176,11 +176,8 @@ final class StoryRepository {
       }
       try {
         loadMetadata(reader.read(LEVEL_ZERO_METADATA_ASSET));
-        try {
-          loadDecisions(reader.read(LEVEL_ZERO_INTERACTIONS_ASSET));
-        } catch (Exception ignored) {
-          clearDecisions();
-        }
+        // Legacy metadata can still be read, but decisions without authored local
+        // reactions are never exposed to a running game.
       } catch (Exception ignored) {
         chapters.clear();
         clearDecisions();
@@ -624,6 +621,16 @@ final class StoryRepository {
         if (anchor.isEmpty() || guard.isEmpty()) return output;
         output.put("loopAnchor", anchor);
         output.put("decisionGuard", guard);
+        JSONArray variants = raw.optJSONArray("offlineVariants");
+        if (variants != null && variants.length() >= 3) {
+          for (int i = 0; i < variants.length(); i++) {
+            JSONObject variant = variants.optJSONObject(i);
+            if (variant == null || variant.optString("canon", "").trim().isEmpty()
+                || variant.optJSONObject("trap") == null
+                || variant.optJSONObject("converge") == null) return new JSONObject();
+          }
+          output.put("offlineVariants", copyArray(variants));
+        }
         return output;
       }
       if (MODE_ENTITY_GATE.equals(mode)) {

@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-final-2026-09-23-offline-decisions-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C13",
   "title": "Level 0 — Chương 13: Giọng Nói Trong Bóng Tối",
   "source": "story/source/level_0/LEVEL0_CH13.md",
@@ -23,6 +23,7 @@
   "forbiddenClaims": [
     "Do not identify the voice phenomenon as one confirmed entity or one confirmed mechanism."
   ],
+  "offlineDecisions": [],
   "sourceDigest": "ed9d73a2bacdeaf7c7c6ec2a0dc53d70bc1bdf09d2cfb331a7dce29e6f928916",
   "segmentIds": [
     "L0_C13_S0e068d315cb7ce9d",

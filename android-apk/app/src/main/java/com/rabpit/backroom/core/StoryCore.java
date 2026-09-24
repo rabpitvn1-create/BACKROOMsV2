@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/** Owns authored-story state, deterministic progression, and prefetched hidden story decisions. */
+/** Owns authored-story state and locally prepared hidden story decisions. */
 final class StoryCore {
   static final String ROOT_KEY = "story";
   static final int SCHEMA_VERSION = 5;
@@ -190,6 +190,7 @@ final class StoryCore {
 
     String savedStoryId = story.optString("storyId", "").trim();
     String savedLevelKey = story.optString("levelKey", "").trim();
+    boolean revisionChanged = !repository.sourceRevision().equals(story.optString("sourceRevision", ""));
     boolean legacySameArc = savedStoryId.isEmpty()
         && (savedLevelKey.isEmpty() || currentLevelKey.equals(savedLevelKey))
         && repository.chapter(story.optString("currentChapter", "")) != null;
@@ -211,8 +212,17 @@ final class StoryCore {
 
     if (!story.optBoolean("migrationBlocked", false) && !story.optBoolean("arcComplete", false)) {
       bindRepositoryStory(story);
+      if (revisionChanged && story.optBoolean("segmentDelivered", false)) {
+        StoryRepository.Segment segment = repository.segment(
+            story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
+        StoryRepository.Chapter chapter = repository.chapter(story.optString("currentChapter", ""));
+        if (segment != null && chapter != null && !story.optBoolean("pendingStoryAdvance", false)) {
+          armTurnGate(story, chapter, segment);
+        }
+      }
     }
     state.put(ROOT_KEY, story);
+    if (revisionChanged && story.optBoolean("awaitingDecision", false)) prepareOfflineDecision(state);
   }
 
   private void migrateCompatibleRevision(JSONObject story) throws Exception {
@@ -521,6 +531,8 @@ final class StoryCore {
       state.put(ROOT_KEY, story);
     }
 
+    if (story.optBoolean("awaitingDecision", false)) prepareOfflineDecision(state);
+
     return new AuthoredTurn(
         segment.text,
         chapter.id,
@@ -642,6 +654,21 @@ final class StoryCore {
     state.put(ROOT_KEY, story);
   }
 
+  private void prepareOfflineDecision(JSONObject state) throws Exception {
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    JSONObject contract = story.optJSONObject("decisionContract");
+    JSONArray variants = contract == null ? null : contract.optJSONArray("offlineVariants");
+    if (variants == null || variants.length() < 3) return; // Legacy test-only contracts.
+    JSONObject history = story.optJSONObject("loopHistory");
+    int count = history == null ? 0 : Math.max(0, history.optInt(story.optString("decisionId"), 0));
+    int size = variants.length();
+    JSONObject generated = new JSONObject()
+        .put("canon", new JSONObject().put("text", variants.getJSONObject(count % size).getString("canon")))
+        .put("trap", variants.getJSONObject((count / size) % size).getJSONObject("trap"))
+        .put("converge", variants.getJSONObject((count / (size * size)) % size).getJSONObject("converge"));
+    installDecisionPackage(state, decisionContextHash(state), generated);
+  }
+
   DecisionResolution resolveDecision(
       JSONObject state, String rawChoiceId, CharacterEncounterCore characterCore) throws Exception {
     normalizeState(state);
@@ -675,9 +702,14 @@ final class StoryCore {
       int count = Math.max(0, history.optInt(story.optString("decisionId", current.id), 0)) + 1;
       history.put(story.optString("decisionId", current.id), count);
       story.put("loopHistory", history);
+      LevelCore.returnToCurrentLevelStart(state);
       state.put(ROOT_KEY, story);
-      String reply = preparedReply + "\n\n" + current.text;
-      return new DecisionResolution(visibleChoice, reply, OUTCOME_TRAP, null, true);
+      if (story.optJSONObject("decisionContract") != null
+          && story.getJSONObject("decisionContract").optJSONArray("offlineVariants") != null) {
+        story.put("decisionStatus", DECISION_PREFETCH_REQUIRED);
+        prepareOfflineDecision(state);
+      }
+      return new DecisionResolution(visibleChoice, preparedReply, OUTCOME_TRAP, null, true);
     }
 
     if (!OUTCOME_CANON.equals(type) && !OUTCOME_CONVERGE.equals(type)) {
@@ -710,6 +742,20 @@ final class StoryCore {
     story.put("pendingStoryAdvance", false);
     state.put(ROOT_KEY, story);
     return advanceAndRender(state, ADVANCE_ACTION_VI, characterCore);
+  }
+
+  void rearmAuthoredEncounterAfterDeath(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("pendingStoryAdvance", false) || repository == null) return;
+    StoryRepository.Chapter chapter = repository.chapter(story.optString("currentChapter", ""));
+    StoryRepository.Segment segment = repository.segment(
+        story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
+    if (chapter != null && segment != null && StoryRepository.MODE_ENTITY_GATE.equals(segment.mode)) {
+      story.put("pendingStoryAdvance", false);
+      armTurnGate(story, chapter, segment);
+      state.put(ROOT_KEY, story);
+    }
   }
 
 

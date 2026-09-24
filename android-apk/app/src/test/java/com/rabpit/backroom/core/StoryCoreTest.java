@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class StoryCoreTest {
-  @Test public void freshBootstrapRendersCanonicalManuscriptAndArmsDecision() throws Exception {
+  @Test public void freshBootstrapRendersCanonicalManuscriptOffline() throws Exception {
     Path assets = null;
     for (Path dir = Paths.get("").toAbsolutePath(); dir != null && assets == null; dir = dir.getParent()) {
       for (String candidate : new String[]{"src/main/assets", "app/src/main/assets",
@@ -57,8 +57,8 @@ public class StoryCoreTest {
     assertTrue(turn.reply.contains("Ma Sơn. Không có đại chiến."));
     JSONObject after = state.getJSONObject(StoryCore.ROOT_KEY);
     assertTrue(after.getBoolean("segmentDelivered"));
-    assertTrue(after.getBoolean("awaitingDecision"));
-    assertEquals("PREFETCH_REQUIRED", after.getString("decisionStatus"));
+    assertFalse(after.getBoolean("awaitingDecision"));
+    assertEquals(StoryRepository.MODE_LINEAR, turn.mode);
     assertFalse(after.getBoolean("awaitingEntityAttack"));
   }
 
@@ -498,7 +498,8 @@ public class StoryCoreTest {
     assertEquals(StoryCore.OUTCOME_TRAP, resolution.outcome);
     assertTrue(resolution.looped);
     assertTrue(resolution.reply.contains("tự khép vòng"));
-    assertTrue(resolution.reply.contains(anchor.reply));
+    assertFalse(resolution.reply.contains(anchor.reply));
+    assertEquals(LevelCore.defaultLocation("0"), state.getString("location"));
     assertTrue(core.awaitingDecision(state));
     assertTrue(core.decisionReady(state));
     assertEquals("L0_C01_P001",

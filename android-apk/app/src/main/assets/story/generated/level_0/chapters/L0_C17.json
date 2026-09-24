@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-final-2026-09-23",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "level0-final-2026-09-23-offline-decisions-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L0_C17",
   "title": "Level 0 — Chương 17: Căn Phòng Nhớ Sai",
   "source": "story/source/level_0/LEVEL0_CH17.md",
@@ -23,6 +23,7 @@
   "forbiddenClaims": [
     "Do not claim the room definitely reads minds or memories; the source keeps the mechanism uncertain."
   ],
+  "offlineDecisions": [],
   "sourceDigest": "cb3f99bc36ba3358f04ac83ef35d3bea0256127cd44039a9421a9ce48ac80d0a",
   "segmentIds": [
     "L0_C17_S692792c04518f400",

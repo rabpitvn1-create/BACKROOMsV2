@@ -301,10 +301,7 @@ public class StoryRepositoryTest {
       }
 
       if (core.awaitingDecision(state)) {
-        JSONObject request = core.decisionPrefetchRequest(state, "");
-        assertTrue(request.getBoolean("needed"));
-        core.installDecisionPackage(
-            state, request.getString("contextHash"), deterministicAlternates());
+        assertTrue("The compiled Story decision must be ready offline", core.decisionReady(state));
         String canonId = canonChoiceId(state);
         assertFalse(canonId.isEmpty());
         StoryCore.DecisionResolution resolution =

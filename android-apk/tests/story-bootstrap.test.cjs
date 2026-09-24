@@ -33,7 +33,8 @@ function context(state) {
     makeChoiceButton:()=>element('button'), lastGmIndex:()=>state.log.length-1};
   ctx.Android = ctx.window.Android;
   vm.createContext(ctx);
-  vm.runInContext([functionSource(gm,'storyBootstrapPending'),
+    vm.runInContext([functionSource(gm,'storyBootstrapPending'),
+    functionSource(gm,'storyAdvanceAvailable'),
     functionSource(gm,'submitStoryBootstrap'),
     functionSource(gm,'storyHandoffPending'),
     functionSource(gm,'submitStoryHandoff'),
@@ -56,6 +57,19 @@ test('fresh story has exactly one unbulleted CTA and sends only the local Core c
   assert.equal(submissions[0][1],'tiếp tục cốt truyện');
   assert.doesNotMatch(index,/Nhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01\./);
   assert.doesNotMatch(gm,/text:'Tiếp tục'|text:'Tiếp tục cốt truyện'/);
+});
+
+test('a linear authored segment advances through Core without a provider request', () => {
+  const state=bootstrapState();
+  state.story.segmentDelivered=true;
+  const {ctx,submissions}=context(state);
+  const article=element('article');
+  ctx.appendExplorerChoices(article,state.log[0],0);
+  assert.equal(article.children[0].children[0].textContent,'Tiếp tục cốt truyện');
+  article.children[0].children[0].listeners.click();
+  assert.equal(submissions.length,1);
+  assert.equal(submissions[0][1],'tiếp tục cốt truyện');
+  assert.doesNotMatch(gm,/Android\.prefetchStoryDecision|geminiText|haikuText/);
 });
 test('CTA disappears once Turn 1 is delivered and cannot bypass another story gate', () => {
   const state=bootstrapState();
@@ -92,4 +106,3 @@ test('arc boundary exposes one handoff CTA instead of random explorer choices', 
   assert.equal(submissions.length,1);
   assert.equal(submissions[0][1],'tiếp tục cốt truyện');
 });
-

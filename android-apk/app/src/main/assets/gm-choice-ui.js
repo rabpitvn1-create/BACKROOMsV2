@@ -246,7 +246,8 @@
   }
 
   function submitStoryBootstrap() {
-    if (!storyBootstrapPending() || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
+    if ((!storyBootstrapPending() && !storyAdvanceAvailable())
+        || window.__combatBusy || (typeof busy !== 'undefined' && busy)) return;
     if (!window.Android || typeof Android.submitTurn !== 'function') {
       if (status) status.textContent = 'Không tìm thấy Android bridge.';
       return;
@@ -298,36 +299,18 @@
     } catch (_) { return false; }
   }
 
-  function storyDecisionNeedsPrefetch() {
-    try {
-      return storyAwaitingDecision()
-        && String(state.story.decisionStatus || '') === 'PREFETCH_REQUIRED';
-    } catch (_) { return false; }
-  }
-
   function storyDecisionChoices() {
     try {
       return storyDecisionReady() ? state.story.decisionPackage.choices : [];
     } catch (_) { return []; }
   }
 
-  function requestStoryDecisionPrefetch() {
-    if (!storyDecisionNeedsPrefetch()) return;
-    if (!window.Android || typeof Android.prefetchStoryDecision !== 'function') return;
-    var key = String(state.story.decisionId || state.story.currentScene || '');
-    if (!key || window.__storyDecisionPrefetchKey === key) return;
-    window.__storyDecisionPrefetchKey = key;
-    setTimeout(function(){
-      try {
-        Android.prefetchStoryDecision(JSON.stringify(state));
-      } catch (_) {
-        window.__storyDecisionPrefetchKey = '';
-      }
-    }, 0);
-  }
-
   function storyAdvanceAvailable() {
-    return false;
+    var story = state && state.story;
+    return !!(story && story.active === true && story.arcComplete !== true
+      && story.segmentDelivered === true && story.awaitingDecision !== true
+      && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
+      && !(state.combat && state.combat.active));
   }
 
   function storyCutawayActive() {
@@ -422,13 +405,24 @@
       article.appendChild(handoffBox);
       return;
     }
+    if (latest && storyAdvanceAvailable()) {
+      var advanceBox = document.createElement('div');
+      advanceBox.className = 'gm-choices story-advance';
+      var advanceButton = document.createElement('button');
+      advanceButton.type = 'button';
+      advanceButton.className = 'gm-choice';
+      advanceButton.textContent = 'Tiếp tục cốt truyện';
+      advanceButton.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && busy);
+      advanceButton.addEventListener('click', submitStoryBootstrap);
+      advanceBox.appendChild(advanceButton);
+      article.appendChild(advanceBox);
+      return;
+    }
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
     var decisionReady = awaitingDecision && storyDecisionReady();
     var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision && !awaitingEntity;
-
-    if (latest && storyDecisionNeedsPrefetch()) requestStoryDecisionPrefetch();
 
     var choices = [];
     if (decisionReady) {
@@ -530,7 +524,8 @@
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
     var storyLocked = storyAwaitingDecision() || storyAwaitingEntityAttack()
-      || storyPendingAdvance() || storyCutawayActive() || storyHandoffPending();
+      || storyPendingAdvance() || storyCutawayActive() || storyHandoffPending()
+      || storyAdvanceAvailable();
     form.classList.toggle('battle-locked', combat || storyLocked);
     action.disabled = combat || storyLocked;
     action.readOnly = combat || storyLocked;
@@ -769,32 +764,6 @@
       }
     }, true);
   }
-
-  window.backroomStoryDecisionPrepared = function(json){
-    try {
-      state = JSON.parse(json);
-      if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
-      window.__storyDecisionPrefetchKey = '';
-      window.__storyDecisionPrefetchRetries = 0;
-      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
-      if (typeof window.render === 'function') window.render();
-      syncComposer();
-      if (status) status.textContent = 'Các lựa chọn đã sẵn sàng.';
-    } catch (_) {
-      window.__storyDecisionPrefetchKey = '';
-      if (status) status.textContent = 'Decision package không hợp lệ.';
-    }
-  };
-
-  window.backroomStoryDecisionPrefetchError = function(message){
-    window.__storyDecisionPrefetchKey = '';
-    window.__storyDecisionPrefetchRetries = (window.__storyDecisionPrefetchRetries || 0) + 1;
-    if (window.__storyDecisionPrefetchRetries <= 2 && storyDecisionNeedsPrefetch()) {
-      setTimeout(function(){ requestStoryDecisionPrefetch(); }, 900);
-      return;
-    }
-    if (status) status.textContent = 'Không thể chuẩn bị lựa chọn: ' + String(message || 'provider error');
-  };
 
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){

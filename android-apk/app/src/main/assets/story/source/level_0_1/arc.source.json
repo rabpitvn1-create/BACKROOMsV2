@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-station-r1",
+  "sourceRevision": "zenith-station-r1-offline-decisions-r1",
   "startChapter": "L01_C01",
   "segmentTargetChars": 1900,
   "segmentMaxChars": 2400,
@@ -26,6 +26,46 @@
           "characterId": "nam",
           "scope": "story_local",
           "presence": "DECEASED"
+        }
+      ],
+      "offlineDecisions": [
+        {
+          "variants": [
+            {
+              "canon": "Tìm dấu hiệu cơ thể thay cho tiếng ho",
+              "trap": {
+                "text": "Lần theo hướng tiếng ho vừa vọng lại",
+                "reply": "Âm thanh nhỏ dần sau mấy lớp vách kim loại. Cao Minh dừng bên ngưỡng cửa trượt, nơi ma ấn và kiếm ấn vẫn nằm sát nhau. Lục Trầm đứng cạnh hắn; tiếng quạt trong tường che lấp mọi hướng còn lại."
+              },
+              "converge": {
+                "text": "Đối chiếu tiếng ho với vị trí các vách",
+                "reply": "Các lớp kim loại làm âm thanh đổi hướng. Cao Minh giữ lại điều duy nhất chắc chắn: họ vừa nghe một tiếng ho. Hắn mở rộng thần thức."
+              }
+            },
+            {
+              "canon": "Quét xuống dưới hành lang bằng thần thức",
+              "trap": {
+                "text": "Dựa vào tiếng kim loại để định vị",
+                "reply": "Tiếng kim loại bật lên rồi tắt giữa các cửa đóng. Lối đi như ngắn đi một đoạn; dưới chân Cao Minh lại là nền ngay sau cửa trượt. Hai dấu trên khung còn nguyên. Lục Trầm nghiêng đầu lắng nghe, không gọi tên ai."
+              },
+              "converge": {
+                "text": "Giữ im lặng và dò chuyển động sau vách",
+                "reply": "Tiếng quạt chạy đều, không cho biết tiếng ho phát ra từ đâu. Cao Minh chuyển sự chú ý sang những dấu hiệu không phụ thuộc vào âm thanh."
+              }
+            },
+            {
+              "canon": "Kiểm tra nhiệt và sinh khí sau các vách",
+              "trap": {
+                "text": "Lấy nhịp quạt làm hướng tham chiếu",
+                "reply": "Luồng khí chuyển qua các khe cửa làm tiếng quạt đổi chỗ. Cao Minh thấy mình đứng trước ngưỡng cửa trượt; ngoài khung, ma ấn và kiếm ấn vẫn cạnh nhau. Lục Trầm im lặng. Hắn ngừng nghe, để thần thức dò qua những lớp vách."
+              },
+              "converge": {
+                "text": "Tách tiếng ho khỏi tiếng động cơ",
+                "reply": "Cao Minh không tìm thêm được hướng từ âm thanh. Hắn bỏ cách định vị ấy và mở rộng thần thức qua vách kim loại."
+              }
+            }
+          ],
+          "anchor": "Một tiếng ho.\n\nCả hai dừng."
         }
       ]
     },

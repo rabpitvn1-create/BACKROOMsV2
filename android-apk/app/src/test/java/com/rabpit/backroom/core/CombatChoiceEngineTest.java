@@ -15,6 +15,32 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CombatChoiceEngineTest {
+  @Test public void defeatAtSublevelPreservesStoryAndRouteAndAnnouncesOnlyOnce() throws Exception {
+    JSONObject state = combatState(new JSONArray())
+        .put("currentLevel", 0).put("currentLevelKey", "0.1")
+        .put("location", "Level 0.1 / hành lang sâu")
+        .put("story", new JSONObject().put("currentChapter", "L01_C08")
+            .put("currentSegmentIndex", 3).put("eventSequence", 9));
+    JSONObject route = new JSONObject().put("levelKey", "0.1").put("streak", 4);
+    state.put("levelRoute", route);
+    JSONObject combat = new JSONObject().put("active", false).put("outcome", "defeat");
+    state.put("combat", combat);
+
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+    assertEquals("0.1", state.getString("currentLevelKey"));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    assertEquals("L01_C08", state.getJSONObject("story").getString("currentChapter"));
+    assertEquals(3, state.getJSONObject("story").getInt("currentSegmentIndex"));
+    assertEquals(9, state.getJSONObject("story").getInt("eventSequence"));
+    assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
+    assertEquals("Backrooms nuốt chửng lấy bạn khi bạn ngã xuống.",
+        state.getJSONArray("log").getJSONObject(state.getJSONArray("log").length() - 1).getString("text"));
+    int logSize = state.getJSONArray("log").length();
+    CombatChoiceEngine.normalizeTerminalEncounter(new JSONObject(state.toString()));
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
+    assertEquals(logSize, state.getJSONArray("log").length());
+  }
+
   @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);

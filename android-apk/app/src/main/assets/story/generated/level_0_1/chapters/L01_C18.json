@@ -2,8 +2,8 @@
   "schemaVersion": 2,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-station-r1",
-  "compilerFingerprint": "ccdcc7426f6f991acddf9782db7e656479e5038238e0a58a0ec7cd8b99c9bd15",
+  "sourceRevision": "zenith-station-r1-offline-decisions-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
   "id": "L01_C18",
   "title": "Level 0.1 — Chương 18: Người Ở Lại Trước Ngưỡng",
   "source": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.md",
@@ -41,6 +41,7 @@
     "Do not keep Khải in MISSING state after death.",
     "Do not name or choose the destination Level in Story metadata."
   ],
+  "offlineDecisions": [],
   "sourceDigest": "a63cb29c58a933cb719b0dcf0958f9357ff002be957d223cff6168527c7615e2",
   "segmentIds": [
     "L01_C18_Sfaee0ac27b0b8395",

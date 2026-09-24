@@ -751,47 +751,6 @@ public class MainActivity extends Activity {
       });
     }
 
-    @JavascriptInterface public void prefetchStoryDecision(String stateJson) {
-      io.execute(() -> {
-        try {
-          JSONObject submitted = new JSONObject(stateJson);
-          String recentStory = recentStoryContext(submitted);
-          JSONObject request = new JSONObject(
-              gameCore.storyDecisionPrefetchRequest(stateJson, recentStory));
-          if (!request.optBoolean("needed", false)) return;
-
-          String prompt = request.optString("prompt", "").trim();
-          String contextHash = request.optString("contextHash", "").trim();
-          if (prompt.isEmpty() || contextHash.isEmpty()) {
-            throw new Exception("Story decision prefetch request không hợp lệ.");
-          }
-
-          String rawOutput;
-          try {
-            rawOutput = geminiText(prompt);
-          } catch (Exception geminiError) {
-            Log.w(TAG, "All Gemini keys failed for story decision prefetch ("
-                + providerErrorSummary(geminiError) + "); falling back to Haiku.");
-            rawOutput = haikuText(prompt);
-          }
-
-          JSONObject generated = parseModelJson(rawOutput);
-          JSONObject committed = new JSONObject(
-              gameCore.commitStoryDecisionPackage(
-                  stateJson, contextHash, generated.toString()));
-          if (!committed.optBoolean("handled", false)) {
-            throw new Exception(committed.optString(
-                "error", "Story decision package bị Core từ chối."));
-          }
-          emit("backroomStoryDecisionPrepared",
-              committed.getJSONObject("state").toString());
-        } catch (Exception e) {
-          emit("backroomStoryDecisionPrefetchError",
-              e.getMessage() == null ? "Không thể chuẩn bị lựa chọn cốt truyện." : e.getMessage());
-        }
-      });
-    }
-
     @JavascriptInterface public void resolveStoryDecision(String stateJson, String choiceId) {
       io.execute(() -> {
         try {
