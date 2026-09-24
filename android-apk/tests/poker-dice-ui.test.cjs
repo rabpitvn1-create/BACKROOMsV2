@@ -104,3 +104,26 @@ test('GM effect highlights keep the normal narration font', () => {
   assert.match(source, /\.semantic-damage\{color:#ff5c5c\}/);
   assert.match(source, /\.semantic-buff\{color:#73e6a2\}/);
 });
+
+
+test('encounter stays on the current Explorer Turn until victory opens the next turn', () => {
+  const decisionStart = coreFacadeSource.indexOf('public synchronized String processStoryDecision');
+  const decisionEnd = coreFacadeSource.indexOf('public synchronized String processStoryEntityAttack', decisionStart);
+  const decisionBlock = coreFacadeSource.slice(decisionStart, decisionEnd);
+  const encounterRoll = decisionBlock.indexOf('entityCore.prepareEncounter(state);');
+  const turnAdvance = decisionBlock.indexOf('incrementTurn(state);');
+  assert.ok(encounterRoll >= 0 && turnAdvance > encounterRoll);
+  assert.match(decisionBlock, /if \(CombatChoiceEngine\.isKnownEntity\(encounter\)\)[\s\S]*CombatChoiceEngine\.start\(state, encounter[\s\S]*\} else \{[\s\S]*incrementTurn\(state\)/);
+
+  const validatedStart = coreFacadeSource.indexOf('public synchronized String processValidatedCandidate');
+  const validatedEnd = coreFacadeSource.indexOf('public synchronized String storyDecisionPrefetchRequest', validatedStart);
+  const validatedBlock = coreFacadeSource.slice(validatedStart, validatedEnd);
+  assert.match(validatedBlock, /CombatChoiceEngine\.isKnownEntity\(encounterKey\(before\)\)[\s\S]*sanitized\.put\("turn", Math\.max\(1, before\.optInt\("turn", 1\)\)\)/);
+
+  const combatStart = coreFacadeSource.indexOf('public synchronized String processCombatResolution');
+  const combatEnd = coreFacadeSource.indexOf('public synchronized String levelPromptContext', combatStart);
+  const combatBlock = coreFacadeSource.slice(combatStart, combatEnd);
+  assert.match(combatBlock, /wasActive && !active && "victory"\.equals\(outcome\)[\s\S]*incrementTurn\(state\)/);
+  assert.match(combatBlock, /storyCore\.awaitingDecision\(state\)[\s\S]*storyCore\.refreshLoopDecisionContext\(state\)/);
+  assert.match(source, /Entity bị tiêu diệt\. Bắt đầu Turn/);
+});
