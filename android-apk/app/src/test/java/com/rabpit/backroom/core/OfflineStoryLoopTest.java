@@ -360,6 +360,56 @@ public class OfflineStoryLoopTest {
     assertTrue(core.returnJourneyReady(state));
   }
 
+  @Test public void revisitingExistingEntityTraceDoesNotReplayCanonCombatOrRewards() throws Exception {
+    StoryCore core = new StoryCore();
+    JSONObject state = new JSONObject()
+        .put("currentLevelKey", "1")
+        .put("currentLevel", 1)
+        .put("location", "Level 1 / cột bê tông có dấu cào Hound")
+        .put("turn", 12)
+        .put("party", new JSONArray())
+        .put("inventory", new JSONArray()
+            .put(new JSONObject().put("id", "existing_loot").put("quantity", 1)))
+        .put("flags", new JSONObject()
+            .put("canon_hound_event_completed", true)
+            .put("canon_hound_reward_claimed", true))
+        .put("combat", new JSONObject()
+            .put("active", false)
+            .put("outcome", "victory")
+            .put("entityKey", "hound")
+            .put("lootResolved", true)
+            .put("droppedItem", "existing_loot")
+            .put("coreDropResolved", true)
+            .put("coreDropReward", 7));
+    core.normalizeState(state);
+
+    String beforeInventory = state.getJSONArray("inventory").toString();
+    String beforeFlags = state.getJSONObject("flags").toString();
+    String beforeCombat = state.getJSONObject("combat").toString();
+
+    core.beginDeathReturnJourney(
+        state, "Level 1 / cột bê tông có dấu cào Hound", "1");
+    JSONObject request = core.returnJourneyTurnRequest(state, "");
+    JSONObject generated = returnTurn("dấu-Hound-cũ")
+        .put("narration",
+            "Cao Minh đi qua những cột bê tông đã đổi khoảng cách. Một vết cào cũ trên chân cột "
+                + "gợi lại Hound từng xuất hiện ở vùng này, nhưng không có cuộc săn cũ nào diễn ra lại. "
+                + "Hắn chỉ dùng dấu vết đã tồn tại để định hướng giữa ba lối đi trước mặt.");
+    core.installReturnJourneyTurn(
+        state, request.getString("journeyId"), request.getInt("turnIndex"),
+        request.getString("contextHash"), generated);
+    core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_STAY));
+
+    assertEquals(beforeInventory, state.getJSONArray("inventory").toString());
+    assertEquals(beforeFlags, state.getJSONObject("flags").toString());
+    assertEquals(beforeCombat, state.getJSONObject("combat").toString());
+    assertTrue(state.getJSONObject("flags").getBoolean("canon_hound_event_completed"));
+    assertTrue(state.getJSONObject("flags").getBoolean("canon_hound_reward_claimed"));
+    assertTrue(state.getJSONObject("combat").getBoolean("lootResolved"));
+    assertTrue(state.getJSONObject("combat").getBoolean("coreDropResolved"));
+    assertEquals(7, state.getJSONObject("combat").getInt("coreDropReward"));
+  }
+
   @Test public void deathReturnStartsAtExactCurrentLevelKeyForEveryKnownSublevel() throws Exception {
     StoryCore core = new StoryCore();
     String[] keys = {
