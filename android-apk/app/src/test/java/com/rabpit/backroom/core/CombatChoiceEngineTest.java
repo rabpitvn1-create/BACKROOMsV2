@@ -57,10 +57,19 @@ public class CombatChoiceEngineTest {
     assertEquals(4, state.getJSONObject("levelRoute").getInt("streak"));
     assertEquals("Backrooms nuốt chửng lấy bạn khi bạn ngã xuống.",
         state.getJSONArray("log").getJSONObject(state.getJSONArray("log").length() - 1).getString("text"));
+    JSONObject resolvedCombat = state.getJSONObject("combat");
+    assertEquals("Level 0.1 / hành lang sâu", resolvedCombat.getString("deathReturnAnchorLocation"));
+    assertEquals("0.1", resolvedCombat.getString("deathReturnLevelKey"));
+    assertTrue(resolvedCombat.getBoolean("deathReturnJourneyPending"));
+    assertTrue(resolvedCombat.getBoolean("deathRecoveryApplied"));
+
     int logSize = state.getJSONArray("log").length();
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.setCurrentHp(state, "cao_minh", 7);
     CombatChoiceEngine.normalizeTerminalEncounter(new JSONObject(state.toString()));
     CombatChoiceEngine.normalizeTerminalEncounter(state);
     assertEquals(logSize, state.getJSONArray("log").length());
+    assertEquals(7, progression.profile(state, "cao_minh").getInt("currentHp"));
   }
 
   @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
