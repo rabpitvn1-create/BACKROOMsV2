@@ -49,6 +49,7 @@ final class LevelCore {
   private final Map<String, JSONArray> snapshotsByLevelKey = new LinkedHashMap<>();
   private final Map<String, String> visualTypeByLevelKey = new LinkedHashMap<>();
   private final IntRng rng;
+  private final LevelGraph levelGraph;
   private String snapshotRoot = "level_snapshots/wiki";
   private String sublevelSnapshotRoot = "level_snapshots/sublevels/level_0";
 
@@ -59,6 +60,7 @@ final class LevelCore {
   LevelCore(Context context, IntRng rng) {
     if (rng == null) throw new IllegalArgumentException("rng is required");
     this.rng = rng;
+    this.levelGraph = LevelGraph.load(context);
     if (context != null) {
       loadLevelKnowledge(context);
       if (knowledgeByLevelKey.isEmpty()) loadLegacyKnowledge(context);
@@ -74,10 +76,59 @@ final class LevelCore {
 
   void normalizeState(JSONObject state) throws Exception {
     String levelKey = resolveLevelKey(state);
-    int level = parentLevel(levelKey);
+    int level = parentLevelForKey(levelKey);
     state.put("currentLevel", level);
     state.put(LEVEL_KEY, levelKey);
     normalizeRouteState(state, levelKey);
+  }
+
+  int stageIndexForState(JSONObject state) {
+    String key = resolveLevelKey(state);
+    int legacy = stageIndexForKey(key);
+    return levelGraph.available() ? levelGraph.stageIndex(key, legacy) : legacy;
+  }
+
+  void markStoryBoundaryReady(JSONObject state) throws Exception {
+    normalizeState(state);
+    String key = resolveLevelKey(state);
+    JSONObject route = normalizeRouteState(state, key);
+    route.put("storyExitReady", true);
+    route.put("readinessReason", "STORY_ARC_COMPLETE");
+    route.put("exitAvailable", true);
+    route.put("lastResult", "STORY_EXIT_READY");
+    state.put(ROUTE_STATE, route);
+  }
+
+  boolean storyHandoffAvailable(JSONObject state) {
+    try {
+      normalizeState(state);
+      String from = resolveLevelKey(state);
+      JSONObject route = normalizeRouteState(state, from);
+      String next = nextForKey(from);
+      return route.optBoolean("storyExitReady", false)
+          && next != null
+          && transitionAllowedFor(from, next);
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
+  String applyStoryArcTransition(JSONObject state) throws Exception {
+    normalizeState(state);
+    String from = resolveLevelKey(state);
+    JSONObject route = normalizeRouteState(state, from);
+    if (!route.optBoolean("storyExitReady", false)) {
+      throw new IllegalStateException("Story arc boundary is not ready for Level transition");
+    }
+    String next = nextForKey(from);
+    if (next == null || !transitionAllowedFor(from, next)) {
+      throw new IllegalStateException("No validated Level edge is available for this story boundary");
+    }
+    state.put("currentLevel", parentLevelForKey(next));
+    state.put(LEVEL_KEY, next);
+    state.put("location", defaultLocationForKey(next));
+    state.put(ROUTE_STATE, newRouteStateForKey(next));
+    return next;
   }
 
   void rollRouteForExplorerAction(JSONObject state, String action) throws Exception {
@@ -144,7 +195,7 @@ final class LevelCore {
             && "RESET".equals(beforeRoute.optString("lastResult", ""));
 
     if (resetThisTurn) {
-      candidate.put("currentLevel", parentLevel(fromKey));
+      candidate.put("currentLevel", parentLevelForKey(fromKey));
       candidate.put(LEVEL_KEY, fromKey);
       String returnLocation = beforeRoute.optString("returnLocation", "").trim();
       if (!returnLocation.isEmpty()) candidate.put("location", returnLocation);
@@ -156,25 +207,25 @@ final class LevelCore {
       throw new IllegalArgumentException("Unsupported or inconsistent Level destination");
     }
 
-    if (!nodeTransitionAllowed(fromKey, requestedKey)) {
+    if (!transitionAllowedFor(fromKey, requestedKey)) {
       throw new IllegalArgumentException(
-          "Invalid Level transition: " + displayName(fromKey) + " -> " + displayName(requestedKey));
+          "Invalid Level transition: " + displayNameForKey(fromKey) + " -> " + displayNameForKey(requestedKey));
     }
 
     if (!requestedKey.equals(fromKey)) {
       if (!beforeRoute.optBoolean("exitAvailable", false)) {
         throw new IllegalArgumentException("Level transition is locked until the hidden route chain completes");
       }
-      candidate.put("currentLevel", parentLevel(requestedKey));
+      candidate.put("currentLevel", parentLevelForKey(requestedKey));
       candidate.put(LEVEL_KEY, requestedKey);
-      candidate.put(ROUTE_STATE, newRouteState(requestedKey));
+      candidate.put(ROUTE_STATE, newRouteStateForKey(requestedKey));
       if (!locationIdentifiesKey(candidate.optString("location", ""), requestedKey)) {
-        candidate.put("location", defaultLocation(requestedKey));
+        candidate.put("location", defaultLocationForKey(requestedKey));
       }
       return;
     }
 
-    candidate.put("currentLevel", parentLevel(fromKey));
+    candidate.put("currentLevel", parentLevelForKey(fromKey));
     candidate.put(LEVEL_KEY, fromKey);
   }
 
@@ -190,34 +241,34 @@ final class LevelCore {
             && "RESET".equals(beforeRoute.optString("lastResult", ""));
 
     if (resetThisTurn) {
-      candidate.put("currentLevel", parentLevel(fromKey));
+      candidate.put("currentLevel", parentLevelForKey(fromKey));
       candidate.put(LEVEL_KEY, fromKey);
       String returnLocation = beforeRoute.optString("returnLocation", "").trim();
       candidate.put("location", returnLocation.isEmpty()
-          ? before.optString("location", defaultLocation(fromKey))
+          ? before.optString("location", defaultLocationForKey(fromKey))
           : returnLocation);
       return;
     }
 
     String requested = normalizeKey(transitionTarget);
     if (requested.isEmpty() || "none".equals(requested)) requested = fromKey;
-    if (!isKnownLevelKey(requested)) {
+    if (!knownKey(requested)) {
       throw new IllegalArgumentException("Unsupported Level transition target");
     }
-    if (!nodeTransitionAllowed(fromKey, requested)) {
+    if (!transitionAllowedFor(fromKey, requested)) {
       throw new IllegalArgumentException(
-          "Invalid Level transition: " + displayName(fromKey) + " -> " + displayName(requested));
+          "Invalid Level transition: " + displayNameForKey(fromKey) + " -> " + displayNameForKey(requested));
     }
 
     if (!requested.equals(fromKey)) {
       if (!beforeRoute.optBoolean("exitAvailable", false)) {
         throw new IllegalArgumentException("Level transition is locked until the hidden route chain completes");
       }
-      candidate.put("currentLevel", parentLevel(requested));
+      candidate.put("currentLevel", parentLevelForKey(requested));
       candidate.put(LEVEL_KEY, requested);
-      candidate.put(ROUTE_STATE, newRouteState(requested));
+      candidate.put(ROUTE_STATE, newRouteStateForKey(requested));
     } else {
-      candidate.put("currentLevel", parentLevel(fromKey));
+      candidate.put("currentLevel", parentLevelForKey(fromKey));
       candidate.put(LEVEL_KEY, fromKey);
       copyRouteState(beforeRoute, candidate);
     }
@@ -227,8 +278,8 @@ final class LevelCore {
     if (!labelKey.isEmpty() && !labelKey.equals(requested)) sceneLabel = "";
     if (sceneLabel.isEmpty()) {
       candidate.put("location", requested.equals(fromKey)
-          ? before.optString("location", defaultLocation(fromKey))
-          : defaultLocation(requested));
+          ? before.optString("location", defaultLocationForKey(fromKey))
+          : defaultLocationForKey(requested));
     } else {
       candidate.put("location", sceneLabel);
     }
@@ -240,20 +291,33 @@ final class LevelCore {
 
   String promptContext(JSONObject state, String action) {
     String levelKey = resolveLevelKey(state);
-    int level = parentLevel(levelKey);
+    int level = parentLevelForKey(levelKey);
     int turn = Math.max(1, state.optInt("turn", 1));
     String canon = knowledgeContext(levelKey, turn, action);
     if (canon.trim().isEmpty()) {
       canon = legacyCanonByLevelKey.get(levelKey);
     }
     if (canon == null || canon.trim().isEmpty()) {
-      canon = "Canon for " + displayName(levelKey) + " is unavailable.";
+      canon = "Canon for " + displayNameForKey(levelKey) + " is unavailable.";
     }
 
-    String next = nextRequiredLevelKey(levelKey);
+    String next = nextForKey(levelKey);
     String allowed;
     String allowedKeys;
-    if (next != null) {
+    if (levelGraph.available()) {
+      StringBuilder values = new StringBuilder();
+      StringBuilder keys = new StringBuilder();
+      for (String target : levelGraph.outgoing(levelKey)) {
+        if (values.length() > 0) {
+          values.append(", ");
+          keys.append(", ");
+        }
+        values.append(displayNameForKey(target));
+        keys.append(target);
+      }
+      allowed = values.length() == 0 ? "none" : values.toString();
+      allowedKeys = keys.length() == 0 ? "none" : keys.toString();
+    } else if (next != null) {
       allowed = displayName(next);
       allowedKeys = next;
     } else {
@@ -298,7 +362,7 @@ final class LevelCore {
     } else if ("SUCCESS".equals(result)) {
       routeInstruction =
           "HIDDEN ROUTE OUTCOME THIS TURN: SUCCESS. Narrate meaningful continued exploration inside "
-              + displayName(levelKey)
+              + displayNameForKey(levelKey)
               + ", but do not reveal an exit yet. Never mention a roll, streak, probability, or hidden system.";
     } else {
       routeInstruction =
@@ -309,7 +373,7 @@ final class LevelCore {
         ? "LEVEL TRANSITION: AVAILABLE. The only allowed next destination is " + allowed
             + ". Do not skip any Level 0 sub-level node."
         : "LEVEL TRANSITION: LOCKED. Keep currentLevelKey unchanged and keep the environment inside "
-            + displayName(levelKey) + ".";
+            + displayNameForKey(levelKey) + ".";
 
     String narrativeTransitionInstruction = exitAvailable
         ? "NARRATIVE TRANSITION SIGNAL: sceneLabel is descriptive only and never changes Level state. "
@@ -319,7 +383,7 @@ final class LevelCore {
             + "transitionTarget must be empty because the route is locked.";
 
 
-    return "CURRENT LEVEL NODE: " + displayName(levelKey) + "\n"
+    return "CURRENT LEVEL NODE: " + displayNameForKey(levelKey) + "\n"
         + "CURRENT LEVEL KEY: " + levelKey + "\n"
         + "PARENT LEVEL NUMBER: " + level + "\n"
         + "LEVEL KNOWLEDGE BUNDLE:\n" + canon + "\n"
@@ -334,12 +398,12 @@ final class LevelCore {
 
   String snapshotDescriptor(JSONObject state) {
     String levelKey = resolveLevelKey(state);
-    int level = parentLevel(levelKey);
+    int level = parentLevelForKey(levelKey);
     JSONObject output = new JSONObject();
     try {
       output.put("level", level);
       output.put("levelKey", levelKey);
-      output.put("label", displayName(levelKey));
+      output.put("label", displayNameForKey(levelKey));
 
       JSONArray assets;
       String root;
@@ -447,17 +511,19 @@ final class LevelCore {
   private JSONObject normalizeRouteState(JSONObject state, String levelKey) throws Exception {
     JSONObject route = state.optJSONObject(ROUTE_STATE);
     if (route == null || !levelKey.equals(normalizeKey(route.optString("levelKey", "")))) {
-      route = newRouteState(levelKey);
+      route = newRouteStateForKey(levelKey);
       state.put(ROUTE_STATE, route);
       return route;
     }
 
     int streak = Math.max(0, Math.min(ROUTE_REQUIRED_STREAK, route.optInt("streak", 0)));
-    boolean exitAvailable = streak >= ROUTE_REQUIRED_STREAK;
-    route.put("level", parentLevel(levelKey));
+    boolean storyExitReady = route.optBoolean("storyExitReady", false);
+    boolean routeReady = streak >= ROUTE_REQUIRED_STREAK;
+    route.put("level", parentLevelForKey(levelKey));
     route.put("levelKey", levelKey);
-    route.put("streak", exitAvailable ? ROUTE_REQUIRED_STREAK : streak);
-    route.put("exitAvailable", exitAvailable);
+    route.put("streak", routeReady ? ROUTE_REQUIRED_STREAK : streak);
+    route.put("storyExitReady", storyExitReady);
+    route.put("exitAvailable", routeReady || storyExitReady);
     state.put(ROUTE_STATE, route);
     return route;
   }
@@ -472,6 +538,18 @@ final class LevelCore {
         .put("lastResult", "");
   }
 
+  private JSONObject newRouteStateForKey(String levelKey) throws Exception {
+    return new JSONObject()
+        .put("level", parentLevelForKey(levelKey))
+        .put("levelKey", normalizeKey(levelKey))
+        .put("streak", 0)
+        .put("storyExitReady", false)
+        .put("readinessReason", "")
+        .put("exitAvailable", false)
+        .put("lastRollTurn", -1)
+        .put("lastResult", "");
+  }
+
   private static void copyRouteState(JSONObject route, JSONObject candidate) throws Exception {
     if (candidate == null) throw new IllegalArgumentException("candidate state is required");
     candidate.put(ROUTE_STATE, new JSONObject(route.toString()));
@@ -481,25 +559,25 @@ final class LevelCore {
     if (state == null) return "0";
 
     String explicit = normalizeKey(state.optString(LEVEL_KEY, ""));
-    if (isKnownLevelKey(explicit)) return explicit;
+    if (knownKey(explicit)) return explicit;
 
     String inferred = levelKeyFromLocation(state.optString("location", ""));
-    if (isKnownLevelKey(inferred)) return inferred;
+    if (knownKey(inferred)) return inferred;
 
     int level = state.optInt("currentLevel", -1);
     if (level >= 0 && level <= 6) return String.valueOf(level);
     return "0";
   }
 
-  private static String requestedLevelKey(JSONObject candidate, String fallback) {
+  private String requestedLevelKey(JSONObject candidate, String fallback) {
     if (candidate == null) return INVALID_LEVEL_KEY;
 
     String explicit = normalizeKey(candidate.optString(LEVEL_KEY, ""));
-    if (!explicit.isEmpty() && !isKnownLevelKey(explicit)) return INVALID_LEVEL_KEY;
+    if (!explicit.isEmpty() && !knownKey(explicit)) return INVALID_LEVEL_KEY;
 
     String location = candidate.optString("location", "");
     String rawLocationKey = rawLevelKeyFromLocation(location);
-    if (!rawLocationKey.isEmpty() && !isKnownLevelKey(rawLocationKey)) {
+    if (!rawLocationKey.isEmpty() && !knownKey(rawLocationKey)) {
       return INVALID_LEVEL_KEY;
     }
     String locationKey = levelKeyFromLocation(location);
@@ -519,23 +597,23 @@ final class LevelCore {
 
     if (candidate.has("currentLevel")) {
       int numeric = candidate.optInt("currentLevel", -1);
-      int requestedParent = parentLevel(requested);
+      int requestedParent = parentLevelForKey(requested);
       int fallbackParent = parentLevel(fallback);
       if (numeric < 0 || numeric > 6 || (numeric != requestedParent && numeric != fallbackParent)) {
         return INVALID_LEVEL_KEY;
       }
     }
 
-    return isKnownLevelKey(requested) ? requested : INVALID_LEVEL_KEY;
+    return knownKey(requested) ? requested : INVALID_LEVEL_KEY;
   }
 
-  private static boolean nodeTransitionAllowed(String fromKey, String toKey) {
+  private static boolean legacyNodeTransitionAllowed(String fromKey, String toKey) {
     String from = normalizeKey(fromKey);
     String to = normalizeKey(toKey);
     if (!isKnownLevelKey(from) || !isKnownLevelKey(to)) return false;
     if (from.equals(to)) return true;
 
-    String required = nextRequiredLevelKey(from);
+    String required = legacyNextRequiredLevelKey(from);
     if (required != null) return required.equals(to);
 
     int fromLevel = parentLevel(from);
@@ -544,12 +622,54 @@ final class LevelCore {
         && GameCoreRules.levelTransitionAllowed(fromLevel, toLevel);
   }
 
-  private static String nextRequiredLevelKey(String levelKey) {
+  private static String legacyNextRequiredLevelKey(String levelKey) {
     String key = normalizeKey(levelKey);
     for (int i = 0; i < LEVEL_ZERO_PROGRESSION.length - 1; i++) {
       if (LEVEL_ZERO_PROGRESSION[i].equals(key)) return LEVEL_ZERO_PROGRESSION[i + 1];
     }
     return null;
+  }
+
+  private boolean knownKey(String key) {
+    String normalized = normalizeKey(key);
+    return levelGraph.available() ? levelGraph.contains(normalized) : isKnownLevelKey(normalized);
+  }
+
+  private int parentLevelForKey(String key) {
+    String normalized = normalizeKey(key);
+    int legacy = parentLevel(normalized);
+    return levelGraph.available() ? levelGraph.parentLevel(normalized, legacy) : legacy;
+  }
+
+  private int stageIndexForGraphKey(String key) {
+    String normalized = normalizeKey(key);
+    int legacy = stageIndexForKey(normalized);
+    return levelGraph.available() ? levelGraph.stageIndex(normalized, legacy) : legacy;
+  }
+
+  private String displayNameForKey(String key) {
+    String normalized = normalizeKey(key);
+    String legacy = displayName(normalized);
+    return levelGraph.available() ? levelGraph.displayName(normalized, legacy) : legacy;
+  }
+
+  private String defaultLocationForKey(String key) {
+    String normalized = normalizeKey(key);
+    String legacy = defaultLocation(normalized);
+    return levelGraph.available() ? levelGraph.defaultLocation(normalized, legacy) : legacy;
+  }
+
+  private String nextForKey(String key) {
+    String normalized = normalizeKey(key);
+    if (levelGraph.available()) return levelGraph.singleNext(normalized);
+    return legacyNextRequiredLevelKey(normalized);
+  }
+
+  private boolean transitionAllowedFor(String fromKey, String toKey) {
+    String from = normalizeKey(fromKey);
+    String to = normalizeKey(toKey);
+    if (levelGraph.available()) return levelGraph.allows(from, to);
+    return legacyNodeTransitionAllowed(from, to);
   }
 
   private static boolean isKnownLevelKey(String key) {
@@ -642,7 +762,9 @@ final class LevelCore {
 
       JSONObject levels = root.optJSONObject("levels");
       if (levels == null) return;
-      for (String key : new String[]{"0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms", "1", "2", "3", "4", "5", "6"}) {
+      java.util.Iterator<String> levelKeys = levels.keys();
+      while (levelKeys.hasNext()) {
+        String key = levelKeys.next();
         JSONObject bundle = levels.optJSONObject(key);
         if (bundle != null) knowledgeByLevelKey.put(key, new JSONObject(bundle.toString()));
       }
@@ -719,7 +841,7 @@ final class LevelCore {
     if (bundle == null) return "";
 
     StringBuilder out = new StringBuilder();
-    String name = bundle.optString("name", displayName(levelKey)).trim();
+    String name = bundle.optString("name", displayNameForKey(levelKey)).trim();
     if (!name.isEmpty()) out.append("NAME: ").append(name).append('\n');
 
     String category = categorizeAction(action);
