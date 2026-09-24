@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {bounds,envelope,layout}=require('../app/src/main/assets/snapshot-ui.js');
+const {bounds,envelope,layout,assetMetric}=require('../app/src/main/assets/snapshot-ui.js');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const metric=(w,h,pad=0)=>({width:w+pad*2,height:h+pad*2,body:{left:pad,top:pad,right:w+pad,bottom:h+pad},paint:{left:pad,top:pad,right:w+pad,bottom:h+pad}});
 const standing=metric(60,100),aiming=metric(120,100),lucTram=metric(80,100);
@@ -27,6 +27,13 @@ test('entity keeps its own lane and aspect ratio',()=>{
   const r=layout(m,360,250,'left','entity',family);
   assert.ok(r.width<=360*.46+1e-7);near(r.width/r.height,m.width/m.height);near(r.baseline,230);
  }
+});
+test('CopX overlay has measured bounds for its local sprite',()=>{
+ const m=assetMetric('file:///android_asset/entity/copx.webp');
+ assert.equal(m.width,900);assert.equal(m.height,1200);
+ assert.deepEqual(m.body,{left:18,top:2,right:892,bottom:1187});
+ const r=layout(m,360,250,'left','entity',family);
+ assert.ok(r.left>=0);assert.ok(r.left+r.width<=360);
 });
 test('alpha bounds distinguish faint residue, paint and solid body',()=>{
  const data=new Uint8ClampedArray(8*8*4);

@@ -25,6 +25,7 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 | `hotel_corpse_lure` | `hotel_corpse_lure.webp` |
 | `jeff_the_killer` | `jeff_the_killer.webp` |
 | `async_rifleman` | `async_rifleman.webp` |
+| `copx` | `copx.webp` |
 | `tam_ma_cao_minh` | `tam_ma_cao_minh.webp` |
 | `jane_the_killer` | `jane_the_killer.webp` |
 | `slenderman` | `slenderman.webp` |
@@ -57,3 +58,5 @@ Snapshot overlay reads:
 `file:///android_asset/entity/<canonical-key>.webp`
 
 Treasure asset source mapping: Google Drive `Novel/ENTITY/Tam_Ma_Cao_Minh.webp` is packaged as canonical runtime asset `entity/tam_ma_cao_minh.webp`.
+
+CopX asset source mapping: Google Drive `Novel/ENTITY/CopX.webp` is packaged as canonical runtime asset `entity/copx.webp`. CopX is an ordinary roaming Entity with a 3.00% independent roll; a victory grants 5 Core at stage 0, scaled by the existing stage reward curve (100% drop chance, once per encounter).

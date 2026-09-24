@@ -115,6 +115,33 @@ public class CoreRewardEconomyTest {
     assertEquals(231, progression.coreCount(state));
   }
 
+  @Test public void copxPaysFiveCoreScaledByStageOnEveryVictoryExactlyOnce() throws Exception {
+    JSONObject state = combatState("0");
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+
+    for (int kill = 0; kill < 3; kill++) {
+      if (kill == 2) state.put(LevelCore.LEVEL_KEY, "0.1");
+      CombatChoiceEngine.start(state, "copx", 0);
+      JSONObject combat = state.getJSONObject("combat");
+      assertEquals(260, combat.getJSONObject("entity").getInt("baseHp"));
+      assertEquals(22, combat.getJSONObject("entity").getInt("baseDamage"));
+      assertEquals(3, CombatChoiceEngine.entitySkillCount("copx"));
+      combat.getJSONObject("entity").put("hp", 1);
+      finalizeAs(state, 2, 2, 1, 4, 6);
+      CombatChoiceEngine.resolveFinalized(state);
+
+      int expectedReward = kill == 2 ? 8 : 5;
+      int expectedBalance = kill == 0 ? 5 : kill == 1 ? 10 : 18;
+      assertEquals("victory", combat.getString("outcome"));
+      assertEquals(100, combat.getInt("coreDropRatePercent"));
+      assertEquals(expectedReward, combat.getInt("coreDropReward"));
+      assertEquals(expectedBalance, progression.coreCount(state));
+      CombatChoiceEngine.resolveFinalized(state);
+      assertEquals(expectedBalance, progression.coreCount(state));
+    }
+  }
+
   @Test public void storyProgressRewardsCanonAndConvergeButNeverTrapLoop() throws Exception {
     JSONObject state = baseState("0");
     CharacterProgressionCore progression = new CharacterProgressionCore();
