@@ -185,12 +185,13 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   window.backroomPlayCombatFeedback=function(event){
     try{
       var e=event||{},text=String(e.text||'').trim();if(!/^-\d+ HP$/i.test(text))return;
-      var anchor=targetAnchor(e.target==='entity'?'entity':'actor');if(!anchor)return;
+      var target=e.target==='entity'?'entity':'actor',anchor=targetAnchor(target);if(!anchor)return;
       if(e.flash){
         anchor.el.classList.remove('combat-hit-flash');void anchor.el.offsetWidth;anchor.el.classList.add('combat-hit-flash');
         setTimeout(function(){anchor.el&&anchor.el.classList.remove('combat-hit-flash');},170);
       }
-      var floater=document.createElement('div');floater.className='combat-float';floater.textContent=text;floater.style.left=anchor.x+'px';floater.style.top=anchor.y+'px';anchor.box.appendChild(floater);
+      var lane=anchor.box.querySelectorAll('.combat-float[data-target="'+target+'"]').length;
+      var floater=document.createElement('div');floater.className='combat-float';floater.dataset.target=target;floater.textContent=text;floater.style.left=anchor.x+'px';floater.style.top=(anchor.y-lane*26)+'px';anchor.box.appendChild(floater);
       floater.addEventListener('animationend',function(){floater.remove();},{once:true});setTimeout(function(){floater.remove();},1800);
     }catch(_){}
   };
