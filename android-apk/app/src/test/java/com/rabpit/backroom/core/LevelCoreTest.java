@@ -52,6 +52,43 @@ public class LevelCoreTest {
         .put("location", location);
   }
 
+  @Test public void storyBoundaryReadinessKeepsLevelUntilExplicitHandoff() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject state = state(1, LevelCore.defaultLocation("0"))
+        .put(LevelCore.LEVEL_KEY, "0");
+
+    core.normalizeState(state);
+    core.markStoryBoundaryReady(state);
+
+    assertEquals("0", state.getString(LevelCore.LEVEL_KEY));
+    JSONObject readyRoute = state.getJSONObject(LevelCore.ROUTE_STATE);
+    assertEquals(0, readyRoute.getInt("streak"));
+    assertTrue(readyRoute.getBoolean("storyExitReady"));
+    assertTrue(readyRoute.getBoolean("exitAvailable"));
+    assertTrue(core.storyHandoffAvailable(state));
+
+    String next = core.applyStoryArcTransition(state);
+    assertEquals("0.1", next);
+    assertEquals("0.1", state.getString(LevelCore.LEVEL_KEY));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    JSONObject nextRoute = state.getJSONObject(LevelCore.ROUTE_STATE);
+    assertFalse(nextRoute.getBoolean("storyExitReady"));
+    assertFalse(nextRoute.getBoolean("exitAvailable"));
+  }
+
+  @Test public void storyArcTransitionRejectsWithoutBoundaryReadiness() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject state = state(1, LevelCore.defaultLocation("0"))
+        .put(LevelCore.LEVEL_KEY, "0");
+    core.normalizeState(state);
+    try {
+      core.applyStoryArcTransition(state);
+      fail("Expected story handoff to remain locked");
+    } catch (IllegalStateException expected) {
+      assertEquals("0", state.getString(LevelCore.LEVEL_KEY));
+    }
+  }
+
   @Test public void structuredKnowledgeLoadsOnlyCurrentLevelBundle() throws Exception {
     String knowledge = new JSONObject()
         .put("schemaVersion", 2)

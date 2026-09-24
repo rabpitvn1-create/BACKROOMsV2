@@ -250,6 +250,116 @@ public class StoryRepositoryTest {
   }
 
 
+  @Test public void zenithStationRunsAllEighteenChaptersWithStoryLocalContinuity() throws Exception {
+    StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
+    assertTrue(repository.bindLevel("0.1"));
+    assertEquals("level_0_1_zenith_station", repository.storyId());
+    assertEquals("L01_C01", repository.startChapter());
+
+    StoryCore core = StoryCore.withRepository(repository);
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+    JSONObject state = new JSONObject()
+        .put("currentLevel", 0)
+        .put("currentLevelKey", "0.1")
+        .put("turn", 1)
+        .put("party", new JSONArray())
+        .put("flags", new JSONObject());
+
+    Set<String> deliveredChapters = new LinkedHashSet<>();
+    String namDeceasedChapter = "";
+    String khaiFirstPresentChapter = "";
+    String khaiMissingChapter = "";
+    String khaiReturnedChapter = "";
+    int delivered = 0;
+
+    StoryCore.AuthoredTurn turn =
+        core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+    while (turn != null) {
+      delivered++;
+      deliveredChapters.add(turn.chapterId);
+      JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+      JSONObject characters = story.getJSONObject("characters");
+
+      JSONObject nam = characters.optJSONObject("nam");
+      if (nam != null && namDeceasedChapter.isEmpty()
+          && StoryCore.PRESENCE_DECEASED.equals(nam.optString("presence"))) {
+        namDeceasedChapter = turn.chapterId;
+      }
+
+      JSONObject khai = characters.optJSONObject("khai");
+      if (khai != null) {
+        String presence = khai.optString("presence", StoryCore.PRESENCE_UNKNOWN);
+        if (StoryCore.PRESENCE_PRESENT.equals(presence)) {
+          if (khaiFirstPresentChapter.isEmpty()) khaiFirstPresentChapter = turn.chapterId;
+          else if (!"L01_C08".equals(turn.chapterId) && khaiReturnedChapter.isEmpty()) {
+            khaiReturnedChapter = turn.chapterId;
+          }
+        }
+        if (StoryCore.PRESENCE_MISSING.equals(presence) && khaiMissingChapter.isEmpty()) {
+          khaiMissingChapter = turn.chapterId;
+        }
+      }
+
+      if (core.awaitingDecision(state)) {
+        JSONObject request = core.decisionPrefetchRequest(state, "");
+        assertTrue(request.getBoolean("needed"));
+        core.installDecisionPackage(
+            state, request.getString("contextHash"), deterministicAlternates());
+        String canonId = canonChoiceId(state);
+        assertFalse(canonId.isEmpty());
+        StoryCore.DecisionResolution resolution =
+            core.resolveDecision(state, canonId, characterCore);
+        assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advancePendingTurn(state, characterCore);
+      } else {
+        state.put("turn", state.optInt("turn", 1) + 1);
+        turn = core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+      }
+      assertTrue("Zenith story loop exceeded safety bound", delivered < 500);
+    }
+
+    assertEquals(18, deliveredChapters.size());
+    assertEquals("L01_C01", namDeceasedChapter);
+    assertEquals("L01_C08", khaiFirstPresentChapter);
+    assertEquals("L01_C08", khaiMissingChapter);
+    assertEquals("L01_C10", khaiReturnedChapter);
+
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertTrue(story.getBoolean("arcComplete"));
+    assertEquals("level_0_1_zenith_station", story.getString("storyId"));
+    assertEquals("0.1", story.getString("levelKey"));
+    assertTrue(story.getJSONObject("flags").getBoolean("diep_minh_manifestation_ch04_observed"));
+    assertTrue(story.getJSONObject("flags").getBoolean("diep_minh_manifestation_ch13_observed"));
+    assertTrue(story.getJSONObject("flags").getBoolean("zenith_threshold_crossed"));
+    assertTrue(story.getJSONObject("flags").getBoolean("arc_boundary_reached"));
+    assertEquals(StoryCore.PRESENCE_DECEASED,
+        story.getJSONObject("characters").getJSONObject("khai").getString("presence"));
+
+    JSONArray party = state.getJSONArray("party");
+    for (int i = 0; i < party.length(); i++) {
+      assertFalse("Khải must remain story-local",
+          "khai".equals(party.getJSONObject(i).optString("id")));
+    }
+    assertEquals("0.1", state.getString("currentLevelKey"));
+  }
+
+  @Test public void levelWithoutAuthoredStoryDeactivatesStoryNormally() throws Exception {
+    StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
+    StoryCore core = StoryCore.withRepository(repository);
+    JSONObject state = new JSONObject()
+        .put("currentLevel", 0)
+        .put("currentLevelKey", "0.2")
+        .put("turn", 1)
+        .put("party", new JSONArray())
+        .put("flags", new JSONObject());
+
+    core.normalizeState(state);
+
+    assertFalse(state.getJSONObject(StoryCore.ROOT_KEY).getBoolean("active"));
+    assertFalse(repository.hasStoryForLevel("0.2"));
+  }
+
   @Test public void compiledDecisionRequiresFreshSourceDigest() throws Exception {
     String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
     String source = "# Level 0 — Chương 01: Test\n\nĐoạn một.\n\nĐoạn hai.";
