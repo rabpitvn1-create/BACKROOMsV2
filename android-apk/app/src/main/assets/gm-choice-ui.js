@@ -299,6 +299,7 @@
     try {
       var story = state && state.story;
       return !!(story && story.active === true && story.arcComplete !== true
+        && !(story.returnJourney && story.returnJourney.active === true)
         && story.segmentDelivered !== true && story.awaitingDecision !== true
         && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
         && !(state.combat && state.combat.active));
