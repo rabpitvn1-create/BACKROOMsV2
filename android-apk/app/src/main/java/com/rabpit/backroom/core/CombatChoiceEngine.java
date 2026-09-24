@@ -129,9 +129,6 @@ public final class CombatChoiceEngine {
     entity("hotel_corpse_lure", "Hotel Corpse Lure", 190, 18);
     entity("jeff_the_killer", "Jeff", 240, 20);
     entity("async_rifleman", "ASYNC Rifleman", 180, 20);
-    entity("async_vanguard", "ASYNC Vanguard", 200, 21);
-    entity("async_tactical", "ASYNC Tactical Operative", 165, 18);
-    entity("async_decon", "ASYNC Decon Specialist", 190, 19);
     entity("jane_the_killer", "Jane", 270, 20);
     entity("slenderman", "Slenderman", 360, 23);
     entity("diep_minh", "Diệp Minh", 1200, 42);
@@ -204,18 +201,6 @@ public final class CombatChoiceEngine {
         entitySkill("Controlled Burst", 110, 32),
         entitySkill("Cover Fire", 115, 32),
         entitySkill("Crossfire Burst", 120, 28));
-    entitySkills("async_vanguard",
-        entitySkill("Advancing Burst", 110, 35),
-        entitySkill("Choke-Point Fire", 115, 29),
-        entitySkill("Armored Push", 120, 20));
-    entitySkills("async_tactical",
-        entitySkill("Flanking Shot", 110, 32),
-        entitySkill("Pistol Burst", 115, 27),
-        entitySkill("Blind-Angle Shot", 120, 21));
-    entitySkills("async_decon",
-        entitySkill("Cover Shot", 110, 35),
-        entitySkill("Spaced Pistol Fire", 115, 31),
-        entitySkill("Coordinated Shot", 120, 26));
     entitySkills("jane_the_killer",
         entitySkill("Stalking Strike", 110, 33),
         entitySkill("Close-Range Slash", 115, 27),

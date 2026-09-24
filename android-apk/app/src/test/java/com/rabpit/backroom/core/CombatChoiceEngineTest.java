@@ -239,27 +239,21 @@ public class CombatChoiceEngineTest {
     assertFalse(actorLine.toLowerCase().contains("dice"));
   }
 
-  @Test public void asyncEnemiesHaveDistinctCombatProfiles() throws Exception {
-    String[] keys = {"async_rifleman", "async_vanguard", "async_tactical", "async_decon"};
-    String[] names = {"ASYNC Rifleman", "ASYNC Vanguard", "ASYNC Tactical Operative", "ASYNC Decon Specialist"};
-    int[] hp = {180, 200, 165, 190};
-    int[] damage = {20, 21, 18, 19};
+  @Test public void onlyAsyncRiflemanRemainsRegistered() throws Exception {
+    assertTrue(CombatChoiceEngine.isKnownEntity("async_rifleman"));
+    assertFalse(CombatChoiceEngine.isKnownEntity("async_vanguard"));
+    assertFalse(CombatChoiceEngine.isKnownEntity("async_tactical"));
+    assertFalse(CombatChoiceEngine.isKnownEntity("async_decon"));
 
-    for (int i = 0; i < keys.length; i++) {
-      assertTrue(CombatChoiceEngine.isKnownEntity(keys[i]));
-      JSONObject state = combatState(new JSONArray());
-      state.getJSONObject("flags").put("entityEncounterKey", keys[i]);
+    JSONObject state = combatState(new JSONArray());
+    state.getJSONObject("flags").put("entityEncounterKey", "async_rifleman");
+    CombatChoiceEngine.start(state, "async_rifleman", 0);
 
-      CombatChoiceEngine.start(state, keys[i], 0);
-
-      JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
-      assertEquals(keys[i], entity.getString("key"));
-      assertEquals(names[i], entity.getString("name"));
-      assertEquals(hp[i], entity.getInt("baseHp"));
-      assertEquals(damage[i], entity.getInt("baseDamage"));
-      assertEquals(hp[i], entity.getInt("maxHp"));
-      assertEquals(damage[i], entity.getInt("attack"));
-    }
+    JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
+    assertEquals("async_rifleman", entity.getString("key"));
+    assertEquals("ASYNC Rifleman", entity.getString("name"));
+    assertEquals(180, entity.getInt("baseHp"));
+    assertEquals(20, entity.getInt("baseDamage"));
   }
 
   @Test public void caoMinhAndLucTramHaveAuthoritativeUltimateMappings() {

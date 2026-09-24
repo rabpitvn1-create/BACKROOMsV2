@@ -7,10 +7,7 @@ var SnapshotOverlayLayout = (function(){
   var bundledMetrics={
     "cao_minh_entity_overlay.png":{"width":1122,"height":1402,"paint":{"left":1,"top":0,"right":1122,"bottom":1386},"body":{"left":2,"top":3,"right":1122,"bottom":1376},"sha256":"980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47"},
     "cao_minh_snapshot_overlay.png":{"width":1122,"height":1402,"paint":{"left":54,"top":16,"right":1020,"bottom":1389},"body":{"left":54,"top":17,"right":1017,"bottom":1385},"sha256":"e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e"},
-    "entity/async_decon.png":{"width":1024,"height":1536,"paint":{"left":51,"top":9,"right":998,"bottom":1512},"body":{"left":131,"top":10,"right":997,"bottom":1503},"sha256":"197cf7577a38b8356f89723a8edce913cd729974e19673306084fe3515d7c5bf"},
     "entity/async_rifleman.png":{"width":1024,"height":1536,"paint":{"left":21,"top":12,"right":1018,"bottom":1516},"body":{"left":46,"top":13,"right":1017,"bottom":1503},"sha256":"af30ccb189da2d5f7158dbd5737d65eeb324e3338af1179cc322f25976e37547"},
-    "entity/async_tactical.png":{"width":1024,"height":1536,"paint":{"left":89,"top":10,"right":941,"bottom":1511},"body":{"left":112,"top":11,"right":940,"bottom":1506},"sha256":"d80348adc449e9874e129f1263cfdf8b10e5c10a939abd262bbc12c39e279d58"},
-    "entity/async_vanguard.png":{"width":1024,"height":1536,"paint":{"left":73,"top":1,"right":1013,"bottom":1520},"body":{"left":119,"top":5,"right":1012,"bottom":1508},"sha256":"9c9750dcd89d30c673a9575a104ec6ef9479609db8b92d30225dd79851867965"},
     "entity/biological_pipeline.png":{"width":1086,"height":1448,"paint":{"left":112,"top":14,"right":973,"bottom":1434},"body":{"left":113,"top":14,"right":972,"bottom":1433},"sha256":"0474fa10a7ff4f06089df8c5b937576278a11951ae73f24cd2c1afd5cb78f413"},
     "entity/cable_mimic.png":{"width":1254,"height":1254,"paint":{"left":339,"top":19,"right":963,"bottom":1237},"body":{"left":340,"top":21,"right":961,"bottom":1237},"sha256":"15ccdd6a14c0e80e0acec072090aaeb134c6c6b66570cc4e05c9041017399fdb"},
     "entity/clump.png":{"width":1254,"height":1254,"paint":{"left":1,"top":10,"right":1254,"bottom":1227},"body":{"left":3,"top":10,"right":1250,"bottom":1226},"sha256":"a7776f353412753875d4742498135ea7053f60512a82fdf48c350c1e03135b21"},
@@ -143,7 +140,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}
   try{localStorage.removeItem('backroom-apk-snapshot');}catch(_){}
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
-  var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','async_vanguard','async_tactical','async_decon','jane_the_killer','slenderman','diep_minh'];
+  var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={cao_minh:'file:///android_asset/cao_minh_entity_overlay.png',luc_tram:'file:///android_asset/luctram_overlay.png'};
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';
