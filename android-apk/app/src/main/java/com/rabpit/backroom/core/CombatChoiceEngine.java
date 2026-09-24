@@ -142,6 +142,7 @@ public final class CombatChoiceEngine {
     entity("hotel_corpse_lure", "Hotel Corpse Lure", 190, 18);
     entity("jeff_the_killer", "Jeff", 240, 20);
     entity("async_rifleman", "ASYNC Rifleman", 180, 20);
+    entity("copx", "CopX", 260, 22);
     treasureEntity("tam_ma_cao_minh", "Tâm Ma Cao Minh", 300, 30, 100, 10, true);
     entity("jane_the_killer", "Jane", 270, 20);
     entity("slenderman", "Slenderman", 360, 23);
@@ -215,6 +216,10 @@ public final class CombatChoiceEngine {
         entitySkill("Controlled Burst", 110, 32),
         entitySkill("Cover Fire", 115, 32),
         entitySkill("Crossfire Burst", 120, 28));
+    entitySkills("copx",
+        entitySkill("Static Burst", 110, 30),
+        entitySkill("Servo Pivot", 115, 25),
+        entitySkill("Last Directive", 120, 20));
     entitySkills("tam_ma_cao_minh",
         entitySkill("Tâm Ma Trảm", 120, 35),
         entitySkill("Huyết Ảnh Phản Kích", 115, 40),
@@ -1375,8 +1380,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       TreasureRewardPolicy treasure = TREASURE_REWARDS.get(entityKey);
       int reward;
       if (treasure == null) {
+        int baseReward = "copx".equals(entityKey) ? 5
+            : CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE;
         reward = CharacterProgressionCore.scaledCoreReward(
-            CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, stageIndex);
+            baseReward, stageIndex);
         progression.grantCore(state, reward);
         combat.remove("coreDropRewardType");
       } else {

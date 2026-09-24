@@ -11,6 +11,7 @@ var SnapshotOverlayLayout = (function(){
     "entity/biological_pipeline.webp":{"width":1536,"height":1024,"paint":{"left":26,"top":0,"right":1532,"bottom":1004},"body":{"left":53,"top":4,"right":1530,"bottom":1000},"sha256":"e3e7a003eb080aefc57d7963924d9cd8f610db40ada84b9f3ae1d226823589ae"},
     "entity/cable_mimic.webp":{"width":1536,"height":1024,"paint":{"left":8,"top":10,"right":1527,"bottom":1004},"body":{"left":9,"top":11,"right":1526,"bottom":997},"sha256":"1bb78a1e792e6e0a99beb62648e3f06d609be690b5fde0df7de71a9d502b3071"},
     "entity/clump.webp":{"width":1122,"height":1402,"paint":{"left":45,"top":51,"right":1093,"bottom":1304},"body":{"left":50,"top":52,"right":1090,"bottom":1294},"sha256":"8bca2d3b2adde8e48475e3d374bd6ce99a621b8b7aa2e2648a0760175b625673"},
+    "entity/copx.webp":{"width":900,"height":1200,"paint":{"left":14,"top":1,"right":893,"bottom":1190},"body":{"left":18,"top":2,"right":892,"bottom":1187},"sha256":"0054ece794361d86ab4bad071848682bff5a29c78ff091a9732fa55a5312258e"},
     "entity/deathmoth.webp":{"width":1122,"height":1402,"paint":{"left":25,"top":42,"right":1122,"bottom":1366},"body":{"left":26,"top":42,"right":1117,"bottom":1364},"sha256":"c4d27d59aae7491304464df044b783ba63f172bbee75d0fb5bd680f15311a7fb"},
     "entity/diep_minh.webp":{"width":960,"height":1280,"paint":{"left":1,"top":24,"right":956,"bottom":1255},"body":{"left":6,"top":26,"right":954,"bottom":1177},"sha256":"2346392ac68864da3ef2e764f78e6042ec76623dba2954a8e08b80d8077794c1"},
     "entity/duller.webp":{"width":1024,"height":1536,"paint":{"left":251,"top":14,"right":726,"bottom":1525},"body":{"left":384,"top":15,"right":652,"bottom":1500},"sha256":"91f7d14aaf69b03a4ff10f39ebed5a7a42d6353e1b225ec2518e9af51621ef97"},
@@ -141,7 +142,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}
   try{localStorage.removeItem('backroom-apk-snapshot');}catch(_){}
   function localLevelSnapshot(){try{if(!window.Android||typeof Android.levelSnapshot!=='function')return null;return JSON.parse(Android.levelSnapshot(JSON.stringify(state)));}catch(e){return null;}}
-  var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','jane_the_killer','slenderman','diep_minh'];
+  var __entityKeys=['hound','clump','duller','deathmoth','hostile_faceling','false_puddle','paintings','smiler','skin-stealer','predatory_window','biological_pipeline','wretch','cable_mimic','the_beast_of_level_5','hotel_corpse_lure','jeff_the_killer','async_rifleman','copx','jane_the_killer','slenderman','diep_minh'];
   var __combatCharacterOverlays={cao_minh:'file:///android_asset/cao_minh_entity_overlay.png',luc_tram:'file:///android_asset/luctram_overlay.png'};
   window.__combatVisualActorIndex=null;
   window.__combatVisualEntityKey='';

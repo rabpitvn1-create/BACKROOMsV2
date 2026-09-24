@@ -487,6 +487,38 @@
       ]
     },
     {
+      "key": "copx",
+      "name": "CopX",
+      "ratePercent": 3,
+      "levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "canon": "CopX is a corroded late-1980s security automaton, its ivory armor split around exposed servos and a handgun still held in a rigid right arm. Broken evacuation orders leak from its speaker before it identifies moving humans as intruders. It holds long sightlines, fires short measured bursts, then turns stiffly toward movement; cover and sudden changes of angle can break its aim. Its ammunition and sensors are finite, its joints can jam, and it cannot teleport, see through walls or enforce real authority. Sightings since 1987 do not prove that every CopX is the same machine. It is hostile to humans; apparent warnings are degraded threat signals, never a promise of rescue. Defeating one chassis ends that encounter, not necessarily every future sighting.",
+      "autoProcSkills": [
+        {
+          "name": "Static Burst",
+          "damagePercent": 110,
+          "procPercent": 30
+        },
+        {
+          "name": "Servo Pivot",
+          "damagePercent": 115,
+          "procPercent": 25
+        },
+        {
+          "name": "Last Directive",
+          "damagePercent": 120,
+          "procPercent": 20
+        }
+      ]
+    },
+    {
       "key": "tam_ma_cao_minh",
       "name": "Tâm Ma Cao Minh",
       "spawnClass": "treasure",
