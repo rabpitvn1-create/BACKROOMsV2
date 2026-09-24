@@ -7,6 +7,8 @@ const assets = path.join(__dirname, '..', 'app', 'src', 'main', 'assets');
 const gm = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
 const player = fs.readFileSync(path.join(assets, 'player-action-ui.js'), 'utf8');
 const index = fs.readFileSync(path.join(assets, 'index.html'), 'utf8');
+const facade = fs.readFileSync(path.join(__dirname, '..', 'app', 'src', 'main', 'java',
+  'com', 'rabpit', 'backroom', 'core', 'GameCoreFacade.java'), 'utf8');
 const functionSource = (source, name) => {
   const start = source.indexOf('  function ' + name + '(');
   assert.ok(start >= 0, name);
@@ -70,6 +72,16 @@ test('a linear authored segment advances through Core without a provider request
   assert.equal(submissions.length,1);
   assert.equal(submissions[0][1],'tiếp tục cốt truyện');
   assert.doesNotMatch(gm,/Android\.prefetchStoryDecision|geminiText|haikuText/);
+});
+
+test('a wrong Story choice returns before time and encounter processing', () => {
+  const start=facade.indexOf('if (resolution.looped) {');
+  const end=facade.indexOf('grantStoryProgressCore(state, resolution);',start);
+  assert.ok(start>=0 && end>start);
+  const wrongBranch=facade.slice(start,end);
+  assert.match(wrongBranch,/appendDecisionLog\(state, resolution\)/);
+  assert.match(wrongBranch,/return response\(true, state, null, "story_decision_looped"/);
+  assert.doesNotMatch(wrongBranch,/advanceGameTime|prepareEncounter|incrementTurn/);
 });
 test('CTA disappears once Turn 1 is delivered and cannot bypass another story gate', () => {
   const state=bootstrapState();

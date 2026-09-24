@@ -270,6 +270,12 @@ public final class GameCoreFacade implements AutoCloseable {
 
       StoryCore.DecisionResolution resolution =
           storyCore.resolveDecision(state, choiceId, characterEncounterCore);
+      if (resolution.looped) {
+        appendDecisionLog(state, resolution);
+        state.put("saveVersion", CURRENT_SAVE_VERSION);
+        persist(state);
+        return response(true, state, null, "story_decision_looped", resolution.reply);
+      }
       grantStoryProgressCore(state, resolution);
       advanceGameTime(state, resolution.visibleChoice);
       characterProgressionCore.applyExplorerTurnRecovery(state);
@@ -286,16 +292,13 @@ public final class GameCoreFacade implements AutoCloseable {
         incrementTurn(state);
         if (storyCore.hasPendingStoryAdvance(state)) {
           advancePendingStorySequence(state);
-        } else if (resolution.looped) {
-          storyCore.refreshLoopDecisionContext(state);
         }
       }
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
       return response(true, state, null,
-          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat"
-              : (resolution.looped ? "story_decision_looped" : "story_turn_committed"),
+          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat" : "story_turn_committed",
           resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_rejected", null);
