@@ -325,6 +325,7 @@
       var story = state && state.story;
       var route = state && state.levelRoute;
       return !!(story && story.active === true && story.arcComplete === true
+        && !storyReturnPending()
         && route && route.storyExitReady === true
         && story.awaitingDecision !== true && story.awaitingEntityAttack !== true
         && story.pendingStoryAdvance !== true
