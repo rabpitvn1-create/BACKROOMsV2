@@ -415,7 +415,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
   static int skillDamage(int baseDamage, int skillPercent, int skl, int handPercent) {
     long skillBase = ((long)Math.max(1, baseDamage) * Math.max(0, skillPercent) + 50L) / 100L;
-    return scaledDamage((int)Math.max(1L, skillBase),
+    return scaledDamage((int)Math.min(Integer.MAX_VALUE, Math.max(1L, skillBase)),
         CharacterProgressionCore.statPercent(skl), handPercent);
   }
 
@@ -429,13 +429,14 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
   private static int scaledDamage(int baseDamage, int statPercent, int handPercent) {
     long scaled = (long)Math.max(1, baseDamage) * Math.max(0, statPercent) * Math.max(0, handPercent);
-    return Math.max(1, (int)((scaled + 5_000L) / 10_000L));
+    return (int)Math.min(Integer.MAX_VALUE, Math.max(1L, (scaled + 5_000L) / 10_000L));
   }
 
   static int defendedIncomingDamage(int rawDamage, int def) {
     int defPercent = CharacterProgressionCore.statPercent(def);
     long numerator = (long)Math.max(1, rawDamage) * 100L;
-    return Math.max(1, (int)((numerator + defPercent / 2L) / defPercent));
+    return (int)Math.min(Integer.MAX_VALUE,
+        Math.max(1L, (numerator + defPercent / 2L) / defPercent));
   }
 
   static int criticalDamage(int damage) {
@@ -622,6 +623,9 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     }
 
     syncParticipants(state, participants);
+    new CharacterProgressionCore().advanceStatusEffects(
+        state, actor.optString("id", ""), "actor_turn");
+    refreshParticipant(state, actor);
 
     if (entity.optInt("hp", 0) <= 0) {
       finishVictory(state, combat, entity);
@@ -1040,8 +1044,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     JSONArray output = new JSONArray();
     JSONObject player = state.optJSONObject("player");
     String playerName = player == null ? "Cao Minh" : player.optString("name", "Cao Minh");
-    JSONObject cao = progression.profile(state, "cao_minh");
-    output.put(participant("cao_minh", playerName, -1, player, cao, CAO_MINH_BASE_ATTACK));
+    output.put(participant(state, progression, "cao_minh", playerName, -1, player));
 
     JSONArray party = state.optJSONArray("party");
     if (party == null) return output;
@@ -1052,37 +1055,46 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
           member.optString("id", member.optString("name", "")));
       if (id.isEmpty() || "cao_minh".equals(id)) continue;
       String name = member.optString("name", id);
-      output.put(participant(id, name, i, member, progression.profile(state, id),
-          baseAttackFor(member, id)));
+      output.put(participant(state, progression, id, name, i, member));
     }
     return output;
   }
 
-  private static JSONObject participant(String id, String name, int sourceIndex, JSONObject source,
-                                        JSONObject profile, int fallbackAttack) throws Exception {
-    JSONObject stats = profile.getJSONObject("stats");
-    int maxHp = Math.max(1, profile.getInt("maxHp"));
-    int hp = Math.max(0, Math.min(profile.getInt("currentHp"), maxHp));
-    int baseAttack = firstPositive(source, fallbackAttack, "attackMax", "attack", "ATK");
-    int str = stats.getInt("STR");
-    int def = stats.getInt("DEF");
-    int skl = stats.getInt("SKL");
-    int vit = stats.getInt("VIT");
+  private static JSONObject participant(JSONObject state, CharacterProgressionCore progression,
+                                        String id, String name, int sourceIndex, JSONObject source)
+      throws Exception {
+    JSONObject projected = new CharacterStatCore().project(state, source, id, progression);
+    JSONObject stats = projected.getJSONObject("stats");
+    JSONObject combatStatus = projected.getJSONObject("combatStatus");
     return new JSONObject()
         .put("id", id)
         .put("name", name)
         .put("sourceIndex", sourceIndex)
-        .put("hp", hp)
-        .put("maxHp", maxHp)
-        .put("baseAttack", baseAttack)
-        .put("STR", str)
-        .put("DEF", def)
-        .put("SKL", skl)
-        .put("VIT", vit)
-        .put("criticalChancePercent", CharacterStatCore.criticalChancePercent(skl))
-        .put("evasionPercent", CharacterStatCore.evasionPercent(vit))
-        .put("resCriticalPercent", CharacterStatCore.criticalResistancePercent(def))
-        .put("resEvasionPercent", CharacterStatCore.evasionResistancePercent(skl));
+        .put("hp", projected.getInt("currentHp"))
+        .put("maxHp", projected.getInt("maxHp"))
+        .put("baseAttack", baseAttackFor(source, id))
+        .put("STR", stats.getJSONObject("STR").getInt("effective"))
+        .put("DEF", stats.getJSONObject("DEF").getInt("effective"))
+        .put("SKL", stats.getJSONObject("SKL").getInt("effective"))
+        .put("VIT", stats.getJSONObject("VIT").getInt("effective"))
+        .put("criticalChancePercent", combatStatus.getInt("criticalChancePercent"))
+        .put("evasionPercent", combatStatus.getInt("evasionPercent"))
+        .put("resCriticalPercent", combatStatus.getInt("resCriticalPercent"))
+        .put("resEvasionPercent", combatStatus.getInt("resEvasionPercent"));
+  }
+
+  private static void refreshParticipant(JSONObject state, JSONObject actor) throws Exception {
+    String id = actor.optString("id", "");
+    int sourceIndex = actor.optInt("sourceIndex", -1);
+    JSONArray party = state.optJSONArray("party");
+    JSONObject source = sourceIndex < 0 ? state.optJSONObject("player")
+        : party == null || sourceIndex >= party.length() ? null : party.optJSONObject(sourceIndex);
+    JSONObject updated = participant(state, new CharacterProgressionCore(), id,
+        actor.optString("name", id), sourceIndex, source);
+    for (String key : new String[]{"hp", "maxHp", "baseAttack", "STR", "DEF", "SKL", "VIT",
+        "criticalChancePercent", "evasionPercent", "resCriticalPercent", "resEvasionPercent"}) {
+      actor.put(key, updated.get(key));
+    }
   }
 
   static int baseAttackFor(JSONObject source, String rawId) {

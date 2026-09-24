@@ -84,12 +84,19 @@ final class CharacterDetailCore {
 
     int hp = progression.getInt("currentHp");
     int maxHp = progression.getInt("maxHp");
+    if (hp <= 0) {
+      member.put("condition", "Bị hạ").put("healthState", "Bị hạ");
+    } else if ("Bị hạ".equals(member.optString("condition"))) {
+      member.put("condition", "Ổn định").put("healthState", "Ổn định");
+    }
     member.put("currentHp", hp).put("hp", hp).put("maxHp", maxHp);
     member.put("baseMaxHp", progression.getInt("baseMaxHp"));
     member.put("stats", new JSONObject(progression.getJSONObject("stats").toString()));
     member.put("combatStatus",
         new JSONObject(progression.getJSONObject("combatStatus").toString()));
     member.put("progressionSource", progression.getString("source"));
+    member.put("statusEffects", new JSONArray(characterProgressionCore.profile(state, id)
+        .getJSONArray("statusEffects").toString()));
 
     copyStringIfPresent(source, previous, member, "role");
     copyArrayIfPresent(source, previous, member, "injuries");

@@ -629,6 +629,8 @@ public class MainActivity extends Activity {
         long tStart = System.currentTimeMillis();
         try {
           JSONObject submitted = new JSONObject(stateJson);
+          JSONObject persisted = new JSONObject(gameCore.currentCoreState());
+          if (persisted.length() > 0) submitted = persisted;
 
           if (CombatChoiceEngine.isActive(submitted)) {
             throw new Exception("Đang chiến đấu. Hãy dùng khung Poker Dice trong GAME MASTER.");
@@ -637,13 +639,13 @@ public class MainActivity extends Activity {
           String existingEncounter = encounterKey(submitted);
           if (CombatChoiceEngine.isKnownEntity(existingEncounter)) {
             CombatChoiceEngine.start(submitted, existingEncounter, lastGmLogIndex(submitted));
-            submitted = new JSONObject(gameCore.normalizeState(submitted.toString()));
+            submitted = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
             emit("backroomCombatDiceState", submitted.toString());
             return;
           }
 
           long tPreStart = System.currentTimeMillis();
-          JSONObject localResult = new JSONObject(gameCore.processRule(stateJson, action));
+          JSONObject localResult = new JSONObject(gameCore.processRule(submitted.toString(), action));
           long tPreEnd = System.currentTimeMillis();
 
           if (localResult.optBoolean("handled", false)) {
@@ -719,6 +721,7 @@ public class MainActivity extends Activity {
             gmEntry.remove("choices");
             CombatChoiceEngine.start(state, newEncounter, log.length() - 1);
           }
+          state = new JSONObject(gameCore.commitRuntimeState(state.toString()));
           long tValEnd = System.currentTimeMillis();
 
           if (BuildConfig.DEBUG) {
@@ -828,9 +831,9 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatRoll(String stateJson) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
           CombatChoiceEngine.roll(submitted);
-          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
           emit("backroomCombatDiceState", committed.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể ROLL." : e.getMessage());
@@ -841,9 +844,9 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatHold(String stateJson, int dieIndex, boolean held) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
           CombatChoiceEngine.setHold(submitted, dieIndex, held);
-          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
           emit("backroomCombatDiceState", committed.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể HOLD die." : e.getMessage());
@@ -854,9 +857,9 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatFinish(String stateJson) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
           CombatChoiceEngine.finishHand(submitted);
-          JSONObject committed = new JSONObject(gameCore.normalizeState(submitted.toString()));
+          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
           emit("backroomCombatDiceState", committed.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể FINISH hand." : e.getMessage());
@@ -887,7 +890,7 @@ public class MainActivity extends Activity {
                                                 String operation, String targetId, int quantity) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
           if (CombatChoiceEngine.isActive(submitted)) {
             JSONObject rejected = new JSONObject()
               .put("handled", false)
@@ -916,6 +919,10 @@ public class MainActivity extends Activity {
 
     @JavascriptInterface public String normalizeState(String stateJson) {
       return gameCore.normalizeState(stateJson);
+    }
+
+    @JavascriptInterface public String startNewGame(String initialJson) {
+      return gameCore.startNewGame(initialJson);
     }
   }
 

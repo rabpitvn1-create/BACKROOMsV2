@@ -15,6 +15,28 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CombatChoiceEngineTest {
+  @Test public void participantUsesSameEffectiveStatsAsPartyProjection() throws Exception {
+    JSONObject state = combatState(new JSONArray())
+        .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 12L * 60L));
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.applyStatusEffect(state, "cao_minh", "focus", "item:sample",
+        "actor_turn", 1, "STR", 2);
+    JSONObject projected = new CharacterStatCore().project(
+        state, state.getJSONObject("player"), "cao_minh", progression);
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject actor = state.getJSONObject("combat").getJSONArray("participants").getJSONObject(0);
+    assertEquals(projected.getJSONObject("stats").getJSONObject("STR").getInt("effective"),
+        actor.getInt("STR"));
+    assertEquals(projected.getInt("maxHp"), actor.getInt("maxHp"));
+    assertEquals(projected.getJSONObject("combatStatus").getInt("criticalChancePercent"),
+        actor.getInt("criticalChancePercent"));
+    CombatChoiceEngine.finishHand(state);
+    CombatChoiceEngine.resolveFinalized(state);
+    assertEquals(5, progression.profile(state, "cao_minh")
+        .getJSONObject("stats").getInt("STR"));
+    assertEquals(0, progression.profile(state, "cao_minh")
+        .getJSONArray("statusEffects").length());
+  }
   @Test public void startProducesInitialFiveD6ValuesAndProjectsHand() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);

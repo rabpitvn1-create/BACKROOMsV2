@@ -47,6 +47,8 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processRule(String legacyStateJson, String action) {
     JSONObject legacy = parseState(legacyStateJson);
+    JSONObject stored = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (stored.length() > 0) legacy = stored;
     try {
       restoreHiddenDecisionPackage(
           legacy, parseState(preferences.getString(STATE_KEY, "{}")));
@@ -388,16 +390,8 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String processCombatResolution(String stateJson) {
-    JSONObject submitted = parseState(stateJson);
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      restoreHiddenDecisionPackage(submitted, state);
-      // Combat dice/participants live on the submitted state. Keep Core-owned story
-      // state from persisted storage, but apply the submitted combat snapshot.
-      if (submitted.has("combat")) state.put("combat", submitted.get("combat"));
-      if (submitted.has("party")) state.put("party", submitted.get("party"));
-      if (submitted.has("player")) state.put("player", submitted.get("player"));
-
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
@@ -525,6 +519,8 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String processItemAction(String stateJson, String ownerId, String itemId,
                                                String operation, String targetId, int quantity) {
     JSONObject state = parseState(stateJson);
+    JSONObject stored = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (stored.length() > 0) state = stored;
     try {
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
@@ -588,7 +584,7 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
-      restoreHiddenDecisionPackage(state, persisted);
+      if (persisted.length() > 0) state = persisted;
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
@@ -607,6 +603,24 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String currentCoreState() {
     return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
+  }
+
+  public synchronized String commitRuntimeState(String stateJson) {
+    JSONObject state = parseState(stateJson);
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      restoreHiddenDecisionPackage(state, persisted);
+      // Called only from native orchestration after Core validates the narrative delta.
+      persist(state);
+      return clientSafeState(state).toString();
+    } catch (Exception e) {
+      throw new IllegalStateException("Không thể lưu combat state.", e);
+    }
+  }
+
+  public synchronized String startNewGame(String initialJson) {
+    preferences.edit().remove(STATE_KEY).commit();
+    return normalizeState(initialJson);
   }
 
   public synchronized void clear() {
@@ -691,6 +705,7 @@ public final class GameCoreFacade implements AutoCloseable {
     gameTime.put("lastAdvanceReason", "player_action");
     state.put("gameTime", gameTime);
     state.put("saveVersion", CURRENT_SAVE_VERSION);
+    advanceExplorerStatusEffects(state);
   }
 
   private void advanceGameTimeFromBefore(JSONObject before, JSONObject candidate, String action) throws Exception {
@@ -702,6 +717,19 @@ public final class GameCoreFacade implements AutoCloseable {
     gameTime.put("lastAdvanceMinutes", minutes);
     gameTime.put("lastAdvanceReason", "player_action");
     candidate.put("gameTime", gameTime);
+    advanceExplorerStatusEffects(candidate);
+  }
+
+  private void advanceExplorerStatusEffects(JSONObject state) throws Exception {
+    characterProgressionCore.advanceStatusEffects(state, "cao_minh", "explorer_turn");
+    JSONArray party = state.optJSONArray("party");
+    if (party == null) return;
+    for (int i = 0; i < party.length(); i++) {
+      JSONObject member = party.optJSONObject(i);
+      if (member == null || !CharacterEncounterCore.isJoinedMember(member)) continue;
+      characterProgressionCore.advanceStatusEffects(
+          state, member.optString("id", ""), "explorer_turn");
+    }
   }
 
   private String inventoryReply(JSONArray inventory) {
