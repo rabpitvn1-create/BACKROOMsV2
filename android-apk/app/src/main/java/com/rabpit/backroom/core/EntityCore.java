@@ -16,11 +16,13 @@ import java.util.concurrent.ThreadLocalRandom;
 final class EntityCore {
   static final double MIN_AUTO_SPAWN_RATE_PERCENT = 3.0d;
   static final double MAX_AUTO_SPAWN_RATE_PERCENT = 3.5d;
+  static final double MAX_TREASURE_AUTO_SPAWN_RATE_PERCENT = 4.0d;
 
   private static final String REGISTRY_ASSET = "knowledge/entity_encounters.json";
   private static final String ENCOUNTER_KEY = "entityEncounterKey";
   private static final String RESOLVED_KEY = "entityEncounterResolved";
   private static final String SOURCE = "core_independent_roll";
+  private static final String TREASURE_SOURCE = "core_treasure_priority_roll";
 
   private final Map<String, EntityDefinition> entities = new LinkedHashMap<>();
   private final Map<String, LegacyEntityDefinition> legacyEntities = new LinkedHashMap<>();
@@ -55,9 +57,21 @@ final class EntityCore {
     }
 
     int level = state.optInt("currentLevel", 0);
+
+    // Treasure Entities roll before the ordinary collision pool. With one registered Treasure
+    // Entity, its configured rate is its real encounter rate instead of being diluted by
+    // simultaneous ordinary hits.
+    for (EntityDefinition entity : entities.values()) {
+      if (!entity.treasure || !roamingAllowedOn(level)) continue;
+      if (ThreadLocalRandom.current().nextDouble(100.0) < entity.ratePercent) {
+        activateEncounter(state, flags, entity, level, TREASURE_SOURCE);
+        return;
+      }
+    }
+
     List<EntityDefinition> hits = new ArrayList<>();
     for (EntityDefinition entity : entities.values()) {
-      if (!roamingAllowedOn(level)) continue;
+      if (entity.treasure || !roamingAllowedOn(level)) continue;
       double roll = ThreadLocalRandom.current().nextDouble(100.0);
       if (roll < entity.ratePercent) hits.add(entity);
     }
@@ -71,12 +85,7 @@ final class EntityCore {
     }
 
     EntityDefinition selected = hits.get(ThreadLocalRandom.current().nextInt(hits.size()));
-    flags.put(ENCOUNTER_KEY, selected.key);
-    flags.put("entityEncounterSource", SOURCE);
-    flags.put("entityEncounterRatePercent", selected.ratePercent);
-    flags.put("entityEncounterLevel", level);
-    flags.put("entityEncounterStartedTurn", Math.max(1, state.optInt("turn", 1)));
-    state.put("flags", flags);
+    activateEncounter(state, flags, selected, level, SOURCE);
   }
 
   void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
@@ -128,7 +137,9 @@ final class EntityCore {
     }
 
     return "ENTITY CORE ACTIVE ENCOUNTER: " + entity.name + " (key=" + entity.key + ").\n" +
-      "FIXED INDEPENDENT SPAWN RATE: " + entity.ratePercent + "% per eligible world-advancing turn.\n" +
+      (entity.treasure
+          ? "TREASURE PRIORITY SPAWN RATE: " + entity.ratePercent + "% per eligible world-advancing turn.\n"
+          : "FIXED INDEPENDENT SPAWN RATE: " + entity.ratePercent + "% per eligible world-advancing turn.\n") +
       "ROAMING POLICY: this registered Entity is valid on every Backrooms Level. Original canon habitat/location restrictions do not block its presence.\n" +
       "ENTITY CANON (behavior/capabilities only): " + entity.canon + "\n" +
       "Do not replace this Entity with another one. Continue the encounter according to state and behavioral canon. " +
@@ -151,6 +162,17 @@ final class EntityCore {
     if (flags == null) flags = new JSONObject();
     state.put("flags", flags);
     return flags;
+  }
+
+  private void activateEncounter(JSONObject state, JSONObject flags, EntityDefinition selected,
+                                 int level, String source) throws Exception {
+    flags.remove(RESOLVED_KEY);
+    flags.put(ENCOUNTER_KEY, selected.key);
+    flags.put("entityEncounterSource", source);
+    flags.put("entityEncounterRatePercent", selected.ratePercent);
+    flags.put("entityEncounterLevel", level);
+    flags.put("entityEncounterStartedTurn", Math.max(1, state.optInt("turn", 1)));
+    state.put("flags", flags);
   }
 
   private void clearActiveMetadata(JSONObject flags) {
@@ -178,8 +200,13 @@ final class EntityCore {
         String name = record.optString("name", key).trim();
         double rate = record.optDouble("ratePercent", 0.0);
         String canon = record.optString("canon", "").trim();
-        if (key.isEmpty() || !validAutoSpawnRatePercent(rate)) continue;
-        entities.put(key, new EntityDefinition(key, name, rate, canon));
+        boolean treasure = "treasure".equalsIgnoreCase(
+            record.optString("spawnClass", "standard").trim());
+        boolean validRate = treasure
+            ? validTreasureAutoSpawnRatePercent(rate)
+            : validAutoSpawnRatePercent(rate);
+        if (key.isEmpty() || !validRate) continue;
+        entities.put(key, new EntityDefinition(key, name, rate, canon, treasure));
       }
 
       JSONArray legacyRecords = root.optJSONArray("legacyEntities");
@@ -216,6 +243,10 @@ final class EntityCore {
         && ratePercent <= MAX_AUTO_SPAWN_RATE_PERCENT;
   }
 
+  static boolean validTreasureAutoSpawnRatePercent(double ratePercent) {
+    return ratePercent > 0.0d && ratePercent <= MAX_TREASURE_AUTO_SPAWN_RATE_PERCENT;
+  }
+
   private static final class LegacyEntityDefinition {
     final String key;
     final String name;
@@ -233,12 +264,14 @@ final class EntityCore {
     final String name;
     final double ratePercent;
     final String canon;
+    final boolean treasure;
 
-    EntityDefinition(String key, String name, double ratePercent, String canon) {
+    EntityDefinition(String key, String name, double ratePercent, String canon, boolean treasure) {
       this.key = key;
       this.name = name;
       this.ratePercent = ratePercent;
       this.canon = canon;
+      this.treasure = treasure;
     }
   }
 }
