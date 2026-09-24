@@ -391,6 +391,24 @@
     Android.prepareStoryDecision(JSON.stringify(state));
   }
 
+  function allowSingleAutomaticProviderRetry() {
+    if (storyDecisionNeedsProvider()) {
+      var decisionKey = String(state.story.decisionId || '');
+      if (decisionKey && window.__storyDecisionRetryKey !== decisionKey) {
+        window.__storyDecisionRetryKey = decisionKey;
+        window.__storyDecisionRequestKey = '';
+      }
+    }
+    if (returnJourneyNeedsProvider()) {
+      var journey = state.story.returnJourney || {};
+      var returnKey = String(journey.journeyId || '') + ':' + String(journey.turnIndex || 0);
+      if (returnKey && window.__returnJourneyRetryKey !== returnKey) {
+        window.__returnJourneyRetryKey = returnKey;
+        window.__returnJourneyRequestKey = '';
+      }
+    }
+  }
+
   function storyAdvanceAvailable() {
     var story = state && state.story;
     return !!(story && story.active === true && story.arcComplete !== true
@@ -893,6 +911,8 @@
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){
     window.__combatBusy = false;
+    window.__storyDecisionRetryKey = '';
+    window.__returnJourneyRetryKey = '';
     if (typeof previousTurn === 'function') previousTurn(json);
     syncComposer();
     scrollForCurrentMode();
@@ -987,6 +1007,7 @@
     ++diceRollToken;
     window.__combatFeedbackBusy = false;
     window.__combatBusy = false;
+    allowSingleAutomaticProviderRetry();
     if (typeof previousError === 'function') previousError(message);
     syncComposer();
     if (typeof window.render === 'function') window.render();
