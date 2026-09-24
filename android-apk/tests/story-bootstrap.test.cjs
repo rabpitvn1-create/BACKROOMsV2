@@ -35,6 +35,8 @@ function context(state) {
   vm.createContext(ctx);
   vm.runInContext([functionSource(gm,'storyBootstrapPending'),
     functionSource(gm,'submitStoryBootstrap'),
+    functionSource(gm,'storyHandoffPending'),
+    functionSource(gm,'submitStoryHandoff'),
     functionSource(gm,'appendExplorerChoices')].join('\n'), ctx);
   return {ctx,submissions};
 }
@@ -80,8 +82,6 @@ test('arc boundary exposes one handoff CTA instead of random explorer choices', 
   state.story.segmentDelivered=true;
   state.levelRoute={storyExitReady:true,exitAvailable:true};
   const {ctx,submissions}=context(state);
-  vm.runInContext([functionSource(gm,'storyHandoffPending'),
-    functionSource(gm,'submitStoryHandoff')].join('\n'), ctx);
   const article=element('article');
   ctx.appendExplorerChoices(article,state.log[0],0);
   assert.equal(article.children.length,1);
