@@ -2,7 +2,8 @@
 
 **STATUS:** CURRENT USER RETCON / IMMUTABLE unless explicitly retconned again.  
 **Runtime key:** `diep_minh`  
-**Visual asset:** `app/src/main/assets/entity/diep_minh.webp`
+**Visual asset:** `app/src/main/assets/entity/diep_minh.webp`  
+**Drive source:** `Novel/ENTITY/Diep_Minh.webp`
 
 Tài liệu này khóa riêng canon hiện hành của Diệp Minh và **thay thế phần OPEN cũ** về nguyên nhân mối thù Cao Minh ↔ Diệp Minh. Nó không tự thay đổi tỷ lệ spawn, không đưa Diệp Minh vào registry auto-spawn và không xác lập thêm cảnh giới, tông môn hay lai lịch chưa được khóa.
 
