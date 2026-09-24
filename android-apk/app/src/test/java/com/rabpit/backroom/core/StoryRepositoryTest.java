@@ -87,6 +87,16 @@ public class StoryRepositoryTest {
     assertFalse(joined.contains("# Level 0"));
   }
 
+  @Test public void canonicalMarkdownStripsUtf8BomBeforeHeadingAndDigest() throws Exception {
+    String plain = "# Level 0 — Chương 01: Test\r\n\r\nĐoạn một.\r\n";
+    String bom = "\uFEFF# Level 0 — Chương 01: Test\n\nĐoạn một.\n";
+
+    List<String> segments = StoryRepository.splitMarkdown(bom, 20, 80);
+    assertFalse(segments.isEmpty());
+    assertEquals("Level 0 — Chương 01: Test\n\nĐoạn một.", String.join("\n\n", segments));
+    assertEquals(StoryRepository.sourceDigest(plain), StoryRepository.sourceDigest(bom));
+  }
+
   @Test public void cutawayChaptersAreExplicitlyMarked() throws Exception {
     JSONObject root = new JSONObject(readRepoAsset("story/generated/level_0/level0.story.json"));
     JSONArray chapters = root.getJSONArray("chapters");

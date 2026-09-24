@@ -173,9 +173,13 @@ public class StoryCoreTest {
 
 
   private static StoryRepository fixtureRepository() {
+    return fixtureRepository("fixture-r1");
+  }
+
+  private static StoryRepository fixtureRepository(String revision) {
     String metadata = "{"
         + "\"schemaVersion\":1,"
-        + "\"sourceRevision\":\"fixture-r1\","
+        + "\"sourceRevision\":\"" + revision + "\","
         + "\"segmentTargetChars\":1900,"
         + "\"segmentMaxChars\":2400,"
         + "\"startChapter\":\"L0_C01\","
@@ -203,6 +207,23 @@ public class StoryCoreTest {
     sources.put("story/source/level_0/LEVEL0_CH02.md",
         "# Level 0 — Chương 02: Hai\n\nĐây là tuyến Lục Trầm.");
     return StoryRepository.fromText(metadata, sources);
+  }
+
+  @Test public void compatibleSourceRevisionChangePreservesCurrentChapter() throws Exception {
+    JSONObject state = state();
+    StoryCore oldCore = StoryCore.withRepository(fixtureRepository("fixture-r1"));
+    oldCore.normalizeState(state);
+    JSONObject oldStory = state.getJSONObject(StoryCore.ROOT_KEY);
+    oldStory.put("currentChapter", "L0_C02");
+    oldStory.put("currentSegmentIndex", 0);
+    oldStory.put("segmentDelivered", false);
+
+    StoryCore revisedCore = StoryCore.withRepository(fixtureRepository("fixture-r2"));
+    revisedCore.normalizeState(state);
+
+    JSONObject migrated = state.getJSONObject(StoryCore.ROOT_KEY);
+    assertEquals("L0_C02", migrated.getString("currentChapter"));
+    assertEquals("fixture-r2", migrated.getString("sourceRevision"));
   }
 
   @Test public void normalizeWithoutRepositoryKeepsContentAgnosticState() throws Exception {
