@@ -25,6 +25,13 @@ public class EntityCoreTest {
     assertFalse(EntityCore.validAutoSpawnRatePercent(3.51d));
   }
 
+  @Test public void treasureSpawnAllowsFourPercentWithoutChangingOrdinaryBounds() {
+    assertFalse(EntityCore.validAutoSpawnRatePercent(4.0d));
+    assertTrue(EntityCore.validTreasureAutoSpawnRatePercent(4.0d));
+    assertFalse(EntityCore.validTreasureAutoSpawnRatePercent(0.0d));
+    assertFalse(EntityCore.validTreasureAutoSpawnRatePercent(100.01d));
+  }
+
   @Test public void legacyBossPromptCarriesCanonWithoutAutoSpawnSemantics() {
     String prompt = EntityCore.legacyPromptContext(
         "diep_minh", "Diệp Minh", "Huyết cừu Cao gia; ontology Backrooms vẫn OPEN.");
