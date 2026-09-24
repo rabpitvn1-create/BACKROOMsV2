@@ -784,7 +784,9 @@
     if (status) {
       status.textContent = state.combat && state.combat.active
         ? 'Lượt chiến đấu ' + state.combat.round + ' · ' + state.combat.currentActor
-        : 'Chiến đấu kết thúc. Explorer Turn vẫn là ' + state.turn + '.';
+        : (state.combat && state.combat.outcome === 'victory'
+            ? 'Entity bị tiêu diệt. Bắt đầu Turn ' + state.turn + '.'
+            : 'Chiến đấu kết thúc. Turn ' + state.turn + '.');
     }
   }
 

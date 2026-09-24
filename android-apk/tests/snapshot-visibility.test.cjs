@@ -60,3 +60,10 @@ test('combat floating damage stays readable long enough on mobile',()=>{
  assert.match(source,/12%\{opacity:1\}80%\{opacity:1\}100%\{opacity:0/);
  assert.match(source,/setTimeout\(function\(\)\{floater\.remove\(\);\},1800\)/);
 });
+
+
+test('simultaneous floating damage uses separate vertical lanes instead of one anchor',()=>{
+ assert.match(source,/querySelectorAll\('\.combat-float\[data-target="'\+target\+'"\]'\)\.length/);
+ assert.match(source,/floater\.dataset\.target=target/);
+ assert.match(source,/floater\.style\.top=\(anchor\.y-lane\*26\)\+'px'/);
+});

@@ -174,6 +174,9 @@ public final class GameCoreFacade implements AutoCloseable {
       storyCore.normalizeState(before);
       JSONObject candidate = parseState(candidateJson);
       JSONObject sanitized = deepCopy(candidate);
+      if (CombatChoiceEngine.isKnownEntity(encounterKey(before))) {
+        sanitized.put("turn", Math.max(1, before.optInt("turn", 1)));
+      }
 
       copyField(before, sanitized, "inventory");
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
@@ -292,23 +295,24 @@ public final class GameCoreFacade implements AutoCloseable {
       StoryCore.DecisionResolution resolution =
           storyCore.resolveDecision(state, choiceId, characterEncounterCore);
       grantStoryProgressCore(state, resolution);
-      incrementTurn(state);
       advanceGameTime(state, resolution.visibleChoice);
       characterProgressionCore.applyExplorerTurnRecovery(state);
       survivalCore.normalizeState(state);
       itemCore.normalizeInventory(state);
       appendDecisionLog(state, resolution);
 
-      // Random Entity roll belongs to the END of the resolved story turn.
-      // The next authored turn is forbidden from rendering until this gate is clear.
+      // The encounter is the final gate of the current Explorer Turn.
       entityCore.prepareEncounter(state);
       String encounter = encounterKey(state);
       if (CombatChoiceEngine.isKnownEntity(encounter)) {
         CombatChoiceEngine.start(state, encounter, lastGmLogIndex(state));
-      } else if (storyCore.hasPendingStoryAdvance(state)) {
-        advancePendingStorySequence(state);
-      } else if (resolution.looped) {
-        storyCore.refreshLoopDecisionContext(state);
+      } else {
+        incrementTurn(state);
+        if (storyCore.hasPendingStoryAdvance(state)) {
+          advancePendingStorySequence(state);
+        } else if (resolution.looped) {
+          storyCore.refreshLoopDecisionContext(state);
+        }
       }
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
@@ -378,9 +382,13 @@ public final class GameCoreFacade implements AutoCloseable {
       JSONObject combat = state.optJSONObject("combat");
       String outcome = combat == null ? "" : combat.optString("outcome", "");
 
-      if (wasActive && !active && "victory".equals(outcome)
-          && storyCore.hasPendingStoryAdvance(state)) {
-        advancePendingStorySequence(state);
+      if (wasActive && !active && "victory".equals(outcome)) {
+        incrementTurn(state);
+        if (storyCore.hasPendingStoryAdvance(state)) {
+          advancePendingStorySequence(state);
+        } else if (storyCore.awaitingDecision(state)) {
+          storyCore.refreshLoopDecisionContext(state);
+        }
       }
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
