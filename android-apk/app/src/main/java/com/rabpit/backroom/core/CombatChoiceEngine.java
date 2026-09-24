@@ -1387,7 +1387,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             ? EntityStatCore.scale(treasure.repeatBaseCore, stageIndex)
             : treasure.repeatBaseCore;
         reward = progression.rewardTreasureEntityVictory(
-            state, entityKey, firstKillReward, repeatReward);
+            state, entityKey, stageIndex, firstKillReward, repeatReward);
         combat.put("coreDropRewardType", "treasure");
       }
       combat.remove("coreDropRoll");
