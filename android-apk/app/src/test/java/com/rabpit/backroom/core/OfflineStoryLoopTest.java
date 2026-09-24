@@ -39,7 +39,7 @@ public class OfflineStoryLoopTest {
   @Test public void wrongChoicesStayInCurrentArcAndConvergeOnceAfterSaveLoad() throws Exception {
     Path root = assets();
     StoryRepository repository = new StoryRepository(path ->
-        Files.readString(root.resolve(path), StandardCharsets.UTF_8));
+        new String(Files.readAllBytes(root.resolve(path)), StandardCharsets.UTF_8));
     StoryCore core = StoryCore.withRepository(repository);
     CharacterEncounterCore characters = new CharacterEncounterCore(bound -> bound - 1);
 
@@ -110,9 +110,9 @@ public class OfflineStoryLoopTest {
   }
 
   @Test public void storyChoiceUiHasNoProviderPrefetchBridge() throws Exception {
-    String ui = Files.readString(assets().resolve("gm-choice-ui.js"), StandardCharsets.UTF_8);
+    String ui = new String(Files.readAllBytes(assets().resolve("gm-choice-ui.js")), StandardCharsets.UTF_8);
     Path activity = assets().resolve("../java/com/rabpit/backroom/MainActivity.java").normalize();
-    String java = Files.readString(activity, StandardCharsets.UTF_8);
+    String java = new String(Files.readAllBytes(activity), StandardCharsets.UTF_8);
     assertFalse(ui.contains("Android.prefetchStoryDecision"));
     assertFalse(java.contains("void prefetchStoryDecision("));
     assertTrue(java.contains("gameCore.processStoryDecision(stateJson, choiceId)"));
