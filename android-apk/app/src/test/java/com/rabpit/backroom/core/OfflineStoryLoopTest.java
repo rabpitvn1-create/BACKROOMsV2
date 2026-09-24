@@ -309,55 +309,46 @@ public class OfflineStoryLoopTest {
     assertTrue(core.decisionNeedsProvider(state));
   }
 
-  @Test public void invalidOrRepeatedProviderPackageLeavesReturnStateRetryable() throws Exception {
+  @Test public void returnJourneyChoicesRemainVisibleAndSelectedThroughProviderFailureAndReload()
+      throws Exception {
     StoryCore core = StoryCore.withRepository(repository());
-    JSONObject state = storyState("0.1").put("location", "đích lỗi provider");
+    JSONObject state = storyState("0.1");
     core.normalizeState(state);
     core.beginDeathReturnJourney(state, "đích lỗi provider", "0.1");
-
     JSONObject request = core.returnJourneyTurnRequest(state, "");
+    assertTrue(request.getBoolean("needed"));
+    assertFalse(core.returnJourneyReady(state));
+    assertEquals(3, core.returnJourneyChoices(state).length());
+    JSONObject legacy = new JSONObject(state.toString());
+    legacy.getJSONObject("story").getJSONObject("returnJourney")
+        .put("turnPackage", new JSONObject());
+    core.normalizeState(legacy);
+    assertEquals(3, core.returnJourneyChoices(legacy).length());
+    String choices = core.returnJourneyChoices(state).toString();
+    String selected = returnOutcomeId(state, StoryCore.RETURN_STAY);
+    core.selectReturnChoice(state, selected);
+
     JSONObject bad = returnTurn("không-hợp-lệ");
-    bad.getJSONObject("progress").put("text", "reset checkpoint");
+    bad.getJSONObject("progress").put("reply", "reset checkpoint");
     try {
-      core.installReturnJourneyTurn(
-          state, request.getString("journeyId"), request.getInt("turnIndex"),
-          request.getString("contextHash"), bad);
-      fail("Meta-leaking provider text must be rejected.");
+      core.installReturnJourneyTurn(state, request.getString("journeyId"),
+          request.getInt("turnIndex"), request.getString("contextHash"), bad);
+      fail("Unsafe reply must be rejected");
     } catch (IllegalArgumentException expected) {
       assertTrue(expected.getMessage().contains("unsafe"));
     }
-    JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
-    assertEquals(StoryCore.RETURN_PROVIDER_REQUIRED, journey.getString("turnStatus"));
-    assertEquals(0, journey.getJSONObject("turnPackage").length());
-    assertEquals(0, journey.getInt("progress"));
-    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
-
-    JSONObject accepted = returnTurn("bộ-lựa-chọn-cũ");
-    request = core.returnJourneyTurnRequest(state, "");
-    core.installReturnJourneyTurn(
-        state, request.getString("journeyId"), request.getInt("turnIndex"),
-        request.getString("contextHash"), accepted);
-    core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_STAY));
-
-    request = core.returnJourneyTurnRequest(state, "");
-    try {
-      core.installReturnJourneyTurn(
-          state, request.getString("journeyId"), request.getInt("turnIndex"),
-          request.getString("contextHash"), accepted);
-      fail("A complete choice set must not be replayed verbatim.");
-    } catch (IllegalArgumentException expected) {
-      assertTrue(expected.getMessage().contains("repeats"));
-    }
-    journey = state.getJSONObject("story").getJSONObject("returnJourney");
-    assertEquals(StoryCore.RETURN_PROVIDER_REQUIRED, journey.getString("turnStatus"));
-    assertEquals(0, journey.getJSONObject("turnPackage").length());
-    assertEquals(0, journey.getInt("progress"));
-
-    request = core.returnJourneyTurnRequest(state, "");
-    core.installReturnJourneyTurn(
-        state, request.getString("journeyId"), request.getInt("turnIndex"),
-        request.getString("contextHash"), returnTurn("bộ-lựa-chọn-mới"));
-    assertTrue(core.returnJourneyReady(state));
+    JSONObject reloaded = new JSONObject(state.toString());
+    core.normalizeState(reloaded);
+    assertEquals(choices, core.returnJourneyChoices(reloaded).toString());
+    assertEquals(selected, reloaded.getJSONObject("story").getJSONObject("returnJourney")
+        .getString("pendingChoiceId"));
+    assertTrue(core.returnJourneyNeedsProvider(reloaded));
+    core.installReturnJourneyTurn(reloaded, request.getString("journeyId"),
+        request.getInt("turnIndex"), request.getString("contextHash"), returnTurn("hợp-lệ"));
+    assertEquals(choices, core.returnJourneyChoices(reloaded).toString());
+    StoryCore.ReturnJourneyResolution resolution = core.resolveReturnJourneyChoice(reloaded, selected);
+    assertEquals(StoryCore.RETURN_STAY, resolution.outcome);
+    assertEquals(1, reloaded.getJSONObject("story").getJSONObject("returnJourney").getInt("turnIndex"));
   }
 
   @Test public void revisitingExistingEntityTraceDoesNotReplayCanonCombatOrRewards() throws Exception {
@@ -467,10 +458,10 @@ public class OfflineStoryLoopTest {
     assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
     assertTrue(ui.contains("window.__returnJourneyRetryKey = returnKey;"));
     assertTrue(ui.contains("window.__returnJourneyRequestKey = '';"));
-    assertTrue(ui.contains("preparingButton.addEventListener('click', function(){ requestStoryDecision(true); });"));
-    assertTrue(ui.contains("retryReturn.addEventListener('click', function(){ requestReturnJourneyTurn(true); });"));
-    assertTrue(ui.contains("window.__storyDecisionRetryKey = '';"));
-    assertTrue(ui.contains("window.__returnJourneyRetryKey = '';"));
+    assertTrue(ui.contains("retryStory.addEventListener('click', function(){ window.__storyProviderFailedKey = ''; requestStoryDecision(true); });"));
+    assertTrue(ui.contains("retryReturn.addEventListener('click', function(){ window.__returnProviderFailedKey = ''; requestReturnJourneyTurn(true); });"));
+    assertFalse(ui.contains("Đang chuẩn bị ba lựa chọn…"));
+    assertFalse(ui.contains("Đang chuẩn bị ba hướng đi…"));
 
     int errorHandler = ui.indexOf("window.backroomError = function(message)");
     int retry = ui.indexOf("allowSingleAutomaticProviderRetry();", errorHandler);
