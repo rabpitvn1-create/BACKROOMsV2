@@ -64,6 +64,13 @@ public final class GameCoreFacade implements AutoCloseable {
       String text = action == null ? "" : action.trim();
       if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
 
+      if (storyCore.returnJourneyActive(legacy)) {
+        persist(legacy);
+        return response(true, legacy, "return_journey_choice_required",
+            "return_journey_choice_required",
+            "Hành trình hiện tại phải được xử lý bằng ba lựa chọn trong khung GAME MASTER.");
+      }
+
       if (storyArcComplete(legacy) && StoryCore.isAdvanceAction(text)) {
         if (!levelCore.storyHandoffAvailable(legacy)) {
           persist(legacy);
