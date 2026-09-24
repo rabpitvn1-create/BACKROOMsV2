@@ -24,6 +24,7 @@ Runtime overlay dùng canonical Entity key trùng chính xác với tên file b�
 | `the_beast_of_level_5` | `the_beast_of_level_5.png` |
 | `hotel_corpse_lure` | `hotel_corpse_lure.png` |
 | `jeff_the_killer` | `jeff_the_killer.png` |
+| `async_rifleman` | `async_rifleman.png` |
 | `jane_the_killer` | `jane_the_killer.png` |
 | `slenderman` | `slenderman.png` |
 | `diep_minh` | `diep_minh.png` |
