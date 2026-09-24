@@ -191,6 +191,7 @@ final class StoryCore {
     if (story.optJSONObject("decisionPackage") == null) story.put("decisionPackage", new JSONObject());
     if (story.optJSONObject("entityGate") == null) story.put("entityGate", new JSONObject());
     if (story.optJSONObject("loopHistory") == null) story.put("loopHistory", new JSONObject());
+    if (story.optJSONObject("decisionChoiceHistory") == null) story.put("decisionChoiceHistory", new JSONObject());
     if (story.optJSONObject(FLAGS_KEY) == null) story.put(FLAGS_KEY, new JSONObject());
     if (story.optJSONObject("crossArcFacts") == null) story.put("crossArcFacts", new JSONObject());
 
@@ -674,6 +675,7 @@ final class StoryCore {
 
     String decisionId = story.optString("decisionId", "").trim();
     if (decisionId.isEmpty()) throw new IllegalStateException("Missing Story decision id.");
+    rejectRepeatedChoiceSet(story, decisionId, canonText, returnText, stayText);
 
     JSONObject outcomes = new JSONObject();
     List<JSONObject> publicChoices = new ArrayList<>();
@@ -797,6 +799,7 @@ final class StoryCore {
         .put("turnIndex", 0)
         .put("turnStatus", RETURN_PROVIDER_REQUIRED)
         .put("turnPackage", new JSONObject())
+        .put("choiceSetHistory", new JSONArray())
         .put("pausedStory", pausedStory);
     story.put("returnJourney", journey);
     syncReturnJourneyProjection(story);
@@ -949,6 +952,7 @@ final class StoryCore {
         || sameChoice(returnText, stayText)) {
       throw new IllegalArgumentException("Return journey choice package is incomplete or unsafe.");
     }
+    rejectRepeatedReturnChoiceSet(journey, progressText, returnText, stayText);
 
     JSONObject outcomes = new JSONObject();
     List<JSONObject> publicChoices = new ArrayList<>();
@@ -1300,6 +1304,7 @@ final class StoryCore {
           .put("turnStatus", "")
           .put("turnPackage", new JSONObject())
           .put("turnNarration", "")
+          .put("choiceSetHistory", new JSONArray())
           .put("pausedStory", new JSONObject());
     } catch (Exception ignored) {
       return new JSONObject();
@@ -1426,7 +1431,12 @@ final class StoryCore {
         && !lower.equals("continue story")
         && !lower.contains("canon")
         && !lower.contains("trap_loop")
+        && !lower.contains("return_to_start")
+        && !lower.contains("stay_in_place")
         && !lower.contains("bẫy")
+        && !lower.contains("chọn sai")
+        && !lower.contains("reset")
+        && !lower.contains("checkpoint")
         && !lower.matches("^[abc][\\.\\):\\-].*");
   }
 
@@ -1435,9 +1445,52 @@ final class StoryCore {
     String value = text.trim();
     if (value.isEmpty() || value.length() > 1400) return false;
     String lower = value.toLowerCase(Locale.ROOT);
-    return !lower.contains("bạn đã chọn sai")
+    return !lower.contains("chọn sai")
         && !lower.contains("trap_loop")
-        && !lower.contains("reset checkpoint");
+        && !lower.contains("return_to_start")
+        && !lower.contains("stay_in_place")
+        && !lower.contains("reset")
+        && !lower.contains("checkpoint");
+  }
+
+  private static void rejectRepeatedChoiceSet(
+      JSONObject story, String decisionId, String a, String b, String c) throws Exception {
+    JSONObject history = story.optJSONObject("decisionChoiceHistory");
+    if (history == null) history = new JSONObject();
+    JSONArray sets = history.optJSONArray(decisionId);
+    if (sets == null) sets = new JSONArray();
+    String signature = choiceSetSignature(a, b, c);
+    for (int i = 0; i < sets.length(); i++) {
+      if (signature.equals(sets.optString(i, ""))) {
+        throw new IllegalArgumentException("Story choice set repeats an earlier complete set.");
+      }
+    }
+    sets.put(signature);
+    history.put(decisionId, sets);
+    story.put("decisionChoiceHistory", history);
+  }
+
+  private static void rejectRepeatedReturnChoiceSet(
+      JSONObject journey, String a, String b, String c) throws Exception {
+    JSONArray sets = journey.optJSONArray("choiceSetHistory");
+    if (sets == null) sets = new JSONArray();
+    String signature = choiceSetSignature(a, b, c);
+    for (int i = 0; i < sets.length(); i++) {
+      if (signature.equals(sets.optString(i, ""))) {
+        throw new IllegalArgumentException("Return journey choice set repeats an earlier complete set.");
+      }
+    }
+    sets.put(signature);
+    journey.put("choiceSetHistory", sets);
+  }
+
+  private static String choiceSetSignature(String a, String b, String c) {
+    List<String> values = new ArrayList<>();
+    for (String value : new String[]{a, b, c}) {
+      values.add(value == null ? "" : value.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " "));
+    }
+    Collections.sort(values);
+    return String.join("|", values);
   }
 
   private static boolean sameChoice(String a, String b) {
