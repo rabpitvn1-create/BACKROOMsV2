@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "backroomsv2-story-source-catalog-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "stories"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "stories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["storyId", "levelKey", "sourceRevision", "sourceRoot", "annotations", "generatedRoot"],
+        "properties": {
+          "storyId": {"type": "string", "minLength": 1},
+          "levelKey": {"type": "string", "minLength": 1},
+          "sourceRevision": {"type": "string", "minLength": 1},
+          "sourceRoot": {"type": "string", "pattern": "^story/source/"},
+          "annotations": {"type": "string", "pattern": "^story/source/"},
+          "generatedRoot": {"type": "string", "pattern": "^story/generated/"}
+        }
+      }
+    }
+  }
+}
