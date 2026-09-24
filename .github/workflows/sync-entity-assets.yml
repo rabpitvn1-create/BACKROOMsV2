@@ -28,18 +28,8 @@ jobs:
             local name="$2"
             local tmp
             tmp="$(mktemp)"
-            curl -L --fail --retry 3 --retry-delay 2 \
-              "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" \
-              -o "$tmp"
-            python3 - "$tmp" "$name" <<'PY'
-import pathlib, sys
-p = pathlib.Path(sys.argv[1])
-name = sys.argv[2]
-data = p.read_bytes()
-if not data.startswith(b"\x89PNG\r\n\x1a\n"):
-    raise SystemExit(f"{name}: downloaded file is not PNG")
-print(f"{name}: {len(data)} bytes")
-PY
+            curl -L --fail --retry 3 --retry-delay 2 "https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t" -o "$tmp"
+            python3 -c 'import pathlib,sys; d=pathlib.Path(sys.argv[1]).read_bytes(); assert d.startswith(b"\x89PNG\r\n\x1a\n"), "not PNG"; print(sys.argv[2], len(d), "bytes")' "$tmp" "$name"
             mv -f "$tmp" "$target/$name"
           }
 
@@ -61,7 +51,6 @@ PY
           download "1_9uNtlk1TGBF6iTUew_IzE2GENflXc4C" "jeff_the_killer.png"
           download "1-9yGgrlNx7RPCw2QmmtFbzG_tjGibHNK" "jane_the_killer.png"
           download "1gwABRH-hg-nwe-0idxDRi_6PDHqx85tN" "slenderman.png"
-
           download "1nFvMyj0IWbcgf_UwTS2YargtyMyaz3bc" "hazmat_rifle_A_01.png"
           download "1ku45kqkX6YiecAs9i-JfayvXhsXUonqe" "hazmat_rifle_ASNC_02.png"
           download "1Hu35_AQbROjDjd3bGceeE1oPRBLCgpNc" "hazmat_pistol_tactical_03.png"
