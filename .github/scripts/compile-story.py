@@ -586,31 +586,7 @@ def authored_entity_gate_map(chapter):
 
 def compile_player_turns(chapter, segments):
     gates = authored_entity_gate_map(chapter)
-    authored = {}
-    for raw in chapter.get("offlineDecisions") or []:
-        anchor = str(raw.get("anchor", ""))
-        matches = [i for i, segment in enumerate(segments) if anchor and anchor in segment["text"]]
-        index = matches[0] if len(matches) == 1 else -1
-        variants = raw.get("variants")
-        if (index < 0 or sum(segment["text"].count(anchor) for segment in segments) != 1
-                or index in authored or not isinstance(variants, list) or len(variants) < 3
-                or (index == len(segments) - 1 and not chapter.get("nextChapter"))):
-            raise CompileError(chapter["id"] + ": invalid offline decision position/variants")
-        for variant in variants:
-            if not isinstance(variant, dict) or set(variant) != {"canon", "trap", "converge"}:
-                raise CompileError(chapter["id"] + ": invalid offline decision fields")
-            if not isinstance(variant["canon"], str) or not variant["canon"].strip():
-                raise CompileError(chapter["id"] + ": missing canon choice")
-            for key in ("trap", "converge"):
-                value = variant[key]
-                if not isinstance(value, dict) or set(value) != {"text", "reply"} or not all(
-                        isinstance(v, str) and v.strip() for v in value.values()):
-                    raise CompileError(chapter["id"] + ": incomplete " + key + " choice")
-                if any(word in value["reply"].lower() for word in ("chọn sai", "reset", "checkpoint")):
-                    raise CompileError(chapter["id"] + ": player-facing reply reveals the loop")
-            if len({variant["canon"], variant["trap"]["text"], variant["converge"]["text"]}) != 3:
-                raise CompileError(chapter["id"] + ": offline choices must be distinct")
-        authored[index] = variants
+    has_next_chapter = bool(str(chapter.get("nextChapter", "")).strip())
     output = {}
     for index, segment in enumerate(segments):
         entity_key = gates.get(index, "")
@@ -625,13 +601,16 @@ def compile_player_turns(chapter, segments):
             }
             continue
 
-        if index in authored:
+        # Every player-visible authored beat that has another authored beat after it is a real
+        # decision gate. Runtime Core owns the three hidden outcomes; Gemini/Haiku only phrases
+        # the current gate on demand, so generated assets never need provider-authored choices.
+        has_next_authored_turn = index + 1 < len(segments) or has_next_chapter
+        if has_next_authored_turn:
             output[segment["id"]] = {
                 "mode": "DECISION",
                 "decisionContract": {
                     "loopAnchor": segment["id"],
                     "decisionGuard": STANDARD_INTERACTION_GUARD,
-                    "offlineVariants": authored[index],
                 },
             }
         else:
