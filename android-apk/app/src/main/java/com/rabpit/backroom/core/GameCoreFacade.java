@@ -346,12 +346,24 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       appendDecisionLog(state, resolution);
 
-      incrementTurn(state);
-      if (storyCore.hasPendingStoryAdvance(state)) advancePendingStorySequence(state);
+      // Random Entity roll is the final gate of the resolved Story turn.
+      // Do not render the next authored beat until a spawned encounter is resolved.
+      entityCore.prepareEncounter(state);
+      String encounter = encounterKey(state);
+      if (CombatChoiceEngine.isKnownEntity(encounter)) {
+        CombatChoiceEngine.start(state, encounter, lastGmLogIndex(state));
+      } else {
+        incrementTurn(state);
+        if (storyCore.hasPendingStoryAdvance(state)) {
+          advancePendingStorySequence(state);
+        }
+      }
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
-      return response(true, state, null, "story_turn_committed", resolution.reply);
+      return response(true, state, null,
+          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat" : "story_turn_committed",
+          resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_rejected", null);
     }
