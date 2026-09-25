@@ -37,7 +37,7 @@ jobs:
           done
           mkdir -p "$OUT_DIR"
 
-      - name: Generate Level 0-6 floor plates
+      - name: Generate main Level and sublevel floor plates
         shell: bash
         run: |
           set -euo pipefail
@@ -54,23 +54,47 @@ jobs:
           out_dir.mkdir(parents=True, exist_ok=True)
 
           common = (
-              "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. "
-              "Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. "
-              "No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. "
-              "The center and lower half must stay readable behind character feet and drop shadows. "
-              "Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. "
-              "Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon."
+              "Create a pure environmental FLOOR MATERIAL PLATE for a mobile Backrooms game. "
+              "Camera is pointed downward at the walkable surface only, with a shallow perspective suitable for character feet and shadows. "
+              "The entire frame must contain ONLY floor material and tiny floor debris. "
+              "Absolutely no walls, ceiling, horizon, room interior, furniture, signs, interface, captions, typography, readable symbols, people, creatures, shoes, legs, feet, hands, silhouettes, or body parts. "
+              "Do not write or render any words from this prompt. "
+              "Surface must look used and neglected, never freshly cleaned. Include only 1 to 3 SMALL believable pieces of litter/debris plus restrained stains, dust, wear or scuffs. "
+              "Trash must stay sparse and physically small relative to the full floor plate, never a pile and never a focal object. "
+              "Realistic game texture, natural material detail, restrained lighting, no bloom, no neon, no dramatic spotlight."
           )
 
-          prompts = {
-              "0": common + " Level 0 material: damp dirty mustard-beige Berber-like office carpet, flattened fibers, darker wet patches, faint mold grime, nicotine-yellow cast, tiny torn paper and dark lint.",
-              "1": common + " Level 1 Parking Zone material: worn gray parking-garage concrete, hairline cracks, tire scuffs, dusty aggregate, faint oil mark, one small paper scrap and a tiny metal washer.",
-              "2": common + " Level 2 Pipe Dreams material: grimy utility-tunnel concrete with chalky dust, rust flakes, condensation marks, a tiny clipped wire piece and one paper fiber, warm industrial brown-gray tone.",
-              "3": common + " Level 3 Electrical Station material: dark dusty concrete industrial floor, electrical soot, subtle oil grime, small copper-wire clipping and one tiny torn insulation fragment, dim cold industrial lighting.",
-              "4": common + " Level 4 Abandoned Office material: old charcoal-gray office carpet tiles with worn seams, dust gathered in fibers, faint coffee stain, one tiny paper corner and a small plastic fragment, dry abandoned-office feel.",
-              "5": common + " Level 5 Terror Hotel material: aged dark mahogany parquet meeting a narrow burgundy hotel carpet edge, elegant but no longer pristine, fine scuffs, one tiny faded paper scrap and a couple of dark crumbs; still mostly orderly, not filthy.",
-              "6": common + " Level 6 Lights Out material: almost-black cold smooth concrete, barely visible roughness, damp smear, tiny grit and one small pale paper scrap catching minimal ambient light, extremely low-key darkness while keeping floor texture readable."
-          }
+          assets = [
+              ("0", "level_0.webp",
+               common + " Level 0: damp dirty mustard-beige Berber-like office carpet, flattened fibers, darker wet patches, faint mold grime, nicotine-yellow cast; add a tiny torn paper corner and a small dark lint clump."),
+              ("1", "level_1.webp",
+               common + " Level 1 Parking Zone: worn gray parking-garage concrete, hairline cracks, tire scuffs, dusty aggregate and a faint old oil smear; add one tiny paper scrap and a very small metal washer."),
+              ("2", "level_2.webp",
+               common + " Level 2 Pipe Dreams: grimy utility-tunnel concrete, chalky dust, rust flakes and condensation marks; add one tiny clipped wire piece and a small paper fiber."),
+              ("3", "level_3.webp",
+               common + " Level 3 Electrical Station: dark dusty industrial concrete, subtle electrical soot and old oil grime; add a tiny copper-wire clipping and one small torn insulation fragment."),
+              ("4", "level_4.webp",
+               common + " Level 4 Abandoned Office: old charcoal-gray office carpet tiles with worn seams, embedded dust and a faint coffee stain; add one tiny paper corner and one very small plastic chip."),
+              ("5", "level_5.webp",
+               common + " Level 5 Terror Hotel: aged dark mahogany parquet with a narrow burgundy carpet edge, elegant but not pristine, fine scuffs and dust; add one tiny faded paper scrap and a couple of dark crumbs."),
+              ("6", "level_6.webp",
+               common + " Level 6 Lights Out: almost-black cold smooth concrete with barely visible roughness and a damp smear; add tiny grit and one very small pale paper fleck visible only by minimal ambient light. Keep texture readable despite deep darkness."),
+
+              ("0.1", "sublevel_0_1.webp",
+               common + " Level 0.1 Zenith Station: worn brushed-metal deck panels with fine seams, anti-slip texture, cold gray alloy, scratches, oxidation and dried maintenance grime; add a tiny clipped cable tie and two small glass-like flakes."),
+              ("0.2", "sublevel_0_2.webp",
+               common + " Level 0.2 Remodeled Mess: dry deep-red commercial carpet partly dusted by pale plaster powder and construction grit, a subtle cracked seam suggesting nearby collapse; add two tiny plaster chips and a small torn paper scrap."),
+              ("0.5", "sublevel_0_5.webp",
+               common + " Level 0.5 Aquaclaustrophobic Infirmary: filthy off-white hospital vinyl/tile floor under a very shallow dirty-water sheen, gray-brown grime and oily residue; add one tiny soaked paper fragment and a small rust flake."),
+              ("0.7", "sublevel_0_7.webp",
+               common + " Level 0.7 Reminiscence District: worn historical patchwork flooring with a restrained transition from old dark wood planks into faded twentieth-century linoleum, dusty and age-scuffed; add one tiny yellowed paper scrap and a small chipped fragment."),
+              ("manila_room", "sublevel_manila_room.webp",
+               common + " Manila Room: dry aged honey-brown wooden plank floor, matte worn finish, subtle dust in seams and quiet beige cast; add one tiny pencil shaving and one small yellowed paper corner."),
+              ("the_torment", "sublevel_the_torment.webp",
+               common + " The Torment: monochrome gray cracked stone and packed earth with a thin scatter of dead leaf fragments, cold moonlit grayscale, damp dirt in crevices; add one tiny pale weathered scrap and a small broken twig, all desaturated."),
+              ("red_rooms", "sublevel_red_rooms.webp",
+               common + " Red Rooms: dark crimson rough carpet, slightly sticky matted fibers, black mold specks and deep red grime, low darkroom-like lighting; add one tiny torn paper fragment and one small dull plastic fleck.")
+          ]
 
           metadata = {
               "model": model,
@@ -80,7 +104,7 @@ jobs:
               "assets": []
           }
 
-          for level, prompt in prompts.items():
+          for level_key, filename, prompt in assets:
               payload = {"model": model, "prompt": prompt, "n": 1, "response_format": "b64_json"}
               request = urllib.request.Request(
                   endpoint,
@@ -97,11 +121,11 @@ jobs:
                       body = json.loads(response.read().decode("utf-8"))
               except urllib.error.HTTPError as exc:
                   detail = exc.read().decode("utf-8", errors="replace")
-                  raise SystemExit(f"IMG API HTTP {exc.code} for Level {level}: {detail[:2000]}")
+                  raise SystemExit(f"IMG API HTTP {exc.code} for {level_key}: {detail[:2000]}")
 
               data = body.get("data")
               if not isinstance(data, list) or not data:
-                  raise SystemExit(f"IMG API response has no data[0] for Level {level}")
+                  raise SystemExit(f"IMG API response has no data[0] for {level_key}")
               item = data[0]
               if item.get("b64_json"):
                   raw = base64.b64decode(item["b64_json"])
@@ -110,7 +134,7 @@ jobs:
                   with urllib.request.urlopen(dl, timeout=300) as response:
                       raw = response.read()
               else:
-                  raise SystemExit(f"IMG API response has neither b64_json nor url for Level {level}")
+                  raise SystemExit(f"IMG API response has neither b64_json nor url for {level_key}")
 
               if raw.startswith(b"\x89PNG\r\n\x1a\n"):
                   ext = "png"
@@ -123,13 +147,14 @@ jobs:
               elif len(raw) >= 12 and raw[4:8] == b"ftyp":
                   ext = "avif"
               else:
-                  raise SystemExit(f"Unsupported IMG API format for Level {level}; magic={raw[:16].hex()}")
+                  raise SystemExit(f"Unsupported IMG API format for {level_key}; magic={raw[:16].hex()}")
 
-              source = out_dir / f"level_{level}.source.{ext}"
+              stem = filename[:-5]
+              source = out_dir / f"{stem}.source.{ext}"
               source.write_bytes(raw)
               metadata["assets"].append({
-                  "level": level,
-                  "file": f"level_{level}.webp",
+                  "levelKey": level_key,
+                  "file": filename,
                   "prompt": prompt
               })
 
@@ -142,17 +167,25 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq imagemagick webp
 
-          for level in 0 1 2 3 4 5 6; do
-            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "level_${level}.source.*" -print -quit)"
+          mapfile -t stems < <(python3 - <<'PY'
+          import json, os, pathlib
+          data=json.loads((pathlib.Path(os.environ["OUT_DIR"])/"level_floors.generated.json").read_text())
+          for item in data["assets"]:
+              print(item["file"][:-5])
+          PY
+          )
+
+          for stem in "${stems[@]}"; do
+            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "${stem}.source.*" -print -quit)"
             test -n "$src"
-            tmp="/tmp/backroom-floor-${level}.png"
+            tmp="/tmp/${stem}.png"
 
             convert "$src" -auto-orient \
               -resize '768x144^' -gravity south -extent 768x144 \
               -alpha set -channel A -fx 'j<28?j/28:1' +channel \
               "$tmp"
 
-            out="$OUT_DIR/level_${level}.webp"
+            out="$OUT_DIR/${stem}.webp"
             cwebp -quiet -q 76 -m 6 -alpha_q 88 -metadata none "$tmp" -o "$out"
 
             bytes="$(stat -c%s "$out")"
@@ -167,13 +200,13 @@ jobs:
 
             rm -f "$src" "$tmp"
             test "$(identify -format '%wx%h' "$out")" = "768x144"
-            test "$bytes" -le 80000 || { echo "::error::Level $level floor is too large: $bytes bytes"; exit 1; }
-            echo "Level $level floor: $bytes bytes"
+            test "$bytes" -le 80000 || { echo "::error::$stem floor is too large: $bytes bytes"; exit 1; }
+            echo "$stem floor: $bytes bytes"
           done
 
-          total="$(du -cb "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp | tail -1 | awk '{print $1}')"
-          test "$total" -le 500000 || { echo "::error::Floor asset batch too large: $total bytes"; exit 1; }
-          identify "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp
+          total="$(du -cb "$OUT_DIR"/*.webp | tail -1 | awk '{print $1}')"
+          test "$total" -le 900000 || { echo "::error::Floor asset batch too large: $total bytes"; exit 1; }
+          identify "$OUT_DIR"/*.webp
 
       - name: Commit generated floor artwork
         shell: bash
@@ -181,7 +214,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp "$OUT_DIR/level_floors.generated.json"
+          git add "$OUT_DIR"/*.webp "$OUT_DIR/level_floors.generated.json"
           git diff --cached --quiet && { echo 'Floor artwork unchanged.'; exit 0; }
-          git commit -m 'Generate Level floor artwork with IMG API'
+          git commit -m 'Generate Level and sublevel floor artwork with IMG API'
           git push origin HEAD:ui/redmi-viewport-foundation
