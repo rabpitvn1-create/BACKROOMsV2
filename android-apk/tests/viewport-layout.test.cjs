@@ -12,11 +12,8 @@ const playerAction=fs.readFileSync(path.join(assets,'player-action-ui.js'),'utf8
 test('game shell uses one visual viewport height and keeps page scrolling locked',()=>{
   assert.match(index,/html,body\{height:100%;overflow:hidden;overscroll-behavior:none\}/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;/);
-  assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0 max\(8px,env\(safe-area-inset-right\)\)/);
+  assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0;/);
   assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
-  assert.match(index,/safe-area-inset-right/);
-  assert.match(index,/safe-area-inset-bottom/);
-  assert.match(index,/safe-area-inset-left/);
   assert.match(index,/function syncViewportHeight\(\)/);
   assert.match(index,/window\.visualViewport/);
   assert.match(index,/setProperty\("--app-height",height\+"px"\)/);
@@ -38,4 +35,10 @@ test('keyboard-sensitive controls use the shared viewport budget',()=>{
 test('display cutout is painted while header controls remain below the notch',()=>{
   assert.doesNotMatch(index,/padding:max\(8px,env\(safe-area-inset-top\)\)/);
   assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
+});
+
+test('gameplay background reaches all four screen edges',()=>{
+  assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0;/);
+  assert.match(index,/\.game\{border:0;border-radius:0;box-shadow:none\}/);
+  assert.doesNotMatch(index,/\.shell\{[^}]*safe-area-inset-(?:left|right|bottom)/);
 });
