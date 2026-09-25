@@ -1,0 +1,10 @@
+BR 1.0.0.0.6
+
+- Tăng versionCode từ 103 lên 104 để Android nhận đây là bản cập nhật mới.
+- PLAYER ACTION được tách thành tương tác môi trường phụ trợ, không tăng Turn và không tiến hoặc resolve authored Story.
+- Environment action không kích hoạt route roll, loot, Entity encounter, Combat hoặc progression; log môi trường cũng không được đưa ngược vào Story context.
+- Giữ nguyên hidden Story/Return Journey state khi ghi phản hồi environment-only.
+- Sửa lỗi Game Master load xong choice làm trượt mất đoạn văn người chơi đang đọc bằng message anchor trước khi render lại log.
+- Lỗi Game Master hiển thị trực tiếp trong khung GAME MASTER; bỏ thanh Turn/save cố định ở đáy.
+- UI dùng Play Regular/Bold cho control và label, còn nội dung truyện dài giữ system font để dễ đọc.
+- Bổ sung safe-area cho header và PLAYER ACTION trên màn hình bo góc/cutout.
