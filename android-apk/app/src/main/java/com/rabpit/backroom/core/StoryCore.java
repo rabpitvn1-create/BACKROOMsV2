@@ -1260,6 +1260,15 @@ final class StoryCore {
         output.append("Current chapter: ").append(chapter.id).append(" — ").append(chapter.title).append(".\n");
         output.append("Current authored segment: ")
             .append(story.optString("currentScene", "unstarted")).append(".\n");
+        output.append("Current canon location: ").append(state.optString("location", "")).append(".\n");
+        if (story.optBoolean("segmentDelivered", false)) {
+          StoryRepository.Segment segment = repository.segment(
+              chapterId, story.optInt("currentSegmentIndex", 0));
+          if (segment != null && segment.id.equals(story.optString("currentSegmentId", ""))) {
+            output.append("CURRENT DELIVERED AUTHORED SCENE (read-only context):\n")
+                .append(segment.text).append("\n");
+          }
+        }
         output.append("Story thread: ").append(chapter.thread)
             .append("; visibility=").append(chapter.visibility).append(".\n");
         if ("cutaway".equals(chapter.visibility)) {
@@ -1268,6 +1277,15 @@ final class StoryCore {
         }
         appendArray(output, "REQUIRED AUTHORED FACTS", chapter.requiredFacts);
         appendArray(output, "FORBIDDEN CLAIMS", chapter.forbiddenClaims);
+        if (!story.optBoolean("arcComplete", false)) {
+          output.append("ACTIVE SCENE RULE: freely narrate dialogue, reactions, surroundings and optional suggestions "
+              + "within the delivered scene and current canon location. Required facts are constraints, not permission "
+              + "to complete an event before the manuscript delivers it. Do not reveal or foreshadow later beats, "
+              + "complete pending authored events, change canon location/Level/timeline or character presence, "
+              + "or set transitionTarget; only Story/Level Core may advance them. Keep transitionTarget empty even "
+              + "if Level Core lists an available route. Do not change inventory, survival, progression or other "
+              + "Core-owned state.\n");
+        }
       }
 
       output.append("Story-managed character Lục Trầm status: ")

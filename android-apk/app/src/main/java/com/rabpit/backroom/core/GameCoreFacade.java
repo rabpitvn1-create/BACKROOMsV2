@@ -220,15 +220,10 @@ public final class GameCoreFacade implements AutoCloseable {
 
       copyField(before, sanitized, "inventory");
       copyField(before, sanitized, SurvivalCore.ROOT_KEY);
-      copyField(before, sanitized, StoryCore.ROOT_KEY);
       characterProgressionCore.protectFromCandidate(before, sanitized);
 
       int beforeStageIndex = levelCore.stageIndexForState(before);
-      if (transitionTarget == null) {
-        levelCore.validateAndApplyTransition(before, sanitized);
-      } else {
-        levelCore.applyNarrativeTransition(before, sanitized, transitionTarget);
-      }
+      applyNarrativeBoundary(levelCore, before, sanitized, transitionTarget);
       int afterStageIndex = levelCore.stageIndexForState(sanitized);
       if (afterStageIndex != beforeStageIndex) {
         int stageCoreReward = characterProgressionCore.rewardStageCompletion(sanitized, afterStageIndex);
@@ -827,7 +822,22 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  private void copyField(JSONObject source, JSONObject target, String key) throws Exception {
+  static void applyNarrativeBoundary(LevelCore levelCore, JSONObject before, JSONObject candidate,
+                                     String transitionTarget) throws Exception {
+    copyField(before, candidate, StoryCore.ROOT_KEY);
+    JSONObject story = before.optJSONObject(StoryCore.ROOT_KEY);
+    if (story != null && story.optBoolean("active", false) && !story.optBoolean("arcComplete", false)) {
+      copyField(before, candidate, "location");
+      // An authored arc can only change canon location through Story/Level Core actions.
+      levelCore.applyNarrativeTransition(before, candidate, "");
+    } else if (transitionTarget == null) {
+      levelCore.validateAndApplyTransition(before, candidate);
+    } else {
+      levelCore.applyNarrativeTransition(before, candidate, transitionTarget);
+    }
+  }
+
+  private static void copyField(JSONObject source, JSONObject target, String key) throws Exception {
     if (source != null && source.has(key)) target.put(key, source.get(key));
     else target.remove(key);
   }
