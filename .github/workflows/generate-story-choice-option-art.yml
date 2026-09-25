@@ -1,0 +1,166 @@
+name: Generate Story Choice Option Art
+
+on:
+  push:
+    branches:
+      - art/story-choice-loading-overlay
+    paths:
+      - '.github/workflows/generate-story-choice-option-art.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-story-choice-option-art
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/hud
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate IMG API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+          mkdir -p "$OUT_DIR"
+
+      - name: Generate three distinct Backrooms choice artworks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.error, urllib.request
+
+          api = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint = base if base.endswith("/images/generations") else (
+              base + "/images/generations" if base.endswith("/v1") else base + "/v1/images/generations"
+          )
+          out_dir = pathlib.Path(os.environ["OUT_DIR"])
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          prompts = [
+              (
+                  "A wide cinematic Backrooms Level 0 scene for the FIRST decision button of a mobile dark survival text game. "
+                  "A long narrow nicotine-yellow corridor recedes strongly toward the LEFT, with repeating doorless openings, stained wallpaper, "
+                  "worn damp carpet and a line of buzzing fluorescent ceiling panels. Strong leftward vanishing point, claustrophobic hallway composition. "
+                  "Dirty mustard, olive and charcoal palette, realistic game concept art, restrained lighting, detailed grime. "
+                  "No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+              ),
+              (
+                  "A wide cinematic Backrooms Level 0 scene for the SECOND decision button of a mobile dark survival text game. "
+                  "A broad open yellow office chamber with many square structural columns, several dark rectangular passages in different directions, "
+                  "a low acoustic ceiling packed with fluorescent panels, and an unsettling maze-like geometry. Centered open-room composition, clearly NOT a corridor. "
+                  "Dirty amber, faded beige, olive and charcoal palette, realistic game concept art, subtle cinematic shadows, fine grime and damp carpet texture. "
+                  "No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+              ),
+              (
+                  "A wide cinematic Backrooms Level 0 scene for the THIRD decision button of a mobile dark survival text game. "
+                  "A cramped corner junction where two yellow wallpapered hallways split around a close wall, one fluorescent fixture flickers above a darker side passage, "
+                  "with visibly peeling wallpaper, water stains and a slightly warped ceiling grid. Strong RIGHT-side shadow and near-wall foreground composition, distinct from an open room or long corridor. "
+                  "Muted mustard yellow, sickly beige, olive and charcoal palette, realistic game concept art, restrained fluorescent glow, detailed decay. "
+                  "No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+              ),
+          ]
+
+          metadata = {"model": model, "assets": []}
+
+          for index, prompt in enumerate(prompts, start=1):
+              payload = {"model": model, "prompt": prompt, "n": 1, "response_format": "b64_json"}
+              request = urllib.request.Request(
+                  endpoint,
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={
+                      "Authorization": f"Bearer {api}",
+                      "Content-Type": "application/json",
+                      "Accept": "application/json",
+                  },
+                  method="POST",
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=300) as response:
+                      body = json.loads(response.read().decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  detail = exc.read().decode("utf-8", errors="replace")
+                  raise SystemExit(f"IMG API HTTP {exc.code} for choice {index}: {detail[:2000]}")
+
+              data = body.get("data")
+              if not isinstance(data, list) or not data:
+                  raise SystemExit(f"IMG API response has no data[0] for choice {index}")
+              item = data[0]
+              if item.get("b64_json"):
+                  raw = base64.b64decode(item["b64_json"])
+              elif item.get("url"):
+                  dl = urllib.request.Request(item["url"], headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"})
+                  with urllib.request.urlopen(dl, timeout=300) as response:
+                      raw = response.read()
+              else:
+                  raise SystemExit(f"IMG API response has neither b64_json nor url for choice {index}")
+
+              if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+                  ext = "png"
+              elif raw.startswith(b"\xff\xd8\xff"):
+                  ext = "jpg"
+              elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+                  ext = "webp"
+              elif raw.startswith((b"GIF87a", b"GIF89a")):
+                  ext = "gif"
+              elif len(raw) >= 12 and raw[4:8] == b"ftyp":
+                  ext = "avif"
+              else:
+                  raise SystemExit(f"Unsupported IMG API format for choice {index}; magic={raw[:16].hex()}")
+
+              source = out_dir / f"story_choice_{index}_backrooms.source.{ext}"
+              source.write_bytes(raw)
+              metadata["assets"].append({
+                  "file": f"story_choice_{index}_backrooms.png",
+                  "prompt": prompt,
+              })
+
+          (out_dir / "story_choice_backrooms.generated.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+
+          for i in 1 2 3; do
+            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "story_choice_${i}_backrooms.source.*" -print -quit)"
+            test -n "$src"
+            convert "$src" -auto-orient -resize '1200x360^' -gravity center -extent 1200x360 "$OUT_DIR/story_choice_${i}_backrooms.png"
+            rm "$src"
+            test "$(identify -format '%wx%h' "$OUT_DIR/story_choice_${i}_backrooms.png")" = "1200x360"
+          done
+
+          test "$(sha256sum "$OUT_DIR"/story_choice_{1,2,3}_backrooms.png | awk '{print $1}' | sort -u | wc -l)" -eq 3
+          identify "$OUT_DIR"/story_choice_{1,2,3}_backrooms.png
+
+      - name: Commit generated choice artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR/story_choice_1_backrooms.png" \
+                  "$OUT_DIR/story_choice_2_backrooms.png" \
+                  "$OUT_DIR/story_choice_3_backrooms.png" \
+                  "$OUT_DIR/story_choice_backrooms.generated.json"
+          git diff --cached --quiet && { echo 'Choice artwork unchanged.'; exit 0; }
+          git commit -m 'Generate three Story choice artworks with IMG API'
+          git push origin HEAD:art/story-choice-loading-overlay
