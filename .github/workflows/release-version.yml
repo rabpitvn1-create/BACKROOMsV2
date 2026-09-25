@@ -571,10 +571,13 @@ jobs:
           RESPONSE_FILE="$(mktemp)"
           trap 'rm -f "$RESPONSE_FILE"' EXIT
           success=0
+          configured=0
+          hard_failure=0
 
           for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
             key="${!name:-}"
             [ -n "$key" ] || continue
+            configured=1
 
             http_code=$(curl --silent --show-error \
               --connect-timeout 10 --max-time 45 \
@@ -585,17 +588,36 @@ jobs:
               -d "$REQUEST_BODY" \
               "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" || true)
 
-            if [ "$http_code" = "200" ] && jq -e '(.candidates[0].content.parts[0].text | fromjson | .ok) == true' "$RESPONSE_FILE" >/dev/null 2>&1; then
-              echo "Gemini smoke test passed with $name."
-              success=1
+            if [ "$http_code" = "200" ]; then
+              if jq -e '(.candidates[0].content.parts[0].text | fromjson | .ok) == true' "$RESPONSE_FILE" >/dev/null 2>&1; then
+                echo "Gemini smoke test passed with $name."
+                success=1
+                break
+              fi
+              echo "::error::Gemini returned HTTP 200 but failed the expected JSON contract with $name."
+              hard_failure=1
               break
             fi
 
-            echo "::warning::Gemini smoke test failed with $name (HTTP ${http_code:-curl_error}); trying next configured key."
+            case "$http_code" in
+              429|500|502|503|504|000|"")
+                echo "::warning::Gemini transient failure with $name (HTTP ${http_code:-curl_error}); trying next configured key."
+                ;;
+              *)
+                echo "::error::Gemini smoke test failed with non-transient HTTP $http_code using $name."
+                hard_failure=1
+                break
+                ;;
+            esac
             sleep 1
           done
 
-          test "$success" -eq 1
+          test "$configured" -eq 1 || { echo "::error::No Gemini API key is configured."; exit 1; }
+          test "$hard_failure" -eq 0 || exit 1
+
+          if [ "$success" -ne 1 ]; then
+            echo "::warning::All configured Gemini keys returned transient provider errors; continuing release without treating an upstream outage as a code failure."
+          fi
 
       - uses: actions/setup-java@v5
         with:
