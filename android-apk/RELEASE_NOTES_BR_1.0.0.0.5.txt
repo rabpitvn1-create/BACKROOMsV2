@@ -1,0 +1,7 @@
+BR 1.0.0.0.5
+
+- Tăng versionCode từ 102 lên 103 để Android nhận đây là bản cập nhật mới.
+- Snapshot hiện không còn floor asset hoặc floor runtime.
+- Gemini 3.8 Flash dùng thinkingLevel low.
+- Siết lựa chọn A/B/C và Explorer choices để nội dung hiển thị bằng tiếng Việt tự nhiên, ngoại trừ tên riêng hoặc tên chính thức cần giữ nguyên.
+- Giữ nguyên gameplay, Combat, Story progression, Entity spawn, Item, Survival, save format và provider fallback.
