@@ -30,10 +30,10 @@ test('entity keeps its own lane and aspect ratio',()=>{
   assert.ok(r.width<=360*.46+1e-7);near(r.width/r.height,m.width/m.height);near(r.baseline,230);
  }
 });
-test('CopX overlay has measured bounds for its local sprite',()=>{
+test('CopX overlay has measured bounds for its refreshed Drive sprite',()=>{
  const m=assetMetric('file:///android_asset/entity/copx.webp');
- assert.equal(m.width,900);assert.equal(m.height,1200);
- assert.deepEqual(m.body,{left:18,top:2,right:892,bottom:1187});
+ assert.equal(m.width,864);assert.equal(m.height,1536);
+ assert.deepEqual(m.body,{left:17,top:194,right:857,bottom:1332});
  const r=layout(m,360,250,'left','entity',family);
  assert.ok(r.left>=0);assert.ok(r.left+r.width<=360);
 });
