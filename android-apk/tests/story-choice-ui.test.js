@@ -180,3 +180,23 @@ test('selection bridges contain no provider request and native state hides outco
   assert.match(safe, /turnPack\.remove\("outcomes"\)/);
   assert.match(safe, /"pausedStory".*"lookahead"/s);
 });
+
+
+test('semantic rerender captures the visible message before base render destroys the DOM', () => {
+  const gmChoice = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
+  const wrapper = gmChoice.split('var previousRender = window.render;')[1].split('if (form) {')[0];
+  assert.ok(wrapper.indexOf('var viewportAnchor = captureLogAnchor();') >= 0);
+  assert.ok(wrapper.indexOf('var viewportAnchor = captureLogAnchor();') < wrapper.indexOf('previousRender'));
+  assert.match(gmChoice, /function captureLogAnchor\(\)/);
+  assert.match(gmChoice, /data-log-index/);
+  assert.match(gmChoice, /function restoreLogAnchor\(anchor\)/);
+  assert.doesNotMatch(
+    gmChoice.split('function renderSemanticLog(anchor)')[1].split('function scrollLatestGmToStart')[0],
+    /previousScrollTop/
+  );
+});
+
+test('environment-only GM replies do not become the owner of Story choices', () => {
+  const gmChoice = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
+  assert.match(gmChoice, /entry\.role !== 'player' && entry\.scope !== 'environment'/);
+});
