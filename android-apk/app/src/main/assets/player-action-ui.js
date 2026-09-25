@@ -10,7 +10,10 @@
   var backdrop = document.getElementById('playerActionBackdrop');
   var form = document.getElementById('form');
   var action = document.getElementById('action');
+  var submit = document.getElementById('submit');
   if (!modal || !openButton || !form || !action) return;
+
+  window.__playerEnvironmentBusy = false;
 
   function combatActive(){
     try {
@@ -21,7 +24,8 @@
   }
 
   function processing(){
-    return !!window.__combatBusy || (typeof busy !== 'undefined' && !!busy);
+    return !!window.__combatBusy || !!window.__playerEnvironmentBusy
+      || (typeof busy !== 'undefined' && !!busy);
   }
 
   function storyCutawayActive(){
@@ -29,26 +33,6 @@
       return !!(state && state.story && state.story.active === true
         && state.story.arcComplete !== true
         && String(state.story.visibility || '') === 'cutaway');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyReturnActive(){
-    try {
-      return !!(state && state.story && state.story.returnJourney
-        && state.story.returnJourney.active === true);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyDecisionActive(){
-    try {
-      return !!(state && state.story && state.story.active === true
-        && state.story.arcComplete !== true
-        && !storyReturnActive()
-        && state.story.awaitingDecision === true);
     } catch (_) {
       return false;
     }
@@ -85,6 +69,11 @@
     }
   }
 
+  function environmentLocked(){
+    return combatActive() || processing() || storyBootstrapPending() || storyCutawayActive()
+      || storyEntityAttackActive() || storyAdvancePending();
+  }
+
   function fitVisualViewport(){
     if (modal.hidden) return;
     var vv = window.visualViewport;
@@ -113,20 +102,7 @@
   }
 
   function openPlayerAction(){
-    if (combatActive() || processing() || storyReturnActive() || storyBootstrapPending()
-        || storyCutawayActive() || storyDecisionActive()
-        || storyEntityAttackActive() || storyAdvancePending()) {
-      if (typeof statusEl !== 'undefined' && statusEl) {
-        if (combatActive()) statusEl.textContent = 'Đang chiến đấu. Hãy chọn hành động trong khung GAME MASTER.';
-        else if (storyReturnActive()) statusEl.textContent = 'Hãy chọn một hướng đi trong khung GAME MASTER.';
-        else if (storyBootstrapPending()) statusEl.textContent = 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.';
-        else if (storyEntityAttackActive()) statusEl.textContent = 'Encounter cốt truyện: hãy chọn Tấn công trong khung GAME MASTER.';
-        else if (storyDecisionActive()) statusEl.textContent = 'Đang ở điểm quyết định cốt truyện. Hãy chọn một hành động trong khung GAME MASTER.';
-        else if (storyCutawayActive()) statusEl.textContent = 'Đang ở đoạn cắt cảnh cốt truyện.';
-        else statusEl.textContent = 'Đang xử lý lượt hiện tại.';
-      }
-      return;
-    }
+    if (environmentLocked()) return;
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('player-action-open');
@@ -143,34 +119,54 @@
   }
 
   function syncPlayerAction(){
-    var locked = combatActive() || processing() || storyReturnActive() || storyBootstrapPending()
-      || storyCutawayActive() || storyDecisionActive() || storyEntityAttackActive() || storyAdvancePending();
+    var locked = environmentLocked();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyReturnActive() || storyBootstrapPending() || storyCutawayActive()
-        || storyDecisionActive() || storyEntityAttackActive() || storyAdvancePending())
-        && !modal.hidden) closePlayerAction(true);
+    if ((combatActive() || storyBootstrapPending() || storyCutawayActive()
+        || storyEntityAttackActive() || storyAdvancePending()) && !modal.hidden) {
+      closePlayerAction(true);
+    }
   }
 
-  openButton.addEventListener('click', openPlayerAction);
+  function showEnvironmentError(message){
+    window.__playerEnvironmentBusy = false;
+    window.__gmEnvironmentLoading = false;
+    window.__gmErrorMessage = 'Đang gặp lỗi. Vui lòng thử lại.';
+    if (typeof busy !== 'undefined') busy = false;
+    if (submit) submit.disabled = false;
+    if (message && window.console && typeof console.error === 'function')
+      console.error('Environment PLAYER ACTION:', message);
+    if (typeof window.render === 'function') window.render();
+    syncPlayerAction();
+    if (typeof window.backroomScrollGmSystemMessage === 'function')
+      window.backroomScrollGmSystemMessage();
+  }
+
   form.addEventListener('submit', function(event){
-    if (!storyBootstrapPending()) return;
+    if (modal.hidden) return;
     event.preventDefault();
     event.stopImmediatePropagation();
-    if (typeof statusEl !== 'undefined' && statusEl)
-      statusEl.textContent = 'Hãy bắt đầu khám phá thế giới Backrooms trong khung GAME MASTER.';
+
+    var text = String(action.value || '').trim();
+    if (!text || environmentLocked()) return;
+    if (!window.Android || typeof Android.submitEnvironmentAction !== 'function') {
+      showEnvironmentError('Không tìm thấy Android environment bridge.');
+      return;
+    }
+
+    window.__playerEnvironmentBusy = true;
+    window.__gmEnvironmentLoading = true;
+    window.__gmErrorMessage = '';
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
     closePlayerAction(true);
+    if (typeof window.render === 'function') window.render();
+    Android.submitEnvironmentAction(JSON.stringify(state), text);
   }, true);
+
   if (closeButton) closeButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (cancelButton) cancelButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (backdrop) backdrop.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
-
-  form.addEventListener('submit', function(){
-    setTimeout(function(){
-      if (typeof busy !== 'undefined' && busy) closePlayerAction(true);
-      syncPlayerAction();
-    }, 0);
-  });
 
   document.addEventListener('keydown', function(event){
     if (event.key === 'Escape' && !modal.hidden && !processing()) closePlayerAction(true);
@@ -186,6 +182,31 @@
   window.backroomClosePlayerAction = closePlayerAction;
   window.backroomSyncPlayerAction = syncPlayerAction;
 
+  window.backroomEnvironmentTurn = function(json){
+    try {
+      state = typeof ensureCurrentLevel === 'function'
+        ? ensureCurrentLevel(JSON.parse(json))
+        : JSON.parse(json);
+      if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
+      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
+      action.value = '';
+      window.__playerEnvironmentBusy = false;
+      window.__gmEnvironmentLoading = false;
+      window.__gmErrorMessage = '';
+      if (typeof busy !== 'undefined') busy = false;
+      if (submit) submit.disabled = false;
+      closePlayerAction(false);
+      if (typeof window.render === 'function') window.render();
+      syncPlayerAction();
+      if (typeof window.backroomScrollLatestGmToStart === 'function')
+        window.backroomScrollLatestGmToStart();
+    } catch (error) {
+      showEnvironmentError(error && error.message ? error.message : 'Environment state không hợp lệ.');
+    }
+  };
+
+  window.backroomEnvironmentError = showEnvironmentError;
+
   var previousRender = window.render;
   window.render = function(){
     if (typeof previousRender === 'function') previousRender();
@@ -195,6 +216,8 @@
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){
     if (typeof previousTurn === 'function') previousTurn(json);
+    window.__playerEnvironmentBusy = false;
+    window.__gmEnvironmentLoading = false;
     closePlayerAction(false);
     syncPlayerAction();
   };
