@@ -1,0 +1,17 @@
+{
+  "model": "mgr/grok-imagine-image",
+  "assets": [
+    {
+      "file": "story_choice_1_backrooms.png",
+      "prompt": "A wide cinematic Backrooms Level 0 scene for the FIRST decision button of a mobile dark survival text game. A long narrow nicotine-yellow corridor recedes strongly toward the LEFT, with repeating doorless openings, stained wallpaper, worn damp carpet and a line of buzzing fluorescent ceiling panels. Strong leftward vanishing point, claustrophobic hallway composition. Dirty mustard, olive and charcoal palette, realistic game concept art, restrained lighting, detailed grime. No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+    },
+    {
+      "file": "story_choice_2_backrooms.png",
+      "prompt": "A wide cinematic Backrooms Level 0 scene for the SECOND decision button of a mobile dark survival text game. A broad open yellow office chamber with many square structural columns, several dark rectangular passages in different directions, a low acoustic ceiling packed with fluorescent panels, and an unsettling maze-like geometry. Centered open-room composition, clearly NOT a corridor. Dirty amber, faded beige, olive and charcoal palette, realistic game concept art, subtle cinematic shadows, fine grime and damp carpet texture. No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+    },
+    {
+      "file": "story_choice_3_backrooms.png",
+      "prompt": "A wide cinematic Backrooms Level 0 scene for the THIRD decision button of a mobile dark survival text game. A cramped corner junction where two yellow wallpapered hallways split around a close wall, one fluorescent fixture flickers above a darker side passage, with visibly peeling wallpaper, water stains and a slightly warped ceiling grid. Strong RIGHT-side shadow and near-wall foreground composition, distinct from an open room or long corridor. Muted mustard yellow, sickly beige, olive and charcoal palette, realistic game concept art, restrained fluorescent glow, detailed decay. No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI, no border, no neon, no gore."
+    }
+  ]
+}

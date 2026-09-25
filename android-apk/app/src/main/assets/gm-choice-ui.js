@@ -26,9 +26,19 @@
     ".battle-log{display:grid;gap:5px;margin-top:10px}",
     ".battle-line{white-space:pre-wrap;line-height:1.45}",
     ".gm-choices{display:grid;gap:7px;margin-top:12px}",
+    ".story-decision{position:relative}",
+    ".story-choice-loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;overflow:hidden;border:2px solid #d8b84a;border-radius:10px;background-color:#655516;background-image:linear-gradient(180deg,rgba(132,105,18,.30),rgba(15,14,7,.74)),url('hud/story_choice_loading_backrooms.png');background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,237,142,.35),inset 0 0 32px rgba(229,187,61,.22),0 6px 20px #000a;color:#fff0a9;text-shadow:0 2px 4px #000,0 0 10px #000}",
+    ".story-choice-loading-content{display:grid;place-items:center;gap:9px;padding:18px;text-align:center}",
+    ".story-choice-hourglass{font-size:38px;line-height:1;filter:drop-shadow(0 2px 3px #000);animation:story-choice-hourglass-spin 1.15s linear infinite;transform-origin:center}",
+    ".story-choice-loading-label{font-family:'Play',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em}",
+    "@keyframes story-choice-hourglass-spin{to{transform:rotate(360deg)}}",
+    "@media(prefers-reduced-motion:reduce){.story-choice-hourglass{animation:none}}",
     ".combat-turn-label{font-size:12px;letter-spacing:.08em;color:#b5bec6;margin:2px 0 1px}",
     ".gm-choice{width:100%;text-align:left;padding:11px 12px;background:#171d22;border:1px solid #39424a;color:#f0f3f5;font-family:'Play',system-ui,sans-serif;font-weight:400;letter-spacing:normal;text-transform:none;white-space:normal;line-height:1.4;border-radius:8px}",
-    ".story-decision .gm-choice,.story-return .gm-choice{border-color:#756d43;background-color:#171812;background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/player_action_backrooms.png');background-size:cover;background-position:center,center 52%;color:#fff7cf;text-shadow:0 1px 2px #000,0 0 9px #000;box-shadow:inset 0 0 0 1px rgba(220,200,102,.08),inset 0 0 22px rgba(162,145,62,.10),0 5px 18px #0008}",
+    ".story-decision .gm-choice,.story-return .gm-choice{border-color:#756d43;background-color:#171812;background-size:cover;background-position:center;color:#fff7cf;text-shadow:0 1px 2px #000,0 0 9px #000;box-shadow:inset 0 0 0 1px rgba(220,200,102,.08),inset 0 0 22px rgba(162,145,62,.10),0 5px 18px #0008}",
+    ".story-decision>.gm-choice:nth-child(1),.story-return>.gm-choice:nth-child(1){background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/story_choice_1_backrooms.png')}",
+    ".story-decision>.gm-choice:nth-child(2),.story-return>.gm-choice:nth-child(2){background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/story_choice_2_backrooms.png')}",
+    ".story-decision>.gm-choice:nth-child(3),.story-return>.gm-choice:nth-child(3){background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/story_choice_3_backrooms.png')}",
     ".gm-choice:disabled{opacity:.62}",
     ".gm-choice.selected{border-color:#7a858e;background:#20272d}",
     ".combat-skill-description{display:block;margin-top:5px;color:#9fa8af;font-size:11px;font-weight:400;line-height:1.4}",
@@ -481,6 +491,29 @@
     return button;
   }
 
+  function appendStoryChoiceLoadingOverlay(box) {
+    var overlay = document.createElement('div');
+    overlay.className = 'story-choice-loading';
+    overlay.setAttribute('role', 'status');
+    overlay.setAttribute('aria-live', 'polite');
+
+    var content = document.createElement('div');
+    content.className = 'story-choice-loading-content';
+    var hourglass = document.createElement('div');
+    hourglass.className = 'story-choice-hourglass';
+    hourglass.setAttribute('aria-hidden', 'true');
+    hourglass.textContent = '⌛';
+    var label = document.createElement('div');
+    label.className = 'story-choice-loading-label';
+    label.textContent = 'ĐANG TẢI LỰA CHỌN…';
+
+    content.appendChild(hourglass);
+    content.appendChild(label);
+    overlay.appendChild(content);
+    box.appendChild(overlay);
+    box.setAttribute('aria-busy', 'true');
+  }
+
   function appendBattleSection(article, entry, index) {
     if (Array.isArray(entry.battleLog) && entry.battleLog.length) {
       var separator = document.createElement('div');
@@ -582,6 +615,11 @@
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
     var decisionReady = awaitingDecision && storyDecisionReady();
+    var decisionKey = awaitingDecision
+      ? String((state.story.decisionPackage.choices[0] || {}).id || '')
+      : '';
+    var decisionLoading = awaitingDecision && storyDecisionNeedsProvider()
+      && window.__storyProviderFailedKey !== decisionKey;
     if (latest && awaitingDecision && storyDecisionNeedsProvider())
       setTimeout(function(){ requestStoryDecision(false); }, 0);
     if (latest && awaitingDecision && decisionReady && state.story.pendingChoiceId
@@ -628,6 +666,7 @@
       box.appendChild(makeChoiceButton('', choice.text || choice.action || '', entry, choice.highlights || [],
         disabled, !!choice.selected, onClick));
     });
+    if (decisionLoading) appendStoryChoiceLoadingOverlay(box);
     if (awaitingDecision && state.story.pendingChoiceId && state.story.decisionStatus === 'READY'
         && window.__pendingResolutionFailedKey === window.__pendingResolutionRequestKey) {
       var resumeStory = document.createElement('button');
@@ -643,7 +682,11 @@
       retryStory.type = 'button';
       retryStory.className = 'gm-choice';
       retryStory.textContent = 'Thử lại phản hồi';
-      retryStory.addEventListener('click', function(){ window.__storyProviderFailedKey = ''; requestStoryDecision(true); });
+      retryStory.addEventListener('click', function(){
+        window.__storyProviderFailedKey = '';
+        requestStoryDecision(true);
+        if (typeof window.render === 'function') window.render();
+      });
       var storyRecovery = document.createElement('div');
       storyRecovery.className = 'story-provider-recovery';
       storyRecovery.appendChild(retryStory);

@@ -484,7 +484,12 @@ public class OfflineStoryLoopTest {
     assertTrue(ui.contains("window.__returnJourneyRetryKey !== returnKey"));
     assertTrue(ui.contains("window.__returnJourneyRetryKey = returnKey;"));
     assertTrue(ui.contains("window.__returnJourneyRequestKey = '';"));
-    assertTrue(ui.contains("retryStory.addEventListener('click', function(){ window.__storyProviderFailedKey = ''; requestStoryDecision(true); });"));
+    int retryStory = ui.indexOf("retryStory.addEventListener('click', function(){");
+    int retryStoryRequest = ui.indexOf("requestStoryDecision(true);", retryStory);
+    int retryStoryRender = ui.indexOf("window.render();", retryStoryRequest);
+    assertTrue(retryStory >= 0);
+    assertTrue(retryStoryRequest > retryStory);
+    assertTrue(retryStoryRender > retryStoryRequest);
     assertTrue(ui.contains("retryReturn.addEventListener('click', function(){ window.__returnProviderFailedKey = ''; requestReturnJourneyTurn(true); });"));
     assertFalse(ui.contains("Đang chuẩn bị ba lựa chọn…"));
     assertFalse(ui.contains("Đang chuẩn bị ba hướng đi…"));
