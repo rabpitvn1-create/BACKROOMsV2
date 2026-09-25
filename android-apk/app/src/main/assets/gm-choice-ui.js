@@ -253,13 +253,20 @@
     } catch (_) { return false; }
   }
 
-  function returnJourneyReady() {
+  function returnJourneyCurrentReady() {
     try {
       var journey = state && state.story && state.story.returnJourney;
       var pack = journey && journey.turnPackage;
       return storyReturnPending()
-        && String(journey.turnStatus || '') === 'READY' && journey.lookaheadReady === true
+        && String(journey.turnStatus || '') === 'READY'
         && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
+    } catch (_) { return false; }
+  }
+
+  function returnJourneyReady() {
+    try {
+      var journey = state && state.story && state.story.returnJourney;
+      return returnJourneyCurrentReady() && journey.lookaheadReady === true;
     } catch (_) { return false; }
   }
 
@@ -284,7 +291,7 @@
   }
 
   function submitReturnJourneyChoice(choice) {
-    if (!choice || !choice.id || !returnJourneyReady() || state.story.returnJourney.pendingChoiceId
+    if (!choice || !choice.id || !returnJourneyCurrentReady() || state.story.returnJourney.pendingChoiceId
         || window.__selectedReturnChoiceKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex)
         || window.__combatBusy
         || (typeof busy !== 'undefined' && busy)) return;
@@ -581,12 +588,13 @@
     if (latest && storyReturnPending()) {
       var returnBox = document.createElement('div');
       returnBox.className = 'gm-choices story-return';
-      if (returnJourneyReady()) {
-        if (state.story.returnJourney.pendingChoiceId && state.story.returnJourney.turnStatus === 'READY')
+      if (returnJourneyCurrentReady()) {
+        if (returnJourneyReady() && state.story.returnJourney.pendingChoiceId
+            && state.story.returnJourney.turnStatus === 'READY')
           setTimeout(function(){ resumePendingChoice(true); }, 0);
         returnJourneyChoices().forEach(function(choice){
           returnBox.appendChild(makeChoiceButton('', choice.text || '', entry, choice.highlights || [],
-            !returnJourneyReady() || !!window.__combatBusy || !!state.story.returnJourney.pendingChoiceId
+            !returnJourneyCurrentReady() || !!window.__combatBusy || !!state.story.returnJourney.pendingChoiceId
               || window.__selectedReturnChoiceKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex), false,
             function(){ submitReturnJourneyChoice(choice); }));
         });
@@ -1172,14 +1180,23 @@
     ++diceRollToken;
     window.__combatFeedbackBusy = false;
     window.__combatBusy = false;
+    var recoverableReturnLookahead = returnJourneyCurrentReady() && returnJourneyNeedsProvider();
     if (state && state.story && (state.story.pendingChoiceId
         || (state.story.returnJourney && state.story.returnJourney.pendingChoiceId)))
       window.__pendingResolutionFailedKey = window.__pendingResolutionRequestKey;
     allowSingleAutomaticProviderRetry();
-    if (typeof previousError === 'function') previousError(message);
+    if (recoverableReturnLookahead) {
+      if (typeof busy !== 'undefined') busy = false;
+      if (submit) submit.disabled = false;
+      window.__gmErrorMessage = '';
+      if (message && window.console && typeof console.warn === 'function')
+        console.warn('RETURN JOURNEY LOOKAHEAD:', message);
+    } else if (typeof previousError === 'function') {
+      previousError(message);
+    }
     syncComposer();
     if (typeof window.render === 'function') window.render();
-    scrollGmSystemMessage();
+    if (!recoverableReturnLookahead) scrollGmSystemMessage();
   };
 
   window.render();

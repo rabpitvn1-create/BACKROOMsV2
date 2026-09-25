@@ -38,7 +38,7 @@ function buttons(root) {
 function scenario(isReturn) {
   const log = new Element(), form = new Element(), action = new Element(), submit = new Element(), status = new Element();
   const style = new Element();
-  const calls = { prepare: [], resolve: [] };
+  const calls = { prepare: [], resolve: [], errors: [] };
   const choicePack = { contextHash: 'hash', choices: [
     { id: 'choice_ab1', text: 'Cao Minh xem dấu vết cạnh Lục Trầm' },
     { id: 'choice_cd2', text: 'Thử lối ở Level 0' },
@@ -62,7 +62,7 @@ function scenario(isReturn) {
   context.window = context;
   context.render = () => {};
   context.backroomTurn = json => { context.state = JSON.parse(json); context.busy = false; context.render(); };
-  context.backroomError = () => { context.busy = false; };
+  context.backroomError = message => { calls.errors.push(message); context.busy = false; };
   vm.runInNewContext(fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8'), context);
   return { context, log, style, calls };
 }
@@ -127,6 +127,39 @@ for (const isReturn of [false, true]) {
   });
 }
 
+test('Return Journey keeps the prepared current choices usable while lookahead loads', async () => {
+  const { context, log, calls } = scenario(true);
+  await new Promise(resolve => setTimeout(resolve, 10));
+  calls.prepare.length = 0;
+  calls.resolve.length = 0;
+  calls.errors.length = 0;
+
+  context.backroomTurn(JSON.stringify({ ...context.state, story: {
+    ...context.state.story,
+    returnJourney: {
+      ...context.state.story.returnJourney,
+      turnIndex: 1,
+      turnStatus: 'READY',
+      lookaheadReady: false,
+      pendingChoiceId: ''
+    }
+  } }));
+
+  const currentChoices = buttons(log).slice(0, 3);
+  assert.equal(currentChoices.length, 3);
+  assert.ok(currentChoices.every(button => !button.disabled));
+
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(calls.prepare.length, 1);
+
+  currentChoices[0].click();
+  assert.equal(calls.resolve.length, 1);
+
+  context.backroomError('lookahead failed');
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.equal(calls.errors.length, 0);
+  assert.equal(log.querySelectorAll('.message.gm-error').length, 0);
+});
 
 test('Story and return choices use three distinct IMG_API Backrooms artworks', () => {
   const artFiles = [1, 2, 3].map(index =>

@@ -31,8 +31,9 @@ test('keyboard-sensitive controls use the shared viewport budget',()=>{
   assert.match(playerAction,/window\.visualViewport\.addEventListener\('scroll', fitVisualViewport\)/);
 });
 
-test('header and bottom action respect physical curved-screen safe areas',()=>{
-  assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-top\)/);
+test('header stays compact while horizontal and bottom controls respect curved-screen safe areas',()=>{
+  assert.doesNotMatch(index,/\.topbar\{[^}]*env\(safe-area-inset-top\)/);
+  assert.match(index,/\.topbar\{[^}]*padding:10px max\(14px,env\(safe-area-inset-right\)\) 8px max\(14px,env\(safe-area-inset-left\)\)/);
   assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-left\)/);
   assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-right\)/);
   assert.match(index,/\.player-action-bar\{[^}]*env\(safe-area-inset-bottom\)/);

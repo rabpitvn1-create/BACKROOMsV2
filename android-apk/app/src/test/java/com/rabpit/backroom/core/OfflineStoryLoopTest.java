@@ -187,7 +187,16 @@ public class OfflineStoryLoopTest {
       assertFalse(state.getJSONObject("story").getJSONObject("returnJourney")
           .optString("turnNarration", "").isEmpty());
       assertTrue(core.returnJourneyNeedsProvider(state));
+      assertTrue(core.returnJourneyCurrentReady(state));
       assertFalse(core.returnJourneyReady(state));
+
+      // The promoted current turn remains selectable while its next lookahead is generated.
+      JSONObject selectableWithoutLookahead = new JSONObject(state.toString());
+      String pendingReturnChoice = returnOutcomeId(selectableWithoutLookahead, StoryCore.RETURN_STAY);
+      core.selectReturnChoice(selectableWithoutLookahead, pendingReturnChoice);
+      assertEquals(pendingReturnChoice, selectableWithoutLookahead.getJSONObject("story")
+          .getJSONObject("returnJourney").getString("pendingChoiceId"));
+
       installReturnTurn(core, state, "lượt-hai-" + level);
 
       try {

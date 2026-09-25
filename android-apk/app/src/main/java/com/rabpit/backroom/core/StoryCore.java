@@ -834,18 +834,27 @@ final class StoryCore {
     }
   }
 
-  boolean returnJourneyReady(JSONObject state) {
+  boolean returnJourneyCurrentReady(JSONObject state) {
     try {
       normalizeState(state);
       JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
       JSONObject pack = journey.optJSONObject("turnPackage");
       return journey.optBoolean("active", false)
           && RETURN_READY.equals(journey.optString("turnStatus", ""))
-          && journey.optBoolean("lookaheadReady", false)
           && pack != null && pack.optJSONArray("choices") != null
           && pack.optJSONArray("choices").length() == 3
           && preparedOutcomes(pack,
-              new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "")
+              new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "");
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
+  boolean returnJourneyReady(JSONObject state) {
+    try {
+      if (!returnJourneyCurrentReady(state)) return false;
+      JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
+      return journey.optBoolean("lookaheadReady", false)
           && journey.optJSONObject("lookahead") != null
           && journey.optJSONObject("lookahead").optInt("turnIndex", -1)
               == journey.optInt("turnIndex", 0) + 1;
@@ -1645,7 +1654,7 @@ final class StoryCore {
   void selectReturnChoice(JSONObject state, String choiceId) throws Exception {
     normalizeState(state);
     JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
-    if (!returnJourneyReady(state) || findChoice(returnJourneyChoices(state), choiceId) == null
+    if (!returnJourneyCurrentReady(state) || findChoice(returnJourneyChoices(state), choiceId) == null
         || !journey.getJSONObject("turnPackage").optString("contextHash", "")
             .equals(returnJourneyContextHash(state))) {
       throw new IllegalArgumentException("Unknown or stale return choice.");
