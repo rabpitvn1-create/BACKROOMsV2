@@ -382,6 +382,29 @@ public class StoryCoreTest {
     assertTrue(prompt.contains("AI must not advance manuscript position"));
   }
 
+  @Test public void promptAnchorsOnlyDeliveredSegmentAndCurrentLocation() throws Exception {
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    JSONObject state = state().put("location", "Hành lang hiện tại");
+    core.normalizeState(state);
+
+    String beforeDelivery = core.promptContext(state);
+    assertFalse(beforeDelivery.contains("Cao Minh dừng lại trước một đoạn hành lang tối"));
+    assertFalse(beforeDelivery.contains("Hắn nghiêng người, áp sát mép tường"));
+
+    StoryCore.AuthoredTurn delivered = core.advanceAndRender(
+        state, StoryCore.ADVANCE_ACTION_VI, new CharacterEncounterCore(bound -> bound - 1));
+    String prompt = core.promptContext(state);
+
+    assertTrue(prompt.contains("Current chapter: L0_C01"));
+    assertTrue(prompt.contains("Current authored segment: " + delivered.segmentId));
+    assertTrue(prompt.contains("Current canon location: Hành lang hiện tại"));
+    assertTrue(prompt.contains("CURRENT DELIVERED AUTHORED SCENE"));
+    assertTrue(prompt.contains("Cao Minh dừng lại trước một đoạn hành lang tối"));
+    assertFalse(prompt.contains("Hắn nghiêng người, áp sát mép tường"));
+    assertTrue(prompt.contains("Keep transitionTarget empty"));
+    assertTrue(prompt.contains("Do not reveal or foreshadow later beats"));
+  }
+
   private static JSONObject preparedAlternates() throws Exception {
     return preparedAlternates("một");
   }
