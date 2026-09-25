@@ -227,8 +227,8 @@ public class OfflineStoryLoopTest {
       try {
         core.resolveDecision(state, staleStoryChoice, characters);
         fail("Old Story callback must not commit after convergence.");
-      } catch (IllegalStateException expected) {
-        assertTrue(expected.getMessage().contains("not ready"));
+      } catch (IllegalArgumentException expected) {
+        assertTrue(expected.getMessage().contains("Unknown"));
       }
       try {
         core.resolveDecision(state, canonId, characters);
