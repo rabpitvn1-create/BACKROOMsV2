@@ -141,6 +141,10 @@ jobs:
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmNarrativePacketTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           grep -Fq 'GmChoiceContract.gmEntry(reply, generated, state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq '.put("thinkingConfig", new JSONObject().put("thinkingLevel", "low"))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'normalizeChoiceVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
+          grep -Fq 'GmChoiceContract.normalizeChoiceVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          grep -Fq 'choiceNormalizerRemovesCommonEnglishActionLeakage' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           grep -Fq 'CombatChoiceEngine.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'ItemCore.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'gmEntryAddsCoreOwnedSemanticHighlightsWithoutModelMetadata' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
@@ -564,7 +568,7 @@ jobs:
             }],
             generationConfig: {
               responseMimeType: "application/json",
-              thinkingConfig: {thinkingLevel: "medium"}
+              thinkingConfig: {thinkingLevel: "low"}
             }
           }')
 
