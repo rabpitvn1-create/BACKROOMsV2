@@ -1,0 +1,7 @@
+BR 1.0.0.0.0
+
+- Đổi tên phiên bản ứng dụng sang BR 1.0.0.0.0.
+- Tăng versionCode từ 97 lên 98 để Android vẫn cho phép cập nhật từ bản đã cài trước đó.
+- Khôi phục random Entity encounter sau mỗi Story choice hợp lệ trước khi cốt truyện chuyển sang authored beat kế tiếp.
+- Giữ nguyên Entity spawn rates, loot pool và reward amount hiện tại.
+- Thu gọn GitHub Actions để chỉ còn workflow Release Version.
