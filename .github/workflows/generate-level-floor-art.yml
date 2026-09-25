@@ -217,4 +217,5 @@ jobs:
           git add "$OUT_DIR"/*.webp "$OUT_DIR/level_floors.generated.json"
           git diff --cached --quiet && { echo 'Floor artwork unchanged.'; exit 0; }
           git commit -m 'Generate Level and sublevel floor artwork with IMG API'
+          git pull --rebase origin ui/redmi-viewport-foundation
           git push origin HEAD:ui/redmi-viewport-foundation
