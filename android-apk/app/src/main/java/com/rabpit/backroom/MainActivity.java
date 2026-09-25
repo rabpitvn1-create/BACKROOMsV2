@@ -304,7 +304,7 @@ public class MainActivity extends Activity {
         JSONObject contents = new JSONObject().put("role", "user").put("parts", new JSONArray().put(part));
         JSONObject config = new JSONObject()
             .put("responseMimeType", "application/json")
-            .put("thinkingConfig", new JSONObject().put("thinkingLevel", "medium"));
+            .put("thinkingConfig", new JSONObject().put("thinkingLevel", "low"));
         JSONObject body = new JSONObject().put("contents", new JSONArray().put(contents)).put("generationConfig", config);
         JSONObject result = new JSONObject(postJson(
             "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent",
