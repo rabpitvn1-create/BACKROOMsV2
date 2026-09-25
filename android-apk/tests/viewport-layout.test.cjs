@@ -13,7 +13,7 @@ test('game shell uses one visual viewport height and keeps page scrolling locked
   assert.match(index,/html,body\{height:100%;overflow:hidden;overscroll-behavior:none\}/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0;/);
-  assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
+  assert.match(index,/\.topbar\{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px;/);
   assert.match(index,/function syncViewportHeight\(\)/);
   assert.match(index,/window\.visualViewport/);
   assert.match(index,/setProperty\("--app-height",height\+"px"\)/);
@@ -32,9 +32,11 @@ test('keyboard-sensitive controls use the shared viewport budget',()=>{
   assert.match(playerAction,/window\.visualViewport\.addEventListener\('scroll', fitVisualViewport\)/);
 });
 
-test('display cutout is painted while header controls remain below the notch',()=>{
+test('display cutout is painted without inflating the compact header',()=>{
   assert.doesNotMatch(index,/padding:max\(8px,env\(safe-area-inset-top\)\)/);
-  assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
+  assert.doesNotMatch(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
+  assert.match(index,/\.topbar\{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px;/);
+  assert.match(index,/\.snapshot\{height:300px;/);
 });
 
 test('gameplay background reaches all four screen edges',()=>{
