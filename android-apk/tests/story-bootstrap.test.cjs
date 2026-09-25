@@ -77,6 +77,7 @@ function context(state) {
   vm.runInContext([
     functionSource(gm,'storyReturnPending'),
     functionSource(gm,'returnJourneyNeedsProvider'),
+    functionSource(gm,'returnJourneyCurrentReady'),
     functionSource(gm,'returnJourneyReady'),
     functionSource(gm,'returnJourneyChoices'),
     functionSource(gm,'requestReturnJourneyTurn'),
