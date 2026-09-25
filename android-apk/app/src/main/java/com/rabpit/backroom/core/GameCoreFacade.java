@@ -1099,6 +1099,10 @@ public final class GameCoreFacade implements AutoCloseable {
       if (journey != null) {
         if (journey.optBoolean("active", false)) {
           safe.put("location", "Khu vực đang khám phá");
+          for (String key : new String[]{"currentChapter", "currentScene", "currentSegmentId",
+              "currentSegmentIndex", "sourceRevision", "storyId", "levelKey", "eventSequence"}) {
+            story.remove(key);
+          }
         }
         for (String key : new String[]{"cause", "levelKey", "startLocation", "currentPosition",
             "targetLocation", "progress", "requiredProgress", "pausedStory",

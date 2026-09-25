@@ -355,6 +355,10 @@ public class OfflineStoryLoopTest {
     } catch (IllegalArgumentException expected) {
       assertTrue(expected.getMessage().contains("unsafe"));
     }
+    assertFalse(core.returnJourneyReady(state));
+    assertEquals("", state.getJSONObject("story").getJSONObject("returnJourney")
+        .getJSONObject("turnPackage").getJSONObject("outcomes")
+        .getJSONObject(selected).getString("reply"));
     JSONObject reloaded = new JSONObject(state.toString());
     core.normalizeState(reloaded);
     assertEquals(choices.toString(), core.returnJourneyChoices(reloaded).toString());

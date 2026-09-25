@@ -106,14 +106,13 @@ test('GM effect highlights keep the normal narration font', () => {
 });
 
 
-test('encounter stays on the current Explorer Turn until victory opens the next turn', () => {
+test('Explorer encounters keep their turn; CANON enters the next authored beat directly', () => {
   const decisionStart = coreFacadeSource.indexOf('public synchronized String processStoryDecision');
   const decisionEnd = coreFacadeSource.indexOf('public synchronized String processStoryEntityAttack', decisionStart);
   const decisionBlock = coreFacadeSource.slice(decisionStart, decisionEnd);
-  const encounterRoll = decisionBlock.indexOf('entityCore.prepareEncounter(state);');
-  const turnAdvance = decisionBlock.indexOf('incrementTurn(state);');
-  assert.ok(encounterRoll >= 0 && turnAdvance > encounterRoll);
-  assert.match(decisionBlock, /if \(CombatChoiceEngine\.isKnownEntity\(encounter\)\)[\s\S]*CombatChoiceEngine\.start\(state, encounter[\s\S]*\} else \{[\s\S]*incrementTurn\(state\)/);
+  assert.doesNotMatch(decisionBlock, /entityCore\.prepareEncounter\(state\)/);
+  assert.match(decisionBlock,
+    /incrementTurn\(state\);[\s\S]*storyCore\.hasPendingStoryAdvance\(state\)[\s\S]*advancePendingStorySequence\(state\)/);
 
   const validatedStart = coreFacadeSource.indexOf('public synchronized String processValidatedCandidate');
   const validatedEnd = coreFacadeSource.indexOf('public synchronized String processStoryDecision', validatedStart);

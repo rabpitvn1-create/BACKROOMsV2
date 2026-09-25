@@ -957,7 +957,8 @@ final class StoryCore {
         RETURN_ACTIONS[Math.floorMod(expectedTurnIndex + 1, RETURN_ACTIONS.length)],
         new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "");
     String nextNarration = prepareReturnReplies(nextPack, next);
-    String narration = initial ? prepareReturnReplies(journey.getJSONObject("turnPackage"), current) : "";
+    JSONObject currentPack = initial ? copyObject(journey.getJSONObject("turnPackage")) : null;
+    String narration = initial ? prepareReturnReplies(currentPack, current) : "";
     if (repository != null && repository.available()) {
       String chapter = story.optString("currentChapter", "");
       int index = story.optInt("currentSegmentIndex", 0);
@@ -971,6 +972,7 @@ final class StoryCore {
       }
     }
     if (initial) {
+      journey.put("turnPackage", currentPack);
       journey.put("turnStatus", RETURN_READY);
       journey.put("turnNarration", narration);
     }
