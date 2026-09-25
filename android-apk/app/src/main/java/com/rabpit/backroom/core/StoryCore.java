@@ -1415,7 +1415,15 @@ final class StoryCore {
     if (!story.optBoolean("awaitingDecision", false)) return;
     JSONObject pack = story.optJSONObject("decisionPackage");
     if (pack != null && pack.optJSONArray("choices") != null
-        && pack.optJSONArray("choices").length() == 3) return;
+        && pack.optJSONArray("choices").length() == 3) {
+      // Authored events may normalize Story while the gate is being armed. Keep the already-published
+      // IDs/order/wording stable, but refresh the provider guard until hidden replies are committed.
+      if (DECISION_PROVIDER_REQUIRED.equals(story.optString("decisionStatus", ""))) {
+        pack.put("contextHash", decisionContextHash(state));
+        story.put("decisionPackage", pack);
+      }
+      return;
+    }
     String id = story.optString("decisionId", "");
     if (id.isEmpty()) return;
     JSONObject history = story.optJSONObject("loopHistory");
@@ -1428,7 +1436,13 @@ final class StoryCore {
   private void preparePublicReturnTurn(JSONObject state, JSONObject journey) throws Exception {
     JSONObject pack = journey.optJSONObject("turnPackage");
     if (pack != null && pack.optJSONArray("choices") != null
-        && pack.optJSONArray("choices").length() == 3) return;
+        && pack.optJSONArray("choices").length() == 3) {
+      if (RETURN_PROVIDER_REQUIRED.equals(journey.optString("turnStatus", ""))) {
+        pack.put("contextHash", returnJourneyContextHash(state));
+        journey.put("turnPackage", pack);
+      }
+      return;
+    }
     int index = Math.max(0, journey.optInt("turnIndex", 0));
     String[] texts = RETURN_ACTIONS[index % RETURN_ACTIONS.length];
     journey.put("turnPackage", publicPackage(texts,
