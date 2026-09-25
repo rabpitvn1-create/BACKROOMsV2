@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C07",
+  "title": "Level 0.2 — Chương 07: Phần Khô Của Bức Tường",
+  "source": "story/source/level_0_2/LEVEL0.2_CH07_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C08",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "9be0aad26b46f15e4ddc887462a354ff241896df6653bad998fdc9545cfc9c1f",
+  "segmentIds": [
+    "L02_C07_S3a372b1469a18aa2",
+    "L02_C07_S8c43ca01ec18a0bb",
+    "L02_C07_S5427d16c4c2864d9",
+    "L02_C07_Sed0fcb5fffd6f762",
+    "L02_C07_S1d63f46d7cfee186",
+    "L02_C07_Se6bee97fd836acae",
+    "L02_C07_Sefe0ea13e702e476",
+    "L02_C07_Sc87277f62bb3b7a7"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C18",
+  "title": "Level 0.2 — Chương 18: Lần Cuối Có Người Đáp",
+  "source": "story/source/level_0_2/LEVEL0.2_CH18_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C19",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {
+    "L02_C18_S2210c97837b4d291": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "hung",
+        "scope": "story_local",
+        "presence": "DECEASED"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Hưng dies in this chapter after prolonged dehydration and physical decline."
+  ],
+  "forbiddenClaims": [
+    "Do not keep Hưng PRESENT after his death is established.",
+    "Do not invent a resurrection, rescue, capture or a more specific exclusive cause of death than the manuscript establishes."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "8a06b4162fa3ac15c20d2053b4e85e30766d857adbcdd7fed3fb3335088e72ff",
+  "segmentIds": [
+    "L02_C18_S9d2efdd838cddfe3",
+    "L02_C18_S784e02f7df0f177b",
+    "L02_C18_S2171ce57ae0f2de0",
+    "L02_C18_Sb906951a0e7d9671",
+    "L02_C18_S2210c97837b4d291",
+    "L02_C18_S679b6f5db344dbf8",
+    "L02_C18_Sbbfc52a73cd480c4"
+  ]
+}

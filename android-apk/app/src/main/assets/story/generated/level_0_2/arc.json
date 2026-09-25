@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "startChapter": "L02_C01",
+  "chapterCount": 20,
+  "chapters": [
+    {
+      "id": "L02_C01",
+      "metadata": "story/generated/level_0_2/chapters/L02_C01.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C01.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH01_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C02"
+    },
+    {
+      "id": "L02_C02",
+      "metadata": "story/generated/level_0_2/chapters/L02_C02.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C02.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH02_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C03"
+    },
+    {
+      "id": "L02_C03",
+      "metadata": "story/generated/level_0_2/chapters/L02_C03.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C03.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH03_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C04"
+    },
+    {
+      "id": "L02_C04",
+      "metadata": "story/generated/level_0_2/chapters/L02_C04.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C04.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH04_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C05"
+    },
+    {
+      "id": "L02_C05",
+      "metadata": "story/generated/level_0_2/chapters/L02_C05.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C05.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH05_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C06"
+    },
+    {
+      "id": "L02_C06",
+      "metadata": "story/generated/level_0_2/chapters/L02_C06.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C06.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH06_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C07"
+    },
+    {
+      "id": "L02_C07",
+      "metadata": "story/generated/level_0_2/chapters/L02_C07.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C07.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH07_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C08"
+    },
+    {
+      "id": "L02_C08",
+      "metadata": "story/generated/level_0_2/chapters/L02_C08.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C08.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH08_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C09"
+    },
+    {
+      "id": "L02_C09",
+      "metadata": "story/generated/level_0_2/chapters/L02_C09.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C09.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH09_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C10"
+    },
+    {
+      "id": "L02_C10",
+      "metadata": "story/generated/level_0_2/chapters/L02_C10.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C10.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH10_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C11"
+    },
+    {
+      "id": "L02_C11",
+      "metadata": "story/generated/level_0_2/chapters/L02_C11.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C11.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH11_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C12"
+    },
+    {
+      "id": "L02_C12",
+      "metadata": "story/generated/level_0_2/chapters/L02_C12.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C12.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH12_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C13"
+    },
+    {
+      "id": "L02_C13",
+      "metadata": "story/generated/level_0_2/chapters/L02_C13.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C13.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH13_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C14"
+    },
+    {
+      "id": "L02_C14",
+      "metadata": "story/generated/level_0_2/chapters/L02_C14.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C14.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH14_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C15"
+    },
+    {
+      "id": "L02_C15",
+      "metadata": "story/generated/level_0_2/chapters/L02_C15.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C15.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH15_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C16"
+    },
+    {
+      "id": "L02_C16",
+      "metadata": "story/generated/level_0_2/chapters/L02_C16.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C16.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH16_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C17"
+    },
+    {
+      "id": "L02_C17",
+      "metadata": "story/generated/level_0_2/chapters/L02_C17.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C17.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH17_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C18"
+    },
+    {
+      "id": "L02_C18",
+      "metadata": "story/generated/level_0_2/chapters/L02_C18.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C18.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH18_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C19"
+    },
+    {
+      "id": "L02_C19",
+      "metadata": "story/generated/level_0_2/chapters/L02_C19.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C19.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH19_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": "L02_C20"
+    },
+    {
+      "id": "L02_C20",
+      "metadata": "story/generated/level_0_2/chapters/L02_C20.json",
+      "interactions": "story/generated/level_0_2/interactions/L02_C20.json",
+      "source": "story/source/level_0_2/LEVEL0.2_CH20_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "nextChapter": ""
+    }
+  ]
+}

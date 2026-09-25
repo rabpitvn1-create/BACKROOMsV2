@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C11",
+  "title": "Level 0.2 — Chương 11: Chữ Viết Bị Cắt Đôi",
+  "source": "story/source/level_0_2/LEVEL0.2_CH11_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C12",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "4a84fba95e83e860789615e37a134beee4e6d5b3d84f94253baa637289c77e15",
+  "segmentIds": [
+    "L02_C11_S292ac7bfdd2d4cf1"
+  ]
+}

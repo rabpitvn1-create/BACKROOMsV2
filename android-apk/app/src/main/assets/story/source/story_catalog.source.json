@@ -16,6 +16,14 @@
       "sourceRoot": "story/source/level_0_1",
       "annotations": "story/source/level_0_1/arc.source.json",
       "generatedRoot": "story/generated/level_0_1"
+    },
+    {
+      "storyId": "level_0_2_remodeled_mess",
+      "levelKey": "0.2",
+      "sourceRevision": "remodeled-mess-r1",
+      "sourceRoot": "story/source/level_0_2",
+      "annotations": "story/source/level_0_2/arc.source.json",
+      "generatedRoot": "story/generated/level_0_2"
     }
   ]
 }

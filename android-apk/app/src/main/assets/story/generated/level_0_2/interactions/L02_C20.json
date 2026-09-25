@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L02_C20",
+  "source": "story/source/level_0_2/LEVEL0.2_CH20_REMODELED_MESS.md",
+  "sourceDigest": "5b7781c74a4978406840c1928ab95201bfef8dad25ca10aab0eb10656e7cabff",
+  "segmentIds": [
+    "L02_C20_Se8db44a50d287984",
+    "L02_C20_S3c0efed3cfaa05d6",
+    "L02_C20_S55f0337ff9b991e1",
+    "L02_C20_S7fc6ad2be0101f3b",
+    "L02_C20_S22fc81535a94f95c",
+    "L02_C20_S9d19e56dcc8f65c9",
+    "L02_C20_S5a930ea8725bd119",
+    "L02_C20_S6abcde83a5f46f78"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L02_C20_Se8db44a50d287984": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_Se8db44a50d287984",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi theo Lục Trầm vào nhánh trái để tránh phần trần võng.",
+            "return": "Quay lại kiểm tra lối cũ xem có thể qua phần trần đang nứt được không.",
+            "stay": "Đứng yên quan sát cấu trúc trần dưới ánh sáng thần thức trước khi chọn hướng."
+          },
+          {
+            "canon": "Đi theo Lục Trầm vào hành lang nhánh trái để vượt qua vùng nguy hiểm.",
+            "return": "Trở về kiểm tra kỹ lối phía trước bằng thần thức xem nó còn an toàn không.",
+            "stay": "Dừng lại để cho cơ thể thích nghi với nhịp đi chậm Lục Trầm bắt buộc."
+          }
+        ]
+      }
+    },
+    "L02_C20_S3c0efed3cfaa05d6": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S3c0efed3cfaa05d6",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Qua dải nền hẹp từng người một như Cao Minh chỉ dẫn để vượt qua hành lang nguy hiểm.",
+            "return": "Tìm cách khác xung quanh vùng sập để tránh phải đi trên dải nền mỏng manh.",
+            "stay": "Ngồi chờ Lục Trầm hoàn thành bước đầu tiên trước khi tự mình bước lên."
+          },
+          {
+            "canon": "Đi qua hành lang hẹp theo từng người một dưới hướng dẫn của Cao Minh.",
+            "return": "Đề xuất sử dụng dây để buộc ba người lại với nhau khi qua đoạn nguy hiểm.",
+            "stay": "Chờ cho đến khi chắc chắn không có dấu hiệu sập thêm trước khi bước lên."
+          }
+        ]
+      }
+    },
+    "L02_C20_S55f0337ff9b991e1": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S55f0337ff9b991e1",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước ra khỏi hành lang khi trần bắt đầu sập phía sau Cao Minh.",
+            "return": "Quay lại kéo Cao Minh thay vì chạy tiếp vì cậu còn đang ở giữa khúc nguy hiểm.",
+            "stay": "Dừng lại gọi Cao Minh để chắc chắn hắn kịp thoát trước khi tấm trần rơi."
+          },
+          {
+            "canon": "Rời khỏi hành lang với Lục Trầm khi cấu trúc phía sau bắt đầu sụp đổ.",
+            "return": "Cố thể đẩy Cao Minh từ phía trước để giúp hắn né tránh thanh kim loại rơi.",
+            "stay": "Chờ Cao Minh ở mép an toàn để bắt tay hắn ngay khi hắn thoát ra."
+          }
+        ]
+      }
+    },
+    "L02_C20_S7fc6ad2be0101f3b": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S7fc6ad2be0101f3b",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục bế Duy qua hành lang thô, theo Lục Trầm tìm đường thoát khỏi vùng đang sập.",
+            "return": "Dừng lại để kiểm tra vết thương của Duy kỹ lưỡng hơn, xác định mức độ chảy máu.",
+            "stay": "Giữ Duy ở vị trí hiện tại, chờ kết cấu ổn định trước khi di chuyển tiếp."
+          },
+          {
+            "canon": "Theo Lục Trầm đi vào hành lang nước phía trước, mang Duy ra khỏi khu vực nứt nát.",
+            "return": "Quay lại kiểm tra liệu có thể quay lại phần hành lang phía sau để lấy đồ dùng hoặc tìm lối khác.",
+            "stay": "Đặt Duy xuống phần nền ổn định gần đây, để cậu nghỉ ngơi trước khi tiếp tục hành trình."
+          }
+        ]
+      }
+    },
+    "L02_C20_S22fc81535a94f95c": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S22fc81535a94f95c",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bế Duy từng bước vào vùng nước, nhìn Lục Trầm dẫn đường qua hành lang đã thay đổi.",
+            "return": "Hỏi Duy về cảm giác của cậu và liệu cần dừng để điều chỉnh cách bế để giảm đau.",
+            "stay": "Dừng tại vị trí bờ nước, quan sát tình trạng của hành lang phía trước trước khi bước vào."
+          },
+          {
+            "canon": "Tiến vào dòng nước theo Lục Trầm, đi sâu vào khu vực mà Duy không nhận ra.",
+            "return": "Gọi Lục Trầm quay lại để bàn bạn về lựa chọn hướng đi hoặc tìm con đường khác khô ráo hơn.",
+            "stay": "Dừng ở chỗ Duy lần đầu chạm nước, để cậu thích nghi với cảnh vật quanh mình."
+          }
+        ]
+      }
+    },
+    "L02_C20_S9d19e56dcc8f65c9": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S9d19e56dcc8f65c9",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt Duy xuống phần nền cao hơn sát tường, theo dõi từng nhịp thở của cậu trong im lặng.",
+            "return": "Nói với Duy về thanh kim loại hay bất cứ điều gì cậu muốn nhắc lại trước khi tiếp tục.",
+            "stay": "Giữ Duy trong tay, chờ cậu nói thêm hoặc cho cậu thời gian để nhìn xung quanh hành lang mới."
+          },
+          {
+            "canon": "Để Duy nằm trên nền cao, cất sợi dây vào áo trong, chuẩn bị rời khỏi khu vực này với Lục Trầm.",
+            "return": "Hỏi Duy xem cậu có muốn uống nước hay cần thứ gì khác để cảm thấy thoải mái hơn.",
+            "stay": "Ngồi bên cạnh Duy, để cậu biết rằng cả hai đều ở đây và không vội vàng bước tiếp."
+          }
+        ]
+      }
+    },
+    "L02_C20_S5a930ea8725bd119": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C20_S5a930ea8725bd119",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi sâu vào hành lang phía trước cùng Lục Trầm.",
+            "return": "Quay lại nhìn lần cuối nơi Duy nằm trước khi rời khỏi.",
+            "stay": "Đứng lại một lúc để kiểm tra sợi dây hai vòng vẫn còn an toàn."
+          },
+          {
+            "canon": "Đi theo ánh đèn xanh sâu vào vùng nước ứ đó.",
+            "return": "Dừng lại và nhìn về hành lang cũ để ghi nhớ con đường mình vừa đi qua.",
+            "stay": "Kiểm tra kỹ tay áo trong để chắc chắn không gì bị mất khi di chuyển."
+          }
+        ]
+      }
+    },
+    "L02_C20_S6abcde83a5f46f78": {
+      "mode": "LINEAR",
+      "decisionContract": {}
+    }
+  }
+}

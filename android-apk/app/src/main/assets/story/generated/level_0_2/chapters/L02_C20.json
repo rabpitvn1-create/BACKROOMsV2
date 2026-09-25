@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C20",
+  "title": "Chương 20: Người Cuối Cùng Rời Đi",
+  "source": "story/source/level_0_2/LEVEL0.2_CH20_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "ARC_BOUNDARY_REACHED"
+    }
+  ],
+  "eventsAfterSegment": {
+    "L02_C20_S5a930ea8725bd119": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "duy",
+        "scope": "story_local",
+        "presence": "DECEASED"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Duy dies before the chapter ends.",
+    "Cao Minh and Lục Trầm continue into an unnamed flooded corridor after leaving Duy's body in a dry recess."
+  ],
+  "forbiddenClaims": [
+    "Do not keep Duy PRESENT or MISSING after his death is established.",
+    "Do not name or choose the destination Level in Story metadata.",
+    "Do not claim the flooded region is safe."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "5b7781c74a4978406840c1928ab95201bfef8dad25ca10aab0eb10656e7cabff",
+  "segmentIds": [
+    "L02_C20_Se8db44a50d287984",
+    "L02_C20_S3c0efed3cfaa05d6",
+    "L02_C20_S55f0337ff9b991e1",
+    "L02_C20_S7fc6ad2be0101f3b",
+    "L02_C20_S22fc81535a94f95c",
+    "L02_C20_S9d19e56dcc8f65c9",
+    "L02_C20_S5a930ea8725bd119",
+    "L02_C20_S6abcde83a5f46f78"
+  ]
+}

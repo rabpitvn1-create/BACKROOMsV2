@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L02_C01",
+  "source": "story/source/level_0_2/LEVEL0.2_CH01_REMODELED_MESS.md",
+  "sourceDigest": "004d3c2500d90750bb8bd33252fd6c34a93b1c51de2dc47aeb152b0e8ccb0d67",
+  "segmentIds": [
+    "L02_C01_S3b8233956d25c411",
+    "L02_C01_S195409911cbcec9b",
+    "L02_C01_Sba4051b8444eb653",
+    "L02_C01_S93b1596893766d8e",
+    "L02_C01_Se4d0045182e951ba",
+    "L02_C01_Sfd519616fca0091b",
+    "L02_C01_Sbb2375ea73590d3e"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L02_C01_S3b8233956d25c411": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_S3b8233956d25c411",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo hành lang, quan sát từng bước để tránh vùng sập tiếp theo",
+            "return": "Quay lại phòng trước kiểm tra lại khung gỗ và vật liệu vụn một lần nữa",
+            "stay": "Đứng yên tại chỗ, để ý tiếng động từ phía xa để hiểu được quy luật sập của cấu trúc"
+          },
+          {
+            "canon": "Đi sâu hơn vào hành lang hẹp, dò đường trước từng bước",
+            "return": "Trở về góc nơi tấm trần vừa rơi để kiểm tra lỗ thông hơi phía trên",
+            "stay": "Chờ bụi lắng xuống hoàn toàn trước khi tiếp tục, quan sát các phần trần còn lại"
+          }
+        ]
+      }
+    },
+    "L02_C01_S195409911cbcec9b": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_S195409911cbcec9b",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi tiếp qua đoạn tường vừa đổ, mép thảm trái vẫn đủ để di chuyển",
+            "return": "Quay lại giao lộ để kiểm tra kỹ đường phải mặc dù có nhiều vật liệu lỏng hơn",
+            "stay": "Chờ thêm ở vị trí hiện tại cho bụi lắng hoàn toàn và khí lưu thông rõ ràng"
+          },
+          {
+            "canon": "Vượt qua chỗ sập và tiến vào hành lang phía trước",
+            "return": "Rẽ trái quay sang nhánh phải để tìm con đường vòng tránh vùng bị hư hỏng",
+            "stay": "Dùng thần thức kiểm tra sâu hơn phần tường và khung để hiểu mức độ hỏng hóc"
+          }
+        ]
+      }
+    },
+    "L02_C01_Sba4051b8444eb653": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_Sba4051b8444eb653",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chọn cửa đầu, tiếp tục theo hành lang đỏ để tìm đường đi xa hơn",
+            "return": "Quay lại phòng bốn cửa để kiểm tra lại ký hiệu trên tường thêm một lần",
+            "stay": "Đứng lâu hơn để quan sát bốn lối vào, dò cảm giác từng cửa bằng thần thức"
+          },
+          {
+            "canon": "Đi vào hành lang đỏ tiếp tục tìm đường sâu vào cấu trúc",
+            "return": "Kiểm tra phòng có bồn, xem có thể thu thập thông tin về hệ thống từng phần",
+            "stay": "Ngồi xuống ở phòng bốn cửa, để thần thức quét toàn bộ không gian xung quanh"
+          }
+        ]
+      }
+    },
+    "L02_C01_S93b1596893766d8e": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_S93b1596893766d8e",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục phía trước để tìm lối thoát khỏi hành lang này",
+            "return": "Quay lại kiểm tra những phòng khác mà ta chưa khám phá kỹ",
+            "stay": "Dừng lại quan sát cấu trúc trần và tường để hiểu rõ hơn"
+          },
+          {
+            "canon": "Đi theo phía trước nơi bề mặt còn được hoàn thiện",
+            "return": "Quay về kiểm tra lại khu vực có bồn nước trước đó",
+            "stay": "Dừng để tìm hiểu thêm về mô thức sụp đổ xung quanh"
+          }
+        ]
+      }
+    },
+    "L02_C01_Se4d0045182e951ba": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_Se4d0045182e951ba",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào phòng lớn phía trước để tìm đường tiếp",
+            "return": "Quay sang kiểm tra lại hành lang cũ dù biết nó yếu",
+            "stay": "Dừng lại để theo dõi các dấu hiệu sụp đổ thêm một lúc"
+          },
+          {
+            "canon": "Vào phòng mới và đánh giá từng khu vực cẩn thận",
+            "return": "Trở lại điểm ma ấn để xác minh đường quay lại",
+            "stay": "Chờ dõi tình hình ở ranh giới giữa hai nửa phòng"
+          }
+        ]
+      }
+    },
+    "L02_C01_Sfd519616fca0091b": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_Sfd519616fca0091b",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chọn đi theo con đường khung bên phải để tiến tới",
+            "return": "Quay lại thử con đường bên trái dù dấu hiệu không tốt",
+            "stay": "Đứng yên để lắng nghe và quan sát tình hình xung quanh"
+          },
+          {
+            "canon": "Rẽ phải vào vùng khung thô để tìm lối thoát",
+            "return": "Quay trở lại bên trái mặc dù nghe có tiếng cảnh báo",
+            "stay": "Ngừng bước để kiểm tra kỹ hơn từng hướng có thể đi"
+          }
+        ]
+      }
+    },
+    "L02_C01_Sbb2375ea73590d3e": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C01_Sbb2375ea73590d3e",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi vào khu công trình lộ thiên bên phải",
+            "return": "Quay lại kiểm tra ánh sáng phát sáng ở căn phòng trước",
+            "stay": "Đợi Lục Trầm chỉ rõ hơn trước khi chọn hướng"
+          },
+          {
+            "canon": "Bước vào hành lang trước mặt để tìm lối khác",
+            "return": "Dừng lại quan sát thêm tiếng rắc từ trần của phòng trước",
+            "stay": "Xem xét cẩn thận bức tường sập phía trước lần nữa"
+          }
+        ]
+      }
+    }
+  }
+}

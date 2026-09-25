@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L02_C17",
+  "source": "story/source/level_0_2/LEVEL0.2_CH17_REMODELED_MESS.md",
+  "sourceDigest": "572afb9c5965dd381f506a87745acfb4ce17277ba9857b22212bd7bc88156b52",
+  "segmentIds": [
+    "L02_C17_S833497e890d1cf71",
+    "L02_C17_Scdafd6f7040f7621",
+    "L02_C17_Sfb32c32f3b057b4c",
+    "L02_C17_Sd91230f05af81464",
+    "L02_C17_S734263e3b62e8176",
+    "L02_C17_Sf01c2cdedaab20a4",
+    "L02_C17_Sa5a0b3c3931ef090",
+    "L02_C17_S52eb1246997bf3e9"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L02_C17_S833497e890d1cf71": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_S833497e890d1cf71",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến lên gặp trực tiếp, kiếm sẵn sàng.",
+            "return": "Quay lại giữ vị trí hiện tại, quan sát tia sáng.",
+            "stay": "Dừng lại, gọi lên hỏi kẻ đó là ai."
+          },
+          {
+            "canon": "Bước tới đối diện kẻ phía trước.",
+            "return": "Đứng yên, chờ kẻ kia tiếp cận.",
+            "stay": "Rút kiếm để sẵn sàng nếu cần, nhưng giữ khoảng cách."
+          }
+        ]
+      }
+    },
+    "L02_C17_Scdafd6f7040f7621": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_Scdafd6f7040f7621",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tung kiếm chặn và đẩy hắn ra để bảo vệ đoàn.",
+            "return": "Kêu Lục Trầm che chắn, rút lui từ từ với đoàn.",
+            "stay": "Giữ kiếm sẵn, theo dõi từng động tác của hắn."
+          },
+          {
+            "canon": "Chém ngang để buộc hắn phải gạt lưỡi kiếm sang một bên.",
+            "return": "Cân bằng sàn chân, chờ hắn chủ động tấn công trước.",
+            "stay": "Dùng kiếm chặn đòn tấn công kế tiếp mà không thụ động lùi."
+          }
+        ]
+      }
+    },
+    "L02_C17_Sfb32c32f3b057b4c": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_Sfb32c32f3b057b4c",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đẩy mạnh hắn qua bức vách, tạo khoảng cách để đoàn thoát.",
+            "return": "Giữ phòng thế, né tránh từng cơ hội phản công nhỏ.",
+            "stay": "Tiếp tục đối chọi, chờ khoảng trống cho đoàn rút lui."
+          },
+          {
+            "canon": "Dùng vai đẩy hắn ra, rõ ràng chỉ muốn tách biệt.",
+            "return": "Chém chéo để buộc hắn phải đối ứng kiếm pháp của Cao Minh.",
+            "stay": "Đứng vững, chặn lại từng cơ động của hắn mà không sâu vào."
+          }
+        ]
+      }
+    },
+    "L02_C17_Sd91230f05af81464": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_Sd91230f05af81464",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp theo Lục Trầm qua khe hẹp, đỡ Duy và Hưng khỏi vùng sập.",
+            "return": "Quay lại lấy Huyết Ma Kiếm từ nơi nó chặn đòn kiếm của Diệp Minh.",
+            "stay": "Kiểm tra bề mặt tường trắng nơi Diệp Minh vừa đụng phải, tìm hiểu mức độ sập của cấu trúc."
+          },
+          {
+            "canon": "Chạy theo Lục Trầm tới khe kế tiếp, bỏ lại phần trần đang rơi phía sau.",
+            "return": "Dùng thần niệm giữ thêm một phần vật liệu để chắc chắn Diệp Minh không theo kịp.",
+            "stay": "Để mắt theo dõi phần trần rơi, đảm bảo nó không chắn hẫng lối thoát của nhóm."
+          }
+        ]
+      }
+    },
+    "L02_C17_S734263e3b62e8176": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_S734263e3b62e8176",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi sâu vào hành lang, khi bụi lắng tìm một chỗ an toàn để dừng lại.",
+            "return": "Dừng ngay để kiểm tra tình trạng của Hưng, không muốn anh ta mất ý thức trên đường.",
+            "stay": "Lắng nghe để xác định liệu Diệp Minh có còn phía sau vùng sập, chuẩn bị đối phó nếu cần."
+          },
+          {
+            "canon": "Tìm một phòng trắng chưa sập hoàn toàn, đưa nhóm vào đó để Hưng có thể yên tĩnh hồi phục.",
+            "return": "Yêu cầu Duy kiểm tra toàn bộ cơ thể Hưng để phát hiện sớm nếu có chấn thương nặng nào.",
+            "stay": "Đắp tạm thời vết thương của Hưng bằng vải từ quần áo của ai đó, chuẩn bị cho tình huống tệ hơn."
+          }
+        ]
+      }
+    },
+    "L02_C17_Sf01c2cdedaab20a4": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_Sf01c2cdedaab20a4",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đứng ở cửa phòng cùng Lục Trầm, theo dõi hành lang xem có dấu hiệu gì từ phía bên kia sập.",
+            "return": "Quay lại nơi Hưng đang nằm, kiểm tra nhịp thở và độ sâu của vết thương ở ngực cậu.",
+            "stay": "Khảo sát kỹ lưỡng căn phòng này để đảm bảo không có mối nguy hiểm ẩn nào."
+          },
+          {
+            "canon": "Nghe Duy hỏi về Diệp Minh, trả lời rõ ràng rồi tiếp tục theo dõi bên ngoài.",
+            "return": "Bước ra khỏi cửa lại gần vùng sập một chút, để ý xem có tiếng chuyển động hay âm thanh lạ nào.",
+            "stay": "Quay sang Lục Trầm, thảo luận kế hoạch tiếp theo cho nhóm từ nay về sau."
+          }
+        ]
+      }
+    },
+    "L02_C17_Sa5a0b3c3931ef090": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_Sa5a0b3c3931ef090",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo Lục Trầm kiểm tra hành lang phía sau đống sập.",
+            "return": "Quay lại gần Hưng và Duy để theo dõi tình trạng của Hưng.",
+            "stay": "Chờ tại cửa phòng và quan sát phản ứng của Hưng với từng lúc Duy gọi tên."
+          },
+          {
+            "canon": "Hỏi Lục Trầm về con đường ra khỏi khu vực đó.",
+            "return": "Tiếp tục đứng cạnh Lục Trầm và nghe Hưng nói chuyện với Duy.",
+            "stay": "Nhìn về phía đống sập nơi Diệp Minh có thể còn lại."
+          }
+        ]
+      }
+    },
+    "L02_C17_S52eb1246997bf3e9": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C17_S52eb1246997bf3e9",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bắt đầu di chuyển khỏi căn phòng cùng Lục Trầm để tìm lối ra.",
+            "return": "Chờ Hưng hoàn toàn tỉnh lại trước khi rời khỏi chỗ này.",
+            "stay": "Tiếp tục quan sát Hưng và Duy ở phòng hiện tại."
+          },
+          {
+            "canon": "Dẫn đường vào hành lang để Lục Trầm tiếp tục khảo sát phía trước.",
+            "return": "Đứng chờ Duy và Hưng sẵn sàng hoàn toàn trước khi tiến hành.",
+            "stay": "Kiểm tra lại phía sau lần nữa để chắc chắn Diệp Minh không theo."
+          }
+        ]
+      }
+    }
+  }
+}

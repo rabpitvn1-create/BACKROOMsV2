@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C14",
+  "title": "Level 0.2 — Chương 14: Cột Mốc Đứng Sai Chỗ",
+  "source": "story/source/level_0_2/LEVEL0.2_CH14_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C15",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "740bbd7784119061a9ab828ef03a5c702f3f7b53f2091d63a2d580b81fac06b3",
+  "segmentIds": [
+    "L02_C14_Sc4819a631c959cd3",
+    "L02_C14_S9ba80e70cc7b2a62",
+    "L02_C14_S8089fd99b2416db0",
+    "L02_C14_S9e5e8db324dbedcc",
+    "L02_C14_S2b52faf4449184e3",
+    "L02_C14_S02ef7226e5198e8c",
+    "L02_C14_S87f9d794b3872e80",
+    "L02_C14_S91b859bb1b394aa4"
+  ]
+}

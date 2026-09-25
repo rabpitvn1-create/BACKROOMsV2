@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L02_C05",
+  "source": "story/source/level_0_2/LEVEL0.2_CH05_REMODELED_MESS.md",
+  "sourceDigest": "b1868cb07001eeeb06f76a87f6a146c16c8603e91174ede95930054482393288",
+  "segmentIds": [
+    "L02_C05_Scb4f79b124bc2d91",
+    "L02_C05_S875699708b59e6d2",
+    "L02_C05_S7bdffa66fcde50ae",
+    "L02_C05_S49236bf666edfb4b",
+    "L02_C05_S440241680caa94e2",
+    "L02_C05_Sf0cc5e543c0044fd",
+    "L02_C05_S9abf75041570f139",
+    "L02_C05_Sb2705507e7418d27"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L02_C05_Scb4f79b124bc2d91": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_Scb4f79b124bc2d91",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi phía trước nơi Hưng có thể đã đi qua.",
+            "return": "Hỏi Duy chi tiết hơn về vị trí chính xác nơi anh mất tích lần trước.",
+            "stay": "Xem xét các khung tường xung quanh để tìm thêm dấu hiệu."
+          },
+          {
+            "canon": "Tiếp tục đi sâu vào những đoạn đường mà Hưng có dấu vết.",
+            "return": "Quay lại đoạn trước để kiểm tra kỹ hơn các chi tiết Duy nhớ.",
+            "stay": "Dừng lại và quan sát cấu trúc xung quanh để đánh giá an toàn."
+          }
+        ]
+      }
+    },
+    "L02_C05_S875699708b59e6d2": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_S875699708b59e6d2",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước nhanh hơn để theo những dấu Hưng để lại.",
+            "return": "Thận trọng dừng lại khi thấy cơ sở vật chất trên trần có vấn đề.",
+            "stay": "Quan sát kỹ từng vết để hiểu hướng Hưng đã đi."
+          },
+          {
+            "canon": "Đẩy mạnh tìm kiếm theo chuỗi các dấu hai nét chéo phía trước.",
+            "return": "Kiểm tra các khung cửa xung quanh để đảm bảo con đường an toàn.",
+            "stay": "Ghi nhớ vị trí các dấu và tìm hiểu quy luật của chúng."
+          }
+        ]
+      }
+    },
+    "L02_C05_S7bdffa66fcde50ae": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_S7bdffa66fcde50ae",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Thử nhánh trái nơi có thảm đỏ để xem Hưng có thể đã đi theo hướng đó.",
+            "return": "Kiểm tra nhánh phải trước khi commit vào bất kỳ hướng nào.",
+            "stay": "Phân tích vệt kéo trên thảm để hiểu thêm về những gì đã xảy ra."
+          },
+          {
+            "canon": "Theo dấu vào chuỗi phòng hoàn thiện để xem Hưng có thể ở đâu.",
+            "return": "Dừng tại giao lộ và đợi thêm dấu hiệu rõ ràng trước khi chọn hướng.",
+            "stay": "Tìm hiểu lý do tại sao chỉ có một nét trên dấu này khác biệt."
+          }
+        ]
+      }
+    },
+    "L02_C05_S49236bf666edfb4b": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_S49236bf666edfb4b",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo Lục Trầm vào phòng để kiểm tra tình trạng của người đó.",
+            "return": "Hỏi Lục Trầm có thể phát hiện được gì từ khe cửa trước khi luồn vào.",
+            "stay": "Giữ vị trí hiện tại và theo dõi Lục Trầm từ ngoài để phòng chống sập trần."
+          },
+          {
+            "canon": "Vào sau Lục Trầm để hỗ trợ kiểm tra người nằm một cách trực tiếp.",
+            "return": "Kiểm tra kỹ càng tấm vách rơi để hiểu cơ chế nó mắc và có thể gỡ ra.",
+            "stay": "Đứng sẵn tại khe cửa để Lục Trầm có thể báo hiệu nếu cần hỗ trợ ngay."
+          }
+        ]
+      }
+    },
+    "L02_C05_S440241680caa94e2": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_S440241680caa94e2",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chỉ đạo Duy và Lục Trầm đưa Hưng ra khỏi phòng theo cách an toàn nhất.",
+            "return": "Hỏi Hưng chi tiết về tình trạng chân trái để đánh giá mức độ nghiêm trọng.",
+            "stay": "Dành thời gian giữ tấm vách ổn định để chuẩn bị kỹ lưỡng trước khi di chuyển."
+          },
+          {
+            "canon": "Hướng dẫn cách tối ưu để Lục Trầm đỡ Hưng qua khe mà không gây chấn động.",
+            "return": "Tiếp tục kiểm tra xung quanh phòng để xác định có nguy hiểm nào khác không.",
+            "stay": "Yêu cầu Lục Trầm dừng lại và báo cáo chi tiết về tình trạng Hưng trước khi di chuyển."
+          }
+        ]
+      }
+    },
+    "L02_C05_Sf0cc5e543c0044fd": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_Sf0cc5e543c0044fd",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dẫn đoàn người tới khu vực an toàn hơn để Hưng có thể trồi dậy và nói chuyện.",
+            "return": "Điều tra thêm về ba nét Duy nhắc đến để hiểu những dấu hiệu trong khu này.",
+            "stay": "Yêu cầu Hưng mô tả chi tiết những gì hắn nhớ được trước khi di chuyển tiếp."
+          },
+          {
+            "canon": "Dẫn nhóm qua vùng hành lang có kết cấu ổn định để dừng chân.",
+            "return": "Quay lại phòng để kiểm tra những vết tích Hưng để lại khi nằm đó.",
+            "stay": "Hỏi Hưng về những người khác mà dấu vết cho thấy từng ở khu này."
+          }
+        ]
+      }
+    },
+    "L02_C05_S9abf75041570f139": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_S9abf75041570f139",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra hành lang phía trước trước khi tiếp tục đi",
+            "return": "Hỏi Hưng chi tiết về những dấu mà hắn để lại trong các phòng",
+            "stay": "Quan sát tường để xác định kết cấu còn đủ an toàn cho bốn người"
+          },
+          {
+            "canon": "Dẫn đoàn ra khỏi đoạn hành lang trước khi tiếng rắc nghe rõ hơn",
+            "return": "Yêu cầu Duy mô tả chính xác nơi hắn tách khỏi Hưng lúc trần sập",
+            "stay": "Ghi nhớ vị trí của ba nét chéo lạ để tìm hiểu thêm khi an toàn"
+          }
+        ]
+      }
+    },
+    "L02_C05_Sb2705507e7418d27": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L02_C05_Sb2705507e7418d27",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến vào khu hành lang với tường trắng sạch và kiểm tra ổ điện phía chân tường",
+            "return": "Dừng lại để cho Hưng và Duy thích ứng với bước đi chậm trước khi vào khu khác",
+            "stay": "Để ý các tấm trần phẳng và đèn hoạt động để cảnh báo nếu có dấu hiệu xấu"
+          },
+          {
+            "canon": "Kiểm tra ổ điện bằng mảnh gỗ để xác định liệu có năng lượng thực sự",
+            "return": "Chú ý sự thay đổi đột ngột trong kiến trúc và báo hiệu cho nhóm cẩn thận",
+            "stay": "Quan sát chân tường và các vị trí trước khi cho nhóm di chuyển tiếp"
+          }
+        ]
+      }
+    }
+  }
+}

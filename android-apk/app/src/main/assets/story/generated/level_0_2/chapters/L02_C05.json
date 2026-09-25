@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L02_C05",
+  "title": "Level 0.2 — Chương 05: Hai Nét Chéo",
+  "source": "story/source/level_0_2/LEVEL0.2_CH05_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C06",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {
+    "L02_C05_Sb2705507e7418d27": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "hung",
+        "scope": "story_local",
+        "presence": "PRESENT"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Duy reunites with Hưng alive; Hưng remains a story-local survivor and is not a Party member."
+  ],
+  "forbiddenClaims": [
+    "Do not add Duy or Hưng to Party or invent gameplay combat stats for them."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "b1868cb07001eeeb06f76a87f6a146c16c8603e91174ede95930054482393288",
+  "segmentIds": [
+    "L02_C05_Scb4f79b124bc2d91",
+    "L02_C05_S875699708b59e6d2",
+    "L02_C05_S7bdffa66fcde50ae",
+    "L02_C05_S49236bf666edfb4b",
+    "L02_C05_S440241680caa94e2",
+    "L02_C05_Sf0cc5e543c0044fd",
+    "L02_C05_S9abf75041570f139",
+    "L02_C05_Sb2705507e7418d27"
+  ]
+}
