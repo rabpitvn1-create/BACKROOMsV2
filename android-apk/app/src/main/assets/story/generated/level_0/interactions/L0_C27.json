@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C27",
   "source": "story/source/level_0/LEVEL0_CH27.md",
   "sourceDigest": "b8489b7e33d2945e565f2d5b020bf4d357e8d23f75d2cebc47b22e9bf0234cd3",
@@ -15,48 +15,120 @@
     "L0_C27_Sf12f251f16a24a10",
     "L0_C27_S2fc718048ec29423"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C27_S534fabd5fd6f0383": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_S534fabd5fd6f0383",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hỏi rõ giọng đó biết những dấu nào để xác định thân phận",
+            "return": "Tiếp tục về phía trước mà không nói gì, để xem giọng đó còn theo không",
+            "stay": "Lắng nghe thêm xem giọng đó sẽ nói gì tiếp theo"
+          },
+          {
+            "canon": "Yêu cầu giọng đó chỉ rõ vị trí của hai dấu để kiểm chứng",
+            "return": "Bước đi chậm rãi mà vẫn giữ nguyên hướng, theo dõi âm thanh phía sau",
+            "stay": "Đứng yên và để ý mọi thay đổi trong cách giọng đó phát âm"
+          }
+        ]
       }
     },
     "L0_C27_S9248c852d922f2e7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_S9248c852d922f2e7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi và bỏ qua câu hỏi của Lục Trầm, để tập trung vào hành động",
+            "return": "Dừng lại và quan sát xung quanh để tìm manh mối nào khác",
+            "stay": "Đặt câu hỏi ngược lại cho Lục Trầm về cảm nhận của cô"
+          },
+          {
+            "canon": "Bước vào khu vực tiếp theo để tránh xa những tiếng gọi đó",
+            "return": "Quay nửa người để có thể nghe rõ hơn từ phía sau",
+            "stay": "Im lặng và chỉ theo dõi phản ứng của Lục Trầm"
+          }
+        ]
       }
     },
     "L0_C27_S2c84f32ff7a18bb7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_S2c84f32ff7a18bb7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi qua cánh cửa mở và rời khỏi vùng tiếng gọi",
+            "return": "Dừng lại để quan sát kỹ những gì phía sau cánh cửa trước khi bước vào",
+            "stay": "Chờ thêm một lúc để xem liệu tiếng gọi còn tiếp tục hay dừng lại"
+          },
+          {
+            "canon": "Tiến vào hành lang rộng hơn để kiểm tra kỹ các chi tiết",
+            "return": "Tạm dừng ở cửa để nghe xem âm thanh phía sau còn theo hay không",
+            "stay": "Để ý các mảng kính dọc hành lang và nhận xét với Lục Trầm"
+          }
+        ]
       }
     },
     "L0_C27_S700331b047516e60": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_S700331b047516e60",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến gần tấm kính để xem rõ cạnh cầu nối phía xa",
+            "return": "Kiểm tra lại toàn bộ dấu ở hành lang phía sau",
+            "stay": "Nhìn sâu vào bóng phản chiếu của cả hai người trên kính"
+          },
+          {
+            "canon": "Đi dọc theo tấm kính tìm chỗ có thể vượt qua",
+            "return": "Quay lại cánh cửa kiểm xem nó có thay đổi sau lần dùng ma ấn",
+            "stay": "Theo dõi chuyển động của cụm đèn vừa bật lên phía xa"
+          }
+        ]
       }
     },
     "L0_C27_Sf12f251f16a24a10": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_Sf12f251f16a24a10",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước qua lớp kính để tiến vào cấu trúc kim loại",
+            "return": "Dựng thêm một ma ấn ở vị trí hiện tại rồi bước lùi để quan sát",
+            "stay": "Dùng thần thức quét khắp khoảng không phía ngoài kính"
+          },
+          {
+            "canon": "Đi tìm cách để tiếp cận cầu nối và những điểm gãy ánh sáng",
+            "return": "Kiểm tra toàn bộ khung kính có chỗ nào yếu hơn không",
+            "stay": "Nghe lại tiếng cạch vừa rồi bằng tất cả các giác quan"
+          }
+        ]
       }
     },
     "L0_C27_S2fc718048ec29423": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C27_S2fc718048ec29423",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Vượt qua tấm kính để bước xuống những tầng cấu trúc phía dưới",
+            "return": "Dừng lại và quan sát từng phần khoảng không mà không di chuyển",
+            "stay": "Theo dõi hướng ánh sáng từ các bức tường để hiểu cấu trúc"
+          },
+          {
+            "canon": "Tiến tới vạch phân cách trên nền để xem kỹ hơn",
+            "return": "Đi dọc cạnh tấm kính để tìm hiểu quy luật thay đổi khung cảnh",
+            "stay": "Dùng Huyết Ma Kiếm để cảm nhận sự khác biệt giữa hai loại nền"
+          }
+        ]
       }
     }
   }

@@ -135,17 +135,8 @@ public class StoryRepositoryTest {
   }
 
   @Test public void finalLevelZeroStoryRunsEndToEndWithAuthoredMilestones() throws Exception {
-    String metadata = readRepoAsset("story/generated/level_0/level0.story.json");
-    Map<String, String> sources = new LinkedHashMap<>();
-    for (int i = 1; i <= 30; i++) {
-      String path = String.format(java.util.Locale.ROOT,
-          "story/source/level_0/LEVEL0_CH%02d.md", i);
-      sources.put(path, readRepoAsset(path));
-    }
-
-    String decisions =
-        readRepoAsset("story/generated/level_0/level0.interactions.json");
-    StoryRepository repository = StoryRepository.fromText(metadata, sources, decisions);
+    StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
+    assertTrue(repository.bindLevel("0"));
     StoryCore core = StoryCore.withRepository(repository);
     CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
     JSONObject state = new JSONObject()
@@ -201,6 +192,10 @@ public class StoryRepositoryTest {
       if (core.awaitingDecision(state)) {
         compiledDecisions++;
         assertEquals(StoryRepository.MODE_DECISION, turn.mode);
+        JSONArray variants = turn.decisionContract.optJSONArray("choiceVariants");
+        assertTrue("Every runtime Story decision must carry compiled authored choices",
+            variants != null && variants.length() >= 1);
+        assertEquals(3, core.decisionChoices(state).length());
         assertTrue(core.decisionNeedsProvider(state));
         JSONObject request = core.decisionGenerationRequest(state, "");
         assertTrue(request.getBoolean("needed"));
@@ -301,7 +296,11 @@ public class StoryRepositoryTest {
       }
 
       if (core.awaitingDecision(state)) {
-        assertTrue("The current Story decision must request provider wording on demand",
+        JSONArray variants = turn.decisionContract.optJSONArray("choiceVariants");
+        assertTrue("Every Zenith Story decision must carry compiled authored choices",
+            variants != null && variants.length() >= 1);
+        assertEquals(3, core.decisionChoices(state).length());
+        assertTrue("The current Story decision must request provider replies on demand",
             core.decisionNeedsProvider(state));
         JSONObject request = core.decisionGenerationRequest(state, "");
         assertTrue(request.getBoolean("needed"));

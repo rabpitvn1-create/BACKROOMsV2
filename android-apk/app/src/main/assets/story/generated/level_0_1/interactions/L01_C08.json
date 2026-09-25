@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "zenith-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L01_C08",
   "source": "story/source/level_0_1/LEVEL0.1_CH08_ZENITH_STATION.md",
   "sourceDigest": "395a7bdfd0bba1a58abd49cee69a3926d50eeb7fb18c3de95307445826ece815",
@@ -17,62 +17,158 @@
     "L01_C08_S86fd9262d5e1373c",
     "L01_C08_S40752666ada0214f"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L01_C08_S25b3b5c3b0beba2c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S25b3b5c3b0beba2c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào không gian rộng để hiểu rõ hơn về sinh khí đó.",
+            "return": "Đợi lâu hơn ở chỗ này để quan sát phản ứng của nó.",
+            "stay": "Tập trung thần thức để xác định chính xác vị trí và bản chất của sinh khí."
+          },
+          {
+            "canon": "Tiến gần từ từ mà không gây tiếng động lớn.",
+            "return": "Quay lại khoang chứa các giá kim loại để tìm thêm manh mối.",
+            "stay": "Giữ khoảng cách an toàn và để cho nó tỏ rõ ý định trước."
+          }
+        ]
       }
     },
     "L01_C08_S568e0b499ee72430": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S568e0b499ee72430",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nói chuyện để hiểu người này là ai và họ ở đây bao lâu.",
+            "return": "Im lặng và tiếp tục quan sát thêm trước khi giao tiếp.",
+            "stay": "Từng bước tìm cách bao vây để có lợi thế nếu cần."
+          },
+          {
+            "canon": "Hỏi trực tiếp về khu vực này để lấy thông tin hữu ích.",
+            "return": "Cho phép Lục Trầm tiếp cận vì cô có thể nhanh hơn.",
+            "stay": "Dần dần khiến người này thoải mái bằng cách cho phép hắn kiểm soát khoảng cách."
+          }
+        ]
       }
     },
     "L01_C08_S1da01b433f002352": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S1da01b433f002352",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hỏi anh ta về những quan sát được ở khu vực này.",
+            "return": "Yêu cầu anh ta chỉ đường an toàn hơn để rời khỏi khu này.",
+            "stay": "Mô tả chi tiết những gì Cao Minh và Lục Trầm đã gặp ở những nơi khác."
+          },
+          {
+            "canon": "Thẳng thắn hỏi anh ta biết gì về độ cao và khoảng cách thay đổi.",
+            "return": "Xin anh ta chỉ nơi có nước sạch và chỗ an toàn để yên.",
+            "stay": "Kể cho anh ta nghe về cơ cấu cảm ứng tự động ở những cửa khác."
+          }
+        ]
       }
     },
     "L01_C08_Sdadf1f006d596152": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_Sdadf1f006d596152",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hỏi Khải về cấu trúc của khu vực này—những đặc điểm cố định nào giúp anh định hướng.",
+            "return": "Quan sát thêm hành vi của Khải trước khi đề xuất bất cứ điều gì tiếp theo.",
+            "stay": "Hỏi Khải chi tiết về những người khác mà anh đã gặp và điều gì xảy ra với họ."
+          },
+          {
+            "canon": "Đề nghị Khải chỉ cho hai người một vài mốc quan trọng trong khu vực trước khi tách đường.",
+            "return": "Tiếp tục khảo sát cùng Lục Trầm theo cách của họ, để Khải theo sau nếu muốn.",
+            "stay": "Tranh luận thêm với Lục Trầm về việc liệu nên tin tưởng lời cảnh báo của Khải hay không."
+          }
+        ]
       }
     },
     "L01_C08_S38177703dcdcdd17": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S38177703dcdcdd17",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dừng lại để nghe rõ hơn những gì tiếng rung đó báo hiệu và nhận diện quy luật của nó.",
+            "return": "Đồng ý với cảnh báo của Khải mà không cần hiểu thêm tại sao—an toàn hơn là tò mò.",
+            "stay": "Hỏi Lục Trầm ý kiến của cô về việc liệu Khải có thực sự hiểu những thay đổi ấy hay chỉ sợ chúng."
+          },
+          {
+            "canon": "Yêu cầu Khải dẫn đường đi theo hướng khác—một con đường hắn đã biết là an toàn.",
+            "return": "Kiểm tra cánh cửa họ vừa qua một lần nữa để chắc chắn nó vẫn có thể mở được.",
+            "stay": "Nhắc nhở Khải rằng ba người cần biết nơi họ đi trước khi tiếp tục di chuyển."
+          }
+        ]
       }
     },
     "L01_C08_S2e52e6c405f5e473": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S2e52e6c405f5e473",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo Khải vào lối hẹp sau khoảng thời gian mà hắn đề xuất, chuẩn bị cho những gì ở phía bên kia.",
+            "return": "Yêu cầu Khải đợi lại hoặc quay lại thay vì để anh ta đi một mình qua lối tối.",
+            "stay": "Thảo luận với Lục Trầm về kế hoạch nếu Khải không quay lại trong thời gian hắn hứa."
+          },
+          {
+            "canon": "Tiến vào lối hẹp đúng lúc và để ý dấu vết hoặc bất kỳ thay đổi nào xảy ra sau Khải.",
+            "return": "Chờ thêm một vài chu kỳ nữa để chắc chắn cửa không sẽ đóng lại hoàn toàn.",
+            "stay": "Hỏi Lục Trầm liệu họ có nên chuẩn bị một tuyến đường rút lui thay vì theo Khải không."
+          }
+        ]
       }
     },
     "L01_C08_S86fd9262d5e1373c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S86fd9262d5e1373c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo hướng bên phải, nơi lạnh hơn",
+            "return": "Gọi tên Khải để xác nhận hắn còn nghe thấy",
+            "stay": "Kiểm tra vệt đen trên kính để hiểu nó là gì"
+          },
+          {
+            "canon": "Bước vào hành lang bên phải cùng Lục Trầm",
+            "return": "Quét thần thức lần nữa để tìm dấu hiệu Khải",
+            "stay": "Đánh dấu ngưỡng hiện tại trước khi hành động"
+          }
+        ]
       }
     },
     "L01_C08_S40752666ada0214f": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C08_S40752666ada0214f",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kéo cửa trượt ra và bước qua cùng Lục Trầm",
+            "return": "Chờ thêm để xem liệu cửa có tự mở không",
+            "stay": "Quét phía bên trong trước khi quyết định qua cửa"
+          },
+          {
+            "canon": "Cùng nhịp bước qua cửa hẹp phía trước",
+            "return": "Dùng Tịch Quang để soi sáng khoang bên trong trước",
+            "stay": "Để Lục Trầm kiểm tra bảng điều khiển cửa trước"
+          }
+        ]
       }
     }
   }

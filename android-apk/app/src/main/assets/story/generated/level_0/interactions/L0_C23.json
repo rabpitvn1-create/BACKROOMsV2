@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C23",
   "source": "story/source/level_0/LEVEL0_CH23.md",
   "sourceDigest": "df6dc4d96ffef53872203062f5ac8c4318878332d2d32329ea232b8264f1f2a9",
@@ -15,48 +15,120 @@
     "L0_C23_S42905a49ec5eecd1",
     "L0_C23_Sb32fcea3f2063a45"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C23_S7879a798cf6267cf": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_S7879a798cf6267cf",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến vào vùng tối, dùng thần thức để tìm nguồn gốc giọng nói.",
+            "return": "Hỏi Lục Trầm có nên lấy thêm linh quang trước khi bước vào bóng tối.",
+            "stay": "Yêu cầu giọng nói đó tự xác định danh tính bằng cách trả lời một câu hỏi khác."
+          },
+          {
+            "canon": "Theo dõi âm thanh và di chuyển sâu hơn để xác minh danh tính.",
+            "return": "Đề nghị dừng lại và kiểm tra những dấu hiệu chuyển động quanh khu vực hiện tại.",
+            "stay": "Bảo Lục Trầm giữ vị trí, tự mình tiến tới để quan sát phản ứng của giọng nói."
+          }
+        ]
       }
     },
     "L0_C23_S2be9d53a98eb80b9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_S2be9d53a98eb80b9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Xuyên qua vùng chất lỏng, theo dõi những lời gọi để tìm danh tính thật.",
+            "return": "Đề xuất chậm lại, dùng Tịch Quang để quét kỹ hơn trước khi tiếp tục.",
+            "stay": "Hỏi giọng nói một chi tiết khác về Nam để kiểm chứng thêm, không tiến thêm."
+          },
+          {
+            "canon": "Cùng Lục Trầm men tường cao, rời khỏi vùng chất lỏng để tìm lối vòng.",
+            "return": "Lăn kiếm xuống bề mặt chất lỏng để kiểm tra độ sâu và thành phần.",
+            "stay": "Dừng lại và nghe kỹ từng tiếng âm, cố ghi nhớ hướng chính xác của nó."
+          }
+        ]
       }
     },
     "L0_C23_S1abb57442a4b6bfe": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_S1abb57442a4b6bfe",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đánh dấu bức tường liền, tìm kiếm hành lang cũ ở một vị trí khác.",
+            "return": "Kháy lên bức tường để nghe âm thanh phản hồi và xác định độ dày.",
+            "stay": "Đứng lặng lẽ để theo dõi xem bức tường có thay đổi trong thời gian chờ đợi."
+          },
+          {
+            "canon": "Men bức tường sang phải rồi trái, tìm xem lối mở có quay lại ở chỗ khác hay không.",
+            "return": "Đặt thêm một ma ấn ở vị trí hiện tại và chờ để quan sát sự thay đổi.",
+            "stay": "Hỏi Lục Trầm có từng gặp tường liền biến thành lối mở trong quá trình khám phá."
+          }
+        ]
       }
     },
     "L0_C23_Sd186aecb2c8b9ee9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_Sd186aecb2c8b9ee9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo hướng gió khô và tuyến kim loại để xem chúng dẫn đến đâu",
+            "return": "Quay lại bức tường liền để kiểm tra xem có cửa ở chỗ khác không",
+            "stay": "Tiếp tục đo độ ẩm thảm ở các phòng khác để xác nhận xu thế"
+          },
+          {
+            "canon": "Đi theo bốn dấu hiệu trùng nhau để tìm nguồn của chúng",
+            "return": "Quay về vùng tiếng huỳnh quang để khám phá hành lang ẩm ướt",
+            "stay": "Ghi chú chi tiết về vị trí panel và kiếm ấn trước khi tiếp tục"
+          }
+        ]
       }
     },
     "L0_C23_S42905a49ec5eecd1": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_S42905a49ec5eecd1",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục dưới luồng khí khô cùng Lục Trầm",
+            "return": "Quay sang hành lang ẩm để kiểm tra tiếng huỳnh quang",
+            "stay": "Kéo dài việc kiểm tra lưới thông gió và ống kim loại"
+          },
+          {
+            "canon": "Đi tiếp theo hướng mà gió khô chỉ dẫn",
+            "return": "Dừng lại để tìm hiểu thêm về nguồn gốc của lưới kim loại",
+            "stay": "Đặt thêm dấu mốc quanh tấm panel trước khi rời khỏi"
+          }
+        ]
       }
     },
     "L0_C23_Sb32fcea3f2063a45": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C23_Sb32fcea3f2063a45",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Quay lại kiểm tra xem tấm panel có thay đổi vị trí hay không",
+            "return": "Tiếp tục đi sâu vào giao lộ chữ T để khám phá phía trước",
+            "stay": "Ngồi dưới panel để quan sát luồng khí và tiếng động dài lâu"
+          },
+          {
+            "canon": "Lần lại đoạn đường để so sánh các dấu mốc với lần đi đầu tiên",
+            "return": "Khám phá hành lang chưa đi để tìm nguồn của tiếng rung cơ học",
+            "stay": "Chạm vào tấm panel và ống dẫn để cảm nhận linh lực bên trong"
+          }
+        ]
       }
     }
   }

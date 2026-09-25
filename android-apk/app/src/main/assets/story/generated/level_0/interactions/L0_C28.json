@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C28",
   "source": "story/source/level_0/LEVEL0_CH28.md",
   "sourceDigest": "5ec40ae0dbaee4299e95caaa0e8119f9e0e59b5e6e8a64f3d543c78aec9e6db4",
@@ -15,48 +15,120 @@
     "L0_C28_Se5be6686bd5f3776",
     "L0_C28_S7a59ab250a227bc6"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C28_S6fcde5c959a08e49": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_S6fcde5c959a08e49",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước qua vạch ranh giới để xem phía bên kia có gì khác.",
+            "return": "Dùng linh lực kiểm tra xem vạch này có liên kết với tường hay chỉ là sự thay đổi vật liệu bề mặt.",
+            "stay": "Yêu cầu Lục Trầm dựng thêm kiếm ấn để thử xem ranh giới có tính chất gì bất thường."
+          },
+          {
+            "canon": "Theo Lục Trầm qua vạch phân cách để khám phá thứ đang nằm ở phía nền đen.",
+            "return": "Đặt một ma ấn của riêng mình ở vạch này rồi quan sát linh lực phản ứng thế nào.",
+            "stay": "Hỏi Lục Trầm về những hiểu biết cô có về vật liệu đen tối và cách nó khác với những gì họ đã thấy trước đó."
+          }
+        ]
       }
     },
     "L0_C28_Sb48cf08bfaaa3a01": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_Sb48cf08bfaaa3a01",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước qua cửa trượt mở sẵn để xem phía bên kia là gì.",
+            "return": "Dùng thần thức kiểm tra linh kiện cảm ứng trên khung cửa để hiểu nó hoạt động như thế nào.",
+            "stay": "Thử bước vào gần rồi lùi ra để kiểm tra xem cửa có đóng mở theo mỗi lần di chuyển hay không."
+          },
+          {
+            "canon": "Đi vào phòng rộng phía bên kia cửa để xem ba lối đi dẫn đến đâu.",
+            "return": "Quan sát kỹ cầu nối kim loại qua kính từ nơi đang đứng để tìm bất kỳ dấu hiệu nào về cấu trúc hoặc người dùng.",
+            "stay": "Hỏi Lục Trầm cô có nhận ra vật liệu hoặc thiết kế này từ bất kỳ nơi nào trong khu phòng vàng hay không."
+          }
+        ]
       }
     },
     "L0_C28_S107dc3e387673c80": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_S107dc3e387673c80",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo lối giữa vì nó có tiếng máy rõ ràng và hướng của cầu nối.",
+            "return": "Dùng linh lực để cảm nhận từng lối một, xem có năng lượng hay bất thường gì đang chạy qua chúng.",
+            "stay": "Yêu cầu Lục Trầm vẽ thêm sơ đồ của ba lối trước khi chọn để có thêm thông tin về chúng."
+          },
+          {
+            "canon": "Tiến vào lối giữa nơi luồng khí mát và tiếng cơ khí rõ nhất.",
+            "return": "Bước qua kính để xem cấu trúc ngoài gần hơn, rồi quay lại báo cho Lục Trầm những gì nhìn thấy.",
+            "stay": "Đề nghị Lục Trầm dùng thần thức quét từng lối để phát hiện nếu có tín hiệu sinh vật hay nguy hiểm nào."
+          }
+        ]
       }
     },
     "L0_C28_Sd0090c1129cca19d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_Sd0090c1129cca19d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo Lục Trầm vào lối giữa để kiểm chứng những gì chúng ta chưa hiểu.",
+            "return": "Quay lại ranh giới để xác nhận lần nữa ma ấn, kiếm ấn có còn nguyên vị trí.",
+            "stay": "Yêu cầu Lục Trầm vẽ chi tiết thêm về ba lối trên sơ đồ vải trước khi quyết định."
+          },
+          {
+            "canon": "Bước theo Lục Trầm qua đường biên và tiến vào lối giữa.",
+            "return": "Đề nghị kiểm tra kỹ căn phòng kính thêm lần trước khi rời khỏi.",
+            "stay": "Hỏi Lục Trầm về ý định của cô nếu lối giữa không dẫn về bề ngoài."
+          }
+        ]
       }
     },
     "L0_C28_Se5be6686bd5f3776": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_Se5be6686bd5f3776",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Rút Huyết Ma Kiếm và bước xuống hành lang theo Lục Trầm.",
+            "return": "Dừng lại để quan sát thêm về sự thay đổi của vàng vàng qua các lớp kiến trúc.",
+            "stay": "Gọi Lục Trầm lại để thảo luận thêm về điều cô vừa cảnh báo."
+          },
+          {
+            "canon": "Giữ kiếm sẵn sàng và tiến vào lối dẫn theo Lục Trầm.",
+            "return": "Lùi lại để quan sát kỹ hơn về cửa hoạt động và hành lang trước khi tiếp tục.",
+            "stay": "Yêu cầu Lục Trầm dừng để thảo luận về các dấu hiệu cần lưu ý phía trước."
+          }
+        ]
       }
     },
     "L0_C28_S7a59ab250a227bc6": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C28_S7a59ab250a227bc6",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước xuống cầu thang mười bảy bậc cùng Lục Trầm để khám phá phía dưới.",
+            "return": "Đề nghị quay lại để tìm hiểu thêm về hành lang kim loại trước khi xuống sâu.",
+            "stay": "Dừng ở đầu cầu thang để quan sát và lắng nghe những âm thanh từ phía dưới."
+          },
+          {
+            "canon": "Theo Lục Trầm đi xuống cầu thang để kiểm tra những cánh cửa trượt bên dưới.",
+            "return": "Đề xuất dành thêm thời gian khám phá hành lang kim loại trước khi rời đi.",
+            "stay": "Đứng ở vị trí hiện tại để đợi Lục Trầm báo cáo điều kiện phía dưới trước."
+          }
+        ]
       }
     }
   }

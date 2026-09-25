@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "zenith-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L01_C09",
   "source": "story/source/level_0_1/LEVEL0.1_CH09_ZENITH_STATION.md",
   "sourceDigest": "026acbd4def4270b63d838c2f8648d6c1f924eb3d8a0675a79ea042c5b415ea8",
@@ -16,55 +16,139 @@
     "L01_C09_Sb674ed8dc447c9dc",
     "L01_C09_See022ed4edf93a39"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L01_C09_S75f900c0c5c5a8fe": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_S75f900c0c5c5a8fe",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi vệt đen trên tường để tìm hiểu nó có liên quan đến Khải không",
+            "return": "Kiểm tra lại phòng máy lạnh xem có chi tiết nào bị bỏ sót",
+            "stay": "Đo đạc khoảng cách và cấu trúc của hành lang để hiểu rõ không gian này"
+          },
+          {
+            "canon": "Tiến về phía vệt đen và khám phá nơi nó dẫn đến",
+            "return": "Quay lại kiểm tra các ô kính để so sánh view từ cửa trái và phải",
+            "stay": "Xây dựng bản đồ tinh thần của hành lang trắng dựa trên các chi tiết quan sát được"
+          }
+        ]
       }
     },
     "L01_C09_S7d29e4a1dd05f6f9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_S7d29e4a1dd05f6f9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo các cầu trên cao để tìm con đường an toàn qua sảnh",
+            "return": "Quay về khúc rẽ thứ hai để kiểm tra cửa kim loại đóng kín",
+            "stay": "Quan sát kỹ cấu trúc của các cầu còn nguyên để xác định độ an toàn"
+          },
+          {
+            "canon": "Khám phá sảnh cao nhiều tầng bằng cách di chuyển dọc theo các ban công",
+            "return": "Kiểm tra lại vệt đen bên tường trái để nhận diện các biến đổi",
+            "stay": "Đi sâu vào sảnh để quan sát các khối máy dưới bóng tối"
+          }
+        ]
       }
     },
     "L01_C09_S7cba2b5a163a2ea7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_S7cba2b5a163a2ea7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Mở cửa phía bên kia sảnh để tìm hiểu tại sao dấu ấn lại xuất hiện ở đó",
+            "return": "Quay lại cầu để thu thập mảnh kim loại và kiểm tra thêm",
+            "stay": "Dành thời gian quan sát vệt đen dài hơn trên tường để hiểu ý nghĩa của nó"
+          },
+          {
+            "canon": "Chọn cửa còn lại trong phòng máy lạnh để tiếp tục tìm kiếm",
+            "return": "Tập trung vào việc ghi lại chi tiết các thay đổi diễn ra trong không gian",
+            "stay": "Bám sát cạnh tường để tìm thêm dấu hiệu liên quan đến Khải"
+          }
+        ]
       }
     },
     "L01_C09_S63bc5afe856b9b31": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_S63bc5afe856b9b31",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi bóng người qua hành lang kính để xác định ai đó là ai.",
+            "return": "Quay lại kiểm tra những vệt đen khác trên tường để tìm mẫu.",
+            "stay": "Đợi xem bóng người có quay lại kính hay không trước khi quyết định."
+          },
+          {
+            "canon": "Tiến vào hành lang và tiếp cận vị trí cuối cùng bóng kia biến mất.",
+            "return": "Xem xét lại các dấu hiệu ở hành lang này để hiểu chúng có liên hệ như thế nào.",
+            "stay": "Ghi nhận vị trí hiện tại và quan sát xem có chuyển động nào tiếp theo không."
+          }
+        ]
       }
     },
     "L01_C09_Sc8cb51a41f92f4bc": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_Sc8cb51a41f92f4bc",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi theo luồng khí ấm để xem nó dẫn tới đâu.",
+            "return": "Quay về hành lang kính và kiểm tra xem có thêm dấu đen nào phía sau không.",
+            "stay": "Dừng lại để nhận diện rõ hơn về nguồn gốc của luồng khí này."
+          },
+          {
+            "canon": "Đi tới thanh kim loại và tiếp tục về hướng luồng khí để tìm hiểu thêm.",
+            "return": "Quay trở lại đánh dấu vị trí này trên bản đồ tinh thần của hành lang.",
+            "stay": "Dừng lại gần thanh kim loại để quan sát kỹ lưỡng trước khi tiến xa hơn."
+          }
+        ]
       }
     },
     "L01_C09_Sb674ed8dc447c9dc": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_Sb674ed8dc447c9dc",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo hành lang để xem nó mở ra thành không gian nào tiếp theo.",
+            "return": "Kiểm tra toàn bộ khu vực xung quanh thanh kim loại để tìm thêm manh mối.",
+            "stay": "Ở lại gần thanh kim loại và xem xét tất cả các khả năng của nó."
+          },
+          {
+            "canon": "Tiếp tục khám phá hành lang để tìm hiểu cơ cấu của khu công trình này.",
+            "return": "Trở về và so sánh những gì đã thấy với dấu hiệu từ những nơi trước đó.",
+            "stay": "Dừng lại để sắp xếp lại những sự kiện vừa xảy ra trong tâm trí."
+          }
+        ]
       }
     },
     "L01_C09_See022ed4edf93a39": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C09_See022ed4edf93a39",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi luồng gió mạnh về phía trái để tìm nguồn của hệ thống thông khí.",
+            "return": "Quay lại kiểm tra thanh kim loại kỹ hơn, xem có chi tiết nào bị bỏ sót.",
+            "stay": "Tiếp tục quan sát những khe thông khí trên tường để hiểu cấu trúc hành lang này."
+          },
+          {
+            "canon": "Đi theo chiều gió mạnh để tìm hiểu xem nó kết nối đến đâu.",
+            "return": "Dừng lại để kiểm tra kỹ những mảnh vật liệu nhỏ rơi vãi quanh hành lang.",
+            "stay": "Quan sát thêm các khe thông khí để tìm bằng chứng về hoạt động của chúng."
+          }
+        ]
       }
     }
   }

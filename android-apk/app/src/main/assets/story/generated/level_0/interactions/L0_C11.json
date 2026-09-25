@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C11",
   "source": "story/source/level_0/LEVEL0_CH11.md",
   "sourceDigest": "591dfe9fc7d5002027d215f471b6fab1800b08aeab587f693218b8622f4f046f",
@@ -15,48 +15,120 @@
     "L0_C11_S6095ae2479086e1c",
     "L0_C11_S5a66654aefde17fb"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C11_Sfb7e5e603da28793": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_Sfb7e5e603da28793",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dẫn họ qua khu hố trước khi Nam mệt quá",
+            "return": "Kiểm tra thêm hướng khác xem có thoát được không",
+            "stay": "Tìm chỗ nghỉ gần đây để Nam bình phục sức"
+          },
+          {
+            "canon": "Tiếp tục đi về phía khu hố để tìm lối ra",
+            "return": "Quay lại những dải hẹp phía trước để chắc chắn đường",
+            "stay": "Chờ Nam đủ sức rồi mới quyết định hướng đi"
+          }
+        ]
       }
     },
     "L0_C11_S96cc25bf6bbfbc4d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_S96cc25bf6bbfbc4d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Cho Tịch Quang qua từng dải hẹp để thăm dò an toàn",
+            "return": "Tự mình qua hố trước để tìm đường tốt nhất",
+            "stay": "Dừng lại nghiên cứu toàn bộ không gian trước khi qua"
+          },
+          {
+            "canon": "Bảo Lục Trầm dùng kiếm thử không gian rồi mới hành động",
+            "return": "Tự bước qua dải đầu tiên để kiểm định độ an toàn",
+            "stay": "Gợi ý Nam tìm cách khác thay vì phải qua hố này"
+          }
+        ]
       }
     },
     "L0_C11_Sff61edb16c2fc209": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_Sff61edb16c2fc209",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Lao vào giữ Nam khi hắn mất thăng bằng giữa hố",
+            "return": "Tập trung vào lấy kiếm về an toàn trước tiên",
+            "stay": "Chỉ hướng dẫn Lục Trầm kéo Nam mà không xen vào"
+          },
+          {
+            "canon": "Dùng ma khí đẩy cả ba người trở về nền rộng",
+            "return": "Dùng Huyết Ma Kiếm móc lấy Nam nhanh chóng",
+            "stay": "Gọi to cảnh báo Nam về nguy hiểm phía dưới"
+          }
+        ]
       }
     },
     "L0_C11_S92895294dd13665b": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_S92895294dd13665b",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi cùng Lục Trầm và Nam để quan sát khu hố thêm cẩn thận.",
+            "return": "Dùng Huyết Ma Kiếm kiểm tra lại bề mặt thảm ở chỗ Nam trượt.",
+            "stay": "Ngồi xuống cạnh Nam để chắc chắn hắn hoàn toàn ổn định trước khi đi tiếp."
+          },
+          {
+            "canon": "Dẫn đầu qua khu hố bằng cách đánh dấu phần sàn an toàn.",
+            "return": "Quan sát khoảng không gian phía dưới hố để hiểu cấu trúc của nó.",
+            "stay": "Hỏi Lục Trầm cô nhận thấy gì bất thường ở hành vi của sàn nhà."
+          }
+        ]
       }
     },
     "L0_C11_S6095ae2479086e1c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_S6095ae2479086e1c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nói rõ lý do tiếp tục hợp tác với cả hai người dựa trên khả năng thực tế.",
+            "return": "Quan sát lối hành lang phía trước để lên kế hoạch bước tiếp theo.",
+            "stay": "Đợi phản ứng của Lục Trầm trước khi quyết định hướng đi."
+          },
+          {
+            "canon": "Công nhận ý kiến của Lục Trầm về cách sắp xếp và chuẩn bị xuất phát.",
+            "return": "Kiểm tra lại dấu kiếm trên tường để chắc chắn nó rõ ràng.",
+            "stay": "Theo dõi cách Lục Trầm chăm sóc cổ chân Nam để học cách xử lý chấn thương."
+          }
+        ]
       }
     },
     "L0_C11_S5a66654aefde17fb": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C11_S5a66654aefde17fb",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi trước từng bước để kiểm tra độ an toàn của dải sàn trước khi Nam theo.",
+            "return": "Dùng Huyết Ma Kiếm xác nhận vị trí các nút buộc vải trên cổ chân Nam.",
+            "stay": "Quan sát Lục Trầm để hiểu cô xử lý tình huống như thế nào."
+          },
+          {
+            "canon": "Chú ý tiếng bước chân lạ vọng từ dưới hố và dẫn đoàn nhanh qua khu nguy hiểm.",
+            "return": "Hạ thấp thần thức để thăm dò rõ hơn khu vực bên dưới hố.",
+            "stay": "Dừng lại để đợi Nam lấy lại sức trước khi tiếp tục bước tiếp theo."
+          }
+        ]
       }
     }
   }
