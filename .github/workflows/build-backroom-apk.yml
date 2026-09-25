@@ -194,7 +194,7 @@ jobs:
           grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'processStoryEntityAttack' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'entityCore.prepareEncounter(state);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'entityCore.prepareEncounter(legacy);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           ! grep -Fq 'prepareOfflineDecision(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'storyDecisionGenerationRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'returnJourneyTurnRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java

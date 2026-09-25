@@ -958,6 +958,18 @@ final class StoryCore {
         new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "");
     String nextNarration = prepareReturnReplies(nextPack, next);
     String narration = initial ? prepareReturnReplies(journey.getJSONObject("turnPackage"), current) : "";
+    if (repository != null && repository.available()) {
+      String chapter = story.optString("currentChapter", "");
+      int index = story.optInt("currentSegmentIndex", 0);
+      StoryRepository.Segment authored = repository.segment(chapter, index);
+      StoryRepository.Segment successor = repository.nextSegment(chapter, index);
+      String currentText = authored == null ? "" : authored.text;
+      String nextText = successor == null ? "" : successor.text;
+      if (!validLoopNarration(nextNarration, currentText, nextText)
+          || (initial && !validLoopNarration(narration, currentText, nextText))) {
+        throw new IllegalArgumentException("Return journey cannot replay manuscript prose.");
+      }
+    }
     if (initial) {
       journey.put("turnStatus", RETURN_READY);
       journey.put("turnNarration", narration);
