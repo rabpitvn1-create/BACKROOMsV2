@@ -1,0 +1,6 @@
+Backroom 1.1.97
+
+- Bump phiên bản ứng dụng lên 1.1.97 với versionCode 97.
+- Tăng tỉ lệ xuất hiện rương từ 3% lên 5%.
+- Tỉ lệ rơi vật phẩm khi hạ Entity và tỉ lệ nhận Core khi mở rương đều là 100%.
+- Giữ nguyên loot pool và số lượng phần thưởng; cập nhật test kiểm tra toàn bộ roll 0–99.
