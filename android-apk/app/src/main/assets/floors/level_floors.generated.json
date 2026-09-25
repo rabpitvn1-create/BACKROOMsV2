@@ -4,7 +4,7 @@
   "displayPurpose": "snapshot-ground-plane",
   "targetDimensions": {
     "width": 768,
-    "height": 144
+    "height": 160
   },
   "assets": [
     {
@@ -85,6 +85,8 @@
       "the_torment",
       "red_rooms"
     ],
-    "swordGlowImplementation": "runtime CSS overlay; not baked into floor WebP"
-  }
+    "swordGlowImplementation": "baked into dark floor WebP assets",
+    "integration": "snapshot-floor layer only; character/entity overlay geometry unchanged"
+  },
+  "source": "Google Drive /Floors"
 }
