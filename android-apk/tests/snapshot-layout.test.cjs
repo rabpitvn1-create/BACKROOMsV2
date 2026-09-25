@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {bounds,envelope,layout,assetMetric,floorKey}=require('../app/src/main/assets/snapshot-ui.js');
+const {bounds,envelope,layout,assetMetric,floorKey,swordGlowForFloor}=require('../app/src/main/assets/snapshot-ui.js');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const metric=(w,h,pad=0)=>({width:w+pad*2,height:h+pad*2,body:{left:pad,top:pad,right:w+pad,bottom:h+pad},paint:{left:pad,top:pad,right:w+pad,bottom:h+pad}});
 const standing=metric(60,100),aiming=metric(120,100),lucTram=metric(80,100);
@@ -66,4 +66,13 @@ test('Snapshot floor resolver keeps main Levels on their own assets',()=>{
  for(let level=0;level<=6;level++)assert.equal(floorKey(String(level),level),'level_'+level);
  assert.equal(floorKey('',3),'level_3');
  assert.equal(floorKey('unknown',99),'level_0');
+});
+
+test('dark floor whitelist controls sword reflection',()=>{
+ assert.equal(swordGlowForFloor('level_6'),true);
+ assert.equal(swordGlowForFloor('sublevel_the_torment'),true);
+ assert.equal(swordGlowForFloor('sublevel_red_rooms'),true);
+ for(const key of ['level_0','level_1','level_2','level_3','level_4','level_5','sublevel_0_1','sublevel_0_2','sublevel_0_5','sublevel_0_7','sublevel_manila_room']){
+  assert.equal(swordGlowForFloor(key),false,key);
+ }
 });
