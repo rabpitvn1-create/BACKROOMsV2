@@ -68,9 +68,3 @@ test('simultaneous floating damage uses separate vertical lanes instead of one a
  assert.match(source,/floater\.style\.top=\(anchor\.y-lane\*26\)\+'px'/);
 });
 
-
-test('Drive floor assets keep their alpha fade instead of being cropped',()=>{
- assert.match(source,/\.snapshot>img\.snapshot-floor\{[^}]*height:18%;object-fit:fill;/);
- assert.doesNotMatch(source,/\.snapshot-sword-glow/);
- assert.doesNotMatch(source,/appendSwordFloorGlow/);
-});

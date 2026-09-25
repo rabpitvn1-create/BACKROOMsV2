@@ -1,8 +1,5 @@
 BR 1.0.0.0.4
 
 - Tăng versionCode từ 101 lên 102 để Android nhận đây là bản cập nhật mới.
-- Tích hợp đầy đủ 14 floor WebP từ Google Drive cho Level 0-6 và toàn bộ sublevel hiện có.
-- Giữ nguyên geometry/scale của character và Entity overlay khi gắn floor mới.
 - Cập nhật 21 Entity overlay WebP từ Google Drive và refresh metrics tương ứng.
 - Sửa regression test CopX theo asset mới 864×1536.
-- Duy trì viewport full-bleed, Snapshot 300px và floor mapping theo exact Level/sublevel key.
