@@ -371,7 +371,9 @@ jobs:
           grep -Fq 'const LEVEL_NODE_TITLES=' android-apk/app/src/main/assets/index.html
           grep -Fq 's.currentLevelKey=inferLevelKey(s)' android-apk/app/src/main/assets/index.html
           grep -Fq '.snapshot{height:250px' android-apk/app/src/main/assets/index.html
-          grep -Fq '.log{height:clamp(320px,48vh,540px)' android-apk/app/src/main/assets/index.html
+          grep -Fq '.game{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;overflow:hidden}' android-apk/app/src/main/assets/index.html
+          grep -Fq '.log{height:auto;min-height:0;overflow:auto;overscroll-behavior:contain' android-apk/app/src/main/assets/index.html
+          ! grep -Fq '.log{height:clamp(320px,48vh,540px)' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
           grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
@@ -424,6 +426,7 @@ jobs:
           node --check android-apk/app/src/main/assets/snapshot-ui.js
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --test android-apk/tests/story-choice-ui.test.js
+          node --test android-apk/tests/viewport-layout.test.cjs
           test -s android-apk/app/src/main/assets/fonts/Play-Regular.ttf
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
