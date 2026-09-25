@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
   private WebView webView;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
   private GameCoreFacade gameCore;
-  private static final String GEMINI_MODEL = "gemini-3.6-flash";
+  private static final String GEMINI_MODEL = "gemini-3.8-flash";
   private static final String HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages";
   private static final String HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001";
   private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
@@ -302,7 +302,9 @@ public class MainActivity extends Activity {
       try {
         JSONObject part = new JSONObject().put("text", prompt);
         JSONObject contents = new JSONObject().put("role", "user").put("parts", new JSONArray().put(part));
-        JSONObject config = new JSONObject().put("responseMimeType", "application/json").put("temperature", 0.8);
+        JSONObject config = new JSONObject()
+            .put("responseMimeType", "application/json")
+            .put("thinkingConfig", new JSONObject().put("thinkingLevel", "medium"));
         JSONObject body = new JSONObject().put("contents", new JSONArray().put(contents)).put("generationConfig", config);
         JSONObject result = new JSONObject(postJson(
             "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent",
