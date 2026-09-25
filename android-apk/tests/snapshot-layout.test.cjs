@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {bounds,envelope,layout,assetMetric}=require('../app/src/main/assets/snapshot-ui.js');
+const {bounds,envelope,layout,assetMetric,floorKey}=require('../app/src/main/assets/snapshot-ui.js');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const metric=(w,h,pad=0)=>({width:w+pad*2,height:h+pad*2,body:{left:pad,top:pad,right:w+pad,bottom:h+pad},paint:{left:pad,top:pad,right:w+pad,bottom:h+pad}});
 const standing=metric(60,100),aiming=metric(120,100),lucTram=metric(80,100);
@@ -51,4 +51,19 @@ test('transparent sprite returns no geometry; translucent sprite has a fallback 
  const data=new Uint8ClampedArray(16);data[3]=70;
  const m=bounds(data,2,2);assert.deepEqual(m.body,m.paint);
  assert.equal(layout(m,0,250,'right','character',envelope([m])),null);
+});
+
+test('Snapshot floor resolver preserves exact sublevel identity',()=>{
+ assert.equal(floorKey('0.1',0),'sublevel_0_1');
+ assert.equal(floorKey('0.2',0),'sublevel_0_2');
+ assert.equal(floorKey('0.5',0),'sublevel_0_5');
+ assert.equal(floorKey('0.7',0),'sublevel_0_7');
+ assert.equal(floorKey('manila_room',0),'sublevel_manila_room');
+ assert.equal(floorKey('the_torment',0),'sublevel_the_torment');
+ assert.equal(floorKey('red_rooms',0),'sublevel_red_rooms');
+});
+test('Snapshot floor resolver keeps main Levels on their own assets',()=>{
+ for(let level=0;level<=6;level++)assert.equal(floorKey(String(level),level),'level_'+level);
+ assert.equal(floorKey('',3),'level_3');
+ assert.equal(floorKey('unknown',99),'level_0');
 });
