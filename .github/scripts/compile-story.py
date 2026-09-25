@@ -782,6 +782,14 @@ def _cached_compiled_chapter(entry, prepared):
                 variants = (spec.get("decisionContract") or {}).get("choiceVariants")
                 if not isinstance(variants, list) or len(variants) != CHOICE_VARIANT_COUNT:
                     return None
+                for variant in variants:
+                    if not isinstance(variant, dict):
+                        return None
+                    values = [variant.get("canon"), variant.get("return"), variant.get("stay")]
+                    if not all(_valid_compiled_choice(value) for value in values):
+                        return None
+                    if len({_normalized_choice(value) for value in values}) != 3:
+                        return None
         return metadata, interaction
     except Exception:
         return None
