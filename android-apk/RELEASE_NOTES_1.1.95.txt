@@ -1,0 +1,7 @@
+Backroom 1.1.95
+
+- Bump phiên bản ứng dụng lên 1.1.95 với versionCode 95.
+- Hiển thị ba lựa chọn Story soạn từ nhịp truyện hiện tại và nhịp kế tiếp; giữ nội dung lựa chọn trong asset được biên dịch sẵn.
+- Cho phép lựa chọn đúng tiếp tục cốt truyện ngay; các lựa chọn còn lại dùng phản hồi do provider chuẩn bị ở nền, với kiểm tra callback cũ và giới hạn retry.
+- Bổ sung toàn bộ 20 chương Story Level 0.2 (Remodeled Mess), gồm các mốc xuất hiện và số phận của Duy, Hưng cùng Diệp Minh.
+- Kết thúc Story Level 0.2 tại ranh giới arc để LevelCore xử lý chuyển sang Level 0.5.
