@@ -119,9 +119,9 @@ jobs:
           grep -Fq '__loot:open_chest' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Android.itemAction' android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq "selectedOwnerId='cao_minh'" android-apk/app/src/main/assets/inventory-ui.js
-          grep -Fq 'CHEST_SPAWN_RATE_PERCENT = 3' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
-          grep -Fq 'ENTITY_DROP_MIN_PERCENT = 10' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
-          grep -Fq 'ENTITY_DROP_MAX_PERCENT = 20' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'CHEST_SPAWN_RATE_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MIN_PERCENT = 100' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'ENTITY_DROP_MAX_PERCENT = 100' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           grep -Fq 'itemCore.prepareExplorationLoot' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'itemCore.validateAndApply' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'gameCore.processItemAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
@@ -441,7 +441,7 @@ jobs:
           grep -Fq 'CORE_STAGE_MULTIPLIER = 1.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'coreDropRatePercent", 100' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CoreRewardEconomyTest.java
-          grep -Fq 'CORE_CHEST_DROP_PERCENT = 50' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
+          grep -Fq 'CORE_CHEST_DROP_PERCENT = 100' android-apk/app/src/main/java/com/rabpit/backroom/core/ItemCore.java
           grep -Fq 'BASE_CRITICAL_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
           grep -Fq 'ENTITY_BASE_EVASION_PERCENT = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           grep -Fq 'combatStatusSection(member)' android-apk/app/src/main/assets/party-ui.js
