@@ -568,9 +568,34 @@ jobs:
             }
           }')
 
-          RESPONSE=$(curl --silent --show-error --fail-with-body             --retry 2 --retry-delay 1             --connect-timeout 10 --max-time 45             -H "Content-Type: application/json"             -H "x-goog-api-key: ${GEMINI_API_KEY_1}"             -X POST             -d "$REQUEST_BODY"             "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+          RESPONSE_FILE="$(mktemp)"
+          trap 'rm -f "$RESPONSE_FILE"' EXIT
+          success=0
 
-          printf '%s' "$RESPONSE"             | jq -e '(.candidates[0].content.parts[0].text | fromjson | .ok) == true'             >/dev/null
+          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
+            key="${!name:-}"
+            [ -n "$key" ] || continue
+
+            http_code=$(curl --silent --show-error \
+              --connect-timeout 10 --max-time 45 \
+              -o "$RESPONSE_FILE" -w '%{http_code}' \
+              -H "Content-Type: application/json" \
+              -H "x-goog-api-key: $key" \
+              -X POST \
+              -d "$REQUEST_BODY" \
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" || true)
+
+            if [ "$http_code" = "200" ] && jq -e '(.candidates[0].content.parts[0].text | fromjson | .ok) == true' "$RESPONSE_FILE" >/dev/null 2>&1; then
+              echo "Gemini smoke test passed with $name."
+              success=1
+              break
+            fi
+
+            echo "::warning::Gemini smoke test failed with $name (HTTP ${http_code:-curl_error}); trying next configured key."
+            sleep 1
+          done
+
+          test "$success" -eq 1
 
       - uses: actions/setup-java@v5
         with:
