@@ -10,14 +10,14 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class ItemCoreTest {
-  @Test public void chestSpawnRateIsExactlyThreePercentBoundary() {
-    assertTrue(ItemCore.shouldSpawnChest(0));
-    assertTrue(ItemCore.shouldSpawnChest(2));
-    assertFalse(ItemCore.shouldSpawnChest(3));
-    assertFalse(ItemCore.shouldSpawnChest(99));
+  @Test public void chestSpawnRateIsExactlyFivePercentBoundary() {
+    for (int roll = 0; roll < 100; roll++) {
+      if (roll < 5) assertTrue(ItemCore.shouldSpawnChest(roll));
+      else assertFalse(ItemCore.shouldSpawnChest(roll));
+    }
   }
 
-  @Test public void everyEntityDropRateStaysBetweenTenAndTwentyPercent() {
+  @Test public void everyEntityDropRateIsOneHundredPercent() {
     String[] keys = {
       "hound","clump","duller","deathmoth","hostile_faceling","false_puddle","paintings","smiler",
       "skin-stealer","predatory_window","biological_pipeline","wretch","cable_mimic",
@@ -25,16 +25,18 @@ public class ItemCoreTest {
     };
     for (String key : keys) {
       int rate = ItemCore.entityDropRatePercent(key);
-      assertTrue(rate >= 10);
-      assertTrue(rate <= 20);
-      assertTrue(ItemCore.shouldDropEntityLoot(rate - 1, rate));
-      assertFalse(ItemCore.shouldDropEntityLoot(rate, rate));
+      assertEquals(100, rate);
+      for (int roll = 0; roll < 100; roll++) {
+        assertTrue(ItemCore.shouldDropEntityLoot(roll, rate));
+      }
     }
   }
 
-  @Test public void chestCoreDropBoundaryIsExactlyFiftyPercent() {
-    assertTrue(ItemCore.shouldDropCore(49, ItemCore.CORE_CHEST_DROP_PERCENT));
-    assertFalse(ItemCore.shouldDropCore(50, ItemCore.CORE_CHEST_DROP_PERCENT));
+  @Test public void chestCoreDropIsOneHundredPercent() {
+    assertEquals(100, ItemCore.CORE_CHEST_DROP_PERCENT);
+    for (int roll = 0; roll < 100; roll++) {
+      assertTrue(ItemCore.shouldDropCore(roll, ItemCore.CORE_CHEST_DROP_PERCENT));
+    }
   }
 
   @Test public void chestCoreRollIsIndependentAndUsesStageBundle() throws Exception {
