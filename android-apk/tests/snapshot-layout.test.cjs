@@ -1,5 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
 const {bounds,envelope,layout,assetMetric,floorKey,swordGlowForFloor}=require('../app/src/main/assets/snapshot-ui.js');
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 const metric=(w,h,pad=0)=>({width:w+pad*2,height:h+pad*2,body:{left:pad,top:pad,right:w+pad,bottom:h+pad},paint:{left:pad,top:pad,right:w+pad,bottom:h+pad}});
@@ -75,4 +77,23 @@ test('dark floor whitelist controls sword reflection',()=>{
  for(const key of ['level_0','level_1','level_2','level_3','level_4','level_5','sublevel_0_1','sublevel_0_2','sublevel_0_5','sublevel_0_7','sublevel_manila_room']){
   assert.equal(swordGlowForFloor(key),false,key);
  }
+});
+
+test('complete Level and sublevel floor asset set stays compact and WebP',()=>{
+ const assetsDir=path.join(__dirname,'../app/src/main/assets/floors');
+ const names=[
+  'level_0.webp','level_1.webp','level_2.webp','level_3.webp','level_4.webp','level_5.webp','level_6.webp',
+  'sublevel_0_1.webp','sublevel_0_2.webp','sublevel_0_5.webp','sublevel_0_7.webp',
+  'sublevel_manila_room.webp','sublevel_the_torment.webp','sublevel_red_rooms.webp'
+ ];
+ for(const name of names){
+  const data=fs.readFileSync(path.join(assetsDir,name));
+  assert.ok(data.length>500,name+' is unexpectedly tiny');
+  assert.ok(data.length<=80000,name+' exceeds 80 KB');
+  assert.equal(data.subarray(0,4).toString('ascii'),'RIFF',name);
+  assert.equal(data.subarray(8,12).toString('ascii'),'WEBP',name);
+ }
+ const meta=JSON.parse(fs.readFileSync(path.join(assetsDir,'level_floors.generated.json'),'utf8'));
+ assert.equal(meta.assets.length,14);
+ assert.deepEqual(meta.postProcess.darkFloorSwordGlow,['level_6','the_torment','red_rooms']);
 });
