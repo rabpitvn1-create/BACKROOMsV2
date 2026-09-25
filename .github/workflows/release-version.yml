@@ -548,6 +548,27 @@ jobs:
           done
           echo "Optional Haiku base/model overrides: ${HAIKU_BASE_URL:+configured} ${HAIKU_MODEL:+configured}"
 
+      - name: Smoke test Gemini 3.8 Flash
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          grep -Fq 'private static final String GEMINI_MODEL = "gemini-3.8-flash";' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+
+          REQUEST_BODY=$(jq -nc '{
+            contents: [{
+              role: "user",
+              parts: [{text: "Return exactly this JSON object: {\"ok\":true}"}]
+            }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              thinkingConfig: {thinkingLevel: "medium"}
+            }
+          }')
+
+          RESPONSE=$(curl --silent --show-error --fail-with-body             --retry 2 --retry-delay 1             --connect-timeout 10 --max-time 45             -H "Content-Type: application/json"             -H "x-goog-api-key: ${GEMINI_API_KEY_1}"             -X POST             -d "$REQUEST_BODY"             "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent")
+
+          printf '%s' "$RESPONSE"             | jq -e '(.candidates[0].content.parts[0].text | fromjson | .ok) == true'             >/dev/null
+
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
