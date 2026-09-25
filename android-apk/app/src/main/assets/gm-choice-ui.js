@@ -956,8 +956,17 @@
     }, true);
   }
 
+  function latestGmScrollKey() {
+    if (!state || !Array.isArray(state.log)) return '';
+    var index = lastGmIndex();
+    if (index < 0) return '';
+    var entry = state.log[index] || {};
+    return String(index) + '\\n' + String(entry.text || '');
+  }
+
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){
+    var previousGmScrollKey = latestGmScrollKey();
     window.__combatBusy = false;
     if (typeof previousTurn === 'function') previousTurn(json);
     if (!storyDecisionNeedsProvider()) window.__storyProviderFailedKey = '';
@@ -967,7 +976,8 @@
     if (!storyReturnPending() || window.__selectedReturnChoiceKey !== String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex))
       window.__selectedReturnChoiceKey = '';
     syncComposer();
-    scrollForCurrentMode();
+    if ((state && state.combat && state.combat.active) || latestGmScrollKey() !== previousGmScrollKey)
+      scrollForCurrentMode();
   };
 
   function playCombatPhase(events, phase) {
