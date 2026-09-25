@@ -1,0 +1,10 @@
+Backroom 1.1.94
+
+- Bump phiên bản ứng dụng lên 1.1.94 với versionCode 94.
+- Hiển thị ngay ba lựa chọn Story thay vì chờ provider/API hoàn tất.
+- Chuyển public choice wording về Core; provider chỉ chuẩn bị hidden replies/narration ở nền.
+- Lưu pending choice khi người chơi bấm trước lúc provider sẵn sàng và tự resolve sau khi provider commit, có stale-context guard và bounded retry.
+- Áp dụng cùng kiến trúc bất đồng bộ cho Return Journey để ba lựa chọn luôn xuất hiện trước API.
+- Đổi giao diện Story choice sang action-plate style, dùng Play Regular cho chữ thường và giữ semantic terms ở Play Bold với màu riêng.
+- Sửa race contextHash trong Story Core mà vẫn giữ nguyên UUID, thứ tự và wording của ba lựa chọn đã hiển thị.
+- Bổ sung regression tests cho immediate choices, early selection, provider retry, stale context và APK font packaging.
