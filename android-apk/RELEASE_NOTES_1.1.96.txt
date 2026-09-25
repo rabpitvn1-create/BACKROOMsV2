@@ -1,0 +1,8 @@
+Backroom 1.1.96
+
+- Bump phiên bản ứng dụng lên 1.1.96 với versionCode 96.
+- Giữ manuscript làm cốt truyện gốc tuyệt đối: lựa chọn CANON tiếp tục trực tiếp theo authored successor do Core quản lý, không để provider viết thay tiến trình.
+- Khóa cả ba lựa chọn Story cho đến khi hai kết quả giả đã được provider chuẩn bị và lưu đầy đủ; callback cũ không thể kích hoạt lại một decision gate đã được revisit.
+- Return/Death Journey dùng micro-story tạm thời với current turn + lookahead branch-neutral, giữ nguyên authored cursor và chỉ hội tụ về đúng điểm cốt truyện bị gián đoạn.
+- Ẩn outcome table, return anchor, paused cursor, progress và lookahead khỏi WebView; chặn WebView đọc trực tiếp asset dưới story/.
+- Bổ sung regression cho early selection, stale callback, reload, lookahead promotion, failure atomicity và giữ nguyên Explorer combat routing.

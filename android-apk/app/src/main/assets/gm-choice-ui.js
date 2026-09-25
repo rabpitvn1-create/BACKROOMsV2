@@ -235,7 +235,8 @@
   function returnJourneyNeedsProvider() {
     try {
       var journey = state && state.story && state.story.returnJourney;
-      return storyReturnPending() && String(journey.turnStatus || '') === 'PROVIDER_REQUIRED';
+      return storyReturnPending() && (String(journey.turnStatus || '') === 'PROVIDER_REQUIRED'
+        || (String(journey.turnStatus || '') === 'READY' && journey.lookaheadReady !== true));
     } catch (_) { return false; }
   }
 
@@ -244,13 +245,15 @@
       var journey = state && state.story && state.story.returnJourney;
       var pack = journey && journey.turnPackage;
       return storyReturnPending()
+        && String(journey.turnStatus || '') === 'READY' && journey.lookaheadReady === true
         && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
     } catch (_) { return false; }
   }
 
   function returnJourneyChoices() {
     try {
-      return returnJourneyReady() ? state.story.returnJourney.turnPackage.choices : [];
+      var pack = state.story.returnJourney.turnPackage;
+      return storyReturnPending() && pack && Array.isArray(pack.choices) ? pack.choices : [];
     } catch (_) { return []; }
   }
 
@@ -372,13 +375,15 @@
     try {
       var pack = state && state.story && state.story.decisionPackage;
       return storyAwaitingDecision() && !storyReturnPending()
+        && String(state.story.decisionStatus || '') === 'READY'
         && pack && Array.isArray(pack.choices) && pack.choices.length === 3;
     } catch (_) { return false; }
   }
 
   function storyDecisionChoices() {
     try {
-      return storyDecisionReady() ? state.story.decisionPackage.choices : [];
+      var pack = state.story.decisionPackage;
+      return storyAwaitingDecision() && pack && Array.isArray(pack.choices) ? pack.choices : [];
     } catch (_) { return []; }
   }
 
@@ -545,7 +550,7 @@
           setTimeout(function(){ resumePendingChoice(true); }, 0);
         returnJourneyChoices().forEach(function(choice){
           returnBox.appendChild(makeChoiceButton('', choice.text || '', entry, choice.highlights || [],
-            !!window.__combatBusy || !!state.story.returnJourney.pendingChoiceId
+            !returnJourneyReady() || !!window.__combatBusy || !!state.story.returnJourney.pendingChoiceId
               || window.__selectedReturnChoiceKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex), false,
             function(){ submitReturnJourneyChoice(choice); }));
         });
@@ -558,24 +563,26 @@
           resumeReturn.addEventListener('click', function(){ window.__pendingResolutionRequestKey = ''; resumePendingChoice(true); });
           returnBox.appendChild(resumeReturn);
         }
-        if (returnJourneyNeedsProvider() && window.__returnProviderFailedKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex)) {
-          var retryReturn = document.createElement('button');
-          retryReturn.type = 'button';
-          retryReturn.className = 'gm-choice';
-          retryReturn.textContent = 'Thử lại phản hồi';
-          retryReturn.addEventListener('click', function(){ window.__returnProviderFailedKey = ''; requestReturnJourneyTurn(true); });
-          returnBox.appendChild(retryReturn);
-        }
-        if (returnJourneyNeedsProvider()) setTimeout(function(){ requestReturnJourneyTurn(false); }, 0);
       }
+      if (returnJourneyNeedsProvider()) setTimeout(function(){ requestReturnJourneyTurn(false); }, 0);
       article.appendChild(returnBox);
+      if (returnJourneyNeedsProvider() && window.__returnProviderFailedKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex)) {
+        var retryReturn = document.createElement('button');
+        retryReturn.type = 'button';
+        retryReturn.textContent = 'Thử lại phản hồi';
+        retryReturn.addEventListener('click', function(){ window.__returnProviderFailedKey = ''; requestReturnJourneyTurn(true); });
+        var returnRecovery = document.createElement('div');
+        returnRecovery.className = 'story-provider-recovery';
+        returnRecovery.appendChild(retryReturn);
+        article.appendChild(returnRecovery);
+      }
       return;
     }
     var cutaway = latest && storyCutawayActive();
     var awaitingDecision = latest && storyAwaitingDecision();
     var awaitingEntity = latest && storyAwaitingEntityAttack();
     var decisionReady = awaitingDecision && storyDecisionReady();
-    if (latest && awaitingDecision && storyDecisionNeedsProvider() && decisionReady)
+    if (latest && awaitingDecision && storyDecisionNeedsProvider())
       setTimeout(function(){ requestStoryDecision(false); }, 0);
     if (latest && awaitingDecision && decisionReady && state.story.pendingChoiceId
         && state.story.decisionStatus === 'READY')
@@ -583,7 +590,7 @@
     var hasChest = latest && chestPresent() && !cutaway && !awaitingDecision && !awaitingEntity;
 
     var choices = [];
-    if (decisionReady) {
+    if (awaitingDecision) {
       choices = storyDecisionChoices();
     } else if (awaitingEntity) {
       var attack = storyEntityAttackChoice();
@@ -609,7 +616,8 @@
     }
 
     choices.slice(0, 3).forEach(function(choice){
-      var disabled = !actionable || !!choice.disabled || !!choice.selected
+      var disabled = !actionable || (awaitingDecision && !decisionReady)
+        || !!choice.disabled || !!choice.selected
         || (awaitingDecision && (!!state.story.pendingChoiceId
           || window.__selectedStoryChoiceKey === (state.story.decisionPackage.choices[0] || {}).id));
       var onClick = awaitingEntity
@@ -636,7 +644,10 @@
       retryStory.className = 'gm-choice';
       retryStory.textContent = 'Thử lại phản hồi';
       retryStory.addEventListener('click', function(){ window.__storyProviderFailedKey = ''; requestStoryDecision(true); });
-      box.appendChild(retryStory);
+      var storyRecovery = document.createElement('div');
+      storyRecovery.className = 'story-provider-recovery';
+      storyRecovery.appendChild(retryStory);
+      article.appendChild(storyRecovery);
     }
     article.appendChild(box);
   }

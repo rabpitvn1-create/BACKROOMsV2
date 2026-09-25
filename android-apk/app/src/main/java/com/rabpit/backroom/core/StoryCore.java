@@ -187,6 +187,11 @@ final class StoryCore {
     syncReturnJourneyProjection(story);
     if (!story.has("decisionStatus")) story.put("decisionStatus", "");
     if (!story.has("decisionId")) story.put("decisionId", "");
+    boolean migratedDecisionToken = story.optBoolean("awaitingDecision", false)
+        && story.optString("decisionGenerationToken", "").isEmpty();
+    if (migratedDecisionToken) {
+      story.put("decisionGenerationToken", opaqueChoiceId());
+    }
     if (story.optJSONObject("decisionContract") == null) story.put("decisionContract", new JSONObject());
     if (story.optJSONObject("decisionPackage") == null) story.put("decisionPackage", new JSONObject());
     if (story.optJSONObject("entityGate") == null) story.put("entityGate", new JSONObject());
@@ -262,6 +267,12 @@ final class StoryCore {
     }
     syncReturnJourneyProjection(story);
     state.put(ROOT_KEY, story);
+    if (migratedDecisionToken && DECISION_READY.equals(story.optString("decisionStatus", ""))) {
+      JSONObject savedPackage = story.optJSONObject("decisionPackage");
+      if (savedPackage != null && savedPackage.optJSONObject("outcomes") != null) {
+        savedPackage.put("contextHash", decisionContextHash(state));
+      }
+    }
     if (story.optBoolean("awaitingDecision", false)) preparePublicDecision(state, story);
     JSONObject journey = story.getJSONObject("returnJourney");
     if (journey.optBoolean("active", false)) preparePublicReturnTurn(state, journey);
@@ -481,7 +492,9 @@ final class StoryCore {
           && DECISION_READY.equals(story.optString("decisionStatus", ""))
           && pack != null
           && pack.optJSONArray("choices") != null
-          && pack.optJSONArray("choices").length() == 3;
+          && pack.optJSONArray("choices").length() == 3
+          && preparedOutcomes(pack, new String[]{OUTCOME_CANON, OUTCOME_STAY, OUTCOME_RETURN},
+              OUTCOME_CANON);
     } catch (Exception ignored) {
       return false;
     }
@@ -623,16 +636,16 @@ final class StoryCore {
     prompt.append("Core has already fixed the three hidden outcomes. You ONLY write player-facing Vietnamese prose. ");
     prompt.append("Never decide state, routes, canon, rewards, encounters, items or progression.\n\n");
     prompt.append("CURRENT AUTHORED BEAT:\n").append(clipTail(current.text, 1700)).append("\n\n");
-    prompt.append("NEXT AUTHORED BEAT (private context only; public choices are already compiled):\n")
-        .append(clip(next.text, 2100)).append("\n\n");
+    // The authored successor stays in Core; the provider only prepares local decoys.
     if (recentStory != null && !recentStory.trim().isEmpty()) {
       prompt.append("RECENT READER-VISIBLE CONTEXT:\n").append(clip(recentStory, 2800)).append("\n\n");
     }
     prompt.append("DECISION GUARD:\n").append(guard).append("\n\n");
     prompt.append("Core has already published three choices. Write only hidden local replies:\n");
-    prompt.append("- return.reply: immediate local consequence folds space back toward the level entrance.\n");
+    prompt.append("- return.reply: immediate local spatial consequence; do not mention the level entrance or reveal that movement returned to an earlier position.\n");
     prompt.append("- stay.reply: immediate local consequence leaves Cao Minh effectively at the same place.\n");
     prompt.append("Do not replay completed canon, grant anything, invent lore, or reveal hidden outcomes. ");
+    prompt.append("The player must feel exploration continuing, never a level replay. ");
     prompt.append("Never say 'chọn sai', 'reset', 'checkpoint', 'canon' or 'bẫy' to the player. ");
     prompt.append("Each reply is local Vietnamese prose only, max 900 characters.\n\n");
     prompt.append("Return JSON only: {\"return\":{\"reply\":\"...\"},\"stay\":{\"reply\":\"...\"}}");
@@ -669,8 +682,10 @@ final class StoryCore {
     }
     JSONObject pack = story.getJSONObject("decisionPackage");
     JSONObject outcomes = pack.getJSONObject("outcomes");
-    setPreparedReply(outcomes, OUTCOME_RETURN, returnReply);
-    setPreparedReply(outcomes, OUTCOME_STAY, stayReply);
+    JSONObject prepared = copyObject(outcomes);
+    setPreparedReply(prepared, OUTCOME_RETURN, returnReply);
+    setPreparedReply(prepared, OUTCOME_STAY, stayReply);
+    pack.put("outcomes", prepared);
     pack.put("contextHash", actualHash);
     story.put("decisionStatus", DECISION_READY);
     state.put(ROOT_KEY, story);
@@ -701,7 +716,7 @@ final class StoryCore {
 
     String visibleChoice = publicChoice.optString("text", "").trim();
     String type = outcome.optString("type", "").trim();
-    if (!OUTCOME_CANON.equals(type) && !decisionReady(state)) {
+    if (!decisionReady(state)) {
       throw new IllegalStateException("Story decision is waiting for provider replies.");
     }
     String preparedReply = outcome.optString("reply", "").trim();
@@ -786,6 +801,8 @@ final class StoryCore {
         .put("turnIndex", 0)
         .put("turnStatus", RETURN_PROVIDER_REQUIRED)
         .put("turnPackage", new JSONObject())
+        .put("lookahead", new JSONObject())
+        .put("lookaheadReady", false)
         .put("choiceSetHistory", new JSONArray())
         .put("pausedStory", pausedStory);
     story.put("returnJourney", journey);
@@ -809,7 +826,9 @@ final class StoryCore {
       normalizeState(state);
       JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
       return journey.optBoolean("active", false)
-          && RETURN_PROVIDER_REQUIRED.equals(journey.optString("turnStatus", ""));
+          && (RETURN_PROVIDER_REQUIRED.equals(journey.optString("turnStatus", ""))
+              || (RETURN_READY.equals(journey.optString("turnStatus", ""))
+                  && !journey.optBoolean("lookaheadReady", false)));
     } catch (Exception ignored) {
       return false;
     }
@@ -822,8 +841,14 @@ final class StoryCore {
       JSONObject pack = journey.optJSONObject("turnPackage");
       return journey.optBoolean("active", false)
           && RETURN_READY.equals(journey.optString("turnStatus", ""))
+          && journey.optBoolean("lookaheadReady", false)
           && pack != null && pack.optJSONArray("choices") != null
-          && pack.optJSONArray("choices").length() == 3;
+          && pack.optJSONArray("choices").length() == 3
+          && preparedOutcomes(pack,
+              new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "")
+          && journey.optJSONObject("lookahead") != null
+          && journey.optJSONObject("lookahead").optInt("turnIndex", -1)
+              == journey.optInt("turnIndex", 0) + 1;
     } catch (Exception ignored) {
       return false;
     }
@@ -849,14 +874,10 @@ final class StoryCore {
     JSONObject journey = story.getJSONObject("returnJourney");
     String contextHash = returnJourneyContextHash(state);
     String currentAuthored = "";
-    String nextAuthored = "";
     if (repository != null && repository.available()) {
       StoryRepository.Segment current = repository.segment(
           story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
-      StoryRepository.Segment next = repository.nextSegment(
-          story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
       if (current != null) currentAuthored = current.text;
-      if (next != null) nextAuthored = next.text;
     }
 
     StringBuilder prompt = new StringBuilder();
@@ -874,10 +895,6 @@ final class StoryCore {
       prompt.append("PAUSED AUTHORED BEAT — context only, DO NOT replay or advance it:\n")
           .append(clipTail(currentAuthored, 1200)).append("\n\n");
     }
-    if (!nextAuthored.isEmpty()) {
-      prompt.append("NEXT AUTHORED BEAT — hard boundary, DO NOT reveal or enter it:\n")
-          .append(clip(nextAuthored, 900)).append("\n\n");
-    }
     if (recentStory != null && !recentStory.trim().isEmpty()) {
       prompt.append("RECENT VISIBLE LOG — avoid repeating wording or complete choice sets:\n")
           .append(clipTail(recentStory, 2800)).append("\n\n");
@@ -887,11 +904,20 @@ final class StoryCore {
     prompt.append("A previously encountered trace or already-existing Entity may be noticed again, but do not replay its completed canon event, combat result or reward.\n");
     prompt.append("PLAYER-FACING PROSE must never say 'chọn sai', 'reset', 'checkpoint', hidden outcome labels, progress counters, or that a loop mechanic exists. ");
     prompt.append("Do not quote a long passage already shown. Spatial repetition should feel like getting lost.\n\n");
-    prompt.append("Return JSON only with 120-900 character narration and three local replies:\n");
-    prompt.append("{\"narration\":\"...\",")
-        .append("\"progress\":{\"reply\":\"...\"},")
-        .append("\"return\":{\"reply\":\"...\"},")
-        .append("\"stay\":{\"reply\":\"...\"}}\n");
+    prompt.append("Return JSON with a current turn and a branch-neutral next turn. ");
+    prompt.append("The next turn must fit any of the three current outcomes; do not assume which was selected. ");
+    prompt.append("Write three distinct, equally plausible Vietnamese choice texts per turn (4-180 characters), ");
+    prompt.append("without hints about outcome. Never write manuscript continuation. ");
+    prompt.append("Use 120-900 character narration for each turn.\n");
+    prompt.append("Turn format: {\"narration\":\"...\",")
+        .append("\"progress\":{\"text\":\"...\",\"reply\":\"...\"},")
+        .append("\"return\":{\"text\":\"...\",\"reply\":\"...\"},")
+        .append("\"stay\":{\"text\":\"...\",\"reply\":\"...\"}}.\n");
+    if (RETURN_PROVIDER_REQUIRED.equals(journey.optString("turnStatus", ""))) {
+      prompt.append("Return JSON only: {\"current\":<turn>,\"next\":<turn>}.\n");
+    } else {
+      prompt.append("Return JSON only: {\"next\":<turn>}.\n");
+    }
     prompt.append("Each reply is immediate local prose only, max 900 characters.");
 
     output.put("needed", true)
@@ -923,31 +949,77 @@ final class StoryCore {
       throw new IllegalStateException("Return public choices no longer match the provider context.");
     }
 
-    String narration = generated == null ? "" : generated.optString("narration", "").trim();
-    JSONObject progress = generated == null ? null : generated.optJSONObject("progress");
-    JSONObject returned = generated == null ? null : generated.optJSONObject("return");
-    JSONObject stay = generated == null ? null : generated.optJSONObject("stay");
-    if (!validReturnNarration(narration)) {
-      throw new IllegalArgumentException("Return journey narration is invalid.");
+    boolean initial = RETURN_PROVIDER_REQUIRED.equals(journey.optString("turnStatus", ""));
+    JSONObject next = generated == null ? null : generated.optJSONObject("next");
+    JSONObject current = initial && generated != null ? generated.optJSONObject("current") : null;
+    // Validate both turns before any state mutation; a partial model response cannot arm a choice.
+    JSONObject nextPack = publicPackage(
+        RETURN_ACTIONS[Math.floorMod(expectedTurnIndex + 1, RETURN_ACTIONS.length)],
+        new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}, "");
+    String nextNarration = prepareReturnReplies(nextPack, next);
+    JSONObject currentPack = initial ? copyObject(journey.getJSONObject("turnPackage")) : null;
+    String narration = initial ? prepareReturnReplies(currentPack, current) : "";
+    if (repository != null && repository.available()) {
+      String chapter = story.optString("currentChapter", "");
+      int index = story.optInt("currentSegmentIndex", 0);
+      StoryRepository.Segment authored = repository.segment(chapter, index);
+      StoryRepository.Segment successor = repository.nextSegment(chapter, index);
+      String currentText = authored == null ? "" : authored.text;
+      String nextText = successor == null ? "" : successor.text;
+      if (!validLoopNarration(nextNarration, currentText, nextText)
+          || (initial && !validLoopNarration(narration, currentText, nextText))) {
+        throw new IllegalArgumentException("Return journey cannot replay manuscript prose.");
+      }
     }
-    String progressReply = progress == null ? "" : progress.optString("reply", "").trim();
-    String returnReply = returned == null ? "" : returned.optString("reply", "").trim();
-    String stayReply = stay == null ? "" : stay.optString("reply", "").trim();
-    if (!validPreparedReply(progressReply) || !validPreparedReply(returnReply)
-        || !validPreparedReply(stayReply)) {
-      throw new IllegalArgumentException("Return journey replies are incomplete or unsafe.");
+    if (initial) {
+      journey.put("turnPackage", currentPack);
+      journey.put("turnStatus", RETURN_READY);
+      journey.put("turnNarration", narration);
     }
-    JSONObject pack = journey.getJSONObject("turnPackage");
-    JSONObject outcomes = pack.getJSONObject("outcomes");
-    setPreparedReply(outcomes, RETURN_PROGRESS, progressReply);
-    setPreparedReply(outcomes, RETURN_TO_START, returnReply);
-    setPreparedReply(outcomes, RETURN_STAY, stayReply);
-    pack.put("contextHash", actualHash);
-    journey.put("turnStatus", RETURN_READY);
-    journey.put("turnNarration", narration);
+    journey.put("lookahead", new JSONObject().put("turnIndex", expectedTurnIndex + 1)
+        .put("narration", nextNarration).put("package", nextPack));
+    journey.put("lookaheadReady", true);
     story.put("returnJourney", journey);
     syncReturnJourneyProjection(story);
     state.put(ROOT_KEY, story);
+    return narration;
+  }
+
+  private static String prepareReturnReplies(JSONObject pack, JSONObject generated) throws Exception {
+    String narration = generated == null ? "" : generated.optString("narration", "").trim();
+    if (!validReturnNarration(narration)) {
+      throw new IllegalArgumentException("Return journey narration is invalid.");
+    }
+    JSONObject prepared = copyObject(pack.getJSONObject("outcomes"));
+    JSONArray choices = copyArray(pack.getJSONArray("choices"));
+    List<String> texts = new ArrayList<>();
+    for (String type : new String[]{RETURN_PROGRESS, RETURN_TO_START, RETURN_STAY}) {
+      String field = RETURN_PROGRESS.equals(type) ? "progress"
+          : RETURN_TO_START.equals(type) ? "return" : "stay";
+      JSONObject branch = generated.optJSONObject(field);
+      String reply = branch == null ? "" : branch.optString("reply", "").trim();
+      String wording = branch == null ? "" : branch.optString("text", "").trim();
+      if (!validPublicChoice(wording)) {
+        throw new IllegalArgumentException("Return journey choice wording is incomplete or unsafe.");
+      }
+      for (String previous : texts) {
+        if (sameChoice(wording, previous)) throw new IllegalArgumentException("Duplicate return choice.");
+      }
+      texts.add(wording);
+      if (!validPreparedReply(reply)) {
+        throw new IllegalArgumentException("Return journey replies are incomplete or unsafe.");
+      }
+      setPreparedReply(prepared, type, reply);
+      for (int i = 0; i < choices.length(); i++) {
+        JSONObject choice = choices.getJSONObject(i);
+        if (type.equals(prepared.getJSONObject(choice.getString("id")).optString("type", ""))) {
+          choice.put("text", wording);
+          break;
+        }
+      }
+    }
+    pack.put("outcomes", prepared);
+    pack.put("choices", choices);
     return narration;
   }
 
@@ -983,6 +1055,16 @@ final class StoryCore {
       progress++;
       journey.put("progress", progress);
       if (progress >= required) {
+        JSONObject anchor = journey.getJSONObject("pausedStory");
+        if (!journey.optString("levelKey", "").equals(state.optString(LevelCore.LEVEL_KEY, ""))
+            || !anchor.optString("storyId", "").equals(story.optString("storyId", ""))
+            || !anchor.optString("sourceRevision", "").equals(story.optString("sourceRevision", ""))
+            || !anchor.optString("currentChapter", "").equals(story.optString("currentChapter", ""))
+            || !anchor.optString("currentSegmentId", "").equals(story.optString("currentSegmentId", ""))
+            || anchor.optInt("currentSegmentIndex", -1) != story.optInt("currentSegmentIndex", -2)
+            || anchor.optInt("eventSequence", -1) != story.optInt("eventSequence", -2)) {
+          throw new IllegalStateException("Return journey anchor changed before convergence.");
+        }
         String target = journey.optString("targetLocation", "").trim();
         if (target.isEmpty()) throw new IllegalStateException("Return journey target is missing.");
         state.put("location", target);
@@ -1013,8 +1095,19 @@ final class StoryCore {
           .put("turnNarration", "");
       if (RETURN_CAUSE_STORY.equals(cause)) rearmCurrentDecision(story);
     } else {
-      journey.put("turnIndex", journey.optInt("turnIndex", 0) + 1);
-      resetReturnTurnForProvider(journey);
+      JSONObject ahead = journey.optJSONObject("lookahead");
+      int nextIndex = journey.optInt("turnIndex", 0) + 1;
+      if (ahead == null || ahead.optInt("turnIndex", -1) != nextIndex) {
+        throw new IllegalStateException("Next return turn is not prepared locally.");
+      }
+      journey.put("turnIndex", nextIndex);
+      journey.put("turnStatus", RETURN_READY);
+      journey.put("turnPackage", ahead.getJSONObject("package"));
+      journey.put("turnNarration", ahead.getString("narration"));
+      journey.put("pendingChoiceId", "");
+      journey.put("lookahead", new JSONObject());
+      journey.put("lookaheadReady", false);
+      journey.getJSONObject("turnPackage").put("contextHash", returnJourneyContextHash(state));
     }
 
     story.put("returnJourney", journey);
@@ -1031,7 +1124,9 @@ final class StoryCore {
     String lower = value.toLowerCase(Locale.ROOT);
     return !lower.contains("chọn sai") && !lower.contains("reset")
         && !lower.contains("checkpoint") && !lower.contains("return_to_start")
-        && !lower.contains("progress") && !lower.contains("stay_in_place");
+        && !lower.contains("progress") && !lower.contains("stay_in_place")
+        && !lower.contains("return journey") && !lower.contains("story gate")
+        && !lower.contains("đầu level") && !lower.contains("quay lại điểm bắt đầu");
   }
 
   static boolean validLoopNarration(String raw, String currentText, String nextText) {
@@ -1262,6 +1357,7 @@ final class StoryCore {
     story.put("awaitingDecision", true);
     story.put("decisionStatus", DECISION_PROVIDER_REQUIRED);
     story.put("decisionId", segment.id);
+    story.put("decisionGenerationToken", opaqueChoiceId());
     story.put("decisionContract", copyObject(segment.decisionContract));
     story.put("decisionPackage", new JSONObject());
   }
@@ -1282,6 +1378,8 @@ final class StoryCore {
           .put("turnStatus", "")
           .put("turnPackage", new JSONObject())
           .put("turnNarration", "")
+          .put("lookahead", new JSONObject())
+          .put("lookaheadReady", false)
           .put("choiceSetHistory", new JSONArray())
           .put("pausedStory", new JSONObject());
     } catch (Exception ignored) {
@@ -1305,6 +1403,8 @@ final class StoryCore {
     journey.put("turnPackage", new JSONObject());
     journey.put("turnNarration", "");
     journey.put("pendingChoiceId", "");
+    journey.put("lookahead", new JSONObject());
+    journey.put("lookaheadReady", false);
   }
 
   private static void rearmCurrentDecision(JSONObject story) throws Exception {
@@ -1313,6 +1413,7 @@ final class StoryCore {
       return;
     }
     story.put("decisionStatus", DECISION_PROVIDER_REQUIRED);
+    story.put("decisionGenerationToken", opaqueChoiceId());
     story.put("decisionPackage", new JSONObject());
     story.put("pendingChoiceId", "");
   }
@@ -1348,6 +1449,7 @@ final class StoryCore {
     story.put("awaitingDecision", false);
     story.put("decisionStatus", "");
     story.put("decisionId", "");
+    story.put("decisionGenerationToken", "");
     story.put("decisionContract", new JSONObject());
     story.put("decisionPackage", new JSONObject());
     story.put("pendingChoiceId", "");
@@ -1359,6 +1461,7 @@ final class StoryCore {
       if (story == null) return "";
       StringBuilder material = new StringBuilder();
       material.append(story.optString("storyId", "")).append('|')
+          .append(story.optString("decisionGenerationToken", "")).append('|')
           .append(story.optString("levelKey", "")).append('|')
           .append(story.optString("sourceRevision", "")).append('|')
           .append(story.optString("currentChapter", "")).append('|')
@@ -1491,7 +1594,7 @@ final class StoryCore {
   void selectDecision(JSONObject state, String choiceId) throws Exception {
     normalizeState(state);
     JSONObject story = state.getJSONObject(ROOT_KEY);
-    if (!story.optBoolean("awaitingDecision", false) || returnJourneyActive(state)
+    if (!decisionReady(state) || returnJourneyActive(state)
         || findChoice(decisionChoices(state), choiceId) == null) {
       throw new IllegalArgumentException("Unknown or stale Story choice.");
     }
@@ -1512,7 +1615,7 @@ final class StoryCore {
       JSONObject outcomes = pack == null ? null : pack.optJSONObject("outcomes");
       JSONObject outcome = outcomes == null ? null : outcomes.optJSONObject(choiceId == null ? "" : choiceId.trim());
       if (outcome == null) return false;
-      return OUTCOME_CANON.equals(outcome.optString("type", "")) || decisionReady(state);
+      return decisionReady(state);
     } catch (Exception ignored) {
       return false;
     }
@@ -1521,7 +1624,7 @@ final class StoryCore {
   void selectReturnChoice(JSONObject state, String choiceId) throws Exception {
     normalizeState(state);
     JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
-    if (!journey.optBoolean("active", false) || findChoice(returnJourneyChoices(state), choiceId) == null
+    if (!returnJourneyReady(state) || findChoice(returnJourneyChoices(state), choiceId) == null
         || !journey.getJSONObject("turnPackage").optString("contextHash", "")
             .equals(returnJourneyContextHash(state))) {
       throw new IllegalArgumentException("Unknown or stale return choice.");
@@ -1551,6 +1654,26 @@ final class StoryCore {
     return null;
   }
 
+  private static boolean preparedOutcomes(JSONObject pack, String[] types, String noReplyType) {
+    if (pack == null) return false;
+    JSONArray choices = pack.optJSONArray("choices");
+    JSONObject outcomes = pack.optJSONObject("outcomes");
+    if (choices == null || outcomes == null || choices.length() != types.length) return false;
+    List<String> seen = new ArrayList<>();
+    for (int i = 0; i < choices.length(); i++) {
+      JSONObject choice = choices.optJSONObject(i);
+      JSONObject outcome = choice == null ? null : outcomes.optJSONObject(choice.optString("id", ""));
+      if (outcome == null) return false;
+      String type = outcome.optString("type", "");
+      if (seen.contains(type) || !java.util.Arrays.asList(types).contains(type)
+          || (!type.equals(noReplyType) && !validPreparedReply(outcome.optString("reply", "")))) {
+        return false;
+      }
+      seen.add(type);
+    }
+    return true;
+  }
+
   private static boolean sameChoice(String a, String b) {
     String left = a == null ? "" : a.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
     String right = b == null ? "" : b.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
@@ -1568,6 +1691,8 @@ final class StoryCore {
         && !lower.contains("trap_loop")
         && !lower.contains("return_to_start")
         && !lower.contains("stay_in_place")
+        && !lower.contains("return journey")
+        && !lower.contains("story gate")
         && !lower.contains("bẫy")
         && !lower.contains("chọn sai")
         && !lower.contains("reset")
@@ -1581,6 +1706,11 @@ final class StoryCore {
     if (value.isEmpty() || value.length() > 1400) return false;
     String lower = value.toLowerCase(Locale.ROOT);
     return !lower.contains("chọn sai")
+        && !lower.contains("sai lựa chọn")
+        && !lower.contains("return journey")
+        && !lower.contains("story gate")
+        && !lower.contains("đầu level")
+        && !lower.contains("quay lại điểm bắt đầu")
         && !lower.contains("trap_loop")
         && !lower.contains("return_to_start")
         && !lower.contains("stay_in_place")

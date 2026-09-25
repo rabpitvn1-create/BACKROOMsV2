@@ -6,6 +6,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -23,6 +25,7 @@ import com.rabpit.backroom.core.ProviderRetryPolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -62,6 +65,18 @@ public class MainActivity extends Activity {
     settings.setDomStorageEnabled(true);
     settings.setAllowFileAccess(true);
     webView.setWebViewClient(new WebViewClient() {
+      @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        String url = request.getUrl().toString();
+        try {
+          String path = new java.net.URI(url).normalize().getPath();
+          if ("file".equals(request.getUrl().getScheme()) && path != null
+              && path.startsWith("/android_asset/story/")) {
+            return new WebResourceResponse("text/plain", "UTF-8",
+                new ByteArrayInputStream(new byte[0]));
+          }
+        } catch (Exception ignored) {}
+        return super.shouldInterceptRequest(view, request);
+      }
       @Override public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         installUiScripts();

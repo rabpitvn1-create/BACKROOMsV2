@@ -69,11 +69,13 @@ for (const isReturn of [false, true]) {
   test(`${isReturn ? 'Return Journey' : 'Story'} renders three choices before provider and queues one request`, async () => {
     const { context, log, style, calls } = scenario(isReturn);
     const choiceButtons = buttons(log);
-    assert.equal(choiceButtons.length, 3);
-    assert.ok(choiceButtons.every(button => !button.disabled));
-    assert.equal(choiceButtons[0].textContent.includes('Cao Minh'), true);
-    const semantic = choiceButtons[0].querySelectorAll('.semantic');
-    assert.equal(semantic.some(span => span.className.includes('semantic-character') && span.textContent === 'Cao Minh'), true);
+    assert.equal(choiceButtons.length, isReturn ? 0 : 3);
+    assert.ok(choiceButtons.every(button => button.disabled));
+    if (!isReturn) {
+      assert.equal(choiceButtons[0].textContent.includes('Cao Minh'), true);
+      const semantic = choiceButtons[0].querySelectorAll('.semantic');
+      assert.equal(semantic.some(span => span.className.includes('semantic-character') && span.textContent === 'Cao Minh'), true);
+    }
     assert.match(style.textContent, /Play-Regular\.ttf/);
     assert.match(style.textContent, /\.gm-choice\{[^}]*font-weight:400/);
     assert.match(style.textContent, /\.semantic\{[^}]*font-weight:700/);
@@ -82,7 +84,12 @@ for (const isReturn of [false, true]) {
     context.render();
     await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(calls.prepare.length, 1);
-    choiceButtons[0].click();
+    if (choiceButtons.length) choiceButtons[0].click();
+    assert.equal(calls.resolve.length, 0);
+    context.backroomTurn(JSON.stringify({ ...context.state, story: {
+      ...context.state.story, ...(isReturn ? { returnJourney: { ...context.state.story.returnJourney, turnStatus: 'READY', lookaheadReady: true } }
+        : { decisionStatus: 'READY' }) } }));
+    buttons(log)[0].click();
     assert.equal(calls.resolve.length, 1);
     context.backroomTurn(JSON.stringify({ ...context.state, story: {
       ...context.state.story, ...(isReturn ? { returnJourney: { ...context.state.story.returnJourney, pendingChoiceId: 'choice_ab1' } }
@@ -102,8 +109,26 @@ for (const isReturn of [false, true]) {
     assert.equal(calls.prepare.length, 2);
     const manual = buttons(log).find(button => button.textContent === 'Thử lại phản hồi');
     assert.ok(manual);
-    assert.equal(buttons(log).length, 4);
+    assert.equal(buttons(log).length, isReturn ? 1 : 4);
     manual.click();
     assert.equal(calls.prepare.length, 3);
   });
 }
+
+test('selection bridges contain no provider request and native state hides outcome tables', () => {
+  const java = fs.readFileSync(path.resolve(__dirname,
+    '../app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
+  const facade = fs.readFileSync(path.resolve(__dirname,
+    '../app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java'), 'utf8');
+  for (const method of ['resolveStoryDecision', 'resolveReturnJourneyChoice']) {
+    const body = java.split(`@JavascriptInterface public void ${method}`)[1]
+      .split('@JavascriptInterface')[0];
+    assert.doesNotMatch(body, /geminiText|haikuText|prepareStoryDecision|prepareReturnJourneyTurn/);
+  }
+  const safe = facade.split('private JSONObject clientSafeState(')[1]
+    .split('private void restoreHiddenDecisionPackage')[0];
+  assert.match(safe, /story\.remove\("decisionContract"\)/);
+  assert.match(safe, /pack\.remove\("outcomes"\)/);
+  assert.match(safe, /turnPack\.remove\("outcomes"\)/);
+  assert.match(safe, /"pausedStory".*"lookahead"/s);
+});
