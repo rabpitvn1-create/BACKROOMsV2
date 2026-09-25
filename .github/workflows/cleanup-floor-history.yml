@@ -1,0 +1,46 @@
+name: Cleanup Floor History Artifacts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cleanup-floor-history.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Remove obsolete floor-bearing release and CI runs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release delete BR-1.0.0.0.3 --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
+
+          for run_id in \
+            36135901986 \
+            36136576450 \
+            36136681742 \
+            36138221952 \
+            36138450161 \
+            36138645246 \
+            36139297205 \
+            36140001194 \
+            36140147261 \
+            36140378359 \
+            36147195775 \
+            36147470320 \
+            36147891005 \
+            36148244054 \
+            36148249717 \
+            36148257534 \
+            36148416434
+          do
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" || true
+          done
