@@ -3,7 +3,7 @@
   "storyId": "level_0_2_remodeled_mess",
   "levelKey": "0.2",
   "sourceRevision": "remodeled-mess-r1",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L02_C19",
   "source": "story/source/level_0_2/LEVEL0.2_CH19_REMODELED_MESS.md",
   "sourceDigest": "60f5a540a91da94208255c66bae3766ac6f8bd568173537fe3202fe505dd2d7c",
@@ -17,62 +17,158 @@
     "L02_C19_S35ccfa03155510c6",
     "L02_C19_S5a91226458f810a2"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L02_C19_S3bbe6cf36f2facf1": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S3bbe6cf36f2facf1",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra buồng vệ sinh đóng để chắc chắn không có nguy hiểm phía trước",
+            "return": "Quay lại phòng tắm để xem bồn rửa có khả dụng không",
+            "stay": "Đợi nước lạnh thêm chút nữa rồi rửa sạch bụi trên cơ thể"
+          },
+          {
+            "canon": "Xem xét các cánh cửa khác trong phòng để tìm lối tiếp theo",
+            "return": "Đi lại gần gương nứt để kiểm tra có mảnh sắc nào có thể dùng được",
+            "stay": "Thử vặn vòi khác để so sánh nước và đảm bảo chất lượng"
+          }
+        ]
       }
     },
     "L02_C19_Scb9de5c95e01c090": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_Scb9de5c95e01c090",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi theo hướng Lục Trầm chỉ dẫn, sẵn sàng cho những bước tiếp theo",
+            "return": "Quay trở lại phòng tắm để kiểm tra lần nữa có gì để uống không",
+            "stay": "Dừng lại và đợi chân phục hồi thêm trước khi tiếp tục hành động"
+          },
+          {
+            "canon": "Hỏi Lục Trầm về đoạn hành lang phía trước và những gì cần chuẩn bị",
+            "return": "Ngồi xuống để xoa và nâng chân trái lên để giảm đau",
+            "stay": "Lấy thanh kim loại để dùng làm gậy hỗ trợ bước đi tiếp theo"
+          }
+        ]
       }
     },
     "L02_C19_S83386b7d6699aca5": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S83386b7d6699aca5",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dẫn đầu qua khu vực bụi dày và bắt đầu di chuyển nhanh hơn",
+            "return": "Ngồi lại để bó chân trái chắc chắn và kiểm tra sợi dây cổ tay",
+            "stay": "Yêu cầu nghỉ thêm vì thân thể cần khôi phục sức lực"
+          },
+          {
+            "canon": "Quan sát tường ngã và khung gỗ để định vị con đường an toàn nhất",
+            "return": "Đôi khi nhìn lên trần để đánh giá độ ổn định của cấu trúc",
+            "stay": "Đứng yên và để mắt thích nghi với bụi trước khi bước tiếp"
+          }
+        ]
       }
     },
     "L02_C19_S81fce288b41a4efc": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S81fce288b41a4efc",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Yêu cầu Lục Trầm đổi vị trí vì cảnh báo trên tường",
+            "return": "Tiếp tục đi nhưng để mắt vào nền dưới chân",
+            "stay": "Hỏi Lục Trầm ý nghĩa của dòng chữ trước khi quyết định"
+          },
+          {
+            "canon": "Настаивать, чтобы Lục Trầm не đi sau cùng theo cảnh báo",
+            "return": "Đề xuất ba người đi sát nhau để hỗ trợ lẫn nhau",
+            "stay": "Xem xét kỹ bức tường và xung quanh dòng chữ để hiểu thêm"
+          }
+        ]
       }
     },
     "L02_C19_S16083a1813a3e5cb": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S16083a1813a3e5cb",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đề nghị Lục Trầm nhường chỗ cuối cùng cho mình",
+            "return": "Ghi nhận lý do Lục Trầm ở sau và cảnh báo cô chú ý nền",
+            "stay": "Tranh luận với Lục Trầm về ý nghĩa thực sự của cảnh báo"
+          },
+          {
+            "canon": "Настаивать đi cuối để bảo vệ những người còn lại",
+            "return": "Chấp nhận vị trí giữa nhưng yêu cầu Lục Trầm giám sát chân mình",
+            "stay": "Phân tích tại sao Lục Trầm lại từ chối đổi vị trí"
+          }
+        ]
       }
     },
     "L02_C19_S7f5c076f8b94172f": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S7f5c076f8b94172f",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước lên thảm đỏ và hướng về khu vực hoàn thiện",
+            "return": "Kiểm tra ranh giới giữa bê tông và thảm trước khi tiến",
+            "stay": "Hỏi Cao Minh có thể quay lại nếu đây không phải lối ra"
+          },
+          {
+            "canon": "Tiến vào hành lang trắng theo Cao Minh",
+            "return": "Chờ Lục Trầm xác nhận nền an toàn trước khi bước tiếp",
+            "stay": "Đánh giá khoảng cách và độ tin cậy của đường mới"
+          }
+        ]
       }
     },
     "L02_C19_S35ccfa03155510c6": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S35ccfa03155510c6",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo hành lang phía trước, không quay lại.",
+            "return": "Nhìn lại phía sau một lần nữa để xác nhận lối cũ bị chặn hoàn toàn.",
+            "stay": "Dừng lại để kiểm tra vết nứt trên tường kỹ hơn."
+          },
+          {
+            "canon": "Đi sâu hơn vào phần hoàn thiện cùng Duy và Lục Trầm.",
+            "return": "Quay lại bảo hai người chờ trong khi cậu đi xem lối cũ còn thông hay không.",
+            "stay": "Ngồi xuống để xoa bóp chân của Duy vì tình trạng của cậu ấy."
+          }
+        ]
       }
     },
     "L02_C19_S5a91226458f810a2": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C19_S5a91226458f810a2",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào lối phải hẹp hơn theo đề xuất của Cao Minh.",
+            "return": "Đề nghị thử lối trái rộng hơn dù có võng trần phía trên.",
+            "stay": "Ngồi xuống ở ngã rẽ để thuyết phục Duy phải nghỉ ngơi lâu hơn."
+          },
+          {
+            "canon": "Theo Cao Minh vào nhánh có nền khô hơn mà Duy chỉ ra.",
+            "return": "Hỏi Lục Trầm ý kiến của cậu về hai lối trước khi chọn.",
+            "stay": "Nói với cả hai rằng cần dừng để bàn kỹ hơn về tình trạng chân và sức khỏe."
+          }
+        ]
       }
     }
   }

@@ -3,7 +3,7 @@
   "storyId": "level_0_2_remodeled_mess",
   "levelKey": "0.2",
   "sourceRevision": "remodeled-mess-r1",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L02_C09",
   "source": "story/source/level_0_2/LEVEL0.2_CH09_REMODELED_MESS.md",
   "sourceDigest": "fd8b8f39513cfe09ad97db784c37a187c5532eefd9bb395c600c758e3a8e9f86",
@@ -16,55 +16,139 @@
     "L02_C09_Se735dad72f371f23",
     "L02_C09_S5ba99d69e04e7d71"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L02_C09_S6bbc52ce5185736b": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_S6bbc52ce5185736b",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Quan sát rãnh nước và tìm cách vượt qua.",
+            "return": "Kiểm tra lại vệt ẩm phía sau để chắc chắn không có nguy hiểm.",
+            "stay": "Để ý các bó dây trên tường để lên cao tránh nước."
+          },
+          {
+            "canon": "Đánh giá chiều sâu của rãnh trước khi đưa ra quyết định.",
+            "return": "Quay lại bước vựng vụi vừa rồi để kiểm tra cân bằng.",
+            "stay": "Theo dõi các ống và dây để hiểu nguồn nước từ đâu."
+          }
+        ]
       }
     },
     "L02_C09_Sdf700292dad0c839": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_Sdf700292dad0c839",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra mảng bụi và dấu kéo để hiểu ý định của người để lại.",
+            "return": "Hỏi Hưng có nghe thấy hoặc cảm nhận được gì lạ lẫm từ dấu này.",
+            "stay": "Nhìn kỹ ba nét chéo để xác định tuổi và chất liệu dấu."
+          },
+          {
+            "canon": "Theo dõi đường kéo trong bụi xem nó dẫn đến đâu.",
+            "return": "Yêu cầu mọi người dừng lại để cùng quan sát chi tiết.",
+            "stay": "Chạm vào mảng bụi để cảm nhận độ tươi mới của dấu."
+          }
+        ]
       }
     },
     "L02_C09_S0467f64b3cb663db": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_S0467f64b3cb663db",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tìm nơi yên tĩnh để Hưng có thể hồi phục sức lực.",
+            "return": "Hỏi Hưng mô tả chính xác vị trí đau để theo dõi sự thay đổi.",
+            "stay": "Đề xuất tiếp tục di chuyển nhưng chậm hơn để quan sát phản ứng."
+          },
+          {
+            "canon": "Lựa chọn phòng trống gần đó để dừng lại ngắn.",
+            "return": "Đặt Hưng xuống để các cơ được thư giãn một lát.",
+            "stay": "Tiếp tục nhưng chú ý mỗi bước để phát hiện dấu hiệu xấu thêm."
+          }
+        ]
       }
     },
     "L02_C09_S89303a1ed8cabdcd": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_S89303a1ed8cabdcd",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dẫn họ ra khỏi phòng này, tiếp tục tìm nước.",
+            "return": "Để họ nằm lâu hơn, kiểm tra thêm tình trạng chân Hưng.",
+            "stay": "Ngồi canh sát hành lang, chắc chắn không có mối nguy hiện tại."
+          },
+          {
+            "canon": "Kéo nhóm lên đường, không thể chỉ nằm chờ khi khát tấn công.",
+            "return": "Cho Hưng ngủ thêm chút, rồi kiểm tra phản xạ của hắn lần nữa.",
+            "stay": "Giữ yên tĩnh trong phòng, để cơ thể Hưng phục hồi từng phút một."
+          }
+        ]
       }
     },
     "L02_C09_S32cf7ebd4f18e6fa": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_S32cf7ebd4f18e6fa",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo hành lang trước mắt, nước sẽ dẫn tới đâu cũng được.",
+            "return": "Dừng lại, quan sát từng giọt nước để hiểu rõ hơn chúng từ đâu tới.",
+            "stay": "Gác lại kế hoạch, xác nhận vị trí hiện tại là an toàn trước khi tiến."
+          },
+          {
+            "canon": "Bước qua những giọt, đuổi theo dấu vết nước phía trước.",
+            "return": "Đứng yên, để Lục Trầm và Duy xem xét kỹ từng chi tiết quanh đây.",
+            "stay": "Tạo khoảng cách an toàn với vệt nước, chỉ quan sát từ xa."
+          }
+        ]
       }
     },
     "L02_C09_Se735dad72f371f23": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_Se735dad72f371f23",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chọn lối trái, dẫn nhóm theo hướng sáng và khô ráo.",
+            "return": "Dừng lại ở giao lộ, để mọi người bàn bạc thêm trước khi quyết định.",
+            "stay": "Quan sát thêm cả hai lối, chắc chắn không bỏ sót chi tiết nào."
+          },
+          {
+            "canon": "Rẽ trái, tránh xa những giọt nước lạ ở bên phải.",
+            "return": "Từ từ tiến lại gần hai giọt nước, kiểm tra xem chúng là gì.",
+            "stay": "Nhìn kỹ lối phải trước, chưa vội kết luận con đường nào tốt hơn."
+          }
+        ]
       }
     },
     "L02_C09_S5ba99d69e04e7d71": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C09_S5ba99d69e04e7d71",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo dãy đèn trắng, chú ý tình trạng Hưng",
+            "return": "Quay lại để kiểm tra hai giọt nước ở lối rẽ tối",
+            "stay": "Đứng lại, cho Hưng nghỉ ngơi và quan sát xung quanh"
+          },
+          {
+            "canon": "Đi sâu vào hành lang ánh sáng để tìm nước uống",
+            "return": "Quay lui tìm con đường khác từ điểm rẽ lúc nãy",
+            "stay": "Ngồi xuống, trao đổi với Duy và Lục Trầm về hướng đi"
+          }
+        ]
       }
     }
   }

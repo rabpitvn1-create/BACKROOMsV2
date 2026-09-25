@@ -3,7 +3,7 @@
   "storyId": "level_0_2_remodeled_mess",
   "levelKey": "0.2",
   "sourceRevision": "remodeled-mess-r1",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L02_C14",
   "source": "story/source/level_0_2/LEVEL0.2_CH14_REMODELED_MESS.md",
   "sourceDigest": "740bbd7784119061a9ab828ef03a5c702f3f7b53f2091d63a2d580b81fac06b3",
@@ -17,62 +17,158 @@
     "L02_C14_S87f9d794b3872e80",
     "L02_C14_S91b859bb1b394aa4"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L02_C14_Sc4819a631c959cd3": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_Sc4819a631c959cd3",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi vào khe bên trái bức tường trắng để kiểm tra hướng tiếp theo.",
+            "return": "Đánh thêm một dấu lên cột để xác nhận vị trí nếu quay lại.",
+            "stay": "Hỏi Lục Trầm xem có thể dùng thanh kim loại để khảo sát không gian phía sau tường."
+          },
+          {
+            "canon": "Tiến vào khe hẹp phía trái để tìm hiểu bố cục xung quanh.",
+            "return": "Yêu cầu Duy kiểm tra kỹ lưỡng bức tường trắng trước khi rời chỗ này.",
+            "stay": "Cho Hưng uống thêm linh tửu để đối phó với cơn khát hiện tại."
+          }
+        ]
       }
     },
     "L02_C14_S9ba80e70cc7b2a62": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S9ba80e70cc7b2a62",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào căn phòng có ánh đèn vàng để quan sát cấu trúc và dấu hiệu.",
+            "return": "Đợi Lục Trầm và Duy kiểm tra hoàn toàn vùng tấm nhựa trước khi tiếp tục.",
+            "stay": "Hỏi Hưng có cảm thấy đủ khỏe để tự đi trong đoạn hành lang này không."
+          },
+          {
+            "canon": "Vào phòng để kiểm tra tiếng rung và mảng sàn bê tông bất thường.",
+            "return": "Giúp Duy bước qua vùng tấm nhựa phồng lên một cách cẩn thận.",
+            "stay": "Dừng lại và cho Hưng nghỉ thêm chút nữa ở đây trước khi tiến lên."
+          }
+        ]
       }
     },
     "L02_C14_S8089fd99b2416db0": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S8089fd99b2416db0",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Rời phòng vàng và tiến vào hành lang phía sau để khám phá tiếp.",
+            "return": "Ở lại phòng lâu hơn để quan sát thêm tiếng rung dưới nền và bóng đèn.",
+            "stay": "Đề nghị Duy nằm xuống để bộ chân trái có thời gian phục hồi."
+          },
+          {
+            "canon": "Đi theo hành lang khô sau phòng để kiểm tra ô cửa phía trước.",
+            "return": "Bảo Lục Trầm tìm cách tắt hoặc điều chỉnh các bóng đèn tắt trong phòng.",
+            "stay": "Yêu cầu Duy và Hưng kể lại những chi tiết về các dấu họ đã gặp."
+          }
+        ]
       }
     },
     "L02_C14_S9e5e8db324dbedcc": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S9e5e8db324dbedcc",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra dấu trên sàn để hiểu quan hệ giữa các điểm trong hành lang.",
+            "return": "Quay lại tấm thạch cao để xem kỹ lại cấu trúc và hướng của ba vạch.",
+            "stay": "Đếm từng khung gỗ cẩn thận từ đầu để so sánh số lượng với các người khác."
+          },
+          {
+            "canon": "Tiếp tục hành động bằng cách không dựa vào bất kỳ phương pháp đếm nào.",
+            "return": "Đặt câu hỏi với nhóm về ý nghĩa của lời cảnh báo trên tấm.",
+            "stay": "Ngồi xuống để nghỉ và suy ngẫm lại những dấu hiệu họ đã tìm thấy."
+          }
+        ]
       }
     },
     "L02_C14_S2b52faf4449184e3": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S2b52faf4449184e3",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Cho Hưng linh tửu và ngừng lại để theo dõi tình trạng của hắn.",
+            "return": "Hỏi Duy những câu hỏi toán học để đánh giá sự tỉnh táo của cả nhóm.",
+            "stay": "Tiếp tục đi tiếp để tìm những dấu hiệu khác trong hành lang."
+          },
+          {
+            "canon": "Cho Hưng một liều nhỏ rồi chú ý theo dõi phản ứng của hắn.",
+            "return": "Giao cho Duy nhiệm vụ kiểm tra kỹ hành lang xung quanh.",
+            "stay": "Đưa Hưng nước thay vì linh tửu để giải khát."
+          }
+        ]
       }
     },
     "L02_C14_S02ef7226e5198e8c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S02ef7226e5198e8c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đổi hướng tiếp cận bằng cách quan sát toàn bộ yếu tố xung quanh thay vì chỉ một dấu.",
+            "return": "Quay về ma ấn thứ hai để xác nhận vị trí chính xác của nó.",
+            "stay": "Yêu cầu nhóm dừng lại để bàn luận về ý nghĩa của vòng lặp này."
+          },
+          {
+            "canon": "Nhận xét những thay đổi nhỏ trong nền, khí, độ ẩm và âm thanh để định hướng.",
+            "return": "Hỏi Lục Trầm về khả năng dấu đầu tiên có thể bị di chuyển.",
+            "stay": "Chờ Duy để thảo luận thêm về lời cảnh báo trên tấm thạch cao."
+          }
+        ]
       }
     },
     "L02_C14_S87f9d794b3872e80": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S87f9d794b3872e80",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo luồng khí nhẹ, nền khô và không có mùi lạ để tìm lối ra.",
+            "return": "Quay lại kiểm tra ma ấn một lần nữa để chắc chắn về vị trí của nó.",
+            "stay": "Dừng lại và quan sát kỹ những dấu hiệu trên tường xung quanh ma ấn."
+          },
+          {
+            "canon": "Dẫn nhóm theo hướng nền bê tông ổn định và không mang mùi.",
+            "return": "Xem xét các đoạn hành lang khác gần đây để so sánh tình trạng vật liệu.",
+            "stay": "Nghe kỹ âm thanh từ các hướng khác nhau trong phạm vi hiện tại."
+          }
+        ]
       }
     },
     "L02_C14_S91b859bb1b394aa4": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C14_S91b859bb1b394aa4",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến tới hướng luồng khí đến để tìm nguồn gốc của nó.",
+            "return": "Dừng đội hình và để Lục Trầm kiểm tra độ ẩm tương đối của nền ở vị trí hiện tại.",
+            "stay": "Quan sát dải nhựa mắc trên khung gỗ để hiểu rõ hơn chuyển động của nó."
+          },
+          {
+            "canon": "Đi theo hướng luồng khí có nhịp không đều để khám phá phía trước.",
+            "return": "Báo cho Hưng biết để cậu tập trung vào những âm thanh khác nếu có.",
+            "stay": "Chỉ cho Duy những vệt sạch trên nền để phân tích dấu vết cùng nhau."
+          }
+        ]
       }
     }
   }

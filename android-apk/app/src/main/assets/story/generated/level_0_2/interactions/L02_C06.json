@@ -3,7 +3,7 @@
   "storyId": "level_0_2_remodeled_mess",
   "levelKey": "0.2",
   "sourceRevision": "remodeled-mess-r1",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L02_C06",
   "source": "story/source/level_0_2/LEVEL0.2_CH06_REMODELED_MESS.md",
   "sourceDigest": "da40bd6422a5f86ef26a81fcc5c789d936399ec1a903f42fbc78eb7f31fcebf3",
@@ -17,62 +17,158 @@
     "L02_C06_Sa438471bd731e05e",
     "L02_C06_S87f67cb3c1d78a0e"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L02_C06_S5896660ae9673d97": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S5896660ae9673d97",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến vào phòng tắm để kiểm tra kỹ vòi nước và các buồng phía sau.",
+            "return": "Quay lại hành lang để quan sát dấu hiệu điện trên ổ cắm lần nữa.",
+            "stay": "Hỏi Duy về chai nước mà hắn đã vứt để hiểu rõ tình hình."
+          },
+          {
+            "canon": "Đẩy cửa mở rộng và bước vào để xem rõ không gian bên trong.",
+            "return": "Dừng lại nghe tiếng nhỏ giọt từ phía sau cửa lâu hơn trước khi quyết định.",
+            "stay": "Yêu cầu Lục Trầm kiểm khe dưới cửa để chắc chắn không có nguy hiểm."
+          }
+        ]
       }
     },
     "L02_C06_S35ffc8ac59bd7cc5": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S35ffc8ac59bd7cc5",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nâng một giọt nước bằng ma khí để kiểm tra thành phần trước khi cho phép bất kỳ ai chạm vào.",
+            "return": "Để Duy rửa tay nhẹ nếu hắn không chạm vào vết thương hay mặt.",
+            "stay": "Đặt câu hỏi về chai nước trước đó để hiểu Duy và Hưng cần nước bao lâu rồi."
+          },
+          {
+            "canon": "Thả giọt nước vào bồn rửa và quan sát phản ứng để đánh giá an toàn.",
+            "return": "Cho Hưng rửa mặt nếu hắn giữ khoảng cách an toàn từ miệng và mắt.",
+            "stay": "Hỏi Lục Trầm kiểm buồng kế bên xem có chai hay bình chứa nước khác không."
+          }
+        ]
       }
     },
     "L02_C06_S683ca4dd66ca5e6d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S683ca4dd66ca5e6d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo dấu kéo trên sàn để xem nó dẫn đến đâu trong khu xây dở.",
+            "return": "Hỏi Hưng chi tiết về lần anh ta nhìn thấy dấu hai nét trên gỗ.",
+            "stay": "Dừng lại kiểm tra các thanh gỗ lộ ra xem có dấu hiệu gì từ trước đó."
+          },
+          {
+            "canon": "Tiến vào căn phòng trắng sạch phía trước để kiểm tra sự bất thường của nó.",
+            "return": "Yêu cầu Hưng chỉ rõ hướng nó đã đi sau khi tách để so sánh với hiện tại.",
+            "stay": "Chắc chắn Lục Trầm hỗ trợ đủ cho Hưng trước khi tiếp tục qua vệt bụi."
+          }
+        ]
       }
     },
     "L02_C06_Scac1e303640e32e9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_Scac1e303640e32e9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo dõi chiều sâu của khu xây dở, ghi nhận từng dấu vết trên đường.",
+            "return": "Quay lại căn phòng trắng để kiểm tra kỹ hơn các chi tiết trên tường và sàn.",
+            "stay": "Dừng lại tại giao điểm hiện tại, cho phép nhóm hồi phục thêm trước khi tiến lên."
+          },
+          {
+            "canon": "Đẩy nhóm vào sâu khu vực, tìm kiếm nguồn nước mà Hưng cần.",
+            "return": "Quay về để kiểm tra tính an toàn của căn phòng vừa rời khỏi.",
+            "stay": "Giữ nguyên vị trí hiện tại, cho Lục Trầm thời gian quan sát xung quanh kỹ lưỡng."
+          }
+        ]
       }
     },
     "L02_C06_S71896e652569606d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S71896e652569606d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hướng nhóm tìm hiểu thêm về ba nét trên thanh gỗ, theo dõi bất kỳ manh mối nào về người để lại chúng.",
+            "return": "Đưa nhóm quay lại để kiểm tra xem phòng trắng còn an toàn hay khí nóng đã lan rộng.",
+            "stay": "Giữ vị trí ở giao lộ cho đến khi khí lạnh hoàn toàn, quan sát các chi tiết xung quanh."
+          },
+          {
+            "canon": "Phân tích ba nét dấu vết để xác định đối tượng nào khác cũng đang tìm kiếm gì trong không gian này.",
+            "return": "Dẫn nhóm lùi lại phía phòng an toàn để tránh khí nóng từ phía sau.",
+            "stay": "Đứng yên tại chỗ, để Duy và Hưng phục hồi thêm sau cuộc chạy trốn."
+          }
+        ]
       }
     },
     "L02_C06_S6e1ec43b8ccb61c9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S6e1ec43b8ccb61c9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Lựa chọn nhánh trái để dẫn nhóm tiếp tục tìm nước, dựa trên cấu trúc dễ kiểm soát hơn.",
+            "return": "Dẫn nhóm quay trở lại nhánh phải dù phức tạp hơn, theo dõi khả năng nhánh đó dẫn tới nguồn.",
+            "stay": "Tạm dừng tại giao điểm để đánh giá đầy đủ cả hai lựa chọn trước khi tiến hành."
+          },
+          {
+            "canon": "Theo nhánh bên trái, nơi kết cấu cho phép nhóm tiến độc lập mà không liên tục nguy hiểm.",
+            "return": "Kiểm tra nhánh phải trước, mặc dù khó hơn, để loại trừ khả năng nước ở đó.",
+            "stay": "Nghỉ ngơi tại giao lộ, cho Hưng thời gian đủ trước khi bất kỳ quyết định di chuyển nào."
+          }
+        ]
       }
     },
     "L02_C06_Sa438471bd731e05e": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_Sa438471bd731e05e",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo nhánh trái, nơi tường còn nguyên vẹn hơn.",
+            "return": "Kiểm tra lại ba nét trên thanh gỗ để chắc chắn không có chi tiết bị bỏ sót.",
+            "stay": "Chờ Hưng và Duy đồng ý hoàn toàn trước khi di chuyển."
+          },
+          {
+            "canon": "Dẫn nhóm vào lối bên trái vì cấu trúc sàn dễ đọc hơn.",
+            "return": "Hỏi Lục Trầm ý kiến kỹ lưỡng về tình trạng chân Hưng trước khi bước tiếp.",
+            "stay": "Quan sát thêm cả hai nhánh để tìm bất kỳ dấu hiệu sinh khí mới."
+          }
+        ]
       }
     },
     "L02_C06_S87f67cb3c1d78a0e": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L02_C06_S87f67cb3c1d78a0e",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục dẫn nhóm qua khoảng không khí với mùi ngọt, sát bên trái để tránh.",
+            "return": "Dừng lại để Duy kiểm tra kỹ cấu trúc tường bên phải và các ống nhỏ.",
+            "stay": "Cho phép nhóm nghỉ ngắn để Hưng có thời gian điều chỉnh tư thế với chân đau."
+          },
+          {
+            "canon": "Dẫn nhóm sát bên trái, qua vùng mùi ngọt mà không chần chừ.",
+            "return": "Yêu cầu Lục Trầm dùng kinh nghiệm để xác định nguồn mùi chính xác.",
+            "stay": "Cho Duy và Hưng thảo luận thêm về tính chất của mùi trước khi tiến."
+          }
+        ]
       }
     }
   }
