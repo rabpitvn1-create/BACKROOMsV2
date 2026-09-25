@@ -822,18 +822,18 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  static void applyNarrativeBoundary(LevelCore levelCore, JSONObject before, JSONObject candidate,
+  static void applyNarrativeBoundary(LevelCore levelCore, JSONObject before, JSONObject sanitized,
                                      String transitionTarget) throws Exception {
-    copyField(before, candidate, StoryCore.ROOT_KEY);
+    copyField(before, sanitized, StoryCore.ROOT_KEY);
     JSONObject story = before.optJSONObject(StoryCore.ROOT_KEY);
     if (story != null && story.optBoolean("active", false) && !story.optBoolean("arcComplete", false)) {
-      copyField(before, candidate, "location");
+      copyField(before, sanitized, "location");
       // An authored arc can only change canon location through Story/Level Core actions.
-      levelCore.applyNarrativeTransition(before, candidate, "");
+      levelCore.applyNarrativeTransition(before, sanitized, "");
     } else if (transitionTarget == null) {
-      levelCore.validateAndApplyTransition(before, candidate);
+      levelCore.validateAndApplyTransition(before, sanitized);
     } else {
-      levelCore.applyNarrativeTransition(before, candidate, transitionTarget);
+      levelCore.applyNarrativeTransition(before, sanitized, transitionTarget);
     }
   }
 
