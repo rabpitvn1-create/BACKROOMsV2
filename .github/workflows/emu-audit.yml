@@ -37,7 +37,7 @@ jobs:
 
       - name: Build debug APK for emulator
         working-directory: android-apk
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
 
       - name: Run 20-interaction emulator audit
         uses: reactivecircus/android-emulator-runner@v2
