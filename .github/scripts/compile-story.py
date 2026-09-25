@@ -25,7 +25,7 @@ ARTIFACT_SCHEMA_VERSION = 2
 INTERACTION_SCHEMA_VERSION = 4
 COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-authored-choice-variants-v1-events-v1"
 VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "ENTITY_GATE"}
-CHOICE_VARIANT_COUNT = 4
+CHOICE_VARIANT_COUNT = 3
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
     re.compile(r"(?iu)\b(?:chọn|đổi|thay đổi)\s+(?:lối|hướng|đường)\b"),
@@ -669,7 +669,7 @@ def _choice_variant_prompt(chapter, segments, next_chapter_first, compiled):
 
 The manuscript is absolute canon. Runtime must be able to show all three choices before any gameplay API call.
 
-For EVERY decision id, write exactly four variants. Each variant has:
+For EVERY decision id, write exactly three variants. Each variant has:
 - canon: a concise immediate action/intention Cao Minh can choose at the END of currentPause that naturally enters nextAuthoredBeat. It must not reveal the result of nextAuthoredBeat.
 - return: a different, genuinely plausible local action grounded only in currentPause. Do not mention returning, resetting, looping, failure, or any hidden result.
 - stay: another different, genuinely plausible local action grounded only in currentPause. Do not mention staying, waiting for a reset, failure, or any hidden result.
@@ -688,7 +688,6 @@ Return JSON only:
 {"decisions":[{"id":"exact id","variants":[
   {"canon":"...","return":"...","stay":"..."},
   {"canon":"...","return":"...","stay":"..."},
-  {"canon":"...","return":"...","stay":"..."},
   {"canon":"...","return":"...","stay":"..."}
 ]}]}
 
@@ -698,16 +697,7 @@ INPUT:
 """ + json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def compile_choice_variants(chapter, segments, next_chapter_first, compiled):
-    decision_ids = [
-        segment["id"] for segment in segments
-        if (compiled.get(segment["id"]) or {}).get("mode") == "DECISION"
-    ]
-    if not decision_ids:
-        return compiled, "deterministic-turn-loop-v4"
-
-    raw, provider = generate(_choice_variant_prompt(
-        chapter, segments, next_chapter_first, compiled))
+def _apply_choice_variant_result(chapter, compiled, decision_ids, raw):
     parsed = extract_json(raw)
     rows = parsed.get("decisions")
     if not isinstance(rows, list):
@@ -721,7 +711,7 @@ def compile_choice_variants(chapter, segments, next_chapter_first, compiled):
         segment_id = str(row["id"])
         variants = row.get("variants")
         if not isinstance(variants, list) or len(variants) != CHOICE_VARIANT_COUNT:
-            raise CompileError(segment_id + ": expected exactly four compiled choice variants.")
+            raise CompileError(segment_id + ": expected exactly three compiled choice variants.")
         cleaned = []
         signatures = set()
         for variant in variants:
@@ -742,8 +732,38 @@ def compile_choice_variants(chapter, segments, next_chapter_first, compiled):
             signatures.add(signature)
             cleaned.append({"canon": canon, "return": returned_text, "stay": stay})
         output[segment_id]["decisionContract"]["choiceVariants"] = cleaned
+    return output
 
-    return output, "authored-choice-" + provider
+
+def compile_choice_variants(chapter, segments, next_chapter_first, compiled):
+    decision_ids = [
+        segment["id"] for segment in segments
+        if (compiled.get(segment["id"]) or {}).get("mode") == "DECISION"
+    ]
+    if not decision_ids:
+        return compiled, "deterministic-turn-loop-v4"
+
+    prompt = _choice_variant_prompt(chapter, segments, next_chapter_first, compiled)
+    errors = []
+    providers = [
+        ("haiku", call_haiku),
+        ("gemini", call_gemini),
+    ]
+    for provider, caller in providers:
+        for attempt in range(2):
+            suffix = "" if attempt == 0 else (
+                "\n\nYour previous output was invalid. Return compact valid JSON only, "
+                "with every requested id in order and exactly three variants per id."
+            )
+            try:
+                raw = caller(prompt + suffix)
+                return _apply_choice_variant_result(
+                    chapter, compiled, decision_ids, raw), "authored-choice-" + provider
+            except Exception as exc:
+                errors.append(provider + " attempt " + str(attempt + 1) + ": " + str(exc))
+                if attempt == 0:
+                    time.sleep(0.8)
+    raise CompileError(chapter["id"] + ": authored choice generation failed. " + " | ".join(errors))
 
 
 def _cached_compiled_chapter(entry, prepared):
