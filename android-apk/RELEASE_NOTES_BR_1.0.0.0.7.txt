@@ -1,0 +1,7 @@
+BR 1.0.0.0.7
+
+- Tăng versionCode từ 104 lên 105 để Android nhận đây là bản cập nhật mới.
+- Sửa Return Journey khi quay về đầu Level: ba lựa chọn của lượt hiện tại vẫn hiển thị và có thể chọn ngay cả khi lookahead cho lượt kế tiếp còn đang tạo.
+- Lỗi tạo lookahead không còn chèn thông báo GAME MASTER lỗi vào Storytelling nếu lượt hiện tại vẫn hợp lệ; cơ chế retry nền vẫn được giữ.
+- Thu gọn header trên Android WebView bằng cách bỏ cộng safe-area-inset-top vào chiều cao, đồng thời vẫn giữ safe-area trái/phải cho màn hình bo cong/cutout.
+- Bổ sung regression test cho Return Journey và layout header, đồng thời cập nhật CI contract tương ứng.

@@ -12,9 +12,9 @@ Game chạy độc lập trong APK Android. Giao diện vẫn dùng WebView/HTML
 
 ## Phiên bản hiện tại
 
-**BR 1.0.0.0.6** (`versionCode 104`). Rương xuất hiện với tỉ lệ 5%; vật phẩm từ Entity và Core trong rương đều có tỉ lệ rơi 100%. Loot pool và số lượng phần thưởng giữ nguyên.
+**BR 1.0.0.0.7** (`versionCode 105`). Rương xuất hiện với tỉ lệ 5%; vật phẩm từ Entity và Core trong rương đều có tỉ lệ rơi 100%. Loot pool và số lượng phần thưởng giữ nguyên.
 
-APK debug và ghi chú phiên bản được phát hành tại [GitHub Releases](https://github.com/rabpitvn1-create/BACKROOMsV2/releases). Xem [ghi chú BR 1.0.0.0.6](android-apk/RELEASE_NOTES_BR_1.0.0.0.6.txt) để biết các thay đổi.
+APK debug và ghi chú phiên bản được phát hành tại [GitHub Releases](https://github.com/rabpitvn1-create/BACKROOMsV2/releases). Xem [ghi chú BR 1.0.0.0.7](android-apk/RELEASE_NOTES_BR_1.0.0.0.7.txt) để biết các thay đổi.
 
 ## Build cục bộ
 
