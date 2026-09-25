@@ -647,8 +647,8 @@ public class StoryCoreTest {
     try {
       core.resolveDecision(reloaded, id, new CharacterEncounterCore(bound -> bound - 1));
       fail("A resolved choice must not resolve twice");
-    } catch (IllegalStateException expected) {
-      assertTrue(expected.getMessage().contains("not ready"));
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("Unknown"));
     }
   }
 
