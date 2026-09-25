@@ -23,8 +23,9 @@ SCHEMA_VERSION = 3
 COMPILER_VERSION = 3
 ARTIFACT_SCHEMA_VERSION = 2
 INTERACTION_SCHEMA_VERSION = 4
-COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-offline-decisions-v1-events-v1"
+COMPILER_SEMANTICS = "multi-arc-v2-content-segments-v1-authored-choice-variants-v1-events-v1"
 VALID_MODES = {"LINEAR", "DECISION", "CUTAWAY", "ENTITY_GATE"}
+CHOICE_VARIANT_COUNT = 2
 FORBIDDEN_CHOICE_PATTERNS = [
     re.compile(r"(?iu)\b(?:đi|tiến|bước|chạy)\s+(?:vào|qua|theo|về|sang|sâu|thẳng|tiếp)\b"),
     re.compile(r"(?iu)\b(?:chọn|đổi|thay đổi)\s+(?:lối|hướng|đường)\b"),
@@ -621,6 +622,215 @@ def compile_player_turns(chapter, segments):
     return output
 
 
+def _normalized_choice(text):
+    return re.sub(r"\s+", " ", str(text or "").strip().casefold())
+
+
+def _valid_compiled_choice(text):
+    value = str(text or "").strip()
+    if len(value) < 4 or len(value) > 180:
+        return False
+    lower = value.casefold()
+    if lower in {"tiếp tục cốt truyện", "continue story"}:
+        return False
+    if any(token in lower for token in (
+            "canon", "trap_loop", "return_to_start", "stay_in_place",
+            "chọn sai", "reset", "checkpoint", "bẫy")):
+        return False
+    return re.match(r"(?iu)^[abc][\.\):\-]", value) is None
+
+
+def _choice_variant_prompt(chapter, segments, next_chapter_first, compiled, requested_ids=None):
+    requested = None if requested_ids is None else set(requested_ids)
+    rows = []
+    for index, segment in enumerate(segments):
+        if (compiled.get(segment["id"]) or {}).get("mode") != "DECISION":
+            continue
+        if requested is not None and segment["id"] not in requested:
+            continue
+        next_text = segments[index + 1]["text"] if index + 1 < len(segments) else next_chapter_first
+        if not next_text:
+            raise CompileError(segment["id"] + ": DECISION is missing an authored successor.")
+        rows.append({
+            "id": segment["id"],
+            "currentPause": segment["text"][-1400:],
+            "nextAuthoredBeat": next_text[:2200],
+        })
+
+    payload = {
+        "chapter": {
+            "id": chapter.get("id"),
+            "title": chapter.get("title"),
+            "thread": chapter.get("thread"),
+            "requiredFacts": chapter.get("requiredFacts") or [],
+            "forbiddenClaims": chapter.get("forbiddenClaims") or [],
+        },
+        "decisions": rows,
+        "variantCount": CHOICE_VARIANT_COUNT,
+    }
+    return """You author PLAYER-FACING Story choices for BACKROOMsV2 at BUILD TIME.
+
+The manuscript is absolute canon. Runtime must be able to show all three choices before any gameplay API call.
+
+For EVERY decision id, write exactly two variants. Each variant has:
+- canon: a concise immediate action/intention Cao Minh can choose at the END of currentPause that naturally enters nextAuthoredBeat. It must not reveal the result of nextAuthoredBeat.
+- return: a different, genuinely plausible local action grounded only in currentPause. Do not mention returning, resetting, looping, failure, or any hidden result.
+- stay: another different, genuinely plausible local action grounded only in currentPause. Do not mention staying, waiting for a reset, failure, or any hidden result.
+
+All three choices must:
+- be natural Vietnamese, 4-180 characters, similarly plausible and attractive;
+- describe Cao Minh's action/intention, not another character's action;
+- use only facts/objects/characters already available at currentPause;
+- never invent lore, items, Entities, routes, rewards, discoveries, relationships, deaths, or outcomes;
+- never use A/B/C labels or meta words such as canon, chọn sai, reset, checkpoint, bẫy;
+- be distinct within a variant.
+The four variants must be meaningfully rephrased so repeated visits do not expose the hidden answer.
+Do not write replies or narration. Runtime provider owns only hidden local replies for false outcomes.
+
+Return JSON only:
+{"decisions":[{"id":"exact id","variants":[
+  {"canon":"...","return":"...","stay":"..."},
+  {"canon":"...","return":"...","stay":"..."}
+]}]}
+
+Every decision id must appear exactly once and in input order.
+
+INPUT:
+""" + json.dumps(payload, ensure_ascii=False, indent=2)
+
+
+def _apply_choice_variant_result(chapter, compiled, decision_ids, raw):
+    parsed = extract_json(raw)
+    rows = parsed.get("decisions")
+    if not isinstance(rows, list):
+        raise CompileError(chapter["id"] + ": choice authoring output missing decisions array.")
+    returned = [str((row or {}).get("id", "")) for row in rows if isinstance(row, dict)]
+    if returned != decision_ids:
+        raise CompileError(chapter["id"] + ": choice authoring ids/order mismatch.")
+
+    output = json.loads(json.dumps(compiled, ensure_ascii=False))
+    for row in rows:
+        segment_id = str(row["id"])
+        variants = row.get("variants")
+        if not isinstance(variants, list) or len(variants) != CHOICE_VARIANT_COUNT:
+            raise CompileError(segment_id + ": expected exactly two compiled choice variants.")
+        cleaned = []
+        signatures = set()
+        for variant in variants:
+            if not isinstance(variant, dict):
+                raise CompileError(segment_id + ": invalid compiled choice variant.")
+            canon = str(variant.get("canon", "") or "").strip()
+            returned_text = str(variant.get("return", "") or "").strip()
+            stay = str(variant.get("stay", "") or "").strip()
+            values = [canon, returned_text, stay]
+            if not all(_valid_compiled_choice(value) for value in values):
+                raise CompileError(segment_id + ": compiled choice text is invalid.")
+            normalized = [_normalized_choice(value) for value in values]
+            if len(set(normalized)) != 3:
+                raise CompileError(segment_id + ": compiled choices must be distinct.")
+            signature = "|".join(sorted(normalized))
+            if signature in signatures:
+                raise CompileError(segment_id + ": compiled choice variant repeats a previous set.")
+            signatures.add(signature)
+            cleaned.append({"canon": canon, "return": returned_text, "stay": stay})
+        output[segment_id]["decisionContract"]["choiceVariants"] = cleaned
+    return output
+
+
+def compile_choice_variants(chapter, segments, next_chapter_first, compiled):
+    decision_ids = [
+        segment["id"] for segment in segments
+        if (compiled.get(segment["id"]) or {}).get("mode") == "DECISION"
+    ]
+    if not decision_ids:
+        return compiled, "deterministic-turn-loop-v4"
+
+    output = json.loads(json.dumps(compiled, ensure_ascii=False))
+    providers_used = []
+    batch_size = 3
+    for start in range(0, len(decision_ids), batch_size):
+        batch_ids = decision_ids[start:start + batch_size]
+        prompt = _choice_variant_prompt(
+            chapter, segments, next_chapter_first, output, batch_ids)
+        errors = []
+        completed = False
+        for provider, caller in (("haiku", call_haiku), ("gemini", call_gemini)):
+            for attempt in range(2):
+                suffix = "" if attempt == 0 else (
+                    "\n\nYour previous output was invalid. Return compact valid JSON only, "
+                    "with every requested id in order and exactly two variants per id."
+                )
+                try:
+                    raw = caller(prompt + suffix)
+                    output = _apply_choice_variant_result(
+                        chapter, output, batch_ids, raw)
+                    providers_used.append(provider)
+                    completed = True
+                    break
+                except Exception as exc:
+                    errors.append(provider + " attempt " + str(attempt + 1) + ": " + str(exc))
+                    if attempt == 0:
+                        time.sleep(0.8)
+            if completed:
+                break
+        if not completed:
+            raise CompileError(
+                chapter["id"] + ": authored choice generation failed for "
+                + ",".join(batch_ids) + ". " + " | ".join(errors))
+
+    provider_label = "+".join(sorted(set(providers_used)))
+    return output, "authored-choice-" + provider_label
+
+
+def _cached_compiled_chapter(entry, prepared):
+    chapter = prepared["runtime"]
+    _, metadata_path, interaction_path = generated_paths(entry, chapter["id"])
+    if not metadata_path.is_file() or not interaction_path.is_file():
+        return None
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        interaction = json.loads(interaction_path.read_text(encoding="utf-8"))
+        expected_ids = [segment["id"] for segment in prepared["segments"]]
+        common = (
+            metadata.get("schemaVersion") == ARTIFACT_SCHEMA_VERSION
+            and interaction.get("schemaVersion") == INTERACTION_SCHEMA_VERSION
+            and metadata.get("storyId") == entry["storyId"]
+            and interaction.get("storyId") == entry["storyId"]
+            and metadata.get("levelKey") == entry["levelKey"]
+            and interaction.get("levelKey") == entry["levelKey"]
+            and metadata.get("sourceRevision") == entry["sourceRevision"]
+            and interaction.get("sourceRevision") == entry["sourceRevision"]
+            and metadata.get("compilerFingerprint") == compiler_fingerprint()
+            and interaction.get("compilerFingerprint") == compiler_fingerprint()
+            and metadata.get("sourceDigest") == prepared["sourceDigest"]
+            and interaction.get("sourceDigest") == prepared["sourceDigest"]
+            and metadata.get("segmentIds") == expected_ids
+            and interaction.get("segmentIds") == expected_ids
+        )
+        if not common:
+            return None
+        specs = interaction.get("segments")
+        if not isinstance(specs, dict):
+            return None
+        for segment_id in expected_ids:
+            spec = specs.get(segment_id) or {}
+            if spec.get("mode") == "DECISION":
+                variants = (spec.get("decisionContract") or {}).get("choiceVariants")
+                if not isinstance(variants, list) or len(variants) != CHOICE_VARIANT_COUNT:
+                    return None
+                for variant in variants:
+                    if not isinstance(variant, dict):
+                        return None
+                    values = [variant.get("canon"), variant.get("return"), variant.get("stay")]
+                    if not all(_valid_compiled_choice(value) for value in values):
+                        return None
+                    if len({_normalized_choice(value) for value in values}) != 3:
+                        return None
+        return metadata, interaction
+    except Exception:
+        return None
+
+
 def compile_safe_linear(segments, forced_locked):
     # Legacy helper kept for compatibility with old call sites. Player-visible
     # compilation no longer uses it: turn decisions are deterministic.
@@ -1087,10 +1297,19 @@ def prepare_story(entry):
             "segments": segments,
             "sourceDigest": source_digest(manuscript),
         })
+    for index, item in enumerate(prepared):
+        item["nextChapterFirstSegmentText"] = (
+            prepared[index + 1]["segments"][0]["text"]
+            if index + 1 < len(prepared) and prepared[index + 1]["segments"] else ""
+        )
     return arc, prepared, target, maximum
 
 
 def compile_prepared_chapter(entry, prepared):
+    cached = _cached_compiled_chapter(entry, prepared)
+    if cached is not None:
+        return cached
+
     chapter = prepared["runtime"]
     segments = prepared["segments"]
     if chapter.get("visibility") == "cutaway":
@@ -1098,7 +1317,8 @@ def compile_prepared_chapter(entry, prepared):
         provider = "deterministic-cutaway"
     else:
         compiled = compile_player_turns(chapter, segments)
-        provider = "deterministic-turn-loop-v3"
+        compiled, provider = compile_choice_variants(
+            chapter, segments, prepared.get("nextChapterFirstSegmentText", ""), compiled)
     interaction = {
         "schemaVersion": INTERACTION_SCHEMA_VERSION,
         "storyId": entry["storyId"],
@@ -1300,8 +1520,21 @@ def validate_v2(selection, catalog):
                 raise CompileError(chapter_id + ": interaction segment order mismatch.")
             for segment_id in expected_ids:
                 spec = segments[segment_id]
-                if spec.get("mode") not in VALID_MODES or not isinstance(spec.get("decisionContract"), dict):
+                contract = spec.get("decisionContract")
+                if spec.get("mode") not in VALID_MODES or not isinstance(contract, dict):
                     raise CompileError(segment_id + ": invalid interaction contract.")
+                if spec.get("mode") == "DECISION":
+                    variants = contract.get("choiceVariants")
+                    if not isinstance(variants, list) or len(variants) != CHOICE_VARIANT_COUNT:
+                        raise CompileError(segment_id + ": missing compiled authored choice variants.")
+                    for variant in variants:
+                        if not isinstance(variant, dict):
+                            raise CompileError(segment_id + ": invalid compiled choice variant.")
+                        values = [variant.get("canon"), variant.get("return"), variant.get("stay")]
+                        if not all(_valid_compiled_choice(value) for value in values):
+                            raise CompileError(segment_id + ": invalid compiled choice wording.")
+                        if len({_normalized_choice(value) for value in values}) != 3:
+                            raise CompileError(segment_id + ": compiled choices must be distinct.")
     print("[story-compiler] generated multi-arc artifacts validated.")
 
 

@@ -383,7 +383,9 @@ public final class GameCoreFacade implements AutoCloseable {
       }
       storyCore.selectDecision(state, choiceId);
       persist(state);
-      if (storyCore.decisionReady(state)) return processStoryDecision(state.toString(), choiceId);
+      if (storyCore.decisionCanResolveNow(state, choiceId)) {
+        return processStoryDecision(state.toString(), choiceId);
+      }
       return response(true, state, null, "story_choice_pending", null);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_choice_rejected", null);

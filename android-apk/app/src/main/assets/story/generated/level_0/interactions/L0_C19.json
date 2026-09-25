@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C19",
   "source": "story/source/level_0/LEVEL0_CH19.md",
   "sourceDigest": "c9942de638422c7f185bef7b10a67f17a65eec92d06b3196f72e18aff9bb277f",
@@ -15,48 +15,120 @@
     "L0_C19_Sc3e6f7665f2edb4c",
     "L0_C19_S167e3d4ce99d238a"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C19_S91b64328b9245164": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_S91b64328b9245164",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi hướng âm thanh và mở rộng phạm vi tìm kiếm có kiểm soát",
+            "return": "Quay về điểm Nam biến mất để kiểm tra lần nữa từng chi tiết tường, sàn và khe hở",
+            "stay": "Tập trung khảo sát các căn phòng ngay sát điểm cuối cùng trước khi mở rộng ra xa"
+          },
+          {
+            "canon": "Tiếp tục đi theo hướng âm thanh nhưng giữ chặt chuỗi mốc để không mất định hướng",
+            "return": "Dừng lại và gọi tên Nam nhiều lần ở những điểm giao cách nhau để xác định khoảng cách",
+            "stay": "Quét toàn bộ các phòng gần đó với thần thức tối đa trước khi tiến xa hơn"
+          }
+        ]
       }
     },
     "L0_C19_S20a508877cd7b73f": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_S20a508877cd7b73f",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Để Lục Trầm kiểm tra tiếp các lối khác trong khi hắn đặt dấu để theo dõi sự thay đổi của không gian",
+            "return": "Yêu cầu Lục Trầm gọi Nam liên tục từ những vị trí khác nhau để nghe rõ hướng âm thanh",
+            "stay": "Khám phá từng chi tiết trong phòng hiện tại trước khi rời khỏi để tránh bỏ sót gì"
+          },
+          {
+            "canon": "Đặt các dấu đánh giá xung quanh vị trí Nam mất và rời xa để quan sát sự thay đổi",
+            "return": "Lặp lại các động tác di chuyển của Lục Trầm vào lúc Nam biến mất để tìm mẫu",
+            "stay": "Đứng yên tại chính xác nơi Nam từng đứng và mở thần thức để cảm nhận bất cứ gì bất thường"
+          }
+        ]
       }
     },
     "L0_C19_S40c7723a3cf6e9b8": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_S40c7723a3cf6e9b8",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dừng theo đuổi tiếng gọi và chuyển sang tìm kiếm dấu vật chất cụ thể trong các hành lang",
+            "return": "Tìm hiểu xem liệu các tiếng gọi phát ra từ cùng một vị trí hay di chuyển trong không gian",
+            "stay": "Ghi nhận những gì Lục Trầm tìm thấy ở các nhánh hành lang và đánh giá từng dấu vết"
+          },
+          {
+            "canon": "Thay đổi phương pháp thay vì cứ tiếp tục kiểm tra các dấu âm thanh không rõ nguồn",
+            "return": "Yêu cầu Lục Trầm mô tả chi tiết từng dấu vật mà cô nhìn thấy để phân tích mẫu",
+            "stay": "Tập trung vào những bằng chứng vật lý như dấu chân và vết cọ tường trước khi tiếp tục"
+          }
+        ]
       }
     },
     "L0_C19_S861044ec9fa32948": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_S861044ec9fa32948",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo tuyến kim loại, để dấu rõ cho Nam nếu hắn quay lại.",
+            "return": "Quay lại phòng trung tâm, kiểm lại từng mốc đã đánh dấu.",
+            "stay": "Gọi Nam lần nữa, nghe phản ứng từ các hướng khác nhau."
+          },
+          {
+            "canon": "Khắc mũi tên chỉ hướng trên tường, rồi đi theo tuyến có vật liệu mới.",
+            "return": "Xem lại dải vải trên thảm, thử tìm chuỗi dấu chân liên tiếp.",
+            "stay": "Dừng lại, để thần thức quét từng góc phòng trung tâm kỹ hơn."
+          }
+        ]
       }
     },
     "L0_C19_Sc3e6f7665f2edb4c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_Sc3e6f7665f2edb4c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo Lục Trầm vào tuyến kim loại, rồi tiếp tục sâu hơn.",
+            "return": "Dừng lại, kiểm ma ấn trung tâm lần nữa trước khi rời xa.",
+            "stay": "Nói với Lục Trầm nên đợi thêm ở phòng này, xem Nam có trở lại không."
+          },
+          {
+            "canon": "Đi ba căn phòng theo tuyến kim loại rồi dừng, chuẩn bị tìm kiếm sâu hơn.",
+            "return": "Quay lại ma ấn trung tâm, kiểm từng ký hiệu Lục Trầm vừa để.",
+            "stay": "Đứng yên tại giao lộ, dùng thần thức quét rộng tất cả hướng."
+          }
+        ]
       }
     },
     "L0_C19_S167e3d4ce99d238a": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C19_S167e3d4ce99d238a",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt ma ấn theo khoảng đều, mỗi dấu có hướng, kiểm từng nhánh.",
+            "return": "Tìm phòng có tiếng gọi vừa rồi, xác nhận có ai ở đó hay không.",
+            "stay": "Dừng cạnh tường, theo dõi có dấu chân mới xuất hiện không."
+          },
+          {
+            "canon": "Dựng kiếm ấn cặp cao thấp làm dấu mới, rồi tìm từng nhánh chi tiết.",
+            "return": "Lấy dải vải vừa tìm thấy, so sánh kỹ với vải của Nam.",
+            "stay": "Gọi Nam từ vị trí này, nghe hướng giọng phản hồi rõ hơn."
+          }
+        ]
       }
     }
   }

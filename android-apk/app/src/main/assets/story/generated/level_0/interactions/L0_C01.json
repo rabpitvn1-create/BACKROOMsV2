@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C01",
   "source": "story/source/level_0/LEVEL0_CH01.md",
   "sourceDigest": "42abde5bfa266cec579d1e1240da6898deb128d88f064aee5954c7e08bb10433",
@@ -14,41 +14,101 @@
     "L0_C01_S573a882e321bdf4b",
     "L0_C01_Sf760d34d0571e562"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C01_S677bb7d55e5d596a": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C01_S677bb7d55e5d596a",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi không gian này kỹ lưỡng, tìm cách hiểu quy luật vận hành của nó",
+            "return": "Kiểm tra Huyết Ma Kiếm xem có bị ảnh hưởng bởi sự rơi đó không",
+            "stay": "Quan sát ánh sáng từ các bóng đèn, tìm pattern trong tiếng ù vang quanh"
+          },
+          {
+            "canon": "Bắt đầu ánh sáng mạnh từ thân kiếm để chiếu sáng toàn bộ không gian xung quanh",
+            "return": "Dùng thần thức quét lại những căn phòng đã đi qua để kiểm tra thực trạng hiện tại",
+            "stay": "Lắng nghe kỹ từng âm thanh khác nhau trong không trung để xác định vị trí"
+          }
+        ]
       }
     },
     "L0_C01_S64bfbca54fcb08f7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C01_S64bfbca54fcb08f7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra lại các dấu vết đã ghi nhớ để xác minh không gian có thay đổi",
+            "return": "Chạm vào vết trầy trên chân tường để cảm nhận bằng ma nguyên",
+            "stay": "Quan sát bóng đèn chớp ba lần khi quay lại, chờ xem có tái diễn"
+          },
+          {
+            "canon": "Tiến hành thí nghiệm từng bước bằng các dấu ấn để lập bản đồ không gian",
+            "return": "Chạm lên tấm trần lệch để cảm nhận linh lực hay vết tích trên nó",
+            "stay": "Quan sát kỹ lớp giấy tường, tìm thêm những dấu vết tương tự dấu ấn"
+          }
+        ]
       }
     },
     "L0_C01_S413dc458643599a9": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C01_S413dc458643599a9",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục khám phá sâu vào không gian này để tìm điểm cuối hay trung tâm",
+            "return": "Quay lại những căn phòng đầu tiên, tìm kiếm lối thoát hay điểm khác biệt",
+            "stay": "Nhìn vào lối mở mới, chuẩn bị Huyết Ma Kiếm trước khi bước vào"
+          },
+          {
+            "canon": "Đi sâu vào từng hành lang khác, ghi lại tất cả thay đổi không gian",
+            "return": "Tìm kiếm những vật thể khác, dấu vết hay dấu hiệu sử dụng trong không gian",
+            "stay": "Dừng lại, đánh giá toàn bộ không gian trước khi quyết định hướng tiến"
+          }
+        ]
       }
     },
     "L0_C01_S573a882e321bdf4b": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C01_S573a882e321bdf4b",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào hành lang với Huyết Ma Kiếm, bắt đầu khám phá những quy luật của nơi này",
+            "return": "Quay lại góc tường để xem liệu lối mở có biến mất nếu hắn không nhìn vào nó",
+            "stay": "Dừng lại và quan sát kỹ hơn những chi tiết của hành lang vàng trước khi quyết định"
+          },
+          {
+            "canon": "Tiến sâu vào hành lang để tìm hiểu cấu trúc không gian bí ẩn này",
+            "return": "Kiểm tra lại căn phòng ban đầu để đảm bảo ma ấn của hắn vẫn còn nguyên vị trí",
+            "stay": "Ngồi yên và để ý từng âm thanh, mùi mật trong không khí xung quanh"
+          }
+        ]
       }
     },
     "L0_C01_Sf760d34d0571e562": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C01_Sf760d34d0571e562",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi sâu vào hành lang để tìm ra những bằng chứng khác về quy luật không gian",
+            "return": "Quay trở lại căn phòng bình thường để so sánh với những phòng khác hắn đã gặp",
+            "stay": "Dùng Huyết Ma Kiếm tạo thêm đánh dấu ở những vị trí khác nhau để kiểm tra sự thay đổi"
+          },
+          {
+            "canon": "Đi tiếp phía trước, quan sát cách không gian thay đổi khi hắn di chuyển",
+            "return": "Quay lại để tìm lối mở mà hắn vừa đi qua, xem liệu nó còn ở cùng vị trí",
+            "stay": "Dừng lại và khắc thêm ma ấn ở vị trí mới để theo dõi những biến đổi của địa hình"
+          }
+        ]
       }
     }
   }

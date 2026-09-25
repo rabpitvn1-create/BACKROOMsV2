@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_1_zenith_station",
   "levelKey": "0.1",
-  "sourceRevision": "zenith-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "zenith-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L01_C18",
   "source": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.md",
   "sourceDigest": "a63cb29c58a933cb719b0dcf0958f9357ff002be957d223cff6168527c7615e2",
@@ -16,48 +16,120 @@
     "L01_C18_Sf3f98fcd1d8b8a65",
     "L01_C18_S0901bfbad46780d1"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L01_C18_Sfaee0ac27b0b8395": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_Sfaee0ac27b0b8395",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước qua ngưỡng để kiểm tra hành lang bên kia.",
+            "return": "Quay lại Khải để theo dõi tình trạng của ông kỹ hơn.",
+            "stay": "Ở lại cạnh cửa để quan sát từng chi tiết của hành lang đối diện."
+          },
+          {
+            "canon": "Tiến vào không gian phía trước cùng Lục Trầm.",
+            "return": "Tập trung chú ý vào ma ấn Cao Minh vừa đặt bên Khải.",
+            "stay": "Dừng lại để nghe rõ tiếng vang từ xa phía hành lang."
+          }
+        ]
       }
     },
     "L01_C18_Sacd00ab9a2b05c16": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_Sacd00ab9a2b05c16",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục khám phá phía sau cửa để tìm lối đi.",
+            "return": "Quay về chỗ Khải để chăm sóc ông cho tới khi tình trạng ổn định.",
+            "stay": "Đứng ở cửa để theo dõi sự thay đổi của kết cấu xung quanh."
+          },
+          {
+            "canon": "Đi sâu hơn vào hành lang để đánh giá đường phía trước.",
+            "return": "Dành thời gian nghe Khải nói về những gì ông đã thấy trong quá khứ.",
+            "stay": "Chờ đợi để chắc chắn không có nguy hiểm nào phát sinh tại ngưỡng."
+          }
+        ]
       }
     },
     "L01_C18_S45b48a7c111a3608": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_S45b48a7c111a3608",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chuẩn bị đi tiếp theo hướng Khải gợi ý.",
+            "return": "Nằm xuống bên cạnh để hỗ trợ Khải trong lúc ông nghỉ ngơi.",
+            "stay": "Giữ nguyên vị trí hiện tại để theo dõi tình trạng của Khải."
+          },
+          {
+            "canon": "Định hướng đội tiến tới khu vực mới phía trước.",
+            "return": "Tập trung chỉnh sửa vị trí nằm của Khải để ông thoải mái nhất.",
+            "stay": "Đóng cửa hoàn toàn và chờ đợi cho tới khi Khải phục hồi sức lực."
+          }
+        ]
       }
     },
     "L01_C18_Sc72731c4658778c4": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_Sc72731c4658778c4",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Để Khải nằm yên, rồi bước qua cửa kính cùng Lục Trầm.",
+            "return": "Kiểm tra lại hơi thở và nhịp đập của Khải mấy lần nữa.",
+            "stay": "Ngồi yên bên cạnh Khải, theo dõi ánh sáng từ hành lang phía ngoài."
+          },
+          {
+            "canon": "Mở cửa kính và bước sang không gian bên kia với Lục Trầm.",
+            "return": "Điều chỉnh vị trí chiến bào dưới đầu Khải để hắn nằm thoải mái hơn.",
+            "stay": "Đứng trước cửa kính, nhìn về phía hành lang mà Khải từng tìm kiếm."
+          }
+        ]
       }
     },
     "L01_C18_Se1c8875e138f4813": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_Se1c8875e138f4813",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt Khải vào hốc tường cạnh cửa, rồi bước qua kính cùng Lục Trầm.",
+            "return": "Để mảnh kim loại của Khải gần tay hắn, quay lại ngồi chờ.",
+            "stay": "Nhìn kỹ hốc tường để chắc chắn nó an toàn, không bực không có gì sập."
+          },
+          {
+            "canon": "Đi qua cửa kính với Lục Trầm, rồi đóng cửa lại từ bên kia.",
+            "return": "Kiểm tra xem cửa kính còn hoạt động, đóng mở bình thường không.",
+            "stay": "Nhìn lại Khải qua kính trước khi bước sang, để nhớ rõ vị trí hắn."
+          }
+        ]
       }
     },
     "L01_C18_Sf3f98fcd1d8b8a65": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L01_C18_Sf3f98fcd1d8b8a65",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt tay trên mặt kính, cảm nhận ma ấn, rồi quay lại để tiếp tục với Lục Trầm.",
+            "return": "Sờ lên chiếc kiếm ấn mà Lục Trầm vừa khắc, kiểm tra độ sâu.",
+            "stay": "Đứng yên trước kính, quan sát khu hành lang phía sau một lúc nữa."
+          },
+          {
+            "canon": "Cảm nhận thần thức qua kính, nhận ra không gian đã thay đổi, bước tiếp.",
+            "return": "Quay mắt để nhìn dấu khắc và mảnh kim loại cạnh thi thể Khải.",
+            "stay": "Mở kính trở lại một lần để xác nhận Khải vẫn ở đó, rồi đóng kín."
+          }
+        ]
       }
     },
     "L01_C18_S0901bfbad46780d1": {

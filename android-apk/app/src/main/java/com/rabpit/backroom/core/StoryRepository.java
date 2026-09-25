@@ -621,6 +621,20 @@ final class StoryRepository {
         if (anchor.isEmpty() || guard.isEmpty()) return output;
         output.put("loopAnchor", anchor);
         output.put("decisionGuard", guard);
+        JSONArray choiceVariants = raw.optJSONArray("choiceVariants");
+        if (choiceVariants != null) {
+          if (choiceVariants.length() < 1) return new JSONObject();
+          for (int i = 0; i < choiceVariants.length(); i++) {
+            JSONObject variant = choiceVariants.optJSONObject(i);
+            if (variant == null
+                || variant.optString("canon", "").trim().isEmpty()
+                || variant.optString("return", "").trim().isEmpty()
+                || variant.optString("stay", "").trim().isEmpty()) {
+              return new JSONObject();
+            }
+          }
+          output.put("choiceVariants", copyArray(choiceVariants));
+        }
         JSONArray variants = raw.optJSONArray("offlineVariants");
         if (variants != null && variants.length() >= 3) {
           for (int i = 0; i < variants.length(); i++) {

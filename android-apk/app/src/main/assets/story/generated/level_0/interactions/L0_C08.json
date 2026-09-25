@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C08",
   "source": "story/source/level_0/LEVEL0_CH08.md",
   "sourceDigest": "355643a00a780b7c77c8143edfde88a41e0772af1bc7787157f97f26954c27a3",
@@ -14,41 +14,101 @@
     "L0_C08_S58861084a5dbeee1",
     "L0_C08_S785a179c51717bef"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C08_S9336b107a568fb43": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C08_S9336b107a568fb43",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến theo hướng tia sáng bạc để xác định nguồn kiếm khí",
+            "return": "Dừng lại quan sát các hố xung quanh, kiểm tra độ ổn định của sàn hiện tại",
+            "stay": "Tiếp tục đi men theo dải sàn rộng nhất, tránh những khoảng cách rộng"
+          },
+          {
+            "canon": "Đi theo hướng bạc để tiến gần và xác minh nguồn sáng",
+            "return": "Nghỉ thần thức thêm một lúc, quan sát mọi chuyển động quanh những hố",
+            "stay": "Thực hiện thêm các phép thử để hiểu rõ hơn tính chất của hố trước khi tiếp tục"
+          }
+        ]
       }
     },
     "L0_C08_S03782bc46ffb05f4": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C08_S03782bc46ffb05f4",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào hành lang để tìm hiểu tình hình của người phát ra tiếng ho",
+            "return": "Quay lại khu hố để lấy lại ma ấn và kiểm tra sự thay đổi của sàn",
+            "stay": "Dừng ở mép hành lang, quan sát và lắng nghe thêm trước khi tiến sâu hơn"
+          },
+          {
+            "canon": "Đi vào hành lang theo hướng tiếng người để xác nhận danh tính",
+            "return": "Quay trở lại khu hố để tìm hiểu thêm về cơ chế thay đổi của nơi này",
+            "stay": "Đứng ở ngưỡng hành lang, đợi và quan sát những tín hiệu tiếp theo"
+          }
+        ]
       }
     },
     "L0_C08_Sa06ec3ef3264f261": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C08_Sa06ec3ef3264f261",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dấu chân của hai người để tìm gặp họ phía trước",
+            "return": "Dừng lại ghi chép chi tiết vào mảnh kim loại về những vết kiếm này",
+            "stay": "Quan sát các căn phòng xung quanh, tìm kiếm bất kỳ dấu hiệu nguy hiểm nào"
+          },
+          {
+            "canon": "Đi theo dấu bước để tiến gần đến nơi tiếng rên vang lên",
+            "return": "Lập dừng để phân tích mối liên hệ giữa các vết cắt trên tường",
+            "stay": "Kiểm tra kỹ từng căn phòng, chú ý những thay đổi về ánh sáng và mùi"
+          }
+        ]
       }
     },
     "L0_C08_S58861084a5dbeee1": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C08_S58861084a5dbeee1",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến về phía tiếng nói, cẩn thận kiểm tra mọi hố trước khi bước.",
+            "return": "Quay lại đánh dấu vị trí cầu thang, ghi nhớ tất cả chi tiết của nó.",
+            "stay": "Đứng yên lắng nghe, xác định rõ hướng tiếng nói từ đâu."
+          },
+          {
+            "canon": "Đi theo âm thanh, giữ Huyết Ma Kiếm sẵn sàng, tìm nguồn gốc cuộc thoại.",
+            "return": "Quay xuống cầu thang, kiểm tra xem có dấu hiệu gì thay đổi ở phía dưới.",
+            "stay": "Quan sát hành lang, ghi chú các chi tiết về cấu trúc và ánh sáng xung quanh."
+          }
+        ]
       }
     },
     "L0_C08_S785a179c51717bef": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C08_S785a179c51717bef",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo dõi ma ấn của Cao Minh để qua những điểm đã xác nhận an toàn.",
+            "return": "Để Nam nghỉ thêm, kiểm tra cổ chân của hắn kỹ lưỡng hơn nữa.",
+            "stay": "Quan sát các vết kiếm trên tường, tìm mẫu hoặc ý nghĩa trong chúng."
+          },
+          {
+            "canon": "Thúc đẩy tiến lên, sử dụng ma ấn của Cao Minh làm điểm mốc giữa đường.",
+            "return": "Cho Nam uống nhiều nước hơn, khiến bình chứa tệ hơn nhưng giúp hắn khỏe hơn.",
+            "stay": "Ngồi với Nam, suy nghĩ về chiến lược tiếp theo trong im lặng."
+          }
+        ]
       }
     }
   }

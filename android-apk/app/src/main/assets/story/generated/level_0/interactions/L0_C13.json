@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C13",
   "source": "story/source/level_0/LEVEL0_CH13.md",
   "sourceDigest": "ed9d73a2bacdeaf7c7c6ec2a0dc53d70bc1bdf09d2cfb331a7dce29e6f928916",
@@ -15,48 +15,120 @@
     "L0_C13_Sd49c7a10feb8d6b7",
     "L0_C13_S1cd7b653667d1f74"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C13_S0e068d315cb7ce9d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_S0e068d315cb7ce9d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo âm thanh, tìm lối ra.",
+            "return": "Quay lại kiếm ấn đầu tiên, đợi nó dừng.",
+            "stay": "Dừng lại, nghe thêm để phân biệt hướng thực."
+          },
+          {
+            "canon": "Đi theo tiếng ù mờ phía trước.",
+            "return": "Kiểm tra từng nhánh hành lang gần đây.",
+            "stay": "Tập trung toàn thần thức vào một điểm, chờ nó lặp lại."
+          }
+        ]
       }
     },
     "L0_C13_S5d84f8181ce97f98": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_S5d84f8181ce97f98",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nói ra phát hiện của mình để Nam biết.",
+            "return": "Hỏi Nam có còn nghe tiếng khác nữa không.",
+            "stay": "Yên lặng và quan sát thêm phản ứng của Nam."
+          },
+          {
+            "canon": "Giải thích điều vừa nhận ra với Lục Trầm.",
+            "return": "Hỏi Lục Trầm có nhận diện được đặc điểm nào thêm.",
+            "stay": "Chờ xem liệu giọng còn nói gì khác không."
+          }
+        ]
       }
     },
     "L0_C13_Sd3dfbc4b9320874b": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_Sd3dfbc4b9320874b",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt câu hỏi để so sánh thêm về giọng vợ Nam.",
+            "return": "Đề xuất Nam uống nước và nghỉ một chút.",
+            "stay": "Im lặng để Nam tự sắp xếp suy nghĩ của mình."
+          },
+          {
+            "canon": "Hỏi Nam chi tiết về cách vợ gọi tên để tìm dấu hiệu.",
+            "return": "Quan sát phản ứng của Nam, chưa nói gì.",
+            "stay": "Cho Nam thời gian trước khi nói chuyện tiếp."
+          }
+        ]
       }
     },
     "L0_C13_Se77d1602836901a4": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_Se77d1602836901a4",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục theo dõi giọng gọi để hiểu nó thay đổi như thế nào.",
+            "return": "Yêu cầu Lục Trầm và Nam dừng lại để nghe rõ hơn từng chi tiết.",
+            "stay": "Lặp lại câu hỏi với giọng giả để xem nó sẽ phản ứng tiếp theo ra sao."
+          },
+          {
+            "canon": "Dẫn đội sâu hơn vào hành lang để xem giọng đó mạnh hay yếu đi.",
+            "return": "Dừng và phân tích kỹ từng điểm khác biệt với các lần trước.",
+            "stay": "Hỏi Nam và Lục Trầm những chi tiết họ nhận ra từ lời gọi vừa rồi."
+          }
+        ]
       }
     },
     "L0_C13_Sd49c7a10feb8d6b7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_Sd49c7a10feb8d6b7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Lấy chai rượu từ Vạn Tàng Giới để chuẩn bị những thứ họ sẽ cần.",
+            "return": "Kiểm tra lại các vật khác trong Vạn Tàng Giới để tìm gì có thể dùng.",
+            "stay": "Hỏi Nam và Lục Trầm ý kiến về việc tiếp tục hay nghỉ lâu hơn nữa."
+          },
+          {
+            "canon": "Chuẩn bị tờ giấy để ghi lại những điều còn cần xác minh sau này.",
+            "return": "Yêu cầu Nam nhắc lại mùi hương để so sánh với những gì họ đã biết.",
+            "stay": "Ngồi lại bên cạnh Nam và Lục Trầm để tiếp tục đợi phục hồi."
+          }
+        ]
       }
     },
     "L0_C13_S1cd7b653667d1f74": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C13_S1cd7b653667d1f74",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Quan sát Nam để thấy khi nào hắn sẵn sàng tiếp tục hành động.",
+            "return": "Rút vò linh tửu ra và đảm bảo nó an toàn trong Vạn Tàng Giới.",
+            "stay": "Nói chuyện với Lục Trầm về những tài nguyên họ còn có thể kiếm được."
+          },
+          {
+            "canon": "Lên kế hoạch cho những gì cần kiểm tra ở phòng kế tiếp.",
+            "return": "Kiểm tra tình trạng hiện tại của cả ba người để đánh giá sức lực.",
+            "stay": "Hỏi Nam liệu hắn cảm thấy sợ hãi hay chỉ cần thêm thời gian."
+          }
+        ]
       }
     }
   }

@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C18",
   "source": "story/source/level_0/LEVEL0_CH18.md",
   "sourceDigest": "fee6fd46000e027b51ff8d1d2df8238cf90b460ccba0a0899a1817fe90c54f08",
@@ -15,48 +15,120 @@
     "L0_C18_Sb51c6123b08f1496",
     "L0_C18_S4d0c240ecf9845b7"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C18_S597f960edcd5983d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_S597f960edcd5983d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Để Nam uống từng lượng nhỏ và quan sát phản ứng của cơ thể hắn.",
+            "return": "Hỏi Nam có còn nhớ chi tiết nào khác về Almond Water từ những gì đã nghe.",
+            "stay": "Kiểm tra kỹ chai lạ dưới ánh sáng để tìm dấu hiệu nhiễm bẩn hoặc thay đổi."
+          },
+          {
+            "canon": "Cho phép Nam thử một ngụm và chờ đánh giá tác dụng trước khi quyết định tiếp theo.",
+            "return": "Xin Lục Trầm những công cụ hoặc phương pháp tu luyện có thể kiểm tra độ an toàn.",
+            "stay": "Đề xuất chờ thêm thời gian để xem Nam cần nước cấp bách đến đâu."
+          }
+        ]
       }
     },
     "L0_C18_Sf0391f69c0e03965": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_Sf0391f69c0e03965",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt câu hỏi chi tiết cho Nam về nguồn gốc và độ tin cậy của lời đồn Almond Water.",
+            "return": "Quan sát thêm dấu hiệu sinh lý của Nam trong im lặng mà không cần hỏi.",
+            "stay": "Đề xuất để Nam nằm nghỉ trong khi hai người tiếp tục theo dõi thay vì thẩm vấn."
+          },
+          {
+            "canon": "Hỏi Nam phân biệt được nào giữa thông tin thực tế và những câu chuyện được sáng tạo thêm.",
+            "return": "Kiểm tra chai lỏng bằng cách đưa thần thức vào để tìm bất thường.",
+            "stay": "Để yên Nam hồi phục và chỉ theo dõi bất kỳ thay đổi nào sẽ xảy ra."
+          }
+        ]
       }
     },
     "L0_C18_S3b73162abdc69566": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_S3b73162abdc69566",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra lại với Lục Trầm những điều Nam thực sự nhớ rõ so với những gì chỉ là đoán.",
+            "return": "Chia chai lạ thành các bình nhỏ hơn và giữ một phần để so sánh về sau.",
+            "stay": "Yêu cầu Nam mô tả chi tiết hơn những phiên bản khác nhau mà hắn từng đọc."
+          },
+          {
+            "canon": "Đặt vấn đề về sự khác biệt giữa kiến thức xác thực và truyện được chế tạo để cảnh báo.",
+            "return": "Ghi chú lại các tính chất hiện tại của chất lỏng: mùi, màu sắc, độ trong suốt.",
+            "stay": "Để Nam tiếp tục uống nước thường và chỉ cảnh báo về sử dụng chất lỏng mới."
+          }
+        ]
       }
     },
     "L0_C18_S1eedf546a1cfbd2e": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_S1eedf546a1cfbd2e",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước tới tấm kính để xem rõ phản xạ và kiểm tra những bất thường.",
+            "return": "Kiểm tra các bóng bằng cách di chuyển từng bộ phận cơ thể để so sánh tính nhất quán.",
+            "stay": "Đặt câu hỏi về nguyên nhân khiến phản xạ của Nam chậm hơn phần còn lại."
+          },
+          {
+            "canon": "Tiến gần kính để quan sát kỹ hơn các chi tiết trong vùng tối phía sau.",
+            "return": "Yêu cầu Nam và Lục Trầm cùng thử nhấc tay để so sánh độ chậm của các bóng.",
+            "stay": "Hỏi Lục Trầm ý kiến về hiện tượng phản xạ không đồng bộ trước mặt họ."
+          }
+        ]
       }
     },
     "L0_C18_Sb51c6123b08f1496": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_Sb51c6123b08f1496",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Rời khỏi kính và tiếp tục di chuyển theo hành lang để tìm lối đi tiếp.",
+            "return": "Thử thêm các cử chỉ khác để kiểm tra mức độ trễ của phản xạ trong kính.",
+            "stay": "Đứng yên quan sát kính lâu hơn để ghi nhận tất cả những bất thường nhìn thấy."
+          },
+          {
+            "canon": "Dẫn nhóm ra khỏi vùng kính và tiếp tục theo kim loại.",
+            "return": "Chỉ cho Nam và Lục Trầm những chi tiết lạ trong phản xạ để họ tự nhận xét.",
+            "stay": "Nhận xét với Lục Trầm rằng kính này không phải là vật thường gặp trong Backrooms."
+          }
+        ]
       }
     },
     "L0_C18_S4d0c240ecf9845b7": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C18_S4d0c240ecf9845b7",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Quay lại ngay tìm Nam trong các phòng liền kề.",
+            "return": "Mở rộng thần thức để cảm nhận xem Nam có ở gần đó nhưng bị che giấu.",
+            "stay": "Gọi Nam liên tiếp trong phòng hiện tại để đảm bảo anh ta không chỉ đứng yên."
+          },
+          {
+            "canon": "Lao vào các hành lang xung quanh để kiểm tra từng căn phòng gần nhất.",
+            "return": "Phát hiện tất cả tuyến đường Nam có thể đã bước vào một cách có hệ thống.",
+            "stay": "Dừng lại và sử dụng toàn bộ khả năng cảm nhận để dò tìm sự sống của Nam."
+          }
+        ]
       }
     }
   }

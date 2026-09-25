@@ -623,7 +623,7 @@ final class StoryCore {
     prompt.append("Core has already fixed the three hidden outcomes. You ONLY write player-facing Vietnamese prose. ");
     prompt.append("Never decide state, routes, canon, rewards, encounters, items or progression.\n\n");
     prompt.append("CURRENT AUTHORED BEAT:\n").append(clipTail(current.text, 1700)).append("\n\n");
-    prompt.append("NEXT AUTHORED BEAT (private fixed outcome for canon.text):\n")
+    prompt.append("NEXT AUTHORED BEAT (private context only; public choices are already compiled):\n")
         .append(clip(next.text, 2100)).append("\n\n");
     if (recentStory != null && !recentStory.trim().isEmpty()) {
       prompt.append("RECENT READER-VISIBLE CONTEXT:\n").append(clip(recentStory, 2800)).append("\n\n");
@@ -679,9 +679,11 @@ final class StoryCore {
   DecisionResolution resolveDecision(
       JSONObject state, String rawChoiceId, CharacterEncounterCore characterCore) throws Exception {
     normalizeState(state);
-    if (!decisionReady(state)) throw new IllegalStateException("Story decision is not ready.");
-
     JSONObject story = state.getJSONObject(ROOT_KEY);
+    if (!story.optBoolean("awaitingDecision", false) || returnJourneyActive(state)) {
+      throw new IllegalStateException("Story decision is not ready.");
+    }
+
     JSONObject pack = story.getJSONObject("decisionPackage");
     String expectedHash = pack.optString("contextHash", "").trim();
     if (!expectedHash.equals(decisionContextHash(state))) {
@@ -699,6 +701,9 @@ final class StoryCore {
 
     String visibleChoice = publicChoice.optString("text", "").trim();
     String type = outcome.optString("type", "").trim();
+    if (!OUTCOME_CANON.equals(type) && !decisionReady(state)) {
+      throw new IllegalStateException("Story decision is waiting for provider replies.");
+    }
     String preparedReply = outcome.optString("reply", "").trim();
 
     if (OUTCOME_RETURN.equals(type) || OUTCOME_STAY.equals(type)) {
@@ -1378,14 +1383,8 @@ final class StoryCore {
     return "choice_" + UUID.randomUUID().toString().replace("-", "");
   }
 
-  // Public wording belongs to Core and is fixed when the gate opens. Rotate phrasing
-  // on repeated visits; IDs/order are generated once and persisted, never derived from outcomes.
-  private static final String[][] STORY_ACTIONS = {
-      {"Theo dõi những dấu hiệu phía trước và bước thêm một đoạn", "Thử khoảng lối nằm cạnh dấu vết gần nhất", "Xem kỹ khu vực ngay trước mặt rồi tìm một hướng khác"},
-      {"Quan sát rìa không gian và lần theo đường còn rõ", "Bước vào khoảng hở gần đó để tìm thêm dấu hiệu", "Dò lại bề mặt xung quanh trước khi đổi vị trí"},
-      {"Đi theo mạch dấu vết đang nối tiếp trước mắt", "Khảo sát lối bên cạnh để kiểm tra hướng đi", "Xem xét các góc khuất quanh đây và chọn đường thử"},
-      {"Lần theo chi tiết còn nhận ra ở phía trước", "Tiến qua đoạn hành lang có ánh sáng khác lạ", "Kiểm tra những dấu hiệu gần nhất trước khi đi tiếp"}
-  };
+  // Story wording is compiled from the authored current/next beats. Runtime only assigns
+  // opaque IDs and shuffles presentation; it must never replace authored wording with generic actions.
   private static final String[][] RETURN_ACTIONS = {
       {"Theo một dấu vết còn nhận ra qua lối gần nhất", "Dò theo khoảng sáng chạy dọc mép tường", "Khảo sát những góc khuất trong khu vực này"},
       {"Đi dọc đường nối giữa các dấu hiệu cũ", "Thử lối nằm phía sau một góc rẽ gần đây", "Tìm một mốc quen trong không gian trước mặt"},
@@ -1424,13 +1423,41 @@ final class StoryCore {
       }
       return;
     }
+
+    JSONObject contract = story.optJSONObject("decisionContract");
+    JSONArray variants = contract == null ? null : contract.optJSONArray("choiceVariants");
+    if (variants == null || variants.length() == 0) {
+      throw new IllegalStateException("Authored Story decision is missing compiled public choices.");
+    }
     String id = story.optString("decisionId", "");
     if (id.isEmpty()) return;
     JSONObject history = story.optJSONObject("loopHistory");
     int visits = history == null ? 0 : history.optInt(id, 0);
-    String[] texts = STORY_ACTIONS[Math.floorMod(id.hashCode() + visits, STORY_ACTIONS.length)];
-    story.put("decisionPackage", publicPackage(texts,
-        new String[]{OUTCOME_CANON, OUTCOME_RETURN, OUTCOME_STAY}, decisionContextHash(state)));
+    JSONObject variant = variants.optJSONObject(Math.floorMod(visits, variants.length()));
+    if (variant == null) {
+      throw new IllegalStateException("Compiled Story choice variant is invalid.");
+    }
+    String canonText = variant.optString("canon", "").trim();
+    String returnText = variant.optString("return", "").trim();
+    String stayText = variant.optString("stay", "").trim();
+    if (!validPublicChoice(canonText) || !validPublicChoice(returnText) || !validPublicChoice(stayText)
+        || sameChoice(canonText, returnText) || sameChoice(canonText, stayText)
+        || sameChoice(returnText, stayText)) {
+      throw new IllegalStateException("Compiled Story choices are incomplete or unsafe.");
+    }
+
+    List<JSONObject> choices = new ArrayList<>();
+    JSONObject outcomes = new JSONObject();
+    addOutcome(choices, outcomes, opaqueChoiceId(), canonText, OUTCOME_CANON, "");
+    addOutcome(choices, outcomes, opaqueChoiceId(), returnText, OUTCOME_RETURN, "");
+    addOutcome(choices, outcomes, opaqueChoiceId(), stayText, OUTCOME_STAY, "");
+    Collections.shuffle(choices);
+    JSONArray publicChoices = new JSONArray();
+    for (JSONObject choice : choices) publicChoices.put(choice);
+    story.put("decisionPackage", new JSONObject()
+        .put("contextHash", decisionContextHash(state))
+        .put("choices", publicChoices)
+        .put("outcomes", outcomes));
   }
 
   private void preparePublicReturnTurn(JSONObject state, JSONObject journey) throws Exception {
@@ -1477,6 +1504,20 @@ final class StoryCore {
     story.put("pendingChoiceId", choiceId);
   }
 
+  boolean decisionCanResolveNow(JSONObject state, String choiceId) {
+    try {
+      normalizeState(state);
+      JSONObject story = state.getJSONObject(ROOT_KEY);
+      JSONObject pack = story.optJSONObject("decisionPackage");
+      JSONObject outcomes = pack == null ? null : pack.optJSONObject("outcomes");
+      JSONObject outcome = outcomes == null ? null : outcomes.optJSONObject(choiceId == null ? "" : choiceId.trim());
+      if (outcome == null) return false;
+      return OUTCOME_CANON.equals(outcome.optString("type", "")) || decisionReady(state);
+    } catch (Exception ignored) {
+      return false;
+    }
+  }
+
   void selectReturnChoice(JSONObject state, String choiceId) throws Exception {
     normalizeState(state);
     JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
@@ -1508,6 +1549,12 @@ final class StoryCore {
       if (choice != null && id.equals(choice.optString("id", ""))) return choice;
     }
     return null;
+  }
+
+  private static boolean sameChoice(String a, String b) {
+    String left = a == null ? "" : a.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    String right = b == null ? "" : b.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    return !left.isEmpty() && left.equals(right);
   }
 
   private static boolean validPublicChoice(String text) {
