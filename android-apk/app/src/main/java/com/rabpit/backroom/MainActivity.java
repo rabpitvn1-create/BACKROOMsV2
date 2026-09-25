@@ -830,8 +830,7 @@ public class MainActivity extends Activity {
           String reply = generated.optString("reply", "").trim();
           if (reply.isEmpty()) throw new Exception("GAME MASTER không trả phản hồi môi trường.");
 
-          EnvironmentActionPacket.appendExchange(submitted, text, reply);
-          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
+          JSONObject committed = new JSONObject(gameCore.commitEnvironmentExchange(text, reply));
           emit("backroomEnvironmentTurn", committed.toString());
         } catch (Exception e) {
           Log.w(TAG, "Environment-only PLAYER ACTION failed.", e);
