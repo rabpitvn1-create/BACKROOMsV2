@@ -88,9 +88,9 @@ jobs:
       - name: Verify Java-only baseline
         run: |
           set -euo pipefail
-          grep -Fq 'versionCode 98' android-apk/app/build.gradle
-          grep -Fq "versionName 'BR 1.0.0.0.0'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_BR_1.0.0.0.0.txt
+          grep -Fq 'versionCode 99' android-apk/app/build.gradle
+          grep -Fq "versionName 'BR 1.0.0.0.1'" android-apk/app/build.gradle
+          test -s android-apk/RELEASE_NOTES_BR_1.0.0.0.1.txt
           test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
           test -z "$(find android-apk -type f -name '*.py' -print -quit)"
           test ! -d android-apk/ml
@@ -588,92 +588,92 @@ jobs:
         run: gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon
 
       - name: Prepare APK
-        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk BR-1.0.0.0.0.apk
+        run: cp android-apk/app/build/outputs/apk/debug/app-debug.apk BR-1.0.0.0.1.apk
 
       - name: Verify packaged APK
         run: |
           set -euo pipefail
-          test -s BR-1.0.0.0.0.apk
+          test -s BR-1.0.0.0.1.apk
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs BR-1.0.0.0.0.apk
-          BADGING=$("$BUILD_TOOLS/aapt" dump badging BR-1.0.0.0.0.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='98' versionName='BR 1.0.0.0.0'" <<<"$BADGING"
+          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs BR-1.0.0.0.1.apk
+          BADGING=$("$BUILD_TOOLS/aapt" dump badging BR-1.0.0.0.1.apk)
+          grep -q "package: name='com.rabpit.backroom' versionCode='98' versionName='BR 1.0.0.0.1'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
-          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 BR-1.0.0.0.0.apk
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/index.html'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/snapshot-ui.js'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/gm-choice-ui.js'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/fonts/Play-Regular.ttf'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/inventory-ui.js'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/party-ui.js'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/player-action-ui.js'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/dice/die-1.svg'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/dice/die-6.svg'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/avatars/cao_minh_avatar.jpg'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/cao_minh_entity_overlay.png'
-          test "$(unzip -p BR-1.0.0.0.0.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/avatars/kai_avatar.jpg'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/avatars/kai_avatar.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/avatars/luctram_avatar.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/luctram_overlay.png'
-          cmp <(unzip -p BR-1.0.0.0.0.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
-          cmp <(unzip -p BR-1.0.0.0.0.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/chest_overlay.png'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/status/status_'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/fonts/Play-Bold.ttf'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/fonts/OFL-Play.txt'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/hud/snapshot_frame.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/hud/action_plate.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/hound.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/slenderman.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/diep_minh.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/async_rifleman.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/copx.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/tam_ma_cao_minh.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -E -q 'assets/entity/.*\.png$'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/async_vanguard.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/async_tactical.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/async_decon.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/Anysc.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/hazmat_pistol_tactical_03.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/hazmat_pistol_tank_04.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/hazmat_rifle_ASNC_02.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/entity/hazmat_rifle_A_01.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/kai_snapshot_overlay.webp'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/kai_entity_overlay.png'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/knowledge/knowledge_db.json'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/knowledge/entity_encounters.json'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
-          unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
-          test "$(unzip -l BR-1.0.0.0.0.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
-          ! unzip -l BR-1.0.0.0.0.apk | grep -q 'assets/level_snapshots/wiki/'
-          ! unzip -l BR-1.0.0.0.0.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
+          "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 BR-1.0.0.0.1.apk
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/index.html'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/snapshot-ui.js'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/fonts/Play-Regular.ttf'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/inventory-ui.js'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/party-ui.js'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/player-action-ui.js'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/dice/die-1.svg'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/dice/die-6.svg'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/avatars/cao_minh_avatar.jpg'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/cao_minh_entity_overlay.png'
+          test "$(unzip -p BR-1.0.0.0.1.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/avatars/kai_avatar.jpg'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/avatars/kai_avatar.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/avatars/luctram_avatar.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/luctram_overlay.png'
+          cmp <(unzip -p BR-1.0.0.0.1.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
+          cmp <(unzip -p BR-1.0.0.0.1.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/chest_overlay.png'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/status/status_'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/fonts/Play-Bold.ttf'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/fonts/OFL-Play.txt'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/hud/snapshot_frame.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/hud/action_plate.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/hound.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/slenderman.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/diep_minh.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/async_rifleman.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/copx.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/tam_ma_cao_minh.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -E -q 'assets/entity/.*\.png$'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/async_vanguard.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/async_tactical.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/async_decon.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/Anysc.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/hazmat_pistol_tactical_03.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/hazmat_pistol_tank_04.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/hazmat_rifle_ASNC_02.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/entity/hazmat_rifle_A_01.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/kai_snapshot_overlay.png'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/kai_snapshot_overlay.webp'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/knowledge/knowledge_db.json'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/knowledge/entity_encounters.json'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
+          unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
+          test "$(unzip -l BR-1.0.0.0.1.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
+          ! unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/level_snapshots/wiki/'
+          ! unzip -l BR-1.0.0.0.1.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BR-1.0.0.0.0-debug-apk
-          path: BR-1.0.0.0.0.apk
+          name: BR-1.0.0.0.1-debug-apk
+          path: BR-1.0.0.0.1.apk
           if-no-files-found: error
           retention-days: 14
 
-      - name: Publish GitHub Release BR 1.0.0.0.0
+      - name: Publish GitHub Release BR 1.0.0.0.1
         if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='BR-1.0.0.0.0'
-          TITLE='BR 1.0.0.0.0'
-          NOTES=$(cat android-apk/RELEASE_NOTES_BR_1.0.0.0.0.txt)
+          TAG='BR-1.0.0.0.1'
+          TITLE='BR 1.0.0.0.1'
+          NOTES=$(cat android-apk/RELEASE_NOTES_BR_1.0.0.0.1.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES"
-            gh release upload "$TAG" BR-1.0.0.0.0.apk --clobber
+            gh release upload "$TAG" BR-1.0.0.0.1.apk --clobber
           else
-            gh release create "$TAG" BR-1.0.0.0.0.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
+            gh release create "$TAG" BR-1.0.0.0.1.apk --target "$GITHUB_SHA" --title "$TITLE" --notes "$NOTES"
           fi
 
       - name: Verify published APK
@@ -682,7 +682,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          gh release download BR-1.0.0.0.0 --repo "$GITHUB_REPOSITORY" --pattern 'BR-1.0.0.0.0.apk' --output BR-1.0.0.0.0-verified.apk
-          test -s BR-1.0.0.0.0-verified.apk
-          cmp BR-1.0.0.0.0.apk BR-1.0.0.0.0-verified.apk
-          sha256sum BR-1.0.0.0.0-verified.apk
+          gh release download BR-1.0.0.0.1 --repo "$GITHUB_REPOSITORY" --pattern 'BR-1.0.0.0.1.apk' --output BR-1.0.0.0.1-verified.apk
+          test -s BR-1.0.0.0.1-verified.apk
+          cmp BR-1.0.0.0.1.apk BR-1.0.0.0.1-verified.apk
+          sha256sum BR-1.0.0.0.1-verified.apk
