@@ -1,0 +1,187 @@
+name: Generate Level Floor Art
+
+on:
+  push:
+    branches:
+      - ui/redmi-viewport-foundation
+    paths:
+      - '.github/workflows/generate-level-floor-art.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-level-floor-art
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/floors
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate IMG API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+          mkdir -p "$OUT_DIR"
+
+      - name: Generate Level 0-6 floor plates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.error, urllib.request
+
+          api = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint = base if base.endswith("/images/generations") else (
+              base + "/images/generations" if base.endswith("/v1") else base + "/v1/images/generations"
+          )
+          out_dir = pathlib.Path(os.environ["OUT_DIR"])
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          common = (
+              "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. "
+              "Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. "
+              "No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. "
+              "The center and lower half must stay readable behind character feet and drop shadows. "
+              "Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. "
+              "Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon."
+          )
+
+          prompts = {
+              "0": common + " Level 0 material: damp dirty mustard-beige Berber-like office carpet, flattened fibers, darker wet patches, faint mold grime, nicotine-yellow cast, tiny torn paper and dark lint.",
+              "1": common + " Level 1 Parking Zone material: worn gray parking-garage concrete, hairline cracks, tire scuffs, dusty aggregate, faint oil mark, one small paper scrap and a tiny metal washer.",
+              "2": common + " Level 2 Pipe Dreams material: grimy utility-tunnel concrete with chalky dust, rust flakes, condensation marks, a tiny clipped wire piece and one paper fiber, warm industrial brown-gray tone.",
+              "3": common + " Level 3 Electrical Station material: dark dusty concrete industrial floor, electrical soot, subtle oil grime, small copper-wire clipping and one tiny torn insulation fragment, dim cold industrial lighting.",
+              "4": common + " Level 4 Abandoned Office material: old charcoal-gray office carpet tiles with worn seams, dust gathered in fibers, faint coffee stain, one tiny paper corner and a small plastic fragment, dry abandoned-office feel.",
+              "5": common + " Level 5 Terror Hotel material: aged dark mahogany parquet meeting a narrow burgundy hotel carpet edge, elegant but no longer pristine, fine scuffs, one tiny faded paper scrap and a couple of dark crumbs; still mostly orderly, not filthy.",
+              "6": common + " Level 6 Lights Out material: almost-black cold smooth concrete, barely visible roughness, damp smear, tiny grit and one small pale paper scrap catching minimal ambient light, extremely low-key darkness while keeping floor texture readable."
+          }
+
+          metadata = {
+              "model": model,
+              "format": "webp",
+              "displayPurpose": "snapshot-ground-plane",
+              "targetDimensions": {"width": 768, "height": 144},
+              "assets": []
+          }
+
+          for level, prompt in prompts.items():
+              payload = {"model": model, "prompt": prompt, "n": 1, "response_format": "b64_json"}
+              request = urllib.request.Request(
+                  endpoint,
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={
+                      "Authorization": f"Bearer {api}",
+                      "Content-Type": "application/json",
+                      "Accept": "application/json",
+                  },
+                  method="POST",
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=300) as response:
+                      body = json.loads(response.read().decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  detail = exc.read().decode("utf-8", errors="replace")
+                  raise SystemExit(f"IMG API HTTP {exc.code} for Level {level}: {detail[:2000]}")
+
+              data = body.get("data")
+              if not isinstance(data, list) or not data:
+                  raise SystemExit(f"IMG API response has no data[0] for Level {level}")
+              item = data[0]
+              if item.get("b64_json"):
+                  raw = base64.b64decode(item["b64_json"])
+              elif item.get("url"):
+                  dl = urllib.request.Request(item["url"], headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"})
+                  with urllib.request.urlopen(dl, timeout=300) as response:
+                      raw = response.read()
+              else:
+                  raise SystemExit(f"IMG API response has neither b64_json nor url for Level {level}")
+
+              if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+                  ext = "png"
+              elif raw.startswith(b"\xff\xd8\xff"):
+                  ext = "jpg"
+              elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+                  ext = "webp"
+              elif raw.startswith((b"GIF87a", b"GIF89a")):
+                  ext = "gif"
+              elif len(raw) >= 12 and raw[4:8] == b"ftyp":
+                  ext = "avif"
+              else:
+                  raise SystemExit(f"Unsupported IMG API format for Level {level}; magic={raw[:16].hex()}")
+
+              source = out_dir / f"level_{level}.source.{ext}"
+              source.write_bytes(raw)
+              metadata["assets"].append({
+                  "level": level,
+                  "file": f"level_{level}.webp",
+                  "prompt": prompt
+              })
+
+          (out_dir / "level_floors.generated.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick webp
+
+          for level in 0 1 2 3 4 5 6; do
+            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "level_${level}.source.*" -print -quit)"
+            test -n "$src"
+            tmp="/tmp/backroom-floor-${level}.png"
+
+            convert "$src" -auto-orient \
+              -resize '768x144^' -gravity south -extent 768x144 \
+              -alpha set -channel A -fx 'j<28?j/28:1' +channel \
+              "$tmp"
+
+            out="$OUT_DIR/level_${level}.webp"
+            cwebp -quiet -q 76 -m 6 -alpha_q 88 -metadata none "$tmp" -o "$out"
+
+            bytes="$(stat -c%s "$out")"
+            if [ "$bytes" -gt 80000 ]; then
+              cwebp -quiet -q 70 -m 6 -alpha_q 84 -metadata none "$tmp" -o "$out"
+              bytes="$(stat -c%s "$out")"
+            fi
+            if [ "$bytes" -gt 80000 ]; then
+              cwebp -quiet -q 66 -m 6 -alpha_q 82 -metadata none "$tmp" -o "$out"
+              bytes="$(stat -c%s "$out")"
+            fi
+
+            rm -f "$src" "$tmp"
+            test "$(identify -format '%wx%h' "$out")" = "768x144"
+            test "$bytes" -le 80000 || { echo "::error::Level $level floor is too large: $bytes bytes"; exit 1; }
+            echo "Level $level floor: $bytes bytes"
+          done
+
+          total="$(du -cb "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp | tail -1 | awk '{print $1}')"
+          test "$total" -le 500000 || { echo "::error::Floor asset batch too large: $total bytes"; exit 1; }
+          identify "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp
+
+      - name: Commit generated floor artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR"/level_{0,1,2,3,4,5,6}.webp "$OUT_DIR/level_floors.generated.json"
+          git diff --cached --quiet && { echo 'Floor artwork unchanged.'; exit 0; }
+          git commit -m 'Generate Level floor artwork with IMG API'
+          git push origin HEAD:ui/redmi-viewport-foundation
