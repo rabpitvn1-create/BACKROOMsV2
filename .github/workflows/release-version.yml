@@ -225,7 +225,8 @@ jobs:
           grep -Fq 'storyEntityAttackActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'Android.submitEnvironmentAction' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq '@JavascriptInterface public void submitEnvironmentAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'EnvironmentActionPacket.appendExchange' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'gameCore.commitEnvironmentExchange(text, reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'EnvironmentActionPacket.appendExchange(state, action, reply)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EnvironmentActionPacket.java
           ! grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'storyInteractionActive' android-apk/app/src/main/assets/player-action-ui.js
@@ -438,6 +439,7 @@ jobs:
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --test android-apk/tests/story-choice-ui.test.js
           node --test android-apk/tests/viewport-layout.test.cjs
+          node --test android-apk/tests/environment-action-contract.test.cjs
           ! grep -Fq 'Save được lưu riêng trên thiết bị này.' android-apk/app/src/main/assets/index.html
           grep -Fq 'function captureLogAnchor()' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'function restoreLogAnchor(anchor)' android-apk/app/src/main/assets/gm-choice-ui.js
