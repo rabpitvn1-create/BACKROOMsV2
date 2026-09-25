@@ -1551,6 +1551,12 @@ final class StoryCore {
     return null;
   }
 
+  private static boolean sameChoice(String a, String b) {
+    String left = a == null ? "" : a.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    String right = b == null ? "" : b.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", " ");
+    return !left.isEmpty() && left.equals(right);
+  }
+
   private static boolean validPublicChoice(String text) {
     if (text == null) return false;
     String value = text.trim();
