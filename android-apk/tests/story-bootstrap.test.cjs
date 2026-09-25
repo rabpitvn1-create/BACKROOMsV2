@@ -116,7 +116,7 @@ test('a ready return journey renders exactly three current-turn choices', () => 
   state.story.segmentDelivered=true;
   state.story.awaitingDecision=true;
   state.story.returnJourney={
-    active:true,journeyId:'j1',turnIndex:4,turnStatus:'READY',
+    active:true,journeyId:'j1',turnIndex:4,turnStatus:'READY',lookaheadReady:true,
     turnPackage:{choices:[
       {id:'opaque-1',text:'Đi theo dấu tường'},
       {id:'opaque-2',text:'Rẽ theo tiếng đèn'},
@@ -163,7 +163,7 @@ test('provider generation is requested in background while current Story choices
   assert.equal(buttons.some(x=>x.textContent==='Đang chuẩn bị ba lựa chọn…'),false);
 });
 
-test('provider generation is requested in background while current return choices stay visible', () => {
+test('provider generation is requested while unprepared return choices stay hidden', () => {
   const state=bootstrapState();
   state.story.segmentDelivered=true;
   state.story.returnJourney={
@@ -182,12 +182,7 @@ test('provider generation is requested in background while current return choice
   assert.equal(submitted.story.returnJourney.journeyId,'journey-current');
   assert.equal(submitted.story.returnJourney.turnIndex,7);
   const buttons=article.children[0].children;
-  assert.equal(buttons.length,3);
-  assert.deepEqual(buttons.map(x=>x.textContent),[
-    'Theo dấu hiệu phía trước',
-    'Thử lối gần góc rẽ',
-    'Quan sát khu vực hiện tại'
-  ]);
+  assert.equal(buttons.length,0);
   assert.equal(buttons.some(x=>x.textContent==='Đang chuẩn bị ba hướng đi…'),false);
 });
 
@@ -272,7 +267,8 @@ test('active return journey blocks arc handoff in both UI and Core dispatch orde
   const article=element('article');
   ctx.appendExplorerChoices(article,state.log[0],0);
   assert.equal(article.children.length,1);
-  assert.notEqual(article.children[0].children[0].textContent,'Tiếp tục qua ranh giới');
+  assert.equal(article.children[0].className,'gm-choices story-return');
+  assert.equal(article.children[0].children.length,0);
   assert.equal(submissions.some(x=>x[0]==='submit'),false);
   assert.equal(submissions.filter(x=>x[0]==='prepare-return').length,1);
 

@@ -305,8 +305,6 @@ public final class GameCoreFacade implements AutoCloseable {
       storyCore.installDecisionPackage(state, contextHash, parseState(generatedPackageJson));
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
-      String pending = state.getJSONObject(StoryCore.ROOT_KEY).optString("pendingChoiceId", "");
-      if (!pending.isEmpty()) return processStoryDecision(state.toString(), pending);
       return response(true, state, null, "story_decision_generated", null);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_generation_rejected", null);
@@ -348,23 +346,12 @@ public final class GameCoreFacade implements AutoCloseable {
       itemCore.normalizeInventory(state);
       appendDecisionLog(state, resolution);
 
-      // The encounter is the final gate of the current Explorer Turn.
-      entityCore.prepareEncounter(state);
-      String encounter = encounterKey(state);
-      if (CombatChoiceEngine.isKnownEntity(encounter)) {
-        CombatChoiceEngine.start(state, encounter, lastGmLogIndex(state));
-      } else {
-        incrementTurn(state);
-        if (storyCore.hasPendingStoryAdvance(state)) {
-          advancePendingStorySequence(state);
-        }
-      }
+      incrementTurn(state);
+      if (storyCore.hasPendingStoryAdvance(state)) advancePendingStorySequence(state);
 
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
-      return response(true, state, null,
-          CombatChoiceEngine.isActive(state) ? "story_random_entity_combat" : "story_turn_committed",
-          resolution.reply);
+      return response(true, state, null, "story_turn_committed", resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_rejected", null);
     }
@@ -436,11 +423,9 @@ public final class GameCoreFacade implements AutoCloseable {
       }
       String narration = storyCore.installReturnJourneyTurn(
           state, journeyId, turnIndex, contextHash, parseState(generatedPackageJson));
-      appendGeneratedReturnNarration(state, narration);
+      if (!narration.isEmpty()) appendGeneratedReturnNarration(state, narration);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
-      String pending = returnJourney(state).optString("pendingChoiceId", "");
-      if (!pending.isEmpty()) return processReturnJourneyChoice(state.toString(), pending);
       return response(true, state, null, "return_journey_turn_generated", null);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "return_journey_generation_rejected", null);
@@ -459,6 +444,9 @@ public final class GameCoreFacade implements AutoCloseable {
       StoryCore.ReturnJourneyResolution resolution =
           storyCore.resolveReturnJourneyChoice(state, choiceId);
       appendReturnJourneyResolution(state, resolution);
+      if (!resolution.arrived) {
+        appendGeneratedReturnNarration(state, returnJourney(state).optString("turnNarration", ""));
+      }
       incrementTurn(state);
       if (resolution.arrived && StoryCore.RETURN_CAUSE_DEATH.equals(resolution.cause)
           && storyCore.hasPendingStoryAdvance(state)) {
@@ -1097,6 +1085,11 @@ public final class GameCoreFacade implements AutoCloseable {
     try {
       JSONObject story = safe.optJSONObject(StoryCore.ROOT_KEY);
       if (story == null) return safe;
+      story.remove("decisionContract");
+      story.remove("decisionGenerationToken");
+      story.remove("loopHistory");
+      story.remove("decisionChoiceHistory");
+      story.remove("returnAnchorLocation");
       JSONObject pack = story.optJSONObject("decisionPackage");
       if (pack != null) {
         pack.remove("outcomes");
@@ -1104,6 +1097,12 @@ public final class GameCoreFacade implements AutoCloseable {
       }
       JSONObject journey = story.optJSONObject("returnJourney");
       if (journey != null) {
+        if (journey.optBoolean("active", false)) {
+          safe.put("location", "Khu vực đang khám phá");
+        }
+        for (String key : new String[]{"cause", "levelKey", "startLocation", "currentPosition",
+            "targetLocation", "progress", "requiredProgress", "pausedStory",
+            "choiceSetHistory", "lookahead"}) journey.remove(key);
         JSONObject turnPack = journey.optJSONObject("turnPackage");
         if (turnPack != null) {
           turnPack.remove("outcomes");

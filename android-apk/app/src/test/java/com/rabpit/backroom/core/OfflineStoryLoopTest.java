@@ -40,7 +40,7 @@ public class OfflineStoryLoopTest {
             .put("reply", "Cao Minh giữ vị trí, kiểm tra những dấu vết quanh mình. Không có diễn biến canon, phần thưởng hay kết quả chiến đấu nào được kích hoạt thêm."));
   }
 
-  private static JSONObject returnTurn(String tag) throws Exception {
+  private static JSONObject returnTurnNode(String tag) throws Exception {
     String narration = "Cao Minh đi giữa những mảng kiến trúc quen mà không hoàn toàn trùng khớp. "
         + "Một dấu cũ vẫn còn trên bề mặt gần đó, nhưng khoảng cách giữa các góc rẽ đã đổi. "
         + "Hắn giữ nguyên những gì đã biết và chỉ đánh giá ba hướng có thể thử trong khu vực hiện tại. "
@@ -56,6 +56,11 @@ public class OfflineStoryLoopTest {
         .put("stay", new JSONObject()
             .put("text", "Kiểm tra khe tường trước mặt " + tag)
             .put("reply", "Cao Minh kiểm tra kỹ nhưng không rời khu vực đang đứng. Dấu vết vẫn ở đó, không có phần thưởng hay tiến độ canon mới."));
+  }
+
+  private static JSONObject returnTurn(String tag) throws Exception {
+    return new JSONObject().put("current", returnTurnNode(tag))
+        .put("next", returnTurnNode(tag + " tiếp"));
   }
 
   private static String decisionOutcomeId(JSONObject state, String type) throws Exception {
@@ -166,6 +171,8 @@ public class OfflineStoryLoopTest {
       state = loaded;
       assertTrue(core.returnJourneyReady(state));
       assertFalse(core.returnJourneyNeedsProvider(state));
+      assertTrue(state.getJSONObject("story").getJSONObject("returnJourney")
+          .getBoolean("lookaheadReady"));
       assertEquals(savedChoices, core.returnJourneyChoices(state).toString());
       assertEquals(3, state.getJSONObject("story").getJSONObject("returnJourney")
           .getJSONObject("turnPackage").getJSONObject("outcomes").length());
@@ -175,6 +182,12 @@ public class OfflineStoryLoopTest {
           core.resolveReturnJourneyChoice(state, staleReturnChoice);
       assertFalse(stayJourney.arrived);
       assertEquals(0, state.getJSONObject("story").getJSONObject("returnJourney").getInt("progress"));
+      assertEquals(1, state.getJSONObject("story").getJSONObject("returnJourney").getInt("turnIndex"));
+      assertFalse(core.returnJourneyReady(state));
+      assertFalse(state.getJSONObject("story").getJSONObject("returnJourney")
+          .optString("turnNarration", "").isEmpty());
+      assertTrue(core.returnJourneyNeedsProvider(state));
+      assertFalse(core.returnJourneyReady(state));
       installReturnTurn(core, state, "lượt-hai-" + level);
 
       try {
@@ -309,7 +322,7 @@ public class OfflineStoryLoopTest {
     assertTrue(core.decisionNeedsProvider(state));
   }
 
-  @Test public void returnJourneyChoicesRemainVisibleAndSelectedThroughProviderFailureAndReload()
+  @Test public void returnJourneyRejectsEarlySelectionAndPreservesChoiceIdsThroughFailureAndReload()
       throws Exception {
     StoryCore core = StoryCore.withRepository(repository());
     JSONObject state = storyState("0.1");
@@ -324,12 +337,17 @@ public class OfflineStoryLoopTest {
         .put("turnPackage", new JSONObject());
     core.normalizeState(legacy);
     assertEquals(3, core.returnJourneyChoices(legacy).length());
-    String choices = core.returnJourneyChoices(state).toString();
+    JSONArray choices = core.returnJourneyChoices(state);
     String selected = returnOutcomeId(state, StoryCore.RETURN_STAY);
-    core.selectReturnChoice(state, selected);
+    try {
+      core.selectReturnChoice(state, selected);
+      fail("Unprepared return turn must reject every choice");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("stale"));
+    }
 
     JSONObject bad = returnTurn("không-hợp-lệ");
-    bad.getJSONObject("progress").put("reply", "reset checkpoint");
+    bad.getJSONObject("current").getJSONObject("progress").put("reply", "reset checkpoint");
     try {
       core.installReturnJourneyTurn(state, request.getString("journeyId"),
           request.getInt("turnIndex"), request.getString("contextHash"), bad);
@@ -339,13 +357,17 @@ public class OfflineStoryLoopTest {
     }
     JSONObject reloaded = new JSONObject(state.toString());
     core.normalizeState(reloaded);
-    assertEquals(choices, core.returnJourneyChoices(reloaded).toString());
-    assertEquals(selected, reloaded.getJSONObject("story").getJSONObject("returnJourney")
-        .getString("pendingChoiceId"));
+    assertEquals(choices.toString(), core.returnJourneyChoices(reloaded).toString());
+    assertEquals("", reloaded.getJSONObject("story").getJSONObject("returnJourney")
+        .optString("pendingChoiceId", ""));
     assertTrue(core.returnJourneyNeedsProvider(reloaded));
     core.installReturnJourneyTurn(reloaded, request.getString("journeyId"),
         request.getInt("turnIndex"), request.getString("contextHash"), returnTurn("hợp-lệ"));
-    assertEquals(choices, core.returnJourneyChoices(reloaded).toString());
+    for (int i = 0; i < 3; i++) {
+      assertEquals(choices.getJSONObject(i).getString("id"),
+          core.returnJourneyChoices(reloaded).getJSONObject(i).getString("id"));
+    }
+    core.selectReturnChoice(reloaded, selected);
     StoryCore.ReturnJourneyResolution resolution = core.resolveReturnJourneyChoice(reloaded, selected);
     assertEquals(StoryCore.RETURN_STAY, resolution.outcome);
     assertEquals(1, reloaded.getJSONObject("story").getJSONObject("returnJourney").getInt("turnIndex"));
@@ -381,8 +403,8 @@ public class OfflineStoryLoopTest {
     core.beginDeathReturnJourney(
         state, "Level 1 / cột bê tông có dấu cào Hound", "1");
     JSONObject request = core.returnJourneyTurnRequest(state, "");
-    JSONObject generated = returnTurn("dấu-Hound-cũ")
-        .put("narration",
+    JSONObject generated = returnTurn("dấu-Hound-cũ");
+    generated.getJSONObject("current").put("narration",
             "Cao Minh đi qua những cột bê tông đã đổi khoảng cách. Một vết cào cũ trên chân cột "
                 + "gợi lại Hound từng xuất hiện ở vùng này, nhưng không có cuộc săn cũ nào diễn ra lại. "
                 + "Hắn chỉ dùng dấu vết đã tồn tại để định hướng giữa ba lối đi trước mặt.");
