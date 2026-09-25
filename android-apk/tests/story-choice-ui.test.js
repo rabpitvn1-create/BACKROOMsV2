@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
+const crypto = require('node:crypto');
 
 const assets = path.resolve(__dirname, '../app/src/main/assets');
 class Element {
@@ -126,6 +127,29 @@ for (const isReturn of [false, true]) {
   });
 }
 
+
+test('Story and return choices use three distinct IMG_API Backrooms artworks', () => {
+  const artFiles = [1, 2, 3].map(index =>
+    path.join(assets, `hud/story_choice_${index}_backrooms.png`));
+  for (const art of artFiles) {
+    assert.equal(fs.existsSync(art), true);
+    assert.equal(fs.statSync(art).size > 10000, true);
+  }
+  const hashes = artFiles.map(art =>
+    crypto.createHash('sha256').update(fs.readFileSync(art)).digest('hex'));
+  assert.equal(new Set(hashes).size, 3);
+
+  const metadata = path.join(assets, 'hud/story_choice_backrooms.generated.json');
+  assert.equal(fs.existsSync(metadata), true);
+
+  const gmChoice = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
+  assert.match(gmChoice, /story-decision>\.gm-choice:nth-child\(1\).*story_choice_1_backrooms\.png/);
+  assert.match(gmChoice, /story-decision>\.gm-choice:nth-child\(2\).*story_choice_2_backrooms\.png/);
+  assert.match(gmChoice, /story-decision>\.gm-choice:nth-child\(3\).*story_choice_3_backrooms\.png/);
+  assert.match(gmChoice, /story-return>\.gm-choice:nth-child\(1\).*story_choice_1_backrooms\.png/);
+  assert.match(gmChoice, /story-return>\.gm-choice:nth-child\(2\).*story_choice_2_backrooms\.png/);
+  assert.match(gmChoice, /story-return>\.gm-choice:nth-child\(3\).*story_choice_3_backrooms\.png/);
+});
 
 test('Story choice loading overlay uses its dedicated IMG_API Backrooms artwork', () => {
   const art = path.join(assets, 'hud/story_choice_loading_backrooms.png');
