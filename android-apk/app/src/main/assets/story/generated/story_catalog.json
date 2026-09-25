@@ -9,6 +9,10 @@
     "0.1": {
       "storyId": "level_0_1_zenith_station",
       "metadata": "story/generated/level_0_1/arc.json"
+    },
+    "0.2": {
+      "storyId": "level_0_2_remodeled_mess",
+      "metadata": "story/generated/level_0_2/arc.json"
     }
   }
 }

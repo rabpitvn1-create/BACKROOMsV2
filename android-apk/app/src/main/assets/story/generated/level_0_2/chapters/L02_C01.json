@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "id": "L02_C01",
+  "title": "Level 0.2 — Chương 01: Căn Phòng Đang Tháo Mình",
+  "source": "story/source/level_0_2/LEVEL0.2_CH01_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C02",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "004d3c2500d90750bb8bd33252fd6c34a93b1c51de2dc47aeb152b0e8ccb0d67",
+  "segmentIds": [
+    "L02_C01_S3b8233956d25c411",
+    "L02_C01_S195409911cbcec9b",
+    "L02_C01_Sba4051b8444eb653",
+    "L02_C01_S93b1596893766d8e",
+    "L02_C01_Se4d0045182e951ba",
+    "L02_C01_Sfd519616fca0091b",
+    "L02_C01_Sbb2375ea73590d3e"
+  ]
+}

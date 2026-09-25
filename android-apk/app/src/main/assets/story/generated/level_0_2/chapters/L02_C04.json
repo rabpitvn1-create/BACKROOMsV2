@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "id": "L02_C04",
+  "title": "Level 0.2 — Chương 04: Người Đã Đi Ngang",
+  "source": "story/source/level_0_2/LEVEL0.2_CH04_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C05",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {
+    "L02_C04_Sa7592aed96baebd4": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "duy",
+        "scope": "story_local",
+        "presence": "PRESENT"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Duy is introduced as a story-local survivor and is not a Party member."
+  ],
+  "forbiddenClaims": [
+    "Do not add Duy to Party or invent gameplay combat stats for him."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "84d3b6bda31351cdb52fc18fb39bd546052630d5cb129e4d6eea1a0bf234a448",
+  "segmentIds": [
+    "L02_C04_Sd3afbe477abc0b18",
+    "L02_C04_Sbcfa2554dbf34e1c",
+    "L02_C04_S9b2ca544e513f452",
+    "L02_C04_Sd69e0b7628dfbd2e",
+    "L02_C04_Sa7592aed96baebd4",
+    "L02_C04_Sd9bcac7a1fd43545",
+    "L02_C04_S08b3241b68da4c32",
+    "L02_C04_S9198af6d60f49f4d"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "id": "L02_C03",
+  "title": "Level 0.2 — Chương 03: Trọng Lượng Của Một Bước Chân",
+  "source": "story/source/level_0_2/LEVEL0.2_CH03_REMODELED_MESS.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L02_C04",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "6dc3c38bcebafa2369d70347314ee0b7fb42f962c405f4cd30076d67fe168a81",
+  "segmentIds": [
+    "L02_C03_Sba924c19f4348043",
+    "L02_C03_S4fe617b1bfe2d458",
+    "L02_C03_S4f68b404cb1ddbe5",
+    "L02_C03_S76f7dd650bf252cb",
+    "L02_C03_S4f39ea9ef93379ba",
+    "L02_C03_S29933517668846af",
+    "L02_C03_S70b4ccd554fe584e",
+    "L02_C03_S16d6b72f726f1b0f"
+  ]
+}
