@@ -1,0 +1,7 @@
+BR 1.0.0.0.1
+
+- Tăng versionCode từ 98 lên 99 để Android cho phép cập nhật từ BR 1.0.0.0.0.
+- Nâng Game Master provider chính lên Gemini 3.8 Flash với thinking level medium và bổ sung smoke test API trong Release Version.
+- Thêm khung loading màu vàng có nền Backrooms và đồng hồ cát xoay để che ba lựa chọn Story khi provider chưa trả kết quả.
+- Tạo ba background Backrooms riêng bằng IMG_API cho ba lựa chọn Story/Return Journey thay vì dùng chung một ảnh.
+- Giữ cơ chế retry provider hiện tại và bổ sung regression tests cho loading, retry, bootstrap và artwork của ba lựa chọn.
