@@ -600,8 +600,11 @@ jobs:
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs BR-1.0.0.0.2.apk
           BADGING=$("$BUILD_TOOLS/aapt" dump badging BR-1.0.0.0.2.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='99' versionName='BR 1.0.0.0.2'" <<<"$BADGING"
-          grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
+          printf '%s\n' "$BADGING"
+          grep -Fq "package: name='com.rabpit.backroom'" <<<"$BADGING"
+          grep -Fq "versionCode='100'" <<<"$BADGING"
+          grep -Fq "versionName='BR 1.0.0.0.2'" <<<"$BADGING"
+          grep -Fq "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 BR-1.0.0.0.2.apk
           unzip -l BR-1.0.0.0.2.apk | grep -q 'assets/index.html'
           unzip -l BR-1.0.0.0.2.apk | grep -q 'assets/snapshot-ui.js'
