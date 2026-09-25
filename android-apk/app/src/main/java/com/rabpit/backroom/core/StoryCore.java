@@ -623,7 +623,7 @@ final class StoryCore {
     prompt.append("Core has already fixed the three hidden outcomes. You ONLY write player-facing Vietnamese prose. ");
     prompt.append("Never decide state, routes, canon, rewards, encounters, items or progression.\n\n");
     prompt.append("CURRENT AUTHORED BEAT:\n").append(clipTail(current.text, 1700)).append("\n\n");
-    prompt.append("NEXT AUTHORED BEAT (private fixed outcome for canon.text):\n")
+    prompt.append("NEXT AUTHORED BEAT (private context only; public choices are already compiled):\n")
         .append(clip(next.text, 2100)).append("\n\n");
     if (recentStory != null && !recentStory.trim().isEmpty()) {
       prompt.append("RECENT READER-VISIBLE CONTEXT:\n").append(clip(recentStory, 2800)).append("\n\n");
