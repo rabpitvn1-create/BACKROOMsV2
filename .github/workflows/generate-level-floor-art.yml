@@ -54,46 +54,41 @@ jobs:
           out_dir.mkdir(parents=True, exist_ok=True)
 
           common = (
-              "Create a pure environmental FLOOR MATERIAL PLATE for a mobile Backrooms game. "
-              "Camera is pointed downward at the walkable surface only, with a shallow perspective suitable for character feet and shadows. "
-              "The entire frame must contain ONLY floor material and tiny floor debris. "
-              "Absolutely no walls, ceiling, horizon, room interior, furniture, signs, interface, captions, typography, readable symbols, people, creatures, shoes, legs, feet, hands, silhouettes, or body parts. "
-              "Do not write or render any words from this prompt. "
-              "Surface must look used and neglected, never freshly cleaned. Include only 1 to 3 SMALL believable pieces of litter/debris plus restrained stains, dust, wear or scuffs. "
-              "Trash must stay sparse and physically small relative to the full floor plate, never a pile and never a focal object. "
-              "Realistic game texture, natural material detail, restrained lighting, no bloom, no neon, no dramatic spotlight."
+              "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. "
+              "Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. "
+              "Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting."
           )
 
           assets = [
               ("0", "level_0.webp",
-               common + " Level 0: damp dirty mustard-beige Berber-like office carpet, flattened fibers, darker wet patches, faint mold grime, nicotine-yellow cast; add a tiny torn paper corner and a small dark lint clump."),
+               common + " Level 0: mustard-beige damp Berber office carpet, flattened fibers, darker wet patches, faint mold grime; one tiny torn paper corner and one tiny lint clump."),
               ("1", "level_1.webp",
-               common + " Level 1 Parking Zone: worn gray parking-garage concrete, hairline cracks, tire scuffs, dusty aggregate and a faint old oil smear; add one tiny paper scrap and a very small metal washer."),
+               common + " Level 1: worn gray parking-garage concrete texture, hairline crack, tire scuff, dusty aggregate, faint oil smear; one tiny paper chip and one tiny metal washer."),
               ("2", "level_2.webp",
                common + " Level 2 Pipe Dreams: grimy utility-tunnel concrete, chalky dust, rust flakes and condensation marks; add one tiny clipped wire piece and a small paper fiber."),
               ("3", "level_3.webp",
-               common + " Level 3 Electrical Station: dark dusty industrial concrete, subtle electrical soot and old oil grime; add a tiny copper-wire clipping and one small torn insulation fragment."),
+               common + " Level 3: dark dusty industrial concrete texture, electrical soot, old oil grime; one tiny copper clipping and one tiny insulation chip."),
               ("4", "level_4.webp",
                common + " Level 4 Abandoned Office: old charcoal-gray office carpet tiles with worn seams, embedded dust and a faint coffee stain; add one tiny paper corner and one very small plastic chip."),
               ("5", "level_5.webp",
-               common + " Level 5 Terror Hotel: aged dark mahogany parquet with a narrow burgundy carpet edge, elegant but not pristine, fine scuffs and dust; add one tiny faded paper scrap and a couple of dark crumbs."),
+               common + " Level 5: aged dark mahogany parquet floor texture with a narrow burgundy carpet edge, fine scuffs and dust; one tiny faded paper scrap and two tiny crumbs."),
               ("6", "level_6.webp",
-               common + " Level 6 Lights Out: almost-black cold smooth concrete with barely visible roughness and a damp smear; add tiny grit and one very small pale paper fleck visible only by minimal ambient light. Keep texture readable despite deep darkness."),
+               common + " Level 6: nearly black cold smooth concrete texture, subtle roughness and damp smear, still readable; one tiny pale paper fleck and sparse grit."),
 
               ("0.1", "sublevel_0_1.webp",
                common + " Level 0.1 Zenith Station: worn brushed-metal deck panels with fine seams, anti-slip texture, cold gray alloy, scratches, oxidation and dried maintenance grime; add a tiny clipped cable tie and two small glass-like flakes."),
               ("0.2", "sublevel_0_2.webp",
                common + " Level 0.2 Remodeled Mess: dry deep-red commercial carpet partly dusted by pale plaster powder and construction grit, a subtle cracked seam suggesting nearby collapse; add two tiny plaster chips and a small torn paper scrap."),
               ("0.5", "sublevel_0_5.webp",
-               common + " Level 0.5 Aquaclaustrophobic Infirmary: filthy off-white hospital vinyl/tile floor under a very shallow dirty-water sheen, gray-brown grime and oily residue; add one tiny soaked paper fragment and a small rust flake."),
+               common + " Level 0.5: filthy off-white hospital vinyl tile texture with a shallow dirty-water sheen, gray-brown grime and oily residue; one tiny soaked paper piece and one tiny rust flake."),
               ("0.7", "sublevel_0_7.webp",
                common + " Level 0.7 Reminiscence District: worn historical patchwork flooring with a restrained transition from old dark wood planks into faded twentieth-century linoleum, dusty and age-scuffed; add one tiny yellowed paper scrap and a small chipped fragment."),
               ("manila_room", "sublevel_manila_room.webp",
                common + " Manila Room: dry aged honey-brown wooden plank floor, matte worn finish, subtle dust in seams and quiet beige cast; add one tiny pencil shaving and one small yellowed paper corner."),
               ("the_torment", "sublevel_the_torment.webp",
-               common + " The Torment: monochrome gray cracked stone and packed earth with a thin scatter of dead leaf fragments, cold moonlit grayscale, damp dirt in crevices; add one tiny pale weathered scrap and a small broken twig, all desaturated."),
+               common + " The Torment: monochrome gray cracked stone and packed-earth texture, cold desaturated surface, damp dirt in crevices; only two tiny dead leaf fragments and one tiny broken twig."),
               ("red_rooms", "sublevel_red_rooms.webp",
-               common + " Red Rooms: dark crimson rough carpet, slightly sticky matted fibers, black mold specks and deep red grime, low darkroom-like lighting; add one tiny torn paper fragment and one small dull plastic fleck.")
+               common + " Red Rooms: dark crimson rough carpet texture, sticky matted fibers, black mold specks and deep red grime; one tiny torn paper fragment and one tiny dull plastic fleck.")
           ]
 
           metadata = {
