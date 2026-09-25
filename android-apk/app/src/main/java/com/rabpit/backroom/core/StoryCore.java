@@ -906,8 +906,9 @@ final class StoryCore {
     prompt.append("Do not quote a long passage already shown. Spatial repetition should feel like getting lost.\n\n");
     prompt.append("Return JSON with a current turn and a branch-neutral next turn. ");
     prompt.append("The next turn must fit any of the three current outcomes; do not assume which was selected. ");
-    prompt.append("Write three distinct, equally plausible Vietnamese choice texts per turn (4-180 characters), ");
-    prompt.append("without hints about outcome. Never write manuscript continuation. ");
+    prompt.append("Write three distinct, equally plausible Vietnamese choice texts per turn (4-180 characters). ");
+    prompt.append("Each choice text must be entirely natural Vietnamese except official proper names; never mix English action verbs, directions, room names or environment descriptions into a choice. ");
+    prompt.append("Do not prefix choice text with A/B/C. Without hints about outcome. Never write manuscript continuation. ");
     prompt.append("Use 120-900 character narration for each turn.\n");
     prompt.append("Turn format: {\"narration\":\"...\",")
         .append("\"progress\":{\"text\":\"...\",\"reply\":\"...\"},")
@@ -998,7 +999,8 @@ final class StoryCore {
           : RETURN_TO_START.equals(type) ? "return" : "stay";
       JSONObject branch = generated.optJSONObject(field);
       String reply = branch == null ? "" : branch.optString("reply", "").trim();
-      String wording = branch == null ? "" : branch.optString("text", "").trim();
+      String wording = GmChoiceContract.normalizeChoiceVietnamese(
+          branch == null ? "" : branch.optString("text", "").trim());
       if (!validPublicChoice(wording)) {
         throw new IllegalArgumentException("Return journey choice wording is incomplete or unsafe.");
       }
@@ -1521,8 +1523,9 @@ final class StoryCore {
     Collections.addAll(hiddenTypes, types);
     Collections.shuffle(hiddenTypes);
     for (int i = 0; i < 3; i++) {
-      if (!validPublicChoice(texts[i])) throw new IllegalStateException("Invalid Core-owned choice.");
-      addOutcome(choices, outcomes, opaqueChoiceId(), texts[i], hiddenTypes.get(i), "");
+      String publicText = GmChoiceContract.normalizeChoiceVietnamese(texts[i]);
+      if (!validPublicChoice(publicText)) throw new IllegalStateException("Invalid Core-owned choice.");
+      addOutcome(choices, outcomes, opaqueChoiceId(), publicText, hiddenTypes.get(i), "");
     }
     Collections.shuffle(choices);
     JSONArray publicChoices = new JSONArray();
@@ -1558,9 +1561,9 @@ final class StoryCore {
     if (variant == null) {
       throw new IllegalStateException("Compiled Story choice variant is invalid.");
     }
-    String canonText = variant.optString("canon", "").trim();
-    String returnText = variant.optString("return", "").trim();
-    String stayText = variant.optString("stay", "").trim();
+    String canonText = GmChoiceContract.normalizeChoiceVietnamese(variant.optString("canon", "").trim());
+    String returnText = GmChoiceContract.normalizeChoiceVietnamese(variant.optString("return", "").trim());
+    String stayText = GmChoiceContract.normalizeChoiceVietnamese(variant.optString("stay", "").trim());
     if (!validPublicChoice(canonText) || !validPublicChoice(returnText) || !validPublicChoice(stayText)
         || sameChoice(canonText, returnText) || sameChoice(canonText, stayText)
         || sameChoice(returnText, stayText)) {
