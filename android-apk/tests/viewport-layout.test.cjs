@@ -12,7 +12,8 @@ const playerAction=fs.readFileSync(path.join(assets,'player-action-ui.js'),'utf8
 test('game shell uses one visual viewport height and keeps page scrolling locked',()=>{
   assert.match(index,/html,body\{height:100%;overflow:hidden;overscroll-behavior:none\}/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;/);
-  assert.match(index,/safe-area-inset-top/);
+  assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0 max\(8px,env\(safe-area-inset-right\)\)/);
+  assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
   assert.match(index,/safe-area-inset-right/);
   assert.match(index,/safe-area-inset-bottom/);
   assert.match(index,/safe-area-inset-left/);
@@ -32,4 +33,9 @@ test('keyboard-sensitive controls use the shared viewport budget',()=>{
   assert.match(index,/\.game-menu-sheet\{[^}]*max-height:min\(calc\(var\(--app-height,100dvh\) - 12px\),760px\)/);
   assert.match(playerAction,/window\.visualViewport\.addEventListener\('resize', fitVisualViewport\)/);
   assert.match(playerAction,/window\.visualViewport\.addEventListener\('scroll', fitVisualViewport\)/);
+});
+
+test('display cutout is painted while header controls remain below the notch',()=>{
+  assert.doesNotMatch(index,/padding:max\(8px,env\(safe-area-inset-top\)\)/);
+  assert.match(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
 });
