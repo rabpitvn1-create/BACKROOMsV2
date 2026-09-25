@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C10",
   "source": "story/source/level_0/LEVEL0_CH10.md",
   "sourceDigest": "a8944a5bbe8546b3c5bde8c8f33f4116fb7af9993c91051e2f9e980f66daa91f",
@@ -15,48 +15,120 @@
     "L0_C10_S91f90d1a78d99c33",
     "L0_C10_Sa62366022c3e8e54"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C10_S043fe284c6dd3d7e": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_S043fe284c6dd3d7e",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến vào để kiểm xác người nam và tìm Lục Trầm",
+            "return": "Quan sát thêm để xác định số lượng và ý định của họ",
+            "stay": "Giữ vị trí để lắng nghe rõ nội dung cuộc nói chuyện"
+          },
+          {
+            "canon": "Bước ra và công khai sự hiện diện của mình",
+            "return": "Đi vòng qua đường khác để tiếp cận từ phương hướng khác",
+            "stay": "Chờ cho đến khi cuộc trò chuyện kết thúc tự nhiên"
+          }
+        ]
       }
     },
     "L0_C10_Sa2f9b27ec091dc54": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_Sa2f9b27ec091dc54",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đuổi theo hướng Lục Trầm đã đi để tìm lối kết nối",
+            "return": "Kiểm tra các hướng khác từ vị trí hiện tại",
+            "stay": "Đợi không gian ổn định trước khi di chuyển"
+          },
+          {
+            "canon": "Đi theo lối mở để tiến gần hơn",
+            "return": "Quay lại và tìm lối vòng quanh bức tường cụt",
+            "stay": "Tìm hiểu cấu trúc không gian xung quanh vị trí hiện tại"
+          }
+        ]
       }
     },
     "L0_C10_S34c30eede6fa6bc8": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_S34c30eede6fa6bc8",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo nhánh trái để tiếp cận nguồn tiếng gõ",
+            "return": "Quay lại và thử nhánh phải để xem mở rộng ra đâu",
+            "stay": "Khảo sát kỹ bức tường giữa hai nhánh trước khi chọn"
+          },
+          {
+            "canon": "Theo tiếng Tịch Quang để tìm người nam",
+            "return": "Kiểm tra mảnh vải thêm để tìm manh mối khác",
+            "stay": "Quan sát dấu chân và vệt tiếp theo ở thảm"
+          }
+        ]
       }
     },
     "L0_C10_S20c8684268af225d": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_S20c8684268af225d",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước ra khỏi góc tường để gặp cô.",
+            "return": "Gõ kiếm lại theo tín hiệu cũ để xác nhận vị trí.",
+            "stay": "Chờ thêm để quan sát phản ứng của cô."
+          },
+          {
+            "canon": "Tiến tới phía tiếng người nam để làm rõ tình hình.",
+            "return": "Đứng yên và để Lục Trầm chủ động tìm hắn.",
+            "stay": "Quay lại kiểm tra dấu vết trên tường lần nữa."
+          }
+        ]
       }
     },
     "L0_C10_S91f90d1a78d99c33": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_S91f90d1a78d99c33",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chấp nhận lối cách Lục Trầm định chừng và để cô quyết định tiếp theo.",
+            "return": "Nói rõ ý định của mình để cô biết hắn không có máu tay.",
+            "stay": "Im lặng để cô có thời gian suy tính lâu hơn."
+          },
+          {
+            "canon": "Nhận lời cô và tiếp tục chờ cho tới khi cô tự bước ra.",
+            "return": "Hỏi tên người bị thương để thể hiện thiện ý.",
+            "stay": "Quan sát phản ứng của cả hai người trước khi động."
+          }
+        ]
       }
     },
     "L0_C10_Sa62366022c3e8e54": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C10_Sa62366022c3e8e54",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bỏ kiếm xuống để xóa bớt căng thẳng trong phòng.",
+            "return": "Tập trung vào tình trạng của người đàn ông để hiểu được gì xảy ra.",
+            "stay": "Giữ nguyên tư thế và chờ Lục Trầm nói gì tiếp theo."
+          },
+          {
+            "canon": "Xin phép Lục Trầm trước khi tiến lại gần Nam để cứu chữa.",
+            "return": "Kiểm tra thương tích của Nam để đánh giá mức độ nguy hiểm.",
+            "stay": "Theo dõi từng cử động của Lục Trầm thay vì chú ý tới người lạ."
+          }
+        ]
       }
     }
   }

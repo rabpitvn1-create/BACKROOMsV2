@@ -2,8 +2,8 @@
   "schemaVersion": 4,
   "storyId": "level_0_main",
   "levelKey": "0",
-  "sourceRevision": "level0-return-journey-r2",
-  "compilerFingerprint": "030b6f679b56deb887c94c71ee2b9f2c63d994b36b81a6375aeca2f76245b3f8",
+  "sourceRevision": "level0-authored-choices-r4",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
   "chapterId": "L0_C17",
   "source": "story/source/level_0/LEVEL0_CH17.md",
   "sourceDigest": "cb3f99bc36ba3358f04ac83ef35d3bea0256127cd44039a9421a9ce48ac80d0a",
@@ -14,41 +14,101 @@
     "L0_C17_Sfb9c3dc7a435230c",
     "L0_C17_Scb9219c938335620"
   ],
-  "provider": "deterministic-turn-loop-v3",
+  "provider": "authored-choice-haiku",
   "segments": {
     "L0_C17_S692792c04518f400": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C17_S692792c04518f400",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đặt dấu lên bàn và lan can, rồi bước ra để kiểm phòng có thay đổi hay không",
+            "return": "Dùng ma khí kiểm xem những vật thể gỗ này có linh lực ẩn hay chỉ là vật chất thuần",
+            "stay": "Đi vòng quanh phòng tìm chi tiết không khớp giữa cảm giác quen và hiện thực"
+          },
+          {
+            "canon": "Yêu cầu Nam ở lại ngưỡng, sau đó cùng Lục Trầm quay vào để để lại dấu hiệu",
+            "return": "Hỏi Lục Trầm chi tiết nào của giá kiếm khớp với ký ức Thiên Kiếm Môn của cô",
+            "stay": "Quan sát nơi lan can được gắn để xác định nó có chục năng cơ học nào không"
+          }
+        ]
       }
     },
     "L0_C17_S1d62881c481498be": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C17_S1d62881c481498be",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Để cửa mở rộng, rời khỏi để quan sát căn phòng từ hành lang có thay đổi không",
+            "return": "Kiểm lại lớp giấy tường xung quanh vị trí lan can từng có để tìm dấu chê lại",
+            "stay": "Hỏi Lục Trầm liệu những chi tiết này có thể là mẹo lừa của Backrooms hay không"
+          },
+          {
+            "canon": "Thử lần nữa với cửa mở nhưng ở xa để kiểm lần thứ hai không thay đổi gì",
+            "return": "Dùng ma khí quét toàn bộ phòng tìm loại năng lượng nào có thể gây nhầm lẫn ký ức",
+            "stay": "Đi sâu vào phòng để xem kỹ mùi, chất cảm và mọi chi tiết dễ quên được"
+          }
+        ]
       }
     },
     "L0_C17_S17f48af3efbf6264": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C17_S17f48af3efbf6264",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Ghi lại tất cả phần không khớp giữa ký ức và hiện thực để phân tích sau",
+            "return": "Yêu cầu cả ba mô tả chi tiết những gì thực sự quen thuộc trước khi phòng thay đổi",
+            "stay": "Kiểm ổ cắm điện kỹ để xem có dấu hiệu cháy sém hay bất thường nào không"
+          },
+          {
+            "canon": "Đề xuất từ giờ ghi nhận không khớp trước khi đoán về toàn bộ bức tranh",
+            "return": "Dùng ma khí để cảm nhận xem ổ cắm và những vật khác có chứa năng lượng kỳ dị",
+            "stay": "Hỏi Nam chi tiết về ổ cắm bị cháy ở nhà hắn để hiểu ký ức sai lệch ra sao"
+          }
+        ]
       }
     },
     "L0_C17_Sfb9c3dc7a435230c": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C17_Sfb9c3dc7a435230c",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục đi theo Lục Trầm và Nam ra khỏi căn phòng vàng.",
+            "return": "Quay lại nhìn kỹ ổ cắm điện để tìm thêm chi tiết quen thuộc.",
+            "stay": "Đứng lại để quan sát thêm các vật dụng còn lại trong phòng."
+          },
+          {
+            "canon": "Đi theo hai người rời khỏi căn phòng này.",
+            "return": "Dừng lại để nghiên cứu thêm những gì giống ký ức của riêng mình.",
+            "stay": "Lưu lại trong tâm trí hình ảnh của những chi tiết có gợi nhớ trong phòng."
+          }
+        ]
       }
     },
     "L0_C17_Scb9219c938335620": {
       "mode": "DECISION",
       "decisionContract": {
         "loopAnchor": "L0_C17_Scb9219c938335620",
-        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp."
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Quyết định uống nước lạ để kiểm tra xem nó có an toàn hay không.",
+            "return": "Yêu cầu Cao Minh hoặc Lục Trầm tìm cách khác để kiểm tra chất lỏng này.",
+            "stay": "Chờ xem liệu có cách nào khác để xác minh an toàn mà không cần uống."
+          },
+          {
+            "canon": "Cho phép mình thử chai nước để cứu vãn tình thế.",
+            "return": "Hỏi Cao Minh liệu hắn có thể dùng kháng độc của mình để kiểm tra trước.",
+            "stay": "Yêu cầu cả ba dừng lại và tìm thêm nguồn nước khác trước khi quyết định."
+          }
+        ]
       }
     }
   }
