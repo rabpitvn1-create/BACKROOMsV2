@@ -97,6 +97,28 @@ public class GmChoiceContractTest {
     assertTrue(normalized.contains("hành lang"));
   }
 
+
+  @Test public void choiceNormalizerRemovesCommonEnglishActionLeakage() throws Exception {
+    JSONArray input = new JSONArray().put(new JSONObject().put("text",
+        "Move forward through the corridor and inspect the door, then listen nearby"));
+    JSONArray choices = GmChoiceContract.sanitizeChoices(input);
+    String text = choices.getJSONObject(0).getString("text");
+    String lower = text.toLowerCase();
+
+    assertTrue(text.contains("Tiến về phía trước") || text.contains("tiến về phía trước"));
+    assertTrue(text.contains("hành lang"));
+    assertTrue(text.contains("kiểm tra"));
+    assertTrue(text.contains("cánh cửa"));
+    assertTrue(text.contains("lắng nghe"));
+    assertFalse(lower.contains("move forward"));
+    assertFalse(lower.contains("through"));
+    assertFalse(lower.contains("corridor"));
+    assertFalse(lower.contains("inspect"));
+    assertFalse(lower.contains("door"));
+    assertFalse(lower.contains("then"));
+    assertFalse(lower.contains("nearby"));
+  }
+
   @Test public void deterministicTypeReplacesUntypedModelDuplicate() throws Exception {
     JSONObject generated = new JSONObject().put("highlights",
         new JSONArray().put("Clump").put(new JSONObject().put("text", "vệt đen").put("type", "effect")));
