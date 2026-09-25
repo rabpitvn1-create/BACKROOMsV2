@@ -1,0 +1,236 @@
+name: Polish Snapshot Floor Art
+
+on:
+  push:
+    branches:
+      - ui/redmi-viewport-foundation
+    paths:
+      - '.github/workflows/polish-snapshot-floor-art.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polish-snapshot-floor-art
+  cancel-in-progress: false
+
+jobs:
+  polish:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/floors
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate IMG API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+
+      - name: Regenerate flat The Torment ground
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.error, urllib.request
+
+          api=os.environ["IMG_API"].strip()
+          model=os.environ["IMG_MODEL"].strip()
+          base=os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint=base if base.endswith("/images/generations") else (
+              base+"/images/generations" if base.endswith("/v1") else base+"/v1/images/generations"
+          )
+          out_dir=pathlib.Path(os.environ["OUT_DIR"])
+          prompt=(
+              "Orthographic top-down seamless game floor material scan for The Torment in the Backrooms. "
+              "The entire image is a FLAT walkable ground plane edge to edge: compacted charcoal-gray soil mixed with worn cracked flat stone, "
+              "fine gravel embedded into the surface, thin damp crevices and sparse dead leaf fragments. Cold desaturated moonlit grayscale. "
+              "NO loose rocks, NO boulders, NO stone slabs sticking upward, NO piles, NO walls, NO horizon, NO scenery, NO graves, NO statue, "
+              "NO people, NO body parts, NO feet, NO shoes, NO text, NO letters, NO numbers, NO logo, NO watermark. "
+              "Add only two tiny dead leaf fragments and one thin broken twig, each occupying less than 2 percent of the image. "
+              "High-detail realistic flat PBR ground texture, diffuse restrained lighting."
+          )
+          payload={"model":model,"prompt":prompt,"n":1,"response_format":"b64_json"}
+          request=urllib.request.Request(
+              endpoint,
+              data=json.dumps(payload).encode(),
+              headers={"Authorization":f"Bearer {api}","Content-Type":"application/json","Accept":"application/json"},
+              method="POST"
+          )
+          try:
+              with urllib.request.urlopen(request,timeout=300) as response:
+                  body=json.loads(response.read().decode())
+          except urllib.error.HTTPError as exc:
+              detail=exc.read().decode("utf-8",errors="replace")
+              raise SystemExit(f"IMG API HTTP {exc.code}: {detail[:2000]}")
+          item=body["data"][0]
+          if item.get("b64_json"):
+              raw=base64.b64decode(item["b64_json"])
+          elif item.get("url"):
+              req=urllib.request.Request(item["url"],headers={"User-Agent":"BACKROOMsV2-GitHub-Actions"})
+              with urllib.request.urlopen(req,timeout=300) as response: raw=response.read()
+          else:
+              raise SystemExit("IMG API returned neither b64_json nor url")
+          ext="webp" if raw.startswith(b"RIFF") and raw[8:12]==b"WEBP" else "png" if raw.startswith(b"\x89PNG") else "jpg"
+          (out_dir/f"sublevel_the_torment.source.{ext}").write_bytes(raw)
+
+          meta_path=out_dir/"level_floors.generated.json"
+          meta=json.loads(meta_path.read_text(encoding="utf-8"))
+          for asset in meta.get("assets",[]):
+              if asset.get("levelKey")=="the_torment":
+                  asset["prompt"]=prompt
+          meta["postProcess"]={
+              "debris":"deterministic sparse micro-debris per floor",
+              "darkFloorSwordGlow":["level_6","the_torment","red_rooms"],
+              "swordGlowImplementation":"runtime CSS overlay; not baked into floor WebP"
+          }
+          meta_path.write_text(json.dumps(meta,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Add deterministic micro-debris and optimize WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq webp
+          python3 -m pip install --quiet pillow
+
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw, ImageFilter, ImageEnhance
+          import pathlib, os
+
+          out_dir=pathlib.Path(os.environ["OUT_DIR"])
+          src=next(out_dir.glob("sublevel_the_torment.source.*"))
+          torment=Image.open(src).convert("RGBA")
+          w,h=torment.size
+          scale=max(768/w,144/h)
+          torment=torment.resize((round(w*scale),round(h*scale)),Image.Resampling.LANCZOS)
+          left=max(0,(torment.width-768)//2); top=max(0,torment.height-144)
+          torment=torment.crop((left,top,left+768,top+144))
+          torment.putalpha(Image.new("L",(768,144),255))
+          alpha=torment.getchannel("A")
+          a=Image.new("L",(768,144),255); ap=a.load()
+          for y in range(28):
+              value=round(255*y/28)
+              for x in range(768): ap[x,y]=value
+          torment.putalpha(a)
+          torment.save(out_dir/"sublevel_the_torment.base.png")
+          src.unlink()
+
+          pieces={
+            "level_0.webp":[("paper",(118,110)),("lint",(612,119))],
+            "level_1.webp":[("paper",(142,106)),("washer",(608,116))],
+            "level_2.webp":[("wire",(536,116)),("paper_dark",(212,122))],
+            "level_3.webp":[("wire_copper",(558,116)),("chip_red",(188,121))],
+            "level_4.webp":[("paper",(136,112)),("chip_yellow",(624,118))],
+            "level_5.webp":[("paper_old",(156,113)),("crumb",(616,119))],
+            "level_6.webp":[("paper_pale",(578,116)),("grit",(222,121))],
+            "sublevel_0_1.webp":[("tie",(560,115)),("metal",(196,121))],
+            "sublevel_0_2.webp":[("plaster",(620,116)),("paper_old",(168,121))],
+            "sublevel_0_5.webp":[("paper_wet",(178,116)),("rust",(608,120))],
+            "sublevel_0_7.webp":[("paper_old",(156,116)),("chip_wood",(624,120))],
+            "sublevel_manila_room.webp":[("shaving",(612,116)),("paper_old",(164,120))],
+            "sublevel_the_torment.webp":[("leaf",(170,116)),("twig",(608,120))],
+            "sublevel_red_rooms.webp":[("paper_pale",(174,116)),("chip_dark",(612,120))]
+          }
+
+          def poly(draw,xy,fill):
+              x,y=xy
+              draw.polygon([(x-7,y-4),(x+5,y-5),(x+8,y+2),(x-3,y+5),(x-8,y+1)],fill=fill)
+
+          def add_piece(draw,kind,xy):
+              x,y=xy
+              if kind=="paper": poly(draw,xy,(220,215,190,225))
+              elif kind=="paper_old": poly(draw,xy,(180,158,110,220))
+              elif kind=="paper_dark": poly(draw,xy,(115,104,84,220))
+              elif kind=="paper_pale": poly(draw,xy,(210,207,194,220))
+              elif kind=="paper_wet": poly(draw,xy,(142,132,112,205))
+              elif kind=="lint": draw.ellipse((x-5,y-3,x+5,y+3),fill=(35,30,24,190))
+              elif kind=="washer":
+                  draw.ellipse((x-5,y-5,x+5,y+5),fill=(105,105,100,220));draw.ellipse((x-2,y-2,x+2,y+2),fill=(0,0,0,0))
+              elif kind in ("wire","wire_copper"):
+                  c=(80,70,65,225) if kind=="wire" else (150,75,44,230)
+                  draw.arc((x-8,y-5,x+8,y+5),15,210,fill=c,width=2)
+              elif kind=="chip_red": draw.polygon([(x-5,y-3),(x+6,y-2),(x+4,y+4),(x-4,y+3)],fill=(120,45,38,225))
+              elif kind=="chip_yellow": draw.polygon([(x-5,y-3),(x+5,y-2),(x+3,y+4),(x-4,y+3)],fill=(166,132,48,220))
+              elif kind=="crumb":
+                  for dx,dy,r in [(-4,0,2),(1,-2,2),(5,1,1)]: draw.ellipse((x+dx-r,y+dy-r,x+dx+r,y+dy+r),fill=(55,42,30,210))
+              elif kind=="grit":
+                  for dx,dy in [(-5,0),(0,-2),(5,1)]: draw.ellipse((x+dx-1,y+dy-1,x+dx+1,y+dy+1),fill=(110,108,104,190))
+              elif kind=="tie":
+                  draw.rounded_rectangle((x-8,y-2,x+7,y+2),radius=1,fill=(35,38,42,225));draw.rectangle((x+5,y-4,x+9,y+4),fill=(50,53,57,225))
+              elif kind=="metal": draw.polygon([(x-5,y-2),(x+5,y-3),(x+3,y+3),(x-4,y+4)],fill=(150,157,160,205))
+              elif kind=="plaster":
+                  for dx,dy,r in [(-4,0,3),(2,-2,2),(6,2,2)]: draw.polygon([(x+dx-r,y+dy),(x+dx,y+dy-r),(x+dx+r,y+dy+1),(x+dx-1,y+dy+r)],fill=(205,198,178,220))
+              elif kind=="rust": draw.polygon([(x-5,y-3),(x+5,y-1),(x+3,y+4),(x-4,y+3)],fill=(130,65,35,220))
+              elif kind=="chip_wood": draw.polygon([(x-6,y-2),(x+6,y-3),(x+4,y+3),(x-5,y+4)],fill=(105,73,46,220))
+              elif kind=="shaving":
+                  draw.arc((x-7,y-5,x+7,y+5),20,300,fill=(138,92,48,220),width=2)
+              elif kind=="leaf":
+                  draw.polygon([(x-7,y),(x-2,y-4),(x+7,y),(x-1,y+4)],fill=(70,65,55,210))
+              elif kind=="twig":
+                  draw.line((x-8,y+2,x+8,y-2),fill=(72,62,50,220),width=2)
+                  draw.line((x+1,y,x+5,y-5),fill=(72,62,50,210),width=1)
+              elif kind=="chip_dark": draw.polygon([(x-5,y-3),(x+5,y-2),(x+4,y+4),(x-4,y+2)],fill=(45,38,42,215))
+
+          for name, specs in pieces.items():
+              path=out_dir/name
+              if name=="sublevel_the_torment.webp":
+                  img=Image.open(out_dir/"sublevel_the_torment.base.png").convert("RGBA")
+              else:
+                  img=Image.open(path).convert("RGBA")
+              if name=="level_6.webp":
+                  rgb=ImageEnhance.Brightness(img.convert("RGB")).enhance(0.38)
+                  img=rgb.convert("RGBA")
+                  alpha=Image.open(path).convert("RGBA").getchannel("A")
+                  img.putalpha(alpha)
+              shadow=Image.new("RGBA",img.size,(0,0,0,0));sd=ImageDraw.Draw(shadow)
+              overlay=Image.new("RGBA",img.size,(0,0,0,0));od=ImageDraw.Draw(overlay)
+              for kind,(x,y) in specs:
+                  sd.ellipse((x-9,y-5,x+9,y+5),fill=(0,0,0,55))
+                  add_piece(od,kind,(x,y))
+              shadow=shadow.filter(ImageFilter.GaussianBlur(2))
+              img=Image.alpha_composite(img,shadow)
+              img=Image.alpha_composite(img,overlay)
+              img.save(out_dir/(path.stem+".polished.png"))
+          (out_dir/"sublevel_the_torment.base.png").unlink(missing_ok=True)
+          PY
+
+          for png in "$OUT_DIR"/*.polished.png; do
+            stem="$(basename "$png" .polished.png)"
+            out="$OUT_DIR/$stem.webp"
+            cwebp -quiet -q 76 -m 6 -alpha_q 88 -metadata none "$png" -o "$out"
+            bytes="$(stat -c%s "$out")"
+            if [ "$bytes" -gt 80000 ]; then
+              cwebp -quiet -q 70 -m 6 -alpha_q 84 -metadata none "$png" -o "$out"
+              bytes="$(stat -c%s "$out")"
+            fi
+            rm "$png"
+            test "$bytes" -le 80000 || { echo "::error::$stem.webp exceeds 80 KB: $bytes"; exit 1; }
+            echo "$stem.webp: $bytes bytes"
+          done
+
+          test "$(find "$OUT_DIR" -maxdepth 1 -name '*.webp' | wc -l)" -eq 14
+          total="$(du -cb "$OUT_DIR"/*.webp | tail -1 | awk '{print $1}')"
+          test "$total" -le 900000 || { echo "::error::Floor asset batch too large: $total bytes"; exit 1; }
+
+      - name: Commit polished floor artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR"/*.webp "$OUT_DIR/level_floors.generated.json"
+          git diff --cached --quiet && { echo 'Floor artwork unchanged.'; exit 0; }
+          git commit -m 'Polish Snapshot floor artwork'
+          git pull --rebase origin ui/redmi-viewport-foundation
+          git push origin HEAD:ui/redmi-viewport-foundation
