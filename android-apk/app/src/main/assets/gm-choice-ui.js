@@ -40,6 +40,9 @@
     ".story-decision>.gm-choice:nth-child(2),.story-return>.gm-choice:nth-child(2){background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/story_choice_2_backrooms.png')}",
     ".story-decision>.gm-choice:nth-child(3),.story-return>.gm-choice:nth-child(3){background-image:linear-gradient(90deg,rgba(8,9,7,.90),rgba(12,12,8,.60) 50%,rgba(8,9,7,.88)),url('hud/story_choice_3_backrooms.png')}",
     ".gm-choice:disabled{opacity:.62}",
+    ".gm-system-loading{border-left-color:#65717a;background:#111519}",
+    ".gm-system-error{border-left-color:#a95f5f;background:#181112}",
+    ".gm-system-error .text{color:#e7c6c6}",
     ".gm-choice.selected{border-color:#7a858e;background:#20272d}",
     ".combat-skill-description{display:block;margin-top:5px;color:#9fa8af;font-size:11px;font-weight:400;line-height:1.4}",
     ".composer.battle-locked textarea{background:#101316;color:#697178;border-color:#262d33}",
@@ -174,7 +177,7 @@
     if (!state || !Array.isArray(state.log)) return -1;
     for (var i = state.log.length - 1; i >= 0; i--) {
       var entry = state.log[i];
-      if (entry && entry.role !== 'player') return i;
+      if (entry && entry.role !== 'player' && entry.scope !== 'environment') return i;
     }
     return -1;
   }
@@ -695,9 +698,56 @@
     article.appendChild(box);
   }
 
-  function renderSemanticLog() {
+  function captureLogAnchor() {
+    if (!log) return null;
+    var logRect = log.getBoundingClientRect();
+    var messages = log.querySelectorAll('.message[data-log-index]');
+    for (var i = 0; i < messages.length; i++) {
+      var rect = messages[i].getBoundingClientRect();
+      var bottom = Number.isFinite(rect.bottom) ? rect.bottom : rect.top + (messages[i].offsetHeight || 0);
+      if (bottom > logRect.top + 1) {
+        return {
+          logIndex: messages[i].dataset.logIndex,
+          offset: rect.top - logRect.top,
+          scrollTop: log.scrollTop
+        };
+      }
+    }
+    return {scrollTop: log.scrollTop};
+  }
+
+  function restoreLogAnchor(anchor) {
+    if (!log || !anchor) return;
+    requestAnimationFrame(function(){
+      if (anchor.logIndex !== undefined) {
+        var message = log.querySelector('.message[data-log-index="' + anchor.logIndex + '"]');
+        if (message) {
+          var logRect = log.getBoundingClientRect();
+          var messageRect = message.getBoundingClientRect();
+          log.scrollTop += (messageRect.top - logRect.top) - anchor.offset;
+          return;
+        }
+      }
+      log.scrollTop = Math.max(0, Math.min(anchor.scrollTop || 0, log.scrollHeight - log.clientHeight));
+    });
+  }
+
+  function appendGmSystemMessage(className, message) {
+    var article = document.createElement('article');
+    article.className = 'message gm ' + className;
+    var role = document.createElement('div');
+    role.className = 'role';
+    role.textContent = 'GAME MASTER';
+    article.appendChild(role);
+    var text = document.createElement('div');
+    text.className = 'text gm-main-text';
+    text.textContent = message;
+    article.appendChild(text);
+    log.appendChild(article);
+  }
+
+  function renderSemanticLog(anchor) {
     if (!log || !state || !Array.isArray(state.log)) return;
-    var previousScrollTop = log.scrollTop;
     log.textContent = '';
     state.log.forEach(function(entry, index){
       if (!entry) return;
@@ -720,9 +770,11 @@
       }
       log.appendChild(article);
     });
-    requestAnimationFrame(function(){
-      log.scrollTop = Math.max(0, Math.min(previousScrollTop, log.scrollHeight - log.clientHeight));
-    });
+    if (window.__gmEnvironmentLoading)
+      appendGmSystemMessage('gm-system-loading', 'Đang xử lý hành động môi trường…');
+    if (window.__gmErrorMessage)
+      appendGmSystemMessage('gm-system-error', window.__gmErrorMessage);
+    restoreLogAnchor(anchor);
   }
 
   function scrollLatestGmToStart() {
@@ -743,6 +795,17 @@
     requestAnimationFrame(function(){ log.scrollTop = log.scrollHeight; });
   }
 
+  function scrollGmSystemMessage() {
+    if (!log) return;
+    requestAnimationFrame(function(){
+      var message = log.querySelector('.gm-system-error');
+      if (!message) return;
+      var logRect = log.getBoundingClientRect();
+      var messageRect = message.getBoundingClientRect();
+      log.scrollTop += messageRect.top - logRect.top;
+    });
+  }
+
   function scrollForCurrentMode() {
     if (state && state.combat && state.combat.active) scrollCombatToBottom();
     else scrollLatestGmToStart();
@@ -750,14 +813,14 @@
 
   window.backroomScrollLatestGmToStart = scrollLatestGmToStart;
   window.backroomScrollCombatToBottom = scrollCombatToBottom;
+  window.backroomScrollGmSystemMessage = scrollGmSystemMessage;
   window.backroomScrollForCurrentMode = scrollForCurrentMode;
 
   function syncComposer() {
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
-    var storyLocked = storyReturnPending() || storyAwaitingDecision() || storyAwaitingEntityAttack()
-      || storyPendingAdvance() || storyCutawayActive() || storyHandoffPending()
-      || storyAdvanceAvailable();
+    var storyLocked = storyAwaitingEntityAttack() || storyPendingAdvance()
+      || storyCutawayActive() || storyBootstrapPending();
     form.classList.toggle('battle-locked', combat || storyLocked);
     action.disabled = combat || storyLocked;
     action.readOnly = combat || storyLocked;
@@ -767,20 +830,16 @@
       submit.disabled = true;
     } else if (storyLocked) {
       action.value = '';
-      action.placeholder = storyReturnPending()
-        ? 'Tiếp tục khám phá để tìm lại đoạn đường đang dở.'
-        : storyAwaitingEntityAttack()
+      action.placeholder = storyAwaitingEntityAttack()
         ? 'Encounter cốt truyện: chọn Tấn công trong khung GAME MASTER.'
-        : (storyAwaitingDecision()
-            ? 'Đọc tình huống và chọn một hành động trong khung GAME MASTER.'
-            : (storyPendingAdvance()
-                ? 'Đang chờ kết quả cuối turn trước khi mở turn kế.'
-                : (storyHandoffPending()
-                    ? 'Ranh giới cốt truyện đã sẵn sàng. Chọn nút Tiếp tục qua ranh giới.'
-                    : 'Đang ở đoạn cắt cảnh cốt truyện.')));
+        : (storyPendingAdvance()
+            ? 'Đang chờ Story hoàn tất chuyển đoạn.'
+            : (storyBootstrapPending()
+                ? 'Bắt đầu Story trong khung GAME MASTER trước.'
+                : 'Đang ở đoạn cắt cảnh cốt truyện.'));
       submit.disabled = true;
     } else {
-      action.placeholder = defaultPlaceholder || 'Cao Minh làm gì trong Turn hiện tại?';
+      action.placeholder = defaultPlaceholder || 'Cao Minh tương tác gì với môi trường hiện tại?';
       submit.disabled = !!window.__combatBusy || (typeof busy !== 'undefined' && !!busy);
     }
   }
@@ -981,8 +1040,9 @@
 
   var previousRender = window.render;
   window.render = function(){
+    var viewportAnchor = captureLogAnchor();
     if (typeof previousRender === 'function') previousRender();
-    renderSemanticLog();
+    renderSemanticLog(viewportAnchor);
     syncComposer();
     if (state && state.combat && state.combat.active) scrollCombatToBottom();
     renderCombatPanel();
@@ -1119,6 +1179,7 @@
     if (typeof previousError === 'function') previousError(message);
     syncComposer();
     if (typeof window.render === 'function') window.render();
+    scrollGmSystemMessage();
   };
 
   window.render();
