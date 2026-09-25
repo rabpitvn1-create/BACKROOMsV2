@@ -5,6 +5,8 @@ var SnapshotOverlayLayout = (function(){
   var ENTITY_LANE_WIDTH=0.46;
   // BEGIN GENERATED OVERLAY METRICS
   var bundledMetrics={
+    "cao_minh_entity_overlay.png":{"width":1122,"height":1402,"paint":{"left":1,"top":0,"right":1122,"bottom":1386},"body":{"left":2,"top":3,"right":1122,"bottom":1376},"sha256":"980aaaf8a8575d41ab66b95d8ab24ca7052b66677a1a15e0eb6433c8b716eb47"},
+    "cao_minh_snapshot_overlay.png":{"width":1122,"height":1402,"paint":{"left":54,"top":16,"right":1020,"bottom":1389},"body":{"left":54,"top":17,"right":1017,"bottom":1385},"sha256":"e02f27c3125c3c4c3c3eb4b4314c93bab89d0ac18c92f8038ee2533d616bbd6e"},
     "entity/async_rifleman.webp":{"width":941,"height":1672,"paint":{"left":140,"top":66,"right":841,"bottom":1623},"body":{"left":142,"top":67,"right":840,"bottom":1599},"sha256":"bd0b726251943b8f6afb18a5f2896bdbe44a8ad70c88bb18d50b2b075cf5621d"},
     "entity/biological_pipeline.webp":{"width":864,"height":1536,"paint":{"left":27,"top":104,"right":857,"bottom":1465},"body":{"left":55,"top":105,"right":856,"bottom":1458},"sha256":"4da8b62b404d4dbbb697dabbc695d3038f81a98943df8c252679be3d9256b8a5"},
     "entity/cable_mimic.webp":{"width":864,"height":1536,"paint":{"left":7,"top":0,"right":861,"bottom":1524},"body":{"left":8,"top":1,"right":859,"bottom":1516},"sha256":"5e187bae5df132448c3a156415efd4aa70b80afcb932879bdbf0141a4ad3c20e"},
@@ -26,7 +28,8 @@ var SnapshotOverlayLayout = (function(){
     "entity/smiler.webp":{"width":864,"height":1536,"paint":{"left":220,"top":200,"right":687,"bottom":1339},"body":{"left":250,"top":203,"right":618,"bottom":1322},"sha256":"bf827e46380613fbfdb2d8628972f0d29ff7bb560170fc8295a01e39a5d21a29"},
     "entity/tam_ma_cao_minh.webp":{"width":864,"height":1536,"paint":{"left":3,"top":233,"right":864,"bottom":1286},"body":{"left":4,"top":235,"right":860,"bottom":1282},"sha256":"91f4f8de815bfa2a9fc87a52f0ff946f3af9dd348f18616b8348adcbe81b1a32"},
     "entity/the_beast_of_level_5.webp":{"width":864,"height":1536,"paint":{"left":17,"top":0,"right":864,"bottom":1496},"body":{"left":18,"top":0,"right":862,"bottom":1479},"sha256":"0d2e7d76b8d8acc18143c53f332583f252dee51c9a1358195f520b82a0c1dc75"},
-    "entity/wretch.webp":{"width":864,"height":1536,"paint":{"left":9,"top":207,"right":858,"bottom":1332},"body":{"left":22,"top":208,"right":852,"bottom":1325},"sha256":"21857546b2d789ee9d1831e02fd8132e718b7563a7ba02adf682dce8b5b0bc99"}
+    "entity/wretch.webp":{"width":864,"height":1536,"paint":{"left":9,"top":207,"right":858,"bottom":1332},"body":{"left":22,"top":208,"right":852,"bottom":1325},"sha256":"21857546b2d789ee9d1831e02fd8132e718b7563a7ba02adf682dce8b5b0bc99"},
+    "luctram_overlay.png":{"width":1024,"height":1536,"paint":{"left":2,"top":0,"right":1016,"bottom":1482},"body":{"left":3,"top":4,"right":1016,"bottom":1469},"sha256":"838a4d6b14797aa1e906789725de1a67dbeb176f7ca4ea4e6155c17a07c78d4b"}
   };
   // END GENERATED OVERLAY METRICS
   function assetMetric(src){
