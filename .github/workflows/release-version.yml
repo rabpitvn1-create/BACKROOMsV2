@@ -597,7 +597,7 @@ jobs:
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)
           "$BUILD_TOOLS/apksigner" verify --verbose --print-certs BR-1.0.0.0.1.apk
           BADGING=$("$BUILD_TOOLS/aapt" dump badging BR-1.0.0.0.1.apk)
-          grep -q "package: name='com.rabpit.backroom' versionCode='98' versionName='BR 1.0.0.0.1'" <<<"$BADGING"
+          grep -q "package: name='com.rabpit.backroom' versionCode='99' versionName='BR 1.0.0.0.1'" <<<"$BADGING"
           grep -q "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 BR-1.0.0.0.1.apk
           unzip -l BR-1.0.0.0.1.apk | grep -q 'assets/index.html'
