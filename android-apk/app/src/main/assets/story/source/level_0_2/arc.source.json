@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "storyId": "level_0_2_remodeled_mess",
+  "levelKey": "0.2",
+  "sourceRevision": "remodeled-mess-r1",
+  "startChapter": "L02_C01",
+  "segmentTargetChars": 1900,
+  "segmentMaxChars": 2400,
+  "chapters": [
+    {
+      "id": "L02_C01",
+      "source": "story/source/level_0_2/LEVEL0.2_CH01_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C02",
+      "source": "story/source/level_0_2/LEVEL0.2_CH02_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C03",
+      "source": "story/source/level_0_2/LEVEL0.2_CH03_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C04",
+      "source": "story/source/level_0_2/LEVEL0.2_CH04_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Duy is introduced as a story-local survivor and is not a Party member."
+      ],
+      "forbiddenClaims": [
+        "Do not add Duy to Party or invent gameplay combat stats for him."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Duy nhìn thanh kim loại trong tay.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "duy",
+          "scope": "story_local",
+          "presence": "PRESENT"
+        }
+      ]
+    },
+    {
+      "id": "L02_C05",
+      "source": "story/source/level_0_2/LEVEL0.2_CH05_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Duy reunites with Hưng alive; Hưng remains a story-local survivor and is not a Party member."
+      ],
+      "forbiddenClaims": [
+        "Do not add Duy or Hưng to Party or invent gameplay combat stats for them."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Hưng còn sống.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "hung",
+          "scope": "story_local",
+          "presence": "PRESENT"
+        }
+      ]
+    },
+    {
+      "id": "L02_C06",
+      "source": "story/source/level_0_2/LEVEL0.2_CH06_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C07",
+      "source": "story/source/level_0_2/LEVEL0.2_CH07_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C08",
+      "source": "story/source/level_0_2/LEVEL0.2_CH08_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C09",
+      "source": "story/source/level_0_2/LEVEL0.2_CH09_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C10",
+      "source": "story/source/level_0_2/LEVEL0.2_CH10_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C11",
+      "source": "story/source/level_0_2/LEVEL0.2_CH11_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C12",
+      "source": "story/source/level_0_2/LEVEL0.2_CH12_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C13",
+      "source": "story/source/level_0_2/LEVEL0.2_CH13_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C14",
+      "source": "story/source/level_0_2/LEVEL0.2_CH14_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C15",
+      "source": "story/source/level_0_2/LEVEL0.2_CH15_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C16",
+      "source": "story/source/level_0_2/LEVEL0.2_CH16_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C17",
+      "source": "story/source/level_0_2/LEVEL0.2_CH17_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "A manifestation with Diệp Minh's face, memories and old hostility is observed; its true ontology remains unresolved."
+      ],
+      "forbiddenClaims": [
+        "Do not classify the Diệp Minh manifestation as an EntityCore encounter or prove that it is the original Diệp Minh."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Diệp Minh dừng cách Cao Minh hơn mười bước.",
+          "type": "STORY_FACT_SET",
+          "key": "diep_minh_manifestation_level02_ch17_observed",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "L02_C18",
+      "source": "story/source/level_0_2/LEVEL0.2_CH18_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Hưng dies in this chapter after prolonged dehydration and physical decline."
+      ],
+      "forbiddenClaims": [
+        "Do not keep Hưng PRESENT after his death is established.",
+        "Do not invent a resurrection, rescue, capture or a more specific exclusive cause of death than the manuscript establishes."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Duy hiểu trước khi ai nói.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "hung",
+          "scope": "story_local",
+          "presence": "DECEASED"
+        }
+      ]
+    },
+    {
+      "id": "L02_C19",
+      "source": "story/source/level_0_2/LEVEL0.2_CH19_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [],
+      "forbiddenClaims": []
+    },
+    {
+      "id": "L02_C20",
+      "source": "story/source/level_0_2/LEVEL0.2_CH20_REMODELED_MESS.md",
+      "thread": "cao_minh",
+      "visibility": "player",
+      "requiredFacts": [
+        "Duy dies before the chapter ends.",
+        "Cao Minh and Lục Trầm continue into an unnamed flooded corridor after leaving Duy's body in a dry recess."
+      ],
+      "forbiddenClaims": [
+        "Do not keep Duy PRESENT or MISSING after his death is established.",
+        "Do not name or choose the destination Level in Story metadata.",
+        "Do not claim the flooded region is safe."
+      ],
+      "events": [
+        {
+          "when": "AFTER_TEXT",
+          "anchor": "Không còn nhịp dưới ngón tay.",
+          "type": "CHARACTER_PRESENCE",
+          "characterId": "duy",
+          "scope": "story_local",
+          "presence": "DECEASED"
+        },
+        {
+          "when": "EXIT",
+          "type": "ARC_BOUNDARY_REACHED"
+        }
+      ]
+    }
+  ]
+}
