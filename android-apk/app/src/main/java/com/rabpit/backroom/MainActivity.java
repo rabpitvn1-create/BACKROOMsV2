@@ -17,6 +17,7 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import com.rabpit.backroom.core.CombatChoiceEngine;
+import com.rabpit.backroom.core.EnvironmentActionPacket;
 import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
 import com.rabpit.backroom.core.GmNarrativePacket;
@@ -567,7 +568,7 @@ public class MainActivity extends Activity {
     return text.length() > max ? text.substring(text.length() - max) : text;
   }
 
-  private String recentStoryContext(JSONObject state) {
+  private String recentContext(JSONObject state, boolean includeEnvironment) {
     JSONArray log = state == null ? null : state.optJSONArray("log");
     if (log == null || log.length() == 0) return "(chưa có lượt trước)";
 
@@ -575,11 +576,14 @@ public class MainActivity extends Activity {
     String currentVisibility = story == null ? "player" : story.optString("visibility", "player");
     String currentThread = story == null ? "cao_minh" : story.optString("thread", "cao_minh");
     boolean cutaway = "cutaway".equals(currentVisibility);
+    int maxEntries = includeEnvironment ? 6 : 4;
 
     java.util.ArrayList<String> visible = new java.util.ArrayList<>();
-    for (int i = log.length() - 1; i >= 0 && visible.size() < 4; i--) {
+    for (int i = log.length() - 1; i >= 0 && visible.size() < maxEntries; i--) {
       JSONObject entry = log.optJSONObject(i);
       if (entry == null) continue;
+      if (!includeEnvironment && EnvironmentActionPacket.SCOPE.equals(entry.optString("scope", ""))) continue;
+
       String role = entry.optString("role", "");
       if ("player".equals(role)) {
         if (cutaway) continue;
@@ -605,6 +609,14 @@ public class MainActivity extends Activity {
       recent.append(line);
     }
     return recent.length() == 0 ? "(chưa có lượt trước)" : recent.toString();
+  }
+
+  private String recentStoryContext(JSONObject state) {
+    return recentContext(state, false);
+  }
+
+  private String recentEnvironmentContext(JSONObject state) {
+    return recentContext(state, true);
   }
 
   private String appendEncounterDialogue(String reply, JSONArray dialogue) {
@@ -767,6 +779,63 @@ public class MainActivity extends Activity {
           } else {
             emit("backroomError", message);
           }
+        }
+      });
+    }
+
+    @JavascriptInterface public void submitEnvironmentAction(String stateJson, String action) {
+      io.execute(() -> {
+        try {
+          JSONObject submitted = new JSONObject(stateJson);
+          JSONObject persisted = new JSONObject(gameCore.currentCoreState());
+          if (persisted.length() > 0) submitted = persisted;
+
+          String text = action == null ? "" : action.trim();
+          if (text.isEmpty()) throw new Exception("PLAYER ACTION trống.");
+          if (CombatChoiceEngine.isActive(submitted)
+              || CombatChoiceEngine.isKnownEntity(encounterKey(submitted))) {
+            throw new Exception("PLAYER ACTION môi trường không khả dụng trong encounter/combat.");
+          }
+
+          JSONObject story = submitted.optJSONObject("story");
+          if (story != null && story.optBoolean("active", false)
+              && !story.optBoolean("arcComplete", false)) {
+            JSONObject journey = story.optJSONObject("returnJourney");
+            boolean returnActive = journey != null && journey.optBoolean("active", false);
+            boolean bootstrapPending = !returnActive
+                && !story.optBoolean("segmentDelivered", false)
+                && !story.optBoolean("awaitingDecision", false)
+                && !story.optBoolean("awaitingEntityAttack", false)
+                && !story.optBoolean("pendingStoryAdvance", false);
+            boolean storyLocked = "cutaway".equals(story.optString("visibility", "player"))
+                || story.optBoolean("awaitingEntityAttack", false)
+                || story.optBoolean("pendingStoryAdvance", false)
+                || bootstrapPending;
+            if (storyLocked) {
+              throw new Exception("PLAYER ACTION môi trường tạm khóa trong đoạn Story hiện tại.");
+            }
+          }
+
+          String coreJson = submitted.toString();
+          String prompt = EnvironmentActionPacket.build(
+              gameCore.levelPromptContext(coreJson, text),
+              gameCore.entityPromptContext(coreJson),
+              gameCore.itemPromptContext(coreJson),
+              gameCore.characterPromptContext(coreJson),
+              recentEnvironmentContext(submitted),
+              submitted,
+              text);
+
+          JSONObject generated = parseModelJson(generateText(prompt));
+          String reply = generated.optString("reply", "").trim();
+          if (reply.isEmpty()) throw new Exception("GAME MASTER không trả phản hồi môi trường.");
+
+          JSONObject committed = new JSONObject(gameCore.commitEnvironmentExchange(text, reply));
+          emit("backroomEnvironmentTurn", committed.toString());
+        } catch (Exception e) {
+          Log.w(TAG, "Environment-only PLAYER ACTION failed.", e);
+          emit("backroomEnvironmentError",
+              e.getMessage() == null ? "Không thể xử lý PLAYER ACTION." : e.getMessage());
         }
       });
     }

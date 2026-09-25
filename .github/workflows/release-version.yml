@@ -221,8 +221,13 @@ jobs:
           grep -Fq 'storyBootstrapPending() || storyCutawayActive()' android-apk/app/src/main/assets/player-action-ui.js
           ! grep -Fq 'Nhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01.' android-apk/app/src/main/assets/index.html
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'storyDecisionActive' android-apk/app/src/main/assets/player-action-ui.js
+          ! grep -Fq 'storyDecisionActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'storyEntityAttackActive' android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq 'Android.submitEnvironmentAction' android-apk/app/src/main/assets/player-action-ui.js
+          grep -Fq '@JavascriptInterface public void submitEnvironmentAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'gameCore.commitEnvironmentExchange(text, reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
+          grep -Fq 'EnvironmentActionPacket.appendExchange(state, action, reply)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EnvironmentActionPacket.java
           ! grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq 'storyInteractionActive' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
@@ -375,14 +380,17 @@ jobs:
           grep -Fq 'const LEVEL_NODE_TITLES=' android-apk/app/src/main/assets/index.html
           grep -Fq 's.currentLevelKey=inferLevelKey(s)' android-apk/app/src/main/assets/index.html
           grep -Fq '.snapshot{height:300px' android-apk/app/src/main/assets/index.html
-          grep -Fq '.game{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;overflow:hidden}' android-apk/app/src/main/assets/index.html
+          grep -Fq '.game{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;overflow:hidden}' android-apk/app/src/main/assets/index.html
           grep -Fq '.log{height:auto;min-height:0;overflow:auto;overscroll-behavior:contain' android-apk/app/src/main/assets/index.html
           ! grep -Fq '.log{height:clamp(320px,48vh,540px)' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionOpen"' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
           grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="gameMenuOpen"' android-apk/app/src/main/assets/index.html
-          grep -Fq '.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px' android-apk/app/src/main/assets/index.html
+          grep -Fq 'env(safe-area-inset-top)' android-apk/app/src/main/assets/index.html
+          grep -Fq 'env(safe-area-inset-left)' android-apk/app/src/main/assets/index.html
+          grep -Fq 'env(safe-area-inset-right)' android-apk/app/src/main/assets/index.html
+          grep -Fq 'env(safe-area-inset-bottom)' android-apk/app/src/main/assets/index.html
           grep -Fq '.game-menu-trigger{width:40px;height:40px;flex:0 0 40px' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="gameMenuModal"' android-apk/app/src/main/assets/index.html
           ! grep -Fq '<div class="turn">TURN' android-apk/app/src/main/assets/index.html
@@ -431,6 +439,10 @@ jobs:
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --test android-apk/tests/story-choice-ui.test.js
           node --test android-apk/tests/viewport-layout.test.cjs
+          node --test android-apk/tests/environment-action-contract.test.cjs
+          ! grep -Fq 'Save được lưu riêng trên thiết bị này.' android-apk/app/src/main/assets/index.html
+          grep -Fq 'function captureLogAnchor()' android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq 'function restoreLogAnchor(anchor)' android-apk/app/src/main/assets/gm-choice-ui.js
           test -s android-apk/app/src/main/assets/fonts/Play-Regular.ttf
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js

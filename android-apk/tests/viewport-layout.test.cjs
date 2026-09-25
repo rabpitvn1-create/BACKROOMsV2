@@ -13,14 +13,13 @@ test('game shell uses one visual viewport height and keeps page scrolling locked
   assert.match(index,/html,body\{height:100%;overflow:hidden;overscroll-behavior:none\}/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;/);
   assert.match(index,/\.shell\{height:var\(--app-height,100dvh\);min-height:0;overflow:hidden;padding:0;/);
-  assert.match(index,/\.topbar\{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px;/);
   assert.match(index,/function syncViewportHeight\(\)/);
   assert.match(index,/window\.visualViewport/);
   assert.match(index,/setProperty\("--app-height",height\+"px"\)/);
 });
 
 test('gameplay frame is fixed while only the narrative log consumes leftover height',()=>{
-  assert.match(index,/\.game\{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax\(0,1fr\) auto auto;overflow:hidden\}/);
+  assert.match(index,/\.game\{height:100%;min-height:0;display:grid;grid-template-rows:auto auto minmax\(0,1fr\) auto;overflow:hidden\}/);
   assert.match(index,/\.log\{height:auto;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;/);
   assert.doesNotMatch(index,/\.log\{height:clamp\(320px,48vh,540px\)/);
 });
@@ -32,11 +31,24 @@ test('keyboard-sensitive controls use the shared viewport budget',()=>{
   assert.match(playerAction,/window\.visualViewport\.addEventListener\('scroll', fitVisualViewport\)/);
 });
 
-test('display cutout is painted without inflating the compact header',()=>{
-  assert.doesNotMatch(index,/padding:max\(8px,env\(safe-area-inset-top\)\)/);
-  assert.doesNotMatch(index,/\.topbar\{padding-top:max\(6px,env\(safe-area-inset-top\)\)\}/);
-  assert.match(index,/\.topbar\{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 8px;/);
+test('header and bottom action respect physical curved-screen safe areas',()=>{
+  assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-top\)/);
+  assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-left\)/);
+  assert.match(index,/\.topbar\{[^}]*env\(safe-area-inset-right\)/);
+  assert.match(index,/\.player-action-bar\{[^}]*env\(safe-area-inset-bottom\)/);
   assert.match(index,/\.snapshot\{height:300px;/);
+});
+
+test('permanent turn status no longer consumes a gameplay grid row',()=>{
+  assert.match(index,/\.status\{position:absolute;width:1px;height:1px;/);
+  assert.doesNotMatch(index,/Save được lưu riêng trên thiết bị này/);
+  assert.doesNotMatch(index,/Turn "\+state\.turn/);
+});
+
+test('Play font is limited to UI while narrative body keeps the system font',()=>{
+  assert.match(index,/@font-face\{font-family:'Play'[^}]*Play-Regular\.ttf/);
+  assert.match(index,/\.topbar,\.game-menu-trigger,\.player-action-bar button[^}]*font-family:'Play'/);
+  assert.match(index,/body\{[^}]*font:15px system-ui/);
 });
 
 test('gameplay background reaches all four screen edges',()=>{
