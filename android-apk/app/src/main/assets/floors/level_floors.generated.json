@@ -1,0 +1,46 @@
+{
+  "model": "mgr/grok-imagine-image",
+  "format": "webp",
+  "displayPurpose": "snapshot-ground-plane",
+  "targetDimensions": {
+    "width": 768,
+    "height": 144
+  },
+  "assets": [
+    {
+      "level": "0",
+      "file": "level_0.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 0 material: damp dirty mustard-beige Berber-like office carpet, flattened fibers, darker wet patches, faint mold grime, nicotine-yellow cast, tiny torn paper and dark lint."
+    },
+    {
+      "level": "1",
+      "file": "level_1.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 1 Parking Zone material: worn gray parking-garage concrete, hairline cracks, tire scuffs, dusty aggregate, faint oil mark, one small paper scrap and a tiny metal washer."
+    },
+    {
+      "level": "2",
+      "file": "level_2.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 2 Pipe Dreams material: grimy utility-tunnel concrete with chalky dust, rust flakes, condensation marks, a tiny clipped wire piece and one paper fiber, warm industrial brown-gray tone."
+    },
+    {
+      "level": "3",
+      "file": "level_3.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 3 Electrical Station material: dark dusty concrete industrial floor, electrical soot, subtle oil grime, small copper-wire clipping and one tiny torn insulation fragment, dim cold industrial lighting."
+    },
+    {
+      "level": "4",
+      "file": "level_4.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 4 Abandoned Office material: old charcoal-gray office carpet tiles with worn seams, dust gathered in fibers, faint coffee stain, one tiny paper corner and a small plastic fragment, dry abandoned-office feel."
+    },
+    {
+      "level": "5",
+      "file": "level_5.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 5 Terror Hotel material: aged dark mahogany parquet meeting a narrow burgundy hotel carpet edge, elegant but no longer pristine, fine scuffs, one tiny faded paper scrap and a couple of dark crumbs; still mostly orderly, not filthy."
+    },
+    {
+      "level": "6",
+      "file": "level_6.webp",
+      "prompt": "Wide low-profile foreground FLOOR PLATE asset for a mobile Backrooms game snapshot. Show only the walkable ground surface in shallow perspective, designed for characters and creatures to stand on. No walls, no ceiling, no horizon skyline, no people, no creatures, no feet, no UI, no text, no letters, no numbers, no logo, no watermark. The center and lower half must stay readable behind character feet and drop shadows. Crucially, the surface must NOT look freshly cleaned: include only 1 to 3 small believable pieces of litter or debris, such as a torn paper scrap, tiny wrapper fragment, loose grit, cable clipping or dust clump, plus restrained stains/scuffs appropriate to the material. Keep trash sparse and small, never a garbage pile. Realistic game concept art texture, restrained lighting, no bloom, no neon. Level 6 Lights Out material: almost-black cold smooth concrete, barely visible roughness, damp smear, tiny grit and one small pale paper scrap catching minimal ambient light, extremely low-key darkness while keeping floor texture readable."
+    }
+  ]
+}
