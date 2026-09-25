@@ -70,12 +70,21 @@
     {
       "levelKey": "the_torment",
       "file": "sublevel_the_torment.webp",
-      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. The Torment: monochrome gray cracked stone and packed-earth texture, cold desaturated surface, damp dirt in crevices; only two tiny dead leaf fragments and one tiny broken twig."
+      "prompt": "Orthographic top-down seamless game floor material scan for The Torment in the Backrooms. The entire image is a FLAT walkable ground plane edge to edge: compacted charcoal-gray soil mixed with worn cracked flat stone, fine gravel embedded into the surface, thin damp crevices and sparse dead leaf fragments. Cold desaturated moonlit grayscale. NO loose rocks, NO boulders, NO stone slabs sticking upward, NO piles, NO walls, NO horizon, NO scenery, NO graves, NO statue, NO people, NO body parts, NO feet, NO shoes, NO text, NO letters, NO numbers, NO logo, NO watermark. Add only two tiny dead leaf fragments and one thin broken twig, each occupying less than 2 percent of the image. High-detail realistic flat PBR ground texture, diffuse restrained lighting."
     },
     {
       "levelKey": "red_rooms",
       "file": "sublevel_red_rooms.webp",
       "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Red Rooms: dark crimson rough carpet texture, sticky matted fibers, black mold specks and deep red grime; one tiny torn paper fragment and one tiny dull plastic fleck."
     }
-  ]
+  ],
+  "postProcess": {
+    "debris": "deterministic sparse micro-debris per floor",
+    "darkFloorSwordGlow": [
+      "level_6",
+      "the_torment",
+      "red_rooms"
+    ],
+    "swordGlowImplementation": "runtime CSS overlay; not baked into floor WebP"
+  }
 }
