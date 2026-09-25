@@ -298,9 +298,15 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(false, state, "Story choice generation is stale.",
             "story_decision_generation_stale", null);
       }
+      if (!storyCore.decisionNeedsProvider(state)) {
+        return response(false, state, "Story choice generation is stale.",
+            "story_decision_generation_stale", null);
+      }
       storyCore.installDecisionPackage(state, contextHash, parseState(generatedPackageJson));
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
+      String pending = state.getJSONObject(StoryCore.ROOT_KEY).optString("pendingChoiceId", "");
+      if (!pending.isEmpty()) return processStoryDecision(state.toString(), pending);
       return response(true, state, null, "story_decision_generated", null);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "story_decision_generation_rejected", null);
@@ -364,6 +370,26 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String selectStoryDecision(String stateJson, String choiceId) {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      JSONObject submittedStory = parseState(stateJson).optJSONObject(StoryCore.ROOT_KEY);
+      JSONObject storedStory = state.optJSONObject(StoryCore.ROOT_KEY);
+      if (submittedStory == null || storedStory == null
+          || !submittedStory.optString("decisionId", "").equals(storedStory.optString("decisionId", ""))
+          || !submittedStory.optJSONObject("decisionPackage").optString("contextHash", "")
+              .equals(storedStory.optJSONObject("decisionPackage").optString("contextHash", ""))) {
+        throw new IllegalStateException("Story choice trên UI đã cũ.");
+      }
+      storyCore.selectDecision(state, choiceId);
+      persist(state);
+      if (storyCore.decisionReady(state)) return processStoryDecision(state.toString(), choiceId);
+      return response(true, state, null, "story_choice_pending", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "story_choice_rejected", null);
+    }
+  }
+
   public synchronized String returnJourneyTurnRequest(String stateJson, String recentStory) {
     JSONObject submitted = parseState(stateJson);
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
@@ -402,11 +428,17 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(false, state, "Return journey generation is stale.",
             "return_journey_generation_stale", null);
       }
+      if (!storyCore.returnJourneyNeedsProvider(state)) {
+        return response(false, state, "Return journey generation is stale.",
+            "return_journey_generation_stale", null);
+      }
       String narration = storyCore.installReturnJourneyTurn(
           state, journeyId, turnIndex, contextHash, parseState(generatedPackageJson));
       appendGeneratedReturnNarration(state, narration);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
+      String pending = returnJourney(state).optString("pendingChoiceId", "");
+      if (!pending.isEmpty()) return processReturnJourneyChoice(state.toString(), pending);
       return response(true, state, null, "return_journey_turn_generated", null);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "return_journey_generation_rejected", null);
@@ -437,6 +469,25 @@ public final class GameCoreFacade implements AutoCloseable {
           resolution.reply);
     } catch (Exception e) {
       return response(false, state, safeMessage(e), "return_journey_choice_rejected", null);
+    }
+  }
+
+  public synchronized String selectReturnJourneyChoice(String stateJson, String choiceId) {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      JSONObject submittedJourney = returnJourney(parseState(stateJson));
+      JSONObject storedJourney = returnJourney(state);
+      if (!sameReturnTurn(submittedJourney, storedJourney)
+          || !submittedJourney.optJSONObject("turnPackage").optString("contextHash", "")
+              .equals(storedJourney.optJSONObject("turnPackage").optString("contextHash", ""))) {
+        throw new IllegalStateException("Return journey choice trên UI đã cũ.");
+      }
+      storyCore.selectReturnChoice(state, choiceId);
+      persist(state);
+      if (storyCore.returnJourneyReady(state)) return processReturnJourneyChoice(state.toString(), choiceId);
+      return response(true, state, null, "return_choice_pending", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "return_choice_rejected", null);
     }
   }
 

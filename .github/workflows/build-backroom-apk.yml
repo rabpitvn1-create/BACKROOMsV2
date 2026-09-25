@@ -382,7 +382,8 @@ jobs:
           ! grep -Fq '<div class="turn">TURN' android-apk/app/src/main/assets/index.html
           grep -Fq 'player-action-ui.js' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'management-ui.js' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq ".message.gm .role,.gm-choice{font-family:system-ui" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq ".gm-choice{width:100%;text-align:left;" android-apk/app/src/main/assets/gm-choice-ui.js
+          grep -Fq "font-family:'Play',system-ui,sans-serif;font-weight:400" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq ".semantic{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq ".message.gm .role,.gm-choice,.combat-turn-label{font-family:'Play'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'function alignOverlayToGround' android-apk/app/src/main/assets/snapshot-ui.js
@@ -422,6 +423,8 @@ jobs:
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
           node --check android-apk/app/src/main/assets/snapshot-ui.js
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
+          node --test android-apk/tests/story-choice-ui.test.js
+          test -s android-apk/app/src/main/assets/fonts/Play-Regular.ttf
           node --check android-apk/app/src/main/assets/inventory-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
@@ -579,6 +582,7 @@ jobs:
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/index.html'
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/snapshot-ui.js'
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/gm-choice-ui.js'
+          unzip -l Backroom-1.1.93.apk | grep -q 'assets/fonts/Play-Regular.ttf'
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/inventory-ui.js'
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/party-ui.js'
           unzip -l Backroom-1.1.93.apk | grep -q 'assets/player-action-ui.js'

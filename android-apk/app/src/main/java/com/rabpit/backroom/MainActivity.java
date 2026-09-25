@@ -778,6 +778,7 @@ public class MainActivity extends Activity {
           JSONObject committed = new JSONObject(
               gameCore.commitStoryDecisionPackage(stateJson, contextHash, generated.toString()));
           if (!committed.optBoolean("handled", false)) {
+            if ("story_decision_generation_stale".equals(committed.optString("reason", ""))) return;
             throw new Exception(committed.optString("error", "Story choice package bị Core từ chối."));
           }
           emit("backroomTurn", committed.getJSONObject("state").toString());
@@ -792,7 +793,7 @@ public class MainActivity extends Activity {
       io.execute(() -> {
         try {
           JSONObject result = new JSONObject(
-              gameCore.processStoryDecision(stateJson, choiceId));
+              gameCore.selectStoryDecision(stateJson, choiceId));
           if (!result.optBoolean("handled", false)) {
             throw new Exception(result.optString(
                 "error", "Story decision bị Core từ chối."));
@@ -832,6 +833,7 @@ public class MainActivity extends Activity {
           JSONObject committed = new JSONObject(gameCore.commitReturnJourneyTurn(
               stateJson, journeyId, turnIndex, contextHash, generated.toString()));
           if (!committed.optBoolean("handled", false)) {
+            if ("return_journey_generation_stale".equals(committed.optString("reason", ""))) return;
             throw new Exception(committed.optString(
                 "error", "Return journey turn bị Core từ chối."));
           }
@@ -847,7 +849,7 @@ public class MainActivity extends Activity {
       io.execute(() -> {
         try {
           JSONObject result = new JSONObject(
-              gameCore.processReturnJourneyChoice(stateJson, choiceId));
+              gameCore.selectReturnJourneyChoice(stateJson, choiceId));
           if (!result.optBoolean("handled", false)) {
             throw new Exception(result.optString(
                 "error", "Lựa chọn hành trình bị Core từ chối."));

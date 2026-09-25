@@ -60,7 +60,6 @@ function context(state) {
     storyCutawayActive:()=>false,
     storyAwaitingDecision:()=>!!(state.story&&state.story.awaitingDecision),
     storyAwaitingEntityAttack:()=>false,
-    storyDecisionReady:()=>false,
     chestPresent:()=>false,
     storyPendingAdvance:()=>false,
     fallbackExplorerChoices:()=>[],
@@ -81,6 +80,8 @@ function context(state) {
     functionSource(gm,'returnJourneyChoices'),
     functionSource(gm,'requestReturnJourneyTurn'),
     functionSource(gm,'submitReturnJourneyChoice'),
+    functionSource(gm,'storyDecisionReady'),
+    functionSource(gm,'storyDecisionChoices'),
     functionSource(gm,'storyDecisionNeedsProvider'),
     functionSource(gm,'requestStoryDecision'),
     functionSource(gm,'storyBootstrapPending'),
@@ -136,27 +137,42 @@ test('a ready return journey renders exactly three current-turn choices', () => 
   assert.equal(submissions[0][2],'opaque-2');
 });
 
-test('provider generation is requested only for the current Story gate', () => {
+test('provider generation is requested in background while current Story choices stay visible', () => {
   const state=bootstrapState();
   Object.assign(state.story,{
     segmentDelivered:true,awaitingDecision:true,decisionStatus:'PROVIDER_REQUIRED',
-    decisionId:'L0_current'
+    decisionId:'L0_current',
+    decisionPackage:{contextHash:'story-hash',choices:[
+      {id:'story-1',text:'Quan sát dấu hiệu phía trước'},
+      {id:'story-2',text:'Kiểm tra khoảng lối bên cạnh'},
+      {id:'story-3',text:'Xem kỹ khu vực gần nhất'}
+    ]}
   });
   const {ctx,submissions}=context(state);
   const article=element('article');
   ctx.appendExplorerChoices(article,state.log[0],0);
   assert.equal(submissions.filter(x=>x[0]==='prepare-story').length,1);
   assert.equal(submissions.find(x=>x[0]==='prepare-story')[1].story.decisionId,'L0_current');
-  assert.equal(article.children[0].children.length,1);
-  assert.equal(article.children[0].children[0].textContent,'Đang chuẩn bị ba lựa chọn…');
+  const buttons=article.children[0].children;
+  assert.equal(buttons.length,3);
+  assert.deepEqual(buttons.map(x=>x.textContent),[
+    'Quan sát dấu hiệu phía trước',
+    'Kiểm tra khoảng lối bên cạnh',
+    'Xem kỹ khu vực gần nhất'
+  ]);
+  assert.equal(buttons.some(x=>x.textContent==='Đang chuẩn bị ba lựa chọn…'),false);
 });
 
-test('provider generation is requested only for the current return journey turn', () => {
+test('provider generation is requested in background while current return choices stay visible', () => {
   const state=bootstrapState();
   state.story.segmentDelivered=true;
   state.story.returnJourney={
     active:true,journeyId:'journey-current',turnIndex:7,turnStatus:'PROVIDER_REQUIRED',
-    turnPackage:{}
+    turnPackage:{contextHash:'return-hash',choices:[
+      {id:'return-1',text:'Theo dấu hiệu phía trước'},
+      {id:'return-2',text:'Thử lối gần góc rẽ'},
+      {id:'return-3',text:'Quan sát khu vực hiện tại'}
+    ]}
   };
   const {ctx,submissions}=context(state);
   const article=element('article');
@@ -165,6 +181,14 @@ test('provider generation is requested only for the current return journey turn'
   const submitted=submissions.find(x=>x[0]==='prepare-return')[1];
   assert.equal(submitted.story.returnJourney.journeyId,'journey-current');
   assert.equal(submitted.story.returnJourney.turnIndex,7);
+  const buttons=article.children[0].children;
+  assert.equal(buttons.length,3);
+  assert.deepEqual(buttons.map(x=>x.textContent),[
+    'Theo dấu hiệu phía trước',
+    'Thử lối gần góc rẽ',
+    'Quan sát khu vực hiện tại'
+  ]);
+  assert.equal(buttons.some(x=>x.textContent==='Đang chuẩn bị ba hướng đi…'),false);
 });
 
 test('a wrong Story choice returns before time and random encounter processing', () => {
@@ -232,7 +256,14 @@ test('active return journey blocks arc handoff in both UI and Core dispatch orde
   const state=bootstrapState();
   state.story.arcComplete=true;
   state.story.segmentDelivered=true;
-  state.story.returnJourney={active:true,turnStatus:'PROVIDER_REQUIRED'};
+  state.story.returnJourney={
+    active:true,journeyId:'journey-handoff-guard',turnIndex:0,turnStatus:'PROVIDER_REQUIRED',
+    turnPackage:{contextHash:'return-handoff-hash',choices:[
+      {id:'guard-1',text:'Theo dấu hiệu phía trước'},
+      {id:'guard-2',text:'Thử lối gần nhất'},
+      {id:'guard-3',text:'Quan sát khu vực hiện tại'}
+    ]}
+  };
   state.levelRoute={storyExitReady:true,exitAvailable:true};
 
   const {ctx,submissions}=context(state);

@@ -407,14 +407,27 @@ public class StoryCoreTest {
     assertTrue(core.awaitingDecision(state));
     assertTrue(core.decisionNeedsProvider(state));
     assertTrue(core.blocksFreePlayerAction(state));
+    assertFalse(core.decisionReady(state));
+    JSONArray immediate = core.decisionChoices(state);
+    assertEquals(3, immediate.length());
+    String choicesBeforeProvider = immediate.toString();
+    JSONObject reloaded = new JSONObject(state.toString());
+    core.normalizeState(reloaded);
+    assertEquals(choicesBeforeProvider, core.decisionChoices(reloaded).toString());
+    JSONObject legacy = new JSONObject(state.toString());
+    legacy.getJSONObject("story").put("decisionPackage", new JSONObject());
+    core.normalizeState(legacy);
+    assertEquals(3, core.decisionChoices(legacy).length());
+    assertTrue(core.decisionNeedsProvider(legacy));
 
     JSONObject request = core.decisionGenerationRequest(state, "(context)");
     assertTrue(request.getBoolean("needed"));
     String contextHash = request.getString("contextHash");
-    assertTrue(request.getString("prompt").contains("Write exactly three choices"));
+    assertTrue(request.getString("prompt").contains("Core has already published three choices"));
 
     core.installDecisionPackage(state, contextHash, preparedAlternates());
     assertTrue(core.decisionReady(state));
+    assertEquals(choicesBeforeProvider, core.decisionChoices(state).toString());
 
     JSONArray publicChoices = core.decisionChoices(state);
     assertEquals(3, publicChoices.length());
@@ -528,6 +541,62 @@ public class StoryCoreTest {
       fail("Expected stale decision package to be rejected");
     } catch (IllegalStateException expected) {
       assertTrue(expected.getMessage().contains("context changed"));
+    }
+  }
+
+  @Test public void pendingProviderGuardRefreshesWithoutChangingPublishedChoices() throws Exception {
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    JSONObject state = state();
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+
+    JSONArray before = core.decisionChoices(state);
+    String published = before.toString();
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    String oldHash = story.getJSONObject("decisionPackage").getString("contextHash");
+
+    story.getJSONObject("characters").getJSONObject("luc_tram")
+        .put("presence", StoryCore.PRESENCE_PRESENT);
+    core.normalizeState(state);
+
+    assertEquals(published, core.decisionChoices(state).toString());
+    String refreshed = state.getJSONObject(StoryCore.ROOT_KEY)
+        .getJSONObject("decisionPackage").getString("contextHash");
+    assertFalse(oldHash.equals(refreshed));
+    JSONObject request = core.decisionGenerationRequest(state, "");
+    assertEquals(refreshed, request.getString("contextHash"));
+    core.installDecisionPackage(state, refreshed, preparedAlternates());
+    assertTrue(core.decisionReady(state));
+  }
+
+  @Test public void earlySelectionSurvivesReloadAndUsesTheSameProviderResult() throws Exception {
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    JSONObject state = state();
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+    String id = choiceIdForOutcome(state, StoryCore.OUTCOME_STAY);
+    JSONObject request = core.decisionGenerationRequest(state, "");
+    core.selectDecision(state, id);
+    JSONObject reloaded = new JSONObject(state.toString());
+    core.normalizeState(reloaded);
+    assertEquals(id, reloaded.getJSONObject("story").getString("pendingChoiceId"));
+    assertEquals(3, core.decisionChoices(reloaded).length());
+    try {
+      core.selectDecision(reloaded, choiceIdForOutcome(reloaded, StoryCore.OUTCOME_CANON));
+      fail("Second selection must not replace the pending choice");
+    } catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("already selected"));
+    }
+    core.installDecisionPackage(reloaded, request.getString("contextHash"), preparedAlternates());
+    StoryCore.DecisionResolution result = core.resolveDecision(reloaded, id,
+        new CharacterEncounterCore(bound -> bound - 1));
+    assertEquals(StoryCore.OUTCOME_STAY, result.outcome);
+    assertTrue(result.looped);
+    try {
+      core.resolveDecision(reloaded, id, new CharacterEncounterCore(bound -> bound - 1));
+      fail("A resolved choice must not resolve twice");
+    } catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("not ready"));
     }
   }
 
