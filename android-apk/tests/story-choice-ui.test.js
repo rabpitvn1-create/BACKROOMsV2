@@ -66,7 +66,7 @@ function scenario(isReturn) {
   return { context, log, style, calls };
 }
 for (const isReturn of [false, true]) {
-  test(`${isReturn ? 'Return Journey' : 'Story'} renders three choices before provider and queues one request`, async () => {
+  test(`${isReturn ? 'Return Journey' : 'Story'} covers unavailable choices while provider is loading`, async () => {
     const { context, log, style, calls } = scenario(isReturn);
     const choiceButtons = buttons(log);
     assert.equal(choiceButtons.length, isReturn ? 0 : 3);
@@ -75,8 +75,16 @@ for (const isReturn of [false, true]) {
       assert.equal(choiceButtons[0].textContent.includes('Cao Minh'), true);
       const semantic = choiceButtons[0].querySelectorAll('.semantic');
       assert.equal(semantic.some(span => span.className.includes('semantic-character') && span.textContent === 'Cao Minh'), true);
+      assert.equal(log.querySelectorAll('.story-choice-loading').length, 1);
+      assert.equal(log.querySelectorAll('.story-choice-hourglass')[0].textContent, '⌛');
+      assert.match(log.querySelectorAll('.story-choice-loading-label')[0].textContent, /ĐANG TẢI LỰA CHỌN/);
+    } else {
+      assert.equal(log.querySelectorAll('.story-choice-loading').length, 0);
     }
     assert.match(style.textContent, /Play-Regular\.ttf/);
+    assert.match(style.textContent, /story_choice_loading_backrooms\.png/);
+    assert.match(style.textContent, /story-choice-hourglass-spin/);
+    assert.match(style.textContent, /border:2px solid #d8b84a/);
     assert.match(style.textContent, /\.gm-choice\{[^}]*font-weight:400/);
     assert.match(style.textContent, /\.semantic\{[^}]*font-weight:700/);
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -89,6 +97,7 @@ for (const isReturn of [false, true]) {
     context.backroomTurn(JSON.stringify({ ...context.state, story: {
       ...context.state.story, ...(isReturn ? { returnJourney: { ...context.state.story.returnJourney, turnStatus: 'READY', lookaheadReady: true } }
         : { decisionStatus: 'READY' }) } }));
+    assert.equal(log.querySelectorAll('.story-choice-loading').length, 0);
     buttons(log)[0].click();
     assert.equal(calls.resolve.length, 1);
     context.backroomTurn(JSON.stringify({ ...context.state, story: {
@@ -110,10 +119,25 @@ for (const isReturn of [false, true]) {
     const manual = buttons(log).find(button => button.textContent === 'Thử lại phản hồi');
     assert.ok(manual);
     assert.equal(buttons(log).length, isReturn ? 1 : 4);
+    if (!isReturn) assert.equal(log.querySelectorAll('.story-choice-loading').length, 0);
     manual.click();
     assert.equal(calls.prepare.length, 3);
+    if (!isReturn) assert.equal(log.querySelectorAll('.story-choice-loading').length, 1);
   });
 }
+
+
+test('Story choice loading overlay uses its dedicated IMG_API Backrooms artwork', () => {
+  const art = path.join(assets, 'hud/story_choice_loading_backrooms.png');
+  const metadata = path.join(assets, 'hud/story_choice_loading_backrooms.generated.json');
+  assert.equal(fs.existsSync(art), true);
+  assert.equal(fs.statSync(art).size > 10000, true);
+  assert.equal(fs.existsSync(metadata), true);
+  const gmChoice = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
+  assert.match(gmChoice, /url\('hud\/story_choice_loading_backrooms\.png'\)/);
+  assert.match(gmChoice, /story-choice-loading\{[^}]*border:2px solid #d8b84a/);
+  assert.match(gmChoice, /@keyframes story-choice-hourglass-spin/);
+});
 
 test('selection bridges contain no provider request and native state hides outcome tables', () => {
   const java = fs.readFileSync(path.resolve(__dirname,
