@@ -1,0 +1,9 @@
+BR 1.0.0.0.3
+
+- Tăng versionCode từ 100 lên 101 để Android nhận đây là bản cập nhật mới.
+- Gộp bản đại tu viewport Redmi/WebView vào nhánh phát hành chính với Gameplay full-bleed sát bốn cạnh màn hình.
+- Giữ header gọn như bản gốc, tăng Snapshot lên 300px và để log tự co giãn theo viewport thực tế.
+- Thêm hệ sàn Snapshot riêng cho Level 0-6 và toàn bộ sublevel hiện có: 0.1, 0.2, 0.5, 0.7, Manila Room, The Torment và Red Rooms.
+- Tối ưu 14 floor asset sang WebP dung lượng thấp, có vết bẩn và rác nhỏ phù hợp từng môi trường.
+- Thêm phản sáng kiếm của Cao Minh trên Level 6, The Torment và Red Rooms với lõi trắng và viền đỏ nhẹ.
+- Bổ sung regression tests cho viewport, full-bleed, floor resolver, floor asset set và dark-floor sword glow.

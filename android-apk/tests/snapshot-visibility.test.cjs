@@ -67,3 +67,11 @@ test('simultaneous floating damage uses separate vertical lanes instead of one a
  assert.match(source,/floater\.dataset\.target=target/);
  assert.match(source,/floater\.style\.top=\(anchor\.y-lane\*26\)\+'px'/);
 });
+
+test('snapshot sword reflection stays below sprites and requires visible Cao Minh',()=>{
+ assert.match(source,/\.snapshot-sword-glow\{[^}]*z-index:1/);
+ assert.match(source,/radial-gradient\(ellipse at center,rgba\(255,250,244,.78\)/);
+ assert.match(source,/rgba\(221,72,57,.24\)/);
+ assert.match(source,/querySelector\('img\.snapshot-character\[alt="Cao Minh"\],img\.snapshot-character\[data-combat-actor="cao_minh"\]'/);
+ assert.match(source,/appendSnapshotOverlay\(box\);appendSwordFloorGlow\(box,local\)/);
+});

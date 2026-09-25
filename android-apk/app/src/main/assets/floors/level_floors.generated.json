@@ -1,0 +1,90 @@
+{
+  "model": "mgr/grok-imagine-image",
+  "format": "webp",
+  "displayPurpose": "snapshot-ground-plane",
+  "targetDimensions": {
+    "width": 768,
+    "height": 144
+  },
+  "assets": [
+    {
+      "levelKey": "0",
+      "file": "level_0.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 0: mustard-beige damp Berber office carpet, flattened fibers, darker wet patches, faint mold grime; one tiny torn paper corner and one tiny lint clump."
+    },
+    {
+      "levelKey": "1",
+      "file": "level_1.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 1: worn gray parking-garage concrete texture, hairline crack, tire scuff, dusty aggregate, faint oil smear; one tiny paper chip and one tiny metal washer."
+    },
+    {
+      "levelKey": "2",
+      "file": "level_2.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 2 Pipe Dreams: grimy utility-tunnel concrete, chalky dust, rust flakes and condensation marks; add one tiny clipped wire piece and a small paper fiber."
+    },
+    {
+      "levelKey": "3",
+      "file": "level_3.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 3: dark dusty industrial concrete texture, electrical soot, old oil grime; one tiny copper clipping and one tiny insulation chip."
+    },
+    {
+      "levelKey": "4",
+      "file": "level_4.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 4 Abandoned Office: old charcoal-gray office carpet tiles with worn seams, embedded dust and a faint coffee stain; add one tiny paper corner and one very small plastic chip."
+    },
+    {
+      "levelKey": "5",
+      "file": "level_5.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 5: aged dark mahogany parquet floor texture with a narrow burgundy carpet edge, fine scuffs and dust; one tiny faded paper scrap and two tiny crumbs."
+    },
+    {
+      "levelKey": "6",
+      "file": "level_6.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 6: nearly black cold smooth concrete texture, subtle roughness and damp smear, still readable; one tiny pale paper fleck and sparse grit."
+    },
+    {
+      "levelKey": "0.1",
+      "file": "sublevel_0_1.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 0.1 Zenith Station: worn brushed-metal deck panels with fine seams, anti-slip texture, cold gray alloy, scratches, oxidation and dried maintenance grime; add a tiny clipped cable tie and two small glass-like flakes."
+    },
+    {
+      "levelKey": "0.2",
+      "file": "sublevel_0_2.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 0.2 Remodeled Mess: dry deep-red commercial carpet partly dusted by pale plaster powder and construction grit, a subtle cracked seam suggesting nearby collapse; add two tiny plaster chips and a small torn paper scrap."
+    },
+    {
+      "levelKey": "0.5",
+      "file": "sublevel_0_5.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 0.5: filthy off-white hospital vinyl tile texture with a shallow dirty-water sheen, gray-brown grime and oily residue; one tiny soaked paper piece and one tiny rust flake."
+    },
+    {
+      "levelKey": "0.7",
+      "file": "sublevel_0_7.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Level 0.7 Reminiscence District: worn historical patchwork flooring with a restrained transition from old dark wood planks into faded twentieth-century linoleum, dusty and age-scuffed; add one tiny yellowed paper scrap and a small chipped fragment."
+    },
+    {
+      "levelKey": "manila_room",
+      "file": "sublevel_manila_room.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Manila Room: dry aged honey-brown wooden plank floor, matte worn finish, subtle dust in seams and quiet beige cast; add one tiny pencil shaving and one small yellowed paper corner."
+    },
+    {
+      "levelKey": "the_torment",
+      "file": "sublevel_the_torment.webp",
+      "prompt": "TOP-DOWN FLAT MATERIAL TEXTURE ONLY. A continuous compacted charcoal-gray soil floor for The Torment in the Backrooms, viewed orthographically straight down. The surface must be almost uniform and fully walkable edge to edge, made of fine packed earth, subtle powdery grit, faint damp patches and thin hairline cracks. ABSOLUTELY NO visible rocks, NO pebbles, NO stones, NO boulders, NO stone slabs, NO raised chunks, NO rubble, NO piles. No walls, no horizon, no graves, no statue, no scenery, no people, no feet, no body parts, no text, no symbols, no watermark. Only two tiny flattened dead-leaf fragments and one hair-thin broken twig may appear, each under 1.5 percent of image width. Cold moonlit grayscale, low contrast, realistic high-detail game ground texture, diffuse lighting."
+    },
+    {
+      "levelKey": "red_rooms",
+      "file": "sublevel_red_rooms.webp",
+      "prompt": "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting. Red Rooms: dark crimson rough carpet texture, sticky matted fibers, black mold specks and deep red grime; one tiny torn paper fragment and one tiny dull plastic fleck."
+    }
+  ],
+  "postProcess": {
+    "debris": "deterministic sparse micro-debris per floor",
+    "darkFloorSwordGlow": [
+      "level_6",
+      "the_torment",
+      "red_rooms"
+    ],
+    "swordGlowImplementation": "runtime CSS overlay; not baked into floor WebP"
+  }
+}

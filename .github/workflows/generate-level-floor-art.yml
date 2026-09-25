@@ -1,0 +1,216 @@
+name: Generate Level Floor Art
+
+on:
+  push:
+    branches:
+      - ui/redmi-viewport-foundation
+    paths:
+      - '.github/workflows/generate-level-floor-art.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-level-floor-art
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/floors
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate IMG API configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+          mkdir -p "$OUT_DIR"
+
+      - name: Generate main Level and sublevel floor plates
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, json, os, pathlib, urllib.error, urllib.request
+
+          api = os.environ["IMG_API"].strip()
+          model = os.environ["IMG_MODEL"].strip()
+          base = os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint = base if base.endswith("/images/generations") else (
+              base + "/images/generations" if base.endswith("/v1") else base + "/v1/images/generations"
+          )
+          out_dir = pathlib.Path(os.environ["OUT_DIR"])
+          out_dir.mkdir(parents=True, exist_ok=True)
+
+          common = (
+              "Seamless PBR floor material texture swatch, orthographic top-down material scan, no scene and no point-of-view photography. "
+              "Only the floor surface is visible edge to edge. No human, no body, no shoes, no feet, no hands, no creature, no furniture, no wall, no horizon, no sign, no icon, no logo, no watermark, no letters, no words, no numbers. "
+              "Aged and naturally dirty. Add only one or two tiny debris pieces, physically small and secondary. High-detail game texture, flat diffuse lighting."
+          )
+
+          assets = [
+              ("0", "level_0.webp",
+               common + " Level 0: mustard-beige damp Berber office carpet, flattened fibers, darker wet patches, faint mold grime; one tiny torn paper corner and one tiny lint clump."),
+              ("1", "level_1.webp",
+               common + " Level 1: worn gray parking-garage concrete texture, hairline crack, tire scuff, dusty aggregate, faint oil smear; one tiny paper chip and one tiny metal washer."),
+              ("2", "level_2.webp",
+               common + " Level 2 Pipe Dreams: grimy utility-tunnel concrete, chalky dust, rust flakes and condensation marks; add one tiny clipped wire piece and a small paper fiber."),
+              ("3", "level_3.webp",
+               common + " Level 3: dark dusty industrial concrete texture, electrical soot, old oil grime; one tiny copper clipping and one tiny insulation chip."),
+              ("4", "level_4.webp",
+               common + " Level 4 Abandoned Office: old charcoal-gray office carpet tiles with worn seams, embedded dust and a faint coffee stain; add one tiny paper corner and one very small plastic chip."),
+              ("5", "level_5.webp",
+               common + " Level 5: aged dark mahogany parquet floor texture with a narrow burgundy carpet edge, fine scuffs and dust; one tiny faded paper scrap and two tiny crumbs."),
+              ("6", "level_6.webp",
+               common + " Level 6: nearly black cold smooth concrete texture, subtle roughness and damp smear, still readable; one tiny pale paper fleck and sparse grit."),
+
+              ("0.1", "sublevel_0_1.webp",
+               common + " Level 0.1 Zenith Station: worn brushed-metal deck panels with fine seams, anti-slip texture, cold gray alloy, scratches, oxidation and dried maintenance grime; add a tiny clipped cable tie and two small glass-like flakes."),
+              ("0.2", "sublevel_0_2.webp",
+               common + " Level 0.2 Remodeled Mess: dry deep-red commercial carpet partly dusted by pale plaster powder and construction grit, a subtle cracked seam suggesting nearby collapse; add two tiny plaster chips and a small torn paper scrap."),
+              ("0.5", "sublevel_0_5.webp",
+               common + " Level 0.5: filthy off-white hospital vinyl tile texture with a shallow dirty-water sheen, gray-brown grime and oily residue; one tiny soaked paper piece and one tiny rust flake."),
+              ("0.7", "sublevel_0_7.webp",
+               common + " Level 0.7 Reminiscence District: worn historical patchwork flooring with a restrained transition from old dark wood planks into faded twentieth-century linoleum, dusty and age-scuffed; add one tiny yellowed paper scrap and a small chipped fragment."),
+              ("manila_room", "sublevel_manila_room.webp",
+               common + " Manila Room: dry aged honey-brown wooden plank floor, matte worn finish, subtle dust in seams and quiet beige cast; add one tiny pencil shaving and one small yellowed paper corner."),
+              ("the_torment", "sublevel_the_torment.webp",
+               common + " The Torment: monochrome gray cracked stone and packed-earth texture, cold desaturated surface, damp dirt in crevices; only two tiny dead leaf fragments and one tiny broken twig."),
+              ("red_rooms", "sublevel_red_rooms.webp",
+               common + " Red Rooms: dark crimson rough carpet texture, sticky matted fibers, black mold specks and deep red grime; one tiny torn paper fragment and one tiny dull plastic fleck.")
+          ]
+
+          metadata = {
+              "model": model,
+              "format": "webp",
+              "displayPurpose": "snapshot-ground-plane",
+              "targetDimensions": {"width": 768, "height": 144},
+              "assets": []
+          }
+
+          for level_key, filename, prompt in assets:
+              payload = {"model": model, "prompt": prompt, "n": 1, "response_format": "b64_json"}
+              request = urllib.request.Request(
+                  endpoint,
+                  data=json.dumps(payload).encode("utf-8"),
+                  headers={
+                      "Authorization": f"Bearer {api}",
+                      "Content-Type": "application/json",
+                      "Accept": "application/json",
+                  },
+                  method="POST",
+              )
+              try:
+                  with urllib.request.urlopen(request, timeout=300) as response:
+                      body = json.loads(response.read().decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  detail = exc.read().decode("utf-8", errors="replace")
+                  raise SystemExit(f"IMG API HTTP {exc.code} for {level_key}: {detail[:2000]}")
+
+              data = body.get("data")
+              if not isinstance(data, list) or not data:
+                  raise SystemExit(f"IMG API response has no data[0] for {level_key}")
+              item = data[0]
+              if item.get("b64_json"):
+                  raw = base64.b64decode(item["b64_json"])
+              elif item.get("url"):
+                  dl = urllib.request.Request(item["url"], headers={"User-Agent": "BACKROOMsV2-GitHub-Actions"})
+                  with urllib.request.urlopen(dl, timeout=300) as response:
+                      raw = response.read()
+              else:
+                  raise SystemExit(f"IMG API response has neither b64_json nor url for {level_key}")
+
+              if raw.startswith(b"\x89PNG\r\n\x1a\n"):
+                  ext = "png"
+              elif raw.startswith(b"\xff\xd8\xff"):
+                  ext = "jpg"
+              elif raw.startswith(b"RIFF") and raw[8:12] == b"WEBP":
+                  ext = "webp"
+              elif raw.startswith((b"GIF87a", b"GIF89a")):
+                  ext = "gif"
+              elif len(raw) >= 12 and raw[4:8] == b"ftyp":
+                  ext = "avif"
+              else:
+                  raise SystemExit(f"Unsupported IMG API format for {level_key}; magic={raw[:16].hex()}")
+
+              stem = filename[:-5]
+              source = out_dir / f"{stem}.source.{ext}"
+              source.write_bytes(raw)
+              metadata["assets"].append({
+                  "levelKey": level_key,
+                  "file": filename,
+                  "prompt": prompt
+              })
+
+          (out_dir / "level_floors.generated.json").write_text(
+              json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          PY
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick webp
+
+          mapfile -t stems < <(python3 - <<'PY'
+          import json, os, pathlib
+          data=json.loads((pathlib.Path(os.environ["OUT_DIR"])/"level_floors.generated.json").read_text())
+          for item in data["assets"]:
+              print(item["file"][:-5])
+          PY
+          )
+
+          for stem in "${stems[@]}"; do
+            src="$(find "$OUT_DIR" -maxdepth 1 -type f -name "${stem}.source.*" -print -quit)"
+            test -n "$src"
+            tmp="/tmp/${stem}.png"
+
+            convert "$src" -auto-orient \
+              -resize '768x144^' -gravity south -extent 768x144 \
+              -alpha set -channel A -fx 'j<28?j/28:1' +channel \
+              "$tmp"
+
+            out="$OUT_DIR/${stem}.webp"
+            cwebp -quiet -q 76 -m 6 -alpha_q 88 -metadata none "$tmp" -o "$out"
+
+            bytes="$(stat -c%s "$out")"
+            if [ "$bytes" -gt 80000 ]; then
+              cwebp -quiet -q 70 -m 6 -alpha_q 84 -metadata none "$tmp" -o "$out"
+              bytes="$(stat -c%s "$out")"
+            fi
+            if [ "$bytes" -gt 80000 ]; then
+              cwebp -quiet -q 66 -m 6 -alpha_q 82 -metadata none "$tmp" -o "$out"
+              bytes="$(stat -c%s "$out")"
+            fi
+
+            rm -f "$src" "$tmp"
+            test "$(identify -format '%wx%h' "$out")" = "768x144"
+            test "$bytes" -le 80000 || { echo "::error::$stem floor is too large: $bytes bytes"; exit 1; }
+            echo "$stem floor: $bytes bytes"
+          done
+
+          total="$(du -cb "$OUT_DIR"/*.webp | tail -1 | awk '{print $1}')"
+          test "$total" -le 900000 || { echo "::error::Floor asset batch too large: $total bytes"; exit 1; }
+          identify "$OUT_DIR"/*.webp
+
+      - name: Commit generated floor artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR"/*.webp "$OUT_DIR/level_floors.generated.json"
+          git diff --cached --quiet && { echo 'Floor artwork unchanged.'; exit 0; }
+          git commit -m 'Generate Level and sublevel floor artwork with IMG API'
+          git pull --rebase origin ui/redmi-viewport-foundation
+          git push origin HEAD:ui/redmi-viewport-foundation

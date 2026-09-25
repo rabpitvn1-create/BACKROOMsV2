@@ -1,0 +1,93 @@
+name: Regenerate The Torment Floor
+
+on:
+  push:
+    branches:
+      - ui/redmi-viewport-foundation
+    paths:
+      - '.github/workflows/regenerate-torment-floor.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    env:
+      IMG_API: ${{ secrets.IMG_API }}
+      IMG_MODEL: ${{ secrets.IMG_MODEL }}
+      IMG_BASE_URL: ${{ secrets.IMG_BASE_URL }}
+      OUT_DIR: android-apk/app/src/main/assets/floors
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate flat compacted Torment floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in IMG_API IMG_MODEL IMG_BASE_URL; do
+            test -n "${!name:-}" || { echo "::error::Missing GitHub Secret: $name"; exit 1; }
+          done
+          python3 - <<'PY'
+          import base64,json,os,pathlib,urllib.request,urllib.error
+          out=pathlib.Path(os.environ["OUT_DIR"])
+          api=os.environ["IMG_API"].strip();model=os.environ["IMG_MODEL"].strip()
+          base=os.environ["IMG_BASE_URL"].strip().rstrip("/")
+          endpoint=base if base.endswith("/images/generations") else (base+"/images/generations" if base.endswith("/v1") else base+"/v1/images/generations")
+          prompt=(
+            "TOP-DOWN FLAT MATERIAL TEXTURE ONLY. A continuous compacted charcoal-gray soil floor for The Torment in the Backrooms, viewed orthographically straight down. "
+            "The surface must be almost uniform and fully walkable edge to edge, made of fine packed earth, subtle powdery grit, faint damp patches and thin hairline cracks. "
+            "ABSOLUTELY NO visible rocks, NO pebbles, NO stones, NO boulders, NO stone slabs, NO raised chunks, NO rubble, NO piles. "
+            "No walls, no horizon, no graves, no statue, no scenery, no people, no feet, no body parts, no text, no symbols, no watermark. "
+            "Only two tiny flattened dead-leaf fragments and one hair-thin broken twig may appear, each under 1.5 percent of image width. "
+            "Cold moonlit grayscale, low contrast, realistic high-detail game ground texture, diffuse lighting."
+          )
+          payload={"model":model,"prompt":prompt,"n":1,"response_format":"b64_json"}
+          req=urllib.request.Request(endpoint,data=json.dumps(payload).encode(),headers={"Authorization":f"Bearer {api}","Content-Type":"application/json","Accept":"application/json"},method="POST")
+          try:
+            with urllib.request.urlopen(req,timeout=300) as r: body=json.loads(r.read().decode())
+          except urllib.error.HTTPError as exc:
+            raise SystemExit(f"IMG API HTTP {exc.code}: {exc.read().decode('utf-8','replace')[:2000]}")
+          item=body["data"][0]
+          raw=base64.b64decode(item["b64_json"]) if item.get("b64_json") else urllib.request.urlopen(urllib.request.Request(item["url"],headers={"User-Agent":"BACKROOMsV2-GitHub-Actions"}),timeout=300).read()
+          ext="webp" if raw.startswith(b"RIFF") and raw[8:12]==b"WEBP" else "png" if raw.startswith(b"\x89PNG") else "jpg"
+          (out/f"torment-flat.source.{ext}").write_bytes(raw)
+          meta_path=out/"level_floors.generated.json"
+          meta=json.loads(meta_path.read_text(encoding="utf-8"))
+          for a in meta.get("assets",[]):
+            if a.get("levelKey")=="the_torment": a["prompt"]=prompt
+          meta_path.write_text(json.dumps(meta,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick webp
+          src="$(find "$OUT_DIR" -maxdepth 1 -name 'torment-flat.source.*' -print -quit)"
+          tmp="/tmp/torment-flat.png"
+          convert "$src" -auto-orient -resize '768x144^' -gravity south -extent 768x144 \
+            -alpha set -channel A -fx 'j<28?j/28:1' +channel "$tmp"
+
+          # Add only tiny, flat debris. These remain intentionally subordinate.
+          convert "$tmp" \
+            -fill 'rgba(70,65,55,0.82)' -draw 'polygon 166,116 171,112 178,116 171,120' \
+            -fill 'rgba(72,62,50,0.82)' -strokewidth 2 -stroke 'rgba(72,62,50,0.82)' -draw 'line 600,122 616,118' \
+            "$tmp"
+
+          out="$OUT_DIR/sublevel_the_torment.webp"
+          cwebp -quiet -q 76 -m 6 -alpha_q 88 -metadata none "$tmp" -o "$out"
+          bytes="$(stat -c%s "$out")"
+          test "$bytes" -le 80000 || { echo "::error::Torment floor too large: $bytes"; exit 1; }
+          rm -f "$src" "$tmp"
+          echo "Torment floor: $bytes bytes"
+
+      - name: Commit Torment floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$OUT_DIR/sublevel_the_torment.webp" "$OUT_DIR/level_floors.generated.json"
+          git commit -m 'Refine The Torment floor texture'
+          git pull --rebase origin ui/redmi-viewport-foundation
+          git push origin HEAD:ui/redmi-viewport-foundation
