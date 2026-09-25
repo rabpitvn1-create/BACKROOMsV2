@@ -346,6 +346,12 @@ public class StoryRepositoryTest {
     assertEquals("0.1", state.getString("currentLevelKey"));
   }
 
+  @Test public void levelZeroTwoAuthoredStoryLoadsFromCatalog() throws Exception {
+    StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
+    assertTrue(repository.hasStoryForLevel("0.2"));
+    assertTrue(repository.bindLevel("0.2"));
+  }
+
   @Test public void levelWithoutAuthoredStoryDeactivatesStoryNormally() throws Exception {
     StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
     StoryCore core = StoryCore.withRepository(repository);
