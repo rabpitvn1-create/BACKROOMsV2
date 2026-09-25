@@ -750,6 +750,18 @@ public final class GameCoreFacade implements AutoCloseable {
     return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
   }
 
+  public synchronized String commitEnvironmentExchange(String action, String reply) {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      EnvironmentActionPacket.appendExchange(state, action, reply);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return clientSafeState(state).toString();
+    } catch (Exception e) {
+      throw new IllegalStateException("Không thể lưu PLAYER ACTION môi trường.", e);
+    }
+  }
+
   public synchronized String commitRuntimeState(String stateJson) {
     JSONObject state = parseState(stateJson);
     JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
