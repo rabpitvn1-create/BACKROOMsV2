@@ -70,7 +70,7 @@
     {
       "levelKey": "the_torment",
       "file": "sublevel_the_torment.webp",
-      "prompt": "Orthographic top-down seamless game floor material scan for The Torment in the Backrooms. The entire image is a FLAT walkable ground plane edge to edge: compacted charcoal-gray soil mixed with worn cracked flat stone, fine gravel embedded into the surface, thin damp crevices and sparse dead leaf fragments. Cold desaturated moonlit grayscale. NO loose rocks, NO boulders, NO stone slabs sticking upward, NO piles, NO walls, NO horizon, NO scenery, NO graves, NO statue, NO people, NO body parts, NO feet, NO shoes, NO text, NO letters, NO numbers, NO logo, NO watermark. Add only two tiny dead leaf fragments and one thin broken twig, each occupying less than 2 percent of the image. High-detail realistic flat PBR ground texture, diffuse restrained lighting."
+      "prompt": "TOP-DOWN FLAT MATERIAL TEXTURE ONLY. A continuous compacted charcoal-gray soil floor for The Torment in the Backrooms, viewed orthographically straight down. The surface must be almost uniform and fully walkable edge to edge, made of fine packed earth, subtle powdery grit, faint damp patches and thin hairline cracks. ABSOLUTELY NO visible rocks, NO pebbles, NO stones, NO boulders, NO stone slabs, NO raised chunks, NO rubble, NO piles. No walls, no horizon, no graves, no statue, no scenery, no people, no feet, no body parts, no text, no symbols, no watermark. Only two tiny flattened dead-leaf fragments and one hair-thin broken twig may appear, each under 1.5 percent of image width. Cold moonlit grayscale, low contrast, realistic high-detail game ground texture, diffuse lighting."
     },
     {
       "levelKey": "red_rooms",
