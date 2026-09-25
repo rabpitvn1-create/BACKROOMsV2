@@ -99,6 +99,57 @@ public final class GmChoiceContract {
       {"flicker", "chớp tắt"}
   };
 
+  // Choice-only cleanup for common English action/navigation leakage. Official names are left intact.
+  private static final String[][] VIETNAMESE_CHOICE_TERMS = {
+      {"look around", "quan sát xung quanh"},
+      {"move forward", "tiến về phía trước"},
+      {"go forward", "tiến về phía trước"},
+      {"turn back", "quay lại"},
+      {"keep going", "tiếp tục đi"},
+      {"search the area", "tìm kiếm quanh khu vực"},
+      {"through the", "qua"},
+      {"toward the", "về phía"},
+      {"towards the", "về phía"},
+      {"into the", "vào"},
+      {"near the", "gần"},
+      {"investigate", "khảo sát"},
+      {"inspect", "kiểm tra"},
+      {"examine", "xem xét"},
+      {"search", "tìm kiếm"},
+      {"follow", "đi theo"},
+      {"approach", "tiến lại gần"},
+      {"enter", "đi vào"},
+      {"open", "mở"},
+      {"listen", "lắng nghe"},
+      {"observe", "quan sát"},
+      {"explore", "khám phá"},
+      {"check", "kiểm tra"},
+      {"wait", "chờ"},
+      {"hide", "ẩn nấp"},
+      {"run", "chạy"},
+      {"walk", "đi"},
+      {"move", "di chuyển"},
+      {"doorway", "lối cửa"},
+      {"hallway", "hành lang"},
+      {"passage", "lối thông"},
+      {"door", "cánh cửa"},
+      {"room", "căn phòng"},
+      {"path", "lối đi"},
+      {"wall", "bức tường"},
+      {"light", "ánh sáng"},
+      {"nearby", "gần đó"},
+      {"ahead", "phía trước"},
+      {"behind", "phía sau"},
+      {"forward", "phía trước"},
+      {"through", "qua"},
+      {"towards", "về phía"},
+      {"toward", "về phía"},
+      {"around", "xung quanh"},
+      {"then", "rồi"},
+      {"and", "và"},
+      {"or", "hoặc"}
+  };
+
   private GmChoiceContract() {}
 
   public static JSONObject gmEntry(String reply, JSONObject generated) throws Exception {
@@ -135,7 +186,7 @@ public final class GmChoiceContract {
       } else if (raw != null) {
         text = String.valueOf(raw).trim();
       }
-      text = normalizePlayerFacingVietnamese(text);
+      text = normalizeChoiceVietnamese(text);
       if (text.isEmpty()) continue;
       if (text.length() > MAX_CHOICE_TEXT) text = text.substring(0, MAX_CHOICE_TEXT).trim();
       JSONObject choice = new JSONObject()
@@ -170,6 +221,30 @@ public final class GmChoiceContract {
       output = normalized.toString();
     }
     return output;
+  }
+
+
+  public static String normalizeChoiceVietnamese(String input) {
+    String output = normalizePlayerFacingVietnamese(input);
+    if (output.isEmpty()) return output;
+    for (String[] term : VIETNAMESE_CHOICE_TERMS) {
+      Pattern pattern = Pattern.compile(
+          "(?iu)(?<![\\p{L}\\p{N}_])" + Pattern.quote(term[0])
+              + "(?![\\p{L}\\p{N}_])");
+      Matcher matcher = pattern.matcher(output);
+      StringBuffer normalized = new StringBuffer();
+      while (matcher.find()) {
+        String replacement = term[1];
+        String matched = matcher.group();
+        if (!matched.isEmpty() && Character.isUpperCase(matched.codePointAt(0)) && !replacement.isEmpty()) {
+          replacement = replacement.substring(0, 1).toUpperCase(Locale.ROOT) + replacement.substring(1);
+        }
+        matcher.appendReplacement(normalized, Matcher.quoteReplacement(replacement));
+      }
+      matcher.appendTail(normalized);
+      output = normalized.toString();
+    }
+    return output.replaceAll("\\s{2,}", " ").trim();
   }
 
   public static JSONArray sanitizeHighlights(JSONArray input) throws Exception {
