@@ -6,4 +6,3 @@ BR 1.0.0.0.2
 - Thêm hệ sàn Snapshot theo đúng Level và sublevel, gồm Level 0-6, Level 0.1, 0.2, 0.5, 0.7, Manila Room, The Torment và Red Rooms.
 - Thêm texture sàn WebP dung lượng thấp, có vết bẩn và một vài mảnh rác nhỏ phù hợp từng môi trường thay vì bề mặt sạch bóng.
 - Thêm phản sáng nhỏ từ kiếm của Cao Minh trên các môi trường tối Level 6, The Torment và Red Rooms, với lõi trắng và viền đỏ nhẹ.
-- Bổ sung regression tests cho viewport, full-bleed layout, floor resolver, bộ asset WebP và dark-floor sword glow.
