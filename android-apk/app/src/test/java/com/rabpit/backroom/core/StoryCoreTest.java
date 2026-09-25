@@ -112,7 +112,21 @@ public class StoryCoreTest {
         + "\"mode\":\"DECISION\","
         + "\"decisionContract\":{"
         + "\"loopAnchor\":\"L0_C01_P001\","
-        + "\"decisionGuard\":\"Không thay đổi authored plot.\""
+        + "\"decisionGuard\":\"Không thay đổi authored plot.\","
+        + "\"choiceVariants\":["
+        + "{\"canon\":\"Áp sát mép tường rồi bước tiếp theo dấu cũ\","
+        + "\"return\":\"Lần theo tiếng ù về phía khoảng hành lang vừa qua\","
+        + "\"stay\":\"Dừng lại quan sát các vệt trên tường thêm một nhịp\"},"
+        + "{\"canon\":\"Nghiêng người theo mép tường và tiếp tục bám dấu cũ\","
+        + "\"return\":\"Dò ngược dấu chân về khoảng sáng phía sau\","
+        + "\"stay\":\"Giữ vị trí và so lại ánh đèn với mặt thảm\"},"
+        + "{\"canon\":\"Bám sát mép tường để đi tiếp theo dấu đã nhận ra\","
+        + "\"return\":\"Thử lần lại đoạn hành lang vừa vượt qua\","
+        + "\"stay\":\"Quan sát các góc tối quanh chỗ đang đứng\"},"
+        + "{\"canon\":\"Tiến tiếp dọc mép tường theo dấu cũ\","
+        + "\"return\":\"Theo tiếng đèn quay về phía lối vừa rời\","
+        + "\"stay\":\"Đứng yên kiểm tra thảm và vách tường gần nhất\"}"
+        + "]"
         + "}},"
         + "\"L0_C01_P002\":{\"mode\":\"LINEAR\",\"decisionContract\":{}}"
         + "}}}}";
@@ -450,6 +464,44 @@ public class StoryCoreTest {
     } catch (IllegalStateException expected) {
       assertTrue(expected.getMessage().contains("must be resolved"));
     }
+  }
+
+  @Test public void publishedStoryChoicesUseCompiledAuthoredWordingBeforeProvider() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+
+    JSONArray choices = core.decisionChoices(state);
+    assertEquals(3, choices.length());
+    boolean foundCanonWording = false;
+    for (int i = 0; i < choices.length(); i++) {
+      if (choices.getJSONObject(i).getString("text")
+          .contains("Áp sát mép tường rồi bước tiếp theo dấu cũ")) {
+        foundCanonWording = true;
+      }
+    }
+    assertTrue("At least one visible choice must be compiled from the authored successor",
+        foundCanonWording);
+    assertTrue(core.decisionNeedsProvider(state));
+    assertFalse(core.decisionReady(state));
+  }
+
+  @Test public void canonChoiceResolvesBeforeProviderRepliesAreReady() throws Exception {
+    JSONObject state = state();
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    CharacterEncounterCore characterCore = new CharacterEncounterCore(bound -> bound - 1);
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI, characterCore);
+
+    String canonId = choiceIdForOutcome(state, StoryCore.OUTCOME_CANON);
+    assertFalse(canonId.isEmpty());
+    StoryCore.DecisionResolution resolution =
+        core.resolveDecision(state, canonId, characterCore);
+
+    assertEquals(StoryCore.OUTCOME_CANON, resolution.outcome);
+    assertFalse(resolution.looped);
+    assertFalse(core.awaitingDecision(state));
+    assertTrue(core.hasPendingStoryAdvance(state));
   }
 
   @Test public void canonDecisionQueuesNextAuthoredTurnUntilGateClears() throws Exception {
