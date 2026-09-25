@@ -42,37 +42,23 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Determine affected authored content
-        id: changed
+      - name: Determine Story compile scope
         shell: bash
         run: |
           set -euo pipefail
           if [ -n "${{ inputs.story_id || '' }}" ]; then
             printf '%s\n' "--story-id" "${{ inputs.story_id }}" > /tmp/compiler.args
-            : > /tmp/story.changed
-            exit 0
-          fi
-          BEFORE="${{ github.event.before || '' }}"
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            printf '%s\n' "--all" > /tmp/compiler.args
-            : > /tmp/story.changed
           else
-            git diff --name-only "$BEFORE" "${{ github.sha }}" > /tmp/story.changed
-            : > /tmp/compiler.args
+            printf '%s\n' "--all" > /tmp/compiler.args
           fi
 
-      - name: Compile affected stories atomically
+      - name: Compile Story assets atomically
         shell: bash
         run: |
           set -euo pipefail
           mapfile -t ARGS < /tmp/compiler.args
-          if [ "${#ARGS[@]}" -gt 0 ]; then
-            python .github/scripts/compile-story.py "${ARGS[@]}"
-            python .github/scripts/compile-story.py "${ARGS[@]}" --validate-generated
-          else
-            python .github/scripts/compile-story.py --changed-file-list /tmp/story.changed
-            python .github/scripts/compile-story.py --changed-file-list /tmp/story.changed --validate-generated
-          fi
+          python .github/scripts/compile-story.py "${ARGS[@]}"
+          python .github/scripts/compile-story.py "${ARGS[@]}" --validate-generated
 
       - name: Refuse stale artifact commit
         shell: bash
