@@ -32,9 +32,10 @@ const bootstrapState = () => ({
 
 function element(tag) {
   return {
-    tag, children:[], listeners:{}, className:'', textContent:'', disabled:false,
+    tag, children:[], listeners:{}, attributes:{}, className:'', textContent:'', disabled:false,
     appendChild(node){this.children.push(node);},
-    addEventListener(name, callback){this.listeners[name]=callback;}
+    addEventListener(name, callback){this.listeners[name]=callback;},
+    setAttribute(name, value){this.attributes[name]=String(value);}
   };
 }
 
@@ -84,6 +85,7 @@ function context(state) {
     functionSource(gm,'storyDecisionChoices'),
     functionSource(gm,'storyDecisionNeedsProvider'),
     functionSource(gm,'requestStoryDecision'),
+    functionSource(gm,'appendStoryChoiceLoadingOverlay'),
     functionSource(gm,'storyBootstrapPending'),
     functionSource(gm,'storyAdvanceAvailable'),
     functionSource(gm,'submitStoryBootstrap'),
@@ -137,7 +139,7 @@ test('a ready return journey renders exactly three current-turn choices', () => 
   assert.equal(submissions[0][2],'opaque-2');
 });
 
-test('provider generation is requested in background while current Story choices stay visible', () => {
+test('provider generation keeps current Story choices covered while loading', () => {
   const state=bootstrapState();
   Object.assign(state.story,{
     segmentDelivered:true,awaitingDecision:true,decisionStatus:'PROVIDER_REQUIRED',
@@ -153,14 +155,21 @@ test('provider generation is requested in background while current Story choices
   ctx.appendExplorerChoices(article,state.log[0],0);
   assert.equal(submissions.filter(x=>x[0]==='prepare-story').length,1);
   assert.equal(submissions.find(x=>x[0]==='prepare-story')[1].story.decisionId,'L0_current');
-  const buttons=article.children[0].children;
+  const box=article.children[0];
+  const buttons=box.children.filter(x=>x.tag==='button');
   assert.equal(buttons.length,3);
   assert.deepEqual(buttons.map(x=>x.textContent),[
     'Quan sát dấu hiệu phía trước',
     'Kiểm tra khoảng lối bên cạnh',
     'Xem kỹ khu vực gần nhất'
   ]);
-  assert.equal(buttons.some(x=>x.textContent==='Đang chuẩn bị ba lựa chọn…'),false);
+  assert.ok(buttons.every(x=>x.disabled));
+  const loading=box.children.find(x=>x.className==='story-choice-loading');
+  assert.ok(loading);
+  assert.equal(loading.attributes.role,'status');
+  assert.equal(box.attributes['aria-busy'],'true');
+  assert.equal(loading.children[0].children[0].textContent,'⌛');
+  assert.equal(loading.children[0].children[1].textContent,'ĐANG TẢI LỰA CHỌN…');
 });
 
 test('provider generation is requested while unprepared return choices stay hidden', () => {
