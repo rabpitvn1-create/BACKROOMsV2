@@ -387,7 +387,8 @@ jobs:
           grep -Fq 'id="playerActionModal"' android-apk/app/src/main/assets/index.html
           grep -Fq 'PLAYER ACTION' android-apk/app/src/main/assets/index.html
           grep -Fq 'id="gameMenuOpen"' android-apk/app/src/main/assets/index.html
-          grep -Fq 'env(safe-area-inset-top)' android-apk/app/src/main/assets/index.html
+          ! grep -Fq 'env(safe-area-inset-top)' android-apk/app/src/main/assets/index.html
+          grep -Fq 'padding:10px max(14px,env(safe-area-inset-right)) 8px max(14px,env(safe-area-inset-left))' android-apk/app/src/main/assets/index.html
           grep -Fq 'env(safe-area-inset-left)' android-apk/app/src/main/assets/index.html
           grep -Fq 'env(safe-area-inset-right)' android-apk/app/src/main/assets/index.html
           grep -Fq 'env(safe-area-inset-bottom)' android-apk/app/src/main/assets/index.html
