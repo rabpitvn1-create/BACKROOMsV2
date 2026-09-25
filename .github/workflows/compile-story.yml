@@ -24,6 +24,15 @@ jobs:
   compile:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
+      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
+      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
+      HAIKU_API: ${{ secrets.HAIKU_API }}
+      HAIKU_BASE_URL: ${{ secrets.HAIKU_BASE_URL || vars.HAIKU_BASE_URL }}
+      HAIKU_MODEL: ${{ secrets.HAIKU_MODEL || vars.HAIKU_MODEL }}
     steps:
       - uses: actions/checkout@v4
         with:
