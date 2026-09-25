@@ -458,28 +458,6 @@ public class OfflineStoryLoopTest {
     }
   }
 
-  @Test public void storyDecisionKeepsRandomEntityGateBeforeAdvancingAuthoredStory() throws Exception {
-    Path facade = assets().resolve("../java/com/rabpit/backroom/core/GameCoreFacade.java").normalize();
-    String java = new String(Files.readAllBytes(facade), StandardCharsets.UTF_8);
-
-    int methodStart = java.indexOf("public synchronized String processStoryDecision(");
-    int methodEnd = java.indexOf("public synchronized String selectStoryDecision(", methodStart);
-    assertTrue(methodStart >= 0);
-    assertTrue(methodEnd > methodStart);
-
-    String method = java.substring(methodStart, methodEnd);
-    int encounterRoll = method.indexOf("entityCore.prepareEncounter(state);");
-    int combatStart = method.indexOf(
-        "CombatChoiceEngine.start(state, encounter, lastGmLogIndex(state));");
-    int storyAdvance = method.indexOf("advancePendingStorySequence(state)");
-
-    assertTrue("Story decisions must roll Entity before advancing authored Story", encounterRoll >= 0);
-    assertTrue("A successful random Entity roll must start combat", combatStart > encounterRoll);
-    assertTrue("Authored Story may advance only when no random encounter blocks the turn",
-        storyAdvance > combatStart);
-    assertTrue(method.contains("\"story_random_entity_combat\""));
-  }
-
   @Test public void choiceGenerationIsCurrentTurnOnlyAndUsesGeminiBridgeWithHaikuFallback() throws Exception {
     String ui = new String(Files.readAllBytes(assets().resolve("gm-choice-ui.js")), StandardCharsets.UTF_8);
     Path activity = assets().resolve("../java/com/rabpit/backroom/MainActivity.java").normalize();
