@@ -18,29 +18,33 @@ fi
 
 log "EMU_AUDIT_START $(date -u +%FT%TZ)"
 log "APK=$APK"
-adb install -r "$APK" >>"$SUMMARY" 2>&1 || log "ANOMALY install_failed"
-adb shell pm clear com.rabpit.backroom >>"$SUMMARY" 2>&1 || true
-adb logcat -c || true
+timeout 60s adb install -r "$APK" >>"$SUMMARY" 2>&1 || log "ANOMALY install_failed_or_timed_out"
+timeout 10s adb shell pm clear com.rabpit.backroom >>"$SUMMARY" 2>&1 || true
+timeout 10s adb logcat -c || true
 adb logcat -v threadtime > "$OUT/logcat-full.txt" 2>&1 &
 LOGCAT_PID=$!
 
-adb shell am start -W -n com.rabpit.backroom/.MainActivity >>"$SUMMARY" 2>&1 || log "ANOMALY launch_failed"
+timeout 20s adb shell am start -W -n com.rabpit.backroom/.MainActivity >>"$SUMMARY" 2>&1 || log "ANOMALY launch_failed_or_timed_out"
 sleep 8
 
-screen_size="$(adb shell wm size 2>/dev/null | tr -d '\r' | tail -1)"
+screen_size="$(timeout 5s adb shell wm size 2>/dev/null | tr -d '\r' | tail -1 || true)"
 log "SCREEN=$screen_size"
 
 dump_ui() {
   local label="$1"
-  adb exec-out screencap -p > "$OUT/${label}.png" 2>/dev/null || true
-  adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
-  adb pull /sdcard/window.xml "$OUT/${label}.xml" >/dev/null 2>&1 || true
+  timeout 8s adb exec-out screencap -p > "$OUT/${label}.png" 2>/dev/null || true
+  timeout 6s adb shell uiautomator dump /sdcard/window.xml >/dev/null 2>&1 || true
+  timeout 6s adb pull /sdcard/window.xml "$OUT/${label}.xml" >/dev/null 2>&1 || true
+  if [ ! -s "$OUT/${label}.xml" ]; then
+    printf '<hierarchy/>\n' > "$OUT/${label}.xml"
+    log "${label} ANOMALY ui_dump_missing_or_timed_out"
+  fi
 }
 
 scroll_log_down() {
   # Repeated upward swipes inside the central log area expose the latest GM choice buttons.
   for _ in 1 2 3 4; do
-    adb shell input swipe 540 1450 540 650 180 >/dev/null 2>&1 || true
+    timeout 4s adb shell input swipe 540 1450 540 650 180 >/dev/null 2>&1 || true
     sleep 0.2
   done
 }
@@ -139,7 +143,7 @@ for turn in $(seq 1 20); do
   log ""
   log "===== INTERACTION $turn ====="
   candidate=""
-  for poll in $(seq 1 35); do
+  for poll in $(seq 1 8); do
     scroll_log_down
     dump_ui "turn-$(printf '%02d' "$turn")-poll-$(printf '%02d' "$poll")"
     xml="$OUT/turn-$(printf '%02d' "$turn")-poll-$(printf '%02d' "$poll").xml"
@@ -158,20 +162,20 @@ for turn in $(seq 1 20); do
 
   IFS=$'\t' read -r _ x y text <<<"$candidate"
   log "INTERACTION $turn TAP x=$x y=$y text=$text"
-  adb shell input tap "$x" "$y" >/dev/null 2>&1 || log "INTERACTION $turn ANOMALY tap_failed"
+  timeout 4s adb shell input tap "$x" "$y" >/dev/null 2>&1 || log "INTERACTION $turn ANOMALY tap_failed_or_timed_out"
   sleep 2
 
   dump_ui "turn-$(printf '%02d' "$turn")-after"
   report_xml "$OUT/turn-$(printf '%02d' "$turn")-after.xml" "TURN$(printf '%02d' "$turn")-AFTER"
 
   # Record crash/error signatures without aborting the run.
-  adb logcat -d -v brief 2>/dev/null | grep -E 'FATAL EXCEPTION|AndroidRuntime|BackroomMain|chromium.*(ERROR|crash)|IllegalStateException|IllegalArgumentException' | tail -n 30 >> "$SUMMARY" || true
+  timeout 8s adb logcat -d -v brief 2>/dev/null | grep -E 'FATAL EXCEPTION|AndroidRuntime|BackroomMain|chromium.*(ERROR|crash)|IllegalStateException|IllegalArgumentException' | tail -n 30 >> "$SUMMARY" || true
 done
 
 dump_ui "turn-20-final"
 report_xml "$OUT/turn-20-final.xml" "FINAL"
-adb shell dumpsys activity activities > "$OUT/dumpsys-activity.txt" 2>&1 || true
-adb shell dumpsys meminfo com.rabpit.backroom > "$OUT/dumpsys-meminfo.txt" 2>&1 || true
+timeout 10s adb shell dumpsys activity activities > "$OUT/dumpsys-activity.txt" 2>&1 || true
+timeout 10s adb shell dumpsys meminfo com.rabpit.backroom > "$OUT/dumpsys-meminfo.txt" 2>&1 || true
 kill "$LOGCAT_PID" >/dev/null 2>&1 || true
 wait "$LOGCAT_PID" 2>/dev/null || true
 
