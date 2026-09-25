@@ -544,6 +544,31 @@ public class StoryCoreTest {
     }
   }
 
+  @Test public void pendingProviderGuardRefreshesWithoutChangingPublishedChoices() throws Exception {
+    StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
+    JSONObject state = state();
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+
+    JSONArray before = core.decisionChoices(state);
+    String published = before.toString();
+    JSONObject story = state.getJSONObject(StoryCore.ROOT_KEY);
+    String oldHash = story.getJSONObject("decisionPackage").getString("contextHash");
+
+    story.getJSONObject("characters").getJSONObject("luc_tram")
+        .put("presence", StoryCore.PRESENCE_PRESENT);
+    core.normalizeState(state);
+
+    assertEquals(published, core.decisionChoices(state).toString());
+    String refreshed = state.getJSONObject(StoryCore.ROOT_KEY)
+        .getJSONObject("decisionPackage").getString("contextHash");
+    assertFalse(oldHash.equals(refreshed));
+    JSONObject request = core.decisionGenerationRequest(state, "");
+    assertEquals(refreshed, request.getString("contextHash"));
+    core.installDecisionPackage(state, refreshed, preparedAlternates());
+    assertTrue(core.decisionReady(state));
+  }
+
   @Test public void earlySelectionSurvivesReloadAndUsesTheSameProviderResult() throws Exception {
     StoryCore core = StoryCore.withRepository(decisionFixtureRepository());
     JSONObject state = state();
