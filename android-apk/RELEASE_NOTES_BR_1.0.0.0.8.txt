@@ -1,0 +1,6 @@
+BR 1.0.0.0.8
+
+- Làm mới ảnh loading Story bằng WebP phong cách Backrooms Level 0.
+- Thay biểu tượng đồng hồ cát bằng asset WebP riêng và thêm hiệu ứng nhịp nhẹ, tôn trọng reduced motion.
+- Giữ mỗi asset dưới giới hạn 320 KB và bổ sung regression test cho định dạng, kích thước và UI.
+- Tăng versionCode từ 105 lên 106 để Android nhận đây là bản cập nhật mới.
