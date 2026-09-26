@@ -16,7 +16,6 @@
     ".inventory-quantity{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:center}",
     ".inventory-quantity input,.inventory-share select{width:100%;background:#090c0f;color:#fff;border:1px solid #30373e;padding:10px;border-radius:6px}",
     ".inventory-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}",
-    ".inventory-sheet-actions .wide{grid-column:1/-1}",
     ".inventory-share{display:grid;grid-template-columns:1fr auto;gap:8px}",
     ".inventory-drop{background:#241616;color:#f1b3b3;border-color:#663b3b}",
     ".inventory-note{font-size:12px;color:#8d979f}",

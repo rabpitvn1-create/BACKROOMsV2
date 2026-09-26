@@ -150,7 +150,7 @@ const initial={
 };
 
 const byId=id=>document.getElementById(id);
-const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
+const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
 function normalizeCoreState(value){try{return window.Android&&typeof Android.normalizeState==="function"?JSON.parse(Android.normalizeState(JSON.stringify(value))):value}catch(_){return value}}
 let state=normalizeCoreState(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial);
 let busy=false;
@@ -199,7 +199,7 @@ function esc(s){const d=document.createElement("div");d.textContent=s||"";return
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
 function levelTitle(){const key=String(state?.currentLevelKey||state?.currentLevel||0);return LEVEL_NODE_TITLES[key]||("Level "+key)}
 function partyDisplayItems(){const result=[];const seen=new Set();const add=x=>{if(!x)return;const name=typeof x==="string"?x:String(x.name||x.id||"").trim();if(!name)return;const key=name.toLocaleLowerCase("vi");if(seen.has(key))return;seen.add(key);result.push(typeof x==="string"?{name}:x)};add(state?.player||{name:"Cao Minh"});(Array.isArray(state?.party)?state.party:[]).filter(x=>x&&x.joined===true).forEach(add);return result}
-function render(){titleEl.textContent=levelTitle();if(turnEl)turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("")}
+function render(){titleEl.textContent=levelTitle();locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=chips(partyDisplayItems());inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("")}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state))}
 function load(){state=normalizeCoreState(ensureCurrentLevel(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial));state.characterCanon=CURRENT_CHARACTER_CANON;save();render()}
 function freshCoreGame(){const fresh=JSON.parse(JSON.stringify(initial));return window.Android&&typeof Android.startNewGame==="function"?JSON.parse(Android.startNewGame(JSON.stringify(fresh))):fresh}

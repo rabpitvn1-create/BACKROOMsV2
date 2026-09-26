@@ -172,8 +172,8 @@ jobs:
           test ! -e android-apk/app/src/main/assets/status/status_armor_break.webp
           test ! -e android-apk/app/src/main/assets/status/status_icons.generated.json
           ! grep -Fq 'combat-status-hud' android-apk/app/src/main/assets/snapshot-ui.js
-          test -s android-apk/app/src/main/assets/hud/snapshot_frame.png
-          test -s android-apk/app/src/main/assets/hud/action_plate.png
+          test ! -e android-apk/app/src/main/assets/hud/snapshot_frame.png
+          test ! -e android-apk/app/src/main/assets/hud/action_plate.png
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
@@ -693,8 +693,8 @@ jobs:
           ! unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/status/status_'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/fonts/OFL-Play.txt'
-          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/hud/snapshot_frame.png'
-          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/hud/action_plate.png'
+          ! unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/hud/snapshot_frame.png'
+          ! unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/hud/action_plate.png'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/entity/hound.webp'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/entity/slenderman.webp'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/entity/diep_minh.webp'

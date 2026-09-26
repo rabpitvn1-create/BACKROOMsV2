@@ -16,9 +16,9 @@ function pngSize(file){
   return [data.readUInt32BE(16),data.readUInt32BE(20)];
 }
 
-test('generated Tu Tien HUD asset files remain present on disk at expected dimensions',()=>{
-  assert.deepEqual(pngSize(path.join(assets,'hud/snapshot_frame.png')),[1536,1152]);
-  assert.deepEqual(pngSize(path.join(assets,'hud/action_plate.png')),[1400,300]);
+test('legacy Tu Tien HUD frame and action plate assets are removed from disk',()=>{
+  assert.equal(fs.existsSync(path.join(assets,'hud/snapshot_frame.png')),false);
+  assert.equal(fs.existsSync(path.join(assets,'hud/action_plate.png')),false);
 });
 
 test('snapshot returns to clean dark frame without decorative/status HUD layers',()=>{

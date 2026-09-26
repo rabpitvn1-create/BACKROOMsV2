@@ -133,8 +133,6 @@
     return hours>0?hours+' giờ '+rest+' phút':rest+' phút';
   }
 
-  function appendText(el,text){el.appendChild(document.createTextNode(String(text)));}
-
   function makeAvatar(member,className){
     var src=avatarFor(member);
     if(src){
