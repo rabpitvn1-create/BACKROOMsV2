@@ -1,4 +1,9 @@
 {
-  "model": "mgr/grok-imagine-image",
-  "prompt": "A cinematic Backrooms loading-panel background for a mobile dark survival text game. Empty Level 0 yellow office maze, stained yellow-beige wallpaper, damp worn carpet, repeating rectangular openings, cold fluorescent ceiling lights and subtly impossible liminal perspective. The scene should feel uncanny, lonely and oppressive. Composition is for a medium vertical UI card covering three stacked decision buttons: keep the central area calm and readable, with richer corridor architecture and fluorescent detail toward the edges. Dominant dirty amber, mustard yellow, nicotine yellow, olive and charcoal palette, realistic game concept art, restrained cinematic lighting, fine grime and material texture. No people, no creatures, no weapons, no text, no letters, no numbers, no logos, no watermark, no UI elements, no border frame, no neon, no excessive bloom, no gore."
+  "source": "Google Drive Backrooms Level / level_00_liminal_hall.webp",
+  "sourceFileId": "1wDbaAZpSVKGkAiLVsM3Mp3s8CdCcNpgn",
+  "hourglassSource": "Google Drive Backrooms Level / backrooms_loading_hourglass.webp",
+  "hourglassSourceFileId": "1dLbWQVm6zQ7nI34_95DLx79iiav47-Sl",
+  "format": "webp",
+  "maxBytes": 327680,
+  "prompt": "Original Level 0 Backrooms corridor: empty yellow office maze, damp carpet, aged wallpaper, harsh fluorescent lights, no characters, text, logos, weapons or fantasy elements."
 }

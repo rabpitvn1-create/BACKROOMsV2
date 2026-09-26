@@ -27,11 +27,11 @@
     ".battle-line{white-space:pre-wrap;line-height:1.45}",
     ".gm-choices{display:grid;gap:7px;margin-top:12px}",
     ".story-decision{position:relative}",
-    ".story-choice-loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;overflow:hidden;border:2px solid #d8b84a;border-radius:10px;background-color:#655516;background-image:linear-gradient(180deg,rgba(132,105,18,.30),rgba(15,14,7,.74)),url('hud/story_choice_loading_backrooms.png');background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,237,142,.35),inset 0 0 32px rgba(229,187,61,.22),0 6px 20px #000a;color:#fff0a9;text-shadow:0 2px 4px #000,0 0 10px #000}",
+    ".story-choice-loading{position:absolute;inset:0;z-index:5;display:grid;place-items:center;overflow:hidden;border:2px solid #d8b84a;border-radius:10px;background-color:#655516;background-image:linear-gradient(180deg,rgba(132,105,18,.30),rgba(15,14,7,.74)),url('hud/story_choice_loading_backrooms.webp');background-size:cover;background-position:center;box-shadow:inset 0 0 0 1px rgba(255,237,142,.35),inset 0 0 32px rgba(229,187,61,.22),0 6px 20px #000a;color:#fff0a9;text-shadow:0 2px 4px #000,0 0 10px #000}",
     ".story-choice-loading-content{display:grid;place-items:center;gap:9px;padding:18px;text-align:center}",
-    ".story-choice-hourglass{font-size:38px;line-height:1;filter:drop-shadow(0 2px 3px #000);animation:story-choice-hourglass-spin 1.15s linear infinite;transform-origin:center}",
+    ".story-choice-hourglass{display:block;width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 3px 4px #000);animation:story-choice-hourglass-pulse 1.45s ease-in-out infinite;transform-origin:center}",
     ".story-choice-loading-label{font-family:'Play',system-ui,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em}",
-    "@keyframes story-choice-hourglass-spin{to{transform:rotate(360deg)}}",
+    "@keyframes story-choice-hourglass-pulse{0%,100%{transform:scale(.94);filter:drop-shadow(0 3px 4px #000) brightness(.86)}50%{transform:scale(1);filter:drop-shadow(0 3px 5px #000) brightness(1.12)}}",
     "@media(prefers-reduced-motion:reduce){.story-choice-hourglass{animation:none}}",
     ".combat-turn-label{font-size:12px;letter-spacing:.08em;color:#b5bec6;margin:2px 0 1px}",
     ".gm-choice{width:100%;text-align:left;padding:11px 12px;background:#171d22;border:1px solid #39424a;color:#f0f3f5;font-family:'Play',system-ui,sans-serif;font-weight:400;letter-spacing:normal;text-transform:none;white-space:normal;line-height:1.4;border-radius:8px}",
@@ -509,10 +509,11 @@
 
     var content = document.createElement('div');
     content.className = 'story-choice-loading-content';
-    var hourglass = document.createElement('div');
+    var hourglass = document.createElement('img');
     hourglass.className = 'story-choice-hourglass';
     hourglass.setAttribute('aria-hidden', 'true');
-    hourglass.textContent = '⌛';
+    hourglass.setAttribute('src', 'file:///android_asset/hud/story_choice_hourglass_backrooms.webp');
+    hourglass.setAttribute('alt', '');
     var label = document.createElement('div');
     label.className = 'story-choice-loading-label';
     label.textContent = 'ĐANG TẢI LỰA CHỌN…';

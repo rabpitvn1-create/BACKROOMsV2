@@ -77,14 +77,14 @@ for (const isReturn of [false, true]) {
       const semantic = choiceButtons[0].querySelectorAll('.semantic');
       assert.equal(semantic.some(span => span.className.includes('semantic-character') && span.textContent === 'Cao Minh'), true);
       assert.equal(log.querySelectorAll('.story-choice-loading').length, 1);
-      assert.equal(log.querySelectorAll('.story-choice-hourglass')[0].textContent, '⌛');
+      assert.equal(log.querySelectorAll('.story-choice-hourglass')[0].tag, 'img');
       assert.match(log.querySelectorAll('.story-choice-loading-label')[0].textContent, /ĐANG TẢI LỰA CHỌN/);
     } else {
       assert.equal(log.querySelectorAll('.story-choice-loading').length, 0);
     }
     assert.match(style.textContent, /Play-Regular\.ttf/);
-    assert.match(style.textContent, /story_choice_loading_backrooms\.png/);
-    assert.match(style.textContent, /story-choice-hourglass-spin/);
+    assert.match(style.textContent, /story_choice_loading_backrooms\.webp/);
+    assert.match(style.textContent, /story-choice-hourglass-pulse/);
     assert.match(style.textContent, /border:2px solid #d8b84a/);
     assert.match(style.textContent, /\.gm-choice\{[^}]*font-weight:400/);
     assert.match(style.textContent, /\.semantic\{[^}]*font-weight:700/);
@@ -185,15 +185,19 @@ test('Story and return choices use three distinct IMG_API Backrooms artworks', (
 });
 
 test('Story choice loading overlay uses its dedicated IMG_API Backrooms artwork', () => {
-  const art = path.join(assets, 'hud/story_choice_loading_backrooms.png');
+  const art = path.join(assets, 'hud/story_choice_loading_backrooms.webp');
+  const hourglass = path.join(assets, 'hud/story_choice_hourglass_backrooms.webp');
   const metadata = path.join(assets, 'hud/story_choice_loading_backrooms.generated.json');
   assert.equal(fs.existsSync(art), true);
-  assert.equal(fs.statSync(art).size > 10000, true);
+  assert.equal(fs.statSync(art).size <= 320 * 1024, true);
+  assert.equal(fs.existsSync(hourglass), true);
+  assert.equal(fs.statSync(hourglass).size <= 320 * 1024, true);
   assert.equal(fs.existsSync(metadata), true);
   const gmChoice = fs.readFileSync(path.join(assets, 'gm-choice-ui.js'), 'utf8');
-  assert.match(gmChoice, /url\('hud\/story_choice_loading_backrooms\.png'\)/);
+  assert.match(gmChoice, /url\('hud\/story_choice_loading_backrooms\.webp'\)/);
+  assert.match(gmChoice, /story_choice_hourglass_backrooms\.webp/);
   assert.match(gmChoice, /story-choice-loading\{[^}]*border:2px solid #d8b84a/);
-  assert.match(gmChoice, /@keyframes story-choice-hourglass-spin/);
+  assert.match(gmChoice, /@keyframes story-choice-hourglass-pulse/);
 });
 
 test('selection bridges contain no provider request and native state hides outcome tables', () => {
