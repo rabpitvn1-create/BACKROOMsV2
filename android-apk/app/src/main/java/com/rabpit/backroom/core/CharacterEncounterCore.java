@@ -302,15 +302,6 @@ final class CharacterEncounterCore {
     return encounter;
   }
 
-  private static JSONArray filterIds(JSONArray ids, JSONArray party) {
-    JSONArray result = new JSONArray();
-    if (ids == null) return result;
-    for (String id : CANONICAL_ORDER) {
-      if (containsString(ids, id) && containsPartyId(party, id)) result.put(id);
-    }
-    return result;
-  }
-
   private static boolean containsString(JSONArray values, String expected) {
     if (values == null) return false;
     for (int i = 0; i < values.length(); i++) {

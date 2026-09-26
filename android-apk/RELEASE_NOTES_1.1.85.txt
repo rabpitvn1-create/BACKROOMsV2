@@ -1,9 +1,0 @@
-Backroom 1.1.85
-
-- Tích hợp Story Compiler v1 cho cốt truyện Level 0 gồm 30 chương.
-- Phân loại runtime thành LINEAR, INTERACTIVE, CUTAWAY và LOCKED_EVENT mà không sửa văn bản tiểu thuyết gốc.
-- Thêm pipeline QA nhiều lớp cho A/B/C: Haiku sinh candidate, Gemini review, Haiku final audit với Gemini fallback.
-- Ràng buộc interaction theo SHA-256 của manuscript và compiler fingerprint để metadata cũ tự mất hiệu lực khi source thay đổi.
-- Khóa lựa chọn theo trạng thái cuối segment (pauseAnchor), chặn choice lặp hành động/fact đã hoàn tất hoặc làm lệch authored plot.
-- StoryCore giữ interaction state, chặn free input/advance khi đang chờ A/B/C và không cho choice cốt truyện kích hoạt route/loot/Entity roll ngẫu nhiên.
-- Giữ cốt truyện Level 0 theo manuscript hiện tại; không tự suy diễn Chương 30 thành chuyển Level 1.

@@ -1,8 +1,0 @@
-Backroom 1.1.70
-
-- Thay toàn bộ Snapshot local của Level 0–6 bằng 21 ảnh WebP từ bộ Google Drive mới, mỗi Level 3 ảnh 351 × 250 px.
-- Xoá toàn bộ Snapshot legacy và Wikidot cũ; thêm manifest mới cùng SHA-256 để kiểm tra tính toàn vẹn khi build.
-- Giữ Snapshot ở chiều cao 250 px, bỏ khung nhập Player cố định và mở rộng khung GAME MASTER; Player Action tiếp tục dùng popup.
-- Khôi phục bảng chi tiết Party với Status, HP, chỉ số sinh tồn, stats, equipment và inventory.
-- Chuyển chữ UI thông thường về system font; giữ Play Bold cho semantic/special text.
-- Cho toàn bộ Entity đã đăng ký auto-spawn roaming ở mọi Level, không còn bị chặn bởi habitat canon gốc.

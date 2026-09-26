@@ -1,3 +1,0 @@
-Backroom 1.1.58 Debug
-- Omnivault Ring is preserved.
-- Adds regression coverage for the runtime equipment projection as well as the engine-level weapon/armor overwrite.

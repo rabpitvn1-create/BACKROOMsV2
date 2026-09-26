@@ -1,5 +1,0 @@
-BR 1.0.0.0.4
-
-- Tăng versionCode từ 101 lên 102 để Android nhận đây là bản cập nhật mới.
-- Cập nhật 21 Entity overlay WebP từ Google Drive và refresh metrics tương ứng.
-- Sửa regression test CopX theo asset mới 864×1536.

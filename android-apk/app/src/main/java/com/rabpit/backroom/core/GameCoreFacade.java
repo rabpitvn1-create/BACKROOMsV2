@@ -506,17 +506,6 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  public synchronized String storyLoopNarrationPrompt() throws Exception {
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
-    return storyCore.loopNarrationPrompt(state);
-  }
-
-  public synchronized String completeStoryReturn(String expectedStateJson, String narration)
-      throws Exception {
-    throw new IllegalStateException(
-        "Single-step Story return is disabled; return journeys resolve through three Core-owned choices.");
-  }
-
   public synchronized String processStoryEntityAttack(String stateJson) {
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {

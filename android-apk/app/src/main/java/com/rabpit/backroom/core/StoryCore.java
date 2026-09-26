@@ -466,10 +466,6 @@ final class StoryCore {
     return entityKey;
   }
 
-  boolean decisionNeedsPrefetch(JSONObject state) {
-    return decisionNeedsProvider(state);
-  }
-
   boolean decisionNeedsProvider(JSONObject state) {
     try {
       normalizeState(state);
@@ -608,10 +604,6 @@ final class StoryCore {
         chapter.visibility,
         segment.mode,
         segment.decisionContract);
-  }
-
-  JSONObject decisionPrefetchRequest(JSONObject state, String recentStory) throws Exception {
-    return decisionGenerationRequest(state, recentStory);
   }
 
   JSONObject decisionGenerationRequest(JSONObject state, String recentStory) throws Exception {
@@ -1221,14 +1213,6 @@ final class StoryCore {
       throw new IllegalStateException("No return journey turn is awaiting narration.");
     }
     return request.getString("prompt");
-  }
-
-  boolean validLoopNarration(JSONObject state, String reply) throws Exception {
-    return validReturnNarration(reply);
-  }
-
-  void completeReturnJourney(JSONObject state) throws Exception {
-    throw new IllegalStateException("Return journeys now resolve only through Core-owned choices.");
   }
 
   void refreshLoopDecisionContext(JSONObject state) throws Exception {

@@ -533,16 +533,6 @@ final class LevelCore {
     return route;
   }
 
-  private static JSONObject newRouteState(String levelKey) throws Exception {
-    return new JSONObject()
-        .put("level", parentLevel(levelKey))
-        .put("levelKey", normalizeKey(levelKey))
-        .put("streak", 0)
-        .put("exitAvailable", false)
-        .put("lastRollTurn", -1)
-        .put("lastResult", "");
-  }
-
   private JSONObject newRouteStateForKey(String levelKey) throws Exception {
     return new JSONObject()
         .put("level", parentLevelForKey(levelKey))
@@ -644,12 +634,6 @@ final class LevelCore {
     String normalized = normalizeKey(key);
     int legacy = parentLevel(normalized);
     return levelGraph.available() ? levelGraph.parentLevel(normalized, legacy) : legacy;
-  }
-
-  private int stageIndexForGraphKey(String key) {
-    String normalized = normalizeKey(key);
-    int legacy = stageIndexForKey(normalized);
-    return levelGraph.available() ? levelGraph.stageIndex(normalized, legacy) : legacy;
   }
 
   private String displayNameForKey(String key) {
