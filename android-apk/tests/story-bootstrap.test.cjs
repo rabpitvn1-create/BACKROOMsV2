@@ -169,7 +169,9 @@ test('provider generation keeps current Story choices covered while loading', ()
   assert.ok(loading);
   assert.equal(loading.attributes.role,'status');
   assert.equal(box.attributes['aria-busy'],'true');
-  assert.equal(loading.children[0].children[0].textContent,'⌛');
+  const hourglass=loading.children[0].children[0];
+  assert.equal(hourglass.tag,'img');
+  assert.equal(hourglass.attributes.src,'file:///android_asset/hud/story_choice_hourglass_backrooms.webp');
   assert.equal(loading.children[0].children[1].textContent,'ĐANG TẢI LỰA CHỌN…');
 });
 
