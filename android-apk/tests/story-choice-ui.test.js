@@ -86,6 +86,7 @@ for (const isReturn of [false, true]) {
     assert.match(style.textContent, /story_choice_loading_backrooms\.webp/);
     assert.match(style.textContent, /story-choice-hourglass-pulse/);
     assert.match(style.textContent, /border:2px solid #d8b84a/);
+    assert.match(style.textContent, /background-image:linear-gradient\(180deg,rgba\(8,9,6,.52\),rgba\(5,6,4,.82\)\)/);
     assert.match(style.textContent, /\.gm-choice\{[^}]*font-weight:400/);
     assert.match(style.textContent, /\.semantic\{[^}]*font-weight:700/);
     await new Promise(resolve => setTimeout(resolve, 10));
@@ -114,9 +115,12 @@ for (const isReturn of [false, true]) {
     context.backroomError('provider failed');
     await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(calls.prepare.length, 2);
+    assert.equal(calls.errors.length, 0);
+    if (!isReturn) assert.equal(log.querySelectorAll('.story-choice-loading').length, 1);
     context.backroomError('provider failed again');
     await new Promise(resolve => setTimeout(resolve, 10));
     assert.equal(calls.prepare.length, 2);
+    assert.equal(calls.errors.length, 1);
     const manual = buttons(log).find(button => button.textContent === 'Thử lại phản hồi');
     assert.ok(manual);
     assert.equal(buttons(log).length, isReturn ? 1 : 4);
