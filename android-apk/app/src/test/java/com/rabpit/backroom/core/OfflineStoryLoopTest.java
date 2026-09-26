@@ -116,6 +116,142 @@ public class OfflineStoryLoopTest {
         .put("levelRoute", new JSONObject().put("levelKey", level).put("streak", 4));
   }
 
+  private static JSONObject decisionState(StoryCore core) throws Exception {
+    JSONObject state = storyState("0");
+    core.normalizeState(state);
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+    return state;
+  }
+
+  private static void converge(StoryCore core, JSONObject state) throws Exception {
+    for (int step = 0; step < 3; step++) {
+      installReturnTurn(core, state, "hội-tụ-" + step);
+      core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+    }
+  }
+
+  @Test public void prearmedRandomEncounterBlocksReturnTurnAndVictoryKeepsJourney() throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    JSONObject state = decisionState(core);
+    core.beginDeathReturnJourney(state, "đích gốc", "0");
+    installReturnTurn(core, state, "trước-combat");
+    core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+    JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
+    String target = journey.getString("targetLocation");
+    int progress = journey.getInt("progress");
+    String staleChoice = returnOutcomeId(state, StoryCore.RETURN_STAY);
+    state.getJSONObject("flags").put("entityEncounterKey", "hound");
+    assertTrue(GameCoreFacade.startRandomEntityEncounter(new EntityCore(null), state));
+    assertTrue(CombatChoiceEngine.isActive(state));
+    core.resumeReturnJourneyAfterTurn(state, true);
+    assertFalse(core.returnJourneyCurrentReady(state));
+    assertEquals(progress, journey.getInt("progress"));
+    assertEquals(target, journey.getString("targetLocation"));
+    try {
+      core.selectReturnChoice(state, staleChoice);
+      fail("Choice before combat must be stale");
+    } catch (IllegalArgumentException expected) { /* stale */ }
+    state.getJSONObject("combat").put("active", false).put("outcome", "victory");
+    state.getJSONObject("flags").put("entityEncounterKey", "");
+    installReturnTurn(core, state, "sau-combat");
+    assertTrue(core.returnJourneyReady(state));
+    assertEquals(progress, journey.getInt("progress"));
+    assertEquals(target, journey.getString("targetLocation"));
+  }
+
+  @Test public void deathDuringReturnRestartsAtLevelStartWithOriginalAnchor() throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    JSONObject state = decisionState(core);
+    installStoryChoices(core, state, "sai");
+    core.resolveDecision(state, decisionOutcomeId(state, StoryCore.OUTCOME_RETURN),
+        new CharacterEncounterCore(bound -> bound - 1));
+    installReturnTurn(core, state, "lượt-cũ");
+    core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
+    installReturnTurn(core, state, "lượt-chết");
+    JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
+    String oldId = journey.getString("journeyId");
+    String staleChoice = returnOutcomeId(state, StoryCore.RETURN_STAY);
+    String anchor = journey.getJSONObject("pausedStory").toString();
+    String target = journey.getString("targetLocation");
+    state.put("combat", new JSONObject().put("outcome", "defeat")
+        .put("deathReturnJourneyPending", true).put("deathReturnAnchorLocation", state.getString("location")));
+    GameCoreFacade.armDeathReturnIfNeeded(core, state);
+    assertFalse(state.getJSONObject("combat").getBoolean("deathReturnJourneyPending"));
+    assertNotEquals(oldId, journey.getString("journeyId"));
+    assertEquals(0, journey.getInt("progress"));
+    assertEquals(0, journey.getInt("turnIndex"));
+    assertEquals(LevelCore.defaultLocation("0"), state.getString("location"));
+    assertEquals(state.getString("location"), journey.getString("currentPosition"));
+    assertEquals(target, journey.getString("targetLocation"));
+    assertEquals(anchor, journey.getJSONObject("pausedStory").toString());
+    try {
+      core.selectReturnChoice(state, staleChoice);
+      fail("Choice from before death must be stale");
+    } catch (IllegalArgumentException expected) { /* stale */ }
+    converge(core, state);
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionNeedsProvider(state));
+  }
+
+  @Test public void deathAtDecisionGateRestoresFreshGateAndRejectsOldChoice() throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    JSONObject state = decisionState(core);
+    installStoryChoices(core, state, "trước-chết");
+    String stale = decisionOutcomeId(state, StoryCore.OUTCOME_CANON);
+    String oldToken = state.getJSONObject("story").getString("decisionGenerationToken");
+    core.beginDeathReturnJourney(state, state.getString("location"), "0");
+    converge(core, state);
+    assertTrue(core.awaitingDecision(state));
+    assertTrue(core.decisionNeedsProvider(state));
+    assertNotEquals(oldToken, state.getJSONObject("story").getString("decisionGenerationToken"));
+    JSONObject staleStory = new JSONObject().put("decisionPackage", new JSONObject()
+        .put("choices", new JSONArray().put(new JSONObject().put("id", stale))
+            .put(new JSONObject().put("id", "old-2")).put(new JSONObject().put("id", "old-3"))));
+    assertFalse(GameCoreFacade.sameStoryChoiceSet(staleStory, state.getJSONObject("story")));
+    installStoryChoices(core, state, "sau-chết");
+    try {
+      core.resolveDecision(state, stale, new CharacterEncounterCore(bound -> bound - 1));
+      fail("Old decision callback must not commit");
+    } catch (IllegalArgumentException expected) { /* stale */ }
+  }
+
+  @Test public void deathWithPendingAdvanceResumesExactlyOnce() throws Exception {
+    StoryCore core = StoryCore.withRepository(repository());
+    JSONObject state = decisionState(core);
+    installStoryChoices(core, state, "canon");
+    core.resolveDecision(state, decisionOutcomeId(state, StoryCore.OUTCOME_CANON),
+        new CharacterEncounterCore(bound -> bound - 1));
+    int index = state.getJSONObject("story").getInt("currentSegmentIndex");
+    int events = state.getJSONObject("story").getInt("eventSequence");
+    core.beginDeathReturnJourney(state, state.getString("location"), "0");
+    converge(core, state);
+    assertTrue(core.hasPendingStoryAdvance(state));
+    assertEquals(index, state.getJSONObject("story").getInt("currentSegmentIndex"));
+    CharacterEncounterCore characters = new CharacterEncounterCore(bound -> bound - 1);
+    assertNotNull(core.advancePendingTurn(state, characters));
+    assertEquals(index + 1, state.getJSONObject("story").getInt("currentSegmentIndex"));
+    assertNull(core.advancePendingTurn(state, characters));
+    assertEquals(events, state.getJSONObject("story").getInt("eventSequence"));
+  }
+
+  @Test public void authoredEntityGateDeathReturnsToAttackGate() throws Exception {
+    StoryCore core = StoryCore.withRepository(StoryCoreTest.entityGateFixtureRepository());
+    JSONObject state = storyState("0");
+    core.advanceAndRender(state, StoryCore.ADVANCE_ACTION_VI,
+        new CharacterEncounterCore(bound -> bound - 1));
+    assertTrue(core.awaitingEntityAttack(state));
+    String segment = state.getJSONObject("story").getString("currentSegmentId");
+    core.consumeEntityAttack(state);
+    core.rearmAuthoredEncounterAfterDeath(state);
+    core.beginDeathReturnJourney(state, state.getString("location"), "0");
+    converge(core, state);
+    assertTrue(core.awaitingEntityAttack(state));
+    assertFalse(core.hasPendingStoryAdvance(state));
+    assertEquals("hound", core.entityAttackChoice(state).getString("entityKey"));
+    assertEquals(segment, state.getJSONObject("story").getString("currentSegmentId"));
+  }
+
   @Test public void wrongStoryChoiceRunsMultiTurnJourneyAndConvergesExactlyOnce() throws Exception {
     CharacterEncounterCore characters = new CharacterEncounterCore(bound -> bound - 1);
 

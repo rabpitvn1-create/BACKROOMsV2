@@ -136,7 +136,7 @@ public class StoryCoreTest {
   }
 
 
-  private static StoryRepository entityGateFixtureRepository() {
+  static StoryRepository entityGateFixtureRepository() {
     String sourcePath = "story/source/level_0/LEVEL0_CH01.md";
     StringBuilder encounter = new StringBuilder(
         "Cao Minh khựng lại khi một Hound chắn ngang hành lang.");

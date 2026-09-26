@@ -754,6 +754,37 @@ final class StoryCore {
     beginReturnJourney(state, RETURN_CAUSE_DEATH, targetLocation, targetLevelKey);
   }
 
+  void restartReturnJourneyAfterDeath(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    JSONObject journey = story.getJSONObject("returnJourney");
+    if (!journey.optBoolean("active", false)) {
+      throw new IllegalStateException("No return journey to restart after death.");
+    }
+    LevelCore.returnToCurrentLevelStart(state);
+    String start = state.optString("location", "");
+    journey.put("journeyId", "return_" + UUID.randomUUID().toString().replace("-", ""))
+        .put("startLocation", start).put("currentPosition", start)
+        .put("progress", 0).put("turnIndex", 0)
+        .put("choiceSetHistory", new JSONArray());
+    resetReturnTurnForProvider(journey);
+    story.put("returnJourney", journey);
+    syncReturnJourneyProjection(story);
+    state.put(ROOT_KEY, story);
+    preparePublicReturnTurn(state, journey);
+  }
+
+  void resumeReturnJourneyAfterTurn(JSONObject state, boolean combatStarted) throws Exception {
+    if (!returnJourneyActive(state)) return;
+    JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
+    if (combatStarted) {
+      resetReturnTurnForProvider(journey);
+      preparePublicReturnTurn(state, journey);
+    } else {
+      journey.getJSONObject("turnPackage").put("contextHash", returnJourneyContextHash(state));
+    }
+  }
+
   private void beginReturnJourney(
       JSONObject state, String cause, String targetLocation, String targetLevelKey) throws Exception {
     JSONObject story = state.optJSONObject(ROOT_KEY);
@@ -1071,6 +1102,7 @@ final class StoryCore {
             || !anchor.optString("storyId", "").equals(story.optString("storyId", ""))
             || !anchor.optString("sourceRevision", "").equals(story.optString("sourceRevision", ""))
             || !anchor.optString("currentChapter", "").equals(story.optString("currentChapter", ""))
+            || !anchor.optString("currentScene", "").equals(story.optString("currentScene", ""))
             || !anchor.optString("currentSegmentId", "").equals(story.optString("currentSegmentId", ""))
             || anchor.optInt("currentSegmentIndex", -1) != story.optInt("currentSegmentIndex", -2)
             || anchor.optInt("eventSequence", -1) != story.optInt("eventSequence", -2)) {
@@ -1104,7 +1136,7 @@ final class StoryCore {
           .put("turnStatus", "")
           .put("turnPackage", new JSONObject())
           .put("turnNarration", "");
-      if (RETURN_CAUSE_STORY.equals(cause)) rearmCurrentDecision(story);
+      restorePausedStoryGate(story, journey.getJSONObject("pausedStory"));
     } else {
       JSONObject ahead = journey.optJSONObject("lookahead");
       int nextIndex = journey.optInt("turnIndex", 0) + 1;
@@ -1127,6 +1159,34 @@ final class StoryCore {
     if (arrived) preparePublicDecision(state, story);
     else preparePublicReturnTurn(state, journey);
     return new ReturnJourneyResolution(visibleChoice, reply, type, arrived, cause);
+  }
+
+  private void restorePausedStoryGate(JSONObject story, JSONObject anchor) throws Exception {
+    boolean decision = anchor.optBoolean("awaitingDecision", false);
+    boolean entity = anchor.optBoolean("awaitingEntityAttack", false);
+    boolean pending = anchor.optBoolean("pendingStoryAdvance", false);
+    if ((decision ? 1 : 0) + (entity ? 1 : 0) + (pending ? 1 : 0) > 1) {
+      throw new IllegalStateException("Invalid paused Story gate.");
+    }
+    clearDecision(story);
+    story.put("awaitingEntityAttack", false);
+    story.put("entityGate", new JSONObject());
+    story.put("pendingStoryAdvance", pending);
+    if (decision || entity) {
+      if (repository == null) throw new IllegalStateException("Paused Story source unavailable.");
+      StoryRepository.Chapter chapter = repository.chapter(story.optString("currentChapter", ""));
+      StoryRepository.Segment segment = repository.segment(
+          story.optString("currentChapter", ""), story.optInt("currentSegmentIndex", 0));
+      if (chapter == null || segment == null || (decision && !StoryRepository.MODE_DECISION.equals(segment.mode))
+          || (entity && !StoryRepository.MODE_ENTITY_GATE.equals(segment.mode))) {
+        throw new IllegalStateException("Paused Story gate no longer matches authored source.");
+      }
+      armTurnGate(story, chapter, segment);
+      if ((decision && !story.optBoolean("awaitingDecision", false))
+          || (entity && !story.optBoolean("awaitingEntityAttack", false))) {
+        throw new IllegalStateException("Paused Story gate cannot be restored.");
+      }
+    }
   }
 
   private static boolean validReturnNarration(String raw) {

@@ -278,7 +278,7 @@
   }
 
   function requestReturnJourneyTurn(force) {
-    if (!returnJourneyNeedsProvider() || window.__combatBusy) return;
+    if (!returnJourneyNeedsProvider() || window.__combatBusy || (state.combat && state.combat.active)) return;
     var journey = state.story.returnJourney || {};
     var key = String(journey.journeyId || '') + ':' + String(journey.turnIndex || 0);
     if (!force && window.__returnJourneyRequestKey === key) return;
@@ -293,7 +293,7 @@
   function submitReturnJourneyChoice(choice) {
     if (!choice || !choice.id || !returnJourneyCurrentReady() || state.story.returnJourney.pendingChoiceId
         || window.__selectedReturnChoiceKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex)
-        || window.__combatBusy
+        || window.__combatBusy || (state.combat && state.combat.active)
         || (typeof busy !== 'undefined' && busy)) return;
     if (!window.Android || typeof Android.resolveReturnJourneyChoice !== 'function') {
       if (status) status.textContent = 'Không tìm thấy Android return journey bridge.';
@@ -310,7 +310,7 @@
     var journey = isReturn && state.story.returnJourney;
     var id = String(isReturn ? journey.pendingChoiceId || '' : state.story.pendingChoiceId || '');
     var ready = isReturn ? journey.turnStatus === 'READY' : state.story.decisionStatus === 'READY';
-    if (!id || !ready || window.__combatBusy || !window.Android) return;
+    if (!id || !ready || window.__combatBusy || (state.combat && state.combat.active) || !window.Android) return;
     var key = (isReturn ? String(journey.journeyId) + ':' + String(journey.turnIndex) :
       String((state.story.decisionPackage.choices[0] || {}).id)) + ':' + id;
     if (window.__pendingResolutionRequestKey === key) return;
@@ -599,7 +599,8 @@
           setTimeout(function(){ resumePendingChoice(true); }, 0);
         returnJourneyChoices().forEach(function(choice){
           returnBox.appendChild(makeChoiceButton('', choice.text || '', entry, choice.highlights || [],
-            !returnJourneyCurrentReady() || !!window.__combatBusy || !!state.story.returnJourney.pendingChoiceId
+            !returnJourneyCurrentReady() || !!window.__combatBusy || !!(state.combat && state.combat.active)
+              || !!state.story.returnJourney.pendingChoiceId
               || window.__selectedReturnChoiceKey === String(state.story.returnJourney.journeyId) + ':' + String(state.story.returnJourney.turnIndex), false,
             function(){ submitReturnJourneyChoice(choice); }));
         });

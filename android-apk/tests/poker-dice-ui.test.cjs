@@ -110,11 +110,14 @@ test('Story CANON rolls Entity before advancing the next authored beat', () => {
   const decisionStart = coreFacadeSource.indexOf('public synchronized String processStoryDecision');
   const decisionEnd = coreFacadeSource.indexOf('public synchronized String processStoryEntityAttack', decisionStart);
   const decisionBlock = coreFacadeSource.slice(decisionStart, decisionEnd);
-  assert.match(decisionBlock, /entityCore\.prepareEncounter\(state\)/);
-  assert.match(decisionBlock,
+  assert.match(decisionBlock, /startRandomEntityEncounter\(entityCore, state\)/);
+  const encounterStart = coreFacadeSource.indexOf('static boolean startRandomEntityEncounter');
+  const encounterBlock = coreFacadeSource.slice(encounterStart, coreFacadeSource.indexOf('private static int lastGmLogIndex', encounterStart));
+  assert.match(encounterBlock, /entityCore\.prepareEncounter\(state\)/);
+  assert.match(encounterBlock,
     /CombatChoiceEngine\.isKnownEntity\(encounter\)[\s\S]*CombatChoiceEngine\.start\(state, encounter, lastGmLogIndex\(state\)\)/);
   assert.match(decisionBlock,
-    /else \{[\s\S]*incrementTurn\(state\);[\s\S]*storyCore\.hasPendingStoryAdvance\(state\)[\s\S]*advancePendingStorySequence\(state\)/);
+    /if \(!startRandomEntityEncounter\(entityCore, state\)\) \{[\s\S]*incrementTurn\(state\);[\s\S]*storyCore\.hasPendingStoryAdvance\(state\)[\s\S]*advancePendingStorySequence\(state\)/);
   assert.match(decisionBlock, /story_random_entity_combat/);
 
   const validatedStart = coreFacadeSource.indexOf('public synchronized String processValidatedCandidate');
