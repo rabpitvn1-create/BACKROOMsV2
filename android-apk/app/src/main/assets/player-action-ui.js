@@ -69,9 +69,21 @@
     }
   }
 
+  function storyDecisionPreparing(){
+    try {
+      var story = state && state.story;
+      return !!(story && story.active === true && story.arcComplete !== true
+        && !(story.returnJourney && story.returnJourney.active === true)
+        && story.awaitingDecision === true
+        && String(story.decisionStatus || '') !== 'READY');
+    } catch (_) {
+      return false;
+    }
+  }
+
   function environmentLocked(){
     return combatActive() || processing() || storyBootstrapPending() || storyCutawayActive()
-      || storyEntityAttackActive() || storyAdvancePending();
+      || storyEntityAttackActive() || storyAdvancePending() || storyDecisionPreparing();
   }
 
   function fitVisualViewport(){
@@ -123,7 +135,7 @@
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
     if ((combatActive() || storyBootstrapPending() || storyCutawayActive()
-        || storyEntityAttackActive() || storyAdvancePending()) && !modal.hidden) {
+        || storyEntityAttackActive() || storyAdvancePending() || storyDecisionPreparing()) && !modal.hidden) {
       closePlayerAction(true);
     }
   }
@@ -164,6 +176,7 @@
     Android.submitEnvironmentAction(JSON.stringify(state), text);
   }, true);
 
+  openButton.addEventListener('click', openPlayerAction);
   if (closeButton) closeButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (cancelButton) cancelButton.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });
   if (backdrop) backdrop.addEventListener('click', function(){ if (!processing()) closePlayerAction(true); });

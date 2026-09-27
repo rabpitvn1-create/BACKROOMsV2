@@ -634,9 +634,12 @@ final class StoryCore {
     }
     prompt.append("DECISION GUARD:\n").append(guard).append("\n\n");
     prompt.append("Core has already published three choices. Write only hidden local replies:\n");
-    prompt.append("- return.reply: immediate local spatial consequence; do not mention the level entrance or reveal that movement returned to an earlier position.\n");
-    prompt.append("- stay.reply: immediate local consequence leaves Cao Minh effectively at the same place.\n");
-    prompt.append("Do not replay completed canon, grant anything, invent lore, or reveal hidden outcomes. ");
+    prompt.append("- return.reply: a short spatial/horror detour beat with one concrete local anomaly or changed cue; "
+        + "do not mention the level entrance, reveal that movement returned to an earlier position, or advance authored progression.\n");
+    prompt.append("- stay.reply: a short observation/tension beat at the same place with one concrete sensory clue or anomaly; "
+        + "do not advance authored progression.\n");
+    prompt.append("Make RETURN/STAY feel like meaningful survival-horror responses, not 'wrong choice' filler or 'nothing happens'. ");
+    prompt.append("Do not grant rewards, create persistent facts the Core would need to remember, replay completed canon, invent lore, or reveal hidden outcomes. ");
     prompt.append("The player must feel exploration continuing, never a level replay. ");
     prompt.append("Never say 'chọn sai', 'reset', 'checkpoint', 'canon' or 'bẫy' to the player. ");
     prompt.append("Each reply is local Vietnamese prose only, max 900 characters.\n\n");
