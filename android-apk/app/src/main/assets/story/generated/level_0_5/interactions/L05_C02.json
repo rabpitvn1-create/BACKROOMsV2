@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L05_C02",
+  "source": "story/source/level_0_5/LEVEL0.5_CH02_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "sourceDigest": "6a1cf2770a3dd82410a817b33c163572153d12a227185e4b02b2f3f10f248d2b",
+  "segmentIds": [
+    "L05_C02_S8b15685e2a06983f",
+    "L05_C02_S5460e2e6bc2f4149",
+    "L05_C02_S4950b656015cefcf",
+    "L05_C02_S9f29627f09963546",
+    "L05_C02_Sfe4ac517742c145d",
+    "L05_C02_S133f4a3a3542ec2f",
+    "L05_C02_S754098294c6be5ce",
+    "L05_C02_S0e5ae00d7bc75de8"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L05_C02_S8b15685e2a06983f": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S8b15685e2a06983f",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiến vào phòng bên trái để gặp người phụ nữ đang cầm đoạn gỗ.",
+            "return": "Yêu cầu Lục Trầm mô tả chi tiết về dấu giày trước khi tiến thêm.",
+            "stay": "Nghe thêm xem tiếng ho có lặp lại hay không trước khi bất kỳ động thái nào."
+          },
+          {
+            "canon": "Bước ra khỏi vách gỗ để gặp người phụ nữ và trao đổi với cô ấy.",
+            "return": "Khiêm tốn giơ tay để cho thấy Huyết Ma Kiếm không đe dọa.",
+            "stay": "Dừng lại và theo dõi từng chuyển động nhỏ của người phụ nữ từ khoảng cách an toàn."
+          }
+        ]
+      }
+    },
+    "L05_C02_S5460e2e6bc2f4149": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S5460e2e6bc2f4149",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Chấp nhận Hà rời khỏi căn phòng và theo dõi cô khi cô di chuyển cùng nhóm.",
+            "return": "Kiểm tra kỹ lưỡng căn phòng mà Hà vừa rời bỏ để tìm manh mối về thực phẩm hoặc nước.",
+            "stay": "Hỏi Hà chi tiết về cách cô sống sót trong môi trường này mà không có hỗ trợ."
+          },
+          {
+            "canon": "Theo Lục Trầm khi cô bước ra khỏi phòng và tiếp tục hành trình.",
+            "return": "Quan sát tất cả các vật dụng trong phòng của Hà trước khi di chuyển tiếp.",
+            "stay": "Dành thêm thời gian để lắng nghe Hà mô tả những gì cô đã tìm thấy ở đây."
+          }
+        ]
+      }
+    },
+    "L05_C02_S4950b656015cefcf": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S4950b656015cefcf",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Dẫn Hà xuống hành lang dốc nước mặc dù cô do dự về lối đi này.",
+            "return": "Theo dõi lối trái mà Hà chỉ để xác minh cô nói thực hay chỉ tránh né.",
+            "stay": "Yêu cầu Hà mô tả chi tiết từng chi tiết mà cô nhìn thấy ở hành lang khác trước khi quyết định."
+          },
+          {
+            "canon": "Bước vào nước cùng Hà và Lục Trầm để tiếp tục khám phá phía trước.",
+            "return": "Yêu cầu Hà chỉ rõ vị trí chính xác của những phòng trống cô đã khám phá.",
+            "stay": "Lùi lại và nghe Hà diễn tả lại toàn bộ bản đồ mà cô đã ghép lại được từ sự khám phá của mình."
+          }
+        ]
+      }
+    },
+    "L05_C02_S9f29627f09963546": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S9f29627f09963546",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nắm chặt tay Hà để giữ cô ổn định khi qua chỗ rêu trơn.",
+            "return": "Chỉ cho Hà cách bước sát tường trước khi bước qua đoạn rêu.",
+            "stay": "Quan sát cách Hà di chuyển trên gờ để đánh giá cô."
+          },
+          {
+            "canon": "Giữ cô khi thấy chân trượt, cử động nhanh để cân bằng lại.",
+            "return": "Chỉ vào chỗ rêu và để Hà tự tìm cách đi an toàn.",
+            "stay": "Đứng sẵn để theo dõi nếu Hà gặp vấn đề trên gờ."
+          }
+        ]
+      }
+    },
+    "L05_C02_Sfe4ac517742c145d": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_Sfe4ac517742c145d",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nghe Hà nói chuyện riêng về cửa đóng và dừng lại để quan sát cái đó.",
+            "return": "Tiếp tục đi qua cửa để không lãng phí thời gian kiểm tra.",
+            "stay": "Nhìn cửa từ xa nhưng không bình luận gì cả."
+          },
+          {
+            "canon": "Thấy Hà ngại ngùng ở cánh cửa và quyết định không hỏi thêm.",
+            "return": "Hỏi Hà chi tiết hơn về cửa đó để chắc chắn không có nguy hiểm.",
+            "stay": "Để ý cách Hà phản ứng nhưng không bộc lộ gì."
+          }
+        ]
+      }
+    },
+    "L05_C02_S133f4a3a3542ec2f": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S133f4a3a3542ec2f",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước xuống nước trước Hà để kiểm tra độ sâu và mức độ an toàn.",
+            "return": "Để Lục Trầm đi trước rồi quan sát từ trên gờ trước khi xuống.",
+            "stay": "Chờ xem Hà và Lục Trầm bước xuống để hiểu rõ tình huống."
+          },
+          {
+            "canon": "Mở thần thức rộng khi nghe tiếng gõ từ cánh cửa phía sau.",
+            "return": "Ngồi yên và để Lục Trầm quyết định hành động tiếp theo.",
+            "stay": "Quan sát Hà để thấy cô sợ như thế nào trước tiếng lạ."
+          }
+        ]
+      }
+    },
+    "L05_C02_S754098294c6be5ce": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S754098294c6be5ce",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi theo Lục Trầm qua lối khác, để lại cánh cửa phía sau.",
+            "return": "Quay lại xem cánh cửa đó để hiểu rõ nguồn gốc tiếng gõ.",
+            "stay": "Ở lại chỗ này lâu hơn để quan sát xem có tiếng động nào khác."
+          },
+          {
+            "canon": "Tiếp tục tiến sâu vào hành lang theo hướng Lục Trầm chỉ.",
+            "return": "Kiểm tra kỹ hai đầu hành lang trước khi quyết định di chuyển.",
+            "stay": "Chờ Hà và Lục Trầm yên tĩnh để nghe rõ hơn những âm thanh xung quanh."
+          }
+        ]
+      }
+    },
+    "L05_C02_S0e5ae00d7bc75de8": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C02_S0e5ae00d7bc75de8",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi xuống nước, vượt qua rãnh để tìm lối tiếp.",
+            "return": "Ở lại chỗ khô một lúc để theo dõi hành động của Hà thêm.",
+            "stay": "Xem xét kỹ trolley và ống kim loại trước khi bước xuống."
+          },
+          {
+            "canon": "Theo Lục Trầm xuống phía nước sâu hơn.",
+            "return": "Dừng lại kiểm tra chỗ khô này để tìm các dấu hiệu khác.",
+            "stay": "Quan sát Hà và Lục Trầm từ chỗ cao để hiểu địa hình tốt hơn."
+          }
+        ]
+      }
+    }
+  }
+}

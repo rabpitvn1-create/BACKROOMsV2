@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L05_C14",
+  "source": "story/source/level_0_5/LEVEL0.5_CH14_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "sourceDigest": "f1f218e5224972a18fc6d2db4c02de6f0906fd0c99b18161b4ba25853e0ff6f1",
+  "segmentIds": [
+    "L05_C14_S9d8b0d479cbd84dd",
+    "L05_C14_Sdf10c8d184fe6c06",
+    "L05_C14_S09551e7b490d71e8",
+    "L05_C14_S71213d262214a271",
+    "L05_C14_S41de9f3ccce4f50d",
+    "L05_C14_Sb156ed36f4c49dd7",
+    "L05_C14_S8bbfdf5f982b2ab7",
+    "L05_C14_S6f16899c76ff3dca"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L05_C14_S9d8b0d479cbd84dd": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S9d8b0d479cbd84dd",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi tiếp qua hành lang, kiểm tra đường phía trước.",
+            "return": "Quay lại phòng chờ, đợi mọi người chuẩn bị kỹ hơn.",
+            "stay": "Ở lại đây một lúc, để Lục Trầm và Tùng hồi phục thêm."
+          },
+          {
+            "canon": "Dẫn nhóm vào hành lang để tìm lối thoát.",
+            "return": "Ngồi xuống, xem xét kế hoạch với cả ba người.",
+            "stay": "Chờ Lục Trầm chủ động ra hiệu trước khi bất kỳ ai bước tiếp."
+          }
+        ]
+      }
+    },
+    "L05_C14_Sdf10c8d184fe6c06": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_Sdf10c8d184fe6c06",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi vào phòng nhỏ, kiểm tra các lối dẫn phía sau.",
+            "return": "Đề nghị tìm cách quay lại, tránh khoảng tối không rõ.",
+            "stay": "Đứng yên, để Lục Trầm quyết định bước tiếp hay dừng."
+          },
+          {
+            "canon": "Dẫn đoàn vào khoảng tối để xem điều gì chờ ở phía sau.",
+            "return": "Lấy Tùng lên và tìm đường khác, tránh khoảng tối.",
+            "stay": "Chờ tại chỗ, để Lục Trầm thăm dò trước một mình."
+          }
+        ]
+      }
+    },
+    "L05_C14_S09551e7b490d71e8": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S09551e7b490d71e8",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đi vào phòng khám, tìm cách vượt qua khu vực có dây điện.",
+            "return": "Quay lại dốc, tìm lối khác để tránh nguy hiểm.",
+            "stay": "Dừng lại, quan sát lâu hơn trước khi chuyển động."
+          },
+          {
+            "canon": "Khám phá phòng khám và tìm đường sống thêm.",
+            "return": "Lùi lại với nhóm, báo cáo rủi ro trước khi tiếp tục.",
+            "stay": "Ở lại để canh chừng Tùng, không rời nhóm."
+          }
+        ]
+      }
+    },
+    "L05_C14_S71213d262214a271": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S71213d262214a271",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đứng dậy, kiểm tra hành lang phía trước để tìm nước sạch và lối đi an toàn hơn.",
+            "return": "Ngồi lại cạnh Lục Trầm, để cho cơ thể nghỉ ngơi thêm một chút trước khi tiếp tục.",
+            "stay": "Đi sang chỗ Hà và Tùng, quan sát tình trạng sức khỏe của anh để quyết định bước tiếp theo."
+          },
+          {
+            "canon": "Bước tới hai đầu hành lang để kiểm tra lối đi, tìm hiểu điều kiện phía trước.",
+            "return": "Dừng lại để nghe Hà và Tùng nói chuyện, không can thiệp vào khoảnh khắc của họ.",
+            "stay": "Ngồi xuống đợi Lục Trầm thức dậy, không cần vội vã bây giờ."
+          }
+        ]
+      }
+    },
+    "L05_C14_S41de9f3ccce4f50d": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S41de9f3ccce4f50d",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Đóng mắt để ngủ, để Hà canh chừng trong lúc ta phục hồi sức lực.",
+            "return": "Tiếp tục quan sát xung quanh hành lang, không hoàn toàn tin tưởng vào sự yên tĩnh này.",
+            "stay": "Nói với Hà rằng ta vẫn có thể canh, cô hãy ngủ để có đủ sức khi cần."
+          },
+          {
+            "canon": "Nằm xuống cạnh tường, buông lỏng canh chừng cho phần còn lại của đêm.",
+            "return": "Giữ mắt mở, theo dõi cả hai đầu hành lang từ vị trí hiện tại.",
+            "stay": "Đi kiểm tra lại cửa chống cháy kẹt, xem có thể mở rộng thêm hay không."
+          }
+        ]
+      }
+    },
+    "L05_C14_Sb156ed36f4c49dd7": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_Sb156ed36f4c49dd7",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nhắm mắt và để ý thức trôi vào chỗ sâu, nơi những ký ức cũ chờ đợi.",
+            "return": "Theo dõi Hà từ góc mắt, để đảm bảo cô không rơi vào giấc ngủ vô tình.",
+            "stay": "Thực hiện thêm một vòng kiểm tra âm thầm tại cửa chống cháy trước khi cho phép bản thân nghỉ."
+          },
+          {
+            "canon": "Để tâm trí thả lỏng vào không gian giữa thức và mộng, nơi câu trả lời tự xuất hiện.",
+            "return": "Giữ cơ thể bình tĩnh nhưng tinh thần canh cảnh, sẵn sàng bước vào hành động trong một giây.",
+            "stay": "Nhìn Lục Trầm và Tùng, ghi nhớ chi tiết mỗi nhịp thở của họ để phát hiện bất thường."
+          }
+        ]
+      }
+    },
+    "L05_C14_S8bbfdf5f982b2ab7": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S8bbfdf5f982b2ab7",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hỏi họ về kế hoạch tiếp theo.",
+            "return": "Quan sát Lục Trầm để chắc hắn vẫn thâm canh.",
+            "stay": "Để mắt trên Hà, xem cô còn gì muốn nói không."
+          },
+          {
+            "canon": "Đứng dậy, kiểm tra đường hành lang.",
+            "return": "Tiếp tục ngồi yên, cho Tâm Ma im tiếp.",
+            "stay": "Nhìn lại Tùng, xem anh vẫn an toàn chưa."
+          }
+        ]
+      }
+    },
+    "L05_C14_S6f16899c76ff3dca": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C14_S6f16899c76ff3dca",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra vết thương chân Tùng dưới lớp băng.",
+            "return": "Để Hà chăm sóc, tự mình theo dõi hành lang.",
+            "stay": "Nằm lại, để Hà đuỗi sức sau lần gọi tên."
+          },
+          {
+            "canon": "Hỏi Lục Trầm có thể di chuyển được bao xa.",
+            "return": "Im lặng nghe Tùng nói, học thêm về sức khỏe anh.",
+            "stay": "Tiếp tục quan sát bàn tay phải Lục Trầm mà không bình luận."
+          }
+        ]
+      }
+    }
+  }
+}

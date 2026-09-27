@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C14",
+  "title": "Level 0.5 — Chương 14: Quyền Được Từ Chối",
+  "source": "story/source/level_0_5/LEVEL0.5_CH14_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C15",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "f1f218e5224972a18fc6d2db4c02de6f0906fd0c99b18161b4ba25853e0ff6f1",
+  "segmentIds": [
+    "L05_C14_S9d8b0d479cbd84dd",
+    "L05_C14_Sdf10c8d184fe6c06",
+    "L05_C14_S09551e7b490d71e8",
+    "L05_C14_S71213d262214a271",
+    "L05_C14_S41de9f3ccce4f50d",
+    "L05_C14_Sb156ed36f4c49dd7",
+    "L05_C14_S8bbfdf5f982b2ab7",
+    "L05_C14_S6f16899c76ff3dca"
+  ]
+}

@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L05_C04",
+  "source": "story/source/level_0_5/LEVEL0.5_CH04_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "sourceDigest": "9029c399b6cd097f049b1f977462751718dc253bc469ce4c26547af483626bf6",
+  "segmentIds": [
+    "L05_C04_S83c035e6316164c4",
+    "L05_C04_S0cfcfd048a6df1fd",
+    "L05_C04_S7fb5d85a384cee25",
+    "L05_C04_S627739201bc9416c",
+    "L05_C04_S9f61b6755f01187a",
+    "L05_C04_S97dc6727d156294b",
+    "L05_C04_S2990ad01ce05ef1f",
+    "L05_C04_S2f795bb0b037f4ce"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L05_C04_S83c035e6316164c4": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S83c035e6316164c4",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Giúp Tùng đứng dậy và chuẩn bị di chuyển khỏi phòng.",
+            "return": "Kiểm tra lại tình trạng của Tùng để quyết định có nên di chuyển ngay hay chờ thêm.",
+            "stay": "Tìm thêm tài nguyên hoặc vật dụng trong phòng có thể hỗ trợ khả năng di chuyển của anh."
+          },
+          {
+            "canon": "Dẫn nhóm ra khỏi căn phòng để tiếp tục khảo sát hành lang phía trước.",
+            "return": "Quyết định dừng lại và đợi Tùng phục hồi thêm trước khi thử di chuyển.",
+            "stay": "Xem xét sử dụng các vật liệu trong phòng để tạo ra hỗ trợ tốt hơn cho chân bị thương."
+          }
+        ]
+      }
+    },
+    "L05_C04_S0cfcfd048a6df1fd": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S0cfcfd048a6df1fd",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hỗ trợ Tùng từng bước và tiếp tục di chuyển vào hành lang để khám phá vùng bệnh viện sâu hơn.",
+            "return": "Dừng lại ngay khi thấy Tùng gặp khó khăn và đưa anh trở lại căn phòng.",
+            "stay": "Cho Tùng nghỉ ngơi trong hành lang gần phòng để anh có thể hồi phục lực lượng."
+          },
+          {
+            "canon": "Dẫn đội tiến lên phía trước để tìm nơi ngừng chân tốt hơn cho Tùng.",
+            "return": "Quay trở lại vùng này nếu phía trước quá khó khăn để di chuyển với người bị thương.",
+            "stay": "Cho Tùng thử đi thêm vài bước nữa trong hành lang trước khi quyết định hướng đi tiếp theo."
+          }
+        ]
+      }
+    },
+    "L05_C04_S7fb5d85a384cee25": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S7fb5d85a384cee25",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Cõng Tùng qua vùng nước để giữ vết thương của anh khô ráo và tiến lên phía trước.",
+            "return": "Tìm đường khác hoặc chờ đợi để xem liệu có cách nào để tránh nước mà không cần cõng.",
+            "stay": "Để Tùng tự quyết định cách thức di chuyển qua nước bằng cách hỗ trợ cân bằng từ bên cạnh."
+          },
+          {
+            "canon": "Sẵn sàng cõng Tùng vượt qua đoạn nước để tiếp tục tiến lên và kiếm tìm tài nguyên.",
+            "return": "Đề nghị quay lại và tìm một lối khác thay vì buộc phải vượt qua nước bẩn này.",
+            "stay": "Thử các biện pháp khác như dùng thanh gỗ hoặc vải để giúp Tùng vượt qua mà không cần cõng."
+          }
+        ]
+      }
+    },
+    "L05_C04_S627739201bc9416c": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S627739201bc9416c",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Tiếp tục bước qua khe hẹp, cẩn thận tránh mảnh kim loại và dây điện.",
+            "return": "Quay lại hỏi Hà xem có thể dùng trolley làm bậc để vượt qua khe hẹp không.",
+            "stay": "Dừng lại, kiểm tra chân Tùng có bị rách thêm từ va chạm vừa rồi không."
+          },
+          {
+            "canon": "Dịch chuyển sang phải để tránh trần bị cong và dây điện trên đầu.",
+            "return": "Yêu cầu Lục Trầm đẩy trolley sang một bên để mở ra lối đi thêm.",
+            "stay": "Chờ Lục Trầm kiểm tra xem phần trần bị cong có tiếp tục rơi hay không."
+          }
+        ]
+      }
+    },
+    "L05_C04_S9f61b6755f01187a": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S9f61b6755f01187a",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Hạ Tùng xuống để anh chống chân lành qua những bước tiếp theo.",
+            "return": "Đề nghị dừng một lúc để tìm cách an toàn hơn trước khi tiếp tục.",
+            "stay": "Giữ Tùng trên lưng và tìm cách khác để vượt qua khe hẹp này."
+          },
+          {
+            "canon": "Bước từng bước với Tùng, nhập nhằng qua phần hẹp nhất của khe.",
+            "return": "Quay lại để xem Lục Trầm có thể tháo một phần dây điện được không.",
+            "stay": "Dừng để hỏi ý kiến Lục Trầm về khoảng trống bên trái."
+          }
+        ]
+      }
+    },
+    "L05_C04_S97dc6727d156294b": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S97dc6727d156294b",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kéo Tùng lên ngay và xoay người qua khe, rời xa mảnh kim loại gỉ.",
+            "return": "Đặt Tùng xuống để bàn chân bị thương có thể tựa vào thanh gỗ lâu hơn.",
+            "stay": "Dừng lại và hỏi Tùng từng bước chân có chạm vào gì khác không."
+          },
+          {
+            "canon": "Đẩy tiến dến nền khô, bỏ lại khu vực nước bị ô nhiễm phía sau.",
+            "return": "Lùi về để tìm một thanh gỗ khác để hỗ trợ Tùng bước tiếp.",
+            "stay": "Yêu cầu Lục Trầm quay lại giúp đỡ trong khu vực hẹp này."
+          }
+        ]
+      }
+    },
+    "L05_C04_S2990ad01ce05ef1f": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S2990ad01ce05ef1f",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào hành lang tối phía trước để tìm nước sạch cho Tùng",
+            "return": "Quay lại phòng để kiểm tra xem Hà có cần thêm gỗ để cố định chân Tùng không",
+            "stay": "Tiếp tục đứng canh với Lục Trầm và theo dõi tiếng nước nhỏ từ bên trong"
+          },
+          {
+            "canon": "Dẫn đoàn tiến sâu vào bệnh viện để tìm lối thoát",
+            "return": "Đi kiểm tra những phòng bên cạnh để xem có khám phá được gì hữu ích",
+            "stay": "Ở lại giống như Lục Trầm muốn để đảm bảo trần không sụp trước khi di chuyển"
+          }
+        ]
+      }
+    },
+    "L05_C04_S2f795bb0b037f4ce": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C04_S2f795bb0b037f4ce",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Khai triển thần thức để tìm đường an toàn qua vùng nước có điện",
+            "return": "Kiểm tra các phòng bên trái để tìm nguồn điện chính của dãy này",
+            "stay": "Chờ Lục Trầm quyết định kế tiếp thay vì vội vã mở rộng cảm nhận"
+          },
+          {
+            "canon": "Theo dõi dòng điện và khám phá đường đi qua vùng ngập",
+            "return": "Tập trung vào cõng Tùng và để cho Lục Trầm xử lý mối đe dọa từ dây dẫn",
+            "stay": "Đứng yên và chờ xem liệu tiếng nước hoặc dấu hiệu khác sẽ chỉ rõ hướng"
+          }
+        ]
+      }
+    }
+  }
+}
