@@ -21,6 +21,7 @@ final class EmergentTurnEngine {
   static final String ROOT_KEY = "emergent";
   static final String CANON_VERSION = "emergent-canon-v1";
   static final String RNG_SCHEMA_VERSION = "scoped-rng-v1";
+  static final String RESOLVER_VERSION = "emergent-resolver-v1";
 
   private static final int SCHEMA_VERSION = 1;
   private static final int TRACE_LIMIT = 20;
@@ -46,6 +47,7 @@ final class EmergentTurnEngine {
     ensureArray(root, "commitLog");
     ensureArray(root, "selectionTrace");
     ensureObject(root, "selectionIndex");
+    ensureObject(root, "currentStateMeta");
     SchedulerProjection.normalize(root);
     normalizeSkeleton(root);
     normalizeDirector(root);
@@ -348,9 +350,28 @@ final class EmergentTurnEngine {
 
   void commitAuthoritative(JSONObject state, String turnId, JSONArray events, JSONObject selection)
       throws Exception {
+    commitAuthoritative(null, state, turnId, events, selection);
+  }
+
+  void commitAuthoritative(JSONObject beforeState, JSONObject state, String turnId,
+                           JSONArray events, JSONObject selection) throws Exception {
     normalizeState(state);
     validateBatch(turnId, events);
     if (hasCommitted(state, turnId)) return;
+
+    JSONObject stateDelta = beforeState == null
+        ? new JSONObject().put("set", new JSONObject()).put("remove", new JSONArray())
+        : AuthoritativeStatePatch.diff(beforeState, state);
+    if (beforeState != null && !AuthoritativeStatePatch.isEmpty(stateDelta) && events.length() == 0) {
+      throw new IllegalStateException("Authoritative state changed without DomainEvent");
+    }
+    if (beforeState != null) {
+      JSONObject replayed = AuthoritativeStatePatch.apply(beforeState, stateDelta);
+      JSONObject residual = AuthoritativeStatePatch.diff(replayed, state);
+      if (!AuthoritativeStatePatch.isEmpty(residual)) {
+        throw new IllegalStateException("Authoritative state patch is not replay-complete");
+      }
+    }
 
     JSONObject root = state.getJSONObject(ROOT_KEY);
     int sequence = root.getInt("commitSequence") + 1;
@@ -363,6 +384,19 @@ final class EmergentTurnEngine {
       projectThreadEffects(root, event, turn);
     }
 
+    String lastEventId = events.length() == 0 ? "" :
+        events.getJSONObject(events.length() - 1).optString("eventId", "");
+    JSONObject stateMeta = root.getJSONObject("currentStateMeta");
+    JSONArray changedRoots = AuthoritativeStatePatch.changedRoots(stateDelta);
+    for (int i = 0; i < changedRoots.length(); i++) {
+      String path = changedRoots.optString(i, "");
+      if (path.isEmpty()) continue;
+      stateMeta.put(path, new JSONObject()
+          .put("stateClass", "AUTHORITATIVE")
+          .put("lastChangedEventId", lastEventId)
+          .put("lastChangedTurn", turn));
+    }
+
     JSONObject commit = new JSONObject()
         .put("commitSeq", sequence)
         .put("turnId", turnId)
@@ -370,6 +404,8 @@ final class EmergentTurnEngine {
         .put("stateVersion", nextStateVersion)
         .put("canonVersion", CANON_VERSION)
         .put("rngSchemaVersion", RNG_SCHEMA_VERSION)
+        .put("resolverVersion", RESOLVER_VERSION)
+        .put("stateDelta", stateDelta)
         .put("events", new JSONArray(events.toString()));
 
     if (selection != null && !selection.optBoolean("selectedNone", false)) {
