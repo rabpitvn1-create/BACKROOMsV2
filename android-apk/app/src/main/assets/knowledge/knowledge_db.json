@@ -150,50 +150,6 @@
       "affordances": []
     },
     {
-      "id": "STORY.MAIN.OBJECTIVE",
-      "domain": "STORY",
-      "kind": "baseline-objective",
-      "text": "Initial long-term objective for Cao Minh: explore Backrooms because it is an unknown world whose rules he cannot immediately explain. Observe, test and remember local rules; investigate how deep the structure goes, what sustains it, and what Entities are. Returning to his original world is secondary rather than an urgent opening objective.",
-      "source": {
-        "document": "05_TextGame/STORY/MAIN_STORY.md",
-        "anchor": "3 PLAYER & MAIN OBJECTIVE"
-      },
-      "authority": "STORY_CANON",
-      "mutability": "BASELINE",
-      "priority": 42,
-      "tags": [
-        "objective",
-        "main campaign",
-        "exploration",
-        "backrooms"
-      ],
-      "references": [],
-      "affordances": []
-    },
-    {
-      "id": "STORY.MAIN.CAO_MINH_ENTRY",
-      "domain": "STORY",
-      "kind": "baseline-continuity",
-      "text": "Cao Minh had already reached the summit of cultivation in his original world and was sitting bored on Ma Sơn when the ground beneath him vanished without a recognizable formation or spatial fluctuation. He fell directly into Level 0 alone. He does not know Backrooms terminology, Level rules or Entity rules in advance. Instead of urgently seeking an exit, he chooses to explore because the place presents unknown laws he cannot immediately explain.",
-      "source": {
-        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-BACKROOMS-01"
-      },
-      "authority": "STORY_CANON",
-      "mutability": "BASELINE",
-      "priority": 38,
-      "tags": [
-        "main campaign",
-        "cao minh",
-        "backrooms",
-        "level 0",
-        "exploration",
-        "knowledge boundary"
-      ],
-      "references": [],
-      "affordances": []
-    },
-    {
       "id": "CHAR.CAO_MINH.RUNTIME_CORE",
       "domain": "CHARACTER",
       "kind": "runtime-card",
