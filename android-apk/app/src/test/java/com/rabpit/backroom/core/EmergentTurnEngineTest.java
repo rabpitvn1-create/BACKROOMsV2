@@ -195,9 +195,9 @@ public class EmergentTurnEngineTest {
     root.remove(CampaignSkeleton.ROOT_KEY);
     root.remove(NarrativeSkeleton.ROOT_KEY);
     root.put("skeleton", legacy);
-    root.getJSONObject("projectionWatermarks")
-        .remove("campaignSkeleton")
-        .remove("narrativeSkeleton");
+    JSONObject watermarks = root.getJSONObject("projectionWatermarks");
+    watermarks.remove("campaignSkeleton");
+    watermarks.remove("narrativeSkeleton");
 
     engine.normalizeState(state);
 
