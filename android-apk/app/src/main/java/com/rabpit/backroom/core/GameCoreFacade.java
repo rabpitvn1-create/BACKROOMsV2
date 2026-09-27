@@ -210,8 +210,6 @@ public final class GameCoreFacade implements AutoCloseable {
 
       LevelCore.returnToCurrentLevelStart(state);
       combat.put("deathRestartPending", false)
-          .put("deathReturnJourneyPending", false)
-          .put("deathReturnJourneyStarted", false)
           .put("outcome", "");
       state.put("combat", combat);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
