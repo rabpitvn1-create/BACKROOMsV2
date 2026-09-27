@@ -102,4 +102,31 @@ public class GameCoreFacadeNarrativeBoundaryTest {
     assertEquals("story_authored", candidate.getJSONObject("flags")
         .getString("entityEncounterSource"));
   }
+
+  @Test public void deathReturnMigrationCancelsProviderJourneyAndQueuesLocalRestart() throws Exception {
+    JSONObject state = new JSONObject()
+        .put("currentLevel", 0)
+        .put(LevelCore.LEVEL_KEY, "0.1")
+        .put("location", "Level 0.1 / hành lang sâu")
+        .put("story", new JSONObject())
+        .put("combat", new JSONObject()
+            .put("active", false)
+            .put("outcome", "defeat")
+            .put("deathReturnJourneyPending", true));
+
+    StoryCore storyCore = new StoryCore();
+    storyCore.normalizeState(state);
+    storyCore.beginDeathReturnJourney(state, "Level 0.1 / hành lang sâu", "0.1");
+    assertTrue(storyCore.returnJourneyActive(state));
+
+    GameCoreFacade.armDeathReturnIfNeeded(storyCore, state);
+
+    assertFalse(storyCore.returnJourneyActive(state));
+    assertEquals(LevelCore.defaultLocation("0.1"), state.getString("location"));
+    JSONObject combat = state.getJSONObject("combat");
+    assertTrue(combat.getBoolean("deathRestartPending"));
+    assertFalse(combat.getBoolean("deathReturnJourneyPending"));
+    assertFalse(combat.getBoolean("deathReturnJourneyStarted"));
+  }
+
 }
