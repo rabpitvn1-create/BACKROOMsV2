@@ -1,14 +1,21 @@
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-23.
+Đồng bộ: 2026-09-27.
 
-Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` là ngoại lệ có phạm vi hẹp và thay thế riêng cạnh quan hệ Cao Minh ↔ Diệp Minh từng để OPEN.
+Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, các tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` là ngoại lệ có phạm vi hẹp và thay thế riêng cạnh quan hệ Cao Minh ↔ Diệp Minh từng để OPEN.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
 - Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
+- Trác Lâm: `Trác Lâm — Wiki nhân vật` — Drive ID `1JF4wJtL5JBZtDtzYil6duLb73QAqjoQmgqdw-syp1nY`
+
+## Trác Lâm — SRU-03
+
+Trác Lâm là sĩ quan Việt Nam 28 tuổi, quê Đà Nẵng, đội trưởng đội sáu người SRU-03 của lực lượng cảnh sát chống dị thường năm 2099. Trong ECHO-17, anh bị tách khỏi năm đồng đội; họ còn sống nhưng anh chưa biết. Anh chỉ gặp Cao Minh và Lục Trầm lần đầu ở Level 0.7, khi cả ba có vũ khí và chưa tin nhau. Quan hệ phải tích lũy qua nhiều chương, không được chuyển thành tín nhiệm hay thay đổi đạo đức sau một cảnh.
+
+Trang bị AEGIS-K4, M-92 Gemini hai nòng, bộ trinh sát và bộ cứu thương là công nghệ hữu hạn pin/đạn, có thể nhiễu hoặc hỏng. Anh không biết trước Level, Entity hay quy luật Backrooms. Ưu tiên bằng chứng, đội hình và bảo toàn người sống; phân biệt quan sát với giả thuyết, sẵn sàng nổ súng khi mối đe dọa được xác nhận. Overlay/Codex: `Trac_lam.png`; avatar: `avatars/trac_lam_avatar.png`. Chỉ số số học theo runtime, không suy từ Codex.
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
 

@@ -14,21 +14,21 @@ import static org.junit.Assert.fail;
 
 public class CharacterEncounterCoreTest {
   @Test public void lucTramNeverRandomlyEncountersAtAnyLevel() throws Exception {
-    SequenceRng levelZeroRng = new SequenceRng(3999, 3999, 3999);
+    SequenceRng levelZeroRng = new SequenceRng(3999, 3999);
     JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
     new CharacterEncounterCore(levelZeroRng).rollForExplorerAction(levelZero, "Cao Minh đi tiếp");
     assertEquals(0, levelZero.getJSONArray("party").length());
     assertEquals(0, levelZero.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").length());
-    assertEquals(3, levelZeroRng.calls);
+    assertEquals(2, levelZeroRng.calls);
 
-    SequenceRng levelOneRng = new SequenceRng(3999, 3999, 3999);
+    SequenceRng levelOneRng = new SequenceRng(3999, 3999);
     JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
     new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Cao Minh đi tiếp");
     assertEquals(0, levelOne.getJSONArray("party").length());
     assertEquals(0, levelOne.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").length());
-    assertEquals(3, levelOneRng.calls);
+    assertEquals(2, levelOneRng.calls);
   }
 
   @Test public void storyManagedLucTramCannotRemainInRandomPendingIntro() throws Exception {
@@ -50,7 +50,7 @@ public class CharacterEncounterCoreTest {
   }
 
   @Test public void oneExplorerRollQueuesOnlyRandomPoolThenJoinsAfterFirstContact() throws Exception {
-    SequenceRng rng = new SequenceRng(0, 0, 3999, 3999);
+    SequenceRng rng = new SequenceRng(0, 0);
     CharacterEncounterCore core = new CharacterEncounterCore(rng);
     JSONObject state = state(1, 7).put(LevelCore.LEVEL_KEY, "1");
     CharacterEncounterCore.EncounterResult result =
@@ -69,13 +69,13 @@ public class CharacterEncounterCoreTest {
     core.rollForExplorerAction(candidate, "Gemini retry");
     candidate.put("turn", 8);
     core.rollForExplorerAction(candidate, "Cao Minh đi tiếp");
-    assertEquals(4, rng.calls);
+    assertEquals(2, rng.calls);
     assertEquals(2, candidate.getJSONArray("party").length());
   }
 
   @Test public void geminiFailureKeepsRandomEncounterPendingWithoutPrematureJoin() throws Exception {
     JSONObject state = state(1, 3).put(LevelCore.LEVEL_KEY, "1");
-    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999, 3999));
+    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999));
     core.rollForExplorerAction(state, "Cao Minh mở cửa");
     JSONObject savedAfterFailure = new JSONObject(state.toString());
     core.normalizeState(savedAfterFailure);
@@ -92,14 +92,40 @@ public class CharacterEncounterCoreTest {
   }
 
   @Test public void tracLamFirstContactJoinsWithOwnIdentity() throws Exception {
-    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(3999, 3999, 0));
-    JSONObject state = state(1, 4);
+    SequenceRng rng = new SequenceRng();
+    CharacterEncounterCore core = new CharacterEncounterCore(rng);
+    JSONObject state = state(0, 4).put(LevelCore.LEVEL_KEY, "0.7")
+        .put("party", new JSONArray().put(new JSONObject().put("id", "luc_tram")));
     core.rollForExplorerAction(state, "Cao Minh mở cửa");
     assertEquals("trac_lam", state.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
     JSONObject candidate = new JSONObject(state.toString());
     core.validateAndApply(state, candidate, new JSONArray().put("Đứng lại.").put("Tôi là Trác Lâm."));
-    assertEquals("Trác Lâm", candidate.getJSONArray("party").getJSONObject(0).getString("name"));
+    assertEquals("Trác Lâm", candidate.getJSONArray("party").getJSONObject(1).getString("name"));
+    assertTrue(candidate.getJSONObject("characterEncounter").getBoolean("tracLamMet"));
+    assertEquals(0, rng.calls);
+  }
+
+  @Test public void tracLamCannotAppearBeforeLevelPointSeven() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(3999, 3999));
+    JSONObject state = state(0, 4).put(LevelCore.LEVEL_KEY, "0.5")
+        .put("party", new JSONArray().put(new JSONObject().put("id", "luc_tram")));
+    core.rollForExplorerAction(state, "Cao Minh nhìn quanh");
+    assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
+  }
+
+  @Test public void tracLamMeetsAtLevelPointSevenEvenWhenPartyIsFullWithoutJoining() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng());
+    JSONObject state = state(0, 4).put(LevelCore.LEVEL_KEY, "0.7")
+        .put("party", new JSONArray()
+            .put(new JSONObject().put("id", "luc_tram"))
+            .put(new JSONObject().put("id", "iris"))
+            .put(new JSONObject().put("id", "syvial")));
+    core.rollForExplorerAction(state, "Cao Minh nhìn quanh");
+    JSONObject candidate = new JSONObject(state.toString());
+    core.validateAndApply(state, candidate, new JSONArray().put("Đứng lại.").put("Tôi là Trác Lâm."));
+    assertEquals(3, candidate.getJSONArray("party").length());
+    assertTrue(candidate.getJSONObject("characterEncounter").getBoolean("tracLamMet"));
   }
 
   @Test public void normalizationDeduplicatesCurrentCompanionsAndStripsShadowProgression() throws Exception {

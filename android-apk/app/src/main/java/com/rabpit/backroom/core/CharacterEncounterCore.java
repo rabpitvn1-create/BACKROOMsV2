@@ -97,18 +97,23 @@ final class CharacterEncounterCore {
 
     // Story-managed characters such as Lục Trầm are deliberately excluded from RNG.
     // Their appearance/reunion/join timing is owned by authored story events.
-    if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
-      hits.add("iris");
-    }
-    if (!containsPartyId(party, "syvial") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
-      hits.add("syvial");
-    }
-    if (!containsPartyId(party, "trac_lam") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
+    boolean tracLamFirstContact = "0.7".equals(state.optString(LevelCore.LEVEL_KEY, ""))
+        && containsPartyId(party, "luc_tram")
+        && !containsPartyId(party, "trac_lam")
+        && !encounter.optBoolean("tracLamMet", false);
+    if (tracLamFirstContact) {
       hits.add("trac_lam");
+    } else {
+      if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
+        hits.add("iris");
+      }
+      if (!containsPartyId(party, "syvial") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
+        hits.add("syvial");
+      }
     }
 
     int available = MAX_COMPANIONS - party.length();
-    if (hits.size() > available) {
+    if (hits.size() > available && !tracLamFirstContact) {
       encounter.put("lastCapacityRejected", new JSONArray(hits));
       encounter.put(JUST_ENCOUNTERED, new JSONArray());
       state.put(ENCOUNTER_STATE, encounter);
@@ -141,6 +146,7 @@ final class CharacterEncounterCore {
     for (int i = 0; i < pending.length(); i++) {
       String id = pending.optString(i, "").trim().toLowerCase(Locale.ROOT);
       if (id.isEmpty() || containsPartyId(party, id)) continue;
+      if (party.length() >= MAX_COMPANIONS && "trac_lam".equals(id)) continue;
       if (party.length() >= MAX_COMPANIONS) {
         throw new IllegalStateException("Party đã đầy trước khi hoàn tất character encounter.");
       }
@@ -150,6 +156,7 @@ final class CharacterEncounterCore {
     normalizeState(candidate);
 
     JSONObject encounter = candidate.getJSONObject(ENCOUNTER_STATE);
+    if (containsString(pending, "trac_lam")) encounter.put("tracLamMet", true);
     encounter.put("lastIntroduced", new JSONArray(pending.toString()));
     encounter.put("lastIntroducedTurn", Math.max(1, candidate.optInt("turn", 1)));
     encounter.put(PENDING_INTRO, new JSONArray());
@@ -167,7 +174,7 @@ final class CharacterEncounterCore {
       for (String id : CANONICAL_ORDER) {
         if (containsPartyId(party, id)) {
           joined.add(displayName(id));
-        } else if (!StoryCore.isStoryManagedCharacter(id)) {
+        } else if (!StoryCore.isStoryManagedCharacter(id) && !"trac_lam".equals(id)) {
           randomNotMet.add(displayName(id));
         }
       }
@@ -177,6 +184,7 @@ final class CharacterEncounterCore {
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
           "Story-managed: Lục Trầm (" + lucTramStatus + "); never random-roll her appearance/reunion/join.\n" +
+          "Trác Lâm: 28-year-old Vietnamese SRU-03 captain from 2099, separated from his team during ECHO-17. Black AEGIS-K4 armor, M-92 Gemini two-barrel rifle with finite ammunition. He distinguishes observation from hypothesis, protects survivors and does not know Backrooms rules in advance. He does not know that his five teammates survived. First contact only at Level 0.7 with Cao Minh and Lục Trầm present: all three initially armed, lower aim reciprocally, exchange only survival facts. Do not turn one meeting into instant trust or let him command Cao Minh. If Party is full, the meeting does not add him to Party.\n" +
           "Random encounter pool not met: " + listText(randomNotMet) + ".\n" +
           "Just randomly encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending random intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
@@ -188,7 +196,7 @@ final class CharacterEncounterCore {
               : "A random character encounter has triggered. Depict first contact in the current location before any spoken line. " +
                   "Do not imply the character was already walking with Cao Minh, already in his Party, or present in earlier Backrooms turns. " +
                   "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
-                  "After this validated random encounter scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
+                  "After this validated encounter scene the Core joins a character only when Party has room; do not ask the player to accept them and do not advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
@@ -286,8 +294,10 @@ final class CharacterEncounterCore {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));
     } else if ("trac_lam".equals(id)) {
-      inventory.put(new JSONObject().put("name", "Súng dài SRU"));
-      inventory.put(new JSONObject().put("name", "Giáp chiến thuật SRU"));
+      inventory.put(new JSONObject().put("name", "M-92 Gemini"));
+      inventory.put(new JSONObject().put("name", "AEGIS-K4"));
+      inventory.put(new JSONObject().put("name", "Bộ trinh sát cá nhân"));
+      inventory.put(new JSONObject().put("name", "Bộ cứu thương SRU"));
     }
     return inventory;
   }

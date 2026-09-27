@@ -119,16 +119,19 @@
       "name": "Trác Lâm",
       "source": "02_CHARACTERS/Trác Lâm — Wiki nhân vật",
       "driveId": "1JF4wJtL5JBZtDtzYil6duLb73QAqjoQmgqdw-syp1nY",
-      "revision": "R01",
+      "revision": "R02",
       "aliases": [
         "trác lâm",
         "trac lam",
         "trac_lam"
       ],
-      "runtime": "Đội trưởng SRU-03 thuộc lực lượng chống dị thường SRU, đến từ năm 2099. First contact với Cao Minh trừ khi live campaign xác lập khác. Không biết trước Level, Entity hay quy luật Backrooms.",
-      "visual": "Tóc đen hơi rối, mắt xanh, giáp chiến thuật đen với điểm xanh nhỏ và phù hiệu POLICE/SRU; cầm súng dài hai nòng. Overlay Trac_lam.png và avatar avatars/trac_lam_avatar.png lấy từ ảnh Drive.",
+      "runtime": "Trác Lâm, nam, 28 tuổi tại năm 2099, người Việt Nam quê Đà Nẵng, đội trưởng tổ sáu người SRU-03 thuộc lực lượng cảnh sát phản ứng chống dị thường. Vào Backrooms trong chiến dịch ECHO-17 và mất liên lạc với năm đồng đội; first contact với Cao Minh và Lục Trầm tại Level 0.7 khi cả ba đang có vũ khí. Anh hạ đường ngắm khi họ làm tương tự, trao đổi dữ kiện sinh tồn; quan hệ phải phát triển qua nhiều hành động, không tin tưởng tức thì. Không có tri thức sẵn về Level, Entity hay Backrooms.",
+      "visual": "Cao 182 cm, tóc đen hơi rối, mắt xanh lam, vóc dáng săn chắc; giáp đen có điểm xanh nhỏ, phù hiệu POLICE/SRU trên vai, ngực và đùi, súng dài hai nòng. Overlay và ảnh Codex dùng Trac_lam.png; avatar avatars/trac_lam_avatar.png lấy trực tiếp từ ảnh Drive.",
       "gameplay": "Runtime khởi tạo STR/DEF/SKL/VIT = 5/5/5/5, HP gốc 50 và công cơ bản 30, bằng 100% mốc khởi tạo Cao Minh trong game. Khóa mục tiêu 150%, Hỏa lực chế áp 145% và Choáng, Phá tuyến 170% và Xuyên giáp; Ultimate Lệnh SRU-03 theo Poker Dice.",
-      "knowledgeLock": "Nguồn gốc dịch chuyển từ năm 2099, quan hệ trước Backrooms và thông số công nghệ cụ thể chưa được xác lập."
+      "knowledgeLock": "Năm thành viên SRU-03 còn sống sau chuyển vùng nhưng phân tán; Trác Lâm không biết. Thiết bị ghi 19 giờ 47 phút tới first contact, không chứng minh thời gian khách quan. Không tự cho anh biết Backrooms, vị trí đồng đội hay bản chất Entity. Tính trách nhiệm quá mức là điểm yếu; Cao Minh không thay đổi đạo đức chỉ sau một lần gặp.",
+      "equipment": "AEGIS-K4 là giáp trợ lực cơ điện năm 2099 với cảm biến, ghi nhận môi trường và liên lạc; phụ thuộc pin, linh kiện và có thể bị nhiễu. M-92 Gemini là súng hai nòng độc lập chuyển giữa đạn xuyên giáp và đạn chặn mục tiêu, đạn hữu hạn. Có bộ trinh sát cá nhân và bộ cứu thương SRU; không có sức mạnh siêu nhiên, không phải bác sĩ.",
+      "abilities": "Khóa mục tiêu giữ đường ngắm ổn định, ưu tiên mối đe dọa trực tiếp. Hỏa lực chế áp tạo khoảng trống cho đội hình; Phá tuyến tập trung vào điểm yếu đã quan sát. Đánh giá dị thường qua nhiều kênh, chỉ huy chiến trường, sinh tồn đô thị và sơ cứu chiến thuật. Anh phân biệt quan sát, suy luận và giả thuyết; bảo toàn người sống trước chiến tích, chấp nhận rút lui khi cần. Có thể nổ súng nhanh trước nguy cơ đã xác nhận.",
+      "relationship": "Với Cao Minh: dè chừng, rồi tôn trọng năng lực và dần trở thành đối trọng chiến thuật/đạo đức qua nhiều chương. Với Lục Trầm: hợp tác dựa trên bằng chứng và quyền tự quyết; không mặc định đứng về phe cô để chống Cao Minh."
     }
   }
 }

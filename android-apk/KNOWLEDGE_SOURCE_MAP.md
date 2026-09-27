@@ -23,6 +23,14 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Tr�
 - `Iris_Codex.docx` — nguồn riêng của Iris.
 - `Syvial_Codex.docx` — nguồn riêng của Syvial.
 - `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R01.
+- `Trác Lâm — Wiki nhân vật` — Drive ID `1JF4wJtL5JBZtDtzYil6duLb73QAqjoQmgqdw-syp1nY` — nguồn hiện hành của Trác Lâm.
+
+### Trác Lâm source map
+
+- `trac_lam`: nam, 28 tuổi, quê Đà Nẵng; đội trưởng SRU-03 từ năm 2099. Tách khỏi năm đồng đội trong ECHO-17; anh chưa biết họ còn sống.
+- First contact với **Cao Minh và Lục Trầm tại Level 0.7**. Không roll ngẫu nhiên ở Level khác. Nếu Party đầy, cuộc gặp vẫn xảy ra nhưng chưa thêm vào Party.
+- AEGIS-K4 và M-92 Gemini là công nghệ phụ thuộc pin/đạn; không cấp tri thức Backrooms hay năng lực siêu nhiên.
+- Gameplay dùng chỉ số runtime Cao Minh làm mốc 80%, không dùng Codex để tính số học.
 
 ### Cao Minh source map
 
