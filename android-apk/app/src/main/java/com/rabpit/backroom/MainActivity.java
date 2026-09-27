@@ -645,8 +645,8 @@ public class MainActivity extends Activity {
 
           String existingEncounter = encounterKey(submitted);
           if (CombatChoiceEngine.isKnownEntity(existingEncounter)) {
-            CombatChoiceEngine.start(submitted, existingEncounter, lastGmLogIndex(submitted));
-            submitted = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
+            submitted = new JSONObject(
+                gameCore.startCombatRuntime(existingEncounter, lastGmLogIndex(submitted)));
             emit("backroomCombatDiceState", submitted.toString());
             return;
           }
@@ -721,8 +721,8 @@ public class MainActivity extends Activity {
           state = new JSONObject(gameCore.commitNarration(state.toString()));
 
           if (CombatChoiceEngine.isKnownEntity(newEncounter)) {
-            CombatChoiceEngine.start(state, newEncounter, log.length() - 1);
-            state = new JSONObject(gameCore.commitRuntimeState(state.toString()));
+            state = new JSONObject(
+                gameCore.startCombatRuntime(newEncounter, log.length() - 1));
           }
 
           if (BuildConfig.DEBUG) {
