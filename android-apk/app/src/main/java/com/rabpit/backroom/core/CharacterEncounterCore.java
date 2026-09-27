@@ -14,6 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
   static final int RARE_ENCOUNTER_BOUND = 4000;
+  static final double LUC_TRAM_REUNION_PERCENT = 10.0d;
 
   interface IntRng {
     int nextInt(int bound);
@@ -95,7 +96,12 @@ final class CharacterEncounterCore {
     JSONArray party = state.getJSONArray("party");
     List<String> hits = new ArrayList<>();
 
-    // Lục Trầm is deliberately excluded from RNG until her dedicated encounter rules are restored.
+    // Current canon: Lục Trầm reunion becomes eligible only after leaving Level 0.
+    if (state.optInt("currentLevel", 0) > 0
+        && !containsPartyId(party, "luc_tram")
+        && nextRoll(100) < (int)LUC_TRAM_REUNION_PERCENT) {
+      hits.add("luc_tram");
+    }
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("iris");
     }
@@ -128,6 +134,23 @@ final class CharacterEncounterCore {
     JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
     if ((pending != null && pending.length() > 0) || party.length() >= MAX_COMPANIONS) return output;
 
+    if (state.optInt("currentLevel", 0) > 0 && !containsPartyId(party, "luc_tram")) {
+      output.put(new JSONObject()
+          .put("candidateId", "character:luc_tram")
+          .put("situationKey", "character:luc_tram")
+          .put("kind", "CHARACTER")
+          .put("category", "SOCIAL")
+          .put("chancePercent", LUC_TRAM_REUNION_PERCENT)
+          .put("payloadKey", "luc_tram")
+          .put("source", "CANON")
+          .put("publicSummary", "Lục Trầm xuất hiện; đây là cuộc tái ngộ với Cao Minh, không phải lần đầu gặp.")
+          .put("proposalRequired", false)
+          .put("eligibilityRuleId", "canon:luc_tram:after_level_0")
+          .put("cooldownTurns", 24)
+          .put("tags", new JSONArray().put("SOCIAL").put("CHARACTER").put("REUNION").put("luc_tram"))
+          .put("keyRefs", new JSONArray().put("luc_tram")));
+    }
+
     for (String id : new String[] {"iris", "syvial"}) {
       if (containsPartyId(party, id)) continue;
       output.put(new JSONObject()
@@ -151,8 +174,8 @@ final class CharacterEncounterCore {
   void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
     String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
-    if ("luc_tram".equals(id)) {
-      throw new IllegalArgumentException("Lục Trầm requires dedicated state-based eligibility rules");
+    if ("luc_tram".equals(id) && state.optInt("currentLevel", 0) <= 0) {
+      throw new IllegalStateException("Lục Trầm reunion is not eligible on Level 0.");
     }
     if (!isEncounterCharacter(id)) throw new IllegalArgumentException("Unknown character candidate: " + id);
 
@@ -231,7 +254,7 @@ final class CharacterEncounterCore {
       for (String id : CANONICAL_ORDER) {
         if (containsPartyId(party, id)) {
           joined.add(displayName(id));
-        } else if (!"luc_tram".equals(id)) {
+        } else if (!"luc_tram".equals(id) || state.optInt("currentLevel", 0) > 0) {
           randomNotMet.add(displayName(id));
         }
       }
@@ -239,13 +262,14 @@ final class CharacterEncounterCore {
       String pendingNames = displayNames(pending);
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
-          "Deferred companion: Lục Trầm; her encounter rules will be restored separately, so do not random-roll her yet.\n" +
-          "Random encounter pool not met: " + listText(randomNotMet) + ".\n" +
-          "Just randomly encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
-          "Pending random intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
+          "Lục Trầm eligibility: 10% reunion candidate only after Level 0; Core owns the roll.\n" +
+          "Encounter pool not met: " + listText(randomNotMet) + ".\n" +
+          "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
+          "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter selection and Party membership. " +
-          "Never spawn Lục Trầm from narration yet, add/remove/reorder Party, or change joined state from narration. " +
-          "Joined characters are authoritative. A pending intro means Core already committed the first-contact encounter this turn; narration must not decide whether they joined. " +
+          "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
+          "Joined characters are authoritative. If pending includes Lục Trầm, depict a hostile/tense REUNION because she and Cao Minh knew and fought each other before Backrooms; never depict first contact or instant trust/romance. " +
+          "For Iris/Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
               : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
