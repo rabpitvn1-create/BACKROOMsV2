@@ -13,7 +13,6 @@ public final class GmNarrativePacket {
     projected.remove("log");
     projected.remove("levelRoute");
     projected.remove("characterCanon");
-    projected.remove("story");
     return projected;
   }
 
@@ -34,7 +33,7 @@ public final class GmNarrativePacket {
         + GmNarratorContract.promptContext() + "\n"
         + GmNarratorContract.caoMinhNarrativeCard() + "\n"
         + "VAI TRÒ GM: bạn quyết định diễn biến tự do tiếp theo dựa trên hành động người chơi, continuity và canon hiện có. "
-        + "Không có authored Story, chapter, beat hay kịch bản định trước cần bám theo. Không ép người chơi quay về một tuyến truyện cố định.\n"
+        + "Không có cốt truyện, chương hay diễn biến định sẵn cần bám theo. Không ép người chơi quay về một tuyến cố định.\n"
         + "NGÔN NGỮ HIỂN THỊ: reply, sceneLabel, choices và encounterDialogue phải là tiếng Việt tự nhiên. "
         + "Chỉ giữ tiếng Anh cho tên riêng/tên chính thức cần thiết. Mỗi choices[].text phải viết hoàn toàn bằng tiếng Việt; "
         + "không trộn động từ, chỉ hướng hoặc mô tả môi trường tiếng Anh vào câu lựa chọn.\n"
