@@ -35,7 +35,6 @@ final class LevelCore {
   private static final String LEVEL_KNOWLEDGE_ASSET = "knowledge/level_knowledge.json";
   private static final String LEGACY_KNOWLEDGE_ASSET = "knowledge/knowledge_db.json";
   private static final String SNAPSHOT_MANIFEST_ASSET = "level_snapshots/drive/manifest.json";
-  private static final String INVALID_LEVEL_KEY = "__invalid__";
   private static final int LEVEL_MISMATCH = -2;
   private static final int ROUTE_ROLL_BOUND = 100;
   static final int MAX_KNOWLEDGE_CONTEXT_CHARS = 3200;
@@ -134,6 +133,8 @@ final class LevelCore {
       route.put("lastResult", "RESET");
       route.put("returnLocation", origin);
       route.remove("originLocation");
+      // Route reset is an engine-owned mechanical outcome; apply it immediately to WorkingState.
+      if (!origin.trim().isEmpty()) state.put("location", origin);
     }
 
     state.put(ROUTE_STATE, route);
@@ -177,107 +178,6 @@ final class LevelCore {
     String key = new LevelCore((Context)null, bound -> 0).resolveLevelKey(state);
     state.put(LEVEL_KEY, key);
     state.put("location", defaultLocation(key));
-  }
-
-  void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {
-    normalizeState(before);
-    String fromKey = resolveLevelKey(before);
-    JSONObject beforeRoute = normalizeRouteState(before, fromKey);
-    copyRouteState(beforeRoute, candidate);
-
-    boolean resetThisTurn =
-        beforeRoute.optInt("lastRollTurn", -1) == Math.max(1, before.optInt("turn", 1))
-            && "RESET".equals(beforeRoute.optString("lastResult", ""));
-
-    if (resetThisTurn) {
-      candidate.put("currentLevel", parentLevelForKey(fromKey));
-      candidate.put(LEVEL_KEY, fromKey);
-      String returnLocation = beforeRoute.optString("returnLocation", "").trim();
-      if (!returnLocation.isEmpty()) candidate.put("location", returnLocation);
-      return;
-    }
-
-    String requestedKey = requestedLevelKey(candidate, fromKey);
-    if (INVALID_LEVEL_KEY.equals(requestedKey)) {
-      throw new IllegalArgumentException("Unsupported or inconsistent Level destination");
-    }
-
-    if (!transitionAllowedFor(fromKey, requestedKey)) {
-      throw new IllegalArgumentException(
-          "Invalid Level transition: " + displayNameForKey(fromKey) + " -> " + displayNameForKey(requestedKey));
-    }
-
-    if (!requestedKey.equals(fromKey)) {
-      if (!beforeRoute.optBoolean("exitAvailable", false)) {
-        throw new IllegalArgumentException("Level transition is locked until the hidden route chain completes");
-      }
-      candidate.put("currentLevel", parentLevelForKey(requestedKey));
-      candidate.put(LEVEL_KEY, requestedKey);
-      candidate.put(ROUTE_STATE, newRouteStateForKey(requestedKey));
-      if (!locationIdentifiesKey(candidate.optString("location", ""), requestedKey)) {
-        candidate.put("location", defaultLocationForKey(requestedKey));
-      }
-      return;
-    }
-
-    candidate.put("currentLevel", parentLevelForKey(fromKey));
-    candidate.put(LEVEL_KEY, fromKey);
-  }
-
-  void applyNarrativeTransition(JSONObject before, JSONObject candidate, String transitionTarget) throws Exception {
-    if (candidate == null) throw new IllegalArgumentException("candidate state is required");
-    normalizeState(before);
-    String fromKey = resolveLevelKey(before);
-    JSONObject beforeRoute = normalizeRouteState(before, fromKey);
-    copyRouteState(beforeRoute, candidate);
-
-    boolean resetThisTurn =
-        beforeRoute.optInt("lastRollTurn", -1) == Math.max(1, before.optInt("turn", 1))
-            && "RESET".equals(beforeRoute.optString("lastResult", ""));
-
-    if (resetThisTurn) {
-      candidate.put("currentLevel", parentLevelForKey(fromKey));
-      candidate.put(LEVEL_KEY, fromKey);
-      String returnLocation = beforeRoute.optString("returnLocation", "").trim();
-      candidate.put("location", returnLocation.isEmpty()
-          ? before.optString("location", defaultLocationForKey(fromKey))
-          : returnLocation);
-      return;
-    }
-
-    String requested = normalizeKey(transitionTarget);
-    if (requested.isEmpty() || "none".equals(requested)) requested = fromKey;
-    if (!knownKey(requested)) {
-      throw new IllegalArgumentException("Unsupported Level transition target");
-    }
-    if (!transitionAllowedFor(fromKey, requested)) {
-      throw new IllegalArgumentException(
-          "Invalid Level transition: " + displayNameForKey(fromKey) + " -> " + displayNameForKey(requested));
-    }
-
-    if (!requested.equals(fromKey)) {
-      if (!beforeRoute.optBoolean("exitAvailable", false)) {
-        throw new IllegalArgumentException("Level transition is locked until the hidden route chain completes");
-      }
-      candidate.put("currentLevel", parentLevelForKey(requested));
-      candidate.put(LEVEL_KEY, requested);
-      candidate.put(ROUTE_STATE, newRouteStateForKey(requested));
-    } else {
-      candidate.put("currentLevel", parentLevelForKey(fromKey));
-      candidate.put(LEVEL_KEY, fromKey);
-      copyRouteState(beforeRoute, candidate);
-    }
-
-    String sceneLabel = candidate.optString("location", "").trim();
-    String labelKey = levelKeyFromLocation(sceneLabel);
-    if (!labelKey.isEmpty() && !labelKey.equals(requested)) sceneLabel = "";
-    if (sceneLabel.isEmpty()) {
-      candidate.put("location", requested.equals(fromKey)
-          ? before.optString("location", defaultLocationForKey(fromKey))
-          : defaultLocationForKey(requested));
-    } else {
-      candidate.put("location", sceneLabel);
-    }
   }
 
   String promptContext(JSONObject state) {
@@ -532,11 +432,6 @@ final class LevelCore {
         .put("lastResult", "");
   }
 
-  private static void copyRouteState(JSONObject route, JSONObject candidate) throws Exception {
-    if (candidate == null) throw new IllegalArgumentException("candidate state is required");
-    candidate.put(ROUTE_STATE, new JSONObject(route.toString()));
-  }
-
   private String resolveLevelKey(JSONObject state) {
     if (state == null) return "0";
 
@@ -549,44 +444,6 @@ final class LevelCore {
     int level = state.optInt("currentLevel", -1);
     if (level >= 0 && level <= 6) return String.valueOf(level);
     return "0";
-  }
-
-  private String requestedLevelKey(JSONObject candidate, String fallback) {
-    if (candidate == null) return INVALID_LEVEL_KEY;
-
-    String explicit = normalizeKey(candidate.optString(LEVEL_KEY, ""));
-    if (!explicit.isEmpty() && !knownKey(explicit)) return INVALID_LEVEL_KEY;
-
-    String location = candidate.optString("location", "");
-    String rawLocationKey = rawLevelKeyFromLocation(location);
-    if (!rawLocationKey.isEmpty() && !knownKey(rawLocationKey)) {
-      return INVALID_LEVEL_KEY;
-    }
-    String locationKey = levelKeyFromLocation(location);
-
-    String requested;
-    if (!locationKey.isEmpty() && (!locationKey.equals(fallback) || explicit.isEmpty() || explicit.equals(fallback))) {
-      requested = locationKey;
-    } else if (!explicit.isEmpty()) {
-      requested = explicit;
-    } else if (candidate.has("currentLevel")) {
-      int level = candidate.optInt("currentLevel", -1);
-      if (level < 0 || level > 6) return INVALID_LEVEL_KEY;
-      requested = level == parentLevel(fallback) ? fallback : String.valueOf(level);
-    } else {
-      requested = fallback;
-    }
-
-    if (candidate.has("currentLevel")) {
-      int numeric = candidate.optInt("currentLevel", -1);
-      int requestedParent = parentLevelForKey(requested);
-      int fallbackParent = parentLevel(fallback);
-      if (numeric < 0 || numeric > 6 || (numeric != requestedParent && numeric != fallbackParent)) {
-        return INVALID_LEVEL_KEY;
-      }
-    }
-
-    return knownKey(requested) ? requested : INVALID_LEVEL_KEY;
   }
 
   private static boolean legacyNodeTransitionAllowed(String fromKey, String toKey) {
@@ -684,10 +541,6 @@ final class LevelCore {
   private static String levelKeyFromLocation(String location) {
     String key = rawLevelKeyFromLocation(location);
     return isKnownLevelKey(key) ? key : "";
-  }
-
-  private static boolean locationIdentifiesKey(String location, String levelKey) {
-    return normalizeKey(levelKey).equals(levelKeyFromLocation(location));
   }
 
   private static String normalizeNumericKey(String raw) {
