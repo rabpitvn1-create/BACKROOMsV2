@@ -253,7 +253,7 @@ jobs:
           jq -e '.version == 2 and (.goodExamples | length == 2) and (.badExample | type == "object") and ([.goodExamples[] | select((.player | type) != "string" or (.gm | type) != "string")] | length == 0)' android-apk/app/src/main/assets/knowledge/gm_style_examples.json >/dev/null
           test -s android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           test -s android-apk/SNAPSHOT_SHA256SUMS.txt
-          grep -Fq '"version": 4' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
+          grep -Fq '"version": 9' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           grep -Fq '"root": "level_snapshots/drive"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           grep -Fq '"sublevelRoot": "level_snapshots/sublevels/level_0"' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json
           jq -e '
@@ -266,7 +266,7 @@ jobs:
             (.sublevels.red_rooms.assets | length == 5)
           ' android-apk/app/src/main/assets/level_snapshots/drive/manifest.json >/dev/null
           sha256sum -c android-apk/SNAPSHOT_SHA256SUMS.txt
-          test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 21
+          test "$(find android-apk/app/src/main/assets/level_snapshots/drive -type f -name '*.webp' | wc -l)" -eq 26
           test "$(find android-apk/app/src/main/assets/level_snapshots/sublevels/level_0 -type f -name '*.webp' | wc -l)" -eq 30
           test -z "$(find android-apk/app/src/main/assets/level_snapshots -type f -name '*.webp' ! -path '*/drive/*' ! -path '*/sublevels/level_0/*' -print -quit)"
           test ! -e android-apk/app/src/main/assets/level_snapshots/wiki
@@ -648,7 +648,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs android-apk/tests/story-bootstrap.test.cjs android-apk/tests/inventory-ui.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs android-apk/tests/story-bootstrap.test.cjs android-apk/tests/story-visuals.test.cjs android-apk/tests/inventory-ui.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
@@ -690,6 +690,12 @@ jobs:
           cmp <(unzip -p BR-1.0.0.0.9.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
           cmp <(unzip -p BR-1.0.0.0.9.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/chest_overlay.png'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/story/generated/story_visuals.json'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/npc/registry.json'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/npc/br_npc_nam_l0_overlay_v01.webp'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/npc/br_npc_khai_l01_overlay_v01.webp'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/npc/br_npc_duy_l02_overlay_v01.webp'
+          unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/npc/br_npc_hung_l02_overlay_v01.webp'
           ! unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/status/status_'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/fonts/OFL-Play.txt'
@@ -718,7 +724,7 @@ jobs:
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/level_snapshots/drive/manifest.json'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/level_snapshots/drive/level_0/01.webp'
           unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/level_snapshots/drive/level_6/03.webp'
-          test "$(unzip -l BR-1.0.0.0.9.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 21
+          test "$(unzip -l BR-1.0.0.0.9.apk | grep -c 'assets/level_snapshots/drive/level_')" -eq 26
           ! unzip -l BR-1.0.0.0.9.apk | grep -q 'assets/level_snapshots/wiki/'
           ! unzip -l BR-1.0.0.0.9.apk | grep -E -q 'assets/level_snapshots/level_[0-6]\.webp'
 

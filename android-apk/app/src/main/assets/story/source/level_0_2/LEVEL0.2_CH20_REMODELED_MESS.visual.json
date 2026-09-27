@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L02_C20",
+  "visuals": [
+    {
+      "when": "ENTER",
+      "primaryNpcId": "duy"
+    },
+    {
+      "when": "AFTER_TEXT",
+      "anchor": "Không còn nhịp dưới ngón tay.",
+      "primaryNpcId": null
+    }
+  ]
+}

@@ -1,0 +1,880 @@
+{
+  "schemaVersion": 1,
+  "visualCompilerFingerprint": "282249583148628108e2df6d35f2f33c393c30496cdcfa5cfa627b71e672042f",
+  "npcs": {
+    "nam": {
+      "displayName": "Nam",
+      "asset": "npc/br_npc_nam_l0_overlay_v01.webp"
+    },
+    "khai": {
+      "displayName": "Khải",
+      "asset": "npc/br_npc_khai_l01_overlay_v01.webp"
+    },
+    "duy": {
+      "displayName": "Duy",
+      "asset": "npc/br_npc_duy_l02_overlay_v01.webp"
+    },
+    "hung": {
+      "displayName": "Hưng",
+      "asset": "npc/br_npc_hung_l02_overlay_v01.webp"
+    }
+  },
+  "stories": {
+    "level_0_main": {
+      "levelKey": "0",
+      "sourceRevision": "level0-authored-choices-r4",
+      "chapters": {
+        "L0_C11": {
+          "visualSource": "story/source/level_0/LEVEL0_CH11.visual.json",
+          "segments": {
+            "L0_C11_Sfb7e5e603da28793": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C11_S96cc25bf6bbfbc4d": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C11_Sff61edb16c2fc209": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C11_S92895294dd13665b": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C11_S6095ae2479086e1c": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C11_S5a66654aefde17fb": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C12": {
+          "visualSource": "story/source/level_0/LEVEL0_CH12.visual.json",
+          "segments": {
+            "L0_C12_Sef79f91b638ab549": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C12_Sfcb164cded33bb7a": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C12_S076c01dda9c7c011": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C12_Sd7440795320630d0": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C12_Sdca6c4b3fbb418e5": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C12_Sbf0b9e8133409256": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C13": {
+          "visualSource": "story/source/level_0/LEVEL0_CH13.visual.json",
+          "segments": {
+            "L0_C13_S0e068d315cb7ce9d": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C13_S5d84f8181ce97f98": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C13_Sd3dfbc4b9320874b": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C13_Se77d1602836901a4": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C13_Sd49c7a10feb8d6b7": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C13_S1cd7b653667d1f74": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C14": {
+          "visualSource": "story/source/level_0/LEVEL0_CH14.visual.json",
+          "segments": {
+            "L0_C14_Sf8dd822b36bbe539": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C14_S83ff82947f25e592": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C14_S7aeab42fab61f09c": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C14_S0985c55db1e23c2c": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C14_S4696730b3af31d0b": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C14_S98b8dc4b4409d23f": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C15": {
+          "visualSource": "story/source/level_0/LEVEL0_CH15.visual.json",
+          "segments": {
+            "L0_C15_S57de2c8df8456540": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C15_Sc5787add69a90395": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C15_S6d32c4eea1923956": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C15_S21dea1e634814710": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C15_S9c9846102b9d9df1": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C15_S7279accf5e4e1d84": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C16": {
+          "visualSource": "story/source/level_0/LEVEL0_CH16.visual.json",
+          "segments": {
+            "L0_C16_S49c724382efe4394": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C16_Sf1eb17b6ed88493d": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C16_S488a1fccd541dac7": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C16_S6070217a9dafcdc6": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C16_S65148fa0fca98b28": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C16_S82c02477a0776fbd": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C17": {
+          "visualSource": "story/source/level_0/LEVEL0_CH17.visual.json",
+          "segments": {
+            "L0_C17_S692792c04518f400": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C17_S1d62881c481498be": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C17_S17f48af3efbf6264": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C17_Sfb9c3dc7a435230c": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C17_Scb9219c938335620": {
+              "primaryNpcId": "nam"
+            }
+          }
+        },
+        "L0_C18": {
+          "visualSource": "story/source/level_0/LEVEL0_CH18.visual.json",
+          "segments": {
+            "L0_C18_S597f960edcd5983d": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C18_Sf0391f69c0e03965": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C18_S3b73162abdc69566": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C18_S1eedf546a1cfbd2e": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C18_Sb51c6123b08f1496": {
+              "primaryNpcId": "nam"
+            },
+            "L0_C18_S4d0c240ecf9845b7": {
+              "primaryNpcId": "nam"
+            }
+          }
+        }
+      }
+    },
+    "level_0_1_zenith_station": {
+      "levelKey": "0.1",
+      "sourceRevision": "zenith-authored-choices-r4",
+      "chapters": {
+        "L01_C08": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH08_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C08_S25b3b5c3b0beba2c": {
+              "primaryNpcId": null
+            },
+            "L01_C08_S568e0b499ee72430": {
+              "primaryNpcId": null
+            },
+            "L01_C08_S1da01b433f002352": {
+              "primaryNpcId": null
+            },
+            "L01_C08_Sdadf1f006d596152": {
+              "primaryNpcId": null
+            },
+            "L01_C08_S38177703dcdcdd17": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C08_S2e52e6c405f5e473": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C08_S86fd9262d5e1373c": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C08_S40752666ada0214f": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C10": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH10_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C10_S34105e106e13eb4b": {
+              "primaryNpcId": null
+            },
+            "L01_C10_Sd12adfdf2c9f66c1": {
+              "primaryNpcId": null
+            },
+            "L01_C10_S4ab0dc61244aea29": {
+              "primaryNpcId": null
+            },
+            "L01_C10_S17772883769f6998": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C10_Sbb19b72d33a1d7e5": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C10_Sf1e312efd49b17de": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C10_S02500094d3ad46d5": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C10_S7b4756c8a3b3362f": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C11": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH11_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C11_S6ec5729a680c581e": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_Se28333138d416ab7": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_S50d6570c561bbad8": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_S6a113c04624619e3": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_Sd6dbeb47714a3b7e": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_Sb97117cccc6f0b3f": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_S1dbd31ad4441828b": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C11_Secb93c0a6999b477": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C12": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH12_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C12_Se656db9fa1340714": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S0a2d0f880c7086c1": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S42af810130c03ec2": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S351e88606d7d9dea": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S2e9f9e7c8750a342": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S933260cd0daae843": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S9eb38c6e196fbd9f": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C12_S21e7ceb6267821f6": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C13": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH13_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C13_Se40cb59f84120a0d": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_Sff89f9acf2af7de5": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_S970d16e31f33bfd6": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_Sec090f332363f280": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_S74ed522ddd22b316": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_Sd7d37fb38ac39bbd": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_Sf960dd718c4ea151": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C13_Sa926cfc8fc8c871e": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C14": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH14_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C14_S3737a3e72a84ce11": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_Saebedd795f0b3aca": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_S264534a3dc8c539a": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_S42ae232cebd4830e": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_S15de13cd2697b773": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_S0d93acb88cb67a12": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C14_S00f630bdd817612c": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C15": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH15_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C15_Se374b62f2c46cf87": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_Sfcf07773803c1950": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_S70d3e8c06677d497": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_Sf38a54186e7ffdf2": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_S0d9f22e31693dbb5": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_S48d358f10c7e6193": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C15_S227e8f1c7de629ba": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C16": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH16_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C16_S325b3d4f682e5805": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Sa26647bc40e24e7e": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Sb2e4ed0ba0f68815": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_S681db9a352983b5c": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Se049dfcecb8dd86f": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Sd77aae0b344c4b2e": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Scbcef30e21715f0d": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C16_Sb984780ff3040f2a": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C17": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH17_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C17_S064590b172c5f93b": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_Sda5d98eae77b9e89": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_S05d903e9e55c37c6": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_Sb1d56633f4bda086": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_Sdbeb4f512a19450d": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_S45a68c4a4b43dff0": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C17_Sb6649226d18a050f": {
+              "primaryNpcId": "khai"
+            }
+          }
+        },
+        "L01_C18": {
+          "visualSource": "story/source/level_0_1/LEVEL0.1_CH18_ZENITH_STATION.visual.json",
+          "segments": {
+            "L01_C18_Sfaee0ac27b0b8395": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C18_Sacd00ab9a2b05c16": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C18_S45b48a7c111a3608": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C18_Sc72731c4658778c4": {
+              "primaryNpcId": "khai"
+            },
+            "L01_C18_Se1c8875e138f4813": {
+              "primaryNpcId": null
+            },
+            "L01_C18_Sf3f98fcd1d8b8a65": {
+              "primaryNpcId": null
+            },
+            "L01_C18_S0901bfbad46780d1": {
+              "primaryNpcId": null
+            }
+          }
+        }
+      }
+    },
+    "level_0_2_remodeled_mess": {
+      "levelKey": "0.2",
+      "sourceRevision": "remodeled-mess-r1",
+      "chapters": {
+        "L02_C04": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH04_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C04_Sd3afbe477abc0b18": {
+              "primaryNpcId": null
+            },
+            "L02_C04_Sbcfa2554dbf34e1c": {
+              "primaryNpcId": null
+            },
+            "L02_C04_S9b2ca544e513f452": {
+              "primaryNpcId": null
+            },
+            "L02_C04_Sd69e0b7628dfbd2e": {
+              "primaryNpcId": null
+            },
+            "L02_C04_Sa7592aed96baebd4": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C04_Sd9bcac7a1fd43545": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C04_S08b3241b68da4c32": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C04_S9198af6d60f49f4d": {
+              "primaryNpcId": "duy"
+            }
+          }
+        },
+        "L02_C05": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH05_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C05_Scb4f79b124bc2d91": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_S875699708b59e6d2": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_S7bdffa66fcde50ae": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_S49236bf666edfb4b": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_S440241680caa94e2": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_Sf0cc5e543c0044fd": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_S9abf75041570f139": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C05_Sb2705507e7418d27": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C06": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH06_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C06_S5896660ae9673d97": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_S35ffc8ac59bd7cc5": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_S683ca4dd66ca5e6d": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_Scac1e303640e32e9": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_S71896e652569606d": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_S6e1ec43b8ccb61c9": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_Sa438471bd731e05e": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C06_S87f67cb3c1d78a0e": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C07": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH07_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C07_S3a372b1469a18aa2": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_S8c43ca01ec18a0bb": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_S5427d16c4c2864d9": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_Sed0fcb5fffd6f762": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_S1d63f46d7cfee186": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_Se6bee97fd836acae": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_Sefe0ea13e702e476": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C07_Sc87277f62bb3b7a7": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C08": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH08_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C08_S51e2da5a93f51f4c": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S3fcedd53e3cfee21": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S7fa917bbe6270baf": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_Sf4321dced4213782": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S8c4b628224cab090": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S2d9cfbc8792f51c3": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S49ecf6619ebe267b": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C08_S64e1e711468a778a": {
+              "primaryNpcId": "duy"
+            }
+          }
+        },
+        "L02_C09": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH09_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C09_S6bbc52ce5185736b": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_Sdf700292dad0c839": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_S0467f64b3cb663db": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_S89303a1ed8cabdcd": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_S32cf7ebd4f18e6fa": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_Se735dad72f371f23": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C09_S5ba99d69e04e7d71": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C10": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH10_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C10_S22b7e08bfd60a4ea": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_S28536054d6cc0726": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_Sd8dff546396ed676": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_S9ab86d6990b90f93": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_Sc797f7c0abc84751": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_S548f27a77a2183ba": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C10_Se8bd7795b84c40b4": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C11": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH11_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C11_S292ac7bfdd2d4cf1": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C12": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH12_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C12_Sf0b05e0fd7f99faa": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C13": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH13_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C13_Sef6f2d0cb2d4e80e": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C14": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH14_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C14_Sc4819a631c959cd3": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S9ba80e70cc7b2a62": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S8089fd99b2416db0": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S9e5e8db324dbedcc": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S2b52faf4449184e3": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S02ef7226e5198e8c": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S87f9d794b3872e80": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C14_S91b859bb1b394aa4": {
+              "primaryNpcId": "duy"
+            }
+          }
+        },
+        "L02_C15": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH15_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C15_Sb264d1f19209811c": {
+              "primaryNpcId": "duy"
+            }
+          }
+        },
+        "L02_C16": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH16_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C16_S79b166cf317d0cfb": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C17": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH17_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C17_S833497e890d1cf71": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_Scdafd6f7040f7621": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_Sfb32c32f3b057b4c": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_Sd91230f05af81464": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_S734263e3b62e8176": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_Sf01c2cdedaab20a4": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_Sa5a0b3c3931ef090": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C17_S52eb1246997bf3e9": {
+              "primaryNpcId": "hung"
+            }
+          }
+        },
+        "L02_C18": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH18_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C18_S9d2efdd838cddfe3": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C18_S784e02f7df0f177b": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C18_S2171ce57ae0f2de0": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C18_Sb906951a0e7d9671": {
+              "primaryNpcId": "hung"
+            },
+            "L02_C18_S2210c97837b4d291": {
+              "primaryNpcId": null
+            },
+            "L02_C18_S679b6f5db344dbf8": {
+              "primaryNpcId": null
+            },
+            "L02_C18_Sbbfc52a73cd480c4": {
+              "primaryNpcId": null
+            }
+          }
+        },
+        "L02_C19": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH19_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C19_S3bbe6cf36f2facf1": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_Scb9de5c95e01c090": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S83386b7d6699aca5": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S81fce288b41a4efc": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S16083a1813a3e5cb": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S7f5c076f8b94172f": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S35ccfa03155510c6": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C19_S5a91226458f810a2": {
+              "primaryNpcId": "duy"
+            }
+          }
+        },
+        "L02_C20": {
+          "visualSource": "story/source/level_0_2/LEVEL0.2_CH20_REMODELED_MESS.visual.json",
+          "segments": {
+            "L02_C20_Se8db44a50d287984": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S3c0efed3cfaa05d6": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S55f0337ff9b991e1": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S7fc6ad2be0101f3b": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S22fc81535a94f95c": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S9d19e56dcc8f65c9": {
+              "primaryNpcId": "duy"
+            },
+            "L02_C20_S5a930ea8725bd119": {
+              "primaryNpcId": null
+            },
+            "L02_C20_S6abcde83a5f46f78": {
+              "primaryNpcId": null
+            }
+          }
+        }
+      }
+    }
+  }
+}

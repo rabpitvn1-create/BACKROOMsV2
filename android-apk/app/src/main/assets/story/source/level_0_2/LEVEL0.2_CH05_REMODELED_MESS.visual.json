@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L02_C05",
+  "visuals": [
+    {
+      "when": "ENTER",
+      "primaryNpcId": "duy"
+    },
+    {
+      "when": "AFTER_TEXT",
+      "anchor": "Hưng còn sống.",
+      "primaryNpcId": "hung"
+    }
+  ]
+}

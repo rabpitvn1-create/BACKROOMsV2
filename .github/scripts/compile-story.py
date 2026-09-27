@@ -18,6 +18,11 @@ METADATA_PATH = STORY_ROOT / "generated/level_0/level0.story.json"  # legacy fix
 OUTPUT_PATH = STORY_ROOT / "generated/level_0/level0.interactions.json"  # legacy fixture only
 SOURCE_CATALOG_PATH = STORY_ROOT / "source/story_catalog.source.json"
 GENERATED_CATALOG_PATH = STORY_ROOT / "generated/story_catalog.json"
+VISUAL_MANIFEST_PATH = STORY_ROOT / "generated/story_visuals.json"
+NPC_REGISTRY_PATH = STORY_ROOT.parent / "npc/registry.json"
+
+VISUAL_SCHEMA_VERSION = 1
+VISUAL_COMPILER_SEMANTICS = "story-visuals-v1"
 
 SCHEMA_VERSION = 3
 COMPILER_VERSION = 3
@@ -1261,6 +1266,233 @@ def resolved_events(chapter, manuscript, segments):
             raise CompileError(chapter["id"] + ": unsupported event timing " + when)
     return enter, exit_events, after
 
+def visual_compiler_fingerprint():
+    return hashlib.sha256(VISUAL_COMPILER_SEMANTICS.encode("utf-8")).hexdigest()
+
+
+def visual_source_asset(chapter):
+    raw = str((chapter or {}).get("source", "")).strip()
+    if not raw.endswith(".md"):
+        raise CompileError("Story manuscript must use .md before deriving visual metadata: " + raw)
+    return raw[:-3] + ".visual.json"
+
+
+def read_npc_registry():
+    if not NPC_REGISTRY_PATH.is_file():
+        raise CompileError("Missing NPC registry: " + str(NPC_REGISTRY_PATH.relative_to(ROOT)))
+    registry = json.loads(NPC_REGISTRY_PATH.read_text(encoding="utf-8"))
+    if registry.get("schemaVersion") != VISUAL_SCHEMA_VERSION:
+        raise CompileError("Unsupported NPC registry schemaVersion.")
+    characters = registry.get("characters")
+    if not isinstance(characters, dict):
+        raise CompileError("NPC registry characters must be an object.")
+    assets = set()
+    for character_id, spec in characters.items():
+        if not re.fullmatch(r"[a-z0-9_]+", str(character_id)):
+            raise CompileError("Invalid NPC id in registry: " + str(character_id))
+        if not isinstance(spec, dict):
+            raise CompileError("NPC registry entry must be an object: " + str(character_id))
+        display_name = str(spec.get("displayName", "")).strip()
+        asset = str(spec.get("asset", "")).strip()
+        if not display_name:
+            raise CompileError("NPC registry displayName is required: " + str(character_id))
+        if not asset.startswith("npc/") or ".." in Path(asset).parts:
+            raise CompileError("Unsafe NPC asset path: " + asset)
+        if asset in assets:
+            raise CompileError("Duplicate NPC asset path: " + asset)
+        asset_path = STORY_ROOT.parent / asset
+        if not asset_path.is_file():
+            raise CompileError("Missing NPC asset: " + asset)
+        assets.add(asset)
+    return registry
+
+
+def _read_chapter_visual_source(chapter):
+    asset = visual_source_asset(chapter)
+    path = source_asset_path(asset)
+    if not path.is_file():
+        return asset, None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schemaVersion") != VISUAL_SCHEMA_VERSION:
+        raise CompileError(str(chapter.get("id")) + ": unsupported visual schemaVersion.")
+    if str(payload.get("chapterId", "")).strip() != str(chapter.get("id", "")).strip():
+        raise CompileError(str(chapter.get("id")) + ": visual chapterId mismatch.")
+    visuals = payload.get("visuals")
+    if not isinstance(visuals, list):
+        raise CompileError(str(chapter.get("id")) + ": visuals must be an array.")
+    return asset, payload
+
+
+def _resolve_chapter_visual_declarations(chapter, manuscript, segments, registry, payload):
+    if payload is None:
+        return {}
+    canonical = canonical_source(manuscript)
+    declarations = {}
+    previous_index = -1
+    valid_acknowledgements = {"UNKNOWN", "PRESENT", "MISSING", "DECEASED"}
+    for raw in payload.get("visuals") or []:
+        if not isinstance(raw, dict):
+            raise CompileError(str(chapter.get("id")) + ": visual declaration must be an object.")
+        when = str(raw.get("when", "")).strip().upper()
+        if "primaryNpcId" not in raw:
+            raise CompileError(str(chapter.get("id")) + ": primaryNpcId is required in every visual declaration.")
+        npc_id = raw.get("primaryNpcId")
+        if npc_id is not None:
+            npc_id = str(npc_id).strip()
+            if not npc_id or npc_id not in registry["characters"]:
+                raise CompileError(str(chapter.get("id")) + ": unknown primaryNpcId " + str(npc_id))
+        acknowledgement = raw.get("acknowledgeState")
+        if acknowledgement is not None:
+            acknowledgement = str(acknowledgement).strip().upper()
+            if npc_id is None:
+                raise CompileError(str(chapter.get("id")) + ": acknowledgeState requires a non-null primaryNpcId.")
+            if acknowledgement not in valid_acknowledgements:
+                raise CompileError(str(chapter.get("id")) + ": invalid acknowledgeState " + acknowledgement)
+
+        if when == "ENTER":
+            if str(raw.get("anchor", "")).strip():
+                raise CompileError(str(chapter.get("id")) + ": ENTER visual must not carry an anchor.")
+            index = 0
+        elif when == "AFTER_TEXT":
+            anchor = str(raw.get("anchor", ""))
+            if not anchor:
+                raise CompileError(str(chapter.get("id")) + ": AFTER_TEXT visual requires anchor.")
+            count = canonical.count(anchor)
+            if count != 1:
+                raise CompileError(str(chapter.get("id")) + ": visual AFTER_TEXT anchor must occur exactly once; got " + str(count))
+            matches = [i for i, item in enumerate(segments) if anchor in item["text"]]
+            if len(matches) != 1:
+                raise CompileError(str(chapter.get("id")) + ": visual anchor crossed/failed segment resolution.")
+            index = matches[0]
+        else:
+            raise CompileError(str(chapter.get("id")) + ": unsupported visual timing " + when)
+
+        if index < previous_index:
+            raise CompileError(str(chapter.get("id")) + ": visual declarations must be authored in story order.")
+        if index in declarations:
+            raise CompileError(str(chapter.get("id")) + ": multiple visual declarations resolve to one segment.")
+        previous_index = index
+        declarations[index] = {
+            "when": when,
+            "primaryNpcId": npc_id,
+            "acknowledgeState": acknowledgement,
+        }
+    return declarations
+
+
+def _apply_visual_presence_event(presence, event):
+    event_type = str((event or {}).get("type", "")).strip().upper()
+    character_id = str((event or {}).get("characterId", "")).strip()
+    if not character_id:
+        return
+    if event_type in {
+            "CHARACTER_PARALLEL_STORY", "CHARACTER_REUNION",
+            "CHARACTER_ACCOMPANY", "CHARACTER_JOIN_PARTY", "CHARACTER_PRESENT"}:
+        presence[character_id] = "PRESENT"
+    elif event_type == "CHARACTER_MISSING":
+        presence[character_id] = "MISSING"
+    elif event_type == "CHARACTER_PRESENCE":
+        value = str((event or {}).get("presence", "UNKNOWN")).strip().upper()
+        if value in {"UNKNOWN", "PRESENT", "MISSING", "DECEASED"}:
+            presence[character_id] = value
+
+
+def _lint_visual_presence(chapter_id, segment_id, declaration, presence, emit_warnings):
+    if not emit_warnings:
+        return
+    npc_id = declaration.get("primaryNpcId")
+    if not npc_id:
+        return
+    actual = str(presence.get(npc_id, "UNKNOWN")).upper()
+    acknowledged = declaration.get("acknowledgeState")
+    if actual in {"MISSING", "DECEASED"}:
+        if acknowledged == actual:
+            return
+        print(
+            "[story-compiler] WARNING {0}/{1}: visual focuses {2} while Character Presence is {3}; "
+            "add acknowledgeState only when intentional.".format(chapter_id, segment_id, npc_id, actual),
+            file=sys.stderr,
+        )
+    elif acknowledged is not None and actual != "UNKNOWN" and acknowledged != actual:
+        print(
+            "[story-compiler] WARNING {0}/{1}: acknowledgeState={2} does not match Character Presence={3} "
+            "for {4}.".format(chapter_id, segment_id, acknowledged, actual, npc_id),
+            file=sys.stderr,
+        )
+
+
+def build_story_visual_manifest(catalog, emit_warnings=True):
+    registry = read_npc_registry()
+    manifest = {
+        "schemaVersion": VISUAL_SCHEMA_VERSION,
+        "visualCompilerFingerprint": visual_compiler_fingerprint(),
+        "npcs": registry["characters"],
+        "stories": {},
+    }
+    for entry in catalog["stories"]:
+        _, prepared, _, _ = prepare_story(entry)
+        story_output = {
+            "levelKey": str(entry["levelKey"]),
+            "sourceRevision": str(entry["sourceRevision"]),
+            "chapters": {},
+        }
+        presence = {}
+        for item in prepared:
+            chapter = item["runtime"]
+            chapter_id = chapter["id"]
+            for event in chapter.get("eventsOnEnter") or []:
+                _apply_visual_presence_event(presence, event)
+
+            visual_asset, visual_payload = _read_chapter_visual_source(chapter)
+            declarations = _resolve_chapter_visual_declarations(
+                chapter, item["manuscript"], item["segments"], registry, visual_payload)
+            focus = None
+            dense = {}
+
+            enter_declaration = declarations.get(0)
+            if enter_declaration is not None and enter_declaration.get("when") == "ENTER":
+                focus = enter_declaration.get("primaryNpcId")
+                first_segment = item["segments"][0]["id"]
+                _lint_visual_presence(
+                    chapter_id, first_segment, enter_declaration, presence, emit_warnings)
+
+            after = chapter.get("eventsAfterSegment") or {}
+            for index, segment in enumerate(item["segments"]):
+                segment_id = segment["id"]
+                for event in after.get(segment_id) or []:
+                    _apply_visual_presence_event(presence, event)
+                declaration = declarations.get(index)
+                if declaration is not None and declaration.get("when") == "AFTER_TEXT":
+                    focus = declaration.get("primaryNpcId")
+                    _lint_visual_presence(
+                        chapter_id, segment_id, declaration, presence, emit_warnings)
+                dense[segment_id] = {"primaryNpcId": focus}
+
+            if visual_payload is not None:
+                story_output["chapters"][chapter_id] = {
+                    "visualSource": visual_asset,
+                    "segments": dense,
+                }
+
+            for event in chapter.get("eventsOnExit") or []:
+                _apply_visual_presence_event(presence, event)
+
+        manifest["stories"][entry["storyId"]] = story_output
+    return manifest
+
+
+def write_story_visual_manifest(catalog):
+    atomic_write_json(VISUAL_MANIFEST_PATH, build_story_visual_manifest(catalog, emit_warnings=True))
+
+
+def validate_story_visual_manifest(catalog):
+    if not VISUAL_MANIFEST_PATH.is_file():
+        raise CompileError("Missing generated Story visual manifest.")
+    actual = json.loads(VISUAL_MANIFEST_PATH.read_text(encoding="utf-8"))
+    expected = build_story_visual_manifest(catalog, emit_warnings=False)
+    if actual != expected:
+        raise CompileError("Generated Story visual manifest is stale or inconsistent.")
+
 
 def prepare_story(entry):
     arc = read_arc_source(entry)
@@ -1413,6 +1645,8 @@ def impacted_selection(catalog, story_ids, changed_paths, force_all):
     if any(path == wide_prefixes[0] or path.startswith(wide_prefixes[1]) or path == wide_prefixes[2]
            for path in normalized):
         return {story_id: None for story_id in entries}
+    if any(path.startswith("android-apk/app/src/main/assets/npc/") for path in normalized):
+        return {story_id: None for story_id in entries}
 
     selected = {}
     for story_id, entry in entries.items():
@@ -1427,9 +1661,15 @@ def impacted_selection(catalog, story_ids, changed_paths, force_all):
             "android-apk/app/src/main/assets/" + str(ch["source"]): str(ch["id"])
             for ch in arc["chapters"]
         }
+        visual_to_id = {
+            "android-apk/app/src/main/assets/" + visual_source_asset(ch): str(ch["id"])
+            for ch in arc["chapters"]
+        }
         for path in normalized:
             if path in source_to_id:
                 chapter_ids.add(source_to_id[path])
+            elif path in visual_to_id:
+                chapter_ids.add(visual_to_id[path])
             elif path.startswith(source_root_repo):
                 selected[story_id] = None
                 chapter_ids.clear()
@@ -1464,6 +1704,7 @@ def compile_v2(selection, catalog):
             atomic_write_json(interaction_path, interaction)
             print("[story-compiler] {0}/{1}: {2} stable segments".format(
                 story_id, chapter_id, len(item["segments"])))
+    write_story_visual_manifest(catalog)
 
 
 def validate_v2(selection, catalog):
@@ -1535,6 +1776,7 @@ def validate_v2(selection, catalog):
                             raise CompileError(segment_id + ": invalid compiled choice wording.")
                         if len({_normalized_choice(value) for value in values}) != 3:
                             raise CompileError(segment_id + ": compiled choices must be distinct.")
+    validate_story_visual_manifest(catalog)
     print("[story-compiler] generated multi-arc artifacts validated.")
 
 
