@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
   private static final long HAIKU_RETRY_DELAY_MS = 1_200L;
   private static final int[] RETRYABLE = {408, 429, 500, 502, 503, 504};
   private static final String GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json";
+  private static final String STORY_VISUAL_MANIFEST_ASSET = "story/generated/story_visuals.json";
   private String gmStyleExamplesCache;
 
   @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -218,20 +219,35 @@ public class MainActivity extends Activity {
     return gmStyleExamplesCache;
   }
 
+  private String storyVisualBootstrap() {
+    try {
+      JSONObject manifest = new JSONObject(readAssetText(STORY_VISUAL_MANIFEST_ASSET));
+      if (manifest.optInt("schemaVersion", 0) != 1) {
+        throw new IllegalArgumentException("Unsupported Story visual manifest schema.");
+      }
+      return "window.__backroomStoryVisuals=" + manifest.toString() + ";";
+    } catch (Exception error) {
+      Log.w(TAG, "Unable to load Story visual manifest; NPC overlays disabled.", error);
+      return "window.__backroomStoryVisuals={\"schemaVersion\":1,\"visualCompilerFingerprint\":\"\",\"npcs\":{},\"stories\":{}};";
+    }
+  }
+
   private void installUiScripts() {
     try {
+      String storyVisualBootstrap = storyVisualBootstrap();
       String snapshotUi = readAssetText("snapshot-ui.js");
       String gmChoiceUi = readAssetText("gm-choice-ui.js");
       String inventoryUi = readAssetText("inventory-ui.js");
       String partyUi = readAssetText("party-ui.js");
       String playerActionUi = readAssetText("player-action-ui.js");
       String managementUi = readAssetText("management-ui.js");
-      webView.evaluateJavascript(snapshotUi, ignored ->
-        webView.evaluateJavascript(gmChoiceUi, ignoredChoice ->
+      webView.evaluateJavascript(storyVisualBootstrap, ignoredVisuals ->
+        webView.evaluateJavascript(snapshotUi, ignored ->
+          webView.evaluateJavascript(gmChoiceUi, ignoredChoice ->
           webView.evaluateJavascript(inventoryUi, ignoredInventory ->
             webView.evaluateJavascript(partyUi, ignoredParty ->
               webView.evaluateJavascript(playerActionUi, ignoredPlayerAction ->
-                webView.evaluateJavascript(managementUi, null))))));
+                webView.evaluateJavascript(managementUi, null)))))));
     } catch (Exception e) {
       Log.e(TAG, "Unable to install WebView UI scripts", e);
     }

@@ -292,3 +292,13 @@ test('active return journey blocks arc handoff in both UI and Core dispatch orde
   assert.match(guardBlock,/return_journey_choice_required/);
   assert.match(guardBlock,/return response\(true, legacy/);
 });
+
+
+test('Story visual manifest is injected before snapshot UI and degrades to an empty manifest', () => {
+  assert.match(activity,/STORY_VISUAL_MANIFEST_ASSET = "story\/generated\/story_visuals\.json"/);
+  assert.match(activity,/Unable to load Story visual manifest; NPC overlays disabled\./);
+  assert.match(activity,/window\.__backroomStoryVisuals=\{\\"schemaVersion\\":1/);
+  const bootstrap=activity.indexOf('webView.evaluateJavascript(storyVisualBootstrap');
+  const snapshot=activity.indexOf('webView.evaluateJavascript(snapshotUi',bootstrap);
+  assert.ok(bootstrap>=0 && snapshot>bootstrap);
+});

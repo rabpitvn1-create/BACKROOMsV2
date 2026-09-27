@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L0_C14",
+  "visuals": [
+    {
+      "when": "ENTER",
+      "primaryNpcId": "nam"
+    }
+  ]
+}

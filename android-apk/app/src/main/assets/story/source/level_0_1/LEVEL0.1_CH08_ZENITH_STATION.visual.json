@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L01_C08",
+  "visuals": [
+    {
+      "when": "AFTER_TEXT",
+      "anchor": "Khải nhìn hai người thêm một lúc rồi bước ra khỏi chỗ nấp.",
+      "primaryNpcId": "khai"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L02_C07",
+  "visuals": [
+    {
+      "when": "ENTER",
+      "primaryNpcId": "hung"
+    }
+  ]
+}

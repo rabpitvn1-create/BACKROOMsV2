@@ -106,3 +106,18 @@ Compilation fails before writing output when any of these are true:
 - a generated catalog contains Level transition rules or prose.
 
 Writes are temp-file + atomic replace. CI compiles only affected stories/chapters unless the source catalog, schema, segmentation contract, or artifact schema requires a controlled wider rebuild.
+
+## Story presentation visuals
+
+NPC Snapshot focus is presentation metadata, not Story state.
+
+- Keep canonical events in \`arc.source.json\`.
+- Put optional per-chapter presentation declarations beside the manuscript as \`<manuscript>.visual.json\`.
+- Visual files use schemaVersion 1, carry the exact chapterId, and contain a \`visuals\` array.
+- Supported timings are \`ENTER\` and \`AFTER_TEXT\`. \`AFTER_TEXT\` requires an anchor that occurs exactly once in the manuscript and resolves inside exactly one stable segment.
+- \`primaryNpcId\` is either a semantic NPC id from \`assets/npc/registry.json\` or explicit \`null\` to clear the overlay.
+- Visual focus resets to \`null\` at every chapter boundary. Carry-over across chapters is forbidden; declare \`ENTER\` again when the same NPC should remain visually primary.
+- \`acknowledgeState\` is optional and only suppresses an intentional Character Presence plausibility warning when it matches the actual state.
+- The compiler materializes a dense chapter-local read model in \`story/generated/story_visuals.json\`. Runtime performs exact \`currentSegmentId\` lookup only; it never forward-fills or persists visual focus.
+- Missing/invalid generated visual data must fail closed to no NPC at runtime and must never block Story progression.
+

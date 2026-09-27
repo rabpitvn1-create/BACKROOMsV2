@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "chapterId": "L01_C18",
+  "visuals": [
+    {
+      "when": "ENTER",
+      "primaryNpcId": "khai"
+    },
+    {
+      "when": "AFTER_TEXT",
+      "anchor": "Khải đã chết.",
+      "primaryNpcId": null
+    }
+  ]
+}
