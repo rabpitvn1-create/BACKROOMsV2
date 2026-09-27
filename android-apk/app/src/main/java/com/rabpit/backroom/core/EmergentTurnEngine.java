@@ -513,8 +513,12 @@ final class EmergentTurnEngine {
       return new JSONObject().put("actionType", "NONE").put("fallback", false);
     }
     String action = proposal.optString("actionType", "").trim().toUpperCase(Locale.ROOT);
-    if (!isAllowedWorldAction(action)) {
-      action = "INTERCEPT";
+    JSONArray allowed = selected.optJSONArray("allowedWorldActions");
+    if (!isAllowedWorldAction(action) || !containsAction(allowed, action)) {
+      action = selected.optString("fallbackAction", "INTERCEPT").trim().toUpperCase(Locale.ROOT);
+      if (!isAllowedWorldAction(action) || !containsAction(allowed, action)) {
+        action = firstAllowedAction(allowed);
+      }
       return new JSONObject().put("actionType", action).put("intentTag", "opportunistic")
           .put("fallback", true);
     }
@@ -523,6 +527,24 @@ final class EmergentTurnEngine {
       intent = "opportunistic";
     }
     return new JSONObject().put("actionType", action).put("intentTag", intent).put("fallback", false);
+  }
+
+  private static boolean containsAction(JSONArray allowed, String action) {
+    if (allowed == null || allowed.length() == 0) return isAllowedWorldAction(action);
+    for (int i = 0; i < allowed.length(); i++) {
+      if (action.equals(allowed.optString(i, "").trim().toUpperCase(Locale.ROOT))) return true;
+    }
+    return false;
+  }
+
+  private static String firstAllowedAction(JSONArray allowed) {
+    if (allowed != null) {
+      for (int i = 0; i < allowed.length(); i++) {
+        String action = allowed.optString(i, "").trim().toUpperCase(Locale.ROOT);
+        if (isAllowedWorldAction(action)) return action;
+      }
+    }
+    return "INTERCEPT";
   }
 
   private static boolean isAllowedWorldAction(String action) {
