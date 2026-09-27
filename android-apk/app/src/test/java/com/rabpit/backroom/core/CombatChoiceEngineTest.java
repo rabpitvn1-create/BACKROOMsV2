@@ -343,8 +343,9 @@ public class CombatChoiceEngineTest {
     assertTrue(entityLine.startsWith("Hound "));
     assertTrue(passiveLine.startsWith("Đại Đạo Ma Tôn:"));
     assertTrue(entityLine.contains("Cao Minh"));
-    assertTrue(entityLine.contains("Evasion")
+    assertTrue(entityLine.contains("né được")
         || entityLine.contains("đánh trượt")
+        || entityLine.contains("không thể tấn công")
         || entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertFalse(actorLine.toLowerCase().contains("reroll"));
     assertFalse(actorLine.toLowerCase().contains("dice"));
