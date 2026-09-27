@@ -29,13 +29,17 @@ public class GmNarrativePacketTest {
         .put("currentLevelKey", "0")
         .put("characterCanon", "FULL_CANON_MARKER".repeat(200))
         .put("levelRoute", new JSONObject().put("streak", 9))
-        .put("log", new org.json.JSONArray().put(new JSONObject().put("text", "secret history")));
+        .put("log", new org.json.JSONArray().put(new JSONObject().put("text", "secret history")))
+        .put("flags", new JSONObject().put("hiddenEntityIntent", "ambush"))
+        .put("emergent", new JSONObject().put("historicalFacts", new org.json.JSONArray().put("hidden truth")));
 
     JSONObject projected = GmNarrativePacket.projectState(state);
 
     assertFalse(projected.has("characterCanon"));
     assertFalse(projected.has("levelRoute"));
     assertFalse(projected.has("log"));
+    assertFalse(projected.has("flags"));
+    assertFalse(projected.has("emergent"));
     assertTrue(state.has("characterCanon"));
   }
 
@@ -65,8 +69,8 @@ public class GmNarrativePacketTest {
     assertTrue("Ordinary narrative packet should stay under 13k chars, was: " + packet.length(),
         packet.length() < 13000);
     assertFalse(packet.contains("FULL_CANON_MARKER"));
-    assertTrue(packet.contains("\"transitionTarget\""));
-    assertTrue(packet.contains("sceneLabel chỉ là nhãn mô tả"));
+    assertFalse(packet.contains("\"transitionTarget\""));
+    assertTrue(packet.contains("world outcome"));
   }
 
   @Test public void packetMakesGmNarrativelyFreeWhileKeepingMechanicsCoreOwned() throws Exception {
@@ -86,9 +90,9 @@ public class GmNarrativePacketTest {
         "Cao Minh quan sát",
         "");
 
-    assertTrue(packet.contains("bạn quyết định diễn biến tự do tiếp theo"));
+    assertTrue(packet.contains("ĐÃ ĐƯỢC JAVA CORE COMMIT"));
     assertTrue(packet.contains("Không có cốt truyện, chương hay diễn biến định sẵn"));
-    assertTrue(packet.contains("Java Core sở hữu Level/route"));
+    assertTrue(packet.contains("Java Core sở hữu toàn bộ world outcome"));
     assertTrue(packet.contains("EXPLORER CHOICES"));
   }
 }

@@ -89,6 +89,11 @@ final class LevelCore {
   }
 
   void rollRouteForExplorerAction(JSONObject state, String action) throws Exception {
+    rollRouteForExplorerAction(state, action, rng);
+  }
+
+  void rollRouteForExplorerAction(JSONObject state, String action, IntRng turnRng) throws Exception {
+    if (turnRng == null) throw new IllegalArgumentException("turn RNG is required");
     normalizeState(state);
     if (!GameCoreRules.isRouteExplorationAction(action)) return;
 
@@ -104,7 +109,7 @@ final class LevelCore {
       route.put("originLocation", state.optString("location", ""));
     }
 
-    int roll = nextRoll(ROUTE_ROLL_BOUND);
+    int roll = nextRoll(turnRng, ROUTE_ROLL_BOUND);
     route.put("lastRollTurn", turn);
 
     if (roll < ROUTE_SUCCESS_PERCENT) {
@@ -131,6 +136,39 @@ final class LevelCore {
     }
 
     state.put(ROUTE_STATE, route);
+  }
+
+  boolean applyPlayerTransitionIfRequested(JSONObject state, String action) throws Exception {
+    normalizeState(state);
+    String fromKey = resolveLevelKey(state);
+    JSONObject route = normalizeRouteState(state, fromKey);
+    if (!route.optBoolean("exitAvailable", false)) return false;
+
+    String requested = rawLevelKeyFromLocation(action);
+    if (requested.isEmpty() && hasTransitionIntent(action)) {
+      if (levelGraph.available()) {
+        java.util.List<String> outgoing = levelGraph.outgoing(fromKey);
+        if (outgoing.size() == 1) requested = outgoing.get(0);
+      } else {
+        requested = nextForKey(fromKey);
+      }
+    }
+    requested = normalizeKey(requested);
+    if (requested.isEmpty() || requested.equals(fromKey)) return false;
+    if (!knownKey(requested) || !transitionAllowedFor(fromKey, requested)) return false;
+
+    state.put("currentLevel", parentLevelForKey(requested));
+    state.put(LEVEL_KEY, requested);
+    state.put(ROUTE_STATE, newRouteStateForKey(requested));
+    state.put("location", defaultLocationForKey(requested));
+    return true;
+  }
+
+  private static boolean hasTransitionIntent(String action) {
+    String value = action == null ? "" : action.trim().toLowerCase(Locale.ROOT);
+    return value.contains("đi qua") || value.contains("bước qua") || value.contains("tiến vào")
+        || value.contains("đi vào") || value.contains("sang ") || value.contains("vào level")
+        || value.contains("enter") || value.contains("go through") || value.contains("cross");
   }
 
   static void returnToCurrentLevelStart(JSONObject state) throws Exception {
@@ -670,7 +708,11 @@ final class LevelCore {
   }
 
   private int nextRoll(int bound) {
-    int value = rng.nextInt(bound);
+    return nextRoll(rng, bound);
+  }
+
+  private static int nextRoll(IntRng source, int bound) {
+    int value = source.nextInt(bound);
     if (value < 0 || value >= bound) {
       throw new IllegalStateException("RNG returned an out-of-range value");
     }

@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 13;
+  private static final int CURRENT_SAVE_VERSION = 14;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -25,6 +25,8 @@ public final class GameCoreFacade implements AutoCloseable {
   private final CharacterProgressionCore characterProgressionCore;
   private final SurvivalCore survivalCore;
   private final CharacterDetailCore characterDetailCore;
+  private final EmergentTurnEngine emergentTurnEngine;
+  private final Map<String, PreparedTurn> preparedTurns = new LinkedHashMap<>();
 
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
@@ -37,6 +39,7 @@ public final class GameCoreFacade implements AutoCloseable {
     this.characterProgressionCore = new CharacterProgressionCore();
     this.survivalCore = new SurvivalCore();
     this.characterDetailCore = new CharacterDetailCore();
+    this.emergentTurnEngine = new EmergentTurnEngine();
   }
 
   public static GameCoreFacade create(Context context, boolean debugLogging) {
@@ -48,72 +51,302 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject stored = parseState(preferences.getString(STATE_KEY, "{}"));
     if (stored.length() > 0) legacy = stored;
     try {
-      levelCore.normalizeState(legacy);
-      characterProgressionCore.normalizeState(legacy);
-      survivalCore.normalizeState(legacy);
-      itemCore.normalizeInventory(legacy);
-      characterEncounterCore.normalizeState(legacy);
-      CombatChoiceEngine.normalizeTerminalEncounter(legacy);
-      String text = action == null ? "" : action.trim();
-      if (text.isEmpty()) return response(false, legacy, null, "fallback_required", null);
-
-      if (itemCore.isOpenChestAction(text)) {
-        JSONObject result = deepCopy(legacy);
-        String itemName = itemCore.openChest(result);
-        incrementTurn(result);
-        advanceGameTime(result, text);
-        characterProgressionCore.applyExplorerTurnRecovery(result);
-        JSONObject flags = result.optJSONObject("flags");
-        int coreReward = flags == null ? 0 : Math.max(0, flags.optInt("lastChestCoreReward", 0));
-        String reply = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory."
-            + (coreReward > 0 ? " Nhận +" + coreReward + " Core." : "");
-        appendLog(result, "Mở Rương", reply);
-        persist(result);
-        return response(true, result, null, "chest_opened", reply);
+      normalizeCoreState(legacy);
+      emergentTurnEngine.normalizeState(legacy);
+      if (emergentTurnEngine.catchUpProjections(legacy)) persist(legacy);
+      if (!emergentTurnEngine.selectionProjectionFresh(legacy)) {
+        throw new IllegalStateException("SelectionCooldown projection is stale");
       }
+
+      String text = action == null ? "" : action.trim();
+      if (text.isEmpty()) return response(false, legacy, "Hành động trống.", "validation_rejected", null);
 
       if (GameCoreRules.isDirectPlayerPickupAction(text)) {
         JSONObject result = deepCopy(legacy);
         String reply = "Không thể nhặt vật phẩm tự do. Loot chỉ nhận từ Entity hoặc Rương.";
         appendLog(result, text, reply);
         persist(result);
-        debug("Rejected direct player pickup");
         return response(true, result, "player_pickup_unavailable", "validation_rejected", reply);
       }
 
       if (GameCoreRules.isInventoryQuery(text)) {
         JSONObject result = deepCopy(legacy);
-        incrementTurn(result);
-        advanceGameTime(result, text);
-        characterProgressionCore.applyExplorerTurnRecovery(result);
         String reply = inventoryReply(result.optJSONArray("inventory"));
         appendLog(result, text, reply);
         persist(result);
-        return response(true, result, null, "committed", reply);
+        return response(true, result, null, "query_handled", reply);
       }
 
       if (GameCoreRules.isPartyQuery(text)) {
         JSONObject result = deepCopy(legacy);
-        incrementTurn(result);
-        advanceGameTime(result, text);
-        characterProgressionCore.applyExplorerTurnRecovery(result);
         String reply = partyReply(result.optJSONArray("party"));
         appendLog(result, text, reply);
         persist(result);
-        return response(true, result, null, "committed", reply);
+        return response(true, result, null, "query_handled", reply);
       }
 
-      levelCore.rollRouteForExplorerAction(legacy, text);
-      itemCore.prepareExplorationLoot(legacy);
-      entityCore.prepareEncounter(legacy);
-      characterEncounterCore.rollForExplorerAction(legacy, text);
-      legacy.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(legacy);
-      return response(false, legacy, null, "fallback_required", null);
+      int preTurnStateVersion = emergentTurnEngine.stateVersion(legacy);
+      String turnId = emergentTurnEngine.nextTurnId(legacy, text);
+      PreparedTurn existing = preparedTurns.get(turnId);
+      if (existing != null) return preparedResponse(legacy, existing);
+
+      TurnRng turnRng = new TurnRng(
+          turnId, preTurnStateVersion,
+          EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION);
+      JSONObject working = deepCopy(legacy);
+      JSONArray events = new JSONArray();
+      String replyHint = "";
+      boolean openedChest = false;
+      String beforeLevelKey = working.optString("currentLevelKey", String.valueOf(working.optInt("currentLevel", 0)));
+
+      if (itemCore.isOpenChestAction(text)) {
+        String itemName = itemCore.openChest(
+            working, bound -> turnRng.nextInt(TurnRng.Scope.PLAYER_ACTION, bound));
+        openedChest = true;
+        JSONObject flags = working.optJSONObject("flags");
+        int coreReward = flags == null ? 0 : Math.max(0, flags.optInt("lastChestCoreReward", 0));
+        replyHint = "Rương chứa " + itemName + " x1. Đã thêm vào Inventory."
+            + (coreReward > 0 ? " Nhận +" + coreReward + " Core." : "");
+        JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+            "CHEST_AVAILABLE", new JSONArray().put(beforeLevelKey), "TERMINATE", "RESOLVED"));
+        events.put(emergentTurnEngine.event(turnId, events, "CHEST_OPENED", "LOCAL", beforeLevelKey,
+            new JSONObject()
+                .put("factPredicate", "chest_opened")
+                .put("factValue", itemName)
+                .put("causedBy", "player")
+                .put("observedByPlayer", true),
+            effects));
+      } else {
+        boolean transitioned = levelCore.applyPlayerTransitionIfRequested(working, text);
+        if (transitioned) {
+          String nextLevel = working.optString("currentLevelKey", "");
+          JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+              "LEVEL_ROUTE_SEARCH", new JSONArray().put(beforeLevelKey), "TERMINATE", "RESOLVED"));
+          events.put(emergentTurnEngine.event(turnId, events, "LEVEL_TRANSITIONED", "REGIONAL", nextLevel,
+              new JSONObject()
+                  .put("factPredicate", "entered_level")
+                  .put("factValue", nextLevel)
+                  .put("causedBy", "player")
+                  .put("observedByPlayer", true),
+              effects));
+        } else {
+          levelCore.rollRouteForExplorerAction(
+              working, text, bound -> turnRng.nextInt(TurnRng.Scope.PLAYER_ACTION, bound));
+          appendRouteEventIfAny(working, turnId, events);
+        }
+      }
+
+      incrementTurn(working);
+      advanceGameTime(working, text);
+      characterProgressionCore.applyExplorerTurnRecovery(working);
+      survivalCore.normalizeState(working);
+      itemCore.normalizeInventory(working);
+      characterEncounterCore.normalizeState(working);
+      working.put("mode", "ai");
+      working.put("saveVersion", CURRENT_SAVE_VERSION);
+
+      // Turn/time are authoritative too, so every world-advancing player turn has an event source.
+      events.put(emergentTurnEngine.event(turnId, events, "PLAYER_ACTION_RESOLVED", "LOCAL", "cao_minh",
+          new JSONObject()
+              .put("factPredicate", "player_action")
+              .put("factValue", text)
+              .put("causedBy", "player")
+              .put("impactEligible", false)
+              .put("observedByPlayer", true),
+          null));
+
+      JSONArray candidates = new JSONArray();
+      appendAll(candidates, entityCore.situationCandidates(working));
+      if (!openedChest) {
+        JSONObject chestCandidate = itemCore.explorationChestCandidate(working);
+        if (chestCandidate != null) candidates.put(chestCandidate);
+      }
+      appendAll(candidates, characterEncounterCore.situationCandidates(working));
+
+      JSONObject selected = emergentTurnEngine.selectCandidate(
+          working, candidates, turnRng, Math.max(1, working.optInt("turn", 1)));
+      PreparedTurn prepared = new PreparedTurn(
+          turnId, preTurnStateVersion, text, working, events, selected, turnRng, replyHint);
+      preparedTurns.clear();
+      preparedTurns.put(turnId, prepared);
+      return preparedResponse(legacy, prepared);
     } catch (Exception e) {
       debug("processRule failed: " + e.getMessage());
       return response(false, legacy, safeMessage(e), "core_error", null);
     }
+  }
+
+  public synchronized String completePreparedTurn(String turnId, String proposalJson) {
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      if (emergentTurnEngine.hasCommitted(persisted, turnId)) {
+        return response(true, persisted, null, "duplicate_commit", null);
+      }
+
+      PreparedTurn prepared = preparedTurns.get(turnId);
+      if (prepared == null) {
+        return response(false, persisted, "Không có turn attempt phù hợp.", "turn_attempt_missing", null);
+      }
+      if (emergentTurnEngine.stateVersion(persisted) != prepared.preTurnStateVersion) {
+        preparedTurns.remove(turnId);
+        return response(false, persisted, "State đã thay đổi trước COMMIT.", "stale_turn_attempt", null);
+      }
+
+      JSONObject working = prepared.working;
+      JSONObject selected = prepared.selected;
+      JSONObject proposal = emergentTurnEngine.sanitizeWorldProposal(selected, parseState(proposalJson));
+      selected.put("worldProposal", proposal);
+      working.getJSONObject(EmergentTurnEngine.ROOT_KEY)
+          .put("lastSelection", new JSONObject(selected.toString()));
+
+      if (!selected.optBoolean("selectedNone", false)) {
+        applySelectedSituation(working, prepared.events, prepared.turnId, selected, proposal);
+      }
+
+      emergentTurnEngine.appendDormancyEvents(
+          working, prepared.events, prepared.turnId, Math.max(1, working.optInt("turn", 1)));
+      if (prepared.events.length() > 64) {
+        throw new IllegalStateException("DomainEvent cascade exceeded max_batch_size=64");
+      }
+      emergentTurnEngine.validateBatch(prepared.turnId, prepared.events);
+      emergentTurnEngine.commitAuthoritative(
+          working, prepared.turnId, prepared.events, selected);
+
+      // First durable write is authoritative. Projections are intentionally a second replayable write.
+      persist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+      preparedTurns.remove(turnId);
+      return preparedCommitResponse(working, prepared);
+    } catch (Exception e) {
+      preparedTurns.remove(turnId);
+      debug("completePreparedTurn failed: " + e.getMessage());
+      return response(false, persisted, safeMessage(e), "system_fault_precommit", null);
+    }
+  }
+
+  public synchronized String commitNarration(String stateJson) {
+    JSONObject submitted = parseState(stateJson);
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      normalizeCoreState(state);
+      JSONArray log = submitted.optJSONArray("log");
+      if (log != null) state.put("log", new JSONArray(log.toString()));
+      characterEncounterCore.acknowledgePendingIntro(state);
+      persist(state);
+      return clientSafeState(state).toString();
+    } catch (Exception e) {
+      throw new IllegalStateException("Không thể lưu narration.", e);
+    }
+  }
+
+  private void applySelectedSituation(JSONObject working, JSONArray events, String turnId,
+                                      JSONObject selected, JSONObject proposal) throws Exception {
+    String kind = selected.optString("kind", "");
+    String payload = selected.optString("payloadKey", "");
+    JSONObject params = new JSONObject()
+        .put("observedByPlayer", true)
+        .put("causedBy", "world")
+        .put("situationKey", selected.optString("situationKey", ""))
+        .put("worldProposal", new JSONObject(proposal.toString()));
+
+    if ("ENTITY".equals(kind)) {
+      entityCore.activateEncounterCandidate(working, payload);
+      params.put("factPredicate", "entity_encounter_started").put("factValue", payload);
+      JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+          "ENTITY_ENCOUNTER", new JSONArray().put(payload), "SEED_OR_ADVANCE", null));
+      events.put(emergentTurnEngine.event(
+          turnId, events, "ENTITY_ENCOUNTER_STARTED", "LOCAL", payload, params, effects));
+      return;
+    }
+
+    if ("CHEST".equals(kind)) {
+      itemCore.activateExplorationChest(working);
+      String levelKey = working.optString("currentLevelKey", payload);
+      params.put("factPredicate", "chest_discovered").put("factValue", true);
+      JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+          "CHEST_AVAILABLE", new JSONArray().put(levelKey), "SEED_OR_ADVANCE", null));
+      events.put(emergentTurnEngine.event(
+          turnId, events, "CHEST_SPAWNED", "LOCAL", levelKey, params, effects));
+      return;
+    }
+
+    if ("CHARACTER".equals(kind)) {
+      characterEncounterCore.activateEncounterCandidate(working, payload);
+      params.put("factPredicate", "character_encountered").put("factValue", payload);
+      events.put(emergentTurnEngine.event(
+          turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", payload, params, null));
+      return;
+    }
+
+    throw new IllegalStateException("Unknown selected Situation kind: " + kind);
+  }
+
+  private void appendRouteEventIfAny(JSONObject state, String turnId, JSONArray events) throws Exception {
+    JSONObject route = state.optJSONObject(LevelCore.ROUTE_STATE);
+    if (route == null) return;
+    int currentTurn = Math.max(1, state.optInt("turn", 1));
+    if (route.optInt("lastRollTurn", -1) != currentTurn) return;
+    String result = route.optString("lastResult", "");
+    if (result.isEmpty()) return;
+
+    String levelKey = state.optString("currentLevelKey", String.valueOf(state.optInt("currentLevel", 0)));
+    String eventType = "RESET".equals(result) ? "ROUTE_SEARCH_RESET"
+        : "EXIT_AVAILABLE".equals(result) ? "ROUTE_EXIT_AVAILABLE" : "ROUTE_SEARCH_PROGRESS";
+    String effect = "EXIT_AVAILABLE".equals(result) ? "TERMINATE" : "SEED_OR_ADVANCE";
+    JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+        "LEVEL_ROUTE_SEARCH", new JSONArray().put(levelKey), effect,
+        "TERMINATE".equals(effect) ? "RESOLVED" : null));
+    events.put(emergentTurnEngine.event(turnId, events, eventType, "LOCAL", levelKey,
+        new JSONObject()
+            .put("factPredicate", "route_search_result")
+            .put("factValue", result)
+            .put("causedBy", "player")
+            .put("observedByPlayer", true),
+        effects));
+  }
+
+  private static void appendAll(JSONArray target, JSONArray source) {
+    if (target == null || source == null) return;
+    for (int i = 0; i < source.length(); i++) target.put(source.opt(i));
+  }
+
+  private String preparedResponse(JSONObject committedState, PreparedTurn prepared) {
+    JSONObject output = new JSONObject();
+    try {
+      output.put("handled", false)
+          .put("reason", "turn_prepared")
+          .put("state", clientSafeState(committedState))
+          .put("turnId", prepared.turnId)
+          .put("selectedCandidate", new JSONObject(prepared.selected.toString()))
+          .put("proposalRequired", prepared.selected.optBoolean("proposalRequired", false));
+      if (!prepared.replyHint.isEmpty()) output.put("replyHint", prepared.replyHint);
+    } catch (Exception ignored) {}
+    return output.toString();
+  }
+
+  private String preparedCommitResponse(JSONObject state, PreparedTurn prepared) {
+    JSONObject output = new JSONObject();
+    try {
+      output.put("handled", true)
+          .put("reason", "turn_committed")
+          .put("state", clientSafeState(state))
+          .put("turnId", prepared.turnId)
+          .put("selectedCandidate", new JSONObject(prepared.selected.toString()));
+      if (!prepared.replyHint.isEmpty()) output.put("replyHint", prepared.replyHint);
+    } catch (Exception ignored) {}
+    return output.toString();
+  }
+
+  private void normalizeCoreState(JSONObject state) throws Exception {
+    levelCore.normalizeState(state);
+    characterProgressionCore.normalizeState(state);
+    survivalCore.normalizeState(state);
+    itemCore.normalizeInventory(state);
+    characterEncounterCore.normalizeState(state);
+    CombatChoiceEngine.normalizeTerminalEncounter(state);
   }
 
   public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
@@ -331,16 +564,15 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
-      state = persisted.length() > 0 && persisted.optInt("saveVersion", -1) == CURRENT_SAVE_VERSION
-          ? persisted
-          : newGameState(state);
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      survivalCore.normalizeState(state);
-      itemCore.normalizeInventory(state);
-      characterEncounterCore.normalizeState(state);
-      CombatChoiceEngine.normalizeTerminalEncounter(state);
+      if (persisted.length() > 0) {
+        state = persisted;
+      } else {
+        state = newGameState(state);
+      }
+      normalizeCoreState(state);
       characterProgressionCore.applyExplorerTurnRecovery(state);
+      emergentTurnEngine.normalizeState(state);
+      emergentTurnEngine.catchUpProjections(state);
       state.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(state);
     } catch (Exception e) {
@@ -391,6 +623,29 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized void clear() {
     preferences.edit().remove(STATE_KEY).apply();
+  }
+
+  private static final class PreparedTurn {
+    final String turnId;
+    final int preTurnStateVersion;
+    final String action;
+    final JSONObject working;
+    final JSONArray events;
+    final JSONObject selected;
+    final TurnRng rng;
+    final String replyHint;
+
+    PreparedTurn(String turnId, int preTurnStateVersion, String action, JSONObject working,
+                 JSONArray events, JSONObject selected, TurnRng rng, String replyHint) {
+      this.turnId = turnId;
+      this.preTurnStateVersion = preTurnStateVersion;
+      this.action = action;
+      this.working = working;
+      this.events = events;
+      this.selected = selected;
+      this.rng = rng;
+      this.replyHint = replyHint == null ? "" : replyHint;
+    }
   }
 
   @Override public void close() {
@@ -584,7 +839,10 @@ public final class GameCoreFacade implements AutoCloseable {
         debug("Character detail projection failed: " + e.getMessage());
       }
     }
-    preferences.edit().putString(STATE_KEY, state == null ? "{}" : state.toString()).apply();
+    boolean committed = preferences.edit()
+        .putString(STATE_KEY, state == null ? "{}" : state.toString())
+        .commit();
+    if (!committed) throw new IllegalStateException("SharedPreferences commit failed");
   }
 
   private String response(boolean handled, JSONObject state, String error, String reason, String reply) {

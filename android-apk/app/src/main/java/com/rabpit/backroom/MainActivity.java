@@ -593,6 +593,37 @@ public class MainActivity extends Activity {
     return Math.max(0, log.length() - 1);
   }
 
+  private String worldProposalPrompt(JSONObject selected) {
+    String summary = selected == null ? "" : selected.optString("publicSummary", "");
+    String canon = selected == null ? "" : selected.optString("capabilityContext", "");
+    return "Bạn đang đề xuất CÁCH một world situation đã được Java Core chọn sẽ được thực hiện. "
+        + "Bạn không được đổi Entity/situation, không quyết outcome và không sửa state.\n"
+        + "SITUATION: " + summary + "\n"
+        + "CAPABILITY/CANON: " + canon + "\n"
+        + "Chọn đúng một actionType phù hợp trong: STALK, INTERCEPT, AMBUSH, DIRECT_ATTACK, LURE, OBSERVE. "
+        + "intentTag chỉ được aggressive, cautious hoặc opportunistic.\n"
+        + "OUTPUT chỉ JSON: {\"actionType\":\"INTERCEPT\",\"intentTag\":\"opportunistic\"}";
+  }
+
+  private JSONObject narrationFallback(JSONObject state, String replyHint) {
+    JSONObject generated = new JSONObject();
+    try {
+      String reply = replyHint == null ? "" : replyHint.trim();
+      JSONObject emergent = state == null ? null : state.optJSONObject("emergent");
+      JSONObject selection = emergent == null ? null : emergent.optJSONObject("lastSelection");
+      if (reply.isEmpty() && selection != null && !selection.optBoolean("selectedNone", false)) {
+        reply = selection.optString("publicSummary", "").trim();
+      }
+      if (reply.isEmpty()) {
+        reply = "Không có biến cố mới. Cao Minh vẫn ở " + state.optString("location", "khu vực hiện tại") + ".";
+      }
+      generated.put("reply", reply)
+          .put("choices", new JSONArray())
+          .put("encounterDialogue", new JSONArray());
+    } catch (Exception ignored) {}
+    return generated;
+  }
+
   private void emit(String function, String json) {
     String script = "window." + function + "(" + JSONObject.quote(json) + ")";
     runOnUiThread(() -> webView.evaluateJavascript(script, null));
@@ -601,7 +632,7 @@ public class MainActivity extends Activity {
   private class GameBridge {
     @JavascriptInterface public void submitTurn(String stateJson, String action) {
       io.execute(() -> {
-        JSONObject committedBeforeGemini = null;
+        JSONObject committedBeforeNarration = null;
         long tStart = System.currentTimeMillis();
         try {
           JSONObject submitted = new JSONObject(stateJson);
@@ -620,108 +651,93 @@ public class MainActivity extends Activity {
             return;
           }
 
-          long tPreStart = System.currentTimeMillis();
-          JSONObject localResult = new JSONObject(gameCore.processRule(submitted.toString(), action));
-          long tPreEnd = System.currentTimeMillis();
-
-          if (localResult.optBoolean("handled", false)) {
-            emit("backroomTurn", localResult.getJSONObject("state").toString());
+          JSONObject prepared = new JSONObject(gameCore.processRule(submitted.toString(), action));
+          if (prepared.optBoolean("handled", false)) {
+            emit("backroomTurn", prepared.getJSONObject("state").toString());
             return;
           }
-          String coreStatus = localResult.optString("status", "");
-          String coreError = localResult.optString("error", "").trim();
-          if ("core_error".equals(coreStatus) || !coreError.isEmpty()) {
-            throw new Exception(coreError.isEmpty() ? "Game State Core từ chối lượt." : coreError);
+          if (!"turn_prepared".equals(prepared.optString("reason", ""))) {
+            throw new Exception(prepared.optString("error", "Game State Core không thể chuẩn bị lượt."));
           }
 
-          JSONObject state = localResult.optJSONObject("state");
-          if (state == null) state = submitted;
-          committedBeforeGemini = new JSONObject(state.toString());
-          String coreBeforeJson = state.toString();
+          String turnId = prepared.getString("turnId");
+          JSONObject selected = prepared.optJSONObject("selectedCandidate");
+          JSONObject proposal = new JSONObject();
+          if (prepared.optBoolean("proposalRequired", false)) {
+            try {
+              proposal = parseModelJson(generateText(worldProposalPrompt(selected)));
+            } catch (Exception proposalError) {
+              Log.w(TAG, "World proposal unavailable/invalid; Core will use canonical fallback: "
+                  + providerErrorSummary(proposalError));
+              proposal = new JSONObject();
+            }
+          }
 
-          long tCtxStart = System.currentTimeMillis();
-          String levelContext = gameCore.levelPromptContext(coreBeforeJson, action);
-          String entityContext = gameCore.entityPromptContext(coreBeforeJson);
-          String itemContext = gameCore.itemPromptContext(coreBeforeJson);
-          String characterContext = gameCore.characterPromptContext(coreBeforeJson);
-          String recentContext = recentContext(state);
-          String gmStyleExamples = gmStyleExamplesContext();
+          JSONObject committed = new JSONObject(
+              gameCore.completePreparedTurn(turnId, proposal.toString()));
+          if (!committed.optBoolean("handled", false)) {
+            throw new Exception(committed.optString("error", "Game State Core từ chối COMMIT."));
+          }
+
+          JSONObject state = committed.getJSONObject("state");
+          committedBeforeNarration = new JSONObject(state.toString());
+          String replyHint = committed.optString("replyHint", "");
+
+          String coreJson = state.toString();
+          String levelContext = gameCore.levelPromptContext(coreJson, action);
+          String entityContext = gameCore.entityPromptContext(coreJson);
+          String itemContext = gameCore.itemPromptContext(coreJson);
+          String characterContext = gameCore.characterPromptContext(coreJson);
           String prompt = GmNarrativePacket.build(
               levelContext, entityContext, itemContext, characterContext,
-              recentContext, state, action, gmStyleExamples);
-          long tCtxEnd = System.currentTimeMillis();
+              recentContext(state), state, action, gmStyleExamplesContext());
 
-          long tGenStart = System.currentTimeMillis();
-          String providerUsed = "Gemini";
-          boolean fallbackOccurred = false;
-          String rawOutput = "";
+          JSONObject generated;
+          String reply;
           try {
-            rawOutput = geminiText(prompt);
-          } catch (Exception geminiError) {
-            fallbackOccurred = true;
-            providerUsed = "Haiku";
-            Log.w(TAG, "All Gemini keys failed (" + providerErrorSummary(geminiError)
-                + "); falling back to Haiku.");
-            rawOutput = haikuText(prompt);
+            generated = parseModelJson(generateText(prompt));
+            reply = generated.optString("reply", "").trim();
+            if (reply.isEmpty()) throw new Exception("AI narration rỗng.");
+          } catch (Exception narrationError) {
+            Log.w(TAG, "Narration provider failed after COMMIT; using deterministic template: "
+                + providerErrorSummary(narrationError));
+            generated = narrationFallback(state, replyHint);
+            reply = generated.optString("reply", "");
           }
-          long tGenEnd = System.currentTimeMillis();
 
-          long tParseStart = System.currentTimeMillis();
-          JSONObject generated = parseModelJson(rawOutput);
-          String reply = generated.optString("reply", "").trim();
-          if (reply.isEmpty()) throw new Exception("AI trả về phản hồi rỗng, lượt này không được ghi.");
           JSONArray encounterDialogue = generated.optJSONArray("encounterDialogue");
           if (encounterDialogue == null) encounterDialogue = new JSONArray();
-          String transitionTarget = generated.optString("transitionTarget", "").trim();
-
-          state.put("turn", state.optInt("turn", 1) + 1).put("mode", "ai");
-          String sceneLabel = generated.optString("sceneLabel", "").trim();
-          if (!sceneLabel.isEmpty()) state.put("location", sceneLabel);
-          long tParseEnd = System.currentTimeMillis();
-
-          long tValStart = System.currentTimeMillis();
-          JSONObject coreCommit = new JSONObject(gameCore.processValidatedCandidate(
-              coreBeforeJson, state.toString(), action, encounterDialogue.toString(), transitionTarget));
-          if (!coreCommit.optBoolean("handled", false)) {
-            throw new Exception("Game State Core từ chối AI delta: " + coreCommit.optString("error", "invalid_delta"));
-          }
-          state = coreCommit.getJSONObject("state");
           reply = appendEncounterDialogue(reply, encounterDialogue);
 
           JSONArray log = state.optJSONArray("log");
           if (log == null) log = new JSONArray();
           log.put(new JSONObject().put("role", "player").put("text", action));
           JSONObject gmEntry = GmChoiceContract.gmEntry(reply, generated, state);
+          String newEncounter = encounterKey(state);
+          if (CombatChoiceEngine.isKnownEntity(newEncounter)) gmEntry.remove("choices");
           log.put(gmEntry);
           state.put("log", log);
 
-          String newEncounter = encounterKey(state);
+          state = new JSONObject(gameCore.commitNarration(state.toString()));
+
           if (CombatChoiceEngine.isKnownEntity(newEncounter)) {
-            gmEntry.remove("choices");
             CombatChoiceEngine.start(state, newEncounter, log.length() - 1);
+            state = new JSONObject(gameCore.commitRuntimeState(state.toString()));
           }
-          state = new JSONObject(gameCore.commitRuntimeState(state.toString()));
-          long tValEnd = System.currentTimeMillis();
 
           if (BuildConfig.DEBUG) {
-            long totalMs = tValEnd - tStart;
-            long preMs = tPreEnd - tPreStart;
-            long ctxMs = tCtxEnd - tCtxStart;
-            long providerMs = tGenEnd - tGenStart;
-            long parseMs = tParseEnd - tParseStart;
-            long valMs = tValEnd - tValStart;
-            int promptChars = prompt.length();
-            Log.d(TAG, String.format(
-                "EXPLORER TURN TELEMETRY: total=%dms (corePre=%dms, ctx=%dms, provider=%s %dms, parse=%dms, coreVal=%dms) promptChars=%d fallback=%b",
-                totalMs, preMs, ctxMs, providerUsed, providerMs, parseMs, valMs, promptChars, fallbackOccurred));
+            Log.d(TAG, "EMERGENT TURN TELEMETRY: total=" + (System.currentTimeMillis() - tStart)
+                + "ms turnId=" + turnId
+                + " situation=" + (selected == null ? "NONE" : selected.optString("situationKey", "NONE")));
           }
-
           emit("backroomTurn", state.toString());
         } catch (Exception e) {
           String message = e.getMessage() == null ? "Không thể xử lý lượt." : e.getMessage();
-          if (committedBeforeGemini != null) {
+          if (committedBeforeNarration != null) {
             try {
-              JSONObject payload = new JSONObject().put("state", committedBeforeGemini).put("message", message);
+              JSONObject payload = new JSONObject()
+                  .put("state", committedBeforeNarration)
+                  .put("message", message);
               emit("backroomCommittedError", payload.toString());
             } catch (Exception ignored) {
               emit("backroomError", message);
