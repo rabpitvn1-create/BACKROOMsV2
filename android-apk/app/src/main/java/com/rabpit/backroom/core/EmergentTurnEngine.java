@@ -215,14 +215,20 @@ final class EmergentTurnEngine {
   JSONObject event(String turnId, JSONArray events, String eventType, String impactScope,
                    String subjectRef, JSONObject params, JSONArray threadEffects) throws Exception {
     int seq = events == null ? 0 : events.length();
+    EventCanonRegistry.Spec spec = EventCanonRegistry.require(eventType);
+    if (impactScope != null && !impactScope.trim().isEmpty()
+        && !spec.impactScope.equals(impactScope.trim())) {
+      throw new IllegalStateException(
+          "Event impact_scope disagrees with canon: " + eventType + " expected " + spec.impactScope);
+    }
     JSONObject normalizedParams = params == null ? new JSONObject() : new JSONObject(params.toString());
     if (!safe(subjectRef).isEmpty()) normalizedParams.put("subjectRef", subjectRef);
     JSONObject event = new JSONObject()
         .put("eventId", turnId + ":e" + seq)
         .put("eventSeq", seq)
         .put("eventType", eventType)
-        .put("eventSemantics", new JSONArray().put("STATE_CHANGE"))
-        .put("impactScope", impactScope == null ? "LOCAL" : impactScope)
+        .put("eventSemantics", spec.semanticsJson())
+        .put("impactScope", spec.impactScope)
         .put("actorRefs", new JSONArray())
         .put("targetRefs", safe(subjectRef).isEmpty() ? new JSONArray() : new JSONArray().put(subjectRef))
         .put("params", normalizedParams);
@@ -315,8 +321,16 @@ final class EmergentTurnEngine {
       if (!event.optString("eventId", "").equals(turnId + ":e" + i)) {
         throw new IllegalStateException("DomainEvent eventId drift");
       }
-      if (event.optString("eventType", "").trim().isEmpty()) {
+      String eventType = event.optString("eventType", "").trim();
+      if (eventType.isEmpty()) {
         throw new IllegalStateException("DomainEvent eventType is required");
+      }
+      EventCanonRegistry.Spec spec = EventCanonRegistry.require(eventType);
+      if (!spec.impactScope.equals(event.optString("impactScope", ""))) {
+        throw new IllegalStateException("DomainEvent impactScope disagrees with canon");
+      }
+      if (!EventCanonRegistry.matchesSemantics(eventType, event.optJSONArray("eventSemantics"))) {
+        throw new IllegalStateException("DomainEvent semantics disagree with canon");
       }
       JSONArray effects = event.optJSONArray("threadEffects");
       if (effects == null) continue;
