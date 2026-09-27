@@ -670,21 +670,42 @@ public final class GameCoreFacade implements AutoCloseable {
     return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
   }
 
-  public synchronized String commitRuntimeState(String stateJson) {
-    JSONObject submitted = parseState(stateJson);
+  public synchronized String combatRollRuntime() {
+    return mutateCombatRuntime("ROLL", -1, false);
+  }
+
+  public synchronized String combatHoldRuntime(int dieIndex, boolean held) {
+    return mutateCombatRuntime("HOLD", dieIndex, held);
+  }
+
+  public synchronized String combatFinishRuntime() {
+    return mutateCombatRuntime("FINISH", -1, false);
+  }
+
+  private String mutateCombatRuntime(String operation, int dieIndex, boolean held) {
     JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
+      JSONObject working = deepCopy(persisted);
 
-      // Runtime bridge may persist combat UI/session state only. It cannot overwrite world authority.
-      if (submitted.has("combat")) {
-        persisted.put("combat", new JSONObject(submitted.getJSONObject("combat").toString()));
+      if ("ROLL".equals(operation)) {
+        CombatChoiceEngine.roll(working);
+      } else if ("HOLD".equals(operation)) {
+        CombatChoiceEngine.setHold(working, dieIndex, held);
+      } else if ("FINISH".equals(operation)) {
+        CombatChoiceEngine.finishHand(working);
+      } else {
+        throw new IllegalArgumentException("Unknown combat runtime operation: " + operation);
       }
+
+      // ROLL/HOLD/FINISH are transient combat-control state. World effects are committed only
+      // by processCombatResolution() through DomainEventBatch.
+      persisted.put("combat", new JSONObject(working.getJSONObject("combat").toString()));
       persist(persisted);
       return clientSafeState(persisted).toString();
     } catch (Exception e) {
-      throw new IllegalStateException("Không thể lưu combat runtime state.", e);
+      throw new IllegalStateException("Không thể cập nhật combat runtime.", e);
     }
   }
 
