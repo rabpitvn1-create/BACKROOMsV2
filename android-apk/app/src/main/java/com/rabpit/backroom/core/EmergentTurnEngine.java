@@ -507,6 +507,23 @@ final class EmergentTurnEngine {
     }
   }
 
+  String worldProposalValidationReason(JSONObject selected, JSONObject raw) {
+    if (selected == null || !selected.optBoolean("proposalRequired", false)) return "";
+    JSONObject proposal = raw == null ? new JSONObject() : raw;
+    String action = proposal.optString("actionType", "").trim().toUpperCase(Locale.ROOT);
+    if (action.isEmpty()) return "actionType is required for the selected SituationCandidate.";
+    if (!isAllowedWorldAction(action)) return "Unknown actionType: " + action;
+    JSONArray allowed = selected.optJSONArray("allowedWorldActions");
+    if (!containsAction(allowed, action)) {
+      return "actionType " + action + " is outside selected candidate capabilities.";
+    }
+    String intent = proposal.optString("intentTag", "opportunistic").trim().toLowerCase(Locale.ROOT);
+    if (!("aggressive".equals(intent) || "cautious".equals(intent) || "opportunistic".equals(intent))) {
+      return "intentTag must be aggressive, cautious, or opportunistic.";
+    }
+    return "";
+  }
+
   JSONObject sanitizeWorldProposal(JSONObject selected, JSONObject raw) throws Exception {
     JSONObject proposal = raw == null ? new JSONObject() : raw;
     if (selected == null || !selected.optBoolean("proposalRequired", false)) {
@@ -514,7 +531,7 @@ final class EmergentTurnEngine {
     }
     String action = proposal.optString("actionType", "").trim().toUpperCase(Locale.ROOT);
     JSONArray allowed = selected.optJSONArray("allowedWorldActions");
-    if (!isAllowedWorldAction(action) || !containsAction(allowed, action)) {
+    if (!worldProposalValidationReason(selected, proposal).isEmpty()) {
       action = selected.optString("fallbackAction", "INTERCEPT").trim().toUpperCase(Locale.ROOT);
       if (!isAllowedWorldAction(action) || !containsAction(allowed, action)) {
         action = firstAllowedAction(allowed);
