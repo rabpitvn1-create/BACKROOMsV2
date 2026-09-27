@@ -37,7 +37,7 @@ public class CombatChoiceEngineTest {
     assertEquals(0, progression.profile(state, "cao_minh")
         .getJSONArray("statusEffects").length());
   }
-  @Test public void defeatAtSublevelPreservesStoryAndRouteAndAnnouncesOnlyOnce() throws Exception {
+  @Test public void defeatAtSublevelPreservesStoryAndRouteAndQueuesLocalRestart() throws Exception {
     JSONObject state = combatState(new JSONArray())
         .put("currentLevel", 0).put("currentLevelKey", "0.1")
         .put("location", "Level 0.1 / hành lang sâu")
@@ -60,7 +60,8 @@ public class CombatChoiceEngineTest {
     JSONObject resolvedCombat = state.getJSONObject("combat");
     assertEquals("Level 0.1 / hành lang sâu", resolvedCombat.getString("deathReturnAnchorLocation"));
     assertEquals("0.1", resolvedCombat.getString("deathReturnLevelKey"));
-    assertTrue(resolvedCombat.getBoolean("deathReturnJourneyPending"));
+    assertFalse(resolvedCombat.getBoolean("deathReturnJourneyPending"));
+    assertTrue(resolvedCombat.getBoolean("deathRestartPending"));
     assertTrue(resolvedCombat.getBoolean("deathRecoveryApplied"));
 
     int logSize = state.getJSONArray("log").length();
