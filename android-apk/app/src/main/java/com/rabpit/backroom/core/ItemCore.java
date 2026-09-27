@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /** Core-owned loot and consumable item rules. AI is never allowed to create loot. */
 final class ItemCore {
@@ -53,7 +52,9 @@ final class ItemCore {
   private final IntRng rng;
 
   ItemCore() {
-    this(bound -> ThreadLocalRandom.current().nextInt(bound));
+    this(bound -> {
+      throw new IllegalStateException("Unscoped Item RNG is disabled; use the TurnRng-backed overload.");
+    });
   }
 
   ItemCore(IntRng rng) {
