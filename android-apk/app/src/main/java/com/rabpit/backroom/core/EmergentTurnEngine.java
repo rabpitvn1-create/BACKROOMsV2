@@ -46,7 +46,7 @@ final class EmergentTurnEngine {
     ensureArray(root, "commitLog");
     ensureArray(root, "selectionTrace");
     ensureObject(root, "selectionIndex");
-    ensureObject(root, "scheduler");
+    SchedulerProjection.normalize(root);
     normalizeSkeleton(root);
     normalizeDirector(root);
 
@@ -96,6 +96,29 @@ final class EmergentTurnEngine {
     normalizeState(state);
     if (rng == null) throw new IllegalArgumentException("TurnRng is required");
     JSONObject root = state.getJSONObject(ROOT_KEY);
+    JSONObject mandatory = firstMandatoryCandidate(rawCandidates);
+    if (mandatory != null) {
+      JSONObject result = new JSONObject(mandatory.toString()).put("selectedNone", false);
+      JSONArray traceCandidates = new JSONArray().put(new JSONObject()
+          .put("situationKey", result.optString("situationKey", ""))
+          .put("category", result.optString("category", ""))
+          .put("finalWeight", 1.0d)
+          .put("mandatory", true)
+          .put("eligibilityRuleId", result.optString("eligibilityRuleId", "")));
+      JSONObject trace = new JSONObject()
+          .put("turn", selectionTurn)
+          .put("candidates", traceCandidates)
+          .put("selectedSituationKey", result.optString("situationKey", ""))
+          .put("selectedNone", false)
+          .put("selectionMode", "MANDATORY");
+      JSONArray traces = root.getJSONArray("selectionTrace");
+      traces.put(trace);
+      while (traces.length() > TRACE_LIMIT) traces.remove(0);
+      root.put("lastSelection", new JSONObject(result.toString()));
+      state.put(ROOT_KEY, root);
+      return result;
+    }
+
     JSONObject index = root.getJSONObject("selectionIndex");
     JSONObject director = root.getJSONObject("director");
     JSONObject modifiers = director.optJSONObject("tagWeightModifiers");
@@ -225,6 +248,35 @@ final class EmergentTurnEngine {
     return output;
   }
 
+  void appendThreadResolutionEvents(JSONObject state, JSONArray events, String turnId, int currentTurn)
+      throws Exception {
+    normalizeState(state);
+    JSONObject root = state.getJSONObject(ROOT_KEY);
+    JSONArray threads = root.getJSONArray("threads");
+    List<String> touched = touchedThreadIds(events);
+    for (int i = 0; i < threads.length(); i++) {
+      JSONObject thread = threads.optJSONObject(i);
+      if (thread == null) continue;
+      String status = thread.optString("status", "");
+      if (!("ACTIVE".equals(status) || "DORMANT".equals(status))) continue;
+      String id = thread.optString("threadId", "");
+      if (id.isEmpty() || touched.contains(id)) continue;
+      JSONArray conditions = thread.optJSONArray("resolutionConditions");
+      ThreadPredicateEngine.validate(conditions);
+      if (!ThreadPredicateEngine.allSatisfied(state, conditions)) continue;
+      JSONArray effects = new JSONArray().put(new JSONObject()
+          .put("threadType", thread.optString("threadType", ""))
+          .put("keyRefs", thread.optJSONArray("keyRefs") == null
+              ? new JSONArray() : new JSONArray(thread.getJSONArray("keyRefs").toString()))
+          .put("effect", "TERMINATE")
+          .put("terminalOutcome", "RESOLVED")
+          .put("targetThreadId", id));
+      events.put(event(turnId, events, "THREAD_RESOLUTION_CONDITION_MET", "LOCAL", id,
+          new JSONObject().put("observedByPlayer", false).put("impactEligible", false), effects));
+      touched.add(id);
+    }
+  }
+
   void appendDormancyEvents(JSONObject state, JSONArray events, String turnId, int currentTurn) throws Exception {
     normalizeState(state);
     JSONObject root = state.getJSONObject(ROOT_KEY);
@@ -351,7 +403,7 @@ final class EmergentTurnEngine {
 
     int schedulerMark = marks.optInt("scheduler", 0);
     if (schedulerMark < latest) {
-      root.getJSONObject("scheduler").put("derivedFromCommitSeq", latest);
+      SchedulerProjection.fold(root, schedulerMark);
       marks.put("scheduler", latest);
       changed = true;
     }
@@ -373,6 +425,11 @@ final class EmergentTurnEngine {
     root.put("projectionWatermarks", marks);
     state.put(ROOT_KEY, root);
     return changed;
+  }
+
+  JSONArray schedulerCandidates(JSONObject state, int currentTurn) throws Exception {
+    normalizeState(state);
+    return SchedulerProjection.dueCandidates(state, currentTurn);
   }
 
   boolean selectionProjectionFresh(JSONObject state) throws Exception {
@@ -516,7 +573,7 @@ final class EmergentTurnEngine {
               .put("keyRefs", new JSONArray(refs.toString()))
               .put("objectiveState", new JSONObject())
               .put("knowledgeState", new JSONObject())
-              .put("resolutionConditions", new JSONArray())
+              .put("resolutionConditions", ThreadPredicateEngine.conditionsForThreadType(threadType, refs))
               .put("status", "ACTIVE");
           threads.put(thread);
         }
@@ -536,7 +593,7 @@ final class EmergentTurnEngine {
               .put("keyRefs", new JSONArray(refs.toString()))
               .put("objectiveState", new JSONObject())
               .put("knowledgeState", new JSONObject())
-              .put("resolutionConditions", new JSONArray());
+              .put("resolutionConditions", ThreadPredicateEngine.conditionsForThreadType(threadType, refs));
           threads.put(thread);
         }
         String outcome = effect.getString("terminalOutcome");
@@ -810,6 +867,25 @@ final class EmergentTurnEngine {
     } catch (Exception e) {
       throw new IllegalStateException("SHA-256 unavailable", e);
     }
+  }
+
+  private static JSONObject firstMandatoryCandidate(JSONArray candidates) throws Exception {
+    JSONObject selected = null;
+    if (candidates == null) return null;
+    for (int i = 0; i < candidates.length(); i++) {
+      JSONObject candidate = candidates.optJSONObject(i);
+      if (candidate == null || !candidate.optBoolean("mandatory", false)) continue;
+      if (selected == null) {
+        selected = candidate;
+        continue;
+      }
+      int dueA = candidate.optInt("dueTurn", candidate.optInt("schedulerDueTurn", Integer.MAX_VALUE));
+      int dueB = selected.optInt("dueTurn", selected.optInt("schedulerDueTurn", Integer.MAX_VALUE));
+      String keyA = candidate.optString("situationKey", "");
+      String keyB = selected.optString("situationKey", "");
+      if (dueA < dueB || (dueA == dueB && keyA.compareTo(keyB) < 0)) selected = candidate;
+    }
+    return selected == null ? null : new JSONObject(selected.toString());
   }
 
   private static final class WeightedCandidate {
