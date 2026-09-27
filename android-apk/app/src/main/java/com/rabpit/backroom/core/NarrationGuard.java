@@ -12,7 +12,7 @@ public final class NarrationGuard {
   private static final Set<String> FORBIDDEN_ROOT_KEYS = new HashSet<>(Arrays.asList(
       "transitionTarget", "sceneLabel", "state", "stateDelta", "currentLevel",
       "currentLevelKey", "location", "flags", "inventory", "party", "combat",
-      "facts", "historicalFacts", "beliefs", "threads", "threadRegistry", "emergent"));
+      "facts", "historicalFacts", "beliefs", "threads", "threadRegistry", "narrativeSkeleton", "emergent"));
 
   private NarrationGuard() {}
 

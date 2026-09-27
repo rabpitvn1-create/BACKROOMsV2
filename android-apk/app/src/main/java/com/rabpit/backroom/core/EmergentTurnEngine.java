@@ -23,7 +23,7 @@ final class EmergentTurnEngine {
   static final String RNG_SCHEMA_VERSION = "scoped-rng-v1";
   static final String RESOLVER_VERSION = "emergent-resolver-v1";
 
-  private static final int SCHEMA_VERSION = 1;
+  private static final int SCHEMA_VERSION = 2;
   private static final int TRACE_LIMIT = 20;
   private static final int DORMANT_AFTER_TURNS = 12;
 
@@ -49,14 +49,19 @@ final class EmergentTurnEngine {
     ensureObject(root, "selectionIndex");
     ensureObject(root, "currentStateMeta");
     SchedulerProjection.normalize(root);
-    normalizeSkeleton(root);
+    boolean narrativeSkeletonReset = NarrativeSkeleton.normalize(root, state);
     normalizeDirector(root);
 
     JSONObject watermarks = ensureObject(root, "projectionWatermarks");
     watermarks.put("selectionCooldown", Math.max(0, watermarks.optInt("selectionCooldown", 0)));
     watermarks.put("scheduler", Math.max(0, watermarks.optInt("scheduler", 0)));
-    watermarks.put("skeleton", Math.max(0, watermarks.optInt("skeleton", 0)));
-    watermarks.put("director", Math.max(0, watermarks.optInt("director", 0)));
+    int narrativeSkeletonMark = Math.max(0, watermarks.optInt("narrativeSkeleton", 0));
+    if (narrativeSkeletonReset) narrativeSkeletonMark = 0;
+    watermarks.put("narrativeSkeleton",
+        Math.min(root.getInt("commitSequence"), narrativeSkeletonMark));
+    watermarks.remove("skeleton");
+    watermarks.put("director", narrativeSkeletonReset
+        ? 0 : Math.max(0, watermarks.optInt("director", 0)));
 
     state.put(ROOT_KEY, root);
   }
@@ -458,10 +463,13 @@ final class EmergentTurnEngine {
       changed = true;
     }
 
-    int skeletonMark = marks.optInt("skeleton", 0);
-    if (skeletonMark < latest) {
-      foldSkeleton(root, skeletonMark, state);
-      marks.put("skeleton", latest);
+    int skeletonMark = marks.optInt("narrativeSkeleton", 0);
+    JSONObject narrativeSkeleton = root.optJSONObject(NarrativeSkeleton.ROOT_KEY);
+    int skeletonDerived = narrativeSkeleton == null
+        ? -1 : narrativeSkeleton.optInt("derivedFromCommitSeq", -1);
+    if (skeletonMark < latest || skeletonDerived != latest) {
+      NarrativeSkeleton.rebuild(root, state);
+      marks.put("narrativeSkeleton", latest);
       changed = true;
     }
 
@@ -692,6 +700,8 @@ final class EmergentTurnEngine {
     residue.put("threadId", id)
         .put("resolvedTurn", turn)
         .put("terminalOutcome", outcome)
+        .put("keyRefs", thread.optJSONArray("keyRefs") == null
+            ? new JSONArray() : new JSONArray(thread.getJSONArray("keyRefs").toString()))
         .put("tags", new JSONArray().put(thread.optString("threadType", "")))
         .put("resurfacePolicy", policy);
     if ("DECAYING".equals(policy)) residue.put("decayWindowTurns", 40);
@@ -719,71 +729,7 @@ final class EmergentTurnEngine {
     }
   }
 
-  private void foldSkeleton(JSONObject root, int watermark, JSONObject state) throws Exception {
-    JSONObject skeleton = root.getJSONObject("skeleton");
-    JSONObject axes = skeleton.getJSONObject("axes");
-    JSONArray commits = root.getJSONArray("commitLog");
-
-    for (int i = 0; i < commits.length(); i++) {
-      JSONObject commit = commits.getJSONObject(i);
-      if (commit.optInt("commitSeq", 0) <= watermark) continue;
-      int commitTurn = Math.max(1, commit.optInt("turn", 1));
-      decayResidueAxes(axes, commitTurn);
-
-      double entityDelta = 0.0d;
-      double socialDelta = 0.0d;
-      double knowledgeDelta = 0.0d;
-      double environmentDelta = 0.0d;
-      JSONArray events = commit.optJSONArray("events");
-      if (events != null) {
-        for (int e = 0; e < events.length(); e++) {
-          JSONObject event = events.optJSONObject(e);
-          if (event == null) continue;
-          String type = event.optString("eventType", "");
-          if (type.startsWith("ENTITY_") || type.startsWith("COMBAT_")) entityDelta += 0.08d;
-          if (type.startsWith("CHARACTER_")) socialDelta += 0.08d;
-          if (type.startsWith("ROUTE_") || "LEVEL_TRANSITIONED".equals(type)) {
-            knowledgeDelta += 0.04d;
-            environmentDelta += 0.03d;
-          }
-        }
-      }
-      bump(axes, "entity_attention", Math.min(0.12d, entityDelta), commitTurn);
-      bump(axes, "social_entanglement", Math.min(0.12d, socialDelta), commitTurn);
-      bump(axes, "world_knowledge", Math.min(0.12d, knowledgeDelta), commitTurn);
-      bump(axes, "environmental_exposure", Math.min(0.12d, environmentDelta), commitTurn);
-    }
-
-    int currentTurn = Math.max(1, state.optInt("turn", 1));
-    double stability = survivalStability(state);
-    setAxis(axes, "survival_stability", stability, currentTurn);
-    setAxis(axes, "resource_dependency", 1.0d - stability, currentTurn);
-    setAxis(axes, "long_term_consequence", longTermConsequence(root, currentTurn), currentTurn);
-    skeleton.put("derivedFromCommitSeq", root.optInt("commitSequence", 0));
-    skeleton.put("playerImpact", playerImpact(root));
-  }
-
-  private static void decayResidueAxes(JSONObject axes, int turn) throws Exception {
-    decayAxis(axes, "entity_attention", turn, 18.0d);
-    decayAxis(axes, "social_entanglement", turn, 36.0d);
-    decayAxis(axes, "world_knowledge", turn, 96.0d);
-    decayAxis(axes, "environmental_exposure", turn, 24.0d);
-  }
-
-  private static void decayAxis(JSONObject axes, String name, int turn, double halfLifeTurns)
-      throws Exception {
-    JSONObject axis = axes.getJSONObject(name);
-    int previousTurn = Math.max(0, axis.optInt("lastUpdatedTurn", 0));
-    int deltaTurns = Math.max(0, turn - previousTurn);
-    if (deltaTurns == 0) return;
-    double previous = clamp(axis.optDouble("score", 0.0d), 0.0d, 1.0d);
-    double factor = Math.pow(0.5d, deltaTurns / Math.max(1.0d, halfLifeTurns));
-    setAxis(axes, name, previous * factor, turn);
-  }
-
   private void projectDirector(JSONObject root, JSONObject state) throws Exception {
-    JSONObject skeleton = root.getJSONObject("skeleton");
-    JSONObject axes = skeleton.getJSONObject("axes");
     JSONObject director = root.getJSONObject("director");
     int currentTurn = Math.max(1, state.optInt("turn", 1));
 
@@ -791,11 +737,11 @@ final class EmergentTurnEngine {
     int dangerCooldownUntil = dangerCooldownUntil(root);
     boolean dangerCooling = currentTurn <= dangerCooldownUntil;
 
-    double dangerPressure = axisScore(axes, "entity_attention");
-    double resourcePressure = axisScore(axes, "resource_dependency");
-    double socialPressure = axisScore(axes, "social_entanglement");
-    double environmentalPressure = axisScore(axes, "environmental_exposure");
-    double consequencePressure = axisScore(axes, "long_term_consequence");
+    double dangerPressure = NarrativeSkeleton.attentionStrength(root, "DANGER");
+    double resourcePressure = NarrativeSkeleton.attentionStrength(root, "RESOURCE");
+    double socialPressure = NarrativeSkeleton.attentionStrength(root, "SOCIAL");
+    double environmentalPressure = NarrativeSkeleton.attentionStrength(root, "ENVIRONMENTAL");
+    double consequencePressure = NarrativeSkeleton.attentionStrength(root, "CONSEQUENCE");
 
     JSONObject modifiers = new JSONObject();
     double dangerModifier = saturatingModifier(dangerPressure, 0.60d, 1.30d);
@@ -807,7 +753,7 @@ final class EmergentTurnEngine {
     modifiers.put("ENVIRONMENTAL", saturatingModifier(environmentalPressure, 0.72d, 1.25d));
     modifiers.put("CONSEQUENCE", saturatingModifier(consequencePressure, 0.70d, 1.30d));
 
-    // Cross-axis relief: severe survival/resource pressure suppresses extra danger and boosts
+    // Cross-pressure relief: severe survival/resource pressure suppresses extra danger and boosts
     // resource opportunities instead of compounding threat indefinitely.
     if (resourcePressure >= 0.70d) {
       modifiers.put("DANGER", Math.min(modifiers.getDouble("DANGER"), 0.80d));
@@ -815,6 +761,9 @@ final class EmergentTurnEngine {
     }
 
     director.put("tagWeightModifiers", modifiers)
+        .put("authority", "WEIGHT_ONLY")
+        .put("canCreateCandidates", false)
+        .put("canUnlockEligibility", false)
         .put("derivedFromCommitSeq", root.optInt("commitSequence", 0))
         .put("activeCooldowns", new JSONObject().put("DANGER_UNTIL_TURN", dangerCooldownUntil))
         .put("recentEventMetrics", metrics)
@@ -879,80 +828,6 @@ final class EmergentTurnEngine {
     return 0;
   }
 
-  private static double survivalStability(JSONObject state) {
-    try {
-      JSONObject survival = state.optJSONObject(SurvivalCore.ROOT_KEY);
-      JSONObject chars = survival == null ? null : survival.optJSONObject(SurvivalCore.CHARACTERS_KEY);
-      JSONObject player = chars == null ? null : chars.optJSONObject("cao_minh");
-      if (player == null) return 1.0d;
-      long elapsed = SurvivalCore.elapsedMinutes(state);
-      long food = Math.max(0L, elapsed - player.optLong("lastFoodMinute", elapsed));
-      long water = Math.max(0L, elapsed - player.optLong("lastWaterMinute", elapsed));
-      long rest = Math.max(0L, elapsed - player.optLong("lastRestMinute", elapsed));
-      double worst = Math.max(
-          (double)food / SurvivalCore.FOOD_CRITICAL_MINUTES,
-          Math.max((double)water / SurvivalCore.WATER_CRITICAL_MINUTES,
-              (double)rest / SurvivalCore.REST_CRITICAL_MINUTES));
-      return clamp(1.0d - worst, 0.0d, 1.0d);
-    } catch (Exception e) {
-      return 1.0d;
-    }
-  }
-
-  private static double longTermConsequence(JSONObject root, int turn) {
-    JSONArray archive = root.optJSONArray("threadArchive");
-    if (archive == null || archive.length() == 0) return 0.0d;
-    int eligible = 0;
-    for (int i = 0; i < archive.length(); i++) {
-      JSONObject residue = archive.optJSONObject(i);
-      if (residue == null) continue;
-      String policy = residue.optString("resurfacePolicy", "NEVER");
-      if ("PERSISTENT".equals(policy)) eligible++;
-      else if ("DECAYING".equals(policy)
-          && turn <= residue.optInt("resolvedTurn", 0) + residue.optInt("decayWindowTurns", 0)) eligible++;
-      else if ("CONDITIONAL".equals(policy)) eligible++; // predicate support is reserved for v2.
-    }
-    return clamp(eligible / 5.0d, 0.0d, 1.0d);
-  }
-
-  private static double playerImpact(JSONObject root) {
-    JSONArray facts = root.optJSONArray("historicalFacts");
-    if (facts == null) return 0.0d;
-    long score = 0L;
-    for (int i = 0; i < facts.length(); i++) {
-      JSONObject fact = facts.optJSONObject(i);
-      if (fact == null || !"player".equals(fact.optString("causedBy"))
-          || !fact.optBoolean("impactEligible", true)) continue;
-      switch (fact.optString("impactScope", "LOCAL")) {
-        case "PERSISTENT_WORLD": score += 27L; break;
-        case "REGIONAL": score += 9L; break;
-        case "SOCIAL": score += 3L; break;
-        default: score += 1L; break;
-      }
-    }
-    return clamp(score / (score + 27.0d), 0.0d, 1.0d);
-  }
-
-  private static void normalizeSkeleton(JSONObject root) throws Exception {
-    JSONObject skeleton = root.optJSONObject("skeleton");
-    if (skeleton == null) skeleton = new JSONObject();
-    JSONObject axes = skeleton.optJSONObject("axes");
-    if (axes == null) axes = new JSONObject();
-    String[] names = {
-        "survival_stability", "resource_dependency", "entity_attention", "social_entanglement",
-        "world_knowledge", "environmental_exposure", "long_term_consequence"
-    };
-    for (String name : names) {
-      if (!(axes.opt(name) instanceof JSONObject)) {
-        axes.put(name, new JSONObject().put("score", 0.0d).put("trend", "STABLE").put("lastUpdatedTurn", 0));
-      }
-    }
-    skeleton.put("axes", axes)
-        .put("derivedFromCommitSeq", Math.max(0, skeleton.optInt("derivedFromCommitSeq", 0)))
-        .put("playerImpact", clamp(skeleton.optDouble("playerImpact", 0.0d), 0.0d, 1.0d));
-    root.put("skeleton", skeleton);
-  }
-
   private static void normalizeDirector(JSONObject root) throws Exception {
     JSONObject director = root.optJSONObject("director");
     if (director == null) director = new JSONObject();
@@ -960,7 +835,10 @@ final class EmergentTurnEngine {
       director.put("tagWeightModifiers", new JSONObject());
     }
     if (!(director.opt("pressures") instanceof JSONObject)) director.put("pressures", new JSONObject());
-    director.put("derivedFromCommitSeq", Math.max(0, director.optInt("derivedFromCommitSeq", 0)));
+    director.put("authority", "WEIGHT_ONLY")
+        .put("canCreateCandidates", false)
+        .put("canUnlockEligibility", false)
+        .put("derivedFromCommitSeq", Math.max(0, director.optInt("derivedFromCommitSeq", 0)));
     root.put("director", director);
   }
 
@@ -1008,26 +886,6 @@ final class EmergentTurnEngine {
       case "ENVIRONMENTAL": return 2;
       default: return 0;
     }
-  }
-
-  private static void bump(JSONObject axes, String name, double delta, int turn) throws Exception {
-    if (delta <= 0.0d) return;
-    JSONObject axis = axes.getJSONObject(name);
-    setAxis(axes, name,
-        axis.optDouble("score", 0.0d) + Math.min(0.12d, Math.max(0.0d, delta)), turn);
-  }
-
-  private static void setAxis(JSONObject axes, String name, double score, int turn) throws Exception {
-    JSONObject axis = axes.getJSONObject(name);
-    double previous = clamp(axis.optDouble("score", 0.0d), 0.0d, 1.0d);
-    double next = clamp(score, 0.0d, 1.0d);
-    String trend = next > previous + 0.0001d ? "RISING" : next < previous - 0.0001d ? "FALLING" : "STABLE";
-    axis.put("score", next).put("trend", trend).put("lastUpdatedTurn", Math.max(0, turn));
-  }
-
-  private static double axisScore(JSONObject axes, String name) {
-    JSONObject axis = axes.optJSONObject(name);
-    return axis == null ? 0.0d : clamp(axis.optDouble("score", 0.0d), 0.0d, 1.0d);
   }
 
   private static double clamp(double value, double min, double max) {

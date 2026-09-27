@@ -84,6 +84,7 @@ public class EmergentTurnIntegrationTest {
     JSONObject narratorView = GmNarrativePacket.projectState(working);
     assertFalse(narratorView.has(EmergentTurnEngine.ROOT_KEY));
     assertFalse(narratorView.has("flags"));
+    assertFalse(narratorView.toString().contains(NarrativeSkeleton.ROOT_KEY));
 
     JSONObject validNarration = new JSONObject()
         .put("reply", "Một tiếng móng cào vang lên phía trước.")
@@ -94,6 +95,10 @@ public class EmergentTurnIntegrationTest {
     JSONObject invalidNarration = new JSONObject(validNarration.toString())
         .put("transitionTarget", "1");
     assertFalse(NarrationGuard.validate(invalidNarration, working).isEmpty());
+
+    JSONObject skeletonLeak = new JSONObject(validNarration.toString())
+        .put("narrativeSkeleton", new JSONObject().put("nextEvent", "forbidden"));
+    assertFalse(NarrationGuard.validate(skeletonLeak, working).isEmpty());
   }
 
   @Test public void noneCandidateCommitsPlayerTurnWithoutInventingWorldEventOrCooldown() throws Exception {
