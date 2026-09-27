@@ -156,6 +156,8 @@ public final class GameCoreFacade implements AutoCloseable {
           null));
 
       JSONArray candidates = new JSONArray();
+      appendAll(candidates, emergentTurnEngine.schedulerCandidates(
+          working, Math.max(1, working.optInt("turn", 1))));
       appendAll(candidates, entityCore.situationCandidates(working));
       if (!openedChest) {
         JSONObject chestCandidate = itemCore.explorationChestCandidate(working);
@@ -205,6 +207,8 @@ public final class GameCoreFacade implements AutoCloseable {
         applySelectedSituation(working, prepared.events, prepared.turnId, selected, proposal);
       }
 
+      emergentTurnEngine.appendThreadResolutionEvents(
+          working, prepared.events, prepared.turnId, Math.max(1, working.optInt("turn", 1)));
       emergentTurnEngine.appendDormancyEvents(
           working, prepared.events, prepared.turnId, Math.max(1, working.optInt("turn", 1)));
       if (prepared.events.length() > 64) {
@@ -275,9 +279,15 @@ public final class GameCoreFacade implements AutoCloseable {
 
     if ("CHARACTER".equals(kind)) {
       characterEncounterCore.activateEncounterCandidate(working, payload);
-      params.put("factPredicate", "character_encountered").put("factValue", payload);
+      boolean reunion = "luc_tram".equals(payload);
+      params.put("factPredicate", reunion ? "character_reunion" : "character_encountered")
+          .put("factValue", payload);
+      JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
+          reunion ? "LUC_TRAM_RELATIONSHIP" : "SOCIAL_CONTACT",
+          new JSONArray().put(payload), "SEED_OR_ADVANCE", null));
       events.put(emergentTurnEngine.event(
-          turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", payload, params, null));
+          turnId, events, reunion ? "CHARACTER_REUNION" : "CHARACTER_ENCOUNTERED",
+          "SOCIAL", payload, params, effects));
       return;
     }
 
