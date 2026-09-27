@@ -96,12 +96,8 @@ final class CharacterEncounterCore {
     JSONArray party = state.getJSONArray("party");
     List<String> hits = new ArrayList<>();
 
-    // Current canon: Lục Trầm reunion becomes eligible only after leaving Level 0.
-    if (state.optInt("currentLevel", 0) > 0
-        && !containsPartyId(party, "luc_tram")
-        && nextRoll(100) < (int)LUC_TRAM_REUNION_PERCENT) {
-      hits.add("luc_tram");
-    }
+    // Legacy roller intentionally excludes Lục Trầm. Her 10% state-based reunion now lives
+    // exclusively in SituationCandidate selection so all mechanical RNG goes through TurnRng.
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("iris");
     }
