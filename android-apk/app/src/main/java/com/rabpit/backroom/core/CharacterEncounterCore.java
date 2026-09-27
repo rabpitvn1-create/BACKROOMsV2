@@ -8,48 +8,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
-/** Owns random companion encounters, Party joins, migration and pending GM introductions. */
+/** Owns deterministic companion candidate eligibility, Party joins, migration and pending introductions. */
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
   static final int RARE_ENCOUNTER_BOUND = 4000;
-
-  interface IntRng {
-    int nextInt(int bound);
-  }
-
-  static final class EncounterResult {
-    final List<String> joinedIds;
-    final boolean capacityRejected;
-
-    EncounterResult(List<String> joinedIds, boolean capacityRejected) {
-      this.joinedIds = joinedIds;
-      this.capacityRejected = capacityRejected;
-    }
-
-    boolean joinedAny() {
-      return !joinedIds.isEmpty();
-    }
-  }
+  static final double LUC_TRAM_REUNION_PERCENT = 10.0d;
 
   private static final String ENCOUNTER_STATE = "characterEncounter";
   private static final String PENDING_INTRO = "pendingIntro";
   private static final String JUST_ENCOUNTERED = "justEncountered";
-  private static final String LAST_ROLL_TURN = "lastExplorerRollTurn";
-  private static final String LAST_ROLL_ACTION = "lastExplorerRollAction";
   private static final String[] CANONICAL_ORDER = {"luc_tram", "iris", "syvial"};
-
-  private final IntRng rng;
-
-  CharacterEncounterCore() {
-    this(bound -> ThreadLocalRandom.current().nextInt(bound));
-  }
-
-  CharacterEncounterCore(IntRng rng) {
-    if (rng == null) throw new IllegalArgumentException("rng is required");
-    this.rng = rng;
-  }
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
@@ -76,80 +45,95 @@ final class CharacterEncounterCore {
     JSONArray joined = new JSONArray();
     for (String id : CANONICAL_ORDER) if (containsPartyId(party, id)) joined.put(id);
     encounter.put("joined", joined);
-    encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO)));
-    encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED)));
+    boolean allowLucTram = state.optInt("currentLevel", 0) > 0;
+    encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO), allowLucTram));
+    encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED), allowLucTram));
     state.put(ENCOUNTER_STATE, encounter);
   }
 
-  EncounterResult rollForExplorerAction(JSONObject state, String action) throws Exception {
+  JSONArray situationCandidates(JSONObject state) throws Exception {
     normalizeState(state);
-    JSONObject encounter = encounterState(state);
-    JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
-    int turn = Math.max(1, state.optInt("turn", 1));
-    if ((pending != null && pending.length() > 0) || encounter.optInt(LAST_ROLL_TURN, -1) == turn) {
-      return new EncounterResult(new ArrayList<>(), false);
-    }
-
-    encounter.put(LAST_ROLL_TURN, turn);
-    encounter.put(LAST_ROLL_ACTION, String.valueOf((action == null ? "" : action.trim()).hashCode()));
+    JSONArray output = new JSONArray();
     JSONArray party = state.getJSONArray("party");
-    List<String> hits = new ArrayList<>();
+    JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
+    JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
+    if ((pending != null && pending.length() > 0) || party.length() >= MAX_COMPANIONS) return output;
 
-    // Lục Trầm is deliberately excluded from RNG until her dedicated encounter rules are restored.
-    if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
-      hits.add("iris");
-    }
-    if (!containsPartyId(party, "syvial") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
-      hits.add("syvial");
+    if (state.optInt("currentLevel", 0) > 0 && !containsPartyId(party, "luc_tram")) {
+      output.put(new JSONObject()
+          .put("candidateId", "character:luc_tram")
+          .put("situationKey", "character:luc_tram")
+          .put("kind", "CHARACTER")
+          .put("category", "SOCIAL")
+          .put("chancePercent", LUC_TRAM_REUNION_PERCENT)
+          .put("payloadKey", "luc_tram")
+          .put("source", "CANON")
+          .put("publicSummary", "Lục Trầm xuất hiện; đây là cuộc tái ngộ với Cao Minh, không phải lần đầu gặp.")
+          .put("proposalRequired", false)
+          .put("eligibilityRuleId", "canon:luc_tram:after_level_0")
+          .put("cooldownTurns", 24)
+          .put("tags", new JSONArray().put("SOCIAL").put("CHARACTER").put("REUNION").put("luc_tram"))
+          .put("keyRefs", new JSONArray().put("luc_tram")));
     }
 
-    int available = MAX_COMPANIONS - party.length();
-    if (hits.size() > available) {
-      encounter.put("lastCapacityRejected", new JSONArray(hits));
-      encounter.put(JUST_ENCOUNTERED, new JSONArray());
-      state.put(ENCOUNTER_STATE, encounter);
-      return new EncounterResult(new ArrayList<>(), true);
+    for (String id : new String[] {"iris", "syvial"}) {
+      if (containsPartyId(party, id)) continue;
+      output.put(new JSONObject()
+          .put("candidateId", "character:" + id)
+          .put("situationKey", "character:" + id)
+          .put("kind", "CHARACTER")
+          .put("category", "SOCIAL")
+          .put("chancePercent", 100.0d / RARE_ENCOUNTER_BOUND)
+          .put("payloadKey", id)
+          .put("source", "CANON")
+          .put("publicSummary", displayName(id) + " vừa xuất hiện và chạm mặt Cao Minh.")
+          .put("proposalRequired", false)
+          .put("eligibilityRuleId", "canon:character:" + id)
+          .put("cooldownTurns", 24)
+          .put("tags", new JSONArray().put("SOCIAL").put("CHARACTER").put(id))
+          .put("keyRefs", new JSONArray().put(id)));
     }
-
-    encounter.remove("lastCapacityRejected");
-    JSONArray encountered = new JSONArray(hits);
-    encounter.put(JUST_ENCOUNTERED, encountered);
-    encounter.put(PENDING_INTRO, new JSONArray(hits));
-    state.put(ENCOUNTER_STATE, encounter);
-    normalizeState(state);
-    return new EncounterResult(hits, false);
+    return output;
   }
 
-  void validateAndApply(JSONObject before, JSONObject candidate, JSONArray introDialogue) throws Exception {
-    normalizeState(before);
-    candidate.put("party", new JSONArray(before.getJSONArray("party").toString()));
-    JSONObject beforeEncounter = before.optJSONObject(ENCOUNTER_STATE);
-    candidate.put(ENCOUNTER_STATE, beforeEncounter == null
-        ? new JSONObject()
-        : new JSONObject(beforeEncounter.toString()));
-    normalizeState(candidate);
-
-    JSONArray pending = candidate.getJSONObject(ENCOUNTER_STATE).optJSONArray(PENDING_INTRO);
-    if (pending == null || pending.length() == 0) return;
-    validateIntroDialogue(introDialogue);
-
-    JSONArray party = candidate.getJSONArray("party");
-    for (int i = 0; i < pending.length(); i++) {
-      String id = pending.optString(i, "").trim().toLowerCase(Locale.ROOT);
-      if (id.isEmpty() || containsPartyId(party, id)) continue;
-      if (party.length() >= MAX_COMPANIONS) {
-        throw new IllegalStateException("Party đã đầy trước khi hoàn tất character encounter.");
-      }
-      party.put(normalizedMember(id, null));
+  void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
+    normalizeState(state);
+    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
+    if ("luc_tram".equals(id) && state.optInt("currentLevel", 0) <= 0) {
+      throw new IllegalStateException("Lục Trầm reunion is not eligible on Level 0.");
     }
-    candidate.put("party", party);
-    normalizeState(candidate);
+    if (!isEncounterCharacter(id)) throw new IllegalArgumentException("Unknown character candidate: " + id);
 
-    JSONObject encounter = candidate.getJSONObject(ENCOUNTER_STATE);
+    JSONArray party = state.getJSONArray("party");
+    if (containsPartyId(party, id)) return;
+    if (party.length() >= MAX_COMPANIONS) throw new IllegalStateException("Party đã đầy.");
+
+    party.put(normalizedMember(id, null));
+    state.put("party", party);
+    JSONObject encounter = encounterState(state);
+    encounter.put(JUST_ENCOUNTERED, new JSONArray().put(id));
+    encounter.put(PENDING_INTRO, new JSONArray().put(id));
+    encounter.put("joined", appendUnique(encounter.optJSONArray("joined"), id));
+    state.put(ENCOUNTER_STATE, encounter);
+    normalizeState(state);
+  }
+
+  void acknowledgePendingIntro(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
+    JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
+    if (pending == null || pending.length() == 0) return;
     encounter.put("lastIntroduced", new JSONArray(pending.toString()));
-    encounter.put("lastIntroducedTurn", Math.max(1, candidate.optInt("turn", 1)));
+    encounter.put("lastIntroducedTurn", Math.max(1, state.optInt("turn", 1)));
     encounter.put(PENDING_INTRO, new JSONArray());
     encounter.put(JUST_ENCOUNTERED, new JSONArray());
+    state.put(ENCOUNTER_STATE, encounter);
+  }
+
+  private static JSONArray appendUnique(JSONArray values, String id) throws Exception {
+    JSONArray output = values == null ? new JSONArray() : new JSONArray(values.toString());
+    if (!containsString(output, id)) output.put(id);
+    return output;
   }
 
   String promptContext(JSONObject state) {
@@ -163,55 +147,40 @@ final class CharacterEncounterCore {
       for (String id : CANONICAL_ORDER) {
         if (containsPartyId(party, id)) {
           joined.add(displayName(id));
-        } else if (!"luc_tram".equals(id)) {
+        } else if (!"luc_tram".equals(id) || state.optInt("currentLevel", 0) > 0) {
           randomNotMet.add(displayName(id));
         }
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
+      boolean pendingLucTram = containsString(pending, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
-          "Deferred companion: Lục Trầm; her encounter rules will be restored separately, so do not random-roll her yet.\n" +
-          "Random encounter pool not met: " + listText(randomNotMet) + ".\n" +
-          "Just randomly encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
-          "Pending random intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
-          "Core exclusively owns random encounter rolls and Party membership. " +
-          "Never spawn Lục Trầm from narration yet, add/remove/reorder Party, or change joined state from narration. " +
-          "Joined characters may be treated as already accompanying Cao Minh. Pending random-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
+          "Lục Trầm eligibility: 10% reunion candidate only after Level 0; Core owns the roll.\n" +
+          "Encounter pool not met: " + listText(randomNotMet) + ".\n" +
+          "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
+          "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
+          "Core exclusively owns encounter selection and Party membership. " +
+          "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
+          "Joined characters are authoritative. If pending includes Lục Trầm, depict a hostile/tense REUNION because she and Cao Minh knew and fought each other before Backrooms; never depict first contact or instant trust/romance. " +
+          "For Iris/Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "A random character encounter has triggered. Depict first contact in the current location before any spoken line. " +
-                  "Do not imply the character was already walking with Cao Minh, already in his Party, or present in earlier Backrooms turns. " +
-                  "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
-                  "After this validated random encounter scene the Core will auto-join the character in the same turn; do not ask the player to accept them and do not advance an extra Explorer Turn.");
+              : pendingLucTram
+                  ? "Lục Trầm reunion is already committed. Depict a tense reunion in the current location; never frame it as first contact. " +
+                      "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                      "Do not invent Cao Minh's dialogue/decision and do not ask the player to approve Party membership."
+                  : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
+                      "Do not imply the character was present in earlier Backrooms turns. " +
+                      "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                      "Do not invent Cao Minh's dialogue/decision, ask the player to approve Party membership, or advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
   }
 
-  static boolean shouldEncounterRare(int roll) {
-    return roll == 0;
-  }
-
   static boolean isJoinedMember(JSONObject member) {
     return member != null && member.optBoolean("joined", false) && isEncounterCharacter(characterId(member));
-  }
-
-  private int nextRoll(int bound) {
-    int value = rng.nextInt(bound);
-    if (value < 0 || value >= bound) throw new IllegalStateException("RNG returned an out-of-range value");
-    return value;
-  }
-
-  private void validateIntroDialogue(JSONArray dialogue) {
-    if (dialogue == null || dialogue.length() < 2 || dialogue.length() > 5) {
-      throw new IllegalArgumentException("Gemini phải trả 2-5 lượt thoại cho character vừa encounter.");
-    }
-    for (int i = 0; i < dialogue.length(); i++) {
-      if (dialogue.optString(i, "").trim().isEmpty()) {
-        throw new IllegalArgumentException("Hội thoại encounter không được có lượt thoại rỗng.");
-      }
-    }
   }
 
   private static JSONObject legacyStringMember(Object raw) {
@@ -260,11 +229,12 @@ final class CharacterEncounterCore {
     return inventory;
   }
 
-  private static JSONArray filterEncounterIds(JSONArray ids) {
+  private static JSONArray filterEncounterIds(JSONArray ids, boolean allowLucTram) {
     JSONArray result = new JSONArray();
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
-      if (!"luc_tram".equals(id) && containsString(ids, id)) result.put(id);
+      if ("luc_tram".equals(id) && !allowLucTram) continue;
+      if (containsString(ids, id)) result.put(id);
     }
     return result;
   }

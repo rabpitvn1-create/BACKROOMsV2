@@ -903,4 +903,27 @@ public class CombatChoiceEngineTest {
         .put("log", new JSONArray().put(
             new JSONObject().put("role", "gm").put("text", "Hound xuất hiện")));
   }
+
+  @Test public void scopedCombatRngReplaysFromTurnMetadata() throws Exception {
+    JSONObject first = combatState(new JSONArray());
+    JSONObject second = combatState(new JSONArray());
+
+    CombatChoiceEngine.start(first, "hound", 0, "turn-combat-rng", 12);
+    CombatChoiceEngine.start(second, "hound", 0, "turn-combat-rng", 12);
+
+    JSONObject firstCombat = first.getJSONObject("combat");
+    JSONObject secondCombat = second.getJSONObject("combat");
+    assertEquals("turn-combat-rng", firstCombat.getString("rngTurnId"));
+    assertEquals(12, firstCombat.getInt("rngPreTurnStateVersion"));
+    assertTrue(firstCombat.getInt("rngSequence") > 0);
+    assertEquals(firstCombat.getJSONObject("diceState").getJSONArray("values").toString(),
+        secondCombat.getJSONObject("diceState").getJSONArray("values").toString());
+
+    CombatChoiceEngine.roll(first);
+    CombatChoiceEngine.roll(second);
+    assertEquals(firstCombat.getJSONObject("diceState").getJSONArray("values").toString(),
+        secondCombat.getJSONObject("diceState").getJSONArray("values").toString());
+    assertEquals(firstCombat.getInt("rngSequence"), secondCombat.getInt("rngSequence"));
+  }
+
 }

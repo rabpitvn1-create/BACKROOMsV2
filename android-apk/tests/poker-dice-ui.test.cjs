@@ -20,7 +20,7 @@ test('combat hides Explorer A B C choices while the inline dice panel is active'
   const start = source.indexOf('function appendExplorerChoices');
   const end = source.indexOf('function renderSemanticLog', start);
   assert.ok(start >= 0 && end > start);
-  assert.match(source.slice(start, end), /if \(state\.combat && state\.combat\.active\) return;/);
+  assert.match(source.slice(start, end), /if \(!entry \|\| \(state\.combat && state\.combat\.active\)\) return;/);
 });
 
 test('reroll UI does not append GM messages', () => {
@@ -83,9 +83,9 @@ test('Core upgrades use persisted state and are locked only by active combat', (
   const end = coreFacadeSource.indexOf('public synchronized String levelSnapshotDescriptor', start);
   assert.ok(start >= 0 && end > start);
   const upgradeBlock = coreFacadeSource.slice(start, end);
-  assert.match(upgradeBlock, /JSONObject state = parseState\(preferences\.getString\(STATE_KEY, "\{\}"\)\)/);
-  assert.match(upgradeBlock, /if \(state\.length\(\) == 0\) state = submitted;/);
-  assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(state\)/);
+  assert.match(upgradeBlock, /JSONObject persisted = parseState\(preferences\.getString\(STATE_KEY, "\{\}"\)\)/);
+  assert.match(upgradeBlock, /if \(persisted\.length\(\) == 0\) persisted = submitted;/);
+  assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(persisted\)/);
 });
 
 
@@ -108,5 +108,4 @@ test('GM effect highlights keep the normal narration font', () => {
   assert.match(source, /\.semantic-damage\{color:#ff5c5c\}/);
   assert.match(source, /\.semantic-buff\{color:#73e6a2\}/);
 });
-
 

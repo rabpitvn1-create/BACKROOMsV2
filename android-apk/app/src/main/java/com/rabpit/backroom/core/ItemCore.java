@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /** Core-owned loot and consumable item rules. AI is never allowed to create loot. */
 final class ItemCore {
@@ -53,7 +52,9 @@ final class ItemCore {
   private final IntRng rng;
 
   ItemCore() {
-    this(bound -> ThreadLocalRandom.current().nextInt(bound));
+    this(bound -> {
+      throw new IllegalStateException("Unscoped Item RNG is disabled; use the TurnRng-backed overload.");
+    });
   }
 
   ItemCore(IntRng rng) {
@@ -104,21 +105,33 @@ final class ItemCore {
     state.put("flags", flags);
   }
 
-  void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
-    JSONObject beforeFlags = flags(before);
-    JSONObject candidateFlags = flags(candidate);
-    if (beforeFlags.optBoolean(CHEST_PRESENT, false)) {
-      candidateFlags.put(CHEST_PRESENT, true);
-      copy(beforeFlags, candidateFlags, "chestSource");
-      copy(beforeFlags, candidateFlags, "chestSpawnRatePercent");
-      copy(beforeFlags, candidateFlags, "chestSpawnTurn");
-    } else {
-      candidateFlags.remove(CHEST_PRESENT);
-      candidateFlags.remove("chestSource");
-      candidateFlags.remove("chestSpawnRatePercent");
-      candidateFlags.remove("chestSpawnTurn");
-    }
-    candidate.put("flags", candidateFlags);
+  JSONObject explorationChestCandidate(JSONObject state) throws Exception {
+    JSONObject currentFlags = flags(state);
+    if (currentFlags.optBoolean(CHEST_PRESENT, false)) return null;
+    String levelKey = state.optString("currentLevelKey", String.valueOf(state.optInt("currentLevel", 0)));
+    return new JSONObject()
+        .put("candidateId", "resource:chest:" + levelKey)
+        .put("situationKey", "resource:chest:" + levelKey)
+        .put("kind", "CHEST")
+        .put("category", "RESOURCE")
+        .put("chancePercent", CHEST_SPAWN_RATE_PERCENT)
+        .put("payloadKey", levelKey)
+        .put("source", "CANON")
+        .put("publicSummary", "Cao Minh phát hiện một chiếc rương trong khu vực.")
+        .put("proposalRequired", false)
+        .put("eligibilityRuleId", "canon:exploration_chest")
+        .put("tags", new JSONArray().put("RESOURCE").put("CHEST"))
+        .put("keyRefs", new JSONArray().put(levelKey));
+  }
+
+  void activateExplorationChest(JSONObject state) throws Exception {
+    JSONObject currentFlags = flags(state);
+    if (currentFlags.optBoolean(CHEST_PRESENT, false)) return;
+    currentFlags.put(CHEST_PRESENT, true);
+    currentFlags.put("chestSource", "candidate_selector");
+    currentFlags.put("chestSpawnRatePercent", CHEST_SPAWN_RATE_PERCENT);
+    currentFlags.put("chestSpawnTurn", Math.max(1, state.optInt("turn", 1)));
+    state.put("flags", currentFlags);
   }
 
   boolean isOpenChestAction(String action) {
@@ -130,12 +143,17 @@ final class ItemCore {
   }
 
   String openChest(JSONObject state) throws Exception {
+    return openChest(state, rng);
+  }
+
+  String openChest(JSONObject state, IntRng turnRng) throws Exception {
+    if (turnRng == null) throw new IllegalArgumentException("turn RNG is required");
     JSONObject flags = flags(state);
     if (!flags.optBoolean(CHEST_PRESENT, false)) {
       throw new IllegalStateException("Không có rương để mở.");
     }
-    String itemName = grantChestLootItem(state, nextRoll(100));
-    int coreRoll = nextRoll(100);
+    String itemName = grantChestLootItem(state, nextRoll(turnRng, 100));
+    int coreRoll = nextRoll(turnRng, 100);
     int coreReward = 0;
     if (shouldDropCore(coreRoll, CORE_CHEST_DROP_PERCENT)) {
       coreReward = progressionCore.grantCore(state,
@@ -493,13 +511,13 @@ final class ItemCore {
   }
 
   private int nextRoll(int bound) {
-    int value = rng.nextInt(bound);
+    return nextRoll(rng, bound);
+  }
+
+  private static int nextRoll(IntRng source, int bound) {
+    int value = source.nextInt(bound);
     if (value < 0 || value >= bound) throw new IllegalStateException("RNG returned an out-of-range value");
     return value;
   }
 
-  private void copy(JSONObject source, JSONObject target, String key) throws Exception {
-    if (source.has(key)) target.put(key, source.get(key));
-    else target.remove(key);
-  }
 }

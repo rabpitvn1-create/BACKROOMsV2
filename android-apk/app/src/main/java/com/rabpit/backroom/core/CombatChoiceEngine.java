@@ -502,6 +502,13 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       JSONObject combat, int chancePercent, String salt) {
     int chance = Math.max(0, Math.min(100, chancePercent));
     if (chance <= 0) return false;
+    if (usesScopedCombatRng(combat)) {
+      try {
+        return nextCombatInt(combat, 100) < chance;
+      } catch (Exception e) {
+        throw new IllegalStateException("Combat RNG failure", e);
+      }
+    }
     int round = Math.max(1, combat.optInt("resolvedRound", combat.optInt("round", 1)));
     int actorIndex = Math.max(0,
         combat.optInt("resolvedActorIndex", combat.optInt("actorIndex", 0)));
@@ -518,6 +525,16 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   public static JSONObject start(JSONObject state, String entityKey, int gmLogIndex) throws Exception {
+    return startInternal(state, entityKey, gmLogIndex, null, 0);
+  }
+
+  static JSONObject start(JSONObject state, String entityKey, int gmLogIndex,
+                          String rngTurnId, int preTurnStateVersion) throws Exception {
+    return startInternal(state, entityKey, gmLogIndex, rngTurnId, preTurnStateVersion);
+  }
+
+  private static JSONObject startInternal(JSONObject state, String entityKey, int gmLogIndex,
+                                          String rngTurnId, int preTurnStateVersion) throws Exception {
     if (state == null) throw new IllegalArgumentException("state is required");
     String normalized = entityKey == null ? "" : entityKey.trim().toLowerCase(Locale.ROOT);
     EntityProfile profile = ENTITIES.get(normalized);
@@ -538,6 +555,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         .put("actorIndex", firstLivingIndex(participants))
         .put("rngSequence", 0)
         .put("seed", stableSeed(state, normalized, participants))
+        .put("rngTurnId", rngTurnId == null ? "" : rngTurnId)
+        .put("rngPreTurnStateVersion", Math.max(0, preTurnStateVersion))
+        .put("rngCanonVersion", EmergentTurnEngine.CANON_VERSION)
+        .put("rngSchemaVersion", EmergentTurnEngine.RNG_SCHEMA_VERSION)
         .put("logIndex", Math.max(0, gmLogIndex))
         .put("deathRestartAnchorLocation", state.optString("location", ""))
         .put("deathRestartLevelKey", state.optString(
@@ -899,9 +920,14 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     if (pool == null || pool.isEmpty()) return effects;
 
     for (CharacterProc proc : pool) {
-      int sequence = combat.optInt("rngSequence", 0);
-      int roll = characterProcRoll(combat.optInt("seed", 1), sequence, actorId, proc.name);
-      combat.put("rngSequence", sequence + 1);
+      int roll;
+      if (usesScopedCombatRng(combat)) {
+        roll = nextCombatInt(combat, 100);
+      } else {
+        int sequence = combat.optInt("rngSequence", 0);
+        roll = characterProcRoll(combat.optInt("seed", 1), sequence, actorId, proc.name);
+        combat.put("rngSequence", sequence + 1);
+      }
       if (roll >= proc.procPercent) continue;
 
       int bonus = Math.max(1,
@@ -1020,7 +1046,10 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int actorIndex = Math.max(0, combat.optInt("actorIndex", 0));
       for (int i = 0; i < pool.size(); i++) {
         EntitySkill skill = pool.get(i);
-        if (entitySkillProcRoll(seed, round, actorIndex, i) >= skill.procPercent) continue;
+        int procRoll = usesScopedCombatRng(combat)
+            ? nextCombatInt(combat, 100)
+            : entitySkillProcRoll(seed, round, actorIndex, i);
+        if (procRoll >= skill.procPercent) continue;
         triggeredSkills.add(skill.name);
         int incoming = entitySkillDamage(rawDamage, skill.damagePercent);
         if (critical) incoming = criticalDamage(incoming);
@@ -1310,9 +1339,14 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     JSONArray held = dice.getJSONArray("held");
     for (int i = 0; i < DICE_COUNT; i++) {
       if (respectHeld && held.optBoolean(i, false)) continue;
-      int sequence = combat.optInt("rngSequence", 0);
-      int value = deterministicDie(combat.optInt("seed", 1), sequence, i);
-      combat.put("rngSequence", sequence + 1);
+      int value;
+      if (usesScopedCombatRng(combat)) {
+        value = 1 + nextCombatInt(combat, 6);
+      } else {
+        int sequence = combat.optInt("rngSequence", 0);
+        value = deterministicDie(combat.optInt("seed", 1), sequence, i);
+        combat.put("rngSequence", sequence + 1);
+      }
       values.put(i, value);
     }
   }
@@ -1345,9 +1379,11 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
     List<Skill> pool = SKILLS.get(id);
     if (pool != null && !pool.isEmpty()) {
-      int index = Math.floorMod(
-          combat.optInt("seed", 1) + combat.optInt("round", 1) * 31 + actorIndex * 17,
-          pool.size());
+      int index = usesScopedCombatRng(combat)
+          ? nextCombatInt(combat, pool.size())
+          : Math.floorMod(
+              combat.optInt("seed", 1) + combat.optInt("round", 1) * 31 + actorIndex * 17,
+              pool.size());
       combat.put("currentSkill", skillJson(pool.get(index)));
     } else {
       combat.remove("currentSkill");
@@ -1435,12 +1471,32 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static int nextPercent(JSONObject combat, String salt) throws Exception {
+    if (usesScopedCombatRng(combat)) return nextCombatInt(combat, 100);
     int sequence = combat.optInt("rngSequence", 0);
     int seed = combat.optInt("seed", 1);
     long mixed = (seed & 0xffffffffL) * 31L + (long)(sequence + 1) * 131L
         + (long)salt.hashCode() * 17L;
     int value = (int)Math.floorMod(mixed, 100L);
     combat.put("rngSequence", sequence + 1);
+    return value;
+  }
+
+  private static boolean usesScopedCombatRng(JSONObject combat) {
+    return combat != null && !combat.optString("rngTurnId", "").trim().isEmpty();
+  }
+
+  private static int nextCombatInt(JSONObject combat, int bound) throws Exception {
+    String turnId = combat.optString("rngTurnId", "").trim();
+    if (turnId.isEmpty()) throw new IllegalStateException("Scoped combat RNG metadata is missing");
+    int used = Math.max(0, combat.optInt("rngSequence", 0));
+    TurnRng rng = new TurnRng(
+        turnId,
+        Math.max(0, combat.optInt("rngPreTurnStateVersion", 0)),
+        combat.optString("rngCanonVersion", EmergentTurnEngine.CANON_VERSION),
+        combat.optString("rngSchemaVersion", EmergentTurnEngine.RNG_SCHEMA_VERSION));
+    rng.resume(TurnRng.Scope.COMBAT, used);
+    int value = rng.nextInt(TurnRng.Scope.COMBAT, bound);
+    combat.put("rngSequence", rng.drawsUsed(TurnRng.Scope.COMBAT));
     return value;
   }
 

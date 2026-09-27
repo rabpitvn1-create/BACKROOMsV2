@@ -143,7 +143,7 @@ jobs:
           grep -Fq 'Android.submitTurn(JSON.stringify(state), text)' android-apk/app/src/main/assets/player-action-ui.js
           grep -Fq 'function submitExplorerChoice(entry, choice)' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'form.requestSubmit()' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'CURRENT_SAVE_VERSION = 13' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 14' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
 
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
