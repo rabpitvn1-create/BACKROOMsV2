@@ -250,14 +250,14 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  public synchronized String commitNarration(String stateJson) {
+  public synchronized String commitNarration(String stateJson, boolean acknowledgePendingIntro) {
     JSONObject submitted = parseState(stateJson);
     JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
       normalizeCoreState(state);
       JSONArray log = submitted.optJSONArray("log");
       if (log != null) state.put("log", new JSONArray(log.toString()));
-      characterEncounterCore.acknowledgePendingIntro(state);
+      if (acknowledgePendingIntro) characterEncounterCore.acknowledgePendingIntro(state);
       persist(state);
       return clientSafeState(state).toString();
     } catch (Exception e) {
