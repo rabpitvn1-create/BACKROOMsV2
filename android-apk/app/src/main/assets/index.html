@@ -127,7 +127,10 @@ const LEVEL_NODE_TITLES={
   "6":"Level 6 : Lights Out"
 };
 
+const CLIENT_SAVE_VERSION=13;
+
 const initial={
+  saveVersion:CLIENT_SAVE_VERSION,
   title:"Level 0 : The Lobby",
   turn:1,
   mode:"local APK",
@@ -151,7 +154,10 @@ const initial={
 const byId=id=>document.getElementById(id);
 const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
 function normalizeCoreState(value){try{return window.Android&&typeof Android.normalizeState==="function"?JSON.parse(Android.normalizeState(JSON.stringify(value))):value}catch(_){return value}}
-let state=normalizeCoreState(JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial);
+let storedState=null;
+try{storedState=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")}catch(_){}
+if(storedState&&storedState.saveVersion!==CLIENT_SAVE_VERSION)localStorage.removeItem("backroom-apk-state");
+let state=normalizeCoreState(storedState&&storedState.saveVersion===CLIENT_SAVE_VERSION?storedState:initial);
 let busy=false;
 
 function inferLevelKey(s){
