@@ -1,5 +1,6 @@
 Backroom 1.1.66
 
+- Đổi font mặc định của game sang Pretendard Std (SIL OFL 1.1), đóng gói offline; Play vẫn giữ cho Character/thành phần đặc biệt.
 - Khôi phục Prologue đầy đủ của Cao Minh như opening độc lập; Prologue chạy trước vòng GM AI và không phục hồi StoryCore/chapter system.
 - Thay authored Story Core bằng gameplay do GM AI điều khiển.
 - A/B/C và PLAYER ACTION dùng chung một luồng GM AI qua submitTurn().
