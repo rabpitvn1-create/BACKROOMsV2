@@ -38,6 +38,13 @@ public class CharacterDetailCoreTest {
     assertEquals(5, stats.getJSONObject("VIT").getInt("effective"));
     assertFalse(cao.has("explorer"));
     assertFalse(cao.has("exp"));
+    JSONArray passives = cao.getJSONArray("passives");
+    assertEquals(1, passives.length());
+    assertEquals("Đại Đạo Ma Tôn", passives.getJSONObject(0).getString("name"));
+    assertEquals(10, passives.getJSONObject(0).getInt("healMaxHpPercent"));
+    assertEquals(20, passives.getJSONObject(0).getInt("attackPerTurnPercent"));
+    assertEquals(20, passives.getJSONObject(0).getInt("criticalPerTurnPercent"));
+    assertEquals(50, passives.getJSONObject(0).getInt("allyCriticalBonusPercent"));
     assertEquals("NORMAL", cao.getJSONObject("physiology").getString("hunger"));
   }
 

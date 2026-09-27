@@ -303,6 +303,15 @@
     sections.appendChild(statBox);
     sections.appendChild(combatStatusSection(member));
 
+    if(Array.isArray(member.passives)&&member.passives.length){
+      var passiveBox=section('PASSIVE');
+      member.passives.forEach(function(passive){
+        if(!passive)return;
+        addRow(passiveBox,String(passive.name||'Passive'),String(passive.description||''));
+      });
+      sections.appendChild(passiveBox);
+    }
+
     var effects=[];
     ['injuries','statuses','effects','statusEffects'].forEach(function(k){
       if(Array.isArray(member&&member[k]))member[k].forEach(function(x){

@@ -37,6 +37,59 @@ public class CombatChoiceEngineTest {
     assertEquals(0, progression.profile(state, "cao_minh")
         .getJSONArray("statusEffects").length());
   }
+  @Test public void daiDaoMaTonHealsAndStacksAttackAndCriticalAfterCaoMinhTurn() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
+    JSONObject entity = combat.getJSONObject("entity");
+    entity.put("hp", 9999).put("maxHp", 9999).put("stunTurns", 1);
+    actor.put("hp", 25);
+
+    finalizeAs(state, 1, 2, 4, 5, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals("Đại Đạo Ma Tôn", actor.getString("passiveSkill"));
+    assertEquals(30, actor.getInt("hp"));
+    assertEquals(1, actor.getInt("daiDaoMaTonStacks"));
+    assertEquals(20, actor.getInt("daiDaoMaTonAttackBonusPercent"));
+    assertEquals(20, actor.getInt("daiDaoMaTonCriticalBonusPercent"));
+    assertEquals(36, actor.getInt("baseAttack"));
+    assertEquals(25, actor.getInt("criticalChancePercent"));
+    assertEquals(30, new CharacterProgressionCore().profile(state, "cao_minh").getInt("currentHp"));
+
+    entity.put("stunTurns", 1);
+    finalizeAs(state, 1, 2, 4, 5, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(35, actor.getInt("hp"));
+    assertEquals(2, actor.getInt("daiDaoMaTonStacks"));
+    assertEquals(40, actor.getInt("daiDaoMaTonAttackBonusPercent"));
+    assertEquals(40, actor.getInt("daiDaoMaTonCriticalBonusPercent"));
+    assertEquals(42, actor.getInt("baseAttack"));
+    assertEquals(45, actor.getInt("criticalChancePercent"));
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    assertTrue(battleLog.toString().contains("Đại Đạo Ma Tôn"));
+  }
+
+  @Test public void daiDaoMaTonGrantsFiftyCriticalToAllCombatAlliesOnly() throws Exception {
+    JSONObject state = combatState(new JSONArray()
+        .put(member("iris", "Iris"))
+        .put(member("syvial", "Syvial")));
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
+    JSONObject cao = participants.getJSONObject(0);
+    JSONObject iris = participants.getJSONObject(1);
+    JSONObject syvial = participants.getJSONObject(2);
+
+    assertEquals(5, cao.getInt("criticalChancePercent"));
+    assertEquals(55, iris.getInt("criticalChancePercent"));
+    assertEquals(55, syvial.getInt("criticalChancePercent"));
+    assertEquals(50, iris.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+    assertEquals(50, syvial.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+  }
+
   @Test public void defeatAtSublevelPreservesRouteAndQueuesLocalRestart() throws Exception {
     JSONObject state = combatState(new JSONArray())
         .put("currentLevel", 0).put("currentLevelKey", "0.1")

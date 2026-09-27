@@ -98,6 +98,17 @@ final class CharacterDetailCore {
     member.put("statusEffects", new JSONArray(characterProgressionCore.profile(state, id)
         .getJSONArray("statusEffects").toString()));
 
+    if ("cao_minh".equals(id)) {
+      member.put("passives", new JSONArray().put(new JSONObject()
+          .put("name", "Đại Đạo Ma Tôn")
+          .put("description",
+              "Sau mỗi lượt combat của Cao Minh: hồi 10% Max HP, cộng dồn +20% Attack và +20% Critical trong trận. Đồng đội nhận +50% Critical.")
+          .put("healMaxHpPercent", 10)
+          .put("attackPerTurnPercent", 20)
+          .put("criticalPerTurnPercent", 20)
+          .put("allyCriticalBonusPercent", 50)));
+    }
+
     copyStringIfPresent(source, previous, member, "role");
     copyArrayIfPresent(source, previous, member, "injuries");
     copyArrayIfPresent(source, previous, member, "statuses");

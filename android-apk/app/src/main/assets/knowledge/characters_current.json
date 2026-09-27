@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
-  "syncedAt": "2026-09-23",
-  "authority": "Google Drive / 02_CHARACTERS + scoped USER_RETCON android-apk/DIEP_MINH_CANON.md",
+  "syncedAt": "2026-09-27",
+  "authority": "Google Drive / 02_CHARACTERS + scoped USER_RETCON android-apk/DIEP_MINH_CANON.md + explicit USER_RETCON Đại Đạo Ma Tôn (2026-09-27)",
   "instruction": "Google Drive character canon is authoritative except where a newer explicit USER_RETCON is committed as current canon. DIEP_MINH_CANON.md supersedes only the old OPEN Cao Minh ↔ Diệp Minh edge. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15 under canonical runtime id `cao_minh`. The retired `kai` player id/identity is not current runtime canon. KNOWLEDGE_LOCK is backstage knowledge only; remaining OPEN/UNKNOWN fields stay unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology.",
   "characters": {
     "cao_minh": {
@@ -61,7 +61,18 @@
           "ignoresEvasion": true,
           "suppressAutoSkillRollsOnUltimateTurn": true
         },
-        "hardLock": "AUTO rolls are independent and multiple AUTO skills may proc in one eligible turn. A successful AUTO proc hits without an additional accuracy/evasion roll."
+        "hardLock": "AUTO rolls are independent and multiple AUTO skills may proc in one eligible turn. A successful AUTO proc hits without an additional accuracy/evasion roll.",
+        "daiDaoMaTon": {
+          "type": "passive",
+          "timing": "after_each_cao_minh_combat_turn",
+          "healMaxHpFraction": 0.1,
+          "attackBonusPercentPerTurn": 20,
+          "criticalPercentagePointsPerTurn": 20,
+          "stacking": "additive_for_current_combat",
+          "allyCriticalPercentagePoints": 50,
+          "criticalCapPercent": 100,
+          "reset": "combat_end"
+        }
       },
       "relationships": {
         "diep_minh": {
