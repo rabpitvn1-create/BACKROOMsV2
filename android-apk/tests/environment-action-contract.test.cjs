@@ -69,3 +69,26 @@ test('RETURN and STAY generation stays non-progressing but produces meaningful h
   assert.match(body,/Do not grant rewards/);
   assert.match(body,/persistent facts the Core would need to remember/);
 });
+
+
+test('Story choice provider falls back when Core rejects Gemini output',()=>{
+  const body=activity.split('@JavascriptInterface public void prepareStoryDecision')[1]
+    .split('@JavascriptInterface')[0];
+  const fallback=body.indexOf('catch (Exception geminiError)');
+  assert.ok(fallback>0);
+  assert.ok(body.indexOf('gameCore.commitStoryDecisionPackage')<fallback);
+  assert.ok(body.lastIndexOf('gameCore.commitStoryDecisionPackage')>fallback);
+  assert.match(body,/story_decision_generation_stale/);
+  assert.match(body,/Gemini Story choice generation\/validation failed; falling back to Haiku/);
+});
+
+test('Return Journey provider falls back when Core rejects Gemini output',()=>{
+  const body=activity.split('@JavascriptInterface public void prepareReturnJourneyTurn')[1]
+    .split('@JavascriptInterface')[0];
+  const fallback=body.indexOf('catch (Exception geminiError)');
+  assert.ok(fallback>0);
+  assert.ok(body.indexOf('gameCore.commitReturnJourneyTurn')<fallback);
+  assert.ok(body.lastIndexOf('gameCore.commitReturnJourneyTurn')>fallback);
+  assert.match(body,/return_journey_generation_stale/);
+  assert.match(body,/Gemini return journey generation\/validation failed; falling back to Haiku/);
+});
