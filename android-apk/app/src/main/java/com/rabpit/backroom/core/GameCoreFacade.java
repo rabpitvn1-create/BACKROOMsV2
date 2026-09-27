@@ -178,6 +178,25 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
+  public synchronized String validateWorldProposal(String selectedJson, String proposalJson) {
+    JSONObject output = new JSONObject();
+    try {
+      JSONObject selected = parseState(selectedJson);
+      JSONObject raw = parseState(proposalJson);
+      String reason = emergentTurnEngine.worldProposalValidationReason(selected, raw);
+      output.put("valid", reason.isEmpty())
+          .put("reason", reason)
+          .put("proposal", emergentTurnEngine.sanitizeWorldProposal(selected, raw));
+    } catch (Exception e) {
+      try {
+        output.put("valid", false)
+            .put("reason", safeMessage(e))
+            .put("proposal", new JSONObject());
+      } catch (Exception ignored) {}
+    }
+    return output.toString();
+  }
+
   public synchronized String completePreparedTurn(String turnId, String proposalJson) {
     JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
