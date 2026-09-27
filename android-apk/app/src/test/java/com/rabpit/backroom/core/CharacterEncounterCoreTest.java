@@ -138,4 +138,17 @@ public class CharacterEncounterCoreTest {
         .put("flags", new JSONObject())
         .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Test")));
   }
+
+  @Test public void lucTramPendingPromptIsReunionNotFirstContact() throws Exception {
+    JSONObject state = state(1, 5)
+        .put("characterEncounter", new JSONObject()
+            .put("pendingIntro", new JSONArray().put("luc_tram"))
+            .put("justEncountered", new JSONArray().put("luc_tram")));
+    CharacterEncounterCore core = new CharacterEncounterCore();
+    String prompt = core.promptContext(state);
+
+    assertTrue(prompt.contains("tense reunion"));
+    assertTrue(prompt.contains("never frame it as first contact"));
+  }
+
 }
