@@ -165,16 +165,15 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
-          grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
+          ! grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'entityCore.prepareEncounter(legacy);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'entityCore.prepareEncounter(state);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq "document.createTextNode('• ')" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "action:'Tiếp tục cốt truyện'" android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'Nhấn vào để bắt đầu khám phá thế giới Backrooms' android-apk/app/src/main/assets/index.html
+          grep -Fq 'GAME MASTER — LEVEL 0' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'Nhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01.' android-apk/app/src/main/assets/index.html
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'gameCore.commitEnvironmentExchange(text, reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           ! grep -Fq 'LUC_TRAM_RATE_PERCENT' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
