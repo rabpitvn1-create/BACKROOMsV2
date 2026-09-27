@@ -668,9 +668,26 @@ public class MainActivity extends Activity {
           JSONObject proposal = new JSONObject();
           if (prepared.optBoolean("proposalRequired", false)) {
             try {
-              proposal = parseModelJson(generateText(worldProposalPrompt(selected)));
+              String proposalPrompt = worldProposalPrompt(selected);
+              JSONObject rawProposal = parseModelJson(generateText(proposalPrompt));
+              JSONObject validation = new JSONObject(
+                  gameCore.validateWorldProposal(selected.toString(), rawProposal.toString()));
+
+              if (!validation.optBoolean("valid", false)) {
+                String reason = validation.optString("reason", "proposal rejected");
+                rawProposal = parseModelJson(generateText(
+                    proposalPrompt + "\nVALIDATION REJECTED: " + reason
+                        + "\nRetry the SAME selected SituationCandidate. Do not change the situation or actor."));
+                validation = new JSONObject(
+                    gameCore.validateWorldProposal(selected.toString(), rawProposal.toString()));
+              }
+
+              if (!validation.optBoolean("valid", false)) {
+                throw new Exception(validation.optString("reason", "World proposal validation failed."));
+              }
+              proposal = validation.getJSONObject("proposal");
             } catch (Exception proposalError) {
-              Log.w(TAG, "World proposal unavailable/invalid; Core will use canonical fallback: "
+              Log.w(TAG, "World proposal unavailable/invalid after bounded retry; Core will use canonical fallback: "
                   + providerErrorSummary(proposalError));
               proposal = new JSONObject();
             }
