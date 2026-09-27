@@ -23,7 +23,7 @@ final class EmergentTurnEngine {
   static final String RNG_SCHEMA_VERSION = "scoped-rng-v1";
   static final String RESOLVER_VERSION = "emergent-resolver-v1";
 
-  private static final int SCHEMA_VERSION = 2;
+  private static final int SCHEMA_VERSION = 3;
   private static final int TRACE_LIMIT = 20;
   private static final int DORMANT_AFTER_TURNS = 12;
 
@@ -49,18 +49,24 @@ final class EmergentTurnEngine {
     ensureObject(root, "selectionIndex");
     ensureObject(root, "currentStateMeta");
     SchedulerProjection.normalize(root);
+    boolean campaignSkeletonReset = CampaignSkeleton.normalize(root, state);
     boolean narrativeSkeletonReset = NarrativeSkeleton.normalize(root, state);
     normalizeDirector(root);
 
     JSONObject watermarks = ensureObject(root, "projectionWatermarks");
     watermarks.put("selectionCooldown", Math.max(0, watermarks.optInt("selectionCooldown", 0)));
     watermarks.put("scheduler", Math.max(0, watermarks.optInt("scheduler", 0)));
+    int campaignSkeletonMark = Math.max(0,
+        watermarks.optInt("campaignSkeleton", watermarks.optInt("skeleton", 0)));
+    if (campaignSkeletonReset) campaignSkeletonMark = 0;
+    watermarks.put("campaignSkeleton",
+        Math.min(root.getInt("commitSequence"), campaignSkeletonMark));
     int narrativeSkeletonMark = Math.max(0, watermarks.optInt("narrativeSkeleton", 0));
     if (narrativeSkeletonReset) narrativeSkeletonMark = 0;
     watermarks.put("narrativeSkeleton",
         Math.min(root.getInt("commitSequence"), narrativeSkeletonMark));
     watermarks.remove("skeleton");
-    watermarks.put("director", narrativeSkeletonReset
+    watermarks.put("director", campaignSkeletonReset || narrativeSkeletonReset
         ? 0 : Math.max(0, watermarks.optInt("director", 0)));
 
     state.put(ROOT_KEY, root);
@@ -149,8 +155,10 @@ final class EmergentTurnEngine {
         double p = cooling ? 0.0d : Math.max(0.0d,
             Math.min(0.99999999d, candidate.optDouble("chancePercent", 0.0d) / 100.0d));
         double hazard = p <= 0.0d ? 0.0d : -Math.log(1.0d - p);
-        double directorModifier = clamp(modifiers.optDouble(category, 1.0d), 0.25d, 2.0d);
-        weighted.add(new WeightedCandidate(candidate, hazard, directorModifier, cooling));
+        double categoryModifier = clamp(modifiers.optDouble(category, 1.0d), 0.25d, 2.0d);
+        double keyRefModifier = NarrativeSkeleton.keyRefWeightModifier(root, candidate);
+        weighted.add(new WeightedCandidate(
+            candidate, hazard, categoryModifier, keyRefModifier, cooling));
         totalHazard += hazard;
       }
     }
@@ -160,12 +168,14 @@ final class EmergentTurnEngine {
     JSONArray traceCandidates = new JSONArray();
     for (WeightedCandidate item : weighted) {
       double baseWeight = totalHazard <= 0.0d ? 0.0d : eventOdds * (item.hazard / totalHazard);
-      item.finalWeight = baseWeight * item.directorModifier;
+      item.finalWeight = baseWeight * item.categoryModifier * item.keyRefModifier;
       totalWeight += item.finalWeight;
       traceCandidates.put(new JSONObject()
           .put("situationKey", item.candidate.getString("situationKey"))
           .put("category", item.candidate.optString("category", ""))
           .put("finalWeight", item.finalWeight)
+          .put("categoryWeightModifier", item.categoryModifier)
+          .put("keyRefWeightModifier", item.keyRefModifier)
           .put("cooldownBlocked", item.cooling)
           .put("eligibilityRuleId", item.candidate.optString("eligibilityRuleId", "")));
     }
@@ -463,11 +473,21 @@ final class EmergentTurnEngine {
       changed = true;
     }
 
-    int skeletonMark = marks.optInt("narrativeSkeleton", 0);
+    int campaignSkeletonMark = marks.optInt("campaignSkeleton", 0);
+    JSONObject campaignSkeleton = root.optJSONObject(CampaignSkeleton.ROOT_KEY);
+    int campaignSkeletonDerived = campaignSkeleton == null
+        ? -1 : campaignSkeleton.optInt("derivedFromCommitSeq", -1);
+    if (campaignSkeletonMark < latest || campaignSkeletonDerived != latest) {
+      CampaignSkeleton.rebuild(root, state);
+      marks.put("campaignSkeleton", latest);
+      changed = true;
+    }
+
+    int narrativeSkeletonMark = marks.optInt("narrativeSkeleton", 0);
     JSONObject narrativeSkeleton = root.optJSONObject(NarrativeSkeleton.ROOT_KEY);
-    int skeletonDerived = narrativeSkeleton == null
+    int narrativeSkeletonDerived = narrativeSkeleton == null
         ? -1 : narrativeSkeleton.optInt("derivedFromCommitSeq", -1);
-    if (skeletonMark < latest || skeletonDerived != latest) {
+    if (narrativeSkeletonMark < latest || narrativeSkeletonDerived != latest) {
       NarrativeSkeleton.rebuild(root, state);
       marks.put("narrativeSkeleton", latest);
       changed = true;
@@ -737,11 +757,11 @@ final class EmergentTurnEngine {
     int dangerCooldownUntil = dangerCooldownUntil(root);
     boolean dangerCooling = currentTurn <= dangerCooldownUntil;
 
-    double dangerPressure = NarrativeSkeleton.attentionStrength(root, "DANGER");
-    double resourcePressure = NarrativeSkeleton.attentionStrength(root, "RESOURCE");
-    double socialPressure = NarrativeSkeleton.attentionStrength(root, "SOCIAL");
-    double environmentalPressure = NarrativeSkeleton.attentionStrength(root, "ENVIRONMENTAL");
-    double consequencePressure = NarrativeSkeleton.attentionStrength(root, "CONSEQUENCE");
+    double dangerPressure = CampaignSkeleton.axisScore(root, "entity_attention");
+    double resourcePressure = CampaignSkeleton.axisScore(root, "resource_dependency");
+    double socialPressure = CampaignSkeleton.axisScore(root, "social_entanglement");
+    double environmentalPressure = CampaignSkeleton.axisScore(root, "environmental_exposure");
+    double consequencePressure = CampaignSkeleton.axisScore(root, "long_term_consequence");
 
     JSONObject modifiers = new JSONObject();
     double dangerModifier = saturatingModifier(dangerPressure, 0.60d, 1.30d);
@@ -930,14 +950,17 @@ final class EmergentTurnEngine {
   private static final class WeightedCandidate {
     final JSONObject candidate;
     final double hazard;
-    final double directorModifier;
+    final double categoryModifier;
+    final double keyRefModifier;
     final boolean cooling;
     double finalWeight;
 
-    WeightedCandidate(JSONObject candidate, double hazard, double directorModifier, boolean cooling) {
+    WeightedCandidate(JSONObject candidate, double hazard, double categoryModifier,
+                      double keyRefModifier, boolean cooling) {
       this.candidate = candidate;
       this.hazard = hazard;
-      this.directorModifier = directorModifier;
+      this.categoryModifier = categoryModifier;
+      this.keyRefModifier = keyRefModifier;
       this.cooling = cooling;
     }
   }

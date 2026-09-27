@@ -168,6 +168,7 @@ public class EmergentTurnEngineTest {
     JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
     JSONObject skeleton = root.getJSONObject(NarrativeSkeleton.ROOT_KEY);
     assertTrue(NarrativeSkeleton.contractValid(skeleton));
+    assertTrue(root.has(CampaignSkeleton.ROOT_KEY));
     assertFalse(root.has("skeleton"));
     assertTrue(skeleton.has("campaignIdentity"));
     assertTrue(skeleton.has("longTermTensions"));
@@ -181,6 +182,115 @@ public class EmergentTurnEngineTest {
     assertFalse(skeleton.has("phaseGate"));
     assertFalse(skeleton.has("plotCursor"));
     assertFalse(skeleton.has("spawnSchedule"));
+  }
+
+  @Test public void campaignSkeletonMigratesSeparatelyFromNarrativeSkeleton() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 7);
+    engine.normalizeState(state);
+    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+
+    JSONObject legacy = new JSONObject(root.getJSONObject(CampaignSkeleton.ROOT_KEY).toString());
+    legacy.getJSONObject("axes").getJSONObject("entity_attention").put("score", 0.42d);
+    root.remove(CampaignSkeleton.ROOT_KEY);
+    root.remove(NarrativeSkeleton.ROOT_KEY);
+    root.put("skeleton", legacy);
+    root.getJSONObject("projectionWatermarks")
+        .remove("campaignSkeleton")
+        .remove("narrativeSkeleton");
+
+    engine.normalizeState(state);
+
+    JSONObject migrated = root.getJSONObject(CampaignSkeleton.ROOT_KEY);
+    assertEquals(0.42d,
+        migrated.getJSONObject("axes").getJSONObject("entity_attention").getDouble("score"), 0.000001d);
+    assertTrue(root.has(NarrativeSkeleton.ROOT_KEY));
+    assertFalse(root.has("skeleton"));
+  }
+
+  @Test public void narrativeSkeletonCarriesReadableCommittedContinuity() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject()
+        .put("turn", 12)
+        .put("currentLevel", 1)
+        .put("currentLevelKey", "1")
+        .put("location", "Level 1")
+        .put("player", new JSONObject().put("name", "Cao Minh"))
+        .put("party", new JSONArray().put(
+            new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")));
+    engine.normalizeState(state);
+    String turnId = engine.nextTurnId(state, "continuity");
+
+    JSONArray events = new JSONArray();
+    events.put(engine.event(turnId, events, "CHARACTER_REUNION", "SOCIAL", "luc_tram",
+        new JSONObject().put("factPredicate", "character_reunion")
+            .put("factValue", "luc_tram").put("observedByPlayer", true),
+        new JSONArray().put(engine.threadEffect(
+            "LUC_TRAM_RELATIONSHIP", new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
+    events.put(engine.event(turnId, events, "ROUTE_SEARCH_PROGRESS", "LOCAL", "1",
+        new JSONObject().put("factPredicate", "route_search_result")
+            .put("factValue", "PROGRESS").put("observedByPlayer", true),
+        new JSONArray().put(engine.threadEffect(
+            "LEVEL_ROUTE_SEARCH", new JSONArray().put("1"), "SEED_OR_ADVANCE", null))));
+
+    engine.commitAuthoritative(state, turnId, events, null);
+    engine.catchUpProjections(state);
+
+    JSONObject skeleton = state.getJSONObject(EmergentTurnEngine.ROOT_KEY)
+        .getJSONObject(NarrativeSkeleton.ROOT_KEY);
+    assertTrue(skeleton.getJSONArray("longTermTensions").toString().contains("summary"));
+    assertTrue(skeleton.getJSONArray("anchorMysteries").toString().contains("Level 1"));
+    assertTrue(skeleton.getJSONArray("importantRelationships").toString().contains("Lục Trầm"));
+    assertTrue(skeleton.getJSONArray("unresolvedWorldQuestions").toString().contains("question"));
+    assertTrue(skeleton.getJSONArray("attentionHints").toString().contains("keyRefs"));
+  }
+
+  @Test public void narrativeSkeletonWeightsOnlyEligibleCandidatesWithMatchingKeyRefs() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 9);
+    engine.normalizeState(state);
+    String turnId = engine.nextTurnId(state, "hound continuity");
+
+    JSONArray events = new JSONArray();
+    events.put(engine.event(turnId, events, "ENTITY_ENCOUNTER_STARTED", "LOCAL", "hound",
+        new JSONObject().put("factPredicate", "entity_encounter_started")
+            .put("factValue", "hound").put("observedByPlayer", true),
+        new JSONArray().put(engine.threadEffect(
+            "ENTITY_ENCOUNTER", new JSONArray().put("hound"), "SEED_OR_ADVANCE", null))));
+    engine.commitAuthoritative(state, turnId, events, null);
+    engine.catchUpProjections(state);
+
+    JSONArray candidates = new JSONArray()
+        .put(engine.candidate("ENTITY", "entity:hound", "DANGER", 10.0d,
+            "hound", "hound", false))
+        .put(engine.candidate("ENTITY", "entity:smiler", "DANGER", 10.0d,
+            "smiler", "smiler", false));
+    engine.selectCandidate(state, candidates,
+        new TurnRng("turn-keyref", 0,
+            EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 9);
+
+    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+    JSONArray traced = root.getJSONArray("selectionTrace")
+        .getJSONObject(root.getJSONArray("selectionTrace").length() - 1)
+        .getJSONArray("candidates");
+    JSONObject hound = null;
+    JSONObject smiler = null;
+    for (int i = 0; i < traced.length(); i++) {
+      JSONObject item = traced.optJSONObject(i);
+      if (item == null) continue;
+      if ("entity:hound".equals(item.optString("situationKey"))) hound = item;
+      if ("entity:smiler".equals(item.optString("situationKey"))) smiler = item;
+    }
+    assertTrue(hound != null && smiler != null);
+    assertTrue(hound.getDouble("keyRefWeightModifier") > 1.0d);
+    assertTrue(hound.getDouble("keyRefWeightModifier") <= 1.35d);
+    assertEquals(1.0d, smiler.getDouble("keyRefWeightModifier"), 0.000001d);
+    assertTrue(hound.getDouble("finalWeight") > smiler.getDouble("finalWeight"));
+
+    JSONObject noEligible = engine.selectCandidate(
+        state, new JSONArray(), new TurnRng("turn-keyref-none", 0,
+            EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 9);
+    assertTrue(noEligible.getBoolean("selectedNone"));
   }
 
   @Test public void narrativeSkeletonRebuildIgnoresSelectionSchedulerAndAiProposal() throws Exception {
@@ -290,7 +400,9 @@ public class EmergentTurnEngineTest {
     engine.commitAuthoritative(state, turnId, events, null);
     engine.catchUpProjections(state);
 
-    JSONObject director = state.getJSONObject(EmergentTurnEngine.ROOT_KEY).getJSONObject("director");
+    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+    JSONObject director = root.getJSONObject("director");
+    assertTrue(CampaignSkeleton.axisScore(root, "entity_attention") > 0.0d);
     assertEquals(23, director.getJSONObject("activeCooldowns").getInt("DANGER_UNTIL_TURN"));
     assertTrue(director.getJSONObject("tagWeightModifiers").getDouble("DANGER") <= 0.65d);
   }
