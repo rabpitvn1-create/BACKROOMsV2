@@ -78,8 +78,9 @@ final class CharacterEncounterCore {
     JSONArray joined = new JSONArray();
     for (String id : CANONICAL_ORDER) if (containsPartyId(party, id)) joined.put(id);
     encounter.put("joined", joined);
-    encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO)));
-    encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED)));
+    boolean allowLucTram = state.optInt("currentLevel", 0) > 0;
+    encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO), allowLucTram));
+    encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED), allowLucTram));
     state.put(ENCOUNTER_STATE, encounter);
   }
 
@@ -349,11 +350,12 @@ final class CharacterEncounterCore {
     return inventory;
   }
 
-  private static JSONArray filterEncounterIds(JSONArray ids) {
+  private static JSONArray filterEncounterIds(JSONArray ids, boolean allowLucTram) {
     JSONArray result = new JSONArray();
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
-      if (!"luc_tram".equals(id) && containsString(ids, id)) result.put(id);
+      if ("luc_tram".equals(id) && !allowLucTram) continue;
+      if (containsString(ids, id)) result.put(id);
     }
     return result;
   }
