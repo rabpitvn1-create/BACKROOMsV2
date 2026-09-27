@@ -714,6 +714,7 @@ public class MainActivity extends Activity {
 
           JSONObject generated;
           String reply;
+          boolean narrationValidated = false;
           try {
             generated = parseModelJson(generateText(prompt));
             String narrationViolation = NarrationGuard.validate(generated, state);
@@ -727,6 +728,7 @@ public class MainActivity extends Activity {
               }
             }
             reply = generated.optString("reply", "").trim();
+            narrationValidated = true;
           } catch (Exception narrationError) {
             Log.w(TAG, "Narration provider failed or contradicted committed authority; using deterministic template: "
                 + providerErrorSummary(narrationError));
@@ -747,7 +749,10 @@ public class MainActivity extends Activity {
           log.put(gmEntry);
           state.put("log", log);
 
-          state = new JSONObject(gameCore.commitNarration(state.toString()));
+          boolean acknowledgePendingIntro = narrationValidated
+              && encounterDialogue.length() >= 2 && encounterDialogue.length() <= 5;
+          state = new JSONObject(
+              gameCore.commitNarration(state.toString(), acknowledgePendingIntro));
 
           if (CombatChoiceEngine.isKnownEntity(newEncounter)) {
             state = new JSONObject(
