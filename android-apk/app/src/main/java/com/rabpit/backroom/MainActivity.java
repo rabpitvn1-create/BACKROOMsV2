@@ -597,11 +597,13 @@ public class MainActivity extends Activity {
   private String worldProposalPrompt(JSONObject selected) {
     String summary = selected == null ? "" : selected.optString("publicSummary", "");
     String canon = selected == null ? "" : selected.optString("capabilityContext", "");
+    JSONArray allowed = selected == null ? null : selected.optJSONArray("allowedWorldActions");
+    String allowedText = allowed == null ? "INTERCEPT, DIRECT_ATTACK, OBSERVE" : allowed.toString();
     return "Bạn đang đề xuất CÁCH một world situation đã được Java Core chọn sẽ được thực hiện. "
         + "Bạn không được đổi Entity/situation, không quyết outcome và không sửa state.\n"
         + "SITUATION: " + summary + "\n"
         + "CAPABILITY/CANON: " + canon + "\n"
-        + "Chọn đúng một actionType phù hợp trong: STALK, INTERCEPT, AMBUSH, DIRECT_ATTACK, LURE, OBSERVE. "
+        + "actionType chỉ được chọn từ ALLOWED_WORLD_ACTIONS: " + allowedText + ". "
         + "intentTag chỉ được aggressive, cautious hoặc opportunistic.\n"
         + "OUTPUT chỉ JSON: {\"actionType\":\"INTERCEPT\",\"intentTag\":\"opportunistic\"}";
   }
