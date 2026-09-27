@@ -19,6 +19,7 @@ import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
 import com.rabpit.backroom.core.GmNarrativePacket;
 import com.rabpit.backroom.core.GmNarratorContract;
+import com.rabpit.backroom.core.NarrationGuard;
 import com.rabpit.backroom.core.ProviderRetryPolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -696,10 +697,19 @@ public class MainActivity extends Activity {
           String reply;
           try {
             generated = parseModelJson(generateText(prompt));
+            String narrationViolation = NarrationGuard.validate(generated, state);
+            if (!narrationViolation.isEmpty()) {
+              generated = parseModelJson(generateText(
+                  prompt + "\nVALIDATION REJECTED: " + narrationViolation
+                      + "\nRegenerate narration only. Do not add or mutate world state."));
+              narrationViolation = NarrationGuard.validate(generated, state);
+              if (!narrationViolation.isEmpty()) {
+                throw new Exception("Narration validation failed: " + narrationViolation);
+              }
+            }
             reply = generated.optString("reply", "").trim();
-            if (reply.isEmpty()) throw new Exception("AI narration rỗng.");
           } catch (Exception narrationError) {
-            Log.w(TAG, "Narration provider failed after COMMIT; using deterministic template: "
+            Log.w(TAG, "Narration provider failed or contradicted committed authority; using deterministic template: "
                 + providerErrorSummary(narrationError));
             generated = narrationFallback(state, replyHint);
             reply = generated.optString("reply", "");
