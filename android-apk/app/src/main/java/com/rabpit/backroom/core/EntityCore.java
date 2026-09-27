@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 final class EntityCore {
   static final double MIN_AUTO_SPAWN_RATE_PERCENT = 3.0d;
@@ -31,81 +30,10 @@ final class EntityCore {
     loadRegistry(context);
   }
 
-  void prepareEncounter(JSONObject state) throws Exception {
-    JSONObject flags = flags(state);
-    String activeKey = flags.optString(ENCOUNTER_KEY, "").trim();
-    if (!activeKey.isEmpty()) {
-      flags.remove(RESOLVED_KEY);
-      state.put("flags", flags);
-      return;
-    }
-
-    int level = state.optInt("currentLevel", 0);
-
-    // Treasure Entities roll before the ordinary collision pool. With one registered Treasure
-    // Entity, its configured rate is its real encounter rate instead of being diluted by
-    // simultaneous ordinary hits.
-    for (EntityDefinition entity : entities.values()) {
-      if (!entity.treasure || !roamingAllowedOn(level)) continue;
-      if (ThreadLocalRandom.current().nextDouble(100.0) < entity.ratePercent) {
-        activateEncounter(state, flags, entity, level, TREASURE_SOURCE);
-        return;
-      }
-    }
-
-    List<EntityDefinition> hits = new ArrayList<>();
-    for (EntityDefinition entity : entities.values()) {
-      if (entity.treasure || !roamingAllowedOn(level)) continue;
-      double roll = ThreadLocalRandom.current().nextDouble(100.0);
-      if (roll < entity.ratePercent) hits.add(entity);
-    }
-
-    flags.remove(RESOLVED_KEY);
-    if (hits.isEmpty()) {
-      flags.put(ENCOUNTER_KEY, "");
-      clearActiveMetadata(flags);
-      state.put("flags", flags);
-      return;
-    }
-
-    EntityDefinition selected = hits.get(ThreadLocalRandom.current().nextInt(hits.size()));
-    activateEncounter(state, flags, selected, level, SOURCE);
-  }
-
-  JSONArray situationCandidates(JSONObject state) throws Exception {
-    JSONArray output = new JSONArray();
-    JSONObject currentFlags = flags(state);
-    if (!currentFlags.optString(ENCOUNTER_KEY, "").trim().isEmpty()) return output;
-    int level = state.optInt("currentLevel", 0);
-    for (EntityDefinition entity : entities.values()) {
-      if (!roamingAllowedOn(level)) continue;
-      output.put(new JSONObject()
-          .put("candidateId", "entity:" + entity.key)
-          .put("situationKey", "entity:" + entity.key)
-          .put("kind", "ENTITY")
-          .put("category", "DANGER")
-          .put("chancePercent", entity.ratePercent)
-          .put("payloadKey", entity.key)
-          .put("source", "CANON")
-          .put("publicSummary", entity.name + " đã tiến vào phạm vi tương tác với Cao Minh.")
-          .put("capabilityContext", entity.canon)
-          .put("proposalRequired", true)
-          .put("eligibilityRuleId", "canon:entity:" + entity.key)
-          .put("tags", new JSONArray().put("DANGER").put("ENTITY").put(entity.key))
-          .put("keyRefs", new JSONArray().put(entity.key)));
-    }
-    return output;
-  }
-
-  void activateEncounterCandidate(JSONObject state, String key) throws Exception {
-    String normalized = key == null ? "" : key.trim();
-    EntityDefinition entity = entities.get(normalized);
-    if (entity == null) throw new IllegalArgumentException("Unknown Entity candidate: " + normalized);
-    JSONObject currentFlags = flags(state);
-    if (!currentFlags.optString(ENCOUNTER_KEY, "").trim().isEmpty()) {
-      throw new IllegalStateException("An Entity encounter is already active");
-    }
-    activateEncounter(state, currentFlags, entity, state.optInt("currentLevel", 0), "candidate_selector");
+  @Deprecated
+  void prepareEncounter(JSONObject state) {
+    throw new IllegalStateException(
+        "Legacy unscoped Entity RNG is disabled; use SituationCandidate selection through TurnRng.");
   }
 
   void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
