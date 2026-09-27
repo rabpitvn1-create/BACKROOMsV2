@@ -83,6 +83,7 @@
   </section>
 </div>
 </main>
+<script src="prologue.js"></script>
 <script>
 function syncViewportHeight(){
   const viewport=window.visualViewport;
@@ -96,7 +97,7 @@ if(window.visualViewport){
 }else{
   window.addEventListener("resize",syncViewportHeight);
 }
-const gmBootMessage="LEVEL 0 — THE LOBBY\n\nChọn một gợi ý của GAME MASTER hoặc dùng PLAYER ACTION để bắt đầu khám phá.";
+const prologueText=window.BACKROOM_PROLOGUE||"LEVEL 0 — THE LOBBY\n\nChọn một gợi ý của GAME MASTER hoặc dùng PLAYER ACTION để bắt đầu khám phá.";
 
 const CURRENT_CHARACTER_CANON={
   "version": "cao-minh-r15-2026-09-20",
@@ -147,7 +148,7 @@ const initial={
   flags:{},
   characterCanon:CURRENT_CHARACTER_CANON,
   log:[
-    {role:"gm",text:gmBootMessage}
+    {role:"gm",text:prologueText}
   ]
 };
 

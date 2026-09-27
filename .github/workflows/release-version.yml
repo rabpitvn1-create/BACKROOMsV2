@@ -100,7 +100,8 @@ jobs:
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --check android-apk/app/src/main/assets/player-action-ui.js
           node --check android-apk/app/src/main/assets/snapshot-ui.js
-          node --test android-apk/tests/gm-choice-ui.test.cjs android-apk/tests/player-action-gm-contract.test.cjs android-apk/tests/viewport-layout.test.cjs
+          node --check android-apk/app/src/main/assets/prologue.js
+          node --test android-apk/tests/gm-choice-ui.test.cjs android-apk/tests/player-action-gm-contract.test.cjs android-apk/tests/prologue-contract.test.cjs android-apk/tests/viewport-layout.test.cjs
 
       - name: Validate Game Master configuration
         run: |
@@ -212,6 +213,7 @@ jobs:
           grep -Fq "launchable-activity: name='com.rabpit.backroom.MainActivity'" <<<"$BADGING"
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.66.apk
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/index.html'
+          unzip -l Backroom-1.1.66.apk | grep -q 'assets/prologue.js'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/snapshot-ui.js'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/gm-choice-ui.js'
           unzip -l Backroom-1.1.66.apk | grep -q 'assets/fonts/Play-Regular.ttf'
