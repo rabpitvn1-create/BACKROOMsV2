@@ -405,7 +405,8 @@ public final class GameCoreFacade implements AutoCloseable {
       int preVersion = emergentTurnEngine.stateVersion(persisted);
       JSONObject working = deepCopy(persisted);
       JSONObject beforeCombat = working.optJSONObject("combat");
-      String entityKey = beforeCombat == null ? "" : beforeCombat.optString("entityKey", "");
+      JSONObject beforeEntity = beforeCombat == null ? null : beforeCombat.optJSONObject("entity");
+      String entityKey = beforeEntity == null ? "" : beforeEntity.optString("key", "");
       String turnId = emergentTurnEngine.nextTurnId(
           persisted, "combat:resolve:" + entityKey + ":" + (beforeCombat == null ? 0 : beforeCombat.optInt("round", 0))
               + ":" + (beforeCombat == null ? 0 : beforeCombat.optInt("actorIndex", 0)));
