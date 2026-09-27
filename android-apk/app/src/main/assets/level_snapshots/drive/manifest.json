@@ -1,8 +1,8 @@
 {
-  "version": 4,
+  "version": 5,
   "source": "User-provided Google Drive snapshot set",
   "sourceFolder": "https://drive.google.com/drive/folders/1QsapoDnhAH69j0EIgdVQb7jV6sKc_IZe",
-  "importedAt": "2026-09-18",
+  "importedAt": "2026-09-27",
   "root": "level_snapshots/drive",
   "selectionPolicy": "turn_based_rotation_for_main_levels_and_level_0_sublevels",
   "dimensions": {
@@ -16,7 +16,8 @@
       "assets": [
         "level_0/01.webp",
         "level_0/02.webp",
-        "level_0/03.webp"
+        "level_0/03.webp",
+        "level_0/04.webp"
       ]
     },
     "1": {
@@ -135,5 +136,6 @@
         "sublevel_red-rooms/snapshot_level_0_sublevel_red-rooms_05.webp"
       ]
     }
-  }
+  },
+  "dimensionPolicy": "legacy_set_351x250; newer_level_0_expansions_keep_source_native_dimensions"
 }

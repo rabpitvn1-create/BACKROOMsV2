@@ -5,12 +5,12 @@ The APK packages the user-provided Google Drive snapshot set locally so Snapshot
 Source folder:
 https://drive.google.com/drive/folders/1QsapoDnhAH69j0EIgdVQb7jV6sKc_IZe
 
-Imported: 2026-09-18
+Imported: 2026-09-18; Level 0 expansion: 2026-09-27
 
 Runtime policy:
-- Levels 0 through 6 each use exactly three local WebP snapshots.
-- Every imported image is 351 × 250 px.
-- Turn-based selection rotates through the three images for the current Level.
+- Levels 1 through 6 use the original three local WebP snapshots; Level 0 is being expanded one image at a time.
+- Original imported snapshots are 351 × 250 px; added Level 0 backgrounds keep their source-native dimensions and are rendered with `object-fit: cover`.
+- Turn-based selection rotates through every manifest asset for the current Level.
 - All previous Escape the Backrooms / Wikidot snapshot image files were removed from the APK.
 - Gemini-generated per-turn snapshots remain a separate runtime path and are not part of this local fallback set.
 
@@ -19,6 +19,7 @@ Runtime policy:
 | 0 | 1 | level_00_snapshot_001.webp | `90a6dbb84d5851244df7c67a747fe0b3bb30d3a1a3dd7c672a5a9d3648e729e7` |
 | 0 | 2 | level_00_snapshot_002.webp | `8e018d014b75005873251c35fc5690c7b3f735367d8572de776a572b3650fb6c` |
 | 0 | 3 | level_00_snapshot_003.webp | `404eb9fccbe6f786dc6c2489ce28e54572d6442b906d2eb0c7ff96ce15fb7e04` |
+| 0 | 4 | level_00_snapshot_004.webp | `f2aa5978a104c2d33ef87a00b24fe1dbf62fda3b36e47ba25f8e2952b0656c54` |
 | 1 | 1 | level_01_snapshot_001.webp | `72d8ffe6e70cf95d8872692bdeccf69811a11df5fd8894251afee80258283ae6` |
 | 1 | 2 | level_01_snapshot_002.webp | `3de86a8c83038b6b37adc861959068e571b6c07712be46a8eca0494595ea33b1` |
 | 1 | 3 | level_01_snapshot_003.webp | `3a7cbab5918e358ccbe1b30269f16137cbb2be9674397f9d5f5421dfc856911c` |
