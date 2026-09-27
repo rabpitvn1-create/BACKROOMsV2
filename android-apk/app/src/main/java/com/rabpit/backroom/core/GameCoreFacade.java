@@ -14,7 +14,7 @@ public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
-  private static final int CURRENT_SAVE_VERSION = 12;
+  private static final int CURRENT_SAVE_VERSION = 13;
 
   private final SharedPreferences preferences;
   private final boolean debugLogging;
@@ -331,7 +331,9 @@ public final class GameCoreFacade implements AutoCloseable {
     JSONObject state = parseState(stateJson);
     try {
       JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
-      state = persisted.length() > 0 ? persisted : newGameState(state);
+      state = persisted.length() > 0 && persisted.optInt("saveVersion", -1) == CURRENT_SAVE_VERSION
+          ? persisted
+          : newGameState(state);
       levelCore.normalizeState(state);
       characterProgressionCore.normalizeState(state);
       survivalCore.normalizeState(state);
