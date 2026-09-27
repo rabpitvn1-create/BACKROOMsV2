@@ -569,7 +569,9 @@
     if (!entry) return;
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
-    if (latest && deathRestartPending()) {
+    var deathRestart = !!(state && state.combat && state.combat.active !== true
+      && state.combat.outcome === 'defeat' && state.combat.deathRestartPending === true);
+    if (latest && deathRestart) {
       var restartBox = document.createElement('div');
       restartBox.className = 'gm-choices death-restart';
       var restartButton = document.createElement('button');
