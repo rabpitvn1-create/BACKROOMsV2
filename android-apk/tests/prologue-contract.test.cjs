@@ -2,15 +2,17 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const vm=require('node:vm');
 
 const assets=path.join(__dirname,'..','app','src','main','assets');
 const script=fs.readFileSync(path.join(assets,'prologue.js'),'utf8');
 const index=fs.readFileSync(path.join(assets,'index.html'),'utf8');
 
 test('standalone prologue restores the full Cao Minh opening without Story Core',()=>{
-  const match=script.match(/window\.BACKROOM_PROLOGUE=(.*);\n/s);
-  assert.ok(match,'prologue payload is missing');
-  const text=JSON.parse(match[1]);
+  const sandbox={window:{}};
+  vm.runInNewContext(script,sandbox,{filename:'prologue.js'});
+  const text=sandbox.window.BACKROOM_PROLOGUE;
+  assert.equal(typeof text,'string');
   assert.ok(text.length>9000,'prologue was unexpectedly truncated');
   assert.match(text,/^PROLOGUE — NƠI KHÔNG CÓ TÊN/);
   assert.match(text,/Ma Sơn\. Không có đại chiến\. Không có thiên kiếp\./);
