@@ -160,7 +160,7 @@ public class OfflineStoryLoopTest {
     assertEquals(target, journey.getString("targetLocation"));
   }
 
-  @Test public void deathDuringReturnRestartsAtLevelStartWithOriginalAnchor() throws Exception {
+  @Test public void deathDuringReturnQueuesLocalRestartAtLevelStart() throws Exception {
     StoryCore core = StoryCore.withRepository(repository());
     JSONObject state = decisionState(core);
     installStoryChoices(core, state, "sai");
@@ -169,27 +169,23 @@ public class OfflineStoryLoopTest {
     installReturnTurn(core, state, "lượt-cũ");
     core.resolveReturnJourneyChoice(state, returnOutcomeId(state, StoryCore.RETURN_PROGRESS));
     installReturnTurn(core, state, "lượt-chết");
-    JSONObject journey = state.getJSONObject("story").getJSONObject("returnJourney");
-    String oldId = journey.getString("journeyId");
     String staleChoice = returnOutcomeId(state, StoryCore.RETURN_STAY);
-    String anchor = journey.getJSONObject("pausedStory").toString();
-    String target = journey.getString("targetLocation");
+
     state.put("combat", new JSONObject().put("outcome", "defeat")
-        .put("deathReturnJourneyPending", true).put("deathReturnAnchorLocation", state.getString("location")));
+        .put("deathReturnJourneyPending", true)
+        .put("deathReturnAnchorLocation", state.getString("location")));
     GameCoreFacade.armDeathReturnIfNeeded(core, state);
-    assertFalse(state.getJSONObject("combat").getBoolean("deathReturnJourneyPending"));
-    assertNotEquals(oldId, journey.getString("journeyId"));
-    assertEquals(0, journey.getInt("progress"));
-    assertEquals(0, journey.getInt("turnIndex"));
+
+    JSONObject combat = state.getJSONObject("combat");
+    assertFalse(combat.getBoolean("deathReturnJourneyPending"));
+    assertFalse(combat.getBoolean("deathReturnJourneyStarted"));
+    assertTrue(combat.getBoolean("deathRestartPending"));
     assertEquals(LevelCore.defaultLocation("0"), state.getString("location"));
-    assertEquals(state.getString("location"), journey.getString("currentPosition"));
-    assertEquals(target, journey.getString("targetLocation"));
-    assertEquals(anchor, journey.getJSONObject("pausedStory").toString());
+    assertFalse(core.returnJourneyActive(state));
     try {
       core.selectReturnChoice(state, staleChoice);
       fail("Choice from before death must be stale");
     } catch (IllegalArgumentException expected) { /* stale */ }
-    converge(core, state);
     assertTrue(core.awaitingDecision(state));
     assertTrue(core.decisionNeedsProvider(state));
   }
