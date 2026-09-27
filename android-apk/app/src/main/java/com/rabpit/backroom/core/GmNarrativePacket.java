@@ -9,14 +9,7 @@ public final class GmNarrativePacket {
   private GmNarrativePacket() {}
 
   public static JSONObject projectState(JSONObject state) throws Exception {
-    JSONObject projected = state == null ? new JSONObject() : new JSONObject(state.toString());
-    projected.remove("log");
-    projected.remove("levelRoute");
-    projected.remove("characterCanon");
-    projected.remove("flags");
-    projected.remove(EmergentTurnEngine.ROOT_KEY);
-    projected.remove("characterEncounter");
-    return projected;
+    return EpistemicView.forActor(state, "cao_minh");
   }
 
   public static String build(
