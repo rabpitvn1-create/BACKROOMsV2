@@ -289,7 +289,7 @@ jobs:
           grep -Fq 'rotatingSectionLimit' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'structuredKnowledgeLoadsOnlyCurrentLevelBundle' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
           grep -Fq 'structuredKnowledgeRotatesLargeScenePoolsByTurn' android-apk/app/src/test/java/com/rabpit/backroom/core/LevelCoreTest.java
-          grep -Fq 'levelCore.rollRouteForExplorerAction(legacy, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'levelCore.rollRouteForExplorerAction(state, text)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'projected.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'projected.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'projected.remove("characterCanon")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
