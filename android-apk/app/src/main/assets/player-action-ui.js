@@ -13,14 +13,9 @@
   var submit = document.getElementById('submit');
   if (!modal || !openButton || !form || !action) return;
 
-  window.__playerEnvironmentBusy = false;
-
   function combatActive(){
-    try {
-      return !!(state && state.combat && state.combat.active);
-    } catch (_) {
-      return false;
-    }
+    try { return !!(state && state.combat && state.combat.active); }
+    catch (_) { return false; }
   }
 
   function deathRestartPending(){
@@ -28,73 +23,15 @@
       var combat = state && state.combat;
       return !!(combat && combat.active !== true && combat.outcome === 'defeat'
         && combat.deathRestartPending === true);
-    } catch (_) {
-      return false;
-    }
+    } catch (_) { return false; }
   }
 
   function processing(){
-    return !!window.__combatBusy || !!window.__playerEnvironmentBusy
-      || (typeof busy !== 'undefined' && !!busy);
+    return !!window.__combatBusy || (typeof busy !== 'undefined' && !!busy);
   }
 
-  function storyCutawayActive(){
-    try {
-      return !!(state && state.story && state.story.active === true
-        && state.story.arcComplete !== true
-        && String(state.story.visibility || '') === 'cutaway');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyBootstrapPending(){
-    try {
-      var story = state && state.story;
-      return !!(story && story.active === true && story.arcComplete !== true
-        && !(story.returnJourney && story.returnJourney.active === true)
-        && story.segmentDelivered !== true && story.awaitingDecision !== true
-        && story.awaitingEntityAttack !== true && story.pendingStoryAdvance !== true
-        && !(state.combat && state.combat.active));
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyEntityAttackActive(){
-    try {
-      return !!(state && state.story && state.story.active === true
-        && state.story.arcComplete !== true
-        && state.story.awaitingEntityAttack === true);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyAdvancePending(){
-    try {
-      return !!(state && state.story && state.story.pendingStoryAdvance === true);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function storyDecisionPreparing(){
-    try {
-      var story = state && state.story;
-      return !!(story && story.active === true && story.arcComplete !== true
-        && !(story.returnJourney && story.returnJourney.active === true)
-        && story.awaitingDecision === true
-        && String(story.decisionStatus || '') !== 'READY');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function environmentLocked(){
-    return combatActive() || deathRestartPending() || processing() || storyBootstrapPending()
-      || storyCutawayActive() || storyEntityAttackActive() || storyAdvancePending()
-      || storyDecisionPreparing();
+  function actionLocked(){
+    return combatActive() || deathRestartPending() || processing();
   }
 
   function fitVisualViewport(){
@@ -125,7 +62,7 @@
   }
 
   function openPlayerAction(){
-    if (environmentLocked()) return;
+    if (actionLocked()) return;
     modal.hidden = false;
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('player-action-open');
@@ -142,27 +79,10 @@
   }
 
   function syncPlayerAction(){
-    var locked = environmentLocked();
+    var locked = actionLocked();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || deathRestartPending() || storyBootstrapPending() || storyCutawayActive()
-        || storyEntityAttackActive() || storyAdvancePending() || storyDecisionPreparing()) && !modal.hidden) {
-      closePlayerAction(true);
-    }
-  }
-
-  function showEnvironmentError(message){
-    window.__playerEnvironmentBusy = false;
-    window.__gmEnvironmentLoading = false;
-    window.__gmErrorMessage = 'Đang gặp lỗi. Vui lòng thử lại.';
-    if (typeof busy !== 'undefined') busy = false;
-    if (submit) submit.disabled = false;
-    if (message && window.console && typeof console.error === 'function')
-      console.error('Environment PLAYER ACTION:', message);
-    if (typeof window.render === 'function') window.render();
-    syncPlayerAction();
-    if (typeof window.backroomScrollGmSystemMessage === 'function')
-      window.backroomScrollGmSystemMessage();
+    if ((combatActive() || deathRestartPending()) && !modal.hidden) closePlayerAction(true);
   }
 
   form.addEventListener('submit', function(event){
@@ -171,20 +91,18 @@
     event.stopImmediatePropagation();
 
     var text = String(action.value || '').trim();
-    if (!text || environmentLocked()) return;
-    if (!window.Android || typeof Android.submitEnvironmentAction !== 'function') {
-      showEnvironmentError('Không tìm thấy Android environment bridge.');
+    if (!text || actionLocked()) return;
+    if (!window.Android || typeof Android.submitTurn !== 'function') {
+      if (typeof window.backroomError === 'function') window.backroomError('Không tìm thấy Android GM bridge.');
       return;
     }
 
-    window.__playerEnvironmentBusy = true;
-    window.__gmEnvironmentLoading = true;
     window.__gmErrorMessage = '';
     if (typeof busy !== 'undefined') busy = true;
     if (submit) submit.disabled = true;
     closePlayerAction(true);
     if (typeof window.render === 'function') window.render();
-    Android.submitEnvironmentAction(JSON.stringify(state), text);
+    Android.submitTurn(JSON.stringify(state), text);
   }, true);
 
   openButton.addEventListener('click', openPlayerAction);
@@ -206,31 +124,6 @@
   window.backroomClosePlayerAction = closePlayerAction;
   window.backroomSyncPlayerAction = syncPlayerAction;
 
-  window.backroomEnvironmentTurn = function(json){
-    try {
-      state = typeof ensureCurrentLevel === 'function'
-        ? ensureCurrentLevel(JSON.parse(json))
-        : JSON.parse(json);
-      if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
-      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
-      action.value = '';
-      window.__playerEnvironmentBusy = false;
-      window.__gmEnvironmentLoading = false;
-      window.__gmErrorMessage = '';
-      if (typeof busy !== 'undefined') busy = false;
-      if (submit) submit.disabled = false;
-      closePlayerAction(false);
-      if (typeof window.render === 'function') window.render();
-      syncPlayerAction();
-      if (typeof window.backroomScrollLatestGmToStart === 'function')
-        window.backroomScrollLatestGmToStart();
-    } catch (error) {
-      showEnvironmentError(error && error.message ? error.message : 'Environment state không hợp lệ.');
-    }
-  };
-
-  window.backroomEnvironmentError = showEnvironmentError;
-
   var previousRender = window.render;
   window.render = function(){
     if (typeof previousRender === 'function') previousRender();
@@ -240,8 +133,6 @@
   var previousTurn = window.backroomTurn;
   window.backroomTurn = function(json){
     if (typeof previousTurn === 'function') previousTurn(json);
-    window.__playerEnvironmentBusy = false;
-    window.__gmEnvironmentLoading = false;
     closePlayerAction(false);
     syncPlayerAction();
   };
