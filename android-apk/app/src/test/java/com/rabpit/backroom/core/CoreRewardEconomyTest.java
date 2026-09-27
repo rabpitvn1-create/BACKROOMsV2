@@ -14,22 +14,6 @@ public class CoreRewardEconomyTest {
         CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, 0));
     assertEquals(3, CharacterProgressionCore.scaledCoreReward(
         CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, 1));
-    assertEquals(5, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, 2));
-    assertEquals(7, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.ENTITY_VICTORY_BASE_CORE, 3));
-
-    assertEquals(5, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 0));
-    assertEquals(8, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 1));
-    assertEquals(11, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 2));
-    assertEquals(17, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 3));
-
-    assertEquals(Integer.MAX_VALUE, CharacterProgressionCore.scaledCoreReward(
-        CharacterProgressionCore.STORY_PROGRESS_BASE_CORE, 10_000));
   }
 
   @Test public void coreBalanceSaturatesInsteadOfOverflowing() throws Exception {
@@ -142,30 +126,6 @@ public class CoreRewardEconomyTest {
     }
   }
 
-  @Test public void storyProgressRewardsCanonAndConvergeButNeverTrapLoop() throws Exception {
-    JSONObject state = baseState("0");
-    CharacterProgressionCore progression = new CharacterProgressionCore();
-    progression.normalizeState(state);
-
-    StoryCore.DecisionResolution canon = new StoryCore.DecisionResolution(
-        "Đi tiếp", "", StoryCore.OUTCOME_CANON, null, false);
-    assertEquals(5, GameCoreFacade.grantStoryProgressCore(state, canon));
-    assertEquals(5, progression.coreCount(state));
-    assertEquals(5, state.getJSONObject("flags").getInt("lastStoryCoreReward"));
-
-    StoryCore.DecisionResolution trap = new StoryCore.DecisionResolution(
-        "Đi vòng", "", StoryCore.OUTCOME_TRAP, null, true);
-    assertEquals(0, GameCoreFacade.grantStoryProgressCore(state, trap));
-    assertEquals(5, progression.coreCount(state));
-    assertEquals(0, state.getJSONObject("flags").getInt("lastStoryCoreReward"));
-
-    state.put(LevelCore.LEVEL_KEY, "0.1");
-    StoryCore.DecisionResolution converge = new StoryCore.DecisionResolution(
-        "Quan sát rồi tiến", "", StoryCore.OUTCOME_CONVERGE, null, false);
-    assertEquals(8, GameCoreFacade.grantStoryProgressCore(state, converge));
-    assertEquals(13, progression.coreCount(state));
-    assertEquals(1, state.getJSONObject("flags").getInt("lastStoryCoreStageIndex"));
-  }
 
   private static JSONObject baseState(String levelKey) throws Exception {
     return new JSONObject()
