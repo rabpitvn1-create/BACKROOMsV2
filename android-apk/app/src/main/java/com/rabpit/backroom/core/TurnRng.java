@@ -11,7 +11,8 @@ final class TurnRng {
     PLAYER_ACTION,
     CANDIDATE_SELECTION,
     WORLD_REACTION,
-    CASCADE
+    CASCADE,
+    COMBAT
   }
 
   private final String turnId;
@@ -44,6 +45,16 @@ final class TurnRng {
   int drawsUsed(Scope scope) {
     Integer value = counters.get(scope);
     return value == null ? 0 : value;
+  }
+
+  void resume(Scope scope, int drawsUsed) {
+    if (scope == null) throw new IllegalArgumentException("scope is required");
+    if (drawsUsed < 0) throw new IllegalArgumentException("drawsUsed must be non-negative");
+    int current = counters.get(scope);
+    if (current != 0 && current != drawsUsed) {
+      throw new IllegalStateException("Cannot resume an already-consumed RNG scope");
+    }
+    counters.put(scope, drawsUsed);
   }
 
   String drawKey(Scope scope, int drawSeq) {
