@@ -330,14 +330,16 @@ public class CombatChoiceEngineTest {
     CombatChoiceEngine.resolveFinalized(state);
 
     JSONArray battleLog = gmLog.getJSONObject(0).getJSONArray("battleLog");
-    assertEquals(2, battleLog.length());
+    assertEquals(3, battleLog.length());
     String actorLine = battleLog.getJSONObject(0).getString("text");
     String entityLine = battleLog.getJSONObject(1).getString("text");
+    String passiveLine = battleLog.getJSONObject(2).getString("text");
     assertTrue(actorLine.startsWith("["));
     assertTrue(actorLine.contains("Cao Minh"));
     assertTrue(actorLine.contains("Hound -"));
     assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertTrue(entityLine.startsWith("Hound "));
+    assertTrue(passiveLine.startsWith("Đại Đạo Ma Tôn:"));
     assertTrue(entityLine.contains("Cao Minh -"));
     assertTrue(entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertFalse(actorLine.toLowerCase().contains("reroll"));
@@ -519,7 +521,7 @@ public class CombatChoiceEngineTest {
     for (int i = 0; i < feedback.length(); i++) {
       String text = feedback.getJSONObject(i).optString("text", "");
       if (text.isEmpty()) continue;
-      assertTrue("Unexpected combat floater: " + text, text.matches("-\\d+ HP"));
+      assertTrue("Unexpected combat floater: " + text, text.matches("[+-]\\d+ HP"));
       assertFalse(text.contains("PROC"));
     }
   }
