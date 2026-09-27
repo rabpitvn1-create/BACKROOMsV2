@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,7 +53,9 @@ final class LevelCore {
   private String sublevelSnapshotRoot = "level_snapshots/sublevels/level_0";
 
   LevelCore(Context context) {
-    this(context, bound -> ThreadLocalRandom.current().nextInt(bound));
+    this(context, bound -> {
+      throw new IllegalStateException("Unscoped Level RNG is disabled; use the TurnRng-backed overload.");
+    });
   }
 
   LevelCore(Context context, IntRng rng) {
