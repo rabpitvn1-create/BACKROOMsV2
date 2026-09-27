@@ -134,23 +134,6 @@ final class ItemCore {
     state.put("flags", currentFlags);
   }
 
-  void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
-    JSONObject beforeFlags = flags(before);
-    JSONObject candidateFlags = flags(candidate);
-    if (beforeFlags.optBoolean(CHEST_PRESENT, false)) {
-      candidateFlags.put(CHEST_PRESENT, true);
-      copy(beforeFlags, candidateFlags, "chestSource");
-      copy(beforeFlags, candidateFlags, "chestSpawnRatePercent");
-      copy(beforeFlags, candidateFlags, "chestSpawnTurn");
-    } else {
-      candidateFlags.remove(CHEST_PRESENT);
-      candidateFlags.remove("chestSource");
-      candidateFlags.remove("chestSpawnRatePercent");
-      candidateFlags.remove("chestSpawnTurn");
-    }
-    candidate.put("flags", candidateFlags);
-  }
-
   boolean isOpenChestAction(String action) {
     String value = action == null ? "" : action.trim().toLowerCase(Locale.ROOT);
     return OPEN_CHEST_ACTION.equals(action)
@@ -537,8 +520,4 @@ final class ItemCore {
     return value;
   }
 
-  private void copy(JSONObject source, JSONObject target, String key) throws Exception {
-    if (source.has(key)) target.put(key, source.get(key));
-    else target.remove(key);
-  }
 }
