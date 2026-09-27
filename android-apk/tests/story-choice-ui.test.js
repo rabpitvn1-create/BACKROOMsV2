@@ -35,10 +35,10 @@ function buttons(root) {
   const walk = el => { for (const child of el.children) { if (child.tag === 'button') result.push(child); walk(child); } };
   walk(root); return result;
 }
-function scenario(isReturn) {
+function scenario(isReturn, deathRestart = false) {
   const log = new Element(), form = new Element(), action = new Element(), submit = new Element(), status = new Element();
   const style = new Element();
-  const calls = { prepare: [], resolve: [], errors: [] };
+  const calls = { prepare: [], resolve: [], restart: [], errors: [] };
   const choicePack = { contextHash: 'hash', choices: [
     { id: 'choice_ab1', text: 'Cao Minh xem dấu vết cạnh Lục Trầm' },
     { id: 'choice_cd2', text: 'Thử lối ở Level 0' },
@@ -48,7 +48,9 @@ function scenario(isReturn) {
     decisionStatus: 'PROVIDER_REQUIRED', decisionId: 'beat', decisionPackage: choicePack,
     returnJourney: { active: isReturn, journeyId: 'journey', turnIndex: 0,
       turnStatus: 'PROVIDER_REQUIRED', turnPackage: choicePack } };
-  const context = { state: { story, combat: { active: false }, log: [{ role: 'gm', text: 'Cao Minh đứng lại.' }] }, busy: false,
+  const context = { state: { story, combat: deathRestart
+      ? { active: false, outcome: 'defeat', deathRestartPending: true }
+      : { active: false }, log: [{ role: 'gm', text: 'Cao Minh đứng lại.' }] }, busy: false,
     document: { head: { appendChild() {} }, createElement(tag) { return tag === 'style' ? style : new Element(tag); },
       createTextNode(text) { const node = new Element('#text'); node.textContent = text; return node; },
       getElementById(id) { return { log, form, action, submit, status }[id]; } },
@@ -57,7 +59,8 @@ function scenario(isReturn) {
     Android: { prepareStoryDecision(data) { calls.prepare.push(JSON.parse(data)); },
       prepareReturnJourneyTurn(data) { calls.prepare.push(JSON.parse(data)); },
       resolveStoryDecision(data, id) { calls.resolve.push(id); },
-      resolveReturnJourneyChoice(data, id) { calls.resolve.push(id); } }
+      resolveReturnJourneyChoice(data, id) { calls.resolve.push(id); },
+      restartAfterDeath() { calls.restart.push(true); } }
   };
   context.window = context;
   context.render = () => {};
@@ -130,6 +133,20 @@ for (const isReturn of [false, true]) {
     if (!isReturn) assert.equal(log.querySelectorAll('.story-choice-loading').length, 1);
   });
 }
+
+test('death restart is immediate, local, and does not request a provider', async () => {
+  const { log, calls } = scenario(false, true);
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  const restart = buttons(log).find(button => button.textContent === 'BẮT ĐẦU LẠI TỪ ĐẦU LEVEL');
+  assert.ok(restart);
+  assert.equal(calls.prepare.length, 0);
+  assert.equal(calls.restart.length, 0);
+
+  restart.click();
+  assert.equal(calls.restart.length, 1);
+  assert.equal(calls.prepare.length, 0);
+});
 
 test('Return Journey keeps the prepared current choices usable while lookahead loads', async () => {
   const { context, log, calls } = scenario(true);
@@ -209,7 +226,7 @@ test('selection bridges contain no provider request and native state hides outco
     '../app/src/main/java/com/rabpit/backroom/MainActivity.java'), 'utf8');
   const facade = fs.readFileSync(path.resolve(__dirname,
     '../app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java'), 'utf8');
-  for (const method of ['resolveStoryDecision', 'resolveReturnJourneyChoice']) {
+  for (const method of ['resolveStoryDecision', 'resolveReturnJourneyChoice', 'restartAfterDeath']) {
     const body = java.split(`@JavascriptInterface public void ${method}`)[1]
       .split('@JavascriptInterface')[0];
     assert.doesNotMatch(body, /geminiText|haikuText|prepareStoryDecision|prepareReturnJourneyTurn/);
