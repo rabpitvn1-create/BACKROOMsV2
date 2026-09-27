@@ -875,6 +875,11 @@
           }
         }
       }
+    },
+    "level_0_5_aquaclaustrophobic_infirmary": {
+      "levelKey": "0.5",
+      "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+      "chapters": {}
     }
   }
 }

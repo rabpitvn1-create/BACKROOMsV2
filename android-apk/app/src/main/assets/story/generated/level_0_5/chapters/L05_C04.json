@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C04",
+  "title": "Chương 04: Trọng Lượng Của Một Người Sống",
+  "source": "story/source/level_0_5/LEVEL0.5_CH04_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C05",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "9029c399b6cd097f049b1f977462751718dc253bc469ce4c26547af483626bf6",
+  "segmentIds": [
+    "L05_C04_S83c035e6316164c4",
+    "L05_C04_S0cfcfd048a6df1fd",
+    "L05_C04_S7fb5d85a384cee25",
+    "L05_C04_S627739201bc9416c",
+    "L05_C04_S9f61b6755f01187a",
+    "L05_C04_S97dc6727d156294b",
+    "L05_C04_S2990ad01ce05ef1f",
+    "L05_C04_S2f795bb0b037f4ce"
+  ]
+}

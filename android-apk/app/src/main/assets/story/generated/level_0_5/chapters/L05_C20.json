@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C20",
+  "title": "Level 0.5 — Chương 20: Cái Giá Được Gọi Đúng Tên",
+  "source": "story/source/level_0_5/LEVEL0.5_CH20_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "",
+  "eventsOnEnter": [],
+  "eventsOnExit": [
+    {
+      "type": "ARC_BOUNDARY_REACHED"
+    }
+  ],
+  "eventsAfterSegment": {
+    "L05_C20_Sed0268a9cd123fff": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "tung",
+        "scope": "story_local",
+        "presence": "DECEASED"
+      }
+    ],
+    "L05_C20_S38d06403c9183084": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "ha",
+        "scope": "story_local",
+        "presence": "DECEASED"
+      }
+    ],
+    "L05_C20_S8b9d7b5875db4729": [
+      {
+        "type": "STORY_FACT_SET",
+        "key": "luc_tram_level05_tinh_hon_stabilized",
+        "value": true
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Tùng clearly reaffirms consent only for the use of his own Tinh Hồn; Hà explicitly refuses; Lục Trầm explicitly refuses.",
+    "Tùng dies permanently after Cao Minh takes his Tinh Hồn.",
+    "Hà dies permanently after Cao Minh takes her Tinh Hồn despite her explicit refusal.",
+    "Cao Minh uses both Tinh Hồn on Lục Trầm despite her refusal; the result is only temporary stabilization, not a full recovery.",
+    "The travelling party after this chapter is Cao Minh and Lục Trầm only.",
+    "The chapter ends at a threshold toward the next region without crossing or naming it in-world."
+  ],
+  "forbiddenClaims": [
+    "Do not rewrite the event as all three people consenting.",
+    "Do not revive Hà or Tùng.",
+    "Do not claim Lục Trầm is fully healed or that Tịch Quang and her right hand have fully recovered.",
+    "Do not make Tâm Ma the controller or excuse for Cao Minh's decision.",
+    "Do not perform or name a Level 0.5 -> Level 0.7 transition in Story metadata; LevelCore owns the destination."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "694411a3c2e6dd2baf9f78fa0293eeeca084c3f5c842b9a1dcab15ae3b57c8a7",
+  "segmentIds": [
+    "L05_C20_Se8afc26682805183",
+    "L05_C20_S25419a6bd64e8918",
+    "L05_C20_S9c97959a136a0fdf",
+    "L05_C20_Sed0268a9cd123fff",
+    "L05_C20_S38d06403c9183084",
+    "L05_C20_S8b9d7b5875db4729",
+    "L05_C20_Sd7c99d8ce5a23684",
+    "L05_C20_Sec1c41fd72bdfd94"
+  ]
+}

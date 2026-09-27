@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C13",
+  "title": "Level 0.5 — Chương 13: Phần Còn Lại Của Một Người",
+  "source": "story/source/level_0_5/LEVEL0.5_CH13_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C14",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "0e94aeac059def8a623436690d53278aaa388195c1b4778711d49e1ce960c284",
+  "segmentIds": [
+    "L05_C13_S7ff41b26e4d60f27",
+    "L05_C13_S5b3db75712dbe2eb",
+    "L05_C13_Sfa8d61c72d9bc20d",
+    "L05_C13_S20823a878dc92375",
+    "L05_C13_S56085693754c9c52",
+    "L05_C13_Sc974711ef68b8bbd",
+    "L05_C13_S9d87301796ef4500",
+    "L05_C13_Sbde0e06a09a63a88"
+  ]
+}

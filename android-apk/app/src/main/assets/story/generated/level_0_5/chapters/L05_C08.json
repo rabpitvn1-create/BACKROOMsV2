@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C08",
+  "title": "Chương 08: Giới Hạn Có Giá",
+  "source": "story/source/level_0_5/LEVEL0.5_CH08_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C09",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "f2b500ccc42b50b963e99772ca083411e41e3c2ba5d80d869ec9c138c18c0aaf",
+  "segmentIds": [
+    "L05_C08_S6361db060d9e4d36",
+    "L05_C08_S84f770ff4ee0f239",
+    "L05_C08_S20be2d55103c6359",
+    "L05_C08_S5ac055a7f09bbe23",
+    "L05_C08_S3e6dc00cdcc41f56",
+    "L05_C08_S4c9bae7bc9ae2d33",
+    "L05_C08_S689a95457151880c"
+  ]
+}
