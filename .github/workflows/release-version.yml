@@ -71,7 +71,7 @@ jobs:
           set -euo pipefail
           grep -Fq 'versionCode 110' android-apk/app/build.gradle
           grep -Fq "versionName '1.1.66'" android-apk/app/build.gradle
-          test -s android-apk/RELEASE_NOTES_BR_1.0.0.0.10.txt
+          test -s android-apk/RELEASE_NOTES_1.1.66.txt
           test -z "$(find android-apk/app/src -type f -name '*.kt' -print -quit)"
           test -z "$(find android-apk -type f -name '*.py' -print -quit)"
           test ! -d android-apk/ml
@@ -380,7 +380,7 @@ jobs:
           node --check android-apk/app/src/main/assets/snapshot-ui.js
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
           node --test android-apk/tests/viewport-layout.test.cjs
-          node --test android-apk/tests/environment-action-contract.test.cjs
+          node --test android-apk/tests/player-action-gm-contract.test.cjs
           ! grep -Fq 'Save được lưu riêng trên thiết bị này.' android-apk/app/src/main/assets/index.html
           grep -Fq 'function captureLogAnchor()' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'function restoreLogAnchor(anchor)' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -453,7 +453,7 @@ jobs:
           grep -Fq 'foodPercent' android-apk/app/src/main/assets/party-ui.js
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/SurvivalCore.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/SurvivalCoreTest.java
-          grep -Fq 'CURRENT_SAVE_VERSION = 12' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          grep -Fq 'CURRENT_SAVE_VERSION = 13' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'survivalCore.projectPhysiology(state, id)' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           grep -Fq 'copyField(before, sanitized, SurvivalCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'ItemCore.grantEntityLootItem' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
