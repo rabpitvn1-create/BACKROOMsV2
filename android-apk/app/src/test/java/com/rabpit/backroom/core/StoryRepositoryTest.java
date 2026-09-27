@@ -352,12 +352,31 @@ public class StoryRepositoryTest {
     assertTrue(repository.bindLevel("0.2"));
   }
 
+  @Test public void levelZeroFiveAuthoredStoryLoadsFromCatalog() throws Exception {
+    StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
+    assertTrue(repository.hasStoryForLevel("0.5"));
+    assertTrue(repository.bindLevel("0.5"));
+    assertEquals("level_0_5_aquaclaustrophobic_infirmary", repository.storyId());
+    assertEquals("L05_C01", repository.startChapter());
+
+    JSONObject arc = new JSONObject(readRepoAsset("story/source/level_0_5/arc.source.json"));
+    assertEquals(20, arc.getJSONArray("chapters").length());
+    assertEquals("L05_C20", arc.getJSONArray("chapters").getJSONObject(19).getString("id"));
+
+    for (int i = 1; i <= 20; i++) {
+      String source = String.format(java.util.Locale.ROOT,
+          "story/source/level_0_5/LEVEL0.5_CH%02d_AQUACLAUSTROPHOBIC_INFIRMARY.md", i);
+      String text = readRepoAsset(source);
+      assertTrue("Level 0.5 manuscript unexpectedly short: " + source, text.length() > 4000);
+    }
+  }
+
   @Test public void levelWithoutAuthoredStoryDeactivatesStoryNormally() throws Exception {
     StoryRepository repository = new StoryRepository(StoryRepositoryTest::readRepoAsset);
     StoryCore core = StoryCore.withRepository(repository);
     JSONObject state = new JSONObject()
         .put("currentLevel", 0)
-        .put("currentLevelKey", "0.5")
+        .put("currentLevelKey", "0.7")
         .put("turn", 1)
         .put("party", new JSONArray())
         .put("flags", new JSONObject());
@@ -365,7 +384,7 @@ public class StoryRepositoryTest {
     core.normalizeState(state);
 
     assertFalse(state.getJSONObject(StoryCore.ROOT_KEY).getBoolean("active"));
-    assertFalse(repository.hasStoryForLevel("0.5"));
+    assertFalse(repository.hasStoryForLevel("0.7"));
   }
 
   @Test public void compiledDecisionRequiresFreshSourceDigest() throws Exception {

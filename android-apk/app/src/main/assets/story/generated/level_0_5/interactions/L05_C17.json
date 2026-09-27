@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 4,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "chapterId": "L05_C17",
+  "source": "story/source/level_0_5/LEVEL0.5_CH17_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "sourceDigest": "3c165528137a5f94a8a836b2bc20bbb10b48445c70941f2a85fadda537b1537f",
+  "segmentIds": [
+    "L05_C17_Sad88f42f45abf902",
+    "L05_C17_S82a3a55a54338fc8",
+    "L05_C17_Sf4216b85d1202703",
+    "L05_C17_S645eb36e42c1dc54",
+    "L05_C17_Sc3eb8bb1d816812c",
+    "L05_C17_S487a6b775b701dc9",
+    "L05_C17_S8d968a2ac66edb24"
+  ],
+  "provider": "authored-choice-haiku",
+  "segments": {
+    "L05_C17_Sad88f42f45abf902": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_Sad88f42f45abf902",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Trả lời câu hỏi của Tùng về Tinh Hồn một cách thẳng thắn",
+            "return": "Yêu cầu Tùng chớp mắt và tập trung vào việc phục hồi sức khỏe",
+            "stay": "Hỏi lại Tùng tại sao anh muốn biết điều đó ngay bây giờ"
+          },
+          {
+            "canon": "Giải thích Tinh Hồn bằng những từ Tùng có thể nắm bắt được",
+            "return": "Đề nghị dừng lại để Tùng có thêm thời gian nghỉ ngơi",
+            "stay": "Nói với Tùng rằng câu hỏi ấy có thể chờ đến lúc an toàn hơn"
+          }
+        ]
+      }
+    },
+    "L05_C17_S82a3a55a54338fc8": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_S82a3a55a54338fc8",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Thừa nhận không chắc chắn về khả năng cứu Lục Trầm và đối mặt với hậu quả của lựa chọn",
+            "return": "Xoa dịu lo lắng của Tùng bằng cách nhấn mạnh kế hoạch hiện tại",
+            "stay": "Chuyển hướng chú ý sang tiếp tục con đường thay vì tranh luận về kết quả"
+          },
+          {
+            "canon": "Công nhận sự phân biệt giữa khả năng chưa đủ và không đủ để chết",
+            "return": "Bảo Tùng tập trung vào hiện tại thay vì lo lắng về những gì chưa biết",
+            "stay": "Tiếp tục đi mà không giải thích thêm, để mọi người xử lý câu hỏi theo cách riêng"
+          }
+        ]
+      }
+    },
+    "L05_C17_Sf4216b85d1202703": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_Sf4216b85d1202703",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Kiểm tra tình trạng của Lục Trầm và khám phá sự suy giảm khả năng điều khiển Tịch Quang",
+            "return": "Giúp dọn dẹp những vật cản còn lại để tiếp tục tiến lên",
+            "stay": "Yêu cầu mọi người dừng lại để đánh giá an toàn của con đường phía trước"
+          },
+          {
+            "canon": "Nhận ra rằng vấn đề không chỉ ở cơ bắp mà còn ở khả năng điều khiển tinh thần",
+            "return": "Tập trung vào việc dọn sạch lối đi để không ai bị chướng ngại",
+            "stay": "Kiểm tra Tùng xem anh có cần dừng lại để nghỉ thêm không"
+          }
+        ]
+      }
+    },
+    "L05_C17_S645eb36e42c1dc54": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_S645eb36e42c1dc54",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Theo Lục Trầm tiếp tục tìm đường ra khỏi hành lang.",
+            "return": "Quay lại kiểm Tùng xem có dấu hiệu thay đổi.",
+            "stay": "Nghe theo hành lang để xác định nước chảy từ đâu."
+          },
+          {
+            "canon": "Dẫn họ vào phòng nghỉ để Tùng có chỗ nằm.",
+            "return": "Dừng lại và khoanh vùng an toàn để bàn kế hoạch tiếp theo.",
+            "stay": "Tiếp tục đi song song với tiếng nước để tìm nguồn."
+          }
+        ]
+      }
+    },
+    "L05_C17_Sc3eb8bb1d816812c": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_Sc3eb8bb1d816812c",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Bước vào phòng và ngồi với họ để nói về những gì hắn cũng cảm thấy.",
+            "return": "Đứng yên và để họ tiếp tục cuộc trò chuyện của riêng họ.",
+            "stay": "Kiểm tra Tùng để ước lượng tình trạng và cần thiết."
+          },
+          {
+            "canon": "Ngồi xuống và công khai nói rằng hắn cũng tham.",
+            "return": "Rút ra ngoài để cho họ không gian riêng tư.",
+            "stay": "Quan sát cách Lục Trầm đối xử với Hà để hiểu sâu hơn."
+          }
+        ]
+      }
+    },
+    "L05_C17_S487a6b775b701dc9": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_S487a6b775b701dc9",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Nói với Lục Trầm rằng ngày mai sẽ phải hỏi những câu khó hơn.",
+            "return": "Im lặng và theo dõi phản ứng của họ đối với nhận xét của mình.",
+            "stay": "Hỏi Lục Trầm liệu cô còn đủ sức để tiếp tục đi."
+          },
+          {
+            "canon": "Thừa nhận với Lục Trầm rằng hắn sắp hết những lựa chọn dễ.",
+            "return": "Đi ra ngoài cửa để lắng nghe tiếng nước trong tường lần nữa.",
+            "stay": "Hỏi Hà liệu cô có muốn dùng nguồn nước trong hành lang không."
+          }
+        ]
+      }
+    },
+    "L05_C17_S8d968a2ac66edb24": {
+      "mode": "DECISION",
+      "decisionContract": {
+        "loopAnchor": "L05_C17_S8d968a2ac66edb24",
+        "decisionGuard": "Chỉ mô tả phản ứng cục bộ cho lựa chọn vừa chọn. Không thêm phát hiện mới, không thay đổi nhân vật hiện diện, vật phẩm, Entity, Party, quan hệ, kiến thức canon, hướng cốt truyện hoặc kết quả authored. Sau phản ứng, trạng thái phải có thể tiếp tục nguyên văn phân đoạn authored kế tiếp.",
+        "choiceVariants": [
+          {
+            "canon": "Để Tùng xuống và bước qua bệ thấp trước để xem đường phía kia.",
+            "return": "Giữ Tùng trên lưng và tìm cách khác để vượt qua nước mà không cần kiểm tra trước.",
+            "stay": "Đề nghị chờ tại chỗ để quan sát xem nước dừng ở đâu trước khi di chuyển."
+          },
+          {
+            "canon": "Hạ Tùng xuống rồi tiên phong qua bệ để đảm bảo an toàn cho những người còn lại.",
+            "return": "Bước theo Lục Trầm qua bệ mà vẫn cõng Tùng dù khó khăn hơn.",
+            "stay": "Đặt câu hỏi về chiều rộng của nước để hiểu rõ hơn tình hình trước khi quyết định."
+          }
+        ]
+      }
+    }
+  }
+}

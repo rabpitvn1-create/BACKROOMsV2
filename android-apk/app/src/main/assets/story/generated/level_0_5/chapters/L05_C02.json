@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C02",
+  "title": "Chương 02: Dấu Chân Trên Nền Khô",
+  "source": "story/source/level_0_5/LEVEL0.5_CH02_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C03",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {
+    "L05_C02_S0e5ae00d7bc75de8": [
+      {
+        "type": "CHARACTER_PRESENCE",
+        "characterId": "ha",
+        "scope": "story_local",
+        "presence": "PRESENT"
+      }
+    ]
+  },
+  "requiredFacts": [
+    "Hà is introduced as a story-local survivor and is not a Party member."
+  ],
+  "forbiddenClaims": [
+    "Do not add Hà to Party or invent gameplay combat stats for her."
+  ],
+  "offlineDecisions": [],
+  "sourceDigest": "6a1cf2770a3dd82410a817b33c163572153d12a227185e4b02b2f3f10f248d2b",
+  "segmentIds": [
+    "L05_C02_S8b15685e2a06983f",
+    "L05_C02_S5460e2e6bc2f4149",
+    "L05_C02_S4950b656015cefcf",
+    "L05_C02_S9f29627f09963546",
+    "L05_C02_Sfe4ac517742c145d",
+    "L05_C02_S133f4a3a3542ec2f",
+    "L05_C02_S754098294c6be5ce",
+    "L05_C02_S0e5ae00d7bc75de8"
+  ]
+}

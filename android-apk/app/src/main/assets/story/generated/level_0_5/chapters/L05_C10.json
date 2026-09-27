@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "storyId": "level_0_5_aquaclaustrophobic_infirmary",
+  "levelKey": "0.5",
+  "sourceRevision": "aquaclaustrophobic-infirmary-r1",
+  "compilerFingerprint": "0e9535d17a6e4ecf9dfecf60a277b2f1b910ba89129eecf793891e392252ace9",
+  "id": "L05_C10",
+  "title": "Level 0.5 — Chương 10: Giá Của Một Lời Nói",
+  "source": "story/source/level_0_5/LEVEL0.5_CH10_AQUACLAUSTROPHOBIC_INFIRMARY.md",
+  "thread": "cao_minh",
+  "visibility": "player",
+  "nextChapter": "L05_C11",
+  "eventsOnEnter": [],
+  "eventsOnExit": [],
+  "eventsAfterSegment": {},
+  "requiredFacts": [],
+  "forbiddenClaims": [],
+  "offlineDecisions": [],
+  "sourceDigest": "465b4b225f2879ceba4238f55cbbdc47bba8b1ed985cc2bda278709555ae4299",
+  "segmentIds": [
+    "L05_C10_S091be2abe92c74fc",
+    "L05_C10_S900d636b43fac6ae",
+    "L05_C10_S9c3e8793d5a725a3",
+    "L05_C10_Sc821f052b5cb81c5",
+    "L05_C10_S41d712cda3af46f4",
+    "L05_C10_S5d7f06d26b613d65",
+    "L05_C10_Sfb3ef192987a313d"
+  ]
+}
