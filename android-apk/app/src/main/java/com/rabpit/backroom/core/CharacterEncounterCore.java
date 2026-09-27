@@ -153,6 +153,7 @@ final class CharacterEncounterCore {
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
+      boolean pendingLucTram = containsString(pending, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
           "Lục Trầm eligibility: 10% reunion candidate only after Level 0; Core owns the roll.\n" +
@@ -165,10 +166,14 @@ final class CharacterEncounterCore {
           "For Iris/Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
-              : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
-                  "Do not imply the character was present in earlier Backrooms turns. " +
-                  "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
-                  "Do not ask the player to approve Party membership and do not advance an extra Explorer Turn.");
+              : pendingLucTram
+                  ? "Lục Trầm reunion is already committed. Depict a tense reunion in the current location; never frame it as first contact. " +
+                      "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                      "Do not invent Cao Minh's dialogue/decision and do not ask the player to approve Party membership."
+                  : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
+                      "Do not imply the character was present in earlier Backrooms turns. " +
+                      "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                      "Do not invent Cao Minh's dialogue/decision, ask the player to approve Party membership, or advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
