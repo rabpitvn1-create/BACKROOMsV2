@@ -26,5 +26,5 @@ test('Play remains primary for special presentation selectors',()=>{
   assert.match(gm,/\.semantic\{font-family:'Play','Pretendard Std'/);
   assert.match(gm,/\.gm-choice\{[^}]*font-family:'Play','Pretendard Std'/);
   assert.match(inventory,/\.inventory-item-name\{font-family:'Play','Pretendard Std'/);
-  assert.match(snapshot,/\.combat-float\{[^}]*font-family:Play,'Pretendard Std'/);
+  assert.match(snapshot,/\.combat-float\{[^}]*font-family:Play,"Pretendard Std"/);
 });
