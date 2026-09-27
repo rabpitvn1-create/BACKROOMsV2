@@ -628,6 +628,11 @@ public class MainActivity extends Activity {
             emit("backroomTurn", localResult.getJSONObject("state").toString());
             return;
           }
+          String coreStatus = localResult.optString("status", "");
+          String coreError = localResult.optString("error", "").trim();
+          if ("core_error".equals(coreStatus) || !coreError.isEmpty()) {
+            throw new Exception(coreError.isEmpty() ? "Game State Core từ chối lượt." : coreError);
+          }
 
           JSONObject state = localResult.optJSONObject("state");
           if (state == null) state = submitted;
