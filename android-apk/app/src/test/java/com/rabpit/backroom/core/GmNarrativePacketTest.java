@@ -43,6 +43,41 @@ public class GmNarrativePacketTest {
     assertTrue(state.has("characterCanon"));
   }
 
+  @Test public void projectionDefaultsUnknownStateToEpistemicAndIncludesActorBeliefs() throws Exception {
+    JSONObject state = new JSONObject()
+        .put("turn", 9)
+        .put("location", "Hành lang vàng")
+        .put("unknownHiddenMechanic", new JSONObject().put("truth", "secret"))
+        .put("flags", new JSONObject().put("ambushReady", true))
+        .put("combat", new JSONObject()
+            .put("active", true)
+            .put("seed", 123456)
+            .put("entity", new JSONObject().put("key", "hound").put("name", "Hound")
+                .put("hp", 40).put("maxHp", 150).put("hiddenIntent", "ambush")))
+        .put(EmergentTurnEngine.ROOT_KEY, new JSONObject()
+            .put("beliefs", new org.json.JSONArray()
+                .put(new JSONObject()
+                    .put("claimId", "c1")
+                    .put("actorId", "cao_minh")
+                    .put("beliefValue", "Có tiếng động phía trước")
+                    .put("confidence", "SUSPECTED"))
+                .put(new JSONObject()
+                    .put("claimId", "c2")
+                    .put("actorId", "iris")
+                    .put("beliefValue", "secret")
+                    .put("confidence", "CONFIRMED"))));
+
+    JSONObject projected = GmNarrativePacket.projectState(state);
+
+    assertFalse(projected.has("unknownHiddenMechanic"));
+    assertFalse(projected.has("flags"));
+    assertFalse(projected.getJSONObject("combat").has("seed"));
+    assertFalse(projected.getJSONObject("combat").getJSONObject("entity").has("hiddenIntent"));
+    assertTrue(projected.has("beliefs"));
+    assertTrue(projected.getJSONArray("beliefs").toString().contains("Có tiếng động phía trước"));
+    assertFalse(projected.getJSONArray("beliefs").toString().contains("secret"));
+  }
+
   @Test public void ordinaryLevelZeroPacketUsesRealKnowledgeAndStaysBudgeted() throws Exception {
     LevelCore core = LevelCore.withKnowledge(
         readRepoAsset("knowledge/level_knowledge.json"), bound -> 0);
