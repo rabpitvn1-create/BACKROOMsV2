@@ -28,6 +28,12 @@ public final class CombatChoiceEngine {
   private static final int CRITICAL_DAMAGE_PERCENT = 150;
   private static final int ENTITY_BASE_CRITICAL_PERCENT = 5;
   private static final int ENTITY_BASE_EVASION_PERCENT = 5;
+  private static final String DAI_DAO_MA_TON = "Đại Đạo Ma Tôn";
+  private static final int DAI_DAO_MA_TON_HEAL_PERCENT = 10;
+  private static final int DAI_DAO_MA_TON_ATTACK_PER_TURN_PERCENT = 20;
+  private static final int DAI_DAO_MA_TON_CRITICAL_PER_TURN_PERCENT = 20;
+  private static final int DAI_DAO_MA_TON_ALLY_CRITICAL_BONUS_PERCENT = 50;
+  private static final int MAX_CRITICAL_CHANCE_PERCENT = 100;
 
   private static final class EntityProfile {
     final String key;
@@ -385,6 +391,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     // Canonical non-offensive skill retained for GM semantic recognition only. It is deliberately
     // excluded from Poker Dice Skill selection so it cannot alter evade/dice outcomes.
     output.put("Thiên Ma Bộ", "skill");
+    output.put(DAI_DAO_MA_TON, "skill");
+    output.put(CharacterStatCore.MA_TON_PASSIVE, "skill");
     return output;
   }
 
@@ -677,6 +685,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       entitySummary = resolveEntityResponse(combat, actor, entity, result.evadeResponse);
     }
 
+    String passiveSummary = applyDaiDaoMaTonAfterTurn(combat, actor);
     syncParticipants(state, participants);
     new CharacterProgressionCore().advanceStatusEffects(
         state, actor.optString("id", ""), "actor_turn");
@@ -694,6 +703,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
 
     appendBattleLine(state, combat, result.summary);
     appendBattleLine(state, combat, entitySummary);
+    appendBattleLine(state, combat, passiveSummary);
     return state;
   }
 
@@ -1129,25 +1139,44 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     JSONObject projected = new CharacterStatCore().project(state, source, id, progression);
     JSONObject stats = projected.getJSONObject("stats");
     JSONObject combatStatus = projected.getJSONObject("combatStatus");
-    return new JSONObject()
+    int baseAttack = baseAttackFor(source, id);
+    int baseCritical = combatStatus.getInt("criticalChancePercent");
+    JSONObject participant = new JSONObject()
         .put("id", id)
         .put("name", name)
         .put("sourceIndex", sourceIndex)
         .put("hp", projected.getInt("currentHp"))
         .put("maxHp", projected.getInt("maxHp"))
-        .put("baseAttack", baseAttackFor(source, id))
+        .put("baseAttack", baseAttack)
+        .put("baseCriticalChancePercent", baseCritical)
         .put("STR", stats.getJSONObject("STR").getInt("effective"))
         .put("DEF", stats.getJSONObject("DEF").getInt("effective"))
         .put("SKL", stats.getJSONObject("SKL").getInt("effective"))
         .put("VIT", stats.getJSONObject("VIT").getInt("effective"))
-        .put("criticalChancePercent", combatStatus.getInt("criticalChancePercent"))
+        .put("criticalChancePercent", baseCritical)
         .put("evasionPercent", combatStatus.getInt("evasionPercent"))
         .put("resCriticalPercent", combatStatus.getInt("resCriticalPercent"))
         .put("resEvasionPercent", combatStatus.getInt("resEvasionPercent"));
+
+    if ("cao_minh".equals(id)) {
+      participant.put("passiveSkill", DAI_DAO_MA_TON)
+          .put("daiDaoMaTonStacks", 0)
+          .put("daiDaoMaTonBaseAttack", baseAttack)
+          .put("daiDaoMaTonAttackBonusPercent", 0)
+          .put("daiDaoMaTonCriticalBonusPercent", 0)
+          .put("daiDaoMaTonHealPercent", DAI_DAO_MA_TON_HEAL_PERCENT);
+    } else {
+      participant.put("daiDaoMaTonAllyCriticalBonusPercent",
+          DAI_DAO_MA_TON_ALLY_CRITICAL_BONUS_PERCENT);
+      participant.put("criticalChancePercent", Math.min(MAX_CRITICAL_CHANCE_PERCENT,
+          baseCritical + DAI_DAO_MA_TON_ALLY_CRITICAL_BONUS_PERCENT));
+    }
+    return participant;
   }
 
   private static void refreshParticipant(JSONObject state, JSONObject actor) throws Exception {
     String id = actor.optString("id", "");
+    int passiveStacks = Math.max(0, actor.optInt("daiDaoMaTonStacks", 0));
     int sourceIndex = actor.optInt("sourceIndex", -1);
     JSONArray party = state.optJSONArray("party");
     JSONObject source = sourceIndex < 0 ? state.optJSONObject("player")
@@ -1155,9 +1184,67 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     JSONObject updated = participant(state, new CharacterProgressionCore(), id,
         actor.optString("name", id), sourceIndex, source);
     for (String key : new String[]{"hp", "maxHp", "baseAttack", "STR", "DEF", "SKL", "VIT",
-        "criticalChancePercent", "evasionPercent", "resCriticalPercent", "resEvasionPercent"}) {
+        "criticalChancePercent", "evasionPercent", "resCriticalPercent", "resEvasionPercent",
+        "baseCriticalChancePercent"}) {
       actor.put(key, updated.get(key));
     }
+
+    if ("cao_minh".equals(id)) {
+      actor.put("passiveSkill", DAI_DAO_MA_TON)
+          .put("daiDaoMaTonBaseAttack", updated.getInt("daiDaoMaTonBaseAttack"))
+          .put("daiDaoMaTonStacks", passiveStacks)
+          .put("daiDaoMaTonHealPercent", DAI_DAO_MA_TON_HEAL_PERCENT);
+      applyDaiDaoMaTonStackBonuses(actor);
+    } else {
+      actor.put("daiDaoMaTonAllyCriticalBonusPercent",
+          updated.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+    }
+  }
+
+  private static String applyDaiDaoMaTonAfterTurn(JSONObject combat, JSONObject actor)
+      throws Exception {
+    if (!"cao_minh".equals(actor.optString("id", "")) || actor.optInt("hp", 0) <= 0) return "";
+
+    int maxHp = Math.max(1, actor.optInt("maxHp", 1));
+    int hpBefore = Math.max(0, actor.optInt("hp", 0));
+    int healAmount = Math.max(1,
+        (int)Math.min(Integer.MAX_VALUE, ((long)maxHp * DAI_DAO_MA_TON_HEAL_PERCENT + 50L) / 100L));
+    int hpAfter = Math.min(maxHp, hpBefore + healAmount);
+    int healed = Math.max(0, hpAfter - hpBefore);
+    actor.put("hp", hpAfter);
+
+    int stacks = Math.max(0, actor.optInt("daiDaoMaTonStacks", 0)) + 1;
+    actor.put("daiDaoMaTonStacks", stacks);
+    applyDaiDaoMaTonStackBonuses(actor);
+
+    if (healed > 0) {
+      addFeedback(combat, "actor", "actor", "heal", "+" + healed + " HP", true);
+    }
+    return DAI_DAO_MA_TON + ": Cao Minh hồi " + healed + " HP; Attack +"
+        + actor.getInt("daiDaoMaTonAttackBonusPercent") + "%, Critical +"
+        + actor.getInt("daiDaoMaTonCriticalBonusPercent") + "% (" + stacks + " tầng).";
+  }
+
+  private static void applyDaiDaoMaTonStackBonuses(JSONObject actor) throws Exception {
+    int stacks = Math.max(0, actor.optInt("daiDaoMaTonStacks", 0));
+    int baseAttack = Math.max(1,
+        actor.optInt("daiDaoMaTonBaseAttack", actor.optInt("baseAttack", CAO_MINH_BASE_ATTACK)));
+    long attackBonus = Math.min(Integer.MAX_VALUE,
+        (long)stacks * DAI_DAO_MA_TON_ATTACK_PER_TURN_PERCENT);
+    long totalPercent = 100L + attackBonus;
+    int attack = (int)Math.min(Integer.MAX_VALUE,
+        Math.max(1L, ((long)baseAttack * totalPercent + 50L) / 100L));
+
+    int baseCritical = Math.max(0,
+        actor.optInt("baseCriticalChancePercent", actor.optInt("criticalChancePercent", 0)));
+    int criticalBonus = (int)Math.min(Integer.MAX_VALUE,
+        (long)stacks * DAI_DAO_MA_TON_CRITICAL_PER_TURN_PERCENT);
+    int critical = Math.min(MAX_CRITICAL_CHANCE_PERCENT, baseCritical + criticalBonus);
+
+    actor.put("baseAttack", attack)
+        .put("criticalChancePercent", critical)
+        .put("daiDaoMaTonAttackBonusPercent", (int)attackBonus)
+        .put("daiDaoMaTonCriticalBonusPercent", criticalBonus);
   }
 
   static int baseAttackFor(JSONObject source, String rawId) {

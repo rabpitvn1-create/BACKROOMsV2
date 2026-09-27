@@ -37,6 +37,59 @@ public class CombatChoiceEngineTest {
     assertEquals(0, progression.profile(state, "cao_minh")
         .getJSONArray("statusEffects").length());
   }
+  @Test public void daiDaoMaTonHealsAndStacksAttackAndCriticalAfterCaoMinhTurn() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject combat = state.getJSONObject("combat");
+    JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
+    JSONObject entity = combat.getJSONObject("entity");
+    entity.put("hp", 9999).put("maxHp", 9999).put("stunTurns", 1);
+    actor.put("hp", 25);
+
+    finalizeAs(state, 1, 2, 4, 5, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals("Đại Đạo Ma Tôn", actor.getString("passiveSkill"));
+    assertEquals(80, actor.getInt("hp"));
+    assertEquals(1, actor.getInt("daiDaoMaTonStacks"));
+    assertEquals(20, actor.getInt("daiDaoMaTonAttackBonusPercent"));
+    assertEquals(20, actor.getInt("daiDaoMaTonCriticalBonusPercent"));
+    assertEquals(36, actor.getInt("baseAttack"));
+    assertEquals(70, actor.getInt("criticalChancePercent"));
+    assertEquals(80, new CharacterProgressionCore().profile(state, "cao_minh").getInt("currentHp"));
+
+    entity.put("stunTurns", 1);
+    finalizeAs(state, 1, 2, 4, 5, 6);
+    CombatChoiceEngine.resolveFinalized(state);
+
+    assertEquals(135, actor.getInt("hp"));
+    assertEquals(2, actor.getInt("daiDaoMaTonStacks"));
+    assertEquals(40, actor.getInt("daiDaoMaTonAttackBonusPercent"));
+    assertEquals(40, actor.getInt("daiDaoMaTonCriticalBonusPercent"));
+    assertEquals(42, actor.getInt("baseAttack"));
+    assertEquals(90, actor.getInt("criticalChancePercent"));
+    JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
+    assertTrue(battleLog.toString().contains("Đại Đạo Ma Tôn"));
+  }
+
+  @Test public void daiDaoMaTonGrantsFiftyCriticalToAllCombatAlliesOnly() throws Exception {
+    JSONObject state = combatState(new JSONArray()
+        .put(member("iris", "Iris"))
+        .put(member("syvial", "Syvial")));
+    CombatChoiceEngine.start(state, "hound", 0);
+
+    JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
+    JSONObject cao = participants.getJSONObject(0);
+    JSONObject iris = participants.getJSONObject(1);
+    JSONObject syvial = participants.getJSONObject(2);
+
+    assertEquals(50, cao.getInt("criticalChancePercent"));
+    assertEquals(55, iris.getInt("criticalChancePercent"));
+    assertEquals(55, syvial.getInt("criticalChancePercent"));
+    assertEquals(50, iris.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+    assertEquals(50, syvial.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+  }
+
   @Test public void defeatAtSublevelPreservesRouteAndQueuesLocalRestart() throws Exception {
     JSONObject state = combatState(new JSONArray())
         .put("currentLevel", 0).put("currentLevelKey", "0.1")
@@ -267,6 +320,8 @@ public class CombatChoiceEngineTest {
   @Test public void rerollsDoNotSpamGmLogAndResolveAddsOrderedActorAndEntityLines() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
+    state.getJSONObject("combat").getJSONObject("entity")
+        .put("hp", 9999).put("maxHp", 9999);
     CombatChoiceEngine.roll(state);
     CombatChoiceEngine.roll(state);
     CombatChoiceEngine.roll(state);
@@ -277,16 +332,21 @@ public class CombatChoiceEngineTest {
     CombatChoiceEngine.resolveFinalized(state);
 
     JSONArray battleLog = gmLog.getJSONObject(0).getJSONArray("battleLog");
-    assertEquals(2, battleLog.length());
+    assertEquals(3, battleLog.length());
     String actorLine = battleLog.getJSONObject(0).getString("text");
     String entityLine = battleLog.getJSONObject(1).getString("text");
+    String passiveLine = battleLog.getJSONObject(2).getString("text");
     assertTrue(actorLine.startsWith("["));
     assertTrue(actorLine.contains("Cao Minh"));
     assertTrue(actorLine.contains("Hound -"));
     assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertTrue(entityLine.startsWith("Hound "));
-    assertTrue(entityLine.contains("Cao Minh -"));
-    assertTrue(entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
+    assertTrue(passiveLine.startsWith("Đại Đạo Ma Tôn:"));
+    assertTrue(entityLine.contains("Cao Minh"));
+    assertTrue(entityLine.contains("né được")
+        || entityLine.contains("đánh trượt")
+        || entityLine.contains("không thể tấn công")
+        || entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertFalse(actorLine.toLowerCase().contains("reroll"));
     assertFalse(actorLine.toLowerCase().contains("dice"));
   }
@@ -457,7 +517,8 @@ public class CombatChoiceEngineTest {
 
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     String actorLine = battleLog.getJSONObject(0).getString("text");
-    assertTrue(actorLine.startsWith("[F.O.A.K] Cao Minh "));
+    assertTrue(actorLine.startsWith("[F.O.A.K] "));
+    assertTrue(actorLine.contains("Cao Minh "));
     assertFalse(actorLine.contains("FOUR OF A KIND"));
     assertTrue(actorLine.contains("Diệp Minh -"));
     assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
@@ -466,7 +527,7 @@ public class CombatChoiceEngineTest {
     for (int i = 0; i < feedback.length(); i++) {
       String text = feedback.getJSONObject(i).optString("text", "");
       if (text.isEmpty()) continue;
-      assertTrue("Unexpected combat floater: " + text, text.matches("-\\d+ HP"));
+      assertTrue("Unexpected combat floater: " + text, text.matches("[+-]\\d+ HP"));
       assertFalse(text.contains("PROC"));
     }
   }
@@ -714,6 +775,7 @@ public class CombatChoiceEngineTest {
     JSONObject entity = combat.getJSONObject("entity");
 
     actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
     entity.put("armorBreakTurns", 2).put("armorBreakPercent", 20);
     int before = entity.getInt("hp");
 
@@ -742,7 +804,9 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris").put("criticalChancePercent", 100);
+    actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
+    actor.put("criticalChancePercent", 100);
     entity.put("evasionPercent", 0).put("resCriticalPercent", 0);
     int before = entity.getInt("hp");
 
@@ -761,7 +825,9 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris").put("evasionPercent", 100);
+    actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
+    actor.put("evasionPercent", 100);
     entity.put("resEvasionPercent", 0).put("evasionPercent", 0);
     int hpBefore = actor.getInt("hp");
 
@@ -795,6 +861,19 @@ public class CombatChoiceEngineTest {
     assertEquals(
         CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(legacy)),
         CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(enriched)));
+  }
+
+  private static void resetToBaselineNonCaoStats(JSONObject actor) throws Exception {
+    actor.put("baseAttack", 30)
+        .put("baseCriticalChancePercent", 5)
+        .put("STR", 5)
+        .put("DEF", 5)
+        .put("SKL", 5)
+        .put("VIT", 5)
+        .put("criticalChancePercent", 5)
+        .put("evasionPercent", 0)
+        .put("resCriticalPercent", 0)
+        .put("resEvasionPercent", 0);
   }
 
   private static void finalizeAs(JSONObject state, int... values) throws Exception {

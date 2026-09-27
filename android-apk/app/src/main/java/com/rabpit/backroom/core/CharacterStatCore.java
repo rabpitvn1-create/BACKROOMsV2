@@ -12,6 +12,8 @@ final class CharacterStatCore {
   static final int MAX_EVASION_PERCENT = 35;
   static final int RESIST_PER_STAT = 2;
   static final int MAX_RESIST_PERCENT = 50;
+  static final String MA_TON_PASSIVE = "Ma Tôn";
+  static final int MA_TON_STAT_BONUS = 99;
 
   JSONObject project(JSONObject state, String characterId, CharacterProgressionCore progressionCore)
       throws Exception {
@@ -23,16 +25,17 @@ final class CharacterStatCore {
     JSONObject profile = progressionCore.profile(state, characterId);
     JSONObject source = profile.getJSONObject("stats");
 
+    int passiveBonus = passiveStatBonus(characterId);
     int str = effectiveStat(state, profile, characterId, "STR");
     int def = effectiveStat(state, profile, characterId, "DEF");
     int skl = effectiveStat(state, profile, characterId, "SKL");
     int vit = effectiveStat(state, profile, characterId, "VIT");
 
     JSONObject stats = new JSONObject()
-        .put("STR", line(source.optInt("STR", CharacterProgressionCore.BASE_STAT), str))
-        .put("DEF", line(source.optInt("DEF", CharacterProgressionCore.BASE_STAT), def))
-        .put("SKL", line(source.optInt("SKL", CharacterProgressionCore.BASE_STAT), skl))
-        .put("VIT", line(source.optInt("VIT", CharacterProgressionCore.BASE_STAT), vit));
+        .put("STR", line(source.optInt("STR", CharacterProgressionCore.BASE_STAT), passiveBonus, str))
+        .put("DEF", line(source.optInt("DEF", CharacterProgressionCore.BASE_STAT), passiveBonus, def))
+        .put("SKL", line(source.optInt("SKL", CharacterProgressionCore.BASE_STAT), passiveBonus, skl))
+        .put("VIT", line(source.optInt("VIT", CharacterProgressionCore.BASE_STAT), passiveBonus, vit));
 
     int baseAttack = CombatChoiceEngine.baseAttackFor(runtimeSource, characterId);
     JSONObject combatStatus = new JSONObject()
@@ -81,7 +84,8 @@ final class CharacterStatCore {
   static int effectiveStat(JSONObject state, JSONObject profile, String characterId, String key)
       throws Exception {
     int base = profile.getJSONObject("stats").optInt(key, CharacterProgressionCore.BASE_STAT);
-    long value = base + new SurvivalCore().statPenalty(state, characterId, key);
+    long value = base + passiveStatBonus(characterId)
+        + new SurvivalCore().statPenalty(state, characterId, key);
     JSONArray effects = profile.optJSONArray("statusEffects");
     if (effects != null) {
       for (int i = 0; i < effects.length(); i++) {
@@ -95,11 +99,18 @@ final class CharacterStatCore {
     return (int)Math.max(1L, Math.min(CharacterProgressionCore.MAX_STAT, value));
   }
 
-  private JSONObject line(int base, int effective) throws Exception {
+  static int passiveStatBonus(String characterId) {
+    return "cao_minh".equals(CharacterProgressionCore.normalizeCharacterId(characterId))
+        ? MA_TON_STAT_BONUS : 0;
+  }
+
+  private JSONObject line(int base, int passiveBonus, int effective) throws Exception {
     int normalized = Math.max(CharacterProgressionCore.BASE_STAT, base);
     return new JSONObject()
         .put("base", normalized)
+        .put("passiveBonus", Math.max(0, passiveBonus))
         .put("effective", effective)
+        .put("temporaryModifier", effective - normalized - Math.max(0, passiveBonus))
         .put("nextCoreCost", CharacterProgressionCore.upgradeCost(normalized));
   }
 }

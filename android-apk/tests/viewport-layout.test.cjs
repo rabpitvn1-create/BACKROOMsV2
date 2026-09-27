@@ -46,10 +46,11 @@ test('permanent turn status no longer consumes a gameplay grid row',()=>{
   assert.doesNotMatch(index,/Turn "\+state\.turn/);
 });
 
-test('Play font is limited to UI while narrative body keeps the system font',()=>{
+test('Play stays on special UI while narrative body uses Pretendard Std',()=>{
   assert.match(index,/@font-face\{font-family:'Play'[^}]*Play-Regular\.ttf/);
-  assert.match(index,/\.topbar,\.game-menu-trigger,\.player-action-bar button[^}]*font-family:'Play'/);
-  assert.match(index,/body\{[^}]*font:15px system-ui/);
+  assert.match(index,/@font-face\{font-family:'Pretendard Std'[^}]*PretendardStd-Regular\.woff2/);
+  assert.match(index,/\.topbar,\.game-menu-trigger,\.player-action-bar button[^}]*font-family:'Play','Pretendard Std'/);
+  assert.match(index,/body\{[^}]*font:15px 'Pretendard Std'/);
 });
 
 test('gameplay background reaches all four screen edges',()=>{
