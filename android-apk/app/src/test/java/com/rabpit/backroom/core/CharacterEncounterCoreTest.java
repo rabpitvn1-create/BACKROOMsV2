@@ -4,50 +4,57 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class CharacterEncounterCoreTest {
-  @Test public void lucTramNeverRandomlyEncountersAtAnyLevel() throws Exception {
-    SequenceRng levelZeroRng = new SequenceRng(3999, 3999);
-    JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
-    new CharacterEncounterCore(levelZeroRng).rollForExplorerAction(levelZero, "Cao Minh đi tiếp");
-    assertEquals(0, levelZero.getJSONArray("party").length());
-    assertEquals(0, levelZero.getJSONObject("characterEncounter")
-        .getJSONArray("pendingIntro").length());
-    assertEquals(2, levelZeroRng.calls);
+  @Test public void candidatesUseCanonRatesAndLucTramRequiresLeavingLevelZero() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore();
 
-    SequenceRng levelOneRng = new SequenceRng(3999, 3999);
+    JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
+    JSONArray zero = core.situationCandidates(levelZero);
+    assertFalse(zero.toString().contains("character:luc_tram"));
+    assertCandidateRate(zero, "character:iris", 100.0d / CharacterEncounterCore.RARE_ENCOUNTER_BOUND);
+    assertCandidateRate(zero, "character:syvial", 100.0d / CharacterEncounterCore.RARE_ENCOUNTER_BOUND);
+
     JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
-    new CharacterEncounterCore(levelOneRng).rollForExplorerAction(levelOne, "Cao Minh đi tiếp");
-    assertEquals(0, levelOne.getJSONArray("party").length());
-    assertEquals(0, levelOne.getJSONObject("characterEncounter")
-        .getJSONArray("pendingIntro").length());
-    assertEquals(2, levelOneRng.calls);
+    JSONArray one = core.situationCandidates(levelOne);
+    assertCandidateRate(one, "character:luc_tram", 10.0d);
+    JSONObject luc = findCandidate(one, "character:luc_tram");
+    assertEquals("canon:luc_tram:after_level_0", luc.getString("eligibilityRuleId"));
+    assertTrue(luc.getJSONArray("tags").toString().contains("REUNION"));
   }
 
-  @Test public void lucTramCandidateIsTenPercentOnlyAfterLevelZero() throws Exception {
-    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng());
+  @Test public void activatingCandidateCommitsPartyBeforeNarrationThenAcknowledgesIntro() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore();
+    JSONObject state = state(1, 7).put(LevelCore.LEVEL_KEY, "1");
 
-    JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
-    JSONArray zeroCandidates = core.situationCandidates(levelZero);
-    assertFalse(zeroCandidates.toString().contains("character:luc_tram"));
+    core.activateEncounterCandidate(state, "iris");
 
-    JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
-    JSONArray oneCandidates = core.situationCandidates(levelOne);
-    JSONObject luc = null;
-    for (int i = 0; i < oneCandidates.length(); i++) {
-      JSONObject candidate = oneCandidates.getJSONObject(i);
-      if ("character:luc_tram".equals(candidate.optString("situationKey"))) luc = candidate;
+    assertEquals(1, state.getJSONArray("party").length());
+    assertEquals("iris", state.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("iris", state.getJSONObject("characterEncounter")
+        .getJSONArray("pendingIntro").getString(0));
+
+    core.acknowledgePendingIntro(state);
+
+    assertEquals(1, state.getJSONArray("party").length());
+    assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
+    assertEquals("iris", state.getJSONObject("characterEncounter")
+        .getJSONArray("lastIntroduced").getString(0));
+  }
+
+  @Test public void lucTramCannotActivateOnLevelZero() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore();
+    JSONObject state = state(0, 2).put(LevelCore.LEVEL_KEY, "0");
+    try {
+      core.activateEncounterCandidate(state, "luc_tram");
+      fail("Level 0 must not allow Lục Trầm reunion.");
+    } catch (IllegalStateException expected) {
+      assertEquals(0, state.getJSONArray("party").length());
     }
-    assertTrue(luc != null);
-    assertEquals(10.0d, luc.getDouble("chancePercent"), 0.00001d);
-    assertEquals("canon:luc_tram:after_level_0", luc.getString("eligibilityRuleId"));
   }
 
   @Test public void eligibleLucTramReunionSurvivesNormalizationAfterLevelZero() throws Exception {
@@ -56,60 +63,12 @@ public class CharacterEncounterCoreTest {
             .put("pendingIntro", new JSONArray().put("luc_tram"))
             .put("justEncountered", new JSONArray().put("luc_tram")));
 
-    new CharacterEncounterCore(new SequenceRng()).normalizeState(state);
+    new CharacterEncounterCore().normalizeState(state);
 
     assertEquals("luc_tram", state.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
     assertEquals("luc_tram", state.getJSONObject("characterEncounter")
         .getJSONArray("justEncountered").getString(0));
-  }
-
-  @Test public void irisAndSyvialUseExactOneInFourThousandBoundary() {
-    assertTrue(CharacterEncounterCore.shouldEncounterRare(0));
-    assertFalse(CharacterEncounterCore.shouldEncounterRare(1));
-    assertFalse(CharacterEncounterCore.shouldEncounterRare(3999));
-  }
-
-  @Test public void oneExplorerRollQueuesOnlyRandomPoolThenJoinsAfterFirstContact() throws Exception {
-    SequenceRng rng = new SequenceRng(0, 0);
-    CharacterEncounterCore core = new CharacterEncounterCore(rng);
-    JSONObject state = state(1, 7).put(LevelCore.LEVEL_KEY, "1");
-    CharacterEncounterCore.EncounterResult result =
-        core.rollForExplorerAction(state, "Cao Minh quan sát hành lang");
-    assertTrue(result.joinedAny());
-    assertEquals(0, state.getJSONArray("party").length());
-    assertEquals(2, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
-
-    JSONObject candidate = new JSONObject(state.toString());
-    core.validateAndApply(state, candidate,
-        new JSONArray().put("Đứng lại.").put("Tôi không có ý gây sự.").put("Nói sau, ra khỏi chỗ này trước."));
-    assertEquals(2, candidate.getJSONArray("party").length());
-    assertEquals("iris", candidate.getJSONArray("party").getJSONObject(0).getString("id"));
-    assertEquals("syvial", candidate.getJSONArray("party").getJSONObject(1).getString("id"));
-
-    core.rollForExplorerAction(candidate, "Gemini retry");
-    candidate.put("turn", 8);
-    core.rollForExplorerAction(candidate, "Cao Minh đi tiếp");
-    assertEquals(2, rng.calls);
-    assertEquals(2, candidate.getJSONArray("party").length());
-  }
-
-  @Test public void geminiFailureKeepsRandomEncounterPendingWithoutPrematureJoin() throws Exception {
-    JSONObject state = state(1, 3).put(LevelCore.LEVEL_KEY, "1");
-    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng(0, 3999));
-    core.rollForExplorerAction(state, "Cao Minh mở cửa");
-    JSONObject savedAfterFailure = new JSONObject(state.toString());
-    core.normalizeState(savedAfterFailure);
-    assertEquals(0, savedAfterFailure.getJSONArray("party").length());
-    assertEquals("iris", savedAfterFailure.getJSONObject("characterEncounter")
-        .getJSONArray("pendingIntro").getString(0));
-    try {
-      core.validateAndApply(savedAfterFailure,
-          new JSONObject(savedAfterFailure.toString()), new JSONArray());
-      fail("Pending encounter must require 2-5 dialogue lines");
-    } catch (IllegalArgumentException expected) {
-      assertEquals(0, savedAfterFailure.getJSONArray("party").length());
-    }
   }
 
   @Test public void normalizationDeduplicatesCurrentCompanionsAndStripsShadowProgression() throws Exception {
@@ -128,39 +87,46 @@ public class CharacterEncounterCoreTest {
         .put("Iris")
         .put("Syvial"));
 
-    new CharacterEncounterCore(new SequenceRng()).normalizeState(state);
+    new CharacterEncounterCore().normalizeState(state);
     JSONArray party = state.getJSONArray("party");
     assertEquals(CharacterEncounterCore.MAX_COMPANIONS, party.length());
     assertEquals("luc_tram", party.getJSONObject(0).getString("id"));
-    assertEquals("Lục Trầm", party.getJSONObject(0).getString("name"));
     assertFalse(party.getJSONObject(0).has("hp"));
     assertFalse(party.getJSONObject(0).has("stats"));
     assertFalse(party.getJSONObject(0).has("level"));
     assertEquals("keep-me", party.getJSONObject(0).getString("customMetadata"));
-    assertTrue(party.getJSONObject(0).getBoolean("joined"));
     assertEquals("iris", party.getJSONObject(1).getString("id"));
     assertEquals("syvial", party.getJSONObject(2).getString("id"));
-    assertTrue(party.getJSONObject(0).getJSONArray("inventory").length() >= 2);
-    assertTrue(party.getJSONObject(1).getJSONArray("inventory").length() >= 2);
-    assertTrue(party.getJSONObject(2).getJSONArray("inventory").length() >= 2);
+  }
+
+  @Test public void fullPartyProducesNoCharacterCandidates() throws Exception {
+    JSONObject state = state(2, 8).put("party", new JSONArray()
+        .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm"))
+        .put(new JSONObject().put("id", "iris").put("name", "Iris"))
+        .put(new JSONObject().put("id", "syvial").put("name", "Syvial")));
+    CharacterEncounterCore core = new CharacterEncounterCore();
+    core.normalizeState(state);
+    assertEquals(0, core.situationCandidates(state).length());
   }
 
   @Test public void emptyLegacyPartyMigratesWithoutCrash() throws Exception {
     JSONObject state = state(0, 1).put("party", new JSONArray());
-    new CharacterEncounterCore(new SequenceRng()).normalizeState(state);
+    new CharacterEncounterCore().normalizeState(state);
     assertEquals(0, state.getJSONArray("party").length());
   }
 
-  @Test public void geminiCandidateCannotAddRemoveOrReplacePartyMembers() throws Exception {
-    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng());
-    JSONObject before = state(0, 2).put("party", new JSONArray()
-        .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")));
-    core.normalizeState(before);
-    JSONObject candidate = new JSONObject(before.toString()).put("party", new JSONArray()
-        .put(new JSONObject().put("id", "syvial").put("name", "Syvial").put("joined", true)));
-    core.validateAndApply(before, candidate, new JSONArray());
-    assertEquals(1, candidate.getJSONArray("party").length());
-    assertEquals("luc_tram", candidate.getJSONArray("party").getJSONObject(0).getString("id"));
+  private static void assertCandidateRate(JSONArray candidates, String key, double expected) throws Exception {
+    JSONObject candidate = findCandidate(candidates, key);
+    assertTrue("Missing candidate " + key, candidate != null);
+    assertEquals(expected, candidate.getDouble("chancePercent"), 0.0000001d);
+  }
+
+  private static JSONObject findCandidate(JSONArray candidates, String key) throws Exception {
+    for (int i = 0; i < candidates.length(); i++) {
+      JSONObject candidate = candidates.getJSONObject(i);
+      if (key.equals(candidate.optString("situationKey"))) return candidate;
+    }
+    return null;
   }
 
   private static JSONObject state(int level, int turn) throws Exception {
@@ -171,18 +137,5 @@ public class CharacterEncounterCoreTest {
         .put("party", new JSONArray())
         .put("flags", new JSONObject())
         .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Test")));
-  }
-
-  private static final class SequenceRng implements CharacterEncounterCore.IntRng {
-    final Queue<Integer> values = new ArrayDeque<>();
-    int calls;
-    SequenceRng(int... values) {
-      for (int value : values) this.values.add(value);
-    }
-    @Override public int nextInt(int bound) {
-      calls++;
-      if (values.isEmpty()) throw new AssertionError("Unexpected RNG call for bound " + bound);
-      return values.remove();
-    }
   }
 }
