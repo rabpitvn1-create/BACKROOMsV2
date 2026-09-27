@@ -15,7 +15,7 @@ import java.util.Locale;
  */
 final class NarrativeSkeleton {
   static final String ROOT_KEY = "narrativeSkeleton";
-  static final int SCHEMA_VERSION = 2;
+  static final int SCHEMA_VERSION = 3;
   private static final double MAX_KEY_REF_WEIGHT_MODIFIER = 1.35d;
 
   private static final String[] TOP_LEVEL_FIELDS = {
@@ -58,7 +58,8 @@ final class NarrativeSkeleton {
     if (threads != null) {
       for (int i = 0; i < threads.length(); i++) {
         JSONObject thread = threads.optJSONObject(i);
-        if (thread == null || !isUnresolved(thread.optString("status", ""))) continue;
+        if (thread == null || !isUnresolved(thread.optString("status", ""))
+            || !narrativeThread(thread.optString("threadType", ""))) continue;
         String threadId = thread.optString("threadId", "").trim();
         String threadType = thread.optString("threadType", "").trim();
         String status = thread.optString("status", "ACTIVE");
@@ -105,6 +106,7 @@ final class NarrativeSkeleton {
         String threadId = residue.optString("threadId", "").trim();
         JSONArray tags = residue.optJSONArray("tags");
         String threadType = tags == null ? "" : tags.optString(0, "");
+        if (!narrativeThread(threadType)) continue;
         JSONArray refs = copyArray(residue.optJSONArray("keyRefs"));
         tensions.put(new JSONObject()
             .put("tensionKey", "residue:" + threadId)
@@ -125,6 +127,7 @@ final class NarrativeSkeleton {
         JSONObject fact = facts.optJSONObject(i);
         if (fact == null) continue;
         String predicate = fact.optString("predicate", "");
+        if (!narrativeFact(fact)) continue;
         String factId = fact.optString("factId", "");
         JSONArray refs = refsForFact(fact);
 
@@ -176,38 +179,6 @@ final class NarrativeSkeleton {
               "state:party:" + actorId);
         }
       }
-    }
-
-    double resourcePressure = survivalPressure(state);
-    String levelRef = currentLevelRef(state);
-    if (resourcePressure > 0.0d) {
-      JSONArray refs = levelRef.isEmpty() ? new JSONArray() : new JSONArray().put(levelRef);
-      addHint(hints, "RESOURCE", refs, resourcePressure, "state:survival");
-      if (resourcePressure >= 0.35d) {
-        tensions.put(new JSONObject()
-            .put("tensionKey", "state:survival_resource_pressure")
-            .put("sourceType", "CURRENT_STATE")
-            .put("sourceRef", "state:survival")
-            .put("keyRefs", copyArray(refs))
-            .put("pressure", resourcePressure)
-            .put("summary", "Nhu cầu sinh tồn của Cao Minh đang tạo áp lực tài nguyên đáng kể."));
-      }
-    }
-
-    JSONObject combat = state == null ? null : state.optJSONObject("combat");
-    JSONObject entity = combat == null ? null : combat.optJSONObject("entity");
-    String combatEntity = entity == null ? "" : entity.optString("key", "").trim();
-    if (combat != null && combat.optBoolean("active", false)) {
-      addHint(hints, "DANGER",
-          combatEntity.isEmpty() ? new JSONArray() : new JSONArray().put(combatEntity),
-          1.0d, "state:combat");
-    }
-
-    JSONObject flags = state == null ? null : state.optJSONObject("flags");
-    String encounterKey = flags == null ? "" : flags.optString("entityEncounterKey", "").trim();
-    if (!encounterKey.isEmpty()) {
-      addHint(hints, "DANGER", new JSONArray().put(encounterKey), 0.90d,
-          "state:entityEncounter");
     }
 
     deriveConvergence(questions, convergence);
@@ -332,9 +303,30 @@ final class NarrativeSkeleton {
     return "ACTIVE".equals(status) || "DORMANT".equals(status);
   }
 
+  private static boolean narrativeThread(String type) {
+    String upper = safe(type).toUpperCase(Locale.ROOT);
+    return isRelationshipType(upper) || isAnchorMysteryType(upper)
+        || upper.contains("WORLD_CONSEQUENCE");
+  }
+
+  private static boolean narrativeFact(JSONObject fact) {
+    if (!fact.optBoolean("impactEligible", true)) return false;
+    String predicate = safe(fact.optString("predicate", "")).toLowerCase(Locale.ROOT);
+    String scope = safe(fact.optString("impactScope", "LOCAL")).toUpperCase(Locale.ROOT);
+    if (isRelationshipPredicate(predicate) || isEndingPossibility(predicate)) return true;
+    if ("LOCAL".equals(scope) || predicate.startsWith("route_")
+        || predicate.startsWith("level_") || "entered_level".equals(predicate)
+        || predicate.startsWith("chest_") || predicate.startsWith("item_")
+        || predicate.startsWith("resource_") || predicate.startsWith("survival_")
+        || predicate.startsWith("combat_") || predicate.startsWith("entity_")) return false;
+    return ("PERSISTENT_WORLD".equals(scope) || "REGIONAL".equals(scope))
+        && (predicate.startsWith("world_") || predicate.contains("mystery")
+            || predicate.contains("consequence"));
+  }
+
   private static boolean isAnchorMysteryType(String type) {
     String upper = safe(type).toUpperCase(Locale.ROOT);
-    return "LEVEL_ROUTE_SEARCH".equals(upper) || upper.contains("MYSTERY")
+    return upper.contains("MYSTERY")
         || upper.contains("UNKNOWN") || upper.contains("SECRET")
         || upper.contains("ORIGIN") || upper.contains("IDENTITY");
   }
@@ -557,26 +549,6 @@ final class NarrativeSkeleton {
             .put("met", true)
             .put("advisoryOnly", true));
       }
-    }
-  }
-
-  private static double survivalPressure(JSONObject state) {
-    try {
-      JSONObject survival = state == null ? null : state.optJSONObject(SurvivalCore.ROOT_KEY);
-      JSONObject chars = survival == null ? null : survival.optJSONObject(SurvivalCore.CHARACTERS_KEY);
-      JSONObject player = chars == null ? null : chars.optJSONObject("cao_minh");
-      if (player == null) return 0.0d;
-      long elapsed = SurvivalCore.elapsedMinutes(state);
-      long food = Math.max(0L, elapsed - player.optLong("lastFoodMinute", elapsed));
-      long water = Math.max(0L, elapsed - player.optLong("lastWaterMinute", elapsed));
-      long rest = Math.max(0L, elapsed - player.optLong("lastRestMinute", elapsed));
-      double worst = Math.max(
-          (double) food / SurvivalCore.FOOD_CRITICAL_MINUTES,
-          Math.max((double) water / SurvivalCore.WATER_CRITICAL_MINUTES,
-              (double) rest / SurvivalCore.REST_CRITICAL_MINUTES));
-      return clamp(worst);
-    } catch (Exception ignored) {
-      return 0.0d;
     }
   }
 

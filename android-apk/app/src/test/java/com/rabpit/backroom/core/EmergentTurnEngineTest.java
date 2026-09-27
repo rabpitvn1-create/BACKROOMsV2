@@ -208,6 +208,21 @@ public class EmergentTurnEngineTest {
     assertFalse(root.has("skeleton"));
   }
 
+  @Test public void oldNarrativeProjectionRebuildsWithoutARecentCommit() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 5);
+    engine.normalizeState(state);
+    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+    root.getJSONObject(NarrativeSkeleton.ROOT_KEY).put("schemaVersion", 2)
+        .getJSONArray("attentionHints").put(new JSONObject().put("tag", "RESOURCE")
+            .put("keyRefs", new JSONArray().put("chest")));
+    engine.catchUpProjections(state);
+    assertEquals(NarrativeSkeleton.SCHEMA_VERSION,
+        root.getJSONObject(NarrativeSkeleton.ROOT_KEY).getInt("schemaVersion"));
+    assertEquals(0, root.getJSONObject(NarrativeSkeleton.ROOT_KEY)
+        .getJSONArray("attentionHints").length());
+  }
+
   @Test public void narrativeSkeletonCarriesReadableCommittedContinuity() throws Exception {
     EmergentTurnEngine engine = new EmergentTurnEngine();
     JSONObject state = new JSONObject()
@@ -239,32 +254,32 @@ public class EmergentTurnEngineTest {
     JSONObject skeleton = state.getJSONObject(EmergentTurnEngine.ROOT_KEY)
         .getJSONObject(NarrativeSkeleton.ROOT_KEY);
     assertTrue(skeleton.getJSONArray("longTermTensions").toString().contains("summary"));
-    assertTrue(skeleton.getJSONArray("anchorMysteries").toString().contains("Level 1"));
+    assertEquals(0, skeleton.getJSONArray("anchorMysteries").length());
     assertTrue(skeleton.getJSONArray("importantRelationships").toString().contains("Lục Trầm"));
     assertTrue(skeleton.getJSONArray("unresolvedWorldQuestions").toString().contains("question"));
     assertTrue(skeleton.getJSONArray("attentionHints").toString().contains("keyRefs"));
   }
 
-  @Test public void narrativeSkeletonWeightsOnlyEligibleCandidatesWithMatchingKeyRefs() throws Exception {
+  @Test public void narrativeSkeletonWeightsOnlyCommittedNarrativeRefs() throws Exception {
     EmergentTurnEngine engine = new EmergentTurnEngine();
     JSONObject state = new JSONObject().put("turn", 9);
     engine.normalizeState(state);
     String turnId = engine.nextTurnId(state, "hound continuity");
 
     JSONArray events = new JSONArray();
-    events.put(engine.event(turnId, events, "ENTITY_ENCOUNTER_STARTED", "LOCAL", "hound",
-        new JSONObject().put("factPredicate", "entity_encounter_started")
-            .put("factValue", "hound").put("observedByPlayer", true),
+    events.put(engine.event(turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", "luc_tram",
+        new JSONObject().put("factPredicate", "character_encountered")
+            .put("factValue", "luc_tram").put("observedByPlayer", true),
         new JSONArray().put(engine.threadEffect(
-            "ENTITY_ENCOUNTER", new JSONArray().put("hound"), "SEED_OR_ADVANCE", null))));
+            "LUC_TRAM_RELATIONSHIP", new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
     engine.commitAuthoritative(state, turnId, events, null);
     engine.catchUpProjections(state);
 
     JSONArray candidates = new JSONArray()
-        .put(engine.candidate("ENTITY", "entity:hound", "DANGER", 10.0d,
-            "hound", "hound", false))
-        .put(engine.candidate("ENTITY", "entity:smiler", "DANGER", 10.0d,
-            "smiler", "smiler", false));
+        .put(engine.candidate("CHARACTER", "character:luc_tram", "SOCIAL", 10.0d,
+            "luc_tram", "luc_tram", false))
+        .put(engine.candidate("CHARACTER", "character:iris", "SOCIAL", 10.0d,
+            "iris", "iris", false));
     engine.selectCandidate(state, candidates,
         new TurnRng("turn-keyref", 0,
             EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 9);
@@ -273,24 +288,92 @@ public class EmergentTurnEngineTest {
     JSONArray traced = root.getJSONArray("selectionTrace")
         .getJSONObject(root.getJSONArray("selectionTrace").length() - 1)
         .getJSONArray("candidates");
-    JSONObject hound = null;
-    JSONObject smiler = null;
+    JSONObject lucTram = null;
+    JSONObject iris = null;
     for (int i = 0; i < traced.length(); i++) {
       JSONObject item = traced.optJSONObject(i);
       if (item == null) continue;
-      if ("entity:hound".equals(item.optString("situationKey"))) hound = item;
-      if ("entity:smiler".equals(item.optString("situationKey"))) smiler = item;
+      if ("character:luc_tram".equals(item.optString("situationKey"))) lucTram = item;
+      if ("character:iris".equals(item.optString("situationKey"))) iris = item;
     }
-    assertTrue(hound != null && smiler != null);
-    assertTrue(hound.getDouble("keyRefWeightModifier") > 1.0d);
-    assertTrue(hound.getDouble("keyRefWeightModifier") <= 1.35d);
-    assertEquals(1.0d, smiler.getDouble("keyRefWeightModifier"), 0.000001d);
-    assertTrue(hound.getDouble("finalWeight") > smiler.getDouble("finalWeight"));
+    assertTrue(lucTram != null && iris != null);
+    assertTrue(lucTram.getDouble("keyRefWeightModifier") > 1.0d);
+    assertTrue(lucTram.getDouble("keyRefWeightModifier") <= 1.35d);
+    assertEquals(1.0d, iris.getDouble("keyRefWeightModifier"), 0.000001d);
+    assertTrue(lucTram.getDouble("finalWeight") > iris.getDouble("finalWeight"));
 
     JSONObject noEligible = engine.selectCandidate(
         state, new JSONArray(), new TurnRng("turn-keyref-none", 0,
             EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 9);
     assertTrue(noEligible.getBoolean("selectedNone"));
+  }
+
+  @Test public void narrativeRelevanceKeepsContinuityAndExcludesHousekeeping() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 8)
+        .put("flags", new JSONObject().put("entityEncounterKey", "hound"))
+        .put("combat", new JSONObject().put("active", true)
+            .put("entity", new JSONObject().put("key", "hound")));
+    engine.normalizeState(state);
+    String turnId = engine.nextTurnId(state, "relevance");
+    JSONArray events = new JSONArray();
+    events.put(engine.event(turnId, events, "CHARACTER_REUNION", "SOCIAL", "luc_tram",
+        new JSONObject().put("factPredicate", "character_reunion"),
+        new JSONArray().put(engine.threadEffect("LUC_TRAM_RELATIONSHIP",
+            new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
+    events.put(engine.event(turnId, events, "PLAYER_ACTION_RESOLVED", "LOCAL", "archive_key",
+        new JSONObject().put("impactEligible", false),
+        new JSONArray().put(engine.threadEffect("ORIGIN_MYSTERY",
+            new JSONArray().put("archive_key"), "SEED_OR_ADVANCE", null))));
+    events.put(engine.event(turnId, events, "LEVEL_TRANSITIONED", "REGIONAL", "archive_key",
+        new JSONObject().put("factPredicate", "world_consequence_archive_opened"), null));
+    String[] mundaneTypes = {"CHEST_AVAILABLE", "LEVEL_ROUTE_SEARCH", "ENTITY_ENCOUNTER"};
+    String[] mundaneRefs = {"chest_level", "route_level", "hound"};
+    for (int i = 0; i < mundaneTypes.length; i++) {
+      events.put(engine.event(turnId, events,
+          "ENTITY_ENCOUNTER".equals(mundaneTypes[i])
+              ? "ENTITY_ENCOUNTER_STARTED" : "PLAYER_ACTION_RESOLVED", "LOCAL", mundaneRefs[i],
+          new JSONObject().put("impactEligible", false),
+          new JSONArray().put(engine.threadEffect(mundaneTypes[i],
+              new JSONArray().put(mundaneRefs[i]), "SEED_OR_ADVANCE", null))));
+    }
+    for (String predicate : new String[] {"combat_resolution", "item_action_resolved",
+        "resource_count_changed", "survival_tick", "route_search_result", "chest_discovered"}) {
+      events.put(engine.event(turnId, events, "PLAYER_ACTION_RESOLVED", "LOCAL", predicate,
+          new JSONObject().put("factPredicate", predicate), null));
+    }
+    engine.commitAuthoritative(state, turnId, events, null);
+    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+    int facts = root.getJSONArray("historicalFacts").length();
+    int threads = root.getJSONArray("threads").length();
+    engine.catchUpProjections(state);
+
+    JSONObject narrative = root.getJSONObject(NarrativeSkeleton.ROOT_KEY);
+    String serialized = narrative.toString();
+    assertTrue(serialized.contains("LUC_TRAM_RELATIONSHIP"));
+    assertTrue(serialized.contains("ORIGIN_MYSTERY"));
+    assertTrue(serialized.contains("world_consequence_archive_opened"));
+    assertTrue(narrative.getJSONArray("anchorMysteries").toString().contains("archive_key"));
+    for (String excluded : new String[] {"CHEST_AVAILABLE", "LEVEL_ROUTE_SEARCH",
+        "ENTITY_ENCOUNTER", "chest_level", "route_level", "hound", "combat_resolution",
+        "item_action_resolved", "resource_count_changed", "survival_tick"}) {
+      assertFalse(excluded + " leaked into narrative", serialized.contains(excluded));
+    }
+    assertEquals(0.0d, NarrativeSkeleton.attentionStrength(root, "DANGER"), 0.000001d);
+    assertEquals(1.0d, NarrativeSkeleton.keyRefWeightModifier(root,
+        engine.candidate("ENTITY", "entity:hound", "DANGER", 10, "hound", "hound", false)), 0.000001d);
+    assertTrue(NarrativeSkeleton.keyRefWeightModifier(root,
+        engine.candidate("CHARACTER", "character:luc_tram", "SOCIAL", 10,
+            "luc_tram", "luc_tram", false)) > 1.0d);
+    assertEquals(facts, root.getJSONArray("historicalFacts").length());
+    assertEquals(threads, root.getJSONArray("threads").length());
+    assertEquals(0, engine.schedulerCandidates(state, 8).length());
+    assertTrue(engine.selectCandidate(state, new JSONArray(), new TurnRng("empty-relevance", 0,
+        EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 8)
+        .getBoolean("selectedNone"));
+    assertTrue(CampaignSkeleton.axisScore(root, "entity_attention") > 0.0d);
+    assertTrue(CampaignSkeleton.axisScore(root, "world_knowledge") > 0.0d);
+    assertTrue(CampaignSkeleton.axisScore(root, "social_entanglement") > 0.0d);
   }
 
   @Test public void narrativeSkeletonRebuildIgnoresSelectionSchedulerAndAiProposal() throws Exception {
@@ -330,7 +413,7 @@ public class EmergentTurnEngineTest {
     assertFalse(serialized.contains("SCHEDULER_LEAK_SENTINEL"));
     assertEquals(factCount, root.getJSONArray("historicalFacts").length());
     assertEquals(threadCount, root.getJSONArray("threads").length());
-    assertTrue(NarrativeSkeleton.attentionStrength(root, "DANGER") > 0.0d);
+    assertEquals(0.0d, NarrativeSkeleton.attentionStrength(root, "DANGER"), 0.000001d);
   }
 
   @Test public void narrativeSkeletonCannotCreateOrUnlockCandidates() throws Exception {
@@ -348,7 +431,7 @@ public class EmergentTurnEngineTest {
     engine.catchUpProjections(state);
 
     JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
-    assertTrue(NarrativeSkeleton.attentionStrength(root, "DANGER") > 0.0d);
+    assertEquals(0.0d, NarrativeSkeleton.attentionStrength(root, "DANGER"), 0.000001d);
     JSONObject director = root.getJSONObject("director");
     assertEquals("WEIGHT_ONLY", director.getString("authority"));
     assertFalse(director.getBoolean("canCreateCandidates"));
