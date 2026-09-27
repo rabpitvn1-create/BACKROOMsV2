@@ -242,6 +242,27 @@
     } catch (_) { return false; }
   }
 
+  function deathRestartPending() {
+    try {
+      var combat = state && state.combat;
+      return !!(combat && combat.active !== true && combat.outcome === 'defeat'
+        && combat.deathRestartPending === true);
+    } catch (_) { return false; }
+  }
+
+  function submitDeathRestart() {
+    if (!deathRestartPending() || window.__combatBusy) return;
+    if (!window.Android || typeof Android.restartAfterDeath !== 'function') {
+      if (status) status.textContent = 'Không tìm thấy Android death restart bridge.';
+      return;
+    }
+    window.__combatBusy = true;
+    if (typeof busy !== 'undefined') busy = true;
+    if (submit) submit.disabled = true;
+    if (typeof window.render === 'function') window.render();
+    Android.restartAfterDeath();
+  }
+
   function returnJourneyNeedsProvider() {
     try {
       var journey = state && state.story && state.story.returnJourney;
@@ -548,6 +569,19 @@
     if (!entry) return;
     if (state.combat && state.combat.active) return;
     var latest = index === lastGmIndex();
+    if (latest && deathRestartPending()) {
+      var restartBox = document.createElement('div');
+      restartBox.className = 'gm-choices death-restart';
+      var restartButton = document.createElement('button');
+      restartButton.type = 'button';
+      restartButton.className = 'gm-choice';
+      restartButton.textContent = 'BẮT ĐẦU LẠI TỪ ĐẦU LEVEL';
+      restartButton.disabled = !!window.__combatBusy;
+      restartButton.addEventListener('click', submitDeathRestart);
+      restartBox.appendChild(restartButton);
+      article.appendChild(restartBox);
+      return;
+    }
     if (latest && storyBootstrapPending()) {
       var bootstrapBox = document.createElement('div');
       bootstrapBox.className = 'gm-choices story-bootstrap';
@@ -830,14 +864,19 @@
   function syncComposer() {
     if (!form || !action || !submit) return;
     var combat = !!(state && state.combat && state.combat.active);
+    var deathLocked = deathRestartPending();
     var storyLocked = storyAwaitingEntityAttack() || storyPendingAdvance()
       || storyCutawayActive() || storyBootstrapPending();
-    form.classList.toggle('battle-locked', combat || storyLocked);
-    action.disabled = combat || storyLocked;
-    action.readOnly = combat || storyLocked;
+    form.classList.toggle('battle-locked', combat || deathLocked || storyLocked);
+    action.disabled = combat || deathLocked || storyLocked;
+    action.readOnly = combat || deathLocked || storyLocked;
     if (combat) {
       action.value = '';
       action.placeholder = 'Đang chiến đấu — hoàn tất Poker Dice trong khung bên trên.';
+      submit.disabled = true;
+    } else if (deathLocked) {
+      action.value = '';
+      action.placeholder = 'Cao Minh đã gục ngã — bắt đầu lại từ đầu Level trong khung GAME MASTER.';
       submit.disabled = true;
     } else if (storyLocked) {
       action.value = '';
@@ -972,7 +1011,7 @@
     var hasRolled=dice.hasRolled===true;
     var rerolls=Math.max(0,Number(dice.rerollsUsed)||0);
     var maxRerolls=Math.max(0,Number(dice.maxRerolls)||3);
-    diceMeta.textContent='Reroll '+String(rerolls)+' / '+String(maxRerolls)+' · chạm die để HOLD';
+    diceMeta.textContent='Lượt Quay '+String(rerolls)+'/'+String(maxRerolls)+' - Chạm Vào Xúc Xắc Để Giữ';
 
     diceRow.textContent='';
     var values=Array.isArray(dice.values)?dice.values:[0,0,0,0,0];
