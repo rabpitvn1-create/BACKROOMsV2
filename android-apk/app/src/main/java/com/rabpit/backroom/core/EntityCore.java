@@ -36,6 +36,42 @@ final class EntityCore {
         "Legacy unscoped Entity RNG is disabled; use SituationCandidate selection through TurnRng.");
   }
 
+  JSONArray situationCandidates(JSONObject state) throws Exception {
+    JSONArray output = new JSONArray();
+    JSONObject currentFlags = flags(state);
+    if (!currentFlags.optString(ENCOUNTER_KEY, "").trim().isEmpty()) return output;
+    int level = state.optInt("currentLevel", 0);
+    for (EntityDefinition entity : entities.values()) {
+      if (!roamingAllowedOn(level)) continue;
+      output.put(new JSONObject()
+          .put("candidateId", "entity:" + entity.key)
+          .put("situationKey", "entity:" + entity.key)
+          .put("kind", "ENTITY")
+          .put("category", "DANGER")
+          .put("chancePercent", entity.ratePercent)
+          .put("payloadKey", entity.key)
+          .put("source", "CANON")
+          .put("publicSummary", entity.name + " đã tiến vào phạm vi tương tác với Cao Minh.")
+          .put("capabilityContext", entity.canon)
+          .put("proposalRequired", true)
+          .put("eligibilityRuleId", "canon:entity:" + entity.key)
+          .put("tags", new JSONArray().put("DANGER").put("ENTITY").put(entity.key))
+          .put("keyRefs", new JSONArray().put(entity.key)));
+    }
+    return output;
+  }
+
+  void activateEncounterCandidate(JSONObject state, String key) throws Exception {
+    String normalized = key == null ? "" : key.trim();
+    EntityDefinition entity = entities.get(normalized);
+    if (entity == null) throw new IllegalArgumentException("Unknown Entity candidate: " + normalized);
+    JSONObject currentFlags = flags(state);
+    if (!currentFlags.optString(ENCOUNTER_KEY, "").trim().isEmpty()) {
+      throw new IllegalStateException("An Entity encounter is already active");
+    }
+    activateEncounter(state, currentFlags, entity, state.optInt("currentLevel", 0), "candidate_selector");
+  }
+
   void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
     JSONObject beforeFlags = flags(before);
     JSONObject candidateFlags = flags(candidate);
