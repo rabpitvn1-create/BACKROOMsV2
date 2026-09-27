@@ -95,8 +95,7 @@ final class CharacterEncounterCore {
     JSONArray party = state.getJSONArray("party");
     List<String> hits = new ArrayList<>();
 
-    // Story-managed characters such as Lục Trầm are deliberately excluded from RNG.
-    // Their appearance/reunion/join timing is owned by authored story events.
+    // Lục Trầm is deliberately excluded from RNG until her dedicated encounter rules are restored.
     if (!containsPartyId(party, "iris") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("iris");
     }
@@ -164,21 +163,20 @@ final class CharacterEncounterCore {
       for (String id : CANONICAL_ORDER) {
         if (containsPartyId(party, id)) {
           joined.add(displayName(id));
-        } else if (!StoryCore.isStoryManagedCharacter(id)) {
+        } else if (!"luc_tram".equals(id)) {
           randomNotMet.add(displayName(id));
         }
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
-      String lucTramStatus = StoryCore.characterStatus(state, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
-          "Story-managed: Lục Trầm (" + lucTramStatus + "); never random-roll her appearance/reunion/join.\n" +
+          "Deferred companion: Lục Trầm; her encounter rules will be restored separately, so do not random-roll her yet.\n" +
           "Random encounter pool not met: " + listText(randomNotMet) + ".\n" +
           "Just randomly encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending random intro: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
-          "Core exclusively owns random encounter rolls and Party membership. StoryCore owns authored character timing. " +
-          "Never spawn a story-managed character, add/remove/reorder Party, or change joined state from narration. " +
+          "Core exclusively owns random encounter rolls and Party membership. " +
+          "Never spawn Lục Trầm from narration yet, add/remove/reorder Party, or change joined state from narration. " +
           "Joined characters may be treated as already accompanying Cao Minh. Pending random-intro characters are NOT yet accompanying Cao Minh at the start of this turn. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
@@ -193,30 +191,6 @@ final class CharacterEncounterCore {
 
   static boolean shouldEncounterRare(int roll) {
     return roll == 0;
-  }
-
-  boolean joinFromStory(JSONObject state, String rawId) throws Exception {
-    normalizeState(state);
-    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
-    if (!isEncounterCharacter(id)) {
-      throw new IllegalArgumentException("Unsupported story Party character: " + rawId);
-    }
-
-    JSONArray party = state.getJSONArray("party");
-    if (containsPartyId(party, id)) return false;
-    if (party.length() >= MAX_COMPANIONS) {
-      throw new IllegalStateException("Party đã đầy trước khi hoàn tất authored story join.");
-    }
-
-    party.put(normalizedMember(id, null));
-    state.put("party", party);
-    normalizeState(state);
-
-    JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
-    encounter.put("lastStoryJoined", id);
-    encounter.put("lastStoryJoinedTurn", Math.max(1, state.optInt("turn", 1)));
-    state.put(ENCOUNTER_STATE, encounter);
-    return true;
   }
 
   static boolean isJoinedMember(JSONObject member) {
@@ -290,7 +264,7 @@ final class CharacterEncounterCore {
     JSONArray result = new JSONArray();
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
-      if (!StoryCore.isStoryManagedCharacter(id) && containsString(ids, id)) result.put(id);
+      if (!"luc_tram".equals(id) && containsString(ids, id)) result.put(id);
     }
     return result;
   }
