@@ -44,6 +44,11 @@ test('ROLL and FINISH are separate controls', () => {
   assert.match(source, /diceRoll\.disabled=.*rerolls>=maxRerolls\|\|allHeld\(held\)/);
 });
 
+test('Poker Dice meta is fully localized to Vietnamese', () => {
+  assert.ok(source.includes("diceMeta.textContent='Lượt Quay '+String(rerolls)+'/'+String(maxRerolls)+' - Chạm Vào Xúc Xắc Để Giữ';"));
+  assert.doesNotMatch(source, /Reroll .*chạm die để HOLD/);
+});
+
 test('production dice UI uses local assets and no Unicode dice glyphs', () => {
   assert.match(source, /file:\/\/\/android_asset\/dice\/die-/);
   assert.doesNotMatch(source, /[⚀⚁⚂⚃⚄⚅]/);
