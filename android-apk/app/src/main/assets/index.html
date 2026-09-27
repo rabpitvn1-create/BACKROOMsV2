@@ -96,8 +96,7 @@ if(window.visualViewport){
 }else{
   window.addEventListener("resize",syncViewportHeight);
 }
-// Main authored opening is served from story/source by StoryCore.
-const storyBootMessage="CỐT TRUYỆN CHÍNH — LEVEL 0\n\nNhấn vào để bắt đầu khám phá thế giới Backrooms";
+const gmBootMessage="GAME MASTER — LEVEL 0\n\nChọn một hành động bên dưới hoặc dùng PLAYER ACTION để hành động tự do.";
 
 const CURRENT_CHARACTER_CANON={
   "version": "cao-minh-r15-2026-09-20",
@@ -145,7 +144,7 @@ const initial={
   flags:{},
   characterCanon:CURRENT_CHARACTER_CANON,
   log:[
-    {role:"gm",text:storyBootMessage}
+    {role:"gm",text:gmBootMessage}
   ]
 };
 
@@ -206,9 +205,9 @@ function freshCoreGame(){const fresh=JSON.parse(JSON.stringify(initial));return 
 function resetGame(){if(confirm("Bắt đầu lại từ đầu?")){state=freshCoreGame();save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=freshCoreGame();render()}}
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){window.__gmErrorMessage="Đang gặp lỗi. Vui lòng thử lại.";render();return}window.__gmErrorMessage="";busy=true;submitEl.disabled=true;window.Android.submitTurn(JSON.stringify(state),a)});
-window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;window.__combatBusy=false;window.__gmEnvironmentLoading=false;window.__gmErrorMessage="";submitEl.disabled=false;save();render()};
-window.backroomError=message=>{busy=false;window.__combatBusy=false;window.__gmEnvironmentLoading=false;submitEl.disabled=false;window.__gmErrorMessage="Đang gặp lỗi. Vui lòng thử lại.";if(message&&window.console&&typeof console.error==="function")console.error("GAME MASTER:",message);if(typeof render==="function")render()};
-window.backroomCommittedError=json=>{const payload=JSON.parse(json);state=ensureCurrentLevel(payload.state||state);state.characterCanon=CURRENT_CHARACTER_CANON;busy=false;window.__gmEnvironmentLoading=false;submitEl.disabled=false;window.__gmErrorMessage="Đang gặp lỗi. Vui lòng thử lại.";save();if(payload.message&&window.console&&typeof console.error==="function")console.error("GAME MASTER:",payload.message);render()};
+window.backroomTurn=json=>{state=ensureCurrentLevel(JSON.parse(json));state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;window.__combatBusy=false;window.__gmErrorMessage="";submitEl.disabled=false;save();render()};
+window.backroomError=message=>{busy=false;window.__combatBusy=false;submitEl.disabled=false;window.__gmErrorMessage="Đang gặp lỗi. Vui lòng thử lại.";if(message&&window.console&&typeof console.error==="function")console.error("GAME MASTER:",message);if(typeof render==="function")render()};
+window.backroomCommittedError=json=>{const payload=JSON.parse(json);state=ensureCurrentLevel(payload.state||state);state.characterCanon=CURRENT_CHARACTER_CANON;busy=false;submitEl.disabled=false;window.__gmErrorMessage="Đang gặp lỗi. Vui lòng thử lại.";save();if(payload.message&&window.console&&typeof console.error==="function")console.error("GAME MASTER:",payload.message);render()};
 render();
 </script>
 </body>
