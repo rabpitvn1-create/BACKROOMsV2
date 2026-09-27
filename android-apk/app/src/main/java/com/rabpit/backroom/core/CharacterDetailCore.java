@@ -99,14 +99,22 @@ final class CharacterDetailCore {
         .getJSONArray("statusEffects").toString()));
 
     if ("cao_minh".equals(id)) {
-      member.put("passives", new JSONArray().put(new JSONObject()
-          .put("name", "Đại Đạo Ma Tôn")
-          .put("description",
-              "Sau mỗi lượt combat của Cao Minh: hồi 10% Max HP, cộng dồn +20% Attack và +20% Critical trong trận. Đồng đội nhận +50% Critical.")
-          .put("healMaxHpPercent", 10)
-          .put("attackPerTurnPercent", 20)
-          .put("criticalPerTurnPercent", 20)
-          .put("allyCriticalBonusPercent", 50)));
+      JSONArray passives = new JSONArray()
+          .put(new JSONObject()
+              .put("name", "Đại Đạo Ma Tôn")
+              .put("description",
+                  "Sau mỗi lượt combat của Cao Minh: hồi 10% Max HP, cộng dồn +20% Attack và +20% Critical trong trận. Đồng đội nhận +50% Critical.")
+              .put("healMaxHpPercent", 10)
+              .put("attackPerTurnPercent", 20)
+              .put("criticalPerTurnPercent", 20)
+              .put("allyCriticalBonusPercent", 50))
+          .put(new JSONObject()
+              .put("name", CharacterStatCore.MA_TON_PASSIVE)
+              .put("description",
+                  "Tất cả Stats nhận +99 điểm dưới dạng bonus riêng. Bonus không cộng vào stat gốc, không làm tăng giá nâng Core và được hiển thị theo dạng 5 (+99).")
+              .put("allStatsBonus", CharacterStatCore.MA_TON_STAT_BONUS)
+              .put("separateFromBaseStats", true));
+      member.put("passives", passives);
     }
 
     copyStringIfPresent(source, previous, member, "role");
