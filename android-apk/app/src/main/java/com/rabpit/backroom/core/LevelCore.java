@@ -140,12 +140,6 @@ final class LevelCore {
     state.put("location", defaultLocation(key));
   }
 
-  static String returnJourneyLocation(String levelKey) {
-    String key = levelKey == null ? "" : levelKey.trim();
-    String start = defaultLocation(key);
-    return start + " — khu vực đang đi qua trong cùng vùng";
-  }
-
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {
     normalizeState(before);
     String fromKey = resolveLevelKey(before);
