@@ -1,6 +1,0 @@
-Backroom 1.1.90
-
-- Bump phiên bản ứng dụng lên 1.1.90 với versionCode 90.
-- Giữ runtime Entity hoàn toàn trên WebP: 20 Entity dùng asset .webp và CI tiếp tục chặn Entity PNG quay lại APK.
-- Xác nhận artwork Diệp Minh hiện hành trong APK khớp đúng `Novel/ENTITY/Diep_Minh.webp` trên Google Drive.
-- Giữ nguyên các thay đổi gameplay/runtime của 1.1.89; bản bump này tập trung đóng gói trạng thái asset Entity mới thành release kế tiếp.

@@ -1,5 +1,0 @@
-Backroom 1.1.66
-
-- Nâng versionCode lên 68 và versionName lên 1.1.66.
-- Đồng bộ GitHub Actions để build, kiểm tra, upload artifact và phát hành đúng APK 1.1.66.
-- Không thay đổi gameplay hoặc runtime ngoài phần tăng phiên bản.

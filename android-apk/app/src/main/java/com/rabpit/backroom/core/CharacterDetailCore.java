@@ -165,44 +165,10 @@ final class CharacterDetailCore {
     return "";
   }
 
-  private static int firstPositive(JSONObject source, int fallback, String... keys) {
-    if (source != null) {
-      for (String key : keys) {
-        int value = source.optInt(key, 0);
-        if (value > 0) return value;
-      }
-    }
-    return fallback;
-  }
-
-  private static int firstNonNegative(JSONObject source, int fallback, String... keys) {
-    if (source != null) {
-      for (String key : keys) {
-        if (!source.has(key)) continue;
-        int value = source.optInt(key, -1);
-        if (value >= 0) return value;
-      }
-    }
-    return fallback;
-  }
-
   private static void copyStringIfPresent(JSONObject source, JSONObject previous, JSONObject target,
                                           String key) throws Exception {
     String value = firstString(source, previous, key);
     if (!value.isEmpty()) target.put(key, value);
-  }
-
-  private static void copyNumberIfPresent(JSONObject source, JSONObject previous, JSONObject target,
-                                          String key) throws Exception {
-    if (source != null && source.has(key)) target.put(key, source.optInt(key, 0));
-    else if (previous != null && previous.has(key)) target.put(key, previous.optInt(key, 0));
-  }
-
-  private static void copyObjectIfPresent(JSONObject source, JSONObject previous, JSONObject target,
-                                          String key) throws Exception {
-    JSONObject value = source == null ? null : source.optJSONObject(key);
-    if (value == null && previous != null) value = previous.optJSONObject(key);
-    if (value != null) target.put(key, new JSONObject(value.toString()));
   }
 
   private static void copyArrayIfPresent(JSONObject source, JSONObject previous, JSONObject target,

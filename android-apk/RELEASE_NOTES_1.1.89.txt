@@ -1,8 +1,0 @@
-Backroom 1.1.89
-
-- Tăng tỉ lệ auto-spawn của toàn bộ 17 Entity còn đăng ký thêm đúng 2 điểm phần trăm, đưa dải hiện tại lên 3.0%–3.5%.
-- Thu gọn ASYNC từ bốn biến thể xuống còn `ASYNC Rifleman`; loại `ASYNC Vanguard`, `ASYNC Tactical Operative` và `ASYNC Decon Specialist` khỏi spawn registry, combat runtime và snapshot overlay.
-- Cân bằng lại HP nền của các Entity combat để nhịp giao tranh ngắn và hợp lý hơn; Diệp Minh giảm từ 2000 xuống 1200 HP.
-- Khôi phục bootstrap cốt truyện New Game chạy local để vào mạch truyện ổn định mà không phụ thuộc phản hồi GM bên ngoài.
-- Thêm artwork phong cách Backrooms cho mobile header và nút Player Action, đồng thời giữ contract UI bằng test.
-- Dọn các workflow one-shot/obsolete và bổ sung công cụ purge lịch sử Actions, chỉ giữ các release xanh.

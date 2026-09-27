@@ -1,6 +1,0 @@
-Backroom 1.1.69
-
-- Khôi phục Party avatar UI và panel thông tin nhân vật khi chạm.
-- Đóng gói avatar Kai/Lucia mới và liên kết Lucia combat overlay.
-- Bật immersive fullscreen native, ẩn status/navigation bar và giữ keyboard resize.
-- Giữ CharacterEncounterCore, Party runtime và combat flow hiện tại.

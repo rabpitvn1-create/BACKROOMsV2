@@ -1,7 +1,0 @@
-Backroom 1.1.84
-
-- Xoá HUD/icon combat status khỏi snapshot; trạng thái hiệu ứng tiếp tục được thể hiện qua battle log/GM.
-- Sửa lethal Chảy máu/Trúng độc ở đầu round: nếu DoT hạ Entity xuống 0 HP thì combat kết thúc ngay, không còn actor đánh thêm vào Entity đã chết.
-- Giảm cỡ chữ floater -HP trên snapshot từ 20px xuống 19px.
-- Chuẩn hoá ONE PAIR trong battle log thành [PAIR] để dùng đúng Play font như các Poker hand token khác.
-- Giữ nguyên proc chance, potency/duration cap, combat sequencing và công thức damage hiện tại.
