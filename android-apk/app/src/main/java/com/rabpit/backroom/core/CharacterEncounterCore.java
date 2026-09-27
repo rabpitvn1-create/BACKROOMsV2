@@ -182,7 +182,7 @@ final class CharacterEncounterCore {
     state.put(ENCOUNTER_STATE, encounter);
   }
 
-  private static JSONArray appendUnique(JSONArray values, String id) {
+  private static JSONArray appendUnique(JSONArray values, String id) throws Exception {
     JSONArray output = values == null ? new JSONArray() : new JSONArray(values.toString());
     if (!containsString(output, id)) output.put(id);
     return output;
