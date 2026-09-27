@@ -21,6 +21,7 @@ Runtime policy:
 | 0 | 3 | level_00_snapshot_003.webp | `404eb9fccbe6f786dc6c2489ce28e54572d6442b906d2eb0c7ff96ce15fb7e04` |
 | 0 | 4 | level_00_snapshot_004.webp | `f2aa5978a104c2d33ef87a00b24fe1dbf62fda3b36e47ba25f8e2952b0656c54` |
 | 0 | 5 | level_00_snapshot_005.webp | `44fca432075659edeabbc21d721416eb584d56fce86737d53b71cecda5792fb3` |
+| 0 | 6 | level_00_snapshot_006.webp | `86aeff71c4a884933e20bfbea3f20da5034b618e2feee1a8a683a02143d36877` |
 | 1 | 1 | level_01_snapshot_001.webp | `72d8ffe6e70cf95d8872692bdeccf69811a11df5fd8894251afee80258283ae6` |
 | 1 | 2 | level_01_snapshot_002.webp | `3de86a8c83038b6b37adc861959068e571b6c07712be46a8eca0494595ea33b1` |
 | 1 | 3 | level_01_snapshot_003.webp | `3a7cbab5918e358ccbe1b30269f16137cbb2be9674397f9d5f5421dfc856911c` |
