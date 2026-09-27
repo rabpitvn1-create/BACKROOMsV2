@@ -1132,6 +1132,21 @@ public class MainActivity extends Activity {
       });
     }
 
+    @JavascriptInterface public void restartAfterDeath() {
+      io.execute(() -> {
+        try {
+          JSONObject result = new JSONObject(gameCore.restartAfterDeath());
+          if (!result.optBoolean("handled", false)) {
+            throw new Exception(result.optString("error", "Không thể bắt đầu lại từ đầu Level."));
+          }
+          emit("backroomTurn", result.getJSONObject("state").toString());
+        } catch (Exception e) {
+          emit("backroomError",
+              e.getMessage() == null ? "Không thể bắt đầu lại từ đầu Level." : e.getMessage());
+        }
+      });
+    }
+
     @JavascriptInterface public void coreUpgrade(String stateJson, String characterId, String stat) {
       io.execute(() -> emit("backroomCoreUpgrade",
           gameCore.processCoreUpgrade(stateJson, characterId, stat)));

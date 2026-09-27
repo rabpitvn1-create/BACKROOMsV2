@@ -587,6 +587,34 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
 
+  public synchronized String restartAfterDeath() {
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      storyCore.normalizeState(state);
+      JSONObject combat = state.optJSONObject("combat");
+      if (combat == null || !"defeat".equals(combat.optString("outcome", ""))
+          || !combat.optBoolean("deathRestartPending", false)) {
+        return response(false, state, "Không có lượt hồi sinh đang chờ.",
+            "death_restart_unavailable", null);
+      }
+
+      storyCore.clearReturnJourneyAfterDeath(state);
+      storyCore.rearmAuthoredEncounterAfterDeath(state);
+      LevelCore.returnToCurrentLevelStart(state);
+      combat.put("deathRestartPending", false)
+          .put("deathReturnJourneyPending", false)
+          .put("deathReturnJourneyStarted", false)
+          .put("outcome", "");
+      state.put("combat", combat);
+      state.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(state);
+      return response(true, state, null, "death_restart_completed", null);
+    } catch (Exception e) {
+      return response(false, state, safeMessage(e), "death_restart_rejected", null);
+    }
+  }
+
+
   public synchronized String levelPromptContext(String stateJson) {
     return levelPromptContext(stateJson, "");
   }
@@ -1201,20 +1229,21 @@ public final class GameCoreFacade implements AutoCloseable {
 
   static void armDeathReturnIfNeeded(StoryCore storyCore, JSONObject state) throws Exception {
     JSONObject combat = state == null ? null : state.optJSONObject("combat");
-    if (combat == null || !"defeat".equals(combat.optString("outcome", ""))
-        || !combat.optBoolean("deathReturnJourneyPending", false)) return;
-    if (storyCore.returnJourneyActive(state)) {
-      storyCore.restartReturnJourneyAfterDeath(state);
-    } else {
-      storyCore.rearmAuthoredEncounterAfterDeath(state);
-      storyCore.beginDeathReturnJourney(
-          state,
-          combat.optString("deathReturnAnchorLocation", state.optString("location", "")),
-          combat.optString("deathReturnLevelKey",
-              state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)))));
-    }
-    combat.put("deathReturnJourneyPending", false);
-    combat.put("deathReturnJourneyStarted", true);
+    if (combat == null || !"defeat".equals(combat.optString("outcome", ""))) return;
+    boolean restartPending = combat.optBoolean("deathRestartPending", false);
+    boolean legacyPending = combat.optBoolean("deathReturnJourneyPending", false)
+        || combat.optBoolean("deathReturnJourneyStarted", false)
+        || storyCore.returnJourneyActive(state);
+    if (!restartPending && !legacyPending) return;
+
+    // Death recovery is gameplay state. Never wait for Story provider generation before the
+    // player can restart from the current Level entrance.
+    storyCore.clearReturnJourneyAfterDeath(state);
+    storyCore.rearmAuthoredEncounterAfterDeath(state);
+    LevelCore.returnToCurrentLevelStart(state);
+    combat.put("deathReturnJourneyPending", false)
+        .put("deathReturnJourneyStarted", false)
+        .put("deathRestartPending", true);
     state.put("combat", combat);
   }
 

@@ -1429,7 +1429,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       LevelCore.returnToCurrentLevelStart(state);
       combat.put("deathReturnAnchorLocation", targetLocation)
           .put("deathReturnLevelKey", targetLevelKey)
-          .put("deathReturnJourneyPending", true)
+          .put("deathReturnJourneyPending", false)
+          .put("deathRestartPending", true)
           .put("deathRecoveryApplied", true)
           .put("playerRespawned", true);
     }
