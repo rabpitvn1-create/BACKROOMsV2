@@ -349,6 +349,9 @@ public final class GameCoreFacade implements AutoCloseable {
     CombatChoiceEngine.normalizeTerminalEncounter(state);
   }
 
+  /**
+   * Legacy AI-state delta path is intentionally disabled. AI narration is non-authoritative.
+   */
   public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
                                                        String encounterDialogueJson) {
     return processValidatedCandidate(beforeJson, candidateJson, action, encounterDialogueJson, null);
@@ -356,100 +359,119 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
                                                        String encounterDialogueJson, String transitionTarget) {
-    JSONObject before = parseState(beforeJson);
-    try {
-      levelCore.normalizeState(before);
-      characterProgressionCore.normalizeState(before);
-      survivalCore.normalizeState(before);
-      itemCore.normalizeInventory(before);
-      characterEncounterCore.normalizeState(before);
-      JSONObject candidate = parseState(candidateJson);
-      JSONObject sanitized = deepCopy(candidate);
-      if (CombatChoiceEngine.isKnownEntity(encounterKey(before))) {
-        sanitized.put("turn", Math.max(1, before.optInt("turn", 1)));
-      }
-
-      copyField(before, sanitized, "inventory");
-      copyField(before, sanitized, SurvivalCore.ROOT_KEY);
-      characterProgressionCore.protectFromCandidate(before, sanitized);
-
-      int beforeStageIndex = levelCore.stageIndexForState(before);
-      applyNarrativeBoundary(levelCore, before, sanitized, transitionTarget);
-      int afterStageIndex = levelCore.stageIndexForState(sanitized);
-      if (afterStageIndex != beforeStageIndex) {
-        int stageCoreReward = characterProgressionCore.rewardStageCompletion(sanitized, afterStageIndex);
-        JSONObject flags = sanitized.optJSONObject("flags");
-        if (flags == null) flags = new JSONObject();
-        flags.put("lastStageCoreReward", stageCoreReward);
-        flags.put("lastStageRewardIndex", afterStageIndex);
-        sanitized.put("flags", flags);
-      }
-      entityCore.validateAndApply(before, sanitized);
-      itemCore.validateAndApply(before, sanitized);
-      characterEncounterCore.validateAndApply(before, sanitized, parseArray(encounterDialogueJson));
-      sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
-      advanceGameTimeFromBefore(before, sanitized, action);
-      characterProgressionCore.applyExplorerTurnRecovery(sanitized);
-      survivalCore.normalizeState(sanitized);
-      itemCore.normalizeInventory(sanitized);
-
-      persist(sanitized);
-      return response(true, sanitized, null, "ai_delta_committed", null);
-    } catch (Exception e) {
-      debug("processValidatedCandidate failed: " + e.getMessage());
-      return response(false, before, safeMessage(e), "ai_delta_rejected", null);
-    }
+    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    return response(false, state,
+        "Legacy AI state mutation is disabled; world state is committed by DomainEventBatch only.",
+        "legacy_ai_delta_disabled", null);
   }
 
   public synchronized String processCombatResolution(String stateJson) {
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      survivalCore.normalizeState(state);
-      itemCore.normalizeInventory(state);
-      characterEncounterCore.normalizeState(state);
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      emergentTurnEngine.catchUpProjections(persisted);
 
-      boolean wasActive = CombatChoiceEngine.isActive(state);
-      CombatChoiceEngine.resolveFinalized(state);
-      CombatChoiceEngine.normalizeTerminalEncounter(state);
-      boolean active = CombatChoiceEngine.isActive(state);
-      JSONObject combat = state.optJSONObject("combat");
+      int preVersion = emergentTurnEngine.stateVersion(persisted);
+      JSONObject working = deepCopy(persisted);
+      JSONObject beforeCombat = working.optJSONObject("combat");
+      String entityKey = beforeCombat == null ? "" : beforeCombat.optString("entityKey", "");
+      String turnId = emergentTurnEngine.nextTurnId(
+          persisted, "combat:resolve:" + entityKey + ":" + (beforeCombat == null ? 0 : beforeCombat.optInt("round", 0))
+              + ":" + (beforeCombat == null ? 0 : beforeCombat.optInt("actorIndex", 0)));
+
+      boolean wasActive = CombatChoiceEngine.isActive(working);
+      CombatChoiceEngine.resolveFinalized(working);
+      CombatChoiceEngine.normalizeTerminalEncounter(working);
+      boolean active = CombatChoiceEngine.isActive(working);
+      JSONObject combat = working.optJSONObject("combat");
       String outcome = combat == null ? "" : combat.optString("outcome", "");
+      String resolvedActor = combat == null ? "" : combat.optString("resolvedActorName", "");
 
+      JSONArray events = new JSONArray();
+      JSONArray threadEffects = new JSONArray();
+      JSONArray entityRefs = entityKey.isEmpty() ? new JSONArray() : new JSONArray().put(entityKey);
       if (wasActive && !active && ("victory".equals(outcome) || "defeat".equals(outcome))) {
-        incrementTurn(state);
+        threadEffects.put(emergentTurnEngine.threadEffect(
+            "ENTITY_ENCOUNTER", entityRefs, "TERMINATE",
+            "victory".equals(outcome) ? "RESOLVED" : "FAILED"));
+      } else if (wasActive && active && !entityKey.isEmpty()) {
+        threadEffects.put(emergentTurnEngine.threadEffect(
+            "ENTITY_ENCOUNTER", entityRefs, "SEED_OR_ADVANCE", null));
       }
 
-      state.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(state);
-      return response(true, state, null,
+      events.put(emergentTurnEngine.event(
+          turnId, events,
+          !active && "victory".equals(outcome) ? "COMBAT_VICTORY"
+              : !active && "defeat".equals(outcome) ? "COMBAT_DEFEAT"
+              : "COMBAT_HAND_RESOLVED",
+          "LOCAL",
+          entityKey.isEmpty() ? "combat" : entityKey,
+          new JSONObject()
+              .put("factPredicate", "combat_resolution")
+              .put("factValue", outcome.isEmpty() ? "ongoing" : outcome)
+              .put("resolvedActor", resolvedActor)
+              .put("causedBy", "player")
+              .put("observedByPlayer", true),
+          threadEffects));
+
+      if (wasActive && !active && ("victory".equals(outcome) || "defeat".equals(outcome))) {
+        incrementTurn(working);
+      }
+
+      emergentTurnEngine.validateBatch(turnId, events);
+      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      if (emergentTurnEngine.stateVersion(working) != preVersion + 1) {
+        throw new IllegalStateException("Combat commit stateVersion drift");
+      }
+      working.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+      return response(true, working, null,
           active ? "combat_turn_resolved" : "combat_finished", null);
     } catch (Exception e) {
-      return response(false, state, safeMessage(e), "combat_resolve_rejected", null);
+      return response(false, persisted, safeMessage(e), "combat_resolve_rejected", null);
     }
   }
 
 
   public synchronized String restartAfterDeath() {
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      JSONObject combat = state.optJSONObject("combat");
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      JSONObject combat = persisted.optJSONObject("combat");
       if (combat == null || !"defeat".equals(combat.optString("outcome", ""))
           || !combat.optBoolean("deathRestartPending", false)) {
-        return response(false, state, "Không có lượt hồi sinh đang chờ.",
+        return response(false, persisted, "Không có lượt hồi sinh đang chờ.",
             "death_restart_unavailable", null);
       }
 
-      LevelCore.returnToCurrentLevelStart(state);
-      combat.put("deathRestartPending", false)
-          .put("outcome", "");
-      state.put("combat", combat);
-      state.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(state);
-      return response(true, state, null, "death_restart_completed", null);
+      JSONObject working = deepCopy(persisted);
+      JSONObject workingCombat = working.getJSONObject("combat");
+      String turnId = emergentTurnEngine.nextTurnId(persisted, "death:restart");
+      LevelCore.returnToCurrentLevelStart(working);
+      workingCombat.put("deathRestartPending", false).put("outcome", "");
+      working.put("combat", workingCombat);
+
+      JSONArray events = new JSONArray();
+      events.put(emergentTurnEngine.event(turnId, events, "PLAYER_RESPAWNED", "LOCAL", "cao_minh",
+          new JSONObject()
+              .put("factPredicate", "respawned_at_level_start")
+              .put("factValue", working.optString("location", ""))
+              .put("causedBy", "system")
+              .put("observedByPlayer", true),
+          null));
+      emergentTurnEngine.validateBatch(turnId, events);
+      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      working.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+      return response(true, working, null, "death_restart_completed", null);
     } catch (Exception e) {
-      return response(false, state, safeMessage(e), "death_restart_rejected", null);
+      return response(false, persisted, safeMessage(e), "death_restart_rejected", null);
     }
   }
 
@@ -506,47 +528,79 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processItemAction(String stateJson, String ownerId, String itemId,
                                                String operation, String targetId, int quantity) {
-    JSONObject state = parseState(stateJson);
-    JSONObject stored = parseState(preferences.getString(STATE_KEY, "{}"));
-    if (stored.length() > 0) state = stored;
+    JSONObject submitted = parseState(stateJson);
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (persisted.length() == 0) persisted = submitted;
     try {
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      survivalCore.normalizeState(state);
-      itemCore.normalizeInventory(state);
-      characterEncounterCore.normalizeState(state);
-      String reply = itemCore.applyItemAction(state, ownerId, itemId, operation, targetId, quantity);
-      state.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(state);
-      return response(true, state, null, "item_action_committed", reply);
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      JSONObject working = deepCopy(persisted);
+      String turnId = emergentTurnEngine.nextTurnId(
+          persisted, "item:" + ownerId + ":" + itemId + ":" + operation + ":" + targetId + ":" + quantity);
+      String reply = itemCore.applyItemAction(working, ownerId, itemId, operation, targetId, quantity);
+
+      JSONArray events = new JSONArray();
+      events.put(emergentTurnEngine.event(turnId, events, "ITEM_ACTION_RESOLVED", "LOCAL",
+          targetId == null || targetId.trim().isEmpty() ? ownerId : targetId,
+          new JSONObject()
+              .put("factPredicate", "item_action")
+              .put("factValue", itemId + ":" + operation + ":" + Math.max(1, quantity))
+              .put("causedBy", "player")
+              .put("observedByPlayer", true),
+          null));
+      emergentTurnEngine.validateBatch(turnId, events);
+      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      working.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+      return response(true, working, null, "item_action_committed", reply);
     } catch (Exception e) {
-      return response(false, state, safeMessage(e), "item_action_rejected", null);
+      return response(false, persisted, safeMessage(e), "item_action_rejected", null);
     }
   }
 
   public synchronized String processCoreUpgrade(String stateJson, String characterId, String stat) {
     JSONObject submitted = parseState(stateJson);
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
-    if (state.length() == 0) state = submitted;
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    if (persisted.length() == 0) persisted = submitted;
     try {
-      levelCore.normalizeState(state);
-      characterProgressionCore.normalizeState(state);
-      characterEncounterCore.normalizeState(state);
-      if (CombatChoiceEngine.isActive(state)) {
-        return response(false, state,
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      if (CombatChoiceEngine.isActive(persisted)) {
+        return response(false, persisted,
             "Battle đang hoạt động. Hãy hoàn tất Poker Dice trước khi nâng chỉ số.",
             "combat_locked", null);
       }
-      JSONObject result = characterProgressionCore.upgradeStat(state, characterId, stat);
-      state.put("saveVersion", CURRENT_SAVE_VERSION);
-      characterDetailCore.projectState(state);
-      persist(state);
+
+      JSONObject working = deepCopy(persisted);
+      String turnId = emergentTurnEngine.nextTurnId(
+          persisted, "upgrade:" + characterId + ":" + stat);
+      JSONObject result = characterProgressionCore.upgradeStat(working, characterId, stat);
+      characterDetailCore.projectState(working);
+
+      JSONArray events = new JSONArray();
+      events.put(emergentTurnEngine.event(turnId, events, "CHARACTER_STAT_UPGRADED", "LOCAL",
+          result.getString("characterId"),
+          new JSONObject()
+              .put("factPredicate", "stat_upgraded")
+              .put("factValue", result.getString("stat") + ":" + result.getInt("value"))
+              .put("causedBy", "player")
+              .put("observedByPlayer", true),
+          null));
+      emergentTurnEngine.validateBatch(turnId, events);
+      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      working.put("saveVersion", CURRENT_SAVE_VERSION);
+      persist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+
       String reply = result.getString("stat") + " của " + result.getString("characterId")
           + " tăng lên " + result.getInt("value") + ". -" + result.getInt("cost")
           + " Core.";
-      return response(true, state, null, "core_upgrade_committed", reply);
+      return response(true, working, null, "core_upgrade_committed", reply);
     } catch (Exception e) {
-      return response(false, state, safeMessage(e), "core_upgrade_rejected", null);
+      return response(false, persisted, safeMessage(e), "core_upgrade_rejected", null);
     }
   }
 
@@ -586,13 +640,20 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String commitRuntimeState(String stateJson) {
-    JSONObject state = parseState(stateJson);
+    JSONObject submitted = parseState(stateJson);
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
-      // Called only from native orchestration after Core validates the narrative delta.
-      persist(state);
-      return clientSafeState(state).toString();
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+
+      // Runtime bridge may persist combat UI/session state only. It cannot overwrite world authority.
+      if (submitted.has("combat")) {
+        persisted.put("combat", new JSONObject(submitted.getJSONObject("combat").toString()));
+      }
+      persist(persisted);
+      return clientSafeState(persisted).toString();
     } catch (Exception e) {
-      throw new IllegalStateException("Không thể lưu combat state.", e);
+      throw new IllegalStateException("Không thể lưu combat runtime state.", e);
     }
   }
 
