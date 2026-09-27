@@ -211,4 +211,29 @@ public class EmergentTurnEngineTest {
     }
   }
 
+
+  @Test public void worldProposalValidationKeepsAiInsideSelectedCandidateCapabilities() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject selected = engine.candidate(
+        "ENTITY", "entity:test", "DANGER", 3.5d, "test", "test", true)
+        .put("allowedWorldActions", new JSONArray().put("INTERCEPT").put("OBSERVE"))
+        .put("fallbackAction", "INTERCEPT");
+
+    JSONObject invalid = new JSONObject()
+        .put("actionType", "AMBUSH")
+        .put("intentTag", "aggressive");
+    assertFalse(engine.worldProposalValidationReason(selected, invalid).isEmpty());
+    JSONObject fallback = engine.sanitizeWorldProposal(selected, invalid);
+    assertEquals("INTERCEPT", fallback.getString("actionType"));
+    assertTrue(fallback.getBoolean("fallback"));
+
+    JSONObject valid = new JSONObject()
+        .put("actionType", "OBSERVE")
+        .put("intentTag", "cautious");
+    assertTrue(engine.worldProposalValidationReason(selected, valid).isEmpty());
+    JSONObject accepted = engine.sanitizeWorldProposal(selected, valid);
+    assertEquals("OBSERVE", accepted.getString("actionType"));
+    assertFalse(accepted.getBoolean("fallback"));
+  }
+
 }
