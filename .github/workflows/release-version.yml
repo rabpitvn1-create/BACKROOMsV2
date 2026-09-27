@@ -43,25 +43,6 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
-      - name: Compile Story generated assets from source
-        run: |
-          set -euo pipefail
-          python3 .github/scripts/compile-story.py
-
-      - name: Commit compiler-owned Story generated assets
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add android-apk/app/src/main/assets/story/generated
-          if git diff --cached --quiet; then
-            echo 'Story generated assets already match source/compiler.'
-          else
-            git commit -m 'Regenerate Story assets'
-            git push origin HEAD:${GITHUB_HEAD_REF}
-          fi
-
       - name: Apply Entity Core runtime
         run: |
           set -euo pipefail
@@ -137,13 +118,20 @@ jobs:
           ! grep -Fq 'text-decoration:underline' android-apk/app/src/main/assets/inventory-ui.js
           grep -Fq 'GmNarrativePacket.build' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          grep -Fq 'VAI TRÒ GM:' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
+          grep -Fq 'Android.submitTurn(JSON.stringify(state), text)' android-apk/app/src/main/assets/player-action-ui.js
+          ! grep -Fq 'state.story' android-apk/app/src/main/assets/gm-choice-ui.js
+          ! grep -Fq 'state.story' android-apk/app/src/main/assets/player-action-ui.js
+          ! grep -Fq 'StoryCore' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
+          test ! -e android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
+          test ! -e android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
+          test ! -d android-apk/app/src/main/assets/story
           grep -Fq 'projected.remove("characterCanon")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmNarrativePacketTest.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           grep -Fq 'GmChoiceContract.gmEntry(reply, generated, state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq '.put("thinkingConfig", new JSONObject().put("thinkingLevel", "low"))' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'normalizeChoiceVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
-          grep -Fq 'GmChoiceContract.normalizeChoiceVietnamese' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'choiceNormalizerRemovesCommonEnglishActionLeakage' android-apk/app/src/test/java/com/rabpit/backroom/core/GmChoiceContractTest.java
           grep -Fq 'CombatChoiceEngine.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
           grep -Fq 'ItemCore.semanticCatalog()' android-apk/app/src/main/java/com/rabpit/backroom/core/GmChoiceContract.java
@@ -177,63 +165,17 @@ jobs:
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
-          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
-          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryCoreTest.java
-          test -s android-apk/app/src/test/java/com/rabpit/backroom/core/StoryRepositoryTest.java
-          test -s android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json
-          test -s .github/scripts/compile-story.py
-          python3 .github/scripts/compile-story.py --validate-generated
-          jq -e '.schemaVersion == 3 and .compilerVersion == 3' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json >/dev/null
-          test "$(jq '[.chapters[].segments[] | select(.mode == "DECISION")] | length' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json)" -gt 100
-          test "$(jq '[.chapters[].segments[] | select(.mode == "LINEAR")] | length' android-apk/app/src/main/assets/story/generated/level_0/level0.interactions.json)" -eq 1
-          grep -Fq 'LEVEL_ZERO_INTERACTIONS_ASSET' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
-          grep -Fq 'MODE_DECISION = "DECISION"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
-          grep -Fq 'MODE_ENTITY_GATE = "ENTITY_GATE"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryRepository.java
-          grep -Fq 'DECISION_PROVIDER_REQUIRED = "PROVIDER_REQUIRED"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'OUTCOME_RETURN = "RETURN_TO_LEVEL_START"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'OUTCOME_STAY = "STAY_IN_PLACE"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'RETURN_CAUSE_DEATH = "DEATH"' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'pendingStoryAdvance' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
           grep -Fq 'prepareAuthoredEncounter' android-apk/app/src/main/java/com/rabpit/backroom/core/EntityCore.java
-          grep -Fq 'processStoryEntityAttack' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'processCombatResolution' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           grep -Fq 'entityCore.prepareEncounter(legacy);' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          ! grep -Fq 'prepareOfflineDecision(state)' android-apk/app/src/main/java/com/rabpit/backroom/core/StoryCore.java
-          grep -Fq 'storyDecisionGenerationRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          grep -Fq 'returnJourneyTurnRequest' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          ! grep -Fq '@JavascriptInterface public void prefetchStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq '@JavascriptInterface public void prepareStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq '@JavascriptInterface public void prepareReturnJourneyTurn' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'Android.prepareStoryDecision' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'Android.prepareReturnJourneyTurn' android-apk/app/src/main/assets/gm-choice-ui.js
-          ! grep -Fq 'Android.prefetchStoryDecision' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq '@JavascriptInterface public void resolveStoryDecision' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq '@JavascriptInterface public void attackStoryEntity' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'storyAwaitingDecision' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'storyAwaitingEntityAttack' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq "document.createTextNode('• ')" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
           ! grep -Fq "action:'Tiếp tục cốt truyện'" android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'Nhấn vào để bắt đầu khám phá thế giới Backrooms' android-apk/app/src/main/assets/index.html
-          grep -Fq 'function storyBootstrapPending()' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'function storyBootstrapPending()' android-apk/app/src/main/assets/player-action-ui.js
-          grep -Fq 'storyBootstrapPending() || storyCutawayActive()' android-apk/app/src/main/assets/player-action-ui.js
           ! grep -Fq 'Nhấn “Tiếp tục cốt truyện” để bắt đầu Chương 01.' android-apk/app/src/main/assets/index.html
           ! grep -Fq "text:'Tiếp tục'" android-apk/app/src/main/assets/gm-choice-ui.js
-          ! grep -Fq 'storyDecisionActive' android-apk/app/src/main/assets/player-action-ui.js
-          grep -Fq 'storyEntityAttackActive' android-apk/app/src/main/assets/player-action-ui.js
-          grep -Fq 'Android.submitEnvironmentAction' android-apk/app/src/main/assets/player-action-ui.js
-          grep -Fq '@JavascriptInterface public void submitEnvironmentAction' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'gameCore.commitEnvironmentExchange(text, reply)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'EnvironmentActionPacket.appendExchange(state, action, reply)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
-          test -s android-apk/app/src/main/java/com/rabpit/backroom/core/EnvironmentActionPacket.java
-          ! grep -Fq 'storyAwaitingInteraction' android-apk/app/src/main/assets/gm-choice-ui.js
-          ! grep -Fq 'storyInteractionActive' android-apk/app/src/main/assets/player-action-ui.js
-          grep -Fq 'Story-managed: Lục Trầm' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
           ! grep -Fq 'LUC_TRAM_RATE_PERCENT' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterEncounterCore.java
-          grep -Fq 'storyPromptContext' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
-          grep -Fq 'copyField(before, sanitized, StoryCore.ROOT_KEY)' android-apk/app/src/main/java/com/rabpit/backroom/core/GameCoreFacade.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterDetailCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           test -s android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterStatCore.java
@@ -352,7 +294,6 @@ jobs:
           grep -Fq 'projected.remove("levelRoute")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'projected.remove("log")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
           grep -Fq 'projected.remove("characterCanon")' android-apk/app/src/main/java/com/rabpit/backroom/core/GmNarrativePacket.java
-          grep -Fq 'private String recentStoryContext(JSONObject state)' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'GM_STYLE_EXAMPLES_ASSET = "knowledge/gm_style_examples.json"' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'private String gmStyleExamplesContext()' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
           grep -Fq 'GM STYLE FEW-SHOT EXAMPLES:' android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java
@@ -438,9 +379,9 @@ jobs:
           ! grep -Fq 'independent 3%' ENTITY_ASSETS.md
           node --check android-apk/app/src/main/assets/snapshot-ui.js
           node --check android-apk/app/src/main/assets/gm-choice-ui.js
-          node --test android-apk/tests/story-choice-ui.test.js
+          node --test android-apk/tests/gm-choice-ui.test.js
           node --test android-apk/tests/viewport-layout.test.cjs
-          node --test android-apk/tests/environment-action-contract.test.cjs
+          node --test android-apk/tests/player-action-gm-contract.test.cjs
           ! grep -Fq 'Save được lưu riêng trên thiết bị này.' android-apk/app/src/main/assets/index.html
           grep -Fq 'function captureLogAnchor()' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'function restoreLogAnchor(anchor)' android-apk/app/src/main/assets/gm-choice-ui.js
@@ -457,7 +398,6 @@ jobs:
           ! grep -Fq 'combat-dice-modal' android-apk/app/src/main/assets/gm-choice-ui.js
           grep -Fq 'static int stageIndexForKey(String levelKey)' android-apk/app/src/main/java/com/rabpit/backroom/core/LevelCore.java
           grep -Fq 'ENTITY_VICTORY_BASE_CORE = 2' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
-          grep -Fq 'STORY_PROGRESS_BASE_CORE = 5' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'CORE_STAGE_MULTIPLIER = 1.5d' android-apk/app/src/main/java/com/rabpit/backroom/core/CharacterProgressionCore.java
           grep -Fq 'coreDropRatePercent", 100' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           test -s android-apk/app/src/test/java/com/rabpit/backroom/core/CoreRewardEconomyTest.java
@@ -469,13 +409,6 @@ jobs:
           test "$(find android-apk/app/src/main/assets/dice -type f -name 'die-*.svg' | wc -l)" -eq 6
           ! grep -R -Fq 'ACTION_A' android-apk/app/src/main/java/com/rabpit/backroom/core/CombatChoiceEngine.java
           ! grep -R -Fq 'Math.random' android-apk/app/src/main/assets/gm-choice-ui.js
-          grep -Fq 'Main authored opening is served from story/source by StoryCore.' android-apk/app/src/main/assets/index.html
-          test -s android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
-          grep -Fq '# Level 0 — Chương 01: Nơi Không Có Tên' android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
-          grep -Fq 'Ma Sơn. Không có đại chiến. Không có thiên kiếp.' android-apk/app/src/main/assets/story/source/level_0/LEVEL0_CH01.md
-          test -s android-apk/app/src/main/assets/story/generated/level_0/level0.story.json
-          grep -Fq '"sourceRevision": "level0-final-2026-09-23"' android-apk/app/src/main/assets/story/generated/level_0/level0.story.json
-          grep -Fq '"chapterCount": 30' android-apk/app/src/main/assets/story/generated/story_manifest.json
           grep -Fq 'player:{name:"Cao Minh",condition:"Ổn định"}' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'Theo đúng mệnh lệnh nhiệm vụ, Kai, Iris và Syvial chủ động bước qua cùng một cổng không gian.' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'Việc Kai xuất hiện trong Backrooms không tự động chứng minh bất kỳ giả thuyết nào về Async.' android-apk/app/src/main/assets/index.html
@@ -483,7 +416,6 @@ jobs:
           ! grep -Fq 'oldPrologueSignature' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'sau no-clip' android-apk/app/src/main/assets/index.html
           ! grep -Fq 'After the shared no-clip event' android-apk/app/src/main/assets/knowledge/knowledge_db.json
-          grep -Fq '"id": "STORY.MAIN.CAO_MINH_ENTRY"' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'Cao Minh' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           ! grep -Fq 'deliberately enter the same SRU spatial gate' android-apk/app/src/main/assets/knowledge/knowledge_db.json
           grep -Fq 'CHỈ SỐ SINH TỒN' android-apk/app/src/main/assets/party-ui.js
@@ -648,7 +580,7 @@ jobs:
       - name: Test snapshot overlay geometry
         run: |
           java android-apk/tools/GenerateOverlayMetrics.java --check
-          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs android-apk/tests/story-bootstrap.test.cjs android-apk/tests/story-visuals.test.cjs android-apk/tests/inventory-ui.test.cjs
+          node --test android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs android-apk/tests/poker-dice-ui.test.cjs android-apk/tests/hud-style.test.cjs android-apk/tests/inventory-ui.test.cjs android-apk/tests/gm-choice-ui.test.js android-apk/tests/player-action-gm-contract.test.cjs
 
       - name: Run Java tests and build debug APK
         working-directory: android-apk
@@ -690,12 +622,6 @@ jobs:
           cmp <(unzip -p BR-1.0.0.0.11.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
           cmp <(unzip -p BR-1.0.0.0.11.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
           unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/chest_overlay.png'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/story/generated/story_visuals.json'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/npc/registry.json'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/npc/br_npc_nam_l0_overlay_v01.webp'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/npc/br_npc_khai_l01_overlay_v01.webp'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/npc/br_npc_duy_l02_overlay_v01.webp'
-          unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/npc/br_npc_hung_l02_overlay_v01.webp'
           ! unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/status/status_'
           unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/fonts/Play-Bold.ttf'
           unzip -l BR-1.0.0.0.11.apk | grep -q 'assets/fonts/OFL-Play.txt'
