@@ -359,22 +359,6 @@ public final class GameCoreFacade implements AutoCloseable {
     CombatChoiceEngine.normalizeTerminalEncounter(state);
   }
 
-  /**
-   * Legacy AI-state delta path is intentionally disabled. AI narration is non-authoritative.
-   */
-  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
-                                                       String encounterDialogueJson) {
-    return processValidatedCandidate(beforeJson, candidateJson, action, encounterDialogueJson, null);
-  }
-
-  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action,
-                                                       String encounterDialogueJson, String transitionTarget) {
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
-    return response(false, state,
-        "Legacy AI state mutation is disabled; world state is committed by DomainEventBatch only.",
-        "legacy_ai_delta_disabled", null);
-  }
-
   public synchronized String startCombatRuntime(String entityKey, int gmLogIndex) {
     JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
@@ -788,15 +772,6 @@ public final class GameCoreFacade implements AutoCloseable {
       return new JSONObject(source == null ? "{}" : source.toString());
     } catch (Exception e) {
       return new JSONObject();
-    }
-  }
-
-  static void applyNarrativeBoundary(LevelCore levelCore, JSONObject before, JSONObject sanitized,
-                                     String transitionTarget) throws Exception {
-    if (transitionTarget == null) {
-      levelCore.validateAndApplyTransition(before, sanitized);
-    } else {
-      levelCore.applyNarrativeTransition(before, sanitized, transitionTarget);
     }
   }
 
