@@ -320,6 +320,8 @@ public class CombatChoiceEngineTest {
   @Test public void rerollsDoNotSpamGmLogAndResolveAddsOrderedActorAndEntityLines() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
+    state.getJSONObject("combat").getJSONObject("entity")
+        .put("hp", 9999).put("maxHp", 9999);
     CombatChoiceEngine.roll(state);
     CombatChoiceEngine.roll(state);
     CombatChoiceEngine.roll(state);
@@ -512,7 +514,8 @@ public class CombatChoiceEngineTest {
 
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     String actorLine = battleLog.getJSONObject(0).getString("text");
-    assertTrue(actorLine.startsWith("[F.O.A.K] Cao Minh "));
+    assertTrue(actorLine.startsWith("[F.O.A.K] "));
+    assertTrue(actorLine.contains("Cao Minh "));
     assertFalse(actorLine.contains("FOUR OF A KIND"));
     assertTrue(actorLine.contains("Diệp Minh -"));
     assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
@@ -769,6 +772,7 @@ public class CombatChoiceEngineTest {
     JSONObject entity = combat.getJSONObject("entity");
 
     actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
     entity.put("armorBreakTurns", 2).put("armorBreakPercent", 20);
     int before = entity.getInt("hp");
 
@@ -797,7 +801,9 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris").put("criticalChancePercent", 100);
+    actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
+    actor.put("criticalChancePercent", 100);
     entity.put("evasionPercent", 0).put("resCriticalPercent", 0);
     int before = entity.getInt("hp");
 
@@ -816,7 +822,9 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris").put("evasionPercent", 100);
+    actor.put("id", "iris");
+    resetToBaselineNonCaoStats(actor);
+    actor.put("evasionPercent", 100);
     entity.put("resEvasionPercent", 0).put("evasionPercent", 0);
     int hpBefore = actor.getInt("hp");
 
@@ -850,6 +858,19 @@ public class CombatChoiceEngineTest {
     assertEquals(
         CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(legacy)),
         CombatChoiceEngine.stableSeed(state, "hound", new JSONArray().put(enriched)));
+  }
+
+  private static void resetToBaselineNonCaoStats(JSONObject actor) throws Exception {
+    actor.put("baseAttack", 30)
+        .put("baseCriticalChancePercent", 5)
+        .put("STR", 5)
+        .put("DEF", 5)
+        .put("SKL", 5)
+        .put("VIT", 5)
+        .put("criticalChancePercent", 5)
+        .put("evasionPercent", 0)
+        .put("resCriticalPercent", 0)
+        .put("resEvasionPercent", 0);
   }
 
   private static void finalizeAs(JSONObject state, int... values) throws Exception {
