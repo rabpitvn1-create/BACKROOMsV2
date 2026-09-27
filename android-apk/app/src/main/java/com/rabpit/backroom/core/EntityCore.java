@@ -93,43 +93,12 @@ final class EntityCore {
     activateEncounter(state, currentFlags, entity, state.optInt("currentLevel", 0), "candidate_selector");
   }
 
-  void validateAndApply(JSONObject before, JSONObject candidate) throws Exception {
-    JSONObject beforeFlags = flags(before);
-    JSONObject candidateFlags = flags(candidate);
-    String activeKey = beforeFlags.optString(ENCOUNTER_KEY, "").trim();
-    boolean resolved = candidateFlags.optBoolean(RESOLVED_KEY, false);
-
-    candidateFlags.remove(RESOLVED_KEY);
-    if (activeKey.isEmpty()) {
-      candidateFlags.put(ENCOUNTER_KEY, "");
-      clearActiveMetadata(candidateFlags);
-      candidate.put("flags", candidateFlags);
-      return;
-    }
-
-    if (resolved) {
-      candidateFlags.put("lastEntityEncounterKey", activeKey);
-      candidateFlags.put("lastEntityEncounterResolvedTurn", Math.max(1, candidate.optInt("turn", before.optInt("turn", 1))));
-      candidateFlags.put(ENCOUNTER_KEY, "");
-      clearActiveMetadata(candidateFlags);
-      candidate.put("flags", candidateFlags);
-      return;
-    }
-
-    candidateFlags.put(ENCOUNTER_KEY, activeKey);
-    copyMetadata(beforeFlags, candidateFlags, "entityEncounterSource");
-    copyMetadata(beforeFlags, candidateFlags, "entityEncounterRatePercent");
-    copyMetadata(beforeFlags, candidateFlags, "entityEncounterLevel");
-    copyMetadata(beforeFlags, candidateFlags, "entityEncounterStartedTurn");
-    candidate.put("flags", candidateFlags);
-  }
-
   String promptContext(JSONObject state) {
     JSONObject flags = state == null ? null : state.optJSONObject("flags");
     String activeKey = flags == null ? "" : flags.optString(ENCOUNTER_KEY, "").trim();
     if (activeKey.isEmpty()) {
       return "ENTITY CORE: no active Entity encounter this turn. Do not invent, summon or select an Entity. " +
-        "Encounter spawning is owned exclusively by Main Game Core independent fixed-rate rolls. " +
+        "Encounter selection is owned exclusively by the deterministic SituationCandidate selector. " +
         "All registered auto-spawn Entities are roaming and may roll on every valid Backrooms Level regardless of their original canon habitat.";
     }
 
@@ -137,8 +106,8 @@ final class EntityCore {
     if (entity == null) {
       LegacyEntityDefinition legacy = legacyEntities.get(activeKey);
       if (legacy != null) return legacyPromptContext(activeKey, legacy.name, legacy.canon);
-      return "ENTITY CORE: active legacy encounter key=" + activeKey + ". Preserve this existing encounter until it is actually resolved. " +
-        "Do not replace it with another Entity. Set flags.entityEncounterResolved=true only when the narrated encounter genuinely ends.";
+      return "ENTITY CORE: active legacy/boss encounter key=" + activeKey + ". Preserve the Core-owned encounter identity. " +
+        "Narration must not replace, resolve, spawn, despawn or mutate this Entity.";
     }
 
     return "ENTITY CORE ACTIVE ENCOUNTER: " + entity.name + " (key=" + entity.key + ").\n" +
@@ -147,8 +116,8 @@ final class EntityCore {
           : "FIXED INDEPENDENT SPAWN RATE: " + entity.ratePercent + "% per eligible world-advancing turn.\n") +
       "ROAMING POLICY: this registered Entity is valid on every Backrooms Level. Original canon habitat/location restrictions do not block its presence.\n" +
       "ENTITY CANON (behavior/capabilities only): " + entity.canon + "\n" +
-      "Do not replace this Entity with another one. Continue the encounter according to state and behavioral canon. " +
-      "Set flags.entityEncounterResolved=true only when the Entity is no longer directly present/engaged and the encounter has genuinely ended.";
+      "Do not replace this Entity with another one. Narrate only the committed encounter state and behavioral canon. " +
+      "Narration has no authority to resolve, spawn, despawn or mutate the Entity.";
   }
 
   static String legacyPromptContext(String activeKey, String name, String canon) {
@@ -158,8 +127,7 @@ final class EntityCore {
     return "ENTITY CORE ACTIVE LEGACY/BOSS ENCOUNTER: " + safeName + " (key=" + safeKey + ").\n" +
       "LEGACY ENTITY CANON: " + safeCanon + "\n" +
       "RUNTIME LOCK: this encounter is legacy/boss-only and must not be treated as an auto-spawn Entity. " +
-      "Preserve this encounter until it is genuinely resolved; do not replace it with another Entity. " +
-      "Set flags.entityEncounterResolved=true only when the narrated encounter genuinely ends.";
+      "Preserve the Core-owned encounter identity; narration must not replace, resolve or mutate it.";
   }
 
   private JSONObject flags(JSONObject state) throws Exception {
@@ -178,18 +146,6 @@ final class EntityCore {
     flags.put("entityEncounterLevel", level);
     flags.put("entityEncounterStartedTurn", Math.max(1, state.optInt("turn", 1)));
     state.put("flags", flags);
-  }
-
-  private void clearActiveMetadata(JSONObject flags) {
-    flags.remove("entityEncounterSource");
-    flags.remove("entityEncounterRatePercent");
-    flags.remove("entityEncounterLevel");
-    flags.remove("entityEncounterStartedTurn");
-  }
-
-  private void copyMetadata(JSONObject source, JSONObject target, String key) throws Exception {
-    if (source.has(key)) target.put(key, source.get(key));
-    else target.remove(key);
   }
 
   private void loadRegistry(Context context) {
