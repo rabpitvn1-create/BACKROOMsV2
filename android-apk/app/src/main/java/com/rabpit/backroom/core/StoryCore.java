@@ -769,6 +769,16 @@ final class StoryCore {
     preparePublicReturnTurn(state, journey);
   }
 
+  void clearReturnJourneyAfterDeath(JSONObject state) throws Exception {
+    normalizeState(state);
+    JSONObject story = state.getJSONObject(ROOT_KEY);
+    JSONObject journey = story.getJSONObject("returnJourney");
+    if (!journey.optBoolean("active", false)) return;
+    story.put("returnJourney", emptyReturnJourney());
+    syncReturnJourneyProjection(story);
+    state.put(ROOT_KEY, story);
+  }
+
   void resumeReturnJourneyAfterTurn(JSONObject state, boolean combatStarted) throws Exception {
     if (!returnJourneyActive(state)) return;
     JSONObject journey = state.getJSONObject(ROOT_KEY).getJSONObject("returnJourney");
