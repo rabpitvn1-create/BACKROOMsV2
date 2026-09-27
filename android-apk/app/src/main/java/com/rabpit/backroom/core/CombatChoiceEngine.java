@@ -263,6 +263,10 @@ public final class CombatChoiceEngine {
     skills("luc_tram",
         skill("Tịch Quang Hợp Kích",
             "Kiếm thế hợp kích bằng Tịch Quang; giữ nguyên projection 150% damage.", 150, "", 0, 0));
+    skills("trac_lam",
+        skill("Khóa mục tiêu", "Loạt bắn chính xác.", 150, "", 0, 0),
+        skill("Hỏa lực chế áp", "Chế áp mục tiêu bằng hỏa lực SRU.", 145, "Choáng", 1, 0),
+        skill("Phá tuyến", "Bắn phá vị trí phòng thủ.", 170, "Xuyên giáp", 2, 20));
 
     // Independent proc skills may trigger after a basic attack or normal Skill, never an Ultimate.
     // Kai is Legacy and deliberately has no entry in this authoritative pool.
@@ -287,6 +291,8 @@ public final class CombatChoiceEngine {
     ULTIMATES.put("luc_tram",
         new Ultimate("Thiên Kiếm Định Giới", LUC_TRAM_THIEN_KIEM_HIT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
+    ULTIMATES.put("trac_lam",
+        new Ultimate("Lệnh SRU-03", 24, ULTIMATE_BONUS_DAMAGE_PERCENT));
   }
 
   private CombatChoiceEngine() {}
@@ -1135,6 +1141,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   static int baseAttackFor(JSONObject source, String rawId) {
     String id = CharacterProgressionCore.normalizeCharacterId(rawId);
     int fallback = "cao_minh".equals(id) ? CAO_MINH_BASE_ATTACK
+        : "trac_lam".equals(id) ? CAO_MINH_BASE_ATTACK
         : "syvial".equals(id) ? 32
         : "iris".equals(id) ? 28
         : 24;

@@ -114,6 +114,21 @@
       "equipment": "Tịch Quang Kiếm is Lục Trầm's bonded double-edged longsword: long, straight, silver, precise and relatively narrow compared with Cao Minh's Huyết Ma Kiếm; it can be recalled by sword intent within valid perception range but does not regenerate infinitely. Thiên Cơ Bạch Kim Kiếm Khải is a high-grade Thiên Kiếm Môn artifact armor in ivory/silver, charcoal and restrained gold; it improves impact resistance, movement and force distribution. Mechanical-looking joints are cultivation-artifact design, not AI, electronics, reactor, servos, hidden guns, missiles or HUD.",
       "visual": "R01 visual lock: young adult female swordswoman; tall, balanced and agile silhouette; very long thick black hair in a high ponytail; gold sword-crown accessory; reddish-brown eyes; full-body white/black/gold segmented sword armor; layered waist armor and long split battle-cloth panels; silver Tịch Quang longsword with gold-black multi-layer guard. No helmet. Do not add energy wings, halo, mask, guns, strong neon glow or change the primary white-black-gold palette. Exact height, weight and measurements remain OPEN. Avatar uses avatars/luctram_avatar.png and combat overlay uses luctram_overlay.png.",
       "relationship": "Before Backrooms Lục Trầm repeatedly hunted Cao Minh and considered him a sworn enemy. The Táng Kiếm Cốc truth is backstage knowledge and must not be handed to her automatically. Cao Minh calls her 'Lục tiên tử' with a teasing edge; she uses 'Cao Minh' when serious and 'ma đầu' when angry. Do not switch to anh/em automatically. Do not resolve their hostility with one rescue, one argument or instant romance."
+    },
+    "trac_lam": {
+      "name": "Trác Lâm",
+      "source": "02_CHARACTERS/Trác Lâm — Wiki nhân vật",
+      "driveId": "1JF4wJtL5JBZtDtzYil6duLb73QAqjoQmgqdw-syp1nY",
+      "revision": "R01",
+      "aliases": [
+        "trác lâm",
+        "trac lam",
+        "trac_lam"
+      ],
+      "runtime": "Đội trưởng SRU-03 thuộc lực lượng chống dị thường SRU, đến từ năm 2099. First contact với Cao Minh trừ khi live campaign xác lập khác. Không biết trước Level, Entity hay quy luật Backrooms.",
+      "visual": "Tóc đen hơi rối, mắt xanh, giáp chiến thuật đen với điểm xanh nhỏ và phù hiệu POLICE/SRU; cầm súng dài hai nòng. Overlay Trac_lam.png và avatar avatars/trac_lam_avatar.png lấy từ ảnh Drive.",
+      "gameplay": "Runtime khởi tạo STR/DEF/SKL/VIT = 5/5/5/5, HP gốc 50 và công cơ bản 30, bằng 100% mốc khởi tạo Cao Minh trong game. Khóa mục tiêu 150%, Hỏa lực chế áp 145% và Choáng, Phá tuyến 170% và Xuyên giáp; Ultimate Lệnh SRU-03 theo Poker Dice.",
+      "knowledgeLock": "Nguồn gốc dịch chuyển từ năm 2099, quan hệ trước Backrooms và thông số công nghệ cụ thể chưa được xác lập."
     }
   }
 }

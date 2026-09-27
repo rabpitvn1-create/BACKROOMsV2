@@ -38,7 +38,7 @@ final class CharacterEncounterCore {
   private static final String JUST_ENCOUNTERED = "justEncountered";
   private static final String LAST_ROLL_TURN = "lastExplorerRollTurn";
   private static final String LAST_ROLL_ACTION = "lastExplorerRollAction";
-  private static final String[] CANONICAL_ORDER = {"luc_tram", "iris", "syvial"};
+  private static final String[] CANONICAL_ORDER = {"luc_tram", "iris", "syvial", "trac_lam"};
 
   private final IntRng rng;
 
@@ -102,6 +102,9 @@ final class CharacterEncounterCore {
     }
     if (!containsPartyId(party, "syvial") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
       hits.add("syvial");
+    }
+    if (!containsPartyId(party, "trac_lam") && shouldEncounterRare(nextRoll(RARE_ENCOUNTER_BOUND))) {
+      hits.add("trac_lam");
     }
 
     int available = MAX_COMPANIONS - party.length();
@@ -282,6 +285,9 @@ final class CharacterEncounterCore {
     } else if ("syvial".equals(id)) {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));
+    } else if ("trac_lam".equals(id)) {
+      inventory.put(new JSONObject().put("name", "Súng dài SRU"));
+      inventory.put(new JSONObject().put("name", "Giáp chiến thuật SRU"));
     }
     return inventory;
   }
@@ -325,17 +331,19 @@ final class CharacterEncounterCore {
     if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "luc_tram";
     if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
+    if (raw.contains("trác lâm") || raw.contains("trac lam") || raw.contains("trac_lam")) return "trac_lam";
     return "";
   }
 
   private static boolean isEncounterCharacter(String id) {
-    return "luc_tram".equals(id) || "iris".equals(id) || "syvial".equals(id);
+    return "luc_tram".equals(id) || "iris".equals(id) || "syvial".equals(id) || "trac_lam".equals(id);
   }
 
   private static String displayName(String id) {
     if ("luc_tram".equals(id)) return "Lục Trầm";
     if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
+    if ("trac_lam".equals(id)) return "Trác Lâm";
     return id;
   }
 

@@ -40,6 +40,7 @@ final class CharacterProgressionCore {
 
     ensureProfileObject(state, characters, "cao_minh");
     ensureProfileObject(state, characters, "luc_tram");
+    ensureProfileObject(state, characters, "trac_lam");
     ensureProfileObject(state, characters, "iris");
     ensureProfileObject(state, characters, "syvial");
 
@@ -426,6 +427,16 @@ final class CharacterProgressionCore {
       stats.remove("CRIT");
       stats.remove("LUCK");
     }
+    if ("trac_lam".equals(id)) {
+      JSONObject leader = characters.optJSONObject("cao_minh");
+      JSONObject leaderStats = leader == null ? null : leader.optJSONObject("stats");
+      if (leaderStats != null) {
+        for (String key : STAT_KEYS) {
+          int floor = (leaderStats.optInt(key, BASE_STAT) * 4 + 4) / 5;
+          stats.put(key, Math.max(stats.optInt(key, BASE_STAT), floor));
+        }
+      }
+    }
     profile.put("stats", stats);
 
     int baseMaxHp = profile.has("baseMaxHp")
@@ -516,6 +527,7 @@ final class CharacterProgressionCore {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (value.contains("cao_minh") || value.contains("cao minh")) return "cao_minh";
     if (value.contains("lục trầm") || value.contains("luc tram") || value.contains("luc_tram")) return "luc_tram";
+    if (value.contains("trác lâm") || value.contains("trac lam") || value.contains("trac_lam")) return "trac_lam";
     if (value.contains("iris") || value.contains("argus")) return "iris";
     if (value.contains("syvial")) return "syvial";
     return value.replace(' ', '_');

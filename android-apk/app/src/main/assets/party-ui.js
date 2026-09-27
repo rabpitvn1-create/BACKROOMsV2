@@ -6,13 +6,15 @@
     cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg',
     luc_tram:'file:///android_asset/avatars/luctram_avatar.png',
     iris:'file:///android_asset/avatars/Iris_avatar.jpg',
-    syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
+    syvial:'file:///android_asset/avatars/Syvial_avatar.jpg',
+    trac_lam:'file:///android_asset/avatars/trac_lam_avatar.png'
   };
   var META={
     cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'},
     luc_tram:{name:'Lục Trầm',role:'Chân truyền Thiên Kiếm Môn'},
     iris:{name:'Iris',role:'Scout / Target Eliminator'},
-    syvial:{name:'Syvial',role:'Đội phó SRU'}
+    syvial:{name:'Syvial',role:'Đội phó SRU'},
+    trac_lam:{name:'Trác Lâm',role:'Đội trưởng SRU-03'}
   };
   var BAND_LABELS={UNKNOWN:'Chưa xác định',NORMAL:'Bình thường',MILD:'Nhẹ',MODERATE:'Vừa',SEVERE:'Nặng',CRITICAL:'Nguy kịch'};
 
@@ -42,6 +44,7 @@
     if(value.indexOf('lục trầm')>=0||value.indexOf('luc tram')>=0||value.indexOf('luc_tram')>=0)return 'luc_tram';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
+    if(value.indexOf('trác lâm')>=0||value.indexOf('trac lam')>=0||value.indexOf('trac_lam')>=0)return 'trac_lam';
     return value.replace(/\s+/g,'_');
   }
 

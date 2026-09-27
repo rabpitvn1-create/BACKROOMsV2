@@ -14,7 +14,7 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
-    for (String id : new String[]{"cao_minh","luc_tram","iris","syvial"}) {
+    for (String id : new String[]{"cao_minh","luc_tram","iris","syvial","trac_lam"}) {
       JSONObject stats = core.profile(state, id).getJSONObject("stats");
       assertEquals(5, stats.getInt("STR"));
       assertEquals(5, stats.getInt("DEF"));
@@ -26,6 +26,18 @@ public class CharacterProgressionCoreTest {
       assertEquals(50, core.profile(state, id).getInt("currentHp"));
       assertEquals(0, core.profile(state, id).getJSONArray("statusEffects").length());
     }
+  }
+
+  @Test public void tracLamKeepsAtLeastEightyPercentOfCaoMinhRuntimeStats() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject state = baseState();
+    core.normalizeState(state);
+    core.grantCore(state, 20);
+    for (int i = 0; i < 4; i++) core.upgradeStat(state, "cao_minh", "STR");
+    JSONObject leader = core.profile(state, "cao_minh").getJSONObject("stats");
+    JSONObject tracLam = core.profile(state, "trac_lam").getJSONObject("stats");
+    assertTrue(tracLam.getInt("STR") * 5 >= leader.getInt("STR") * 4);
+    assertEquals(30, CombatChoiceEngine.baseAttackFor(null, "trac_lam"));
   }
 
   @Test public void legacyExpAndRandomStatsMigrateOnceToBaseline() throws Exception {

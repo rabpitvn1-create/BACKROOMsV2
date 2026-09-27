@@ -50,6 +50,7 @@
     if(value.indexOf('lục trầm')>=0||value.indexOf('luc tram')>=0||value.indexOf('luc_tram')>=0)return 'luc_tram';
     if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
+    if(value.indexOf('trác lâm')>=0||value.indexOf('trac lam')>=0||value.indexOf('trac_lam')>=0)return 'trac_lam';
     return value.replace(/\s+/g,'_');
   }
   function partyMember(id){
