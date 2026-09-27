@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "source": "User-provided Google Drive snapshot set",
   "sourceFolder": "https://drive.google.com/drive/folders/1QsapoDnhAH69j0EIgdVQb7jV6sKc_IZe",
   "importedAt": "2026-09-27",
@@ -20,7 +20,8 @@
         "level_0/04.webp",
         "level_0/05.webp",
         "level_0/06.webp",
-        "level_0/07.webp"
+        "level_0/07.webp",
+        "level_0/08.webp"
       ]
     },
     "1": {
