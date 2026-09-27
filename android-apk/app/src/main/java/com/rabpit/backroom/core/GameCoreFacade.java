@@ -375,6 +375,26 @@ public final class GameCoreFacade implements AutoCloseable {
         "legacy_ai_delta_disabled", null);
   }
 
+  public synchronized String startCombatRuntime(String entityKey, int gmLogIndex) {
+    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    try {
+      normalizeCoreState(persisted);
+      emergentTurnEngine.normalizeState(persisted);
+      JSONObject working = deepCopy(persisted);
+      JSONObject root = working.getJSONObject(EmergentTurnEngine.ROOT_KEY);
+      String rngTurnId = root.optString("lastCommittedTurnId", "").trim();
+      if (rngTurnId.isEmpty()) {
+        rngTurnId = emergentTurnEngine.nextTurnId(persisted, "combat:start:" + entityKey);
+      }
+      CombatChoiceEngine.start(
+          working, entityKey, gmLogIndex, rngTurnId, emergentTurnEngine.stateVersion(persisted));
+      persist(working);
+      return clientSafeState(working).toString();
+    } catch (Exception e) {
+      throw new IllegalStateException("Không thể khởi tạo combat runtime.", e);
+    }
+  }
+
   public synchronized String processCombatResolution(String stateJson) {
     JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
     try {
