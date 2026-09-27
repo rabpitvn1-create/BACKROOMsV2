@@ -611,17 +611,7 @@ final class EmergentTurnEngine {
         .put("causedBy", params.optString("causedBy", ""))
         .put("impactEligible", params.optBoolean("impactEligible", true));
     root.getJSONArray("historicalFacts").put(fact);
-
-    if (params.optBoolean("observedByPlayer", false)) {
-      root.getJSONArray("beliefs").put(new JSONObject()
-          .put("claimId", factId)
-          .put("actorId", "cao_minh")
-          .put("beliefValue", value == null ? JSONObject.NULL : value)
-          .put("confidence", "CONFIRMED")
-          .put("learnedViaEventId", event.getString("eventId"))
-          .put("learnedTurn", turn)
-          .put("confirmedFactId", factId));
-    }
+    BeliefResolver.project(root, event, fact, turn);
   }
 
   private void projectThreadEffects(JSONObject root, JSONObject event, int turn) throws Exception {
