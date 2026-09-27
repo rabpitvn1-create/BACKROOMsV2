@@ -23,6 +23,16 @@
     }
   }
 
+  function deathRestartPending(){
+    try {
+      var combat = state && state.combat;
+      return !!(combat && combat.active !== true && combat.outcome === 'defeat'
+        && combat.deathRestartPending === true);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function processing(){
     return !!window.__combatBusy || !!window.__playerEnvironmentBusy
       || (typeof busy !== 'undefined' && !!busy);
@@ -82,8 +92,9 @@
   }
 
   function environmentLocked(){
-    return combatActive() || processing() || storyBootstrapPending() || storyCutawayActive()
-      || storyEntityAttackActive() || storyAdvancePending() || storyDecisionPreparing();
+    return combatActive() || deathRestartPending() || processing() || storyBootstrapPending()
+      || storyCutawayActive() || storyEntityAttackActive() || storyAdvancePending()
+      || storyDecisionPreparing();
   }
 
   function fitVisualViewport(){
@@ -134,7 +145,7 @@
     var locked = environmentLocked();
     openButton.disabled = locked;
     openButton.setAttribute('aria-disabled', String(locked));
-    if ((combatActive() || storyBootstrapPending() || storyCutawayActive()
+    if ((combatActive() || deathRestartPending() || storyBootstrapPending() || storyCutawayActive()
         || storyEntityAttackActive() || storyAdvancePending() || storyDecisionPreparing()) && !modal.hidden) {
       closePlayerAction(true);
     }
