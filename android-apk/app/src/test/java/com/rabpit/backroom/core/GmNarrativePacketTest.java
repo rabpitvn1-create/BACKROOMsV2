@@ -23,20 +23,18 @@ public class GmNarrativePacketTest {
     throw new IllegalStateException("Unable to locate test asset: " + relativePath);
   }
 
-  @Test public void projectionDropsHeavyCanonAndHiddenHistory() throws Exception {
+  @Test public void projectionDropsHeavyCoreContextAndHistory() throws Exception {
     JSONObject state = new JSONObject()
         .put("currentLevel", 0)
         .put("currentLevelKey", "0")
         .put("characterCanon", "FULL_CANON_MARKER".repeat(200))
         .put("levelRoute", new JSONObject().put("streak", 9))
-        .put(StoryCore.ROOT_KEY, new JSONObject().put("hiddenReveal", "DO_NOT_LEAK"))
         .put("log", new org.json.JSONArray().put(new JSONObject().put("text", "secret history")));
 
     JSONObject projected = GmNarrativePacket.projectState(state);
 
     assertFalse(projected.has("characterCanon"));
     assertFalse(projected.has("levelRoute"));
-    assertFalse(projected.has(StoryCore.ROOT_KEY));
     assertFalse(projected.has("log"));
     assertTrue(state.has("characterCanon"));
   }
@@ -64,8 +62,6 @@ public class GmNarrativePacketTest {
         "Cao Minh đi tiếp theo hành lang",
         readRepoAsset("knowledge/gm_style_examples.json"));
 
-    System.out.println("GM_PACKET_METRICS level0ExploreChars=" + levelContext.length()
-        + " packetChars=" + packet.length());
     assertTrue("Ordinary narrative packet should stay under 13k chars, was: " + packet.length(),
         packet.length() < 13000);
     assertFalse(packet.contains("FULL_CANON_MARKER"));
@@ -73,31 +69,26 @@ public class GmNarrativePacketTest {
     assertTrue(packet.contains("sceneLabel chỉ là nhãn mô tả"));
   }
 
-  @Test public void packetIncludesStoryCoreContextWithoutRequiringCompiledStory() throws Exception {
+  @Test public void packetMakesGmNarrativelyFreeWhileKeepingMechanicsCoreOwned() throws Exception {
     JSONObject state = new JSONObject()
         .put("currentLevel", 0)
         .put("currentLevelKey", "0")
         .put("turn", 1)
         .put("party", new org.json.JSONArray());
 
-    StoryCore storyCore = new StoryCore();
-    storyCore.normalizeState(state);
-    String storyContext = storyCore.promptContext(state);
-
     String packet = GmNarrativePacket.build(
-        "LEVEL",
-        "ENTITY",
-        "ITEM",
-        "CHARACTER",
-        storyContext,
+        "LEVEL CORE: current Level 0.",
+        "ENTITY CORE: no active Entity encounter this turn.",
+        "ITEM CORE: no pending loot.",
+        "CHARACTER ENCOUNTER CORE: no pending intro.",
         "(chưa có lượt trước)",
         state,
         "Cao Minh quan sát",
         "");
 
-    assertTrue(packet.contains("STORY CORE:"));
-    assertTrue(packet.contains("No authored manuscript chapter is currently bound"));
-    assertTrue(packet.contains("authored Story state"));
+    assertTrue(packet.contains("bạn quyết định diễn biến tự do tiếp theo"));
+    assertTrue(packet.contains("Không có cốt truyện, chương hay diễn biến định sẵn"));
+    assertTrue(packet.contains("Java Core sở hữu Level/route"));
+    assertTrue(packet.contains("EXPLORER CHOICES"));
   }
-
 }
