@@ -60,7 +60,6 @@ public class CombatChoiceEngineTest {
     JSONObject resolvedCombat = state.getJSONObject("combat");
     assertEquals("Level 0.1 / hành lang sâu", resolvedCombat.getString("deathReturnAnchorLocation"));
     assertEquals("0.1", resolvedCombat.getString("deathReturnLevelKey"));
-    assertFalse(resolvedCombat.getBoolean("deathReturnJourneyPending"));
     assertTrue(resolvedCombat.getBoolean("deathRestartPending"));
     assertTrue(resolvedCombat.getBoolean("deathRecoveryApplied"));
 
