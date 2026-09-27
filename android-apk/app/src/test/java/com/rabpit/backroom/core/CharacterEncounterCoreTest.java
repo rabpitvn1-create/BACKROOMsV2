@@ -31,7 +31,7 @@ public class CharacterEncounterCoreTest {
     assertEquals(2, levelOneRng.calls);
   }
 
-  @Test public void storyManagedLucTramCannotRemainInRandomPendingIntro() throws Exception {
+  @Test public void deferredLucTramCannotRemainInRandomPendingIntro() throws Exception {
     JSONObject state = state(1, 3)
         .put("characterEncounter", new JSONObject()
             .put("pendingIntro", new JSONArray().put("luc_tram"))
