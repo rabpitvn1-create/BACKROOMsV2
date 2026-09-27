@@ -67,6 +67,21 @@ public class CharacterProgressionCoreTest {
     assertEquals(55, core.profile(state, "luc_tram").getInt("maxHp"));
   }
 
+  @Test public void vitUpgradeAddsItsMaxHpGainToCurrentHp() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject state = baseState();
+    core.normalizeState(state);
+    core.setCurrentHp(state, "cao_minh", 30);
+    core.grantCore(state, 1);
+
+    core.upgradeStat(state, "cao_minh", "VIT");
+
+    assertEquals(55, core.profile(state, "cao_minh").getInt("maxHp"));
+    assertEquals(35, core.profile(state, "cao_minh").getInt("currentHp"));
+    assertEquals(55, state.getJSONObject("player").getInt("maxHp"));
+    assertEquals(35, state.getJSONObject("player").getInt("hp"));
+  }
+
   @Test public void maxHpChangesClampWithoutFreeHealingAndHealDoesNotOverflow() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
