@@ -53,12 +53,33 @@ final class EntityCore {
           .put("source", "CANON")
           .put("publicSummary", entity.name + " đã tiến vào phạm vi tương tác với Cao Minh.")
           .put("capabilityContext", entity.canon)
+          .put("allowedWorldActions", allowedWorldActions(entity.canon))
+          .put("fallbackAction", "INTERCEPT")
           .put("proposalRequired", true)
           .put("eligibilityRuleId", "canon:entity:" + entity.key)
           .put("tags", new JSONArray().put("DANGER").put("ENTITY").put(entity.key))
           .put("keyRefs", new JSONArray().put(entity.key)));
     }
     return output;
+  }
+
+  private static JSONArray allowedWorldActions(String canon) {
+    JSONArray actions = new JSONArray()
+        .put("INTERCEPT")
+        .put("DIRECT_ATTACK")
+        .put("OBSERVE");
+    String text = canon == null ? "" : canon.toLowerCase(java.util.Locale.ROOT);
+    if (text.contains("ambush") || text.contains("blind spot") || text.contains("recess")) {
+      actions.put("AMBUSH");
+    }
+    if (text.contains("watch") || text.contains("stalk") || text.contains("hunt")) {
+      actions.put("STALK");
+    }
+    if (text.contains("lure") || text.contains("mimic") || text.contains("voice")
+        || text.contains("imitat")) {
+      actions.put("LURE");
+    }
+    return actions;
   }
 
   void activateEncounterCandidate(JSONObject state, String key) throws Exception {
