@@ -159,4 +159,56 @@ public class EmergentTurnEngineTest {
     assertEquals("B", commit.getJSONObject("stateDelta").getJSONObject("set").getString("location"));
   }
 
+
+  @Test public void skeletonCapsPerTurnResidueContribution() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 10);
+    engine.normalizeState(state);
+    String turnId = engine.nextTurnId(state, "test residue");
+    JSONArray events = new JSONArray();
+    events.put(engine.event(turnId, events, "ENTITY_ENCOUNTER_STARTED", "LOCAL", "hound",
+        new JSONObject().put("observedByPlayer", true), null));
+    events.put(engine.event(turnId, events, "COMBAT_HAND_RESOLVED", "LOCAL", "hound",
+        new JSONObject().put("observedByPlayer", true), null));
+    events.put(engine.event(turnId, events, "COMBAT_HAND_RESOLVED", "LOCAL", "hound",
+        new JSONObject().put("observedByPlayer", true), null));
+
+    engine.commitAuthoritative(state, turnId, events, null);
+    engine.catchUpProjections(state);
+
+    double score = state.getJSONObject(EmergentTurnEngine.ROOT_KEY)
+        .getJSONObject("skeleton").getJSONObject("axes")
+        .getJSONObject("entity_attention").getDouble("score");
+    assertTrue(score <= 0.1200001d);
+    assertTrue(score > 0.0d);
+  }
+
+  @Test public void directorAppliesDangerCooldownAfterCombatTerminalEvent() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    JSONObject state = new JSONObject().put("turn", 20);
+    engine.normalizeState(state);
+    String turnId = engine.nextTurnId(state, "victory");
+    JSONArray events = new JSONArray();
+    events.put(engine.event(turnId, events, "COMBAT_VICTORY", "LOCAL", "hound",
+        new JSONObject().put("observedByPlayer", true), null));
+
+    engine.commitAuthoritative(state, turnId, events, null);
+    engine.catchUpProjections(state);
+
+    JSONObject director = state.getJSONObject(EmergentTurnEngine.ROOT_KEY).getJSONObject("director");
+    assertEquals(23, director.getJSONObject("activeCooldowns").getInt("DANGER_UNTIL_TURN"));
+    assertTrue(director.getJSONObject("tagWeightModifiers").getDouble("DANGER") <= 0.65d);
+  }
+
+  @Test public void eventCanonRegistryRejectsUnknownEventTypes() throws Exception {
+    EmergentTurnEngine engine = new EmergentTurnEngine();
+    try {
+      engine.event("turn-unknown", new JSONArray(), "AI_INVENTED_EVENT", "LOCAL", "x",
+          new JSONObject(), null);
+      org.junit.Assert.fail("Unknown event types must fail closed.");
+    } catch (IllegalStateException expected) {
+      assertTrue(expected.getMessage().contains("Unknown canon event_type"));
+    }
+  }
+
 }
