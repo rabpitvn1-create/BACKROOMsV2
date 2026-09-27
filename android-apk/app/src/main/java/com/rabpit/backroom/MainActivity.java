@@ -968,19 +968,28 @@ public class MainActivity extends Activity {
             throw new Exception("Story choice request không hợp lệ.");
           }
 
-          String rawOutput;
+          JSONObject committed;
           try {
-            rawOutput = geminiText(prompt);
+            JSONObject generated = parseModelJson(geminiText(prompt));
+            committed = new JSONObject(
+                gameCore.commitStoryDecisionPackage(stateJson, contextHash, generated.toString()));
+            if (!committed.optBoolean("handled", false)) {
+              if ("story_decision_generation_stale".equals(committed.optString("reason", ""))) return;
+              throw new Exception(committed.optString(
+                  "error", "Story choice package bị Core từ chối."));
+            }
           } catch (Exception geminiError) {
-            Log.w(TAG, "All Gemini keys failed for current Story choice; falling back to Haiku.");
-            rawOutput = haikuText(prompt);
-          }
-          JSONObject generated = parseModelJson(rawOutput);
-          JSONObject committed = new JSONObject(
-              gameCore.commitStoryDecisionPackage(stateJson, contextHash, generated.toString()));
-          if (!committed.optBoolean("handled", false)) {
-            if ("story_decision_generation_stale".equals(committed.optString("reason", ""))) return;
-            throw new Exception(committed.optString("error", "Story choice package bị Core từ chối."));
+            Log.w(TAG,
+                "Gemini Story choice generation/validation failed; falling back to Haiku.",
+                geminiError);
+            JSONObject generated = parseModelJson(haikuText(prompt));
+            committed = new JSONObject(
+                gameCore.commitStoryDecisionPackage(stateJson, contextHash, generated.toString()));
+            if (!committed.optBoolean("handled", false)) {
+              if ("story_decision_generation_stale".equals(committed.optString("reason", ""))) return;
+              throw new Exception(committed.optString(
+                  "error", "Story choice package bị Core từ chối."));
+            }
           }
           emit("backroomTurn", committed.getJSONObject("state").toString());
         } catch (Exception e) {
@@ -1023,20 +1032,28 @@ public class MainActivity extends Activity {
             throw new Exception("Return journey request không hợp lệ.");
           }
 
-          String rawOutput;
+          JSONObject committed;
           try {
-            rawOutput = geminiText(prompt);
+            JSONObject generated = parseModelJson(geminiText(prompt));
+            committed = new JSONObject(gameCore.commitReturnJourneyTurn(
+                stateJson, journeyId, turnIndex, contextHash, generated.toString()));
+            if (!committed.optBoolean("handled", false)) {
+              if ("return_journey_generation_stale".equals(committed.optString("reason", ""))) return;
+              throw new Exception(committed.optString(
+                  "error", "Return journey turn bị Core từ chối."));
+            }
           } catch (Exception geminiError) {
-            Log.w(TAG, "All Gemini keys failed for current return journey turn; falling back to Haiku.");
-            rawOutput = haikuText(prompt);
-          }
-          JSONObject generated = parseModelJson(rawOutput);
-          JSONObject committed = new JSONObject(gameCore.commitReturnJourneyTurn(
-              stateJson, journeyId, turnIndex, contextHash, generated.toString()));
-          if (!committed.optBoolean("handled", false)) {
-            if ("return_journey_generation_stale".equals(committed.optString("reason", ""))) return;
-            throw new Exception(committed.optString(
-                "error", "Return journey turn bị Core từ chối."));
+            Log.w(TAG,
+                "Gemini return journey generation/validation failed; falling back to Haiku.",
+                geminiError);
+            JSONObject generated = parseModelJson(haikuText(prompt));
+            committed = new JSONObject(gameCore.commitReturnJourneyTurn(
+                stateJson, journeyId, turnIndex, contextHash, generated.toString()));
+            if (!committed.optBoolean("handled", false)) {
+              if ("return_journey_generation_stale".equals(committed.optString("reason", ""))) return;
+              throw new Exception(committed.optString(
+                  "error", "Return journey turn bị Core từ chối."));
+            }
           }
           emit("backroomTurn", committed.getJSONObject("state").toString());
         } catch (Exception e) {
