@@ -764,10 +764,8 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatRoll(String stateJson) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
-          CombatChoiceEngine.roll(submitted);
-          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
-          emit("backroomCombatDiceState", committed.toString());
+          JSONObject runtime = new JSONObject(gameCore.combatRollRuntime());
+          emit("backroomCombatDiceState", runtime.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể ROLL." : e.getMessage());
         }
@@ -777,10 +775,8 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatHold(String stateJson, int dieIndex, boolean held) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
-          CombatChoiceEngine.setHold(submitted, dieIndex, held);
-          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
-          emit("backroomCombatDiceState", committed.toString());
+          JSONObject runtime = new JSONObject(gameCore.combatHoldRuntime(dieIndex, held));
+          emit("backroomCombatDiceState", runtime.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể HOLD die." : e.getMessage());
         }
@@ -790,10 +786,8 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void combatFinish(String stateJson) {
       io.execute(() -> {
         try {
-          JSONObject submitted = new JSONObject(gameCore.currentCoreState());
-          CombatChoiceEngine.finishHand(submitted);
-          JSONObject committed = new JSONObject(gameCore.commitRuntimeState(submitted.toString()));
-          emit("backroomCombatDiceState", committed.toString());
+          JSONObject runtime = new JSONObject(gameCore.combatFinishRuntime());
+          emit("backroomCombatDiceState", runtime.toString());
         } catch (Exception e) {
           emit("backroomError", e.getMessage() == null ? "Không thể FINISH hand." : e.getMessage());
         }
