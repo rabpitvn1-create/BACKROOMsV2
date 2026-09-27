@@ -534,7 +534,6 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         .put("deathReturnAnchorLocation", state.optString("location", ""))
         .put("deathReturnLevelKey", state.optString(
             LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0))))
-        .put("deathReturnJourneyPending", false)
         .put("participants", participants)
         .put("stageIndex", stageIndex)
         .put("entity", new JSONObject()
@@ -1429,7 +1428,6 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       LevelCore.returnToCurrentLevelStart(state);
       combat.put("deathReturnAnchorLocation", targetLocation)
           .put("deathReturnLevelKey", targetLevelKey)
-          .put("deathReturnJourneyPending", false)
           .put("deathRestartPending", true)
           .put("deathRecoveryApplied", true)
           .put("playerRespawned", true);
