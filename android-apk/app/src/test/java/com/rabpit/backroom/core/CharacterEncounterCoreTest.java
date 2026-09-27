@@ -50,7 +50,7 @@ public class CharacterEncounterCoreTest {
     assertEquals("canon:luc_tram:after_level_0", luc.getString("eligibilityRuleId"));
   }
 
-  @Test public void deferredLucTramCannotRemainInRandomPendingIntro() throws Exception {
+  @Test public void eligibleLucTramReunionSurvivesNormalizationAfterLevelZero() throws Exception {
     JSONObject state = state(1, 3)
         .put("characterEncounter", new JSONObject()
             .put("pendingIntro", new JSONArray().put("luc_tram"))
@@ -58,8 +58,10 @@ public class CharacterEncounterCoreTest {
 
     new CharacterEncounterCore(new SequenceRng()).normalizeState(state);
 
-    assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
-    assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("justEncountered").length());
+    assertEquals("luc_tram", state.getJSONObject("characterEncounter")
+        .getJSONArray("pendingIntro").getString(0));
+    assertEquals("luc_tram", state.getJSONObject("characterEncounter")
+        .getJSONArray("justEncountered").getString(0));
   }
 
   @Test public void irisAndSyvialUseExactOneInFourThousandBoundary() {
