@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /** Owns random companion encounters, Party joins, migration and pending GM introductions. */
 final class CharacterEncounterCore {
@@ -44,7 +43,9 @@ final class CharacterEncounterCore {
   private final IntRng rng;
 
   CharacterEncounterCore() {
-    this(bound -> ThreadLocalRandom.current().nextInt(bound));
+    this(bound -> {
+      throw new IllegalStateException("Unscoped character encounter RNG is disabled; use SituationCandidate selection.");
+    });
   }
 
   CharacterEncounterCore(IntRng rng) {
