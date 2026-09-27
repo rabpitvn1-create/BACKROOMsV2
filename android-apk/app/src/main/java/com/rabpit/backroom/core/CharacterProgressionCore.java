@@ -157,9 +157,16 @@ final class CharacterProgressionCore {
       throw new IllegalStateException("Không đủ Core. Cần " + cost + " Core.");
     }
 
+    int previousMaxHp = profile.getInt("maxHp");
+    int previousCurrentHp = profile.getInt("currentHp");
     resource.put("quantity", available - cost);
     stats.put(stat, current + 1);
     normalizeHp(state, id, profile);
+    if ("VIT".equals(stat) && previousCurrentHp > 0) {
+      int nextMaxHp = profile.getInt("maxHp");
+      int maxHpGain = Math.max(0, nextMaxHp - previousMaxHp);
+      profile.put("currentHp", Math.min(nextMaxHp, previousCurrentHp + maxHpGain));
+    }
     syncShadowHp(state, id, profile.getInt("currentHp"), profile.getInt("maxHp"));
 
     return new JSONObject()
