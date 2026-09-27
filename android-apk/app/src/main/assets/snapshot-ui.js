@@ -88,7 +88,7 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   if(window.__backroomEnhancements)return;
   window.__backroomEnhancements=true;
   var st=document.createElement('style');
-  st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden;isolation:isolate}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-grounded{position:absolute;left:auto;right:2.5%;top:8%;width:auto;height:84%;max-width:95%;max-height:none;object-fit:contain;pointer-events:none;transform:none}.snapshot>img.snapshot-character{z-index:2;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{left:2.5%;right:auto;max-width:46%;z-index:3;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}.snapshot>img.snapshot-npc{left:2.5%;right:auto;max-width:46%;z-index:3;filter:drop-shadow(0 0 10px rgba(0,0,0,.5))}.snapshot-character-placeholder{position:absolute;right:2.5%;bottom:8%;width:38%;height:84%;z-index:2;pointer-events:none;opacity:.46;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));animation:combat-overlay-enter .18s ease-out}.snapshot-character-placeholder:before{content:"";position:absolute;left:50%;top:2%;width:27%;aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:#fff}.snapshot-character-placeholder:after{content:"";position:absolute;left:13%;right:13%;bottom:0;height:78%;background:#fff;clip-path:polygon(38% 0,62% 0,72% 10%,82% 25%,88% 51%,76% 100%,24% 100%,12% 51%,18% 25%,28% 10%);border-radius:18% 18% 9% 9%}.snapshot-combat-character{animation:combat-overlay-enter .18s ease-out}.combat-hit-flash{animation:combat-hit-flash .14s ease-out!important}.combat-float{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,0);font-family:Play,system-ui,sans-serif;font-weight:700;font-size:19px;color:#fff;white-space:nowrap;text-shadow:0 2px 3px #000,0 0 6px #000;animation:combat-float-up 1.6s ease-out forwards}@keyframes combat-hit-flash{0%,100%{opacity:1}50%{filter:brightness(0) invert(1) drop-shadow(0 0 8px #fff);opacity:1}}@keyframes combat-float-up{0%{opacity:0;transform:translate(-50%,8px) scale(.96)}12%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1.04)}}@keyframes combat-overlay-enter{from{opacity:0}to{opacity:1}}.snapshot>img.snapshot-chest{position:absolute;left:50%;bottom:-5%;transform:translateX(-50%);width:auto;max-width:58%;height:92%;object-fit:contain;object-position:center bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.65))}';
+  st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.snapshot-placeholder{display:grid;place-items:center;gap:7px;text-align:center;color:#69737c}.snapshot-placeholder b{font-size:12px;letter-spacing:.16em}.snapshot-placeholder small{color:#56616a}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}.snapshot{position:relative;overflow:hidden;isolation:isolate}.snapshot>img.snapshot-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}.snapshot>img.snapshot-map{object-fit:contain;background:#050607}.snapshot>img.snapshot-grounded{position:absolute;left:auto;right:2.5%;top:8%;width:auto;height:84%;max-width:95%;max-height:none;object-fit:contain;pointer-events:none;transform:none}.snapshot>img.snapshot-character{z-index:2;filter:drop-shadow(0 0 10px rgba(0,0,0,.45))}.snapshot>img.snapshot-entity{left:2.5%;right:auto;max-width:46%;z-index:3;filter:drop-shadow(0 0 10px rgba(0,0,0,.55))}.snapshot-character-placeholder{position:absolute;right:2.5%;bottom:8%;width:38%;height:84%;z-index:2;pointer-events:none;opacity:.46;filter:drop-shadow(0 0 10px rgba(0,0,0,.5));animation:combat-overlay-enter .18s ease-out}.snapshot-character-placeholder:before{content:"";position:absolute;left:50%;top:2%;width:27%;aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:#fff}.snapshot-character-placeholder:after{content:"";position:absolute;left:13%;right:13%;bottom:0;height:78%;background:#fff;clip-path:polygon(38% 0,62% 0,72% 10%,82% 25%,88% 51%,76% 100%,24% 100%,12% 51%,18% 25%,28% 10%);border-radius:18% 18% 9% 9%}.snapshot-combat-character{animation:combat-overlay-enter .18s ease-out}.combat-hit-flash{animation:combat-hit-flash .14s ease-out!important}.combat-float{position:absolute;z-index:8;pointer-events:none;transform:translate(-50%,0);font-family:Play,system-ui,sans-serif;font-weight:700;font-size:19px;color:#fff;white-space:nowrap;text-shadow:0 2px 3px #000,0 0 6px #000;animation:combat-float-up 1.6s ease-out forwards}@keyframes combat-hit-flash{0%,100%{opacity:1}50%{filter:brightness(0) invert(1) drop-shadow(0 0 8px #fff);opacity:1}}@keyframes combat-float-up{0%{opacity:0;transform:translate(-50%,8px) scale(.96)}12%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-34px) scale(1.04)}}@keyframes combat-overlay-enter{from{opacity:0}to{opacity:1}}.snapshot>img.snapshot-chest{position:absolute;left:50%;bottom:-5%;transform:translateX(-50%);width:auto;max-width:58%;height:92%;object-fit:contain;object-position:center bottom;z-index:3;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(0,0,0,.65))}';
   document.head.appendChild(st);
   var __overlayBoundsCache={};
   // Synchronous metadata avoids coupling any sprite to other images' load events.
@@ -152,53 +152,6 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function shouldShowCaoMinhOverlay(){try{var s=(typeof state!=='undefined'&&state)?state:{};return !(s.specialMode||s.debug||activeEntityKey()||chestPresent());}catch(e){return false;}}
   function normalizeActorId(v){var k=String(v||'').trim().toLowerCase();if(k.indexOf('cao_minh')>=0||k.indexOf('cao minh')>=0)return 'cao_minh';if(k.indexOf('lục trầm')>=0||k.indexOf('luc tram')>=0||k.indexOf('luc_tram')>=0)return 'luc_tram';if(k.indexOf('iris')>=0||k.indexOf('argus')>=0)return 'iris';if(k.indexOf('syvial')>=0)return 'syvial';return k.replace(/\s+/g,'_');}
   function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
-
-
-  var __storyVisualWarnings={};
-  function warnStoryVisual(kind,story,detail){
-    try{
-      var manifest=window.__backroomStoryVisuals||{},key=[kind,story&&story.storyId,story&&story.currentChapter,story&&story.currentSegmentId,detail].join('|');
-      if(__storyVisualWarnings[key])return;
-      __storyVisualWarnings[key]=true;
-      if(window.console&&typeof console.warn==='function')console.warn('Story visual fallback',{
-        kind:kind,storyId:story&&story.storyId||'',chapterId:story&&story.currentChapter||'',
-        segmentId:story&&story.currentSegmentId||'',sourceRevision:story&&story.sourceRevision||'',
-        visualCompilerFingerprint:manifest.visualCompilerFingerprint||'',detail:detail||''
-      });
-    }catch(_){}
-  }
-  function storyPrimaryNpc(){
-    try{
-      var s=(typeof state!=='undefined'&&state)?state:{},story=s.story||{};
-      if(story.active!==true||story.segmentDelivered!==true||story.arcComplete===true||s.specialMode||s.debug)return null;
-      if((s.combat&&s.combat.active===true)||story.returnJourneyPending===true||(story.returnJourney&&story.returnJourney.active===true))return null;
-      var storyId=String(story.storyId||''),chapterId=String(story.currentChapter||''),segmentId=String(story.currentSegmentId||'');
-      if(!storyId||!chapterId||!segmentId)return null;
-      var manifest=window.__backroomStoryVisuals||{};
-      if(Number(manifest.schemaVersion||0)!==1){warnStoryVisual('manifest_schema',story,String(manifest.schemaVersion||''));return null;}
-      var storyVisual=(manifest.stories||{})[storyId];
-      if(!storyVisual)return null;
-      if(String(storyVisual.sourceRevision||'')!==String(story.sourceRevision||'')){
-        warnStoryVisual('source_revision',story,String(storyVisual.sourceRevision||''));return null;
-      }
-      var chapter=(storyVisual.chapters||{})[chapterId];
-      if(!chapter)return null;
-      var visual=(chapter.segments||{})[segmentId];
-      if(!visual){warnStoryVisual('missing_segment',story,chapter.visualSource||'');return null;}
-      var npcId=visual.primaryNpcId;
-      if(npcId===null||npcId===undefined||String(npcId).trim()==='')return null;
-      npcId=String(npcId).trim();
-      var npc=(manifest.npcs||{})[npcId];
-      if(!npc||!npc.asset){warnStoryVisual('missing_npc',story,npcId);return null;}
-      return {id:npcId,src:'file:///android_asset/'+String(npc.asset),alt:String(npc.displayName||npcId)};
-    }catch(error){
-      try{warnStoryVisual('exception',(typeof state!=='undefined'&&state&&state.story)||{},String(error&&error.message||error));}catch(_){}
-      return null;
-    }
-  }
-  function appendNpcOverlay(box,npc){
-    var img=document.createElement('img');img.className='snapshot-npc snapshot-grounded';img.src=npc.src;img.alt=npc.alt;img.dataset.npcId=npc.id;box.appendChild(img);alignOverlayToGround(img,'left','entity');return img;
-  }
   function appendCaoMinhSnapshot(box){
     var img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/cao_minh_snapshot_overlay.png';img.alt='Cao Minh';box.appendChild(img);alignOverlayToGround(img,'right','character');return img;
   }
@@ -215,13 +168,6 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
     if(key){
       appendCombatCharacter(box,combatVisualParticipant());
       img=document.createElement('img');img.className='snapshot-entity snapshot-grounded';img.src='file:///android_asset/entity/'+key+'.webp';img.alt=key;box.appendChild(img);alignOverlayToGround(img,'left','entity');return;
-    }
-    var npc=storyPrimaryNpc();
-    if(npc){
-      appendNpcOverlay(box,npc);
-      var s=(typeof state!=='undefined'&&state)?state:{};
-      if(!(s.specialMode||s.debug))appendCaoMinhSnapshot(box);
-      return;
     }
     if(chestPresent()){img=document.createElement('img');img.className='snapshot-chest';img.src='file:///android_asset/chest_overlay.png';img.alt='Rương';box.appendChild(img);return;}
     if(shouldShowCaoMinhOverlay())appendCaoMinhSnapshot(box);
