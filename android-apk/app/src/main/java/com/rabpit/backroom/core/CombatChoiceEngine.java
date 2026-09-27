@@ -618,6 +618,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       rollDice(combat, dice, false);
       dice.put("hasRolled", true).put("rerollsUsed", 0);
       updateHand(dice);
+      autoHoldDuplicateGroups(dice);
       return state;
     }
 
@@ -627,6 +628,7 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     rollDice(combat, dice, true);
     dice.put("rerollsUsed", rerollsUsed + 1);
     updateHand(dice);
+    autoHoldDuplicateGroups(dice);
     return state;
   }
 
@@ -1329,6 +1331,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     if (!dice.optBoolean("hasRolled", false)) {
       rollDice(combat, dice, false);
       dice.put("hasRolled", true).put("rerollsUsed", 0);
+      updateHand(dice);
+      autoHoldDuplicateGroups(dice);
     }
     if (dice.optString("hand", "").trim().isEmpty()) updateHand(dice);
   }
@@ -1356,6 +1360,22 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     int[] hand = new int[DICE_COUNT];
     for (int i = 0; i < DICE_COUNT; i++) hand[i] = values.optInt(i, 0);
     dice.put("hand", classify(hand));
+  }
+
+  static void autoHoldDuplicateGroups(JSONObject dice) throws Exception {
+    JSONArray values = dice.getJSONArray("values");
+    JSONArray held = dice.getJSONArray("held");
+    int[] counts = new int[7];
+    for (int i = 0; i < DICE_COUNT; i++) {
+      int value = values.optInt(i, 0);
+      if (value >= 1 && value <= 6) counts[value]++;
+    }
+    for (int i = 0; i < DICE_COUNT; i++) {
+      int value = values.optInt(i, 0);
+      if (value >= 1 && value <= 6 && counts[value] >= 2) {
+        held.put(i, true);
+      }
+    }
   }
 
   private static boolean allHeld(JSONArray held) {

@@ -136,12 +136,48 @@ public class CombatChoiceEngineTest {
     assertEquals(CombatChoiceEngine.classify(rolled), dice.getString("hand"));
   }
 
+  @Test public void autoHoldMarksEveryDuplicateGroupAndPlayerCanReleaseAnyDie() throws Exception {
+    JSONObject state = combatState(new JSONArray());
+    CombatChoiceEngine.start(state, "hound", 0);
+    JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
+    dice.put("values", new JSONArray().put(2).put(2).put(3).put(3).put(1));
+    JSONArray held = dice.getJSONArray("held");
+    for (int i = 0; i < 5; i++) held.put(i, false);
+
+    CombatChoiceEngine.autoHoldDuplicateGroups(dice);
+
+    assertTrue(held.getBoolean(0));
+    assertTrue(held.getBoolean(1));
+    assertTrue(held.getBoolean(2));
+    assertTrue(held.getBoolean(3));
+    assertFalse(held.getBoolean(4));
+
+    CombatChoiceEngine.setHold(state, 0, false);
+    assertFalse(held.getBoolean(0));
+  }
+
+  @Test public void autoHoldAddsDuplicateGroupsWithoutClearingManualHolds() throws Exception {
+    JSONObject dice = new JSONObject()
+        .put("values", new JSONArray().put(4).put(4).put(2).put(3).put(6))
+        .put("held", new JSONArray().put(false).put(false).put(false).put(false).put(true));
+
+    CombatChoiceEngine.autoHoldDuplicateGroups(dice);
+
+    JSONArray held = dice.getJSONArray("held");
+    assertTrue(held.getBoolean(0));
+    assertTrue(held.getBoolean(1));
+    assertTrue(held.getBoolean(4));
+    assertFalse(held.getBoolean(2));
+    assertFalse(held.getBoolean(3));
+  }
+
   @Test public void holdPersistsAndRerollTouchesOnlyUnheldDice() throws Exception {
     JSONObject state = combatState(new JSONArray());
     CombatChoiceEngine.start(state, "hound", 0);
     JSONObject combat = state.getJSONObject("combat");
     JSONObject dice = combat.getJSONObject("diceState");
     JSONArray before = new JSONArray(dice.getJSONArray("values").toString());
+    for (int i = 0; i < 5; i++) CombatChoiceEngine.setHold(state, i, false);
     CombatChoiceEngine.setHold(state, 0, true);
     CombatChoiceEngine.setHold(state, 3, true);
     int sequenceBefore = combat.getInt("rngSequence");
@@ -191,9 +227,10 @@ public class CombatChoiceEngineTest {
     JSONObject dice = state.getJSONObject("combat").getJSONObject("diceState");
     assertFalse(dice.getBoolean("finalized"));
 
-    CombatChoiceEngine.roll(state);
-    CombatChoiceEngine.roll(state);
-    CombatChoiceEngine.roll(state);
+    for (int reroll = 0; reroll < 3; reroll++) {
+      for (int i = 0; i < 5; i++) CombatChoiceEngine.setHold(state, i, false);
+      CombatChoiceEngine.roll(state);
+    }
 
     assertEquals(3, dice.getInt("rerollsUsed"));
     assertFalse(dice.getBoolean("finalized"));
