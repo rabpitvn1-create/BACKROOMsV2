@@ -31,6 +31,25 @@ public class CharacterEncounterCoreTest {
     assertEquals(2, levelOneRng.calls);
   }
 
+  @Test public void lucTramCandidateIsTenPercentOnlyAfterLevelZero() throws Exception {
+    CharacterEncounterCore core = new CharacterEncounterCore(new SequenceRng());
+
+    JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
+    JSONArray zeroCandidates = core.situationCandidates(levelZero);
+    assertFalse(zeroCandidates.toString().contains("character:luc_tram"));
+
+    JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
+    JSONArray oneCandidates = core.situationCandidates(levelOne);
+    JSONObject luc = null;
+    for (int i = 0; i < oneCandidates.length(); i++) {
+      JSONObject candidate = oneCandidates.getJSONObject(i);
+      if ("character:luc_tram".equals(candidate.optString("situationKey"))) luc = candidate;
+    }
+    assertTrue(luc != null);
+    assertEquals(10.0d, luc.getDouble("chancePercent"), 0.00001d);
+    assertEquals("canon:luc_tram:after_level_0", luc.getString("eligibilityRuleId"));
+  }
+
   @Test public void deferredLucTramCannotRemainInRandomPendingIntro() throws Exception {
     JSONObject state = state(1, 3)
         .put("characterEncounter", new JSONObject()
