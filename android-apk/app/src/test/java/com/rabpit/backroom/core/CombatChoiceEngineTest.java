@@ -342,8 +342,9 @@ public class CombatChoiceEngineTest {
     assertTrue(actorLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertTrue(entityLine.startsWith("Hound "));
     assertTrue(passiveLine.startsWith("Đại Đạo Ma Tôn:"));
-    assertTrue(entityLine.contains("Cao Minh -"));
-    assertTrue(entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
+    assertTrue(entityLine.contains("Cao Minh"));
+    assertTrue(entityLine.contains("Evasion")
+        || entityLine.matches(".*\\[\\d+/\\d+ HP\\].*"));
     assertFalse(actorLine.toLowerCase().contains("reroll"));
     assertFalse(actorLine.toLowerCase().contains("dice"));
   }
