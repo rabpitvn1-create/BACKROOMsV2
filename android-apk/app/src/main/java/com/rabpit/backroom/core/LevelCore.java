@@ -88,49 +88,6 @@ final class LevelCore {
     return levelGraph.available() ? levelGraph.stageIndex(key, legacy) : legacy;
   }
 
-  void markStoryBoundaryReady(JSONObject state) throws Exception {
-    normalizeState(state);
-    String key = resolveLevelKey(state);
-    JSONObject route = normalizeRouteState(state, key);
-    route.put("storyExitReady", true);
-    route.put("readinessReason", "STORY_ARC_COMPLETE");
-    route.put("exitAvailable", true);
-    route.put("lastResult", "STORY_EXIT_READY");
-    state.put(ROUTE_STATE, route);
-  }
-
-  boolean storyHandoffAvailable(JSONObject state) {
-    try {
-      normalizeState(state);
-      String from = resolveLevelKey(state);
-      JSONObject route = normalizeRouteState(state, from);
-      String next = nextForKey(from);
-      return route.optBoolean("storyExitReady", false)
-          && next != null
-          && transitionAllowedFor(from, next);
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  String applyStoryArcTransition(JSONObject state) throws Exception {
-    normalizeState(state);
-    String from = resolveLevelKey(state);
-    JSONObject route = normalizeRouteState(state, from);
-    if (!route.optBoolean("storyExitReady", false)) {
-      throw new IllegalStateException("Story arc boundary is not ready for Level transition");
-    }
-    String next = nextForKey(from);
-    if (next == null || !transitionAllowedFor(from, next)) {
-      throw new IllegalStateException("No validated Level edge is available for this story boundary");
-    }
-    state.put("currentLevel", parentLevelForKey(next));
-    state.put(LEVEL_KEY, next);
-    state.put("location", defaultLocationForKey(next));
-    state.put(ROUTE_STATE, newRouteStateForKey(next));
-    return next;
-  }
-
   void rollRouteForExplorerAction(JSONObject state, String action) throws Exception {
     normalizeState(state);
     if (!GameCoreRules.isRouteExplorationAction(action)) return;
@@ -181,12 +138,6 @@ final class LevelCore {
     String key = new LevelCore((Context)null, bound -> 0).resolveLevelKey(state);
     state.put(LEVEL_KEY, key);
     state.put("location", defaultLocation(key));
-  }
-
-  static String returnJourneyLocation(String levelKey) {
-    String key = levelKey == null ? "" : levelKey.trim();
-    String start = defaultLocation(key);
-    return start + " — khu vực đang đi qua trong cùng vùng";
   }
 
   void validateAndApplyTransition(JSONObject before, JSONObject candidate) throws Exception {
@@ -522,13 +473,11 @@ final class LevelCore {
     }
 
     int streak = Math.max(0, Math.min(ROUTE_REQUIRED_STREAK, route.optInt("streak", 0)));
-    boolean storyExitReady = route.optBoolean("storyExitReady", false);
     boolean routeReady = streak >= ROUTE_REQUIRED_STREAK;
     route.put("level", parentLevelForKey(levelKey));
     route.put("levelKey", levelKey);
     route.put("streak", routeReady ? ROUTE_REQUIRED_STREAK : streak);
-    route.put("storyExitReady", storyExitReady);
-    route.put("exitAvailable", routeReady || storyExitReady);
+    route.put("exitAvailable", routeReady);
     state.put(ROUTE_STATE, route);
     return route;
   }
@@ -538,7 +487,6 @@ final class LevelCore {
         .put("level", parentLevelForKey(levelKey))
         .put("levelKey", normalizeKey(levelKey))
         .put("streak", 0)
-        .put("storyExitReady", false)
         .put("readinessReason", "")
         .put("exitAvailable", false)
         .put("lastRollTurn", -1)

@@ -24,7 +24,6 @@ final class CharacterProgressionCore {
   static final int DEFAULT_BASE_MAX_HP = 50;
   static final int COMPANION_REVIVE_TURNS = 10;
   static final int ENTITY_VICTORY_BASE_CORE = 2;
-  static final int STORY_PROGRESS_BASE_CORE = 5;
 
   private static final double CORE_STAGE_MULTIPLIER = 1.5d;
   private static final String TREASURE_STAGE_KILLS_KEY = "treasureEntityStageKills";

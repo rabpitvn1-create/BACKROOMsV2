@@ -154,51 +154,6 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
   function combatVisualParticipant(){try{var c=state&&state.combat;if(!c||!Array.isArray(c.participants)||!c.participants.length)return null;var idx;if(Number.isInteger(window.__combatVisualActorIndex)){idx=window.__combatVisualActorIndex;}else{var currentId=normalizeActorId(c.currentActor||'');if(currentId){for(var i=0;i<c.participants.length;i++){var candidate=c.participants[i];if(candidate&&normalizeActorId(candidate.id||candidate.name)===currentId)return candidate;}}idx=Number(c.actorIndex||0);}if(idx<0||idx>=c.participants.length)idx=0;return c.participants[idx]||null;}catch(_){return null;}}
 
 
-  var __storyVisualWarnings={};
-  function warnStoryVisual(kind,story,detail){
-    try{
-      var manifest=window.__backroomStoryVisuals||{},key=[kind,story&&story.storyId,story&&story.currentChapter,story&&story.currentSegmentId,detail].join('|');
-      if(__storyVisualWarnings[key])return;
-      __storyVisualWarnings[key]=true;
-      if(window.console&&typeof console.warn==='function')console.warn('Story visual fallback',{
-        kind:kind,storyId:story&&story.storyId||'',chapterId:story&&story.currentChapter||'',
-        segmentId:story&&story.currentSegmentId||'',sourceRevision:story&&story.sourceRevision||'',
-        visualCompilerFingerprint:manifest.visualCompilerFingerprint||'',detail:detail||''
-      });
-    }catch(_){}
-  }
-  function storyPrimaryNpc(){
-    try{
-      var s=(typeof state!=='undefined'&&state)?state:{},story=s.story||{};
-      if(story.active!==true||story.segmentDelivered!==true||story.arcComplete===true||s.specialMode||s.debug)return null;
-      if((s.combat&&s.combat.active===true)||story.returnJourneyPending===true||(story.returnJourney&&story.returnJourney.active===true))return null;
-      var storyId=String(story.storyId||''),chapterId=String(story.currentChapter||''),segmentId=String(story.currentSegmentId||'');
-      if(!storyId||!chapterId||!segmentId)return null;
-      var manifest=window.__backroomStoryVisuals||{};
-      if(Number(manifest.schemaVersion||0)!==1){warnStoryVisual('manifest_schema',story,String(manifest.schemaVersion||''));return null;}
-      var storyVisual=(manifest.stories||{})[storyId];
-      if(!storyVisual)return null;
-      if(String(storyVisual.sourceRevision||'')!==String(story.sourceRevision||'')){
-        warnStoryVisual('source_revision',story,String(storyVisual.sourceRevision||''));return null;
-      }
-      var chapter=(storyVisual.chapters||{})[chapterId];
-      if(!chapter)return null;
-      var visual=(chapter.segments||{})[segmentId];
-      if(!visual){warnStoryVisual('missing_segment',story,chapter.visualSource||'');return null;}
-      var npcId=visual.primaryNpcId;
-      if(npcId===null||npcId===undefined||String(npcId).trim()==='')return null;
-      npcId=String(npcId).trim();
-      var npc=(manifest.npcs||{})[npcId];
-      if(!npc||!npc.asset){warnStoryVisual('missing_npc',story,npcId);return null;}
-      return {id:npcId,src:'file:///android_asset/'+String(npc.asset),alt:String(npc.displayName||npcId)};
-    }catch(error){
-      try{warnStoryVisual('exception',(typeof state!=='undefined'&&state&&state.story)||{},String(error&&error.message||error));}catch(_){}
-      return null;
-    }
-  }
-  function appendNpcOverlay(box,npc){
-    var img=document.createElement('img');img.className='snapshot-npc snapshot-grounded';img.src=npc.src;img.alt=npc.alt;img.dataset.npcId=npc.id;box.appendChild(img);alignOverlayToGround(img,'left','entity');return img;
-  }
   function appendCaoMinhSnapshot(box){
     var img=document.createElement('img');img.className='snapshot-character snapshot-grounded';img.src='file:///android_asset/cao_minh_snapshot_overlay.png';img.alt='Cao Minh';box.appendChild(img);alignOverlayToGround(img,'right','character');return img;
   }
@@ -214,18 +169,25 @@ if(typeof module!=='undefined'&&module.exports)module.exports=SnapshotOverlayLay
     var key=activeEntityKey(),img;
     if(key){
       appendCombatCharacter(box,combatVisualParticipant());
-      img=document.createElement('img');img.className='snapshot-entity snapshot-grounded';img.src='file:///android_asset/entity/'+key+'.webp';img.alt=key;box.appendChild(img);alignOverlayToGround(img,'left','entity');return;
-    }
-    var npc=storyPrimaryNpc();
-    if(npc){
-      appendNpcOverlay(box,npc);
-      var s=(typeof state!=='undefined'&&state)?state:{};
-      if(!(s.specialMode||s.debug))appendCaoMinhSnapshot(box);
+      img=document.createElement('img');
+      img.className='snapshot-entity snapshot-grounded';
+      img.src='file:///android_asset/entity/'+key+'.webp';
+      img.alt=key;
+      box.appendChild(img);
+      alignOverlayToGround(img,'left','entity');
       return;
     }
-    if(chestPresent()){img=document.createElement('img');img.className='snapshot-chest';img.src='file:///android_asset/chest_overlay.png';img.alt='Rương';box.appendChild(img);return;}
+    if(chestPresent()){
+      img=document.createElement('img');
+      img.className='snapshot-chest';
+      img.src='file:///android_asset/chest_overlay.png';
+      img.alt='Rương';
+      box.appendChild(img);
+      return;
+    }
     if(shouldShowCaoMinhOverlay())appendCaoMinhSnapshot(box);
   }
+
   function renderSnapshot(){var box=document.getElementById('snapshot');if(!box)return;box.textContent='';var local=localLevelSnapshot();if(local&&local.path){var img=document.createElement('img');img.className='snapshot-bg'+(local.visualType==='map'?' snapshot-map':'');img.src=local.path;img.alt='Level '+local.level+' Snapshot';box.appendChild(img);}else{var p=document.createElement('div');p.className='snapshot-placeholder';p.innerHTML='<b>LEVEL SNAPSHOT</b><small>Không có ảnh local cho Level hiện tại.</small>';box.appendChild(p);}appendSnapshotOverlay(box);}
   function combatTargetElement(target){var box=document.getElementById('snapshot');if(!box)return null;return target==='entity'?box.querySelector('.snapshot-entity'):box.querySelector('.snapshot-combat-character');}
   function targetAnchor(target){

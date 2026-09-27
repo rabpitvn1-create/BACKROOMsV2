@@ -531,10 +531,9 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
         .put("rngSequence", 0)
         .put("seed", stableSeed(state, normalized, participants))
         .put("logIndex", Math.max(0, gmLogIndex))
-        .put("deathReturnAnchorLocation", state.optString("location", ""))
-        .put("deathReturnLevelKey", state.optString(
+        .put("deathRestartAnchorLocation", state.optString("location", ""))
+        .put("deathRestartLevelKey", state.optString(
             LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0))))
-        .put("deathReturnJourneyPending", false)
         .put("participants", participants)
         .put("stageIndex", stageIndex)
         .put("entity", new JSONObject()
@@ -1411,8 +1410,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     combat.put("active", false).put("outcome", "defeat");
     if (!combat.optBoolean("deathRecoveryApplied", false)) {
       String targetLocation = combat.optString(
-          "deathReturnAnchorLocation", state.optString("location", "")).trim();
-      String targetLevelKey = combat.optString("deathReturnLevelKey",
+          "deathRestartAnchorLocation", state.optString("location", "")).trim();
+      String targetLevelKey = combat.optString("deathRestartLevelKey",
           state.optString(LevelCore.LEVEL_KEY, String.valueOf(state.optInt("currentLevel", 0)))).trim();
 
       // The death sentence is the first player-visible consequence. Penalty/recovery remains Core-owned
@@ -1427,9 +1426,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       progression.applyCaoMinhDeathPenalty(state);
       state.put(LevelCore.LEVEL_KEY, targetLevelKey);
       LevelCore.returnToCurrentLevelStart(state);
-      combat.put("deathReturnAnchorLocation", targetLocation)
-          .put("deathReturnLevelKey", targetLevelKey)
-          .put("deathReturnJourneyPending", false)
+      combat.put("deathRestartAnchorLocation", targetLocation)
+          .put("deathRestartLevelKey", targetLevelKey)
           .put("deathRestartPending", true)
           .put("deathRecoveryApplied", true)
           .put("playerRespawned", true);

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const source=fs.readFileSync(path.join(__dirname,'../app/src/main/assets/snapshot-ui.js'),'utf8');
 const geometry=require('../app/src/main/assets/snapshot-ui.js');
-function boot({unknown=false,unloaded=false,canvasContextMissing=false,storyVisuals=null,stateOverride=null}={}){
+function boot({unknown=false,unloaded=false,canvasContextMissing=false,stateOverride=null}={}){
  const elements=[],styles=[],pending=[],warnings=[];let reads=0;
  const box={clientWidth:350,clientHeight:250,appendChild(el){el.parentElement=this;elements.push(el);},querySelectorAll(selector){return elements.filter(e=>selector.includes('img.')&&e.tagName==='IMG'&&e.className.includes('snapshot-grounded'));}};
  Object.defineProperty(box,'textContent',{set(){elements.length=0;}});
@@ -12,7 +12,7 @@ function boot({unknown=false,unloaded=false,canvasContextMissing=false,storyVisu
   return {tagName:tag.toUpperCase(),style:{},dataset:{},className:'',complete:!unloaded,naturalWidth:0,naturalHeight:0,setAttribute(){},addEventListener(type,cb){if(type==='load')pending.push({el:this,cb});},set src(url){this.url=url;const m=geometry.assetMetric(url)||geometry.assetMetric('cao_minh_snapshot_overlay.png');this.naturalWidth=m.width;this.naturalHeight=m.height;},get src(){return this.url;}};
  }};
  const ctx={document,console:{warn(...args){warnings.push(args);}},localStorage:{removeItem(){}},setTimeout,clearTimeout,Image:function(){throw Error('Detached image preload must not gate overlays');},state:stateOverride||{flags:{},combat:{active:true,participants:[{id:'cao_minh'},{id:'luc_tram'}]}}};
- ctx.window=ctx;if(storyVisuals)ctx.__backroomStoryVisuals=storyVisuals;ctx.addEventListener=()=>{};
+ ctx.window=ctx;ctx.addEventListener=()=>{};
  vm.createContext(ctx);
  let js=source;if(unknown)js=js.replaceAll('file:///android_asset/cao_minh_snapshot_overlay.png','file:///android_asset/unregistered.png');
  vm.runInContext(js,ctx);
@@ -70,48 +70,7 @@ test('simultaneous floating damage uses separate vertical lanes instead of one a
 
 
 
-function npcFixture({entity=false,missingSegment=false,returnJourney=false}={}){
- const segmentId=missingSegment?'L02_C04_missing':'L02_C04_Sa7592aed96baebd4';
- const state={
-   flags:entity?{entityEncounterKey:'hound'}:{},
-   combat:{active:false},
-   story:{active:true,arcComplete:false,segmentDelivered:true,storyId:'level_0_2_remodeled_mess',
-     sourceRevision:'level02-test',currentChapter:'L02_C04',currentSegmentId:segmentId,
-     returnJourneyPending:returnJourney,returnJourney:{active:returnJourney}}
- };
- const visuals={schemaVersion:1,visualCompilerFingerprint:'test',npcs:{
-   duy:{displayName:'Duy',asset:'npc/br_npc_duy_l02_overlay_v01.webp'}
- },stories:{level_0_2_remodeled_mess:{levelKey:'0.2',sourceRevision:'level02-test',chapters:{
-   L02_C04:{visualSource:'story/source/level_0_2/LEVEL0.2_CH04_REMODELED_MESS.visual.json',segments:{
-     L02_C04_Sa7592aed96baebd4:{primaryNpcId:'duy'}
-   }}
- }}}};
- return {state,visuals};
-}
 
-test('Story NPC uses its own semantic class and renders beside Cao Minh',()=>{
- const f=npcFixture(),r=boot({storyVisuals:f.visuals,stateOverride:f.state});
- const npc=r.elements.find(e=>e.className.includes('snapshot-npc'));
- assert.ok(npc);visible(npc);assert.equal(npc.dataset.npcId,'duy');
- assert.ok(!npc.className.includes('snapshot-entity'));
- assert.ok(r.elements.some(e=>e.className.includes('snapshot-character')));
-});
-
-test('active Entity overrides Story NPC without exposing NPC as a combat target',()=>{
- const f=npcFixture({entity:true}),r=boot({storyVisuals:f.visuals,stateOverride:f.state});
- assert.equal(r.elements.some(e=>e.className.includes('snapshot-npc')),false);
- assert.ok(r.elements.some(e=>e.className.includes('snapshot-entity')));
-});
-
-test('missing dense Story visual entry fails closed and logs a non-blocking diagnostic',()=>{
- const f=npcFixture({missingSegment:true}),r=boot({storyVisuals:f.visuals,stateOverride:f.state});
- assert.equal(r.elements.some(e=>e.className.includes('snapshot-npc')),false);
- assert.ok(r.elements.some(e=>e.className.includes('snapshot-character')));
- assert.equal(r.warnings.length,1);
- assert.equal(r.warnings[0][1].kind,'missing_segment');
-});
-
-test('Return Journey suppresses Story NPC until the paused Story cursor resumes',()=>{
- const f=npcFixture({returnJourney:true}),r=boot({storyVisuals:f.visuals,stateOverride:f.state});
- assert.equal(r.elements.some(e=>e.className.includes('snapshot-npc')),false);
+test('snapshot runtime has no scripted NPC overlay hooks',()=>{
+ assert.doesNotMatch(source,/snapshot-npc|storyPrimaryNpc|__backroomStoryVisuals/);
 });
