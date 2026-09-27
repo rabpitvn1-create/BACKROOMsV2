@@ -216,7 +216,7 @@ public final class GameCoreFacade implements AutoCloseable {
       }
       emergentTurnEngine.validateBatch(prepared.turnId, prepared.events);
       emergentTurnEngine.commitAuthoritative(
-          working, prepared.turnId, prepared.events, selected);
+          persisted, working, prepared.turnId, prepared.events, selected);
 
       // First durable write is authoritative. Projections are intentionally a second replayable write.
       persist(working);
@@ -430,7 +430,7 @@ public final class GameCoreFacade implements AutoCloseable {
       }
 
       emergentTurnEngine.validateBatch(turnId, events);
-      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       if (emergentTurnEngine.stateVersion(working) != preVersion + 1) {
         throw new IllegalStateException("Combat commit stateVersion drift");
       }
@@ -474,7 +474,7 @@ public final class GameCoreFacade implements AutoCloseable {
               .put("observedByPlayer", true),
           null));
       emergentTurnEngine.validateBatch(turnId, events);
-      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(working);
       emergentTurnEngine.catchUpProjections(working);
@@ -559,7 +559,7 @@ public final class GameCoreFacade implements AutoCloseable {
               .put("observedByPlayer", true),
           null));
       emergentTurnEngine.validateBatch(turnId, events);
-      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(working);
       emergentTurnEngine.catchUpProjections(working);
@@ -599,7 +599,7 @@ public final class GameCoreFacade implements AutoCloseable {
               .put("observedByPlayer", true),
           null));
       emergentTurnEngine.validateBatch(turnId, events);
-      emergentTurnEngine.commitAuthoritative(working, turnId, events, null);
+      emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
       persist(working);
       emergentTurnEngine.catchUpProjections(working);
