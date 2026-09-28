@@ -14,9 +14,9 @@ Thiết kế và quy trình mở rộng Markdown canon: [Canon Retriever contrac
 
 ## Phiên bản hiện tại
 
-**BR 1.0.0.0.11** (`versionCode 109`). Bổ sung cốt truyện authored Level 0.5 (Aquaclaustrophobic Infirmary) gồm 20 chương cùng runtime assets và regression coverage tương ứng.
+**Backroom 1.1.67** (`versionCode 111`). Tích hợp Canon Retriever dùng chung cho Markdown canon, chạy sau Core commit và cấp CanonPacket có budget cho AI narration.
 
-APK debug và ghi chú phiên bản được phát hành tại [GitHub Releases](https://github.com/rabpitvn1-create/BACKROOMsV2/releases). Xem [ghi chú BR 1.0.0.0.11](android-apk/RELEASE_NOTES_BR_1.0.0.0.11.txt) để biết các thay đổi.
+APK debug và ghi chú phiên bản được phát hành tại [GitHub Releases](https://github.com/rabpitvn1-create/BACKROOMsV2/releases). Xem [ghi chú 1.1.67](android-apk/RELEASE_NOTES_1.1.67.txt) để biết các thay đổi.
 
 ## Build cục bộ
 
