@@ -156,14 +156,12 @@ final class CharacterDetailCore {
         .trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "luc_tram";
-    if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return member.optString("id", "").trim().toLowerCase(Locale.ROOT);
   }
 
   private static String displayName(String id) {
     if ("luc_tram".equals(id)) return "Lục Trầm";
-    if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
     return "Cao Minh";
   }

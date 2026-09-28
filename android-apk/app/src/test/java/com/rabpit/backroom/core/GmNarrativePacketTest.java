@@ -63,7 +63,7 @@ public class GmNarrativePacketTest {
                     .put("confidence", "SUSPECTED"))
                 .put(new JSONObject()
                     .put("claimId", "c2")
-                    .put("actorId", "iris")
+                    .put("actorId", "syvial")
                     .put("beliefValue", "secret")
                     .put("confidence", "CONFIRMED"))));
 

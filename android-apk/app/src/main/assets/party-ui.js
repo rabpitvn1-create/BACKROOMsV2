@@ -5,13 +5,11 @@
   var AVATARS={
     cao_minh:'file:///android_asset/avatars/cao_minh_avatar.jpg',
     luc_tram:'file:///android_asset/avatars/luctram_avatar.png',
-    iris:'file:///android_asset/avatars/Iris_avatar.jpg',
     syvial:'file:///android_asset/avatars/Syvial_avatar.jpg'
   };
   var META={
     cao_minh:{name:'Cao Minh',role:'Vạn Giới Ma Tôn'},
     luc_tram:{name:'Lục Trầm',role:'Chân truyền Thiên Kiếm Môn'},
-    iris:{name:'Iris',role:'Scout / Target Eliminator'},
     syvial:{name:'Syvial',role:'Đội phó SRU'}
   };
   var BAND_LABELS={UNKNOWN:'Chưa xác định',NORMAL:'Bình thường',MILD:'Nhẹ',MODERATE:'Vừa',SEVERE:'Nặng',CRITICAL:'Nguy kịch'};
@@ -40,7 +38,6 @@
     var value=String(raw||'').trim().toLowerCase();
     if(value.indexOf('cao_minh')>=0||value.indexOf('cao minh')>=0)return 'cao_minh';
     if(value.indexOf('lục trầm')>=0||value.indexOf('luc tram')>=0||value.indexOf('luc_tram')>=0)return 'luc_tram';
-    if(value.indexOf('iris')>=0||value.indexOf('argus')>=0)return 'iris';
     if(value.indexOf('syvial')>=0)return 'syvial';
     return value.replace(/\s+/g,'_');
   }

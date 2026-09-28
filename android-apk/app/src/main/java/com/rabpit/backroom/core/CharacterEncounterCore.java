@@ -13,12 +13,12 @@ import java.util.Map;
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
   static final int RARE_ENCOUNTER_BOUND = 4000;
-  static final double LUC_TRAM_REUNION_PERCENT = 10.0d;
+  static final double LUC_TRAM_REUNION_PERCENT = 0.25d;
 
   private static final String ENCOUNTER_STATE = "characterEncounter";
   private static final String PENDING_INTRO = "pendingIntro";
   private static final String JUST_ENCOUNTERED = "justEncountered";
-  private static final String[] CANONICAL_ORDER = {"luc_tram", "iris", "syvial"};
+  private static final String[] CANONICAL_ORDER = {"luc_tram", "syvial"};
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
@@ -76,7 +76,7 @@ final class CharacterEncounterCore {
           .put("keyRefs", new JSONArray().put("luc_tram")));
     }
 
-    for (String id : new String[] {"iris", "syvial"}) {
+    for (String id : new String[] {"syvial"}) {
       if (containsPartyId(party, id)) continue;
       output.put(new JSONObject()
           .put("candidateId", "character:" + id)
@@ -156,14 +156,14 @@ final class CharacterEncounterCore {
       boolean pendingLucTram = containsString(pending, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
-          "Lục Trầm eligibility: 10% reunion candidate only after Level 0; Core owns the roll.\n" +
+          "Lục Trầm eligibility: 0.25% reunion candidate only after Level 0; Core owns the roll.\n" +
           "Encounter pool not met: " + listText(randomNotMet) + ".\n" +
           "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter selection and Party membership. " +
           "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
           "Joined characters are authoritative. If pending includes Lục Trầm, depict a hostile/tense REUNION because she and Cao Minh knew and fought each other before Backrooms; never depict first contact or instant trust/romance. " +
-          "For Iris/Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
+          "For Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
               : pendingLucTram
@@ -219,9 +219,6 @@ final class CharacterEncounterCore {
     if ("luc_tram".equals(id)) {
       inventory.put(new JSONObject().put("name", "Tịch Quang Kiếm"));
       inventory.put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"));
-    } else if ("iris".equals(id)) {
-      inventory.put(new JSONObject().put("name", "SRU Recon Frame R03"));
-      inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
     } else if ("syvial".equals(id)) {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));
@@ -267,18 +264,16 @@ final class CharacterEncounterCore {
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "luc_tram";
-    if (raw.contains("iris") || raw.contains("argus")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return "";
   }
 
   private static boolean isEncounterCharacter(String id) {
-    return "luc_tram".equals(id) || "iris".equals(id) || "syvial".equals(id);
+    return "luc_tram".equals(id) || "syvial".equals(id);
   }
 
   private static String displayName(String id) {
     if ("luc_tram".equals(id)) return "Lục Trầm";
-    if ("iris".equals(id)) return "Iris";
     if ("syvial".equals(id)) return "Syvial";
     return id;
   }

@@ -16,12 +16,11 @@ public class CharacterEncounterCoreTest {
     JSONObject levelZero = state(0, 1).put(LevelCore.LEVEL_KEY, "0");
     JSONArray zero = core.situationCandidates(levelZero);
     assertFalse(zero.toString().contains("character:luc_tram"));
-    assertCandidateRate(zero, "character:iris", 100.0d / CharacterEncounterCore.RARE_ENCOUNTER_BOUND);
     assertCandidateRate(zero, "character:syvial", 100.0d / CharacterEncounterCore.RARE_ENCOUNTER_BOUND);
 
     JSONObject levelOne = state(1, 1).put(LevelCore.LEVEL_KEY, "1");
     JSONArray one = core.situationCandidates(levelOne);
-    assertCandidateRate(one, "character:luc_tram", 10.0d);
+    assertCandidateRate(one, "character:luc_tram", 0.25d);
     JSONObject luc = findCandidate(one, "character:luc_tram");
     assertEquals("canon:luc_tram:after_level_0", luc.getString("eligibilityRuleId"));
     assertTrue(luc.getJSONArray("tags").toString().contains("REUNION"));
@@ -31,18 +30,18 @@ public class CharacterEncounterCoreTest {
     CharacterEncounterCore core = new CharacterEncounterCore();
     JSONObject state = state(1, 7).put(LevelCore.LEVEL_KEY, "1");
 
-    core.activateEncounterCandidate(state, "iris");
+    core.activateEncounterCandidate(state, "syvial");
 
     assertEquals(1, state.getJSONArray("party").length());
-    assertEquals("iris", state.getJSONArray("party").getJSONObject(0).getString("id"));
-    assertEquals("iris", state.getJSONObject("characterEncounter")
+    assertEquals("syvial", state.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("syvial", state.getJSONObject("characterEncounter")
         .getJSONArray("pendingIntro").getString(0));
 
     core.acknowledgePendingIntro(state);
 
     assertEquals(1, state.getJSONArray("party").length());
     assertEquals(0, state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").length());
-    assertEquals("iris", state.getJSONObject("characterEncounter")
+    assertEquals("syvial", state.getJSONObject("characterEncounter")
         .getJSONArray("lastIntroduced").getString(0));
   }
 
@@ -84,25 +83,22 @@ public class CharacterEncounterCoreTest {
         .put(new JSONObject().put("id", "cao_minh").put("name", "Cao Minh"))
         .put(lucTram)
         .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm"))
-        .put("Iris")
         .put("Syvial"));
 
     new CharacterEncounterCore().normalizeState(state);
     JSONArray party = state.getJSONArray("party");
-    assertEquals(CharacterEncounterCore.MAX_COMPANIONS, party.length());
+    assertEquals(2, party.length());
     assertEquals("luc_tram", party.getJSONObject(0).getString("id"));
     assertFalse(party.getJSONObject(0).has("hp"));
     assertFalse(party.getJSONObject(0).has("stats"));
     assertFalse(party.getJSONObject(0).has("level"));
     assertEquals("keep-me", party.getJSONObject(0).getString("customMetadata"));
-    assertEquals("iris", party.getJSONObject(1).getString("id"));
-    assertEquals("syvial", party.getJSONObject(2).getString("id"));
+    assertEquals("syvial", party.getJSONObject(1).getString("id"));
   }
 
-  @Test public void fullPartyProducesNoCharacterCandidates() throws Exception {
+  @Test public void allAvailableCharactersJoinedProducesNoCharacterCandidates() throws Exception {
     JSONObject state = state(2, 8).put("party", new JSONArray()
         .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm"))
-        .put(new JSONObject().put("id", "iris").put("name", "Iris"))
         .put(new JSONObject().put("id", "syvial").put("name", "Syvial")));
     CharacterEncounterCore core = new CharacterEncounterCore();
     core.normalizeState(state);

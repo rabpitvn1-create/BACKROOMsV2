@@ -20,7 +20,7 @@ Bounds below are exclusive right/bottom, measured at full resolution with alpha 
 | Deathmoth | 1536×1024 | 11, 42, 1526, 985 |
 | Hound | 128×128 | 3, 10, 126, 118 |
 
-Iris/Syvial currently have silhouette placeholders, not registered sprite assets. Cao Minh Explorer dùng ảnh idle; combat/Entity encounter dùng ảnh encounter riêng. Each current Entity has one registered sprite.
+Syvial currently has a silhouette placeholder, not a registered sprite asset. Cao Minh Explorer dùng ảnh idle; combat/Entity encounter dùng ảnh encounter riêng. Each current Entity has one registered sprite.
 
 ## New geometry
 
@@ -50,7 +50,7 @@ node android-apk/tests/snapshot-browser.cjs
 
 Set `CHROMIUM_EXECUTABLE_PATH` if using a local Chromium binary. This harness runs the actual renderer, changing only Android asset URLs to a local mocked origin and supplying the Android snapshot bridge/state. It writes screenshots/measurements to a temporary directory.
 
-Verified: 36 combinations (six snapshot sizes × standing, aiming/action, Lục Trầm, Iris placeholder, Syvial placeholder, Hound encounter), all 19 Entity sources loaded, combat feedback rendered, no JavaScript exceptions. Actual Character heights and alpha bounds were checked, including a narrow 240×400 snapshot. Existing 19 snapshot-specific CI checks and JavaScript syntax also passed.
+Verified: 36 combinations (six snapshot sizes × standing, aiming/action, Lục Trầm, Syvial placeholder, Hound encounter), all 19 Entity sources loaded, combat feedback rendered, no JavaScript exceptions. Actual Character heights and alpha bounds were checked, including a narrow 240×400 snapshot. Existing 19 snapshot-specific CI checks and JavaScript syntax also passed.
 
 ## Limits
 

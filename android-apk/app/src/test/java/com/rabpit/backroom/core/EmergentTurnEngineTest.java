@@ -278,8 +278,8 @@ public class EmergentTurnEngineTest {
     JSONArray candidates = new JSONArray()
         .put(engine.candidate("CHARACTER", "character:luc_tram", "SOCIAL", 10.0d,
             "luc_tram", "luc_tram", false))
-        .put(engine.candidate("CHARACTER", "character:iris", "SOCIAL", 10.0d,
-            "iris", "iris", false));
+        .put(engine.candidate("CHARACTER", "character:syvial", "SOCIAL", 10.0d,
+            "syvial", "syvial", false));
     engine.selectCandidate(state, candidates,
         new TurnRng("turn-keyref", 0,
             EmergentTurnEngine.CANON_VERSION, EmergentTurnEngine.RNG_SCHEMA_VERSION), 9);
@@ -289,18 +289,18 @@ public class EmergentTurnEngineTest {
         .getJSONObject(root.getJSONArray("selectionTrace").length() - 1)
         .getJSONArray("candidates");
     JSONObject lucTram = null;
-    JSONObject iris = null;
+    JSONObject syvial = null;
     for (int i = 0; i < traced.length(); i++) {
       JSONObject item = traced.optJSONObject(i);
       if (item == null) continue;
       if ("character:luc_tram".equals(item.optString("situationKey"))) lucTram = item;
-      if ("character:iris".equals(item.optString("situationKey"))) iris = item;
+      if ("character:syvial".equals(item.optString("situationKey"))) syvial = item;
     }
-    assertTrue(lucTram != null && iris != null);
+    assertTrue(lucTram != null && syvial != null);
     assertTrue(lucTram.getDouble("keyRefWeightModifier") > 1.0d);
     assertTrue(lucTram.getDouble("keyRefWeightModifier") <= 1.35d);
-    assertEquals(1.0d, iris.getDouble("keyRefWeightModifier"), 0.000001d);
-    assertTrue(lucTram.getDouble("finalWeight") > iris.getDouble("finalWeight"));
+    assertEquals(1.0d, syvial.getDouble("keyRefWeightModifier"), 0.000001d);
+    assertTrue(lucTram.getDouble("finalWeight") > syvial.getDouble("finalWeight"));
 
     JSONObject noEligible = engine.selectCandidate(
         state, new JSONArray(), new TurnRng("turn-keyref-none", 0,

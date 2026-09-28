@@ -94,7 +94,7 @@
 
   function entryHighlights(entry) {
     var map = new Map();
-    ['Cao Minh','Vạn Giới Ma Tôn','Iris','Syvial','Lục Trầm'].forEach(function(x){ addTerm(map,x,'character'); });
+    ['Cao Minh','Vạn Giới Ma Tôn','Syvial','Lục Trầm'].forEach(function(x){ addTerm(map,x,'character'); });
     knownEffects.forEach(function(x){ addTerm(map,x,'effect'); });
     knownSkills.forEach(function(x){ addTerm(map,x,'skill'); });
     knownHandTokens.forEach(function(x){ addTerm(map,x,'stat'); });

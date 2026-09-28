@@ -49,35 +49,35 @@ public class GameplaySmokeTest {
     assertEquals("0.1", state.getString(LevelCore.LEVEL_KEY));
     assertFalse(state.getJSONObject(LevelCore.ROUTE_STATE).getBoolean("exitAvailable"));
 
-    // Social: an already-eligible Iris candidate becomes committed continuity.
-    JSONObject irisCandidate = findCandidate(
-        characters.situationCandidates(state), "character:iris");
-    assertNotNull(irisCandidate);
-    characters.activateEncounterCandidate(state, "iris");
+    // Social: an already-eligible Syvial candidate becomes committed continuity.
+    JSONObject syvialCandidate = findCandidate(
+        characters.situationCandidates(state), "character:syvial");
+    assertNotNull(syvialCandidate);
+    characters.activateEncounterCandidate(state, "syvial");
     assertEquals(1, state.getJSONArray("party").length());
-    assertEquals("iris", state.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("syvial", state.getJSONArray("party").getJSONObject(0).getString("id"));
 
     String socialTurnId = emergent.nextTurnId(state, "smoke-social");
     JSONArray socialEvents = new JSONArray();
     socialEvents.put(emergent.event(
-        socialTurnId, socialEvents, "CHARACTER_ENCOUNTERED", "SOCIAL", "iris",
+        socialTurnId, socialEvents, "CHARACTER_ENCOUNTERED", "SOCIAL", "syvial",
         new JSONObject()
             .put("factPredicate", "character_encountered")
-            .put("factValue", "iris")
+            .put("factValue", "syvial")
             .put("causedBy", "world")
             .put("observedByPlayer", true),
         new JSONArray().put(emergent.threadEffect(
-            "SOCIAL_CONTACT", new JSONArray().put("iris"), "SEED_OR_ADVANCE", null))));
+            "SOCIAL_CONTACT", new JSONArray().put("syvial"), "SEED_OR_ADVANCE", null))));
     emergent.commitAuthoritative(
         state, socialTurnId, socialEvents,
-        new JSONObject(irisCandidate.toString()).put("selectedNone", false));
+        new JSONObject(syvialCandidate.toString()).put("selectedNone", false));
     emergent.catchUpProjections(state);
 
     JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
     assertTrue(root.has(CampaignSkeleton.ROOT_KEY));
     assertTrue(root.has(NarrativeSkeleton.ROOT_KEY));
     assertTrue(root.getJSONObject(NarrativeSkeleton.ROOT_KEY)
-        .getJSONArray("importantRelationships").toString().contains("iris"));
+        .getJSONArray("importantRelationships").toString().contains("syvial"));
     assertEquals("WEIGHT_ONLY", root.getJSONObject("director").getString("authority"));
 
     // Resource: an eligible chest can be activated/opened and grants Core-owned loot.
@@ -122,7 +122,7 @@ public class GameplaySmokeTest {
     emergent.catchUpProjections(afterReload);
 
     assertEquals("0.1", afterReload.getString(LevelCore.LEVEL_KEY));
-    assertEquals("iris", afterReload.getJSONArray("party").getJSONObject(0).getString("id"));
+    assertEquals("syvial", afterReload.getJSONArray("party").getJSONObject(0).getString("id"));
     assertTrue(afterReload.getJSONObject(EmergentTurnEngine.ROOT_KEY)
         .has(NarrativeSkeleton.ROOT_KEY));
   }
