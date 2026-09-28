@@ -20,7 +20,7 @@ final class LevelCore {
 
   static final String ROUTE_STATE = "levelRoute";
   static final String LEVEL_KEY = "currentLevelKey";
-  static final int ROUTE_SUCCESS_PERCENT = 60;
+  static final int ROUTE_SUCCESS_PERCENT = 50;
   static final int ROUTE_TRIPLE_SUCCESS_PERCENT = 5;
   static final int ROUTE_TRIPLE_SUCCESS_INCREMENT = 3;
   static final int ROUTE_REQUIRED_STREAK = 6;
