@@ -192,18 +192,25 @@ public class MainActivity extends Activity {
           output.append("\nGOOD EXAMPLE ").append(i + 1).append("\n");
           output.append("PLAYER: ").append(player).append("\n");
           output.append("GM: ").append(gm).append("\n");
+          JSONArray choices = example.optJSONArray("choices");
+          if (choices != null) output.append("CHOICES: ").append(choices).append("\n");
         }
       }
 
-      JSONObject bad = root.optJSONObject("badExample");
-      if (bad != null) {
+      JSONArray badExamples = root.optJSONArray("badExamples");
+      if (badExamples == null) badExamples = new JSONArray().put(root.optJSONObject("badExample"));
+      for (int i = 0; i < badExamples.length(); i++) {
+        JSONObject bad = badExamples.optJSONObject(i);
+        if (bad == null) continue;
         String player = bad.optString("player", "").trim();
         String gm = bad.optString("gm", "").trim();
         String why = bad.optString("why", "").trim();
         if (!player.isEmpty() && !gm.isEmpty()) {
-          output.append("\nBAD EXAMPLE — DO NOT IMITATE\n");
+          output.append("\nBAD EXAMPLE ").append(i + 1).append(" — DO NOT IMITATE\n");
           output.append("PLAYER: ").append(player).append("\n");
           output.append("GM: ").append(gm).append("\n");
+          JSONArray choices = bad.optJSONArray("choices");
+          if (choices != null) output.append("BAD CHOICES: ").append(choices).append("\n");
           if (!why.isEmpty()) output.append("WHY BAD: ").append(why).append("\n");
         }
       }
@@ -736,16 +743,23 @@ public class MainActivity extends Activity {
         JSONObject output = geminiBranchBatch(prompt.toString());
         JSONObject branches = output.optJSONObject("branches");
         if (branches == null || branches.length() != 3 || output.length() != 1) return;
-        Map<String, PrefetchBranch> valid = new LinkedHashMap<>();
+        Map<String, JSONObject> previewStates = new LinkedHashMap<>();
+        Map<String, JSONObject> candidates = new LinkedHashMap<>();
         for (String id : actions.keySet()) {
           JSONObject generated = branches.optJSONObject(id);
           if (generated == null || generated.length() != 3
               || generated.optJSONArray("choices") == null
               || generated.optJSONArray("encounterDialogue") == null
               || generated.optString("reply", "").length() > 1800) continue;
-          JSONObject preview = previews.get(id);
-          if (!NarrationGuard.validate(generated, preview.getJSONObject("state")).isEmpty()) continue;
-          valid.put(id, new PrefetchBranch(actions.get(id), preview.getString("outcomeHash"), generated));
+          candidates.put(id, generated);
+          previewStates.put(id, previews.get(id).getJSONObject("state"));
+        }
+        Map<String, PrefetchBranch> valid = new LinkedHashMap<>();
+        for (Map.Entry<String, JSONObject> entry : NarrationGuard
+            .validPrefetchBranches(new JSONObject(candidates), previewStates, actions).entrySet()) {
+          String id = entry.getKey();
+          valid.put(id, new PrefetchBranch(actions.get(id),
+              previews.get(id).getString("outcomeHash"), entry.getValue()));
         }
         if (generation == prefetchGeneration.get() && baseHash.equals(gameCore.currentStateHash())) {
           prefetchCache = new PrefetchCache(baseHash, valid);
@@ -769,25 +783,6 @@ public class MainActivity extends Activity {
         + "actionType chỉ được chọn từ ALLOWED_WORLD_ACTIONS: " + allowedText + ". "
         + "intentTag chỉ được aggressive, cautious hoặc opportunistic.\n"
         + "OUTPUT chỉ JSON: {\"actionType\":\"INTERCEPT\",\"intentTag\":\"opportunistic\"}";
-  }
-
-  private JSONObject narrationFallback(JSONObject state, String replyHint) {
-    JSONObject generated = new JSONObject();
-    try {
-      String reply = replyHint == null ? "" : replyHint.trim();
-      JSONObject emergent = state == null ? null : state.optJSONObject("emergent");
-      JSONObject selection = emergent == null ? null : emergent.optJSONObject("lastSelection");
-      if (reply.isEmpty() && selection != null && !selection.optBoolean("selectedNone", false)) {
-        reply = selection.optString("publicSummary", "").trim();
-      }
-      if (reply.isEmpty()) {
-        reply = "Không có biến cố mới. Cao Minh vẫn ở " + state.optString("location", "khu vực hiện tại") + ".";
-      }
-      generated.put("reply", reply)
-          .put("choices", new JSONArray())
-          .put("encounterDialogue", new JSONArray());
-    } catch (Exception ignored) {}
-    return generated;
   }
 
   private void emit(String function, String json) {
@@ -887,33 +882,17 @@ public class MainActivity extends Activity {
 
           JSONObject state = committed.getJSONObject("state");
           committedBeforeNarration = new JSONObject(state.toString());
-          String replyHint = committed.optString("replyHint", "");
-
-          JSONObject generated;
-          String reply;
-          boolean narrationValidated = false;
-          try {
-            boolean hit = cached != null && cached.outcomeHash.equals(gameCore.currentStateHash());
-            generated = hit ? new JSONObject(cached.narration.toString())
-                : parseModelJson(generateText(narrationPrompt(state, action)));
-            String narrationViolation = NarrationGuard.validate(generated, state);
-            if (!narrationViolation.isEmpty()) {
-              generated = parseModelJson(generateText(
-                  narrationPrompt(state, action) + "\nVALIDATION REJECTED: " + narrationViolation
-                      + "\nRegenerate narration only. Do not add or mutate world state."));
-              narrationViolation = NarrationGuard.validate(generated, state);
-              if (!narrationViolation.isEmpty()) {
-                throw new Exception("Narration validation failed: " + narrationViolation);
-              }
-            }
-            reply = generated.optString("reply", "").trim();
-            narrationValidated = true;
-          } catch (Exception narrationError) {
-            Log.w(TAG, "Narration provider failed or contradicted committed authority; using deterministic template: "
-                + providerErrorSummary(narrationError));
-            generated = narrationFallback(state, replyHint);
-            reply = generated.optString("reply", "");
-          }
+          final JSONObject narrationState = state;
+          boolean hit = cached != null && cached.outcomeHash.equals(gameCore.currentStateHash());
+          JSONObject generated = hit ? new JSONObject(cached.narration.toString())
+              : parseModelJson(generateText(narrationPrompt(state, action)));
+          generated = NarrationGuard.regenerateIfInvalid(generated, state, action, violation ->
+              parseModelJson(generateText(narrationPrompt(narrationState, action)
+                  + "\nVALIDATION REJECTED: " + violation
+                  + "\nRewrite only reply and choices to fix this exact error. Preserve encounterDialogue "
+                  + "exactly as originally generated. Do not add or mutate world state. "
+                  + "Return only the JSON payload; no analysis.")));
+          String reply = generated.optString("reply", "").trim();
 
           JSONArray encounterDialogue = generated.optJSONArray("encounterDialogue");
           if (encounterDialogue == null) encounterDialogue = new JSONArray();
@@ -928,8 +907,7 @@ public class MainActivity extends Activity {
           log.put(gmEntry);
           state.put("log", log);
 
-          boolean acknowledgePendingIntro = narrationValidated
-              && encounterDialogue.length() >= 2 && encounterDialogue.length() <= 5;
+          boolean acknowledgePendingIntro = encounterDialogue.length() >= 2 && encounterDialogue.length() <= 5;
           state = new JSONObject(
               gameCore.commitNarration(state.toString(), acknowledgePendingIntro));
 
