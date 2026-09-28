@@ -210,9 +210,9 @@
     var level = Number.isInteger(state && state.currentLevel) ? state.currentLevel : 0;
     var levelText = 'Level ' + level;
     return [
-      {text:'Quan sát kỹ khu vực xung quanh',action:'Quan sát kỹ khu vực xung quanh'},
-      {text:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất',action:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất'},
-      {text:'Tiếp tục khám phá ' + levelText,action:'Tiếp tục khám phá ' + levelText,highlights:[{text:levelText,type:'location'}]}
+      {id:'A',text:'Quan sát kỹ khu vực xung quanh',action:'Quan sát kỹ khu vực xung quanh'},
+      {id:'B',text:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất',action:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất'},
+      {id:'C',text:'Tiếp tục khám phá ' + levelText,action:'Tiếp tục khám phá ' + levelText,highlights:[{text:levelText,type:'location'}]}
     ];
   }
 
@@ -236,7 +236,7 @@
     button.type = 'button';
     button.className = 'gm-choice' + (selected ? ' selected' : '');
     button.disabled = !!disabled;
-    button.appendChild(document.createTextNode('• '));
+    button.appendChild(document.createTextNode(prefix ? prefix + '. ' : '• '));
     appendRichText(button, text, entry, extra);
     button.addEventListener('click', onClick);
     return button;
@@ -297,9 +297,10 @@
         !actionable, false, function(){ submitChestChoice(); }));
     }
 
-    choices.slice(0, 3).forEach(function(choice){
+    choices.slice(0, 3).forEach(function(choice, index){
       var disabled = !actionable || !!choice.disabled || !!choice.selected;
-      box.appendChild(makeChoiceButton('', choice.text || choice.action || '', entry,
+      var prefix = String(choice.id || String.fromCharCode(65 + index)).trim().toUpperCase();
+      box.appendChild(makeChoiceButton(prefix, choice.text || choice.action || '', entry,
         choice.highlights || [], disabled, !!choice.selected,
         function(){ submitExplorerChoice(entry, choice); }));
     });
