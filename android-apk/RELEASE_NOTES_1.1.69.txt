@@ -1,0 +1,6 @@
+Backroom 1.1.69
+
+- GAME MASTER kiểm tra riêng lời kể và lựa chọn A/B/C trước khi ghi log, cache hoặc hiển thị. Lời kể kiểu báo cáo trạng thái và lựa chọn chung chung sẽ bị từ chối.
+- Nếu validation thất bại, model nhận đúng lỗi để sửa một lần; kết quả sửa được kiểm tra lại toàn bộ. Nhánh prefetch lỗi không được cache và vẫn dùng luồng tạo bình thường khi người chơi chọn.
+- Ba lựa chọn mặc định chỉ còn dùng ở phần mở đầu. Bổ sung ví dụ phong cách cho lời kể tự nhiên và lựa chọn hành động cụ thể.
+- Đồng bộ metadata kích thước overlay Lục Trầm với ảnh đóng gói để kiểm tra hình ảnh và build phát hành hoạt động trở lại.
