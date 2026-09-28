@@ -13,12 +13,13 @@ import java.util.Map;
 final class CharacterEncounterCore {
   static final int MAX_COMPANIONS = 3;
   static final int RARE_ENCOUNTER_BOUND = 4000;
+  static final double LUCIA_LEVEL_ZERO_PERCENT = 10.0d;
   static final double LUC_TRAM_REUNION_PERCENT = 0.25d;
 
   private static final String ENCOUNTER_STATE = "characterEncounter";
   private static final String PENDING_INTRO = "pendingIntro";
   private static final String JUST_ENCOUNTERED = "justEncountered";
-  private static final String[] CANONICAL_ORDER = {"luc_tram", "syvial"};
+  private static final String[] CANONICAL_ORDER = {"lucia", "luc_tram", "syvial"};
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
@@ -58,6 +59,25 @@ final class CharacterEncounterCore {
     JSONObject encounter = state.getJSONObject(ENCOUNTER_STATE);
     JSONArray pending = encounter.optJSONArray(PENDING_INTRO);
     if ((pending != null && pending.length() > 0) || party.length() >= MAX_COMPANIONS) return output;
+
+    String levelKey = state.optString(LevelCore.LEVEL_KEY,
+        String.valueOf(state.optInt("currentLevel", 0))).trim();
+    if ("0".equals(levelKey) && !containsPartyId(party, "lucia")) {
+      output.put(new JSONObject()
+          .put("candidateId", "character:lucia")
+          .put("situationKey", "character:lucia")
+          .put("kind", "CHARACTER")
+          .put("category", "SOCIAL")
+          .put("chancePercent", LUCIA_LEVEL_ZERO_PERCENT)
+          .put("payloadKey", "lucia")
+          .put("source", "CANON")
+          .put("publicSummary", "Lucia Lục xuất hiện; đây là nhân vật riêng, không phải Lục Trầm.")
+          .put("proposalRequired", false)
+          .put("eligibilityRuleId", "canon:lucia:level_0")
+          .put("cooldownTurns", 24)
+          .put("tags", new JSONArray().put("SOCIAL").put("CHARACTER").put("FIRST_CONTACT").put("lucia"))
+          .put("keyRefs", new JSONArray().put("lucia")));
+    }
 
     if (state.optInt("currentLevel", 0) > 0 && !containsPartyId(party, "luc_tram")) {
       output.put(new JSONObject()
@@ -99,6 +119,11 @@ final class CharacterEncounterCore {
   void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
     String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
+    String levelKey = state.optString(LevelCore.LEVEL_KEY,
+        String.valueOf(state.optInt("currentLevel", 0))).trim();
+    if ("lucia".equals(id) && !"0".equals(levelKey)) {
+      throw new IllegalStateException("Lucia Lục encounter is only eligible on Level 0.");
+    }
     if ("luc_tram".equals(id) && state.optInt("currentLevel", 0) <= 0) {
       throw new IllegalStateException("Lục Trầm reunion is not eligible on Level 0.");
     }
@@ -147,22 +172,29 @@ final class CharacterEncounterCore {
       for (String id : CANONICAL_ORDER) {
         if (containsPartyId(party, id)) {
           joined.add(displayName(id));
-        } else if (!"luc_tram".equals(id) || state.optInt("currentLevel", 0) > 0) {
+        } else if (("lucia".equals(id) && "0".equals(state.optString(LevelCore.LEVEL_KEY,
+            String.valueOf(state.optInt("currentLevel", 0))).trim()))
+            || (!"lucia".equals(id) && (!"luc_tram".equals(id)
+                || state.optInt("currentLevel", 0) > 0))) {
           randomNotMet.add(displayName(id));
         }
       }
       String recent = displayNames(encounter.optJSONArray(JUST_ENCOUNTERED));
       String pendingNames = displayNames(pending);
+      boolean pendingLucia = containsString(pending, "lucia");
       boolean pendingLucTram = containsString(pending, "luc_tram");
       return "CHARACTER ENCOUNTER CORE:\n" +
           "Joined: " + listText(joined) + ".\n" +
+          "Lucia Lục eligibility: 10% first-contact candidate on Level 0 only; Lucia Lục is NOT Lục Trầm.\n" +
           "Lục Trầm eligibility: 0.25% reunion candidate only after Level 0; Core owns the roll.\n" +
           "Encounter pool not met: " + listText(randomNotMet) + ".\n" +
           "Just encountered: " + (recent.isEmpty() ? "none" : recent) + ".\n" +
           "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter selection and Party membership. " +
           "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
+          "Never alias, rename, merge or migrate Lucia Lục/Hứa Thuý Mai into Lục Trầm; runtime ids lucia and luc_tram are distinct. " +
           "Joined characters are authoritative. If pending includes Lục Trầm, depict a hostile/tense REUNION because she and Cao Minh knew and fought each other before Backrooms; never depict first contact or instant trust/romance. " +
+          "If pending includes Lucia Lục, depict FIRST CONTACT; her relationship and address with Cao Minh are OPEN until continuity establishes them. " +
           "For Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
@@ -170,10 +202,14 @@ final class CharacterEncounterCore {
                   ? "Lục Trầm reunion is already committed. Depict a tense reunion in the current location; never frame it as first contact. " +
                       "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
                       "Do not invent Cao Minh's dialogue/decision and do not ask the player to approve Party membership."
-                  : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
-                      "Do not imply the character was present in earlier Backrooms turns. " +
-                      "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
-                      "Do not invent Cao Minh's dialogue/decision, ask the player to approve Party membership, or advance an extra Explorer Turn.");
+                  : pendingLucia
+                      ? "Lucia Lục first contact is already committed. Keep her identity separate from Lục Trầm and do not import Lục Trầm canon, equipment, relationship or xưng hô. " +
+                          "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                          "Do not invent Cao Minh's dialogue/decision and do not ask the player to approve Party membership."
+                      : "A character first-contact event is already committed. Depict that first contact in the current location before any spoken line. " +
+                          "Do not imply the character was present in earlier Backrooms turns. " +
+                          "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
+                          "Do not invent Cao Minh's dialogue/decision, ask the player to approve Party membership, or advance an extra Explorer Turn.");
     } catch (Exception e) {
       return "CHARACTER ENCOUNTER CORE: unavailable. Do not spawn characters or mutate Party.";
     }
@@ -216,7 +252,11 @@ final class CharacterEncounterCore {
 
   private static JSONArray defaultInventory(String id) throws Exception {
     JSONArray inventory = new JSONArray();
-    if ("luc_tram".equals(id)) {
+    if ("lucia".equals(id)) {
+      inventory.put(new JSONObject().put("name", "M4A1 cá nhân hóa"));
+      inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
+      inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
+    } else if ("luc_tram".equals(id)) {
       inventory.put(new JSONObject().put("name", "Tịch Quang Kiếm"));
       inventory.put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"));
     } else if ("syvial".equals(id)) {
@@ -263,16 +303,19 @@ final class CharacterEncounterCore {
     if (member == null) return "";
     String raw = (member.optString("id", "") + " " + member.optString("name", "")).trim().toLowerCase(Locale.ROOT);
     if (raw.contains("cao_minh") ) return "cao_minh";
+    if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
+        || raw.contains("hua thuy mai")) return "lucia";
     if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "luc_tram";
     if (raw.contains("syvial")) return "syvial";
     return "";
   }
 
   private static boolean isEncounterCharacter(String id) {
-    return "luc_tram".equals(id) || "syvial".equals(id);
+    return "lucia".equals(id) || "luc_tram".equals(id) || "syvial".equals(id);
   }
 
   private static String displayName(String id) {
+    if ("lucia".equals(id)) return "Lucia Lục";
     if ("luc_tram".equals(id)) return "Lục Trầm";
     if ("syvial".equals(id)) return "Syvial";
     return id;
