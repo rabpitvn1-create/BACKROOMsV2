@@ -445,5 +445,16 @@ public class LevelCoreTest {
     assertTrue(explorePrompt.contains("FORBIDDENINVENTIONS"));
   }
 
+  @Test public void coreKnowledgeDoesNotRotateWithTurn() throws Exception {
+    JSONObject level = new JSONObject().put("name", "Level 0")
+        .put("identity", new org.json.JSONArray()
+            .put("FIRST_IDENTITY").put("SECOND_IDENTITY").put("THIRD_IDENTITY"));
+    String knowledge = new JSONObject().put("schemaVersion", 2)
+        .put("levels", new JSONObject().put("0", level)).toString();
+    LevelCore core = LevelCore.withKnowledge(knowledge, new SequenceRng(0));
+    assertEquals(core.knowledgeContext("0", 1), core.knowledgeContext("0", 9));
+    assertTrue(core.knowledgeContext("0", 9).contains("FIRST_IDENTITY"));
+  }
+
 
 }
