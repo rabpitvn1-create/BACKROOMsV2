@@ -1,8 +1,8 @@
 {
   "schemaVersion": 3,
   "syncedAt": "2026-09-28",
-  "authority": "Google Drive / 02_CHARACTERS + scoped USER_RETCON android-apk/DIEP_MINH_CANON.md + explicit USER_RETCON Đại Đạo Ma Tôn (2026-09-27) + explicit USER_RETCON Ma Tôn (+99 Stats) (2026-09-27)",
-  "instruction": "Google Drive character canon is authoritative except where a newer explicit USER_RETCON is committed as current canon. DIEP_MINH_CANON.md supersedes only the old OPEN Cao Minh ↔ Diệp Minh edge. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15 under canonical runtime id `cao_minh`. The retired `kai` player id/identity is not current runtime canon. KNOWLEDGE_LOCK is backstage knowledge only; remaining OPEN/UNKNOWN fields stay unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology.",
+  "authority": "Google Drive / 02_CHARACTERS + scoped USER_RETCON android-apk/DIEP_MINH_CANON.md + explicit USER_RETCON Đại Đạo Ma Tôn (2026-09-27) + explicit USER_RETCON Ma Tôn (+99 Stats) (2026-09-27) + explicit USER_RETCON Lucia Lục ≠ Lục Trầm (2026-09-28)",
+  "instruction": "Google Drive character canon is authoritative except where a newer explicit USER_RETCON is committed as current canon. DIEP_MINH_CANON.md supersedes only the old OPEN Cao Minh ↔ Diệp Minh edge. The primary protagonist is Cao Minh / Vạn Giới Ma Tôn R15 under canonical runtime id `cao_minh`. The retired `kai` player id/identity is not current runtime canon. KNOWLEDGE_LOCK is backstage knowledge only; remaining OPEN/UNKNOWN fields stay unresolved. Gameplay projection values are internal mechanics and must not be turned into cultivation lore, energy limits or dialogue terminology. Lucia Lục/Hứa Thuý Mai is a separate character under runtime id `lucia`; never alias or migrate her to Lục Trầm (`luc_tram`).",
   "characters": {
     "cao_minh": {
       "name": "Cao Minh / Vạn Giới Ma Tôn",
@@ -110,6 +110,22 @@
       "runtime": "Syvial remains an independent high-tier supernatural swordswoman governed by her own current source. Her Lucifer Core, Devil Trigger, GodKiller and Lucifer Armor remain her own established abilities/equipment. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; any meeting must begin as first contact unless live campaign state later establishes otherwise.",
       "abilities": "Lucifer Core supplies infinite demon power, enhances physical ability/reflex/perception/regeneration, powers Lucifer Armor and synchronizes GodKiller; it is not a second intelligence. Devil Trigger does not remove control and has no invented intrinsic duration/cooldown absent from canon. GodKiller Override / Twenty-Four Severance performs exactly 24 cuts while external time is completely stopped.",
       "equipment": "GodKiller is a massive purely mechanical greatsword, not a gun or gunblade. It is linked to Syvial and may be recalled unless a sufficiently strong mechanism directly blocks that link. Lucifer Armor is a mobile full-body high-tech/mecha armor in black/gunmetal/silver with magenta light accents. Its pointed headgear modules are mechanical sensors, not biological horns. The armor is very durable and rapidly self-repairing but is not canonically absolutely indestructible."
+    },
+    "lucia": {
+      "name": "Lucia Lục / Hứa Thuý Mai",
+      "source": "app/src/main/assets/canon/Lucia_Codex.md",
+      "revision": "R01-scoped-restore",
+      "aliases": [
+        "lucia",
+        "lucia lục",
+        "hứa thuý mai",
+        "hứa thúy mai",
+        "hua thuy mai"
+      ],
+      "runtime": "Lucia Lục / Hứa Thuý Mai is a separate modern human tactical riflewoman under runtime id `lucia`. She is not Lục Trầm, not a Thiên Kiếm Môn cultivator, and does not own Tịch Quang or Thiên Cơ Bạch Kim Kiếm Khải. CharacterEncounterCore owns spawn/join; the restored baseline candidate rate is 10% on Level 0. First contact with Cao Minh is the default unless live continuity establishes otherwise.",
+      "gameplay": "M4A1 Joint Attack keeps 150% damage. Restored proc slots: Toxic Burst 52%/+25% poison 2 turns value 3; Armor-Piercing Burst 55%/+20% armor-pierce 2 turns value 10; Concussive Burst 46%/+15% stun 1 turn; Rending Burst 49%/+20% bleed 2 turns value 3; Corrosive Burst 51%/+20% poison 2 turns value 4. Too Young To Die is the 60-shot Ultimate; each shot uses 100% current DMG +15% Bonus DMG in SSF. These are gameplay projections and do not grant supernatural powers.",
+      "equipment": "Confirmed restored runtime equipment: personalized M4A1, combat knife and military positioning watch. Do not substitute Lục Trầm's sword or armor.",
+      "relationship": "Relationship, history and address with Cao Minh remain OPEN until continuity/save establishes them. Never import the Cao Minh ↔ Lục Trầm rivalry, Táng Kiếm Cốc history or xưng hô into Lucia."
     },
     "luc_tram": {
       "name": "Lục Trầm",

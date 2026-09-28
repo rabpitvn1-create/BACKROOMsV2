@@ -23,6 +23,7 @@ public final class CombatChoiceEngine {
 
   private static final int ULTIMATE_BONUS_DAMAGE_PERCENT = 15;
   private static final int HUYET_MA_24_HIT_COUNT = 24;
+  private static final int LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT = 60;
   private static final int LUC_TRAM_THIEN_KIEM_HIT_COUNT = 60;
   private static final int CAO_MINH_BASE_ATTACK = 30;
   private static final int CRITICAL_DAMAGE_PERCENT = 150;
@@ -261,6 +262,9 @@ public final class CombatChoiceEngine {
         skill("Lucifer Breaker", "", 155, "Choáng", 1, 0),
         skill("Spatial Dominion", "", 210, "Mất phương hướng", 2, 25));
 
+    skills("lucia",
+        skill("M4A1 Joint Attack", "Phối hợp hỏa lực M4A1.", 150, "", 0, 0));
+
     skills("luc_tram",
         skill("Tịch Quang Hợp Kích",
             "Kiếm thế hợp kích bằng Tịch Quang; giữ nguyên projection 150% damage.", 150, "", 0, 0));
@@ -273,6 +277,12 @@ public final class CombatChoiceEngine {
         characterProc("Ma Tâm Chấn", 45, 15, "Choáng", 1, 0),
         characterProc("Huyết Độc Ma Khí", 47, 20, "Trúng độc", 2, 3),
         characterProc("Huyết Liệt Ma Ấn", 51, 20, "Chảy máu", 2, 4));
+    characterProcs("lucia",
+        characterProc("Toxic Burst", 52, 25, "Trúng độc", 2, 3),
+        characterProc("Armor-Piercing Burst", 55, 20, "Xuyên giáp", 2, 10),
+        characterProc("Concussive Burst", 46, 15, "Choáng", 1, 0),
+        characterProc("Rending Burst", 49, 20, "Chảy máu", 2, 3),
+        characterProc("Corrosive Burst", 51, 20, "Trúng độc", 2, 4));
     characterProcs("luc_tram",
         characterProc("Tịch Quang Phản Kiếm", 52, 25, "Trúng độc", 2, 3),
         characterProc("Nhất Tuyến Phá Vọng", 55, 20, "Xuyên giáp", 2, 10),
@@ -284,6 +294,9 @@ public final class CombatChoiceEngine {
     // SSF uses the listed total; FSF keeps the Poker Dice 200% Ultimate multiplier.
     ULTIMATES.put("cao_minh",
         new Ultimate("Huyết Ma Nhị Thập Tứ Trảm", HUYET_MA_24_HIT_COUNT,
+            ULTIMATE_BONUS_DAMAGE_PERCENT));
+    ULTIMATES.put("lucia",
+        new Ultimate("Too Young To Die", LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
     ULTIMATES.put("luc_tram",
         new Ultimate("Thiên Kiếm Định Giới", LUC_TRAM_THIEN_KIEM_HIT_COUNT,

@@ -10,7 +10,7 @@ Mã Codex: LUC-TRAM-THIEN-KIEM-CODEX-R05
 
 Trạng thái: CURRENT / CHARACTER CANON
 
-Override: Retcon này thay thế toàn bộ Character Canon cũ của Lucia Lục / Hứa Thuý Mai đối với nhân vật này.
+Override: Codex này chỉ quyết định Lục Trầm. **Lucia Lục / Hứa Thuý Mai là một nhân vật riêng** và không bị codex này retcon, đổi tên hoặc thay thế.
 
 # **00A · READ FIRST — AI CANON EXECUTION CONTRACT R04**
 
@@ -86,7 +86,7 @@ Override: Retcon này thay thế toàn bộ Character Canon cũ của Lucia Lụ
 
 # **D. CÁC INVARIANT BẤT BIẾN CỦA LỤC TRẦM**
 
-# **\- Tên hiện hành: LỤC TRẦM. Lucia Lục / Hứa Thuý Mai và loadout quân nhân cũ là LEGACY / RETIRED.**
+# **\- Tên hiện hành: LỤC TRẦM. Lucia Lục / Hứa Thuý Mai là nhân vật riêng; không được ánh xạ alias, loadout hoặc continuity của Lucia sang Lục Trầm.**
 
 # **\- Nữ; Nhân tộc / tu sĩ; Chính Đạo · Kiếm Đạo; Chân truyền đệ tử Thiên Kiếm Môn.**
 
@@ -746,13 +746,13 @@ OPEN không được tự biến thành canon chỉ để phục vụ drama.
 
 # **24 · LEGACY OVERRIDE**
 
-Lucia Lục / Hứa Thuý Mai / quân nhân Việt Nam / M4A1 / follower Lucia / military loadout / Too Young To Die / các skill súng cũ → LEGACY / RETIRED đối với nhân vật này.
+Lucia Lục / Hứa Thuý Mai / M4A1 / military loadout / Too Young To Die / các skill súng là dữ kiện của **nhân vật Lucia riêng**, không phải legacy identity của Lục Trầm. Chúng không được migrate hoặc alias sang `luc_tram`.
 
 Tên nhân vật hiện hành: LỤC TRẦM.
 
 Nhận diện hiện hành: Chân truyền đệ tử Thiên Kiếm Môn · Chính Đạo Kiếm Tu · tử địch cũ của Vạn Giới Ma Tôn Cao Minh.
 
-Nếu runtime game hoặc tài liệu cũ vẫn còn khóa Lucia, M4A1, kỹ năng súng hay dữ liệu quân nhân thì đó là dữ liệu implementation/continuity cũ cần migration, không được dùng để ghi đè Character Codex này.
+Nếu runtime hoặc canon có Lucia/M4A1/kỹ năng súng, phải route chúng sang nhân vật `lucia`; không dùng chúng để ghi đè Character Codex Lục Trầm và không xóa Lucia chỉ vì dữ kiện không thuộc `luc_tram`.
 
 # **25 · THỨ TỰ THẨM QUYỀN**
 

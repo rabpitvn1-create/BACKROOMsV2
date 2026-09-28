@@ -1,12 +1,13 @@
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-23.
+Đồng bộ: 2026-09-28.
 
-Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` là ngoại lệ có phạm vi hẹp và thay thế riêng cạnh quan hệ Cao Minh ↔ Diệp Minh từng để OPEN.
+Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, nguồn Character Drive CURRENT có thẩm quyền cao hơn local mirror, save/log cũ và patch artifact, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` và khóa tách **Lucia Lục ≠ Lục Trầm** là các USER_RETCON có phạm vi hẹp. Nguồn Drive cũ của Lucia hiện không truy cập được, nên không tự bổ sung dữ kiện ngoài phần đã xác nhận trong repository.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
+- Lucia Lục / Hứa Thuý Mai: scoped USER_RETCON `app/src/main/assets/canon/Lucia_Codex.md`; historical Drive source currently unavailable.
 - Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
@@ -92,11 +93,23 @@ Nguồn hiện hành: `DIEP_MINH_CANON.md`.
 
 ## Campaign relationship override — Cao Minh R15
 
-Cao Minh không có quan hệ có sẵn với Syvial. Mọi lần gặp Syvial trong campaign phải là first contact trừ khi live state về sau xác lập khác. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
+Cao Minh không có quan hệ có sẵn với Syvial. Mọi lần gặp Syvial trong campaign phải là first contact trừ khi live state về sau xác lập khác. Với Lucia, quan hệ/lịch sử/xưng hô vẫn OPEN và encounter mặc định là first contact trừ khi live continuity xác lập khác. Không ánh xạ quan hệ Cao Minh ↔ Lục Trầm sang Lucia. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
 
 ## Syvial
 
 Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Syvial và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
+
+## Lucia Lục / Hứa Thuý Mai — SCOPED RESTORE R01
+
+Nguồn hiện hành trong repository: `app/src/main/assets/canon/Lucia_Codex.md`. Nguồn Drive lịch sử `Lucia_Codex.docx` hiện không truy cập được, vì vậy chỉ khóa các dữ kiện đã xác nhận trong lịch sử repo và yêu cầu người dùng mới nhất.
+
+**IDENTITY HARD LOCK:** Lucia Lục / Hứa Thuý Mai và Lục Trầm là **hai nhân vật khác nhau**. Runtime id tương ứng là `lucia` và `luc_tram`; không alias, rename, migrate hoặc merge.
+
+Lucia là con người hiện đại được huấn luyện tốt theo vai trò tactical riflewoman đã có trong runtime cũ. Bộ trang bị runtime được xác nhận gồm **M4A1 cá nhân hóa**, **dao găm chiến đấu** và **đồng hồ định vị quân sự**. Không chuyển Tịch Quang, Kiếm Khải, Thiên Kiếm Môn hoặc quan hệ Táng Kiếm Cốc sang Lucia.
+
+Gameplay phục hồi riêng cho `lucia`: **M4A1 Joint Attack 150%**, năm proc súng lịch sử và **Too Young To Die** đúng **60 phát**, mỗi phát dùng **100% DMG hiện tại + 15% Bonus DMG** trong SSF. Đây là gameplay projection; Lucia không nhận năng lực siêu nhiên mới.
+
+CharacterEncounterCore sở hữu spawn/join; baseline phục hồi là **10% candidate trên Level 0**. Quan hệ và xưng hô với Cao Minh vẫn **OPEN** nếu continuity chưa xác lập.
 
 ## Lục Trầm — R05
 
