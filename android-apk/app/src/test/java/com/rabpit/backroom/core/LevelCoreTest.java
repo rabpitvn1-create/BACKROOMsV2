@@ -209,7 +209,7 @@ public class LevelCoreTest {
     assertEquals("file:///android_asset/level_snapshots/drive/level_0/02.webp", descriptor.getString("path"));
   }
 
-  @Test public void routeRollUsesFiveFiftyFiveFortyDistributionBoundaries() throws Exception {
+  @Test public void routeRollUsesFiveFortyFiveFiftyDistributionBoundaries() throws Exception {
     LevelCore tripleCore = new LevelCore(null, new SequenceRng(4));
     JSONObject triple = state(1, "Level 0 / A");
     tripleCore.rollRouteForExplorerAction(triple, ROUTE_ACTION);
@@ -221,12 +221,12 @@ public class LevelCoreTest {
     normalCore.rollRouteForExplorerAction(normal, ROUTE_ACTION);
     assertEquals(1, normal.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
 
-    LevelCore lastSuccessCore = new LevelCore(null, new SequenceRng(59));
+    LevelCore lastSuccessCore = new LevelCore(null, new SequenceRng(49));
     JSONObject lastSuccess = state(1, "Level 0 / A");
     lastSuccessCore.rollRouteForExplorerAction(lastSuccess, ROUTE_ACTION);
     assertEquals(1, lastSuccess.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
 
-    LevelCore failCore = new LevelCore(null, new SequenceRng(60));
+    LevelCore failCore = new LevelCore(null, new SequenceRng(50));
     JSONObject failed = state(1, "Level 0 / A");
     failCore.rollRouteForExplorerAction(failed, ROUTE_ACTION);
     assertEquals(0, failed.getJSONObject(LevelCore.ROUTE_STATE).getInt("streak"));
