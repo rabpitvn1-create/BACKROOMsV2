@@ -5,6 +5,10 @@ import org.json.JSONObject;
 import org.junit.Test;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.*;
 
 public class CanonRetrieverTest {
@@ -71,6 +75,19 @@ public class CanonRetrieverTest {
         state, "Level 0.5", 3000, true, "Level 0.5 — Aquaclaustrophobic Infirmary");
     assertTrue(packet.missingMandatoryRefs.contains("level:0.5"));
     assertFalse(packet.promptText().contains("Wrong for this runtime."));
+  }
+  @Test public void importedLevelZeroPointFiveMatchesCommittedLevel() throws Exception {
+    Path source = Paths.get("src/main/assets/canon/BACKROOMS_WORLD.md");
+    if (!Files.isRegularFile(source)) source = Paths.get("app/src/main/assets/canon/BACKROOMS_WORLD.md");
+    Map<String, String> files = wiki();
+    files.put("BACKROOMS_WORLD.md", new String(Files.readAllBytes(source), StandardCharsets.UTF_8));
+    JSONObject state = new JSONObject().put("currentLevelKey", "0.5").put("party", new JSONArray());
+    CanonRetriever.CanonPacket packet = new CanonRetriever(files).retrieve(state, "Tôi đi tiếp.",
+        CanonRetriever.DEFAULT_BUDGET, true, "Level 0.5 — Aquaclaustrophobic Infirmary");
+    assertFalse(packet.missingMandatoryRefs.toString(), packet.missingMandatoryRefs.contains("level:0.5"));
+    assertTrue(packet.promptText().contains("Waterlogged Passages"));
+    assertFalse(packet.promptText().contains("Chaotic Structure"));
+    assertFalse(packet.budgetExceeded);
   }
   @Test public void dependenciesCyclesMissingRefsAndBudgetAreVisible() throws Exception {
     Map<String, String> files = wiki();

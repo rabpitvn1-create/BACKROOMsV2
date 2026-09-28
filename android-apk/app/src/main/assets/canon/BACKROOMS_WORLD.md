@@ -152,11 +152,15 @@ Một phiên bản Tầng 0 trong trạng thái phân hủy: tường vàng-lụ
 
 Không gian mang cảm giác bị bỏ mặc giữa quá trình mục rữa. Không được mặc định tên “Disease” đồng nghĩa tồn tại một bệnh sinh học cụ thể nếu chưa có dữ kiện xác nhận.
 
-### Level 0.5 — Chaotic Structure
+### Level 0.5 — Aquaclaustrophobic Infirmary
 
-Không gian bị chia thành các khối hình học chồng cắt lên nhau thay vì các phòng thông thường. Trọng lực, phương hướng và khoảng cách có thể phụ thuộc vào bề mặt hoặc cấu trúc đang đứng.
+**Nguồn tham khảo:** [Level 0.5 — Aquaclaustrophobic Infirmary](https://backrooms-wiki.wikidot.com/level-0-5), Moose0, The Backrooms Wiki, CC BY-SA 3.0; bản trang cập nhật 07/09/2026. Nội dung về trải nghiệm, lối ra và The Drowned trong nguồn chủ yếu là lời kể của người sống sót hoặc báo cáo M.E.G.; không nâng suy đoán thành sự thật đã xác minh.
 
-Khoảng trống giữa các khối có thể có hành vi vật lý khác khu vực ổn định. Không được áp dụng bản đồ hai chiều như công cụ tuyệt đối.
+Waterlogged Passages là các hành lang hẹp ngập nước lạnh, bẩn, thường ngang gối và đục đến mức không thấy đáy. Giấy tường màu kem nhợt bong ở mép nước; đèn hình chữ nhật xanh treo bằng dây sờn có thể phát tia lửa. Tiếng nước bị khuấy và tiếng giọt vọng thay cho tiếng buzz đều của Level 0. Thiếu vị trí khô để nghỉ; ngâm nước lâu, kiệt sức, nước ô nhiễm và nguy cơ điện là các hiểm họa môi trường. Không tự xác định tác nhân gây bệnh cụ thể chỉ từ triệu chứng.
+
+Đi sâu hơn, giấy tường chuyển dần sang vách gỗ mục, trần thả và trolley trước khi mở sang The Hospital. Khu bệnh viện có sàn bẩn dầu, gạch trần lệch, vật cản, phòng bệnh và giường ẩm; khô hơn không đồng nghĩa an toàn. Nguồn Wiki kể về The Drowned đeo bám con mồi trong khu này, nhưng sự hiện diện hoặc giao chiến trong game chỉ xảy ra khi EntityCore/state xác nhận.
+
+Nguồn Wiki ghi nhận những lối ra khác, gồm Level 1, Level 37 và Level 109. Trong BACKROOMsV2, Core quyết định tuyến hiện hành: vào từ Level 0.2 và chỉ chuyển tiếp tới Level 0.7. Mô tả từ Wiki không mở thêm route, cấp vật phẩm, gây damage hay spawn Entity.
 
 ### Level 0.66 — The Lobby Went COLD
 
