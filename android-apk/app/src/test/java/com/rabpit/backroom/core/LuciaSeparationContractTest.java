@@ -70,7 +70,7 @@ public class LuciaSeparationContractTest {
     CanonRetriever.CanonPacket packet =
         new CanonRetriever(canon).retrieve(retrievalState, "Tôi nhìn Lucia.", 12000, true);
     assertTrue(packet.missingMandatoryRefs.toString(), packet.missingMandatoryRefs.isEmpty());
-    assertTrue(packet.promptText().contains("runtime id của Lucia là \`lucia\`"));
+    assertTrue(packet.promptText().contains("runtime id của Lucia là `lucia`"));
     assertFalse(packet.promptText().contains("Lucia Lục / Hứa Thuý Mai và loadout quân nhân cũ"));
   }
 
