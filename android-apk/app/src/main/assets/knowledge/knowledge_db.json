@@ -1261,6 +1261,59 @@
       ]
     },
     {
+      "id": "CHAR.LUCIA.IDENTITY",
+      "domain": "CHARACTER",
+      "kind": "identity",
+      "text": "Lucia Lục / Hứa Thuý Mai is a separate modern human tactical riflewoman under runtime id 'lucia'. She is not Lục Trầm ('luc_tram'), not a Thiên Kiếm Môn cultivator, and must never inherit Lục Trầm's equipment, rivalry, romance path or xưng hô. CharacterEncounterCore owns spawn/join; restored baseline encounter eligibility is 10% on Level 0. Relationship/history with Cao Minh remain OPEN until continuity establishes them.",
+      "source": {
+        "document": "app/src/main/assets/canon/Lucia_Codex.md",
+        "anchor": "00 · CORE LOCK"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 56,
+      "tags": [
+        "lucia",
+        "lucia lục",
+        "hứa thuý mai",
+        "hứa thúy mai",
+        "tactical riflewoman",
+        "lucia != lục trầm"
+      ],
+      "references": [],
+      "affordances": [
+        "character_identity",
+        "relationship_context",
+        "dialogue_constraint"
+      ]
+    },
+    {
+      "id": "CHAR.LUCIA.GAMEPLAY",
+      "domain": "CHARACTER",
+      "kind": "gameplay",
+      "text": "Lucia's restored Poker Dice projection uses M4A1 Joint Attack at 150% damage, five historical firearm proc slots, and Too Young To Die as exactly 60 M4A1 shots with 100% current DMG +15% Bonus DMG per shot in SSF. Confirmed default runtime equipment is personalized M4A1, combat knife and military positioning watch. These mechanics do not grant supernatural powers.",
+      "source": {
+        "document": "app/src/main/assets/canon/Lucia_Codex.md",
+        "anchor": "01-02 · TRANG BỊ / GAMEPLAY PROJECTION"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 56,
+      "tags": [
+        "lucia",
+        "m4a1",
+        "too young to die",
+        "60 shot",
+        "gameplay"
+      ],
+      "references": [
+        "CHAR.LUCIA.IDENTITY"
+      ],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
       "id": "CHAR.LUC_TRAM.IDENTITY",
       "domain": "CHARACTER",
       "kind": "identity",
