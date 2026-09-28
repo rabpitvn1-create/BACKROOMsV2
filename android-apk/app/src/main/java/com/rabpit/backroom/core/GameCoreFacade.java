@@ -9,14 +9,20 @@ import org.json.JSONObject;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
   private static final String STATE_KEY = "state_json";
+  private static final String MANUAL_SAVE_KEY = "manual_save_json";
   private static final int CURRENT_SAVE_VERSION = 14;
 
   private final SharedPreferences preferences;
+  private String liveStateJson;
   private final boolean debugLogging;
   private final LevelCore levelCore;
   private final EntityCore entityCore;
@@ -31,6 +37,9 @@ public final class GameCoreFacade implements AutoCloseable {
   private GameCoreFacade(Context context, boolean debugLogging) {
     Context appContext = context.getApplicationContext();
     this.preferences = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    String checkpoint = preferences.getString(MANUAL_SAVE_KEY, "");
+    this.liveStateJson = checkpoint != null && !checkpoint.isEmpty()
+        ? checkpoint : preferences.getString(STATE_KEY, "{}");
     this.debugLogging = debugLogging;
     this.levelCore = new LevelCore(appContext);
     this.entityCore = new EntityCore(appContext);
@@ -48,7 +57,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processRule(String legacyStateJson, String action) {
     JSONObject legacy = parseState(legacyStateJson);
-    JSONObject stored = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject stored = parseState(liveStateJson);
     if (stored.length() > 0) legacy = stored;
     try {
       normalizeCoreState(legacy);
@@ -85,10 +94,24 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "query_handled", reply);
       }
 
-      int preTurnStateVersion = emergentTurnEngine.stateVersion(legacy);
       String turnId = emergentTurnEngine.nextTurnId(legacy, text);
       PreparedTurn existing = preparedTurns.get(turnId);
-      if (existing != null) return preparedResponse(legacy, existing);
+      if (existing != null && existing.baseHash.equals(fingerprint(legacy))) {
+        return preparedResponse(legacy, existing);
+      }
+      PreparedTurn prepared = prepareExplorerTurnData(legacy, text);
+      preparedTurns.clear();
+      preparedTurns.put(turnId, prepared);
+      return preparedResponse(legacy, prepared);
+    } catch (Exception e) {
+      debug("processRule failed: " + e.getMessage());
+      return response(false, legacy, safeMessage(e), "core_error", null);
+    }
+  }
+
+  private PreparedTurn prepareExplorerTurnData(JSONObject legacy, String text) throws Exception {
+      int preTurnStateVersion = emergentTurnEngine.stateVersion(legacy);
+      String turnId = emergentTurnEngine.nextTurnId(legacy, text);
 
       TurnRng turnRng = new TurnRng(
           turnId, preTurnStateVersion,
@@ -168,14 +191,68 @@ public final class GameCoreFacade implements AutoCloseable {
       JSONObject selected = emergentTurnEngine.selectCandidate(
           working, candidates, turnRng, Math.max(1, working.optInt("turn", 1)));
       PreparedTurn prepared = new PreparedTurn(
-          turnId, preTurnStateVersion, text, working, events, selected, turnRng, replyHint);
-      preparedTurns.clear();
-      preparedTurns.put(turnId, prepared);
-      return preparedResponse(legacy, prepared);
+          turnId, preTurnStateVersion, fingerprint(legacy), text, working, events, selected, turnRng, replyHint);
+      return prepared;
+  }
+
+  /** Returns a hypothetical post-turn state without writing preferences or retaining a turn attempt. */
+  public synchronized String previewTurn(String action, String expectedBaseHash) {
+    JSONObject base = parseState(liveStateJson);
+    try {
+      String text = action == null ? "" : action.trim();
+      if (base.length() == 0 || text.isEmpty() || !fingerprint(base).equals(expectedBaseHash)
+          || CombatChoiceEngine.isActive(base) || GameCoreRules.isDirectPlayerPickupAction(text)
+          || GameCoreRules.isInventoryQuery(text) || GameCoreRules.isPartyQuery(text)) {
+        return response(false, base, "Preview unavailable.", "preview_unavailable", null);
+      }
+      JSONObject normalized = deepCopy(base);
+      normalizeCoreState(normalized);
+      emergentTurnEngine.normalizeState(normalized);
+      emergentTurnEngine.catchUpProjections(normalized);
+      if (!emergentTurnEngine.selectionProjectionFresh(normalized)) {
+        throw new IllegalStateException("SelectionCooldown projection is stale");
+      }
+      PreparedTurn prepared = prepareExplorerTurnData(normalized, text);
+      JSONObject working = finishWorkingTurn(normalized, prepared, new JSONObject());
+      projectBeforePersist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      projectBeforePersist(working);
+      return new JSONObject().put("handled", true).put("turnId", prepared.turnId)
+          .put("state", clientSafeState(working)).put("replyHint", prepared.replyHint)
+          .put("baseHash", expectedBaseHash).put("outcomeHash", fingerprint(working)).toString();
     } catch (Exception e) {
-      debug("processRule failed: " + e.getMessage());
-      return response(false, legacy, safeMessage(e), "core_error", null);
+      return response(false, base, safeMessage(e), "preview_unavailable", null);
     }
+  }
+
+  public synchronized String currentStateHash() {
+    return fingerprint(parseState(liveStateJson));
+  }
+
+  /** Only an explicit player action writes the live game to durable storage. */
+  public synchronized String saveCheckpoint() {
+    String live = liveStateJson;
+    if (parseState(live).length() == 0) throw new IllegalStateException("Chưa có game để lưu.");
+    if (!preferences.edit().putString(MANUAL_SAVE_KEY, live).remove(STATE_KEY).commit()) {
+      throw new IllegalStateException("Không thể lưu game.");
+    }
+    return live;
+  }
+
+  public synchronized String loadCheckpoint() {
+    String saved = preferences.getString(MANUAL_SAVE_KEY, "");
+    if (saved == null || parseState(saved).length() == 0) {
+      throw new IllegalStateException("Chưa có bản lưu thủ công.");
+    }
+    JSONObject restored = parseState(saved);
+    preparedTurns.clear();
+    persist(restored);
+    return clientSafeState(restored).toString();
+  }
+
+  public synchronized void clearCheckpoint() {
+    preparedTurns.clear();
+    preferences.edit().remove(MANUAL_SAVE_KEY).remove(STATE_KEY).commit();
   }
 
   public synchronized String validateWorldProposal(String selectedJson, String proposalJson) {
@@ -198,7 +275,7 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String completePreparedTurn(String turnId, String proposalJson) {
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
@@ -210,14 +287,30 @@ public final class GameCoreFacade implements AutoCloseable {
       if (prepared == null) {
         return response(false, persisted, "Không có turn attempt phù hợp.", "turn_attempt_missing", null);
       }
-      if (emergentTurnEngine.stateVersion(persisted) != prepared.preTurnStateVersion) {
+      if (emergentTurnEngine.stateVersion(persisted) != prepared.preTurnStateVersion
+          || !fingerprint(persisted).equals(prepared.baseHash)) {
         preparedTurns.remove(turnId);
         return response(false, persisted, "State đã thay đổi trước COMMIT.", "stale_turn_attempt", null);
       }
 
+      JSONObject working = finishWorkingTurn(persisted, prepared, parseState(proposalJson));
+      projectBeforePersist(working);
+      emergentTurnEngine.catchUpProjections(working);
+      persist(working);
+      preparedTurns.remove(turnId);
+      return preparedCommitResponse(working, prepared);
+    } catch (Exception e) {
+      preparedTurns.remove(turnId);
+      debug("completePreparedTurn failed: " + e.getMessage());
+      return response(false, persisted, safeMessage(e), "system_fault_precommit", null);
+    }
+  }
+
+  private JSONObject finishWorkingTurn(JSONObject persisted, PreparedTurn prepared, JSONObject rawProposal)
+      throws Exception {
       JSONObject working = prepared.working;
       JSONObject selected = prepared.selected;
-      JSONObject proposal = emergentTurnEngine.sanitizeWorldProposal(selected, parseState(proposalJson));
+      JSONObject proposal = emergentTurnEngine.sanitizeWorldProposal(selected, rawProposal);
       selected.put("worldProposal", proposal);
       working.getJSONObject(EmergentTurnEngine.ROOT_KEY)
           .put("lastSelection", new JSONObject(selected.toString()));
@@ -237,22 +330,12 @@ public final class GameCoreFacade implements AutoCloseable {
       emergentTurnEngine.commitAuthoritative(
           persisted, working, prepared.turnId, prepared.events, selected);
 
-      // First durable write is authoritative. Projections are intentionally a second replayable write.
-      persist(working);
-      emergentTurnEngine.catchUpProjections(working);
-      persist(working);
-      preparedTurns.remove(turnId);
-      return preparedCommitResponse(working, prepared);
-    } catch (Exception e) {
-      preparedTurns.remove(turnId);
-      debug("completePreparedTurn failed: " + e.getMessage());
-      return response(false, persisted, safeMessage(e), "system_fault_precommit", null);
-    }
+      return working;
   }
 
   public synchronized String commitNarration(String stateJson, boolean acknowledgePendingIntro) {
     JSONObject submitted = parseState(stateJson);
-    JSONObject state = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject state = parseState(liveStateJson);
     try {
       normalizeCoreState(state);
       JSONArray log = submitted.optJSONArray("log");
@@ -379,7 +462,7 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String startCombatRuntime(String entityKey, int gmLogIndex) {
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
@@ -399,7 +482,7 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String processCombatResolution(String stateJson) {
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
@@ -459,7 +542,7 @@ public final class GameCoreFacade implements AutoCloseable {
         throw new IllegalStateException("Combat commit stateVersion drift");
       }
       working.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(working);
+      projectBeforePersist(working);
       emergentTurnEngine.catchUpProjections(working);
       persist(working);
       return response(true, working, null,
@@ -471,7 +554,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
 
   public synchronized String restartAfterDeath() {
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
@@ -500,7 +583,7 @@ public final class GameCoreFacade implements AutoCloseable {
       emergentTurnEngine.validateBatch(turnId, events);
       emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(working);
+      projectBeforePersist(working);
       emergentTurnEngine.catchUpProjections(working);
       persist(working);
       return response(true, working, null, "death_restart_completed", null);
@@ -563,7 +646,7 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String processItemAction(String stateJson, String ownerId, String itemId,
                                                String operation, String targetId, int quantity) {
     JSONObject submitted = parseState(stateJson);
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     if (persisted.length() == 0) persisted = submitted;
     try {
       normalizeCoreState(persisted);
@@ -585,7 +668,7 @@ public final class GameCoreFacade implements AutoCloseable {
       emergentTurnEngine.validateBatch(turnId, events);
       emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(working);
+      projectBeforePersist(working);
       emergentTurnEngine.catchUpProjections(working);
       persist(working);
       return response(true, working, null, "item_action_committed", reply);
@@ -596,7 +679,7 @@ public final class GameCoreFacade implements AutoCloseable {
 
   public synchronized String processCoreUpgrade(String stateJson, String characterId, String stat) {
     JSONObject submitted = parseState(stateJson);
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     if (persisted.length() == 0) persisted = submitted;
     try {
       normalizeCoreState(persisted);
@@ -625,7 +708,7 @@ public final class GameCoreFacade implements AutoCloseable {
       emergentTurnEngine.validateBatch(turnId, events);
       emergentTurnEngine.commitAuthoritative(persisted, working, turnId, events, null);
       working.put("saveVersion", CURRENT_SAVE_VERSION);
-      persist(working);
+      projectBeforePersist(working);
       emergentTurnEngine.catchUpProjections(working);
       persist(working);
 
@@ -651,7 +734,7 @@ public final class GameCoreFacade implements AutoCloseable {
   public synchronized String normalizeState(String stateJson) {
     JSONObject state = parseState(stateJson);
     try {
-      JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+      JSONObject persisted = parseState(liveStateJson);
       if (persisted.length() > 0) {
         state = persisted;
       } else {
@@ -670,7 +753,7 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String currentCoreState() {
-    return clientSafeState(parseState(preferences.getString(STATE_KEY, "{}"))).toString();
+    return clientSafeState(parseState(liveStateJson)).toString();
   }
 
   public synchronized String combatRollRuntime() {
@@ -686,7 +769,7 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private String mutateCombatRuntime(String operation, int dieIndex, boolean held) {
-    JSONObject persisted = parseState(preferences.getString(STATE_KEY, "{}"));
+    JSONObject persisted = parseState(liveStateJson);
     try {
       normalizeCoreState(persisted);
       emergentTurnEngine.normalizeState(persisted);
@@ -713,7 +796,8 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized String startNewGame(String initialJson) {
-    preferences.edit().remove(STATE_KEY).commit();
+    preparedTurns.clear();
+    liveStateJson = "{}";
     return normalizeState(initialJson);
   }
 
@@ -738,12 +822,14 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   public synchronized void clear() {
-    preferences.edit().remove(STATE_KEY).apply();
+    preparedTurns.clear();
+    liveStateJson = "{}";
   }
 
   private static final class PreparedTurn {
     final String turnId;
     final int preTurnStateVersion;
+    final String baseHash;
     final String action;
     final JSONObject working;
     final JSONArray events;
@@ -751,10 +837,11 @@ public final class GameCoreFacade implements AutoCloseable {
     final TurnRng rng;
     final String replyHint;
 
-    PreparedTurn(String turnId, int preTurnStateVersion, String action, JSONObject working,
+    PreparedTurn(String turnId, int preTurnStateVersion, String baseHash, String action, JSONObject working,
                  JSONArray events, JSONObject selected, TurnRng rng, String replyHint) {
       this.turnId = turnId;
       this.preTurnStateVersion = preTurnStateVersion;
+      this.baseHash = baseHash;
       this.action = action;
       this.working = working;
       this.events = events;
@@ -936,20 +1023,59 @@ public final class GameCoreFacade implements AutoCloseable {
   }
 
   private void persist(JSONObject state) {
-    if (state != null) {
-      try {
-        characterProgressionCore.normalizeState(state);
-        survivalCore.normalizeState(state);
-        itemCore.normalizeInventory(state);
-        characterDetailCore.projectState(state);
-        } catch (Exception e) {
-        debug("Character detail projection failed: " + e.getMessage());
-      }
+    projectBeforePersist(state);
+    liveStateJson = state == null ? "{}" : state.toString();
+  }
+
+  private void projectBeforePersist(JSONObject state) {
+    if (state == null) return;
+    try {
+      characterProgressionCore.normalizeState(state);
+      survivalCore.normalizeState(state);
+      itemCore.normalizeInventory(state);
+      characterDetailCore.projectState(state);
+    } catch (Exception e) {
+      debug("Character detail projection failed: " + e.getMessage());
     }
-    boolean committed = preferences.edit()
-        .putString(STATE_KEY, state == null ? "{}" : state.toString())
-        .commit();
-    if (!committed) throw new IllegalStateException("SharedPreferences commit failed");
+  }
+
+  private static String fingerprint(JSONObject state) {
+    try {
+      byte[] digest = MessageDigest.getInstance("SHA-256")
+          .digest(canonical(state).getBytes(StandardCharsets.UTF_8));
+      StringBuilder hex = new StringBuilder();
+      for (byte b : digest) hex.append(String.format(Locale.ROOT, "%02x", b & 0xff));
+      return hex.toString();
+    } catch (Exception e) {
+      throw new IllegalStateException("Cannot fingerprint Core state", e);
+    }
+  }
+
+  private static String canonical(Object value) throws Exception {
+    if (value == null || value == JSONObject.NULL) return "null";
+    if (value instanceof JSONObject) {
+      JSONObject object = (JSONObject) value;
+      ArrayList<String> keys = new ArrayList<>();
+      java.util.Iterator<String> iterator = object.keys();
+      while (iterator.hasNext()) keys.add(iterator.next());
+      Collections.sort(keys);
+      StringBuilder out = new StringBuilder("{");
+      for (String key : keys) {
+        if (out.length() > 1) out.append(',');
+        out.append(JSONObject.quote(key)).append(':').append(canonical(object.get(key)));
+      }
+      return out.append('}').toString();
+    }
+    if (value instanceof JSONArray) {
+      JSONArray array = (JSONArray) value;
+      StringBuilder out = new StringBuilder("[");
+      for (int i = 0; i < array.length(); i++) {
+        if (i > 0) out.append(',');
+        out.append(canonical(array.get(i)));
+      }
+      return out.append(']').toString();
+    }
+    return value instanceof String ? JSONObject.quote((String) value) : String.valueOf(value);
   }
 
   private String response(boolean handled, JSONObject state, String error, String reason, String reply) {

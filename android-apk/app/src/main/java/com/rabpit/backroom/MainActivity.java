@@ -32,6 +32,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class MainActivity extends Activity {
   private static final String TAG = "BackroomMain";
@@ -43,6 +46,9 @@ public class MainActivity extends Activity {
   // Semantic highlight type note: type chỉ được là character, entity, item, skill, effect, location hoặc stat
   private WebView webView;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
+  private final ExecutorService prefetchIo = Executors.newSingleThreadExecutor();
+  private final AtomicLong prefetchGeneration = new AtomicLong();
+  private volatile PrefetchCache prefetchCache;
   private GameCoreFacade gameCore;
   private CanonRetriever canonRetriever;
   private static final String GEMINI_MODEL = "gemini-3.8-flash";
@@ -150,6 +156,8 @@ public class MainActivity extends Activity {
 
   @Override protected void onDestroy() {
     if (gameCore != null) gameCore.close();
+    prefetchGeneration.incrementAndGet();
+    prefetchIo.shutdownNow();
     io.shutdownNow();
     if (webView != null) webView.destroy();
     super.onDestroy();
@@ -298,29 +306,9 @@ public class MainActivity extends Activity {
             .put("responseMimeType", "application/json")
             .put("thinkingConfig", new JSONObject().put("thinkingLevel", "low"));
         JSONObject body = new JSONObject().put("contents", new JSONArray().put(contents)).put("generationConfig", config);
-        JSONObject result = new JSONObject(postJson(
+        String output = geminiResponseText(postJson(
             "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent",
             key, "x-goog-api-key", body));
-        JSONArray candidates = result.optJSONArray("candidates");
-        StringBuilder text = new StringBuilder();
-        if (candidates != null) {
-          for (int c = 0; c < candidates.length(); c++) {
-            JSONObject candidate = candidates.optJSONObject(c);
-            JSONObject providerContent = candidate != null ? candidate.optJSONObject("content") : null;
-            JSONArray parts = providerContent != null ? providerContent.optJSONArray("parts") : null;
-            if (parts == null) continue;
-            for (int p = 0; p < parts.length(); p++) {
-              JSONObject responsePart = parts.optJSONObject(p);
-              String piece = responsePart != null ? responsePart.optString("text", "").trim() : "";
-              if (!piece.isEmpty()) {
-                if (text.length() > 0) text.append('\n');
-                text.append(piece);
-              }
-            }
-          }
-        }
-        if (text.length() == 0) throw new Exception("Gemini không trả nội dung.");
-        String output = text.toString();
         parseModelJson(output);
         return output;
       } catch (Exception error) {
@@ -332,6 +320,67 @@ public class MainActivity extends Activity {
     }
     if (!configured) throw new Exception("Không có Gemini API key trong APK.");
     throw last != null ? last : new Exception("Tất cả Gemini API key đều không khả dụng.");
+  }
+
+  private String geminiResponseText(String raw) throws Exception {
+    JSONObject result = new JSONObject(raw);
+    JSONArray candidates = result.optJSONArray("candidates");
+    StringBuilder text = new StringBuilder();
+    if (candidates != null) for (int c = 0; c < candidates.length(); c++) {
+      JSONObject candidate = candidates.optJSONObject(c);
+      JSONObject content = candidate == null ? null : candidate.optJSONObject("content");
+      JSONArray parts = content == null ? null : content.optJSONArray("parts");
+      if (parts == null) continue;
+      for (int p = 0; p < parts.length(); p++) {
+        JSONObject part = parts.optJSONObject(p);
+        String piece = part == null ? "" : part.optString("text", "").trim();
+        if (!piece.isEmpty()) {
+          if (text.length() > 0) text.append('\n');
+          text.append(piece);
+        }
+      }
+    }
+    if (text.length() == 0) throw new Exception("Gemini không trả nội dung.");
+    return text.toString();
+  }
+
+  private JSONObject branchSchema() throws Exception {
+    JSONObject choice = new JSONObject().put("type", "OBJECT")
+        .put("properties", new JSONObject().put("text", new JSONObject().put("type", "STRING")))
+        .put("required", new JSONArray().put("text"));
+    JSONObject branch = new JSONObject().put("type", "OBJECT")
+        .put("properties", new JSONObject()
+            .put("reply", new JSONObject().put("type", "STRING"))
+            .put("choices", new JSONObject().put("type", "ARRAY").put("items", choice))
+            .put("encounterDialogue", new JSONObject().put("type", "ARRAY")
+                .put("items", new JSONObject().put("type", "STRING"))))
+        .put("required", new JSONArray().put("reply").put("choices").put("encounterDialogue"));
+    JSONObject branches = new JSONObject().put("type", "OBJECT")
+        .put("properties", new JSONObject().put("A", branch).put("B", branch).put("C", branch))
+        .put("required", new JSONArray().put("A").put("B").put("C"));
+    return new JSONObject().put("type", "OBJECT")
+        .put("properties", new JSONObject().put("branches", branches))
+        .put("required", new JSONArray().put("branches"));
+  }
+
+  /** Exactly one physical Gemini request; failures leave the normal turn path untouched. */
+  private JSONObject geminiBranchBatch(String prompt) throws Exception {
+    String key = "";
+    for (String configured : geminiKeys()) if (configured != null && !configured.trim().isEmpty()) {
+      key = configured;
+      break;
+    }
+    if (key.isEmpty()) throw new Exception("Không có Gemini API key trong APK.");
+    JSONObject config = new JSONObject().put("responseMimeType", "application/json")
+        .put("responseSchema", branchSchema()).put("maxOutputTokens", 8192)
+        .put("thinkingConfig", new JSONObject().put("thinkingLevel", "low"));
+    JSONObject body = new JSONObject().put("contents", new JSONArray().put(
+        new JSONObject().put("role", "user").put("parts", new JSONArray().put(
+            new JSONObject().put("text", prompt)))))
+        .put("generationConfig", config);
+    return parseModelJson(geminiResponseText(postJson(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent",
+        key, "x-goog-api-key", body)));
   }
 
   private boolean haikuConfigured() {
@@ -601,6 +650,113 @@ public class MainActivity extends Activity {
     return Math.max(0, log.length() - 1);
   }
 
+  private String narrationPrompt(JSONObject state, String action) throws Exception {
+    String coreJson = state.toString();
+    String levelContext = gameCore.levelPromptContext(coreJson, action);
+    String entityContext = gameCore.entityPromptContext(coreJson);
+    String itemContext = gameCore.itemPromptContext(coreJson);
+    String characterContext = gameCore.characterPromptContext(coreJson);
+    String levelName = levelContext.startsWith("CURRENT LEVEL NODE: ")
+        ? levelContext.substring("CURRENT LEVEL NODE: ".length()).split("\\n", 2)[0] : "";
+    CanonRetriever.CanonPacket canon = canonRetriever == null ? null
+        : canonRetriever.retrieve(state, action, CanonRetriever.DEFAULT_BUDGET,
+            BuildConfig.DEBUG, levelName);
+    if (canon == null || canon.budgetExceeded) {
+      Log.w(TAG, "Canon retrieval unavailable/over budget/missing refs: "
+          + (canon == null ? "index unavailable" : "size=" + canon.charCount
+              + " missing=" + canon.missingMandatoryRefs + " requires=" + canon.missingRefs));
+      throw new IllegalStateException("Canon bắt buộc không khả dụng trong budget; không gọi AI narration.");
+    }
+    if (!canon.missingMandatoryRefs.isEmpty()) Log.w(TAG,
+        "Markdown canon missing/conflicting; Core context remains authoritative: "
+            + canon.missingMandatoryRefs);
+    if (BuildConfig.DEBUG) Log.d(TAG, "CANON RETRIEVAL: " + canon.trace);
+    return GmNarrativePacket.build(levelContext, entityContext, itemContext, characterContext,
+        recentContext(state), state, action, gmStyleExamplesContext(), canon.promptText());
+  }
+
+  private static final class PrefetchBranch {
+    final String action, outcomeHash;
+    final JSONObject narration;
+    PrefetchBranch(String action, String outcomeHash, JSONObject narration) {
+      this.action = action;
+      this.outcomeHash = outcomeHash;
+      this.narration = narration;
+    }
+  }
+
+  private static final class PrefetchCache {
+    final String baseHash;
+    final Map<String, PrefetchBranch> branches;
+    PrefetchCache(String baseHash, Map<String, PrefetchBranch> branches) {
+      this.baseHash = baseHash;
+      this.branches = branches;
+    }
+    PrefetchBranch forAction(String action) {
+      for (PrefetchBranch branch : branches.values()) if (branch.action.equals(action)) return branch;
+      return null;
+    }
+  }
+
+  private void invalidatePrefetch() {
+    prefetchGeneration.incrementAndGet();
+    prefetchCache = null;
+  }
+
+  private void prefetchChoices(String choicesJson) {
+    final long generation = prefetchGeneration.incrementAndGet();
+    prefetchCache = null;
+    prefetchIo.execute(() -> {
+      try {
+        JSONArray choices = new JSONArray(choicesJson);
+        if (choices.length() != 3) return;
+        String baseHash = gameCore.currentStateHash();
+        Map<String, String> actions = new LinkedHashMap<>();
+        Map<String, JSONObject> previews = new LinkedHashMap<>();
+        StringBuilder prompt = new StringBuilder(
+            "Generate exactly one independent next-turn narration per branch A/B/C. "
+                + "Each branch has its own hypothetical Core-committed outcome and canon. "
+                + "Never transfer events, facts, entities, loot or future choices between branches. "
+                + "Each reply must be at most 1800 characters, choices 0-3. "
+                + "Return only JSON with branches A, B and C; each contains reply, choices and encounterDialogue.\n");
+        for (int i = 0; i < 3; i++) {
+          String id = String.valueOf((char) ('A' + i));
+          JSONObject choice = choices.getJSONObject(i);
+          String action = choice.optString("action", "").trim();
+          if (!id.equals(choice.optString("id", "")) || action.isEmpty()
+              || actions.containsValue(action)) return;
+          JSONObject preview = new JSONObject(gameCore.previewTurn(action, baseHash));
+          if (!preview.optBoolean("handled", false)) return;
+          actions.put(id, action);
+          previews.put(id, preview);
+          prompt.append("\n=== BRANCH ").append(id).append(" ONLY ===\n")
+              .append(narrationPrompt(preview.getJSONObject("state"), action)).append('\n');
+        }
+        if (generation != prefetchGeneration.get() || !baseHash.equals(gameCore.currentStateHash())) return;
+        JSONObject output = geminiBranchBatch(prompt.toString());
+        JSONObject branches = output.optJSONObject("branches");
+        if (branches == null || branches.length() != 3 || output.length() != 1) return;
+        Map<String, PrefetchBranch> valid = new LinkedHashMap<>();
+        for (String id : actions.keySet()) {
+          JSONObject generated = branches.optJSONObject(id);
+          if (generated == null || generated.length() != 3
+              || generated.optJSONArray("choices") == null
+              || generated.optJSONArray("encounterDialogue") == null
+              || generated.optString("reply", "").length() > 1800) continue;
+          JSONObject preview = previews.get(id);
+          if (!NarrationGuard.validate(generated, preview.getJSONObject("state")).isEmpty()) continue;
+          valid.put(id, new PrefetchBranch(actions.get(id), preview.getString("outcomeHash"), generated));
+        }
+        if (generation == prefetchGeneration.get() && baseHash.equals(gameCore.currentStateHash())) {
+          prefetchCache = new PrefetchCache(baseHash, valid);
+        }
+      } catch (Exception error) {
+        Log.w(TAG, "Branch prefetch unavailable; normal turn path remains available: "
+            + providerErrorSummary(error));
+      }
+    });
+  }
+
   private String worldProposalPrompt(JSONObject selected) {
     String summary = selected == null ? "" : selected.optString("publicSummary", "");
     String canon = selected == null ? "" : selected.optString("capabilityContext", "");
@@ -640,6 +796,24 @@ public class MainActivity extends Activity {
   }
 
   private class GameBridge {
+    @JavascriptInterface public void prefetchChoices(String choicesJson) {
+      MainActivity.this.prefetchChoices(choicesJson);
+    }
+
+    @JavascriptInterface public String saveCheckpoint() {
+      return gameCore.saveCheckpoint();
+    }
+
+    @JavascriptInterface public String loadCheckpoint() {
+      invalidatePrefetch();
+      return gameCore.loadCheckpoint();
+    }
+
+    @JavascriptInterface public void clearCheckpoint() {
+      invalidatePrefetch();
+      gameCore.clearCheckpoint();
+    }
+
     @JavascriptInterface public void submitTurn(String stateJson, String action) {
       io.execute(() -> {
         JSONObject committedBeforeNarration = null;
@@ -648,6 +822,11 @@ public class MainActivity extends Activity {
           JSONObject submitted = new JSONObject(stateJson);
           JSONObject persisted = new JSONObject(gameCore.currentCoreState());
           if (persisted.length() > 0) submitted = persisted;
+          PrefetchCache ready = prefetchCache;
+          String baseHash = gameCore.currentStateHash();
+          invalidatePrefetch();
+          PrefetchBranch cached = ready != null && ready.baseHash.equals(baseHash)
+              ? ready.forAction(action == null ? "" : action.trim()) : null;
 
           if (CombatChoiceEngine.isActive(submitted)) {
             throw new Exception("Đang chiến đấu. Hãy dùng khung Poker Dice trong GAME MASTER.");
@@ -673,7 +852,7 @@ public class MainActivity extends Activity {
           String turnId = prepared.getString("turnId");
           JSONObject selected = prepared.optJSONObject("selectedCandidate");
           JSONObject proposal = new JSONObject();
-          if (prepared.optBoolean("proposalRequired", false)) {
+          if (prepared.optBoolean("proposalRequired", false) && cached == null) {
             try {
               String proposalPrompt = worldProposalPrompt(selected);
               JSONObject rawProposal = parseModelJson(generateText(proposalPrompt));
@@ -710,39 +889,17 @@ public class MainActivity extends Activity {
           committedBeforeNarration = new JSONObject(state.toString());
           String replyHint = committed.optString("replyHint", "");
 
-          String coreJson = state.toString();
-          String levelContext = gameCore.levelPromptContext(coreJson, action);
-          String entityContext = gameCore.entityPromptContext(coreJson);
-          String itemContext = gameCore.itemPromptContext(coreJson);
-          String characterContext = gameCore.characterPromptContext(coreJson);
-          String levelName = levelContext.startsWith("CURRENT LEVEL NODE: ")
-              ? levelContext.substring("CURRENT LEVEL NODE: ".length()).split("\\n", 2)[0] : "";
-          CanonRetriever.CanonPacket canon = canonRetriever == null ? null
-              : canonRetriever.retrieve(state, action, CanonRetriever.DEFAULT_BUDGET,
-                  BuildConfig.DEBUG, levelName);
-          if (canon == null || canon.budgetExceeded) {
-            Log.w(TAG, "Canon retrieval unavailable/over budget/missing refs: "
-                + (canon == null ? "index unavailable" : "size=" + canon.charCount
-                    + " missing=" + canon.missingMandatoryRefs + " requires=" + canon.missingRefs));
-            throw new IllegalStateException("Canon bắt buộc không khả dụng trong budget; không gọi AI narration.");
-          }
-          if (!canon.missingMandatoryRefs.isEmpty()) Log.w(TAG,
-              "Markdown canon missing/conflicting; Core context remains authoritative: "
-                  + canon.missingMandatoryRefs);
-          if (BuildConfig.DEBUG) Log.d(TAG, "CANON RETRIEVAL: " + canon.trace);
-          String prompt = GmNarrativePacket.build(
-              levelContext, entityContext, itemContext, characterContext,
-              recentContext(state), state, action, gmStyleExamplesContext(), canon.promptText());
-
           JSONObject generated;
           String reply;
           boolean narrationValidated = false;
           try {
-            generated = parseModelJson(generateText(prompt));
+            boolean hit = cached != null && cached.outcomeHash.equals(gameCore.currentStateHash());
+            generated = hit ? new JSONObject(cached.narration.toString())
+                : parseModelJson(generateText(narrationPrompt(state, action)));
             String narrationViolation = NarrationGuard.validate(generated, state);
             if (!narrationViolation.isEmpty()) {
               generated = parseModelJson(generateText(
-                  prompt + "\nVALIDATION REJECTED: " + narrationViolation
+                  narrationPrompt(state, action) + "\nVALIDATION REJECTED: " + narrationViolation
                       + "\nRegenerate narration only. Do not add or mutate world state."));
               narrationViolation = NarrationGuard.validate(generated, state);
               if (!narrationViolation.isEmpty()) {
@@ -908,6 +1065,7 @@ public class MainActivity extends Activity {
     }
 
     @JavascriptInterface public String startNewGame(String initialJson) {
+      invalidatePrefetch();
       return gameCore.startNewGame(initialJson);
     }
   }

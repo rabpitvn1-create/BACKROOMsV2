@@ -229,7 +229,6 @@
       var result=JSON.parse(json);
       if(result.state)state=result.state;
       if(typeof CURRENT_CHARACTER_CANON!=='undefined')state.characterCanon=CURRENT_CHARACTER_CANON;
-      try{localStorage.setItem('backroom-apk-state',JSON.stringify(state))}catch(_){}
       if(result.handled===false){
         if(typeof window.render==='function')window.render();
         if(status)status.textContent=result.error||'Không thể xử lý vật phẩm.';
