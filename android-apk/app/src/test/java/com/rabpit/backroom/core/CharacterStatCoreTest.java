@@ -81,8 +81,8 @@ public class CharacterStatCoreTest {
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
 
-    JSONObject iris = new CharacterStatCore().project(state, "iris", progression);
-    JSONObject str = iris.getJSONObject("stats").getJSONObject("STR");
+    JSONObject lucTram = new CharacterStatCore().project(state, "luc_tram", progression);
+    JSONObject str = lucTram.getJSONObject("stats").getJSONObject("STR");
     assertEquals(5, str.getInt("base"));
     assertEquals(0, str.getInt("passiveBonus"));
     assertEquals(5, str.getInt("effective"));

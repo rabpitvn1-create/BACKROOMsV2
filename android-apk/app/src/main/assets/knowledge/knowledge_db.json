@@ -153,7 +153,7 @@
       "id": "CHAR.CAO_MINH.RUNTIME_CORE",
       "domain": "CHARACTER",
       "kind": "runtime-card",
-      "text": "Cao Minh / Vạn Giới Ma Tôn is a pure tiên-hiệp/ma-đạo sword cultivator who had already reached the summit of his original world before falling into Backrooms. He has no modern/future military identity, no firearm loadout, and no pre-existing relationship with Iris or Syvial. He is relaxed, bored and lightly mocking when nothing matters, but becomes precise and decisive in real danger. He does not know Backrooms rules in advance.",
+      "text": "Cao Minh / Vạn Giới Ma Tôn is a pure tiên-hiệp/ma-đạo sword cultivator who had already reached the summit of his original world before falling into Backrooms. He has no modern/future military identity, no firearm loadout, and no pre-existing relationship with Syvial. He is relaxed, bored and lightly mocking when nothing matters, but becomes precise and decisive in real danger. He does not know Backrooms rules in advance.",
       "source": {
         "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
         "anchor": "CAO-QUICK-01; CAO-PER-01; CAO-BACKROOMS-01"
@@ -402,28 +402,6 @@
       ]
     },
     {
-      "id": "REL.CAO_MINH.IRIS.NONE",
-      "domain": "RELATIONSHIP",
-      "kind": "hard-lock",
-      "text": "Cao Minh and Iris have no pre-existing relationship at campaign start. If they meet, treat it as first contact unless later live campaign continuity explicitly changes that state.",
-      "source": {
-        "document": "02_CHARACTERS/Cao_Minh_Codex.docx",
-        "anchor": "CAO-CANON-CLEANUP-R15"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "BASELINE",
-      "priority": 25,
-      "tags": [
-        "cao minh",
-        "iris",
-        "first contact"
-      ],
-      "references": [],
-      "affordances": [
-        "dialogue"
-      ]
-    },
-    {
       "id": "REL.CAO_MINH.SYVIAL.NONE",
       "domain": "RELATIONSHIP",
       "kind": "hard-lock",
@@ -439,146 +417,6 @@
         "cao minh",
         "syvial",
         "first contact"
-      ],
-      "references": [],
-      "affordances": [
-        "dialogue"
-      ]
-    },
-    {
-      "id": "CHAR.IRIS.RUNTIME_CORE",
-      "domain": "CHARACTER",
-      "kind": "runtime-card",
-      "text": "Iris remains an independent character governed by her own current source. Her established ranged-combat abilities, ARGUS Terrain Read and equipment remain hers. In the Cao Minh R15 campaign she has no pre-existing command history, romance, friendship or other relationship with Cao Minh; if encountered, the first meeting is first contact unless live campaign continuity later establishes otherwise.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "IRIS-QUICK-01; IRIS-PER-01; IRIS-CANON-GATE-01; IRIS-UNKNOWN-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 22,
-      "tags": [
-        "iris",
-        "argus",
-        "present core",
-        "voice"
-      ],
-      "references": [],
-      "affordances": []
-    },
-    {
-      "id": "CHAR.IRIS.ARGUS",
-      "domain": "CHARACTER",
-      "kind": "ability",
-      "text": "ARGUS Terrain Read combines Iris's direct observation, Recon Frame sensors and analysis of terrain, landmarks, approach/escape routes, lines of sight, cover, ambush points and abnormal traces. It is not omniscience, wall vision, remote-camera generation or automatic supernatural true-form detection. Distorted geometry and bad sensor data can mislead it, so confidence/evidence still matter.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "IRIS-SCOUT-TERRAIN-01; IRIS-SCOUT-GROUND-01; IRIS-SCOUT-TARGET-01; IRIS-CANON-GATE-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 40,
-      "tags": [
-        "iris",
-        "argus",
-        "terrain read",
-        "trace",
-        "route",
-        "cover"
-      ],
-      "references": [],
-      "affordances": [
-        "trace_analysis"
-      ]
-    },
-    {
-      "id": "CHAR.IRIS.THOUSANDFOLD",
-      "domain": "CHARACTER",
-      "kind": "ability",
-      "text": "Thousandfold Cognition accelerates Iris's reception, analysis and information processing up to 1:1000. It does not automatically accelerate her body 1000 times. Knowing the right response does not guarantee her body can physically execute it in time.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "IRIS-THOUSANDFOLD-01; IRIS-WEAK-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 48,
-      "tags": [
-        "iris",
-        "thousandfold",
-        "cognition"
-      ],
-      "references": [],
-      "affordances": [
-        "trace_analysis",
-        "target_analysis"
-      ]
-    },
-    {
-      "id": "CHAR.IRIS.IVORY_EBONY",
-      "domain": "CHARACTER",
-      "kind": "equipment",
-      "text": "Ivory & Ebony are Iris's two signature mechanical pistols, synchronized with Belial Core. Each shot forms directly from Iris's demon power, so carried ammunition quantity is not the limiting factor. Infinite source does not imply infinite rate of fire, weapon durability, per-shot damage or guaranteed hits; projectiles do not self-target or automatically distinguish hiện thân from true body.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "IRIS-COMBAT-TWIN-01; IRIS-AMMO-DEMONIC-01; IRIS-CANON-GATE-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 48,
-      "tags": [
-        "iris",
-        "ivory",
-        "ebony",
-        "gunslinger"
-      ],
-      "references": [],
-      "affordances": [
-        "direct_threat"
-      ]
-    },
-    {
-      "id": "CHAR.IRIS.SUPPORT",
-      "domain": "CHARACTER",
-      "kind": "ability",
-      "text": "Iris has Field Galley and Field MedNet support skills. Field MedNet is battlefield medical capability, not magical healing. Field Galley is field cooking/logistics skill and does not create matter or conjure food.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "FIELD GALLEY; FIELD MEDNET; IRIS-CANON-GATE-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 55,
-      "tags": [
-        "iris",
-        "field mednet",
-        "field galley",
-        "medical",
-        "food"
-      ],
-      "references": [],
-      "affordances": [
-        "field_medical",
-        "field_food"
-      ]
-    },
-    {
-      "id": "REL.IRIS.SYVIAL.BASELINE",
-      "domain": "RELATIONSHIP",
-      "kind": "baseline-edge",
-      "text": "Iris and Syvial may retain the friendship/teammate relationship established by their own sources. That relationship does not create any pre-existing relationship between either of them and Cao Minh. Exact Iris<->Syvial address remains governed by their own current canon.",
-      "source": {
-        "document": "02_CHARACTERS/Iris_Codex.docx",
-        "anchor": "IRIS-REL-SYVIAL-01; IRIS-UNKNOWN-01"
-      },
-      "authority": "CHARACTER_CANON",
-      "mutability": "BASELINE",
-      "priority": 30,
-      "tags": [
-        "iris",
-        "syvial",
-        "relationship",
-        "unknown address"
       ],
       "references": [],
       "affordances": [
@@ -1448,20 +1286,20 @@
       ]
     },
     {
-      "id": "CHAR.LUC_TRAM.VISUAL_R01",
+      "id": "CHAR.LUC_TRAM.VISUAL_R02",
       "domain": "CHARACTER",
       "kind": "visual",
-      "text": "R01 visual lock: Lục Trầm has very long thick black hair in a high ponytail, a gold sword-crown accessory, a white-black-gold segmented Thiên Cơ Bạch Kim Kiếm Khải, split battle-cloth panels and a long silver Tịch Quang sword. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar path is avatars/luctram_avatar.png and combat overlay path is luctram_overlay.png.",
+      "text": "CURRENT Visual Lock R02: Lục Trầm has extremely long silver-white hair gathered high, a gold-black sword-crown with blue crystal accents, cool blue-gray eyes, ivory/silver/gold Thiên Cơ Bạch Kim Kiếm Khải over dark inner layers with restrained blue accents, long segmented battle-cloth panels, and exactly one Tịch Quang greatsword. Mechanical-looking details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms, missiles or HUD. Avatar path is avatars/luctram_avatar.png and combat overlay path is luctram_overlay.png.",
       "source": {
         "document": "02_CHARACTERS/Lục_Trầm_Codex",
-        "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R01"
+        "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R02"
       },
       "authority": "USER_RETCON",
       "mutability": "IMMUTABLE",
       "priority": 55,
       "tags": [
         "lục trầm",
-        "visual lock",
+        "visual lock r02",
         "tịch quang",
         "thiên cơ bạch kim kiếm khải"
       ],

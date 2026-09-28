@@ -74,19 +74,19 @@ public class CombatChoiceEngineTest {
 
   @Test public void daiDaoMaTonGrantsFiftyCriticalToAllCombatAlliesOnly() throws Exception {
     JSONObject state = combatState(new JSONArray()
-        .put(member("iris", "Iris"))
+        .put(member("luc_tram", "Lục Trầm"))
         .put(member("syvial", "Syvial")));
     CombatChoiceEngine.start(state, "hound", 0);
 
     JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
     JSONObject cao = participants.getJSONObject(0);
-    JSONObject iris = participants.getJSONObject(1);
+    JSONObject lucTram = participants.getJSONObject(1);
     JSONObject syvial = participants.getJSONObject(2);
 
     assertEquals(50, cao.getInt("criticalChancePercent"));
-    assertEquals(55, iris.getInt("criticalChancePercent"));
+    assertEquals(55, lucTram.getInt("criticalChancePercent"));
     assertEquals(55, syvial.getInt("criticalChancePercent"));
-    assertEquals(50, iris.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+    assertEquals(50, lucTram.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
     assertEquals(50, syvial.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
   }
 
@@ -326,22 +326,17 @@ public class CombatChoiceEngineTest {
     assertEquals(1, CombatChoiceEngine.defendedIncomingDamage(1, 999));
   }
 
-  @Test public void downedCharacterIsSkippedAndFourSlotOrderWrapsRound() throws Exception {
+  @Test public void downedCharacterIsSkippedAndThreeSlotOrderWrapsRound() throws Exception {
     JSONArray party = new JSONArray()
         .put(member("luc_tram", "Lục Trầm"))
-        .put(member("iris", "Iris"))
         .put(member("syvial", "Syvial"));
     JSONObject state = combatState(party);
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
-    progression.setCurrentHp(state, "iris", 0);
+    progression.setCurrentHp(state, "luc_tram", 0);
 
     CombatChoiceEngine.start(state, "diep_minh", 0);
-    assertEquals(4, state.getJSONObject("combat").getJSONArray("participants").length());
-
-    finalizeAs(state, 2,2,1,4,6);
-    CombatChoiceEngine.resolveFinalized(state);
-    assertEquals("Lục Trầm", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals(3, state.getJSONObject("combat").getJSONArray("participants").length());
 
     finalizeAs(state, 2,2,1,4,6);
     CombatChoiceEngine.resolveFinalized(state);
@@ -811,7 +806,7 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris");
+    actor.put("id", "syvial");
     resetToBaselineNonCaoStats(actor);
     entity.put("armorBreakTurns", 2).put("armorBreakPercent", 20);
     int before = entity.getInt("hp");
@@ -841,7 +836,7 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris");
+    actor.put("id", "syvial");
     resetToBaselineNonCaoStats(actor);
     actor.put("criticalChancePercent", 100);
     entity.put("evasionPercent", 0).put("resCriticalPercent", 0);
@@ -862,7 +857,7 @@ public class CombatChoiceEngineTest {
     JSONObject actor = combat.getJSONArray("participants").getJSONObject(0);
     JSONObject entity = combat.getJSONObject("entity");
 
-    actor.put("id", "iris");
+    actor.put("id", "syvial");
     resetToBaselineNonCaoStats(actor);
     actor.put("evasionPercent", 100);
     entity.put("resEvasionPercent", 0).put("evasionPercent", 0);

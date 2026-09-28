@@ -569,7 +569,6 @@ final class NarrativeSkeleton {
     if (key.isEmpty()) return "một yếu tố chưa định danh";
     if ("cao_minh".equals(key)) return "Cao Minh";
     if ("luc_tram".equals(key)) return "Lục Trầm";
-    if ("iris".equals(key)) return "Iris";
     if ("syvial".equals(key)) return "Syvial";
 
     JSONObject player = state == null ? null : state.optJSONObject("player");

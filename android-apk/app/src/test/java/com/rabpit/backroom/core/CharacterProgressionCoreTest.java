@@ -14,7 +14,7 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
-    for (String id : new String[]{"cao_minh","luc_tram","iris","syvial"}) {
+    for (String id : new String[]{"cao_minh","luc_tram","syvial"}) {
       JSONObject stats = core.profile(state, id).getJSONObject("stats");
       assertEquals(5, stats.getInt("STR"));
       assertEquals(5, stats.getInt("DEF"));
@@ -26,6 +26,25 @@ public class CharacterProgressionCoreTest {
       assertEquals(50, core.profile(state, id).getInt("currentHp"));
       assertEquals("cao_minh".equals(id) ? 545 : 50, core.profile(state, id).getInt("maxHp"));
       assertEquals(0, core.profile(state, id).getJSONArray("statusEffects").length());
+    }
+  }
+
+  @Test public void legacyIrisProfileIsPurgedAndCannotBeRecreated() throws Exception {
+    CharacterProgressionCore core = new CharacterProgressionCore();
+    JSONObject state = baseState().put(CharacterProgressionCore.ROOT_KEY,
+        new JSONObject().put("characters", new JSONObject().put("iris",
+            new JSONObject().put("schema", "core_stats_v1")
+                .put("stats", new JSONObject().put("STR", 99))))));
+
+    core.normalizeState(state);
+
+    assertFalse(state.getJSONObject(CharacterProgressionCore.ROOT_KEY)
+        .getJSONObject(CharacterProgressionCore.CHARACTERS_KEY).has("iris"));
+    try {
+      core.profile(state, "iris");
+      fail("Retired Iris id must not create a runtime profile.");
+    } catch (IllegalArgumentException expected) {
+      assertTrue(expected.getMessage().contains("character id"));
     }
   }
 

@@ -39,8 +39,9 @@ final class CharacterProgressionCore {
 
     ensureProfileObject(state, characters, "cao_minh");
     ensureProfileObject(state, characters, "luc_tram");
-    ensureProfileObject(state, characters, "iris");
     ensureProfileObject(state, characters, "syvial");
+    characters.remove("iris");
+    characters.remove("argus");
 
     JSONObject resource = root.optJSONObject(RESOURCE_KEY);
     if (resource == null) {
@@ -515,7 +516,7 @@ final class CharacterProgressionCore {
     String value = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (value.contains("cao_minh") || value.contains("cao minh")) return "cao_minh";
     if (value.contains("lục trầm") || value.contains("luc tram") || value.contains("luc_tram")) return "luc_tram";
-    if (value.contains("iris") || value.contains("argus")) return "iris";
+    if (value.contains("iris") || value.contains("argus")) return "";
     if (value.contains("syvial")) return "syvial";
     return value.replace(' ', '_');
   }

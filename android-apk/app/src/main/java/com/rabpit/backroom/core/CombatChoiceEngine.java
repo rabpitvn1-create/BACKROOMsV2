@@ -254,12 +254,6 @@ public final class CombatChoiceEngine {
             "Dịch chuyển theo Huyết Ma Kiếm rồi chém đúng hai kiếm; tổng 147% weapon damage.",
             147, "", 0, 0));
 
-    skills("iris",
-        skill("Twosome Time", "", 155, "", 0, 0),
-        skill("Rain Storm", "", 145, "", 0, 0),
-        skill("Honeycomb Fire", "", 185, "Xuyên giáp", 2, 20),
-        skill("Charged Shot", "", 175, "", 0, 0));
-
     skills("syvial",
         skill("Rift Sever", "", 175, "", 0, 0),
         skill("Crimson Guillotine", "", 190, "Chảy máu", 3, 4),
@@ -1253,7 +1247,6 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
     String id = CharacterProgressionCore.normalizeCharacterId(rawId);
     int fallback = "cao_minh".equals(id) ? CAO_MINH_BASE_ATTACK
         : "syvial".equals(id) ? 32
-        : "iris".equals(id) ? 28
         : 24;
     return firstPositive(source, fallback, "attackMax", "attack", "ATK");
   }

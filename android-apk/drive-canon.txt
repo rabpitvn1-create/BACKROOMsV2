@@ -10,7 +10,7 @@ BACKROOMsV2 — RUNTIME CANON LOCK / CAO MINH R15
 - Huyết Ma Chiến Khải là ma khải từ Ma Kim, ma văn, tinh huyết và ma nguyên; không mô tả như powered armor, máy móc, cảm biến hoặc điện tử.
 - Vạn Tàng Giới là kho tiểu không gian cho vật vô tri. Phản Bổn chỉ phục hồi chính vật đã tồn tại; không sao chép hoặc tạo vật mới.
 - Huyết Ma Nhị Thập Tứ Trảm luôn đúng 24 trảm trong thời gian ngoại giới dừng hoàn toàn.
-- Cao Minh không có quan hệ có sẵn với Iris hoặc Syvial. Nếu họ được CharacterEncounterCore đưa vào campaign, lần gặp đầu là first contact trừ khi live state đã xác lập khác.
+- Cao Minh không có quan hệ có sẵn với Syvial. Nếu Syvial được CharacterEncounterCore đưa vào campaign, lần gặp đầu là first contact trừ khi live state đã xác lập khác.
 - Mối thù Cao Minh ↔ Diệp Minh là canon nền nhưng nguyên nhân, lịch sử, trách nhiệm và kết cục OPEN.
 - Năng lực mạnh không được biến thành toàn tri. Tension nên đến từ thông tin chưa đủ, quy luật Backrooms, hình học không gian, trách nhiệm bảo vệ người khác hoặc đối thủ thực sự đủ mạnh.
 - Không có Entity thân thiện hay trung lập với con người theo world lock hiện hành. Hành vi giúp đỡ chỉ có thể là một phần chiến thuật cuối cùng gây hại.

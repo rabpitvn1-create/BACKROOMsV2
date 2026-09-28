@@ -14,7 +14,7 @@ public class GameCoreFacadeNewGameTest {
         .put("story", new JSONObject().put("active", true).put("currentChapter", "legacy"))
         .put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 10000))
         .put("player", new JSONObject().put("hp", 999).put("attack", 999))
-        .put("party", new JSONArray().put(new JSONObject().put("id", "iris").put("joined", true)))
+        .put("party", new JSONArray().put(new JSONObject().put("id", "syvial").put("joined", true)))
         .put("inventory", new JSONArray().put(new JSONObject().put("name", "First Aid Kit")
             .put("quantity", 999)))
         .put("characterProgression", new JSONObject()
