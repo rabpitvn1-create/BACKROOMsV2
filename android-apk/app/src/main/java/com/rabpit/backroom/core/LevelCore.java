@@ -694,7 +694,7 @@ final class LevelCore {
     for (String section : coreSections) {
       JSONArray values = bundle.optJSONArray(section);
       if (values == null || values.length() == 0) continue;
-      appendSectionWithinBudget(out, values, section, turn);
+      appendSectionWithinBudget(out, values, section, 1);
     }
 
     for (int i = 0; i < order.length() && out.length() < MAX_KNOWLEDGE_CONTEXT_CHARS; i++) {
@@ -717,7 +717,7 @@ final class LevelCore {
       StringBuilder out, JSONArray values, String section, int turn) {
     int size = values.length();
     if (size == 0 || out.length() >= MAX_KNOWLEDGE_CONTEXT_CHARS) return;
-    int configuredLimit = rotatingSectionLimit(section);
+    int configuredLimit = isCoreNarrativeSection(section) ? 0 : rotatingSectionLimit(section);
     int count = configuredLimit > 0 ? Math.min(configuredLimit, size) : size;
     int start = configuredLimit > 0 && size > count
         ? Math.floorMod((Math.max(1, turn) - 1) * count + section.hashCode(), size)

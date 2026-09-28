@@ -4,6 +4,8 @@ Game chạy độc lập trong APK Android. Giao diện vẫn dùng WebView/HTML
 
 ## Runtime chính
 
+Thiết kế và quy trình mở rộng Markdown canon: [Canon Retriever contract](android-apk/CANON_RETRIEVER_README.md).
+
 - `android-apk/app/src/main/assets/index.html`: giao diện text game chạy trong WebView.
 - `android-apk/app/src/main/java/com/rabpit/backroom/MainActivity.java`: Android/WebView bridge và AI orchestration.
 - `android-apk/app/src/main/java/com/rabpit/backroom/core/`: Game State Core thuần Java, kiểm tra state/inventory/party và save cục bộ.
