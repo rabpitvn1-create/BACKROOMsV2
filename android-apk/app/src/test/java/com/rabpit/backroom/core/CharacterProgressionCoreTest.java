@@ -14,7 +14,7 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
-    for (String id : new String[]{"cao_minh","luc_tram","iris","syvial"}) {
+    for (String id : new String[]{"cao_minh","luc_tram","syvial"}) {
       JSONObject stats = core.profile(state, id).getJSONObject("stats");
       assertEquals(5, stats.getInt("STR"));
       assertEquals(5, stats.getInt("DEF"));

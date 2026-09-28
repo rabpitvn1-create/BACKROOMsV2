@@ -6,7 +6,6 @@ Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
 Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, bốn tài liệu Drive hiện hành bên dưới có thẩm quyền cao hơn mọi local mirror, save/log cũ, compact canon và patch artifact đã nghỉ hưu, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` là ngoại lệ có phạm vi hẹp và thay thế riêng cạnh quan hệ Cao Minh ↔ Diệp Minh từng để OPEN.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
-- Iris: `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
 - Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
 
@@ -93,17 +92,13 @@ Nguồn hiện hành: `DIEP_MINH_CANON.md`.
 
 ## Campaign relationship override — Cao Minh R15
 
-Cao Minh không có quan hệ có sẵn với Iris hoặc Syvial. Mọi lần gặp trong campaign phải là first contact trừ khi live state về sau xác lập khác. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
-
-## Iris
-
-Iris giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Iris và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
+Cao Minh không có quan hệ có sẵn với Syvial. Mọi lần gặp Syvial trong campaign phải là first contact trừ khi live state về sau xác lập khác. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
 
 ## Syvial
 
 Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, không tồn tại lịch sử chỉ huy, tình cảm hoặc quan hệ có sẵn giữa Syvial và Cao Minh. Nếu gặp Cao Minh, đó là first contact.
 
-## Lục Trầm — R01
+## Lục Trầm — R05
 
 Nguồn trực tiếp: `02_CHARACTERS/Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`.
 
@@ -117,17 +112,17 @@ Giáo nghĩa cốt lõi của Thiên Kiếm Môn là **kiếm phải chịu trá
 
 Quan hệ động phải phát triển chậm: **tử địch → hợp tác bất đắc dĩ → đồng hành → tín nhiệm → tình cảm hình thành**. Không dùng một lần cứu mạng hoặc một cuộc tranh luận để biến thù thành yêu. Không biến Thiên Kiếm Môn thành phe ác toàn diện, cũng không biến Cao Minh thành người tốt hoàn hảo.
 
-### Ngoại hình — Visual Lock R01
+### Ngoại hình — Visual Lock R02
 
-Silhouette chính: nữ kiếm tu trưởng thành trẻ tuổi, cao ráo và thanh thoát; tóc đen cực dài buộc đuôi ngựa cao; kiếm quan vàng; **Thiên Cơ Bạch Kim Kiếm Khải** trắng–đen–vàng phủ gần toàn thân; hệ chiến bào phân mảnh tỏa từ hông; **Tịch Quang Kiếm** là trường kiếm hai lưỡi thân bạc, dài, thẳng và cân đối.
+Silhouette chính: nữ kiếm tu trưởng thành trẻ tuổi, cao ráo, cân đối, thanh thoát nhưng khỏe khoắn; tóc bạc–trắng cực dài gom cao với nhiều lọn dài chuyển động; mắt lam xám lạnh; kiếm quan vàng–đen gắn tinh thể lam; **Thiên Cơ Bạch Kim Kiếm Khải** trắng–bạc–vàng trên lớp nền tối với điểm nhấn sapphire tiết chế; hệ chiến bào phân mảnh tỏa từ hông; đúng một **Tịch Quang đại kiếm** cực dài, thẳng, bản rộng, trắng–bạc với lõi/rãnh lam và hộ thủ vàng–đen.
 
-Các chi tiết giống cơ khí trên Kiếm Khải chỉ là hình thức của **pháp bảo tiên hiệp**, không phải AI, reactor, servo, exoskeleton công nghệ, súng ẩn, tên lửa hoặc HUD. Không tự thêm cánh năng lượng, halo, mũ giáp, mặt nạ hoặc đổi bảng màu trắng–đen–vàng.
+Các chi tiết giống cơ khí trên Kiếm Khải chỉ là hình thức của **pháp bảo tiên hiệp**, không phải AI, reactor, servo, exoskeleton công nghệ, súng ẩn, tên lửa hoặc HUD. Không tự thêm cánh năng lượng, halo, mũ giáp, mặt nạ, súng hoặc over-glow.
 
 ### Năng lực và trang bị
 
 **Thiên Kiếm Linh Tâm:** hợp nhất thần niệm, linh lực, cảm giác không gian và kiếm ý; hỗ trợ đọc quỹ đạo, trọng tâm, dao động linh lực và điểm bất ổn trong thế kiếm/trận pháp/hộ thể. Không đọc suy nghĩ, không xác định thiện ác, không tự nhận dạng Entity, không biết trước luật Backrooms và không miễn nhiễm thao túng ký ức.
 
-**Tịch Quang Kiếm:** bản mệnh linh kiếm, thiên về đường kiếm sạch, đổi góc nhanh, phá điểm mất cân bằng, dẫn lực và bảo hộ. Có thể triệu hồi bằng kiếm niệm trong phạm vi cảm nhận hợp lệ; không tự tái sinh vô hạn.
+**Tịch Quang Kiếm:** bản mệnh linh kiếm, thiên về đường kiếm sạch, đổi góc nhanh, phá điểm mất cân bằng, dẫn lực và bảo hộ. Visual Lock R02 thể hiện đúng một đại kiếm cực dài, thẳng, bản rộng, trắng–bạc với lõi/rãnh lam và hộ thủ vàng–đen. Có thể triệu hồi bằng kiếm niệm trong phạm vi cảm nhận hợp lệ; không tự tái sinh vô hạn.
 
 **Thiên Cơ Bạch Kim Kiếm Khải:** pháp bảo chiến đấu cấp cao của Thiên Kiếm Môn, tăng chịu lực, hỗ trợ thân pháp và phân phối phản lực; không phải powered armor công nghệ.
 
@@ -135,7 +130,7 @@ Các chi tiết giống cơ khí trên Kiếm Khải chỉ là hình thức củ
 
 ### Backrooms và encounter
 
-Lục Trầm rơi vào Level 0 ở vị trí khác Cao Minh và không gặp hắn ngay tại đây. Runtime giữ **10% encounter roll** nhưng chỉ cho phép tái ngộ sau khi đã rời Level 0; Gemini không được tự spawn hoặc mutate Party.
+Lục Trầm rơi vào Level 0 ở vị trí khác Cao Minh và không gặp hắn ngay tại đây. Runtime giữ **0.25% encounter roll** nhưng chỉ cho phép tái ngộ sau khi đã rời Level 0; Gemini không được tự spawn hoặc mutate Party.
 
 Khi tái ngộ, hai người phải nhận ra nhau từ thế giới cũ và bắt đầu trong trạng thái cảnh giác/thù địch. Không cho Lục Trầm tự biết Entity, Level, Almond Water hoặc quy luật Backrooms nếu chưa quan sát, được cung cấp thông tin hoặc suy luận có căn cứ.
 

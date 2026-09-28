@@ -15,14 +15,13 @@
 - `app/src/main/assets/knowledge/characters_current.json`
 - `app/src/main/assets/knowledge/knowledge_db.json`
 
-Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Trầm R01**. Không được phục hồi dữ kiện player-character từ mirror hoặc save cũ nếu mâu thuẫn.
+Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Trầm R05 / Visual R02**. Không được phục hồi dữ kiện player-character từ mirror hoặc save cũ nếu mâu thuẫn.
 
 ## Character Drive audit
 
 - `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
-- `Iris_Codex.docx` — nguồn riêng của Iris.
 - `Syvial_Codex.docx` — nguồn riêng của Syvial.
-- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R01.
+- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R05.
 
 ### Cao Minh source map
 
@@ -43,9 +42,9 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Tr�
 
 | Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity | `LUC-TRAM-THIEN-KIEM-CODEX-R01` | Chân truyền đệ tử Thiên Kiếm Môn; Chính Đạo Kiếm Tu; cùng thế giới nguyên sinh với Cao Minh. |
+| Identity | `LUC-TRAM-THIEN-KIEM-CODEX-R05` | Chân truyền đệ tử Thiên Kiếm Môn; Chính Đạo Kiếm Tu; cùng thế giới nguyên sinh với Cao Minh. |
 | Power scale | `01 · ĐỊNH DANH VÀ VỊ TRÍ` | Thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. |
-| Visual | `04 · NGOẠI HÌNH · VISUAL LOCK R01` | Tóc đen cực dài buộc cao, kiếm quan vàng, Kiếm Khải trắng–đen–vàng, chiến bào phân mảnh, Tịch Quang trường kiếm bạc. |
+| Visual | `04 · NGOẠI HÌNH · VISUAL LOCK R02` | Tóc bạc–trắng cực dài, mắt lam xám, kiếm quan vàng–đen gắn tinh thể lam, Kiếm Khải trắng–bạc–vàng trên nền tối điểm sapphire, chiến bào phân mảnh và đúng một Tịch Quang đại kiếm cực dài trắng–bạc. |
 | Core ability | `07 · THIÊN KIẾM LINH TÂM` | Đọc quỹ đạo/trọng tâm/linh lực/điểm bất ổn; không toàn tri, không tự biết Entity/Level/quy luật. |
 | Weapon | `08 · TỊCH QUANG KIẾM` | Bản mệnh linh kiếm; kiếm niệm triệu hồi; không tự tái sinh vô hạn. |
 | Armor | `09 · THIÊN CƠ BẠCH KIM KIẾM KHẢI` | Pháp bảo tiên hiệp, không phải công nghệ/mecha thuần khoa học. |
@@ -56,7 +55,6 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15** và **Lục Tr�
 
 ### Relationship locks
 
-- Cao Minh ↔ Iris: không có quan hệ có sẵn; first contact nếu gặp.
 - Cao Minh ↔ Syvial: không có quan hệ có sẵn; first contact nếu gặp.
 - Cao Minh ↔ Lục Trầm: đã là tử địch/đối thủ từ thế giới nguyên sinh; trong Backrooms quan hệ phát triển chậm từ đối đầu đến hợp tác, tín nhiệm rồi mới có khả năng nảy sinh tình cảm. Không phải first contact.
 - Cao Minh ↔ Diệp Minh: tử địch không đội trời chung. Diệp Minh trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố là một nguyên nhân quyết định khiến Cao Minh bước vào ma đạo. Không mặc định Diệp Minh là chủ mưu duy nhất; các chi tiết sâu hơn vẫn OPEN. Canon nguồn: `DIEP_MINH_CANON.md`.
