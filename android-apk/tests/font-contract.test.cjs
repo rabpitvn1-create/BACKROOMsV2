@@ -17,7 +17,9 @@ test('Pretendard Std is the packaged default game font',()=>{
   assert.match(index,/body\{[^}]*font:15px 'Pretendard Std'/);
   assert.match(index,/player-action-modal\{[^}]*font-family:'Pretendard Std'/);
   assert.match(index,/game-menu-modal\{[^}]*font-family:'Pretendard Std'/);
-  assert.match(gm,/\.message\.gm \.role\{font-family:'Pretendard Std'/);
+  assert.match(gm,/\.message\.gm \.role\{font-family:'Play','Pretendard Std'/);
+  assert.match(gm,/\.message\.gm \.gm-main-text\{font-family:'Play','Pretendard Std'/);
+  assert.doesNotMatch(gm,/\.message\.player \.gm-main-text\{font-family:'Play'/);
 });
 
 test('Play remains primary for special presentation selectors',()=>{

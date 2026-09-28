@@ -368,7 +368,6 @@
       var result=JSON.parse(json);
       if(result&&result.state){
         state=result.state;
-        try{localStorage.setItem('backroom-apk-state',JSON.stringify(state));}catch(_){}
       }
       if(typeof status!=='undefined'&&status)status.textContent=result&&result.handled?String(result.reply||'Đã nâng chỉ số.'):String(result&&result.error||'Không thể nâng chỉ số.');
     }catch(_){

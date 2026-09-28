@@ -78,12 +78,12 @@ test('combat completion scrolls to the start of the next GM narration', () => {
   assert.doesNotMatch(finishBlock, /scrollCombatToBottom\(\)/);
 });
 
-test('Core upgrades use persisted state and are locked only by active combat', () => {
+test('Core upgrades use live state and are locked only by active combat', () => {
   const start = coreFacadeSource.indexOf('public synchronized String processCoreUpgrade');
   const end = coreFacadeSource.indexOf('public synchronized String levelSnapshotDescriptor', start);
   assert.ok(start >= 0 && end > start);
   const upgradeBlock = coreFacadeSource.slice(start, end);
-  assert.match(upgradeBlock, /JSONObject persisted = parseState\(preferences\.getString\(STATE_KEY, "\{\}"\)\)/);
+  assert.match(upgradeBlock, /JSONObject persisted = parseState\(liveStateJson\)/);
   assert.match(upgradeBlock, /if \(persisted\.length\(\) == 0\) persisted = submitted;/);
   assert.match(upgradeBlock, /CombatChoiceEngine\.isActive\(persisted\)/);
 });
@@ -108,4 +108,3 @@ test('GM effect highlights keep the normal narration font', () => {
   assert.match(source, /\.semantic-damage\{color:#ff5c5c\}/);
   assert.match(source, /\.semantic-buff\{color:#73e6a2\}/);
 });
-

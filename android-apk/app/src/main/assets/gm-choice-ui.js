@@ -7,7 +7,8 @@
   style.textContent = [
     "@font-face{font-family:'Play';font-style:normal;font-weight:400;src:url('file:///android_asset/fonts/Play-Regular.ttf') format('truetype');font-display:swap}",
     "@font-face{font-family:'Play';font-style:normal;font-weight:700;src:url('file:///android_asset/fonts/Play-Bold.ttf') format('truetype');font-display:swap}",
-    ".message.gm .role{font-family:'Pretendard Std',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:700}",
+    ".message.gm .role{font-family:'Play','Pretendard Std',system-ui,sans-serif;font-weight:700}",
+    ".message.gm .gm-main-text{font-family:'Play','Pretendard Std',system-ui,sans-serif}",
     ".semantic{font-family:'Play','Pretendard Std',system-ui,sans-serif;font-weight:700;text-decoration:none}",
     ".semantic-character{color:#67d5ff}",
     ".semantic-entity{color:#ff6b6b}",
@@ -174,7 +175,6 @@
     if (!text || !form || !action) return;
     if (Array.isArray(entry.choices)) entry.choices.forEach(function(x){ x.disabled = true; });
     choice.selected = true;
-    try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
     if (typeof window.render === 'function') window.render();
     action.value = text;
     if (typeof form.requestSubmit === 'function') form.requestSubmit();
@@ -214,6 +214,18 @@
       {id:'B',text:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất',action:'Kiểm tra các lối đi hoặc điểm bất thường gần nhất'},
       {id:'C',text:'Tiếp tục khám phá ' + levelText,action:'Tiếp tục khám phá ' + levelText,highlights:[{text:levelText,type:'location'}]}
     ];
+  }
+
+  function displayedExplorerChoices(entry) {
+    var choices = Array.isArray(entry && entry.choices) ? entry.choices.slice(0, 3) : [];
+    fallbackExplorerChoices().forEach(function(fallback){
+      if (choices.length < 3 && !choices.some(function(choice){
+        return String(choice.action || choice.text || '').trim() === fallback.action;
+      })) choices.push(fallback);
+    });
+    return choices.map(function(choice, index){
+      return Object.assign({}, choice, {id:String.fromCharCode(65 + index)});
+    });
   }
 
   function submitChestChoice() {
@@ -281,10 +293,8 @@
     }
 
     var hasChest = latest && chestPresent();
-    var choices = Array.isArray(entry.choices) ? entry.choices : [];
-    if (latest && !choices.length && !(state.combat && state.combat.active)) {
-      choices = fallbackExplorerChoices();
-    }
+    var choices = latest && !(state.combat && state.combat.active)
+        ? displayedExplorerChoices(entry) : [];
     if (!hasChest && !choices.length) return;
 
     var actionable = latest && !(state.combat && state.combat.active)
@@ -610,7 +620,6 @@
         diceRollAnimating=false;
         state=nextState;
         if(typeof CURRENT_CHARACTER_CANON!=='undefined')state.characterCanon=CURRENT_CHARACTER_CANON;
-        try{localStorage.setItem('backroom-apk-state',JSON.stringify(state));}catch(_){}
         window.__combatBusy=false;
         if(typeof busy!=='undefined')busy=false;
         if(typeof window.render==='function')window.render();
@@ -711,7 +720,6 @@
       state = nextState;
       if (typeof CURRENT_CHARACTER_CANON !== 'undefined') state.characterCanon = CURRENT_CHARACTER_CANON;
       if (action) action.value = '';
-      try { localStorage.setItem('backroom-apk-state', JSON.stringify(state)); } catch (_) {}
 
       var combat = state.combat || {};
       var events = Array.isArray(combat.feedbackEvents) ? combat.feedbackEvents : [];
@@ -775,6 +783,23 @@
     scrollGmSystemMessage();
   };
 
+  window.backroomPrefetchChoices = function(){
+    if (!window.Android || typeof Android.prefetchChoices !== 'function' || !state
+        || (state.combat && state.combat.active)
+        || (state.flags && state.flags.entityEncounterKey)) return;
+    var index = lastGmIndex();
+    var entry = index < 0 ? null : state.log[index];
+    if (!entry || index !== state.log.length - 1) return;
+    var choices = displayedExplorerChoices(entry);
+    if (choices.length !== 3) return;
+    var actions = choices.map(function(choice, i){
+      return {id:String.fromCharCode(65 + i),action:String(choice.action || choice.text || '').trim()};
+    });
+    if (actions.some(function(choice){return !choice.action;})) return;
+    Android.prefetchChoices(JSON.stringify(actions));
+  };
+
   window.render();
   scrollForCurrentMode();
+  window.backroomPrefetchChoices();
 })();
