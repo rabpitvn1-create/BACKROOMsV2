@@ -719,7 +719,7 @@ final class LevelCore {
     if (size == 0 || out.length() >= MAX_KNOWLEDGE_CONTEXT_CHARS) return;
     int configuredLimit = rotatingSectionLimit(section);
     int count = configuredLimit > 0 ? Math.min(configuredLimit, size) : size;
-    int start = configuredLimit > 0 && size > count
+    int start = !isCoreNarrativeSection(section) && configuredLimit > 0 && size > count
         ? Math.floorMod((Math.max(1, turn) - 1) * count + section.hashCode(), size)
         : 0;
 

@@ -18,6 +18,7 @@ import com.rabpit.backroom.core.CombatChoiceEngine;
 import com.rabpit.backroom.core.GameCoreFacade;
 import com.rabpit.backroom.core.GmChoiceContract;
 import com.rabpit.backroom.core.GmNarrativePacket;
+import com.rabpit.backroom.core.CanonRetriever;
 import com.rabpit.backroom.core.GmNarratorContract;
 import com.rabpit.backroom.core.NarrationGuard;
 import com.rabpit.backroom.core.ProviderRetryPolicy;
@@ -43,6 +44,7 @@ public class MainActivity extends Activity {
   private WebView webView;
   private final ExecutorService io = Executors.newSingleThreadExecutor();
   private GameCoreFacade gameCore;
+  private CanonRetriever canonRetriever;
   private static final String GEMINI_MODEL = "gemini-3.8-flash";
   private static final String HAIKU_DEFAULT_BASE_URL = "https://api.anthropic.com/v1/messages";
   private static final String HAIKU_DEFAULT_MODEL = "claude-haiku-4-5-20251001";
@@ -56,6 +58,11 @@ public class MainActivity extends Activity {
     super.onCreate(savedInstanceState);
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     gameCore = GameCoreFacade.create(getApplicationContext(), BuildConfig.DEBUG);
+    try {
+      canonRetriever = CanonRetriever.fromAssets(getApplicationContext());
+    } catch (Exception error) {
+      Log.e(TAG, "Canon assets failed validation", error);
+    }
     webView = new WebView(this);
     WebSettings settings = webView.getSettings();
     settings.setJavaScriptEnabled(true);
@@ -708,9 +715,24 @@ public class MainActivity extends Activity {
           String entityContext = gameCore.entityPromptContext(coreJson);
           String itemContext = gameCore.itemPromptContext(coreJson);
           String characterContext = gameCore.characterPromptContext(coreJson);
+          String levelName = levelContext.startsWith("CURRENT LEVEL NODE: ")
+              ? levelContext.substring("CURRENT LEVEL NODE: ".length()).split("\\n", 2)[0] : "";
+          CanonRetriever.CanonPacket canon = canonRetriever == null ? null
+              : canonRetriever.retrieve(state, action, CanonRetriever.DEFAULT_BUDGET,
+                  BuildConfig.DEBUG, levelName);
+          if (canon == null || canon.budgetExceeded) {
+            Log.w(TAG, "Canon retrieval unavailable/over budget/missing refs: "
+                + (canon == null ? "index unavailable" : "size=" + canon.charCount
+                    + " missing=" + canon.missingMandatoryRefs + " requires=" + canon.missingRefs));
+            throw new IllegalStateException("Canon bắt buộc không khả dụng trong budget; không gọi AI narration.");
+          }
+          if (!canon.missingMandatoryRefs.isEmpty()) Log.w(TAG,
+              "Markdown canon missing/conflicting; Core context remains authoritative: "
+                  + canon.missingMandatoryRefs);
+          if (BuildConfig.DEBUG) Log.d(TAG, "CANON RETRIEVAL: " + canon.trace);
           String prompt = GmNarrativePacket.build(
               levelContext, entityContext, itemContext, characterContext,
-              recentContext(state), state, action, gmStyleExamplesContext());
+              recentContext(state), state, action, gmStyleExamplesContext(), canon.promptText());
 
           JSONObject generated;
           String reply;

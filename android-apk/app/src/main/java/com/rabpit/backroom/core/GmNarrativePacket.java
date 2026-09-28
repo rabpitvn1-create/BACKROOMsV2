@@ -21,6 +21,14 @@ public final class GmNarrativePacket {
       JSONObject state,
       String action,
       String gmStyleExamples) throws Exception {
+    return build(levelContext, entityContext, itemContext, characterContext,
+        recentContext, state, action, gmStyleExamples, "");
+  }
+
+  public static String build(
+      String levelContext, String entityContext, String itemContext, String characterContext,
+      String recentContext, JSONObject state, String action, String gmStyleExamples,
+      String canonText) throws Exception {
     JSONObject promptState = projectState(state);
     String recent = clip(recentContext, MAX_RECENT_CONTEXT_CHARS);
     String style = clip(gmStyleExamples, 1800);
@@ -46,6 +54,8 @@ public final class GmNarrativePacket {
         + safe(entityContext) + "\n"
         + safe(itemContext) + "\n"
         + safe(characterContext) + "\n"
+        + "MARKDOWN CANON (read-only; apply only to committed scene, never override Core state):\n"
+        + safe(canonText) + "\n"
         + situationContext(state) + "\n"
         + "RECENT CONTEXT (chỉ giữ continuity, không lặp nguyên văn):\n" + recent + "\n"
         + "READ-ONLY STATE: " + promptState.toString() + "\n"
