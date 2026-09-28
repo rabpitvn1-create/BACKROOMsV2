@@ -78,11 +78,12 @@ public class MainActivity extends Activity {
       @Override public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         installUiScripts();
+        safeApplyImmersiveFullscreen("onPageFinished");
       }
     });
     webView.addJavascriptInterface(new GameBridge(), "Android");
     setContentView(webView);
-    safeApplyImmersiveFullscreen("onCreate");
+    webView.post(() -> safeApplyImmersiveFullscreen("webViewAttached"));
     webView.loadUrl("file:///android_asset/index.html");
   }
 
