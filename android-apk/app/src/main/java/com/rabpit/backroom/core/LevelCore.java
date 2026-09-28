@@ -30,6 +30,18 @@ final class LevelCore {
   private static final String[] LEVEL_ZERO_PROGRESSION = {
       "0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms", "1"
   };
+  private static final String[] GAMEPLAY_PROGRESSION = {
+      "0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms",
+      "1", "1.2", "1.3", "1.5", "base_alpha", "traders_vault",
+      "2", "2.1", "3", "3.5", "4", "office_market",
+      "5", "5.1", "5.2", "5.3", "6", "6.1"
+  };
+  private static final String[] ALL_LEVEL_NODE_ORDER = {
+      "0", "0.1", "0.2", "0.5", "0.7", "manila_room", "the_torment", "red_rooms",
+      "1", "1.2", "1.3", "1.5", "base_alpha", "traders_vault",
+      "2", "2.1", "3", "3.5", "4", "office_market",
+      "5", "5.1", "5.2", "5.3", "6", "6.1", "6.31"
+  };
   private static final Pattern LEVEL_TOKEN =
       Pattern.compile("(?i)(?:^|\\b)level\\s*([0-6](?:\\.[0-9]+)?)");
   private static final String LEVEL_KNOWLEDGE_ASSET = "knowledge/level_knowledge.json";
@@ -266,7 +278,7 @@ final class LevelCore {
 
     String transitionInstruction = exitAvailable
         ? "LEVEL TRANSITION: AVAILABLE. The only allowed next destination is " + allowed
-            + ". Do not skip any Level 0 sub-level node."
+            + ". Do not skip any required Level graph node."
         : "LEVEL TRANSITION: LOCKED. Keep currentLevelKey unchanged and keep the environment inside "
             + displayNameForKey(levelKey) + ".";
 
@@ -348,15 +360,8 @@ final class LevelCore {
 
   static int stageIndexForKey(String levelKey) {
     String key = normalizeKey(levelKey);
-    for (int i = 0; i < LEVEL_ZERO_PROGRESSION.length; i++) {
-      if (LEVEL_ZERO_PROGRESSION[i].equals(key)) return i;
-    }
-    if (isMainLevelKey(key)) {
-      int level = parentLevel(key);
-      if (level >= 1) {
-        // Level 1 is index 8 because the Level 0 graph contains eight nodes before it.
-        return (LEVEL_ZERO_PROGRESSION.length - 1) + (level - 1);
-      }
+    for (int i = 0; i < ALL_LEVEL_NODE_ORDER.length; i++) {
+      if (ALL_LEVEL_NODE_ORDER[i].equals(key)) return i;
     }
     return 0;
   }
@@ -373,11 +378,24 @@ final class LevelCore {
       case "the_torment": return "The Torment";
       case "red_rooms": return "Red Rooms";
       case "1": return "Level 1 — Parking Zone";
+      case "1.2": return "Level 1.2 — Concrete Garden";
+      case "1.3": return "Level 1.3 — Malignance";
+      case "1.5": return "Level 1.5 — Inverted";
+      case "base_alpha": return "Base Alpha";
+      case "traders_vault": return "Traders Vault";
       case "2": return "Level 2 — Pipe Dreams";
+      case "2.1": return "Level 2.1 — Locked";
       case "3": return "Level 3 — The Electrical Station";
+      case "3.5": return "Level 3.5 — Electropolis";
       case "4": return "Level 4 — The Abandoned Office";
+      case "office_market": return "The Office Market";
       case "5": return "Level 5 — Terror Hotel";
+      case "5.1": return "Level 5.1 — GRAND OPENING OF THE TERROR HOTEL CASINO";
+      case "5.2": return "Level 5.2 — Scenic Views";
+      case "5.3": return "Level 5.3 — Promethei Bibliotheca";
       case "6": return "Level 6 — Lights Out";
+      case "6.1": return "Level 6.1 — The Snackrooms";
+      case "6.31": return "Level 6.31 — Pierce the Veil";
       default: return levelKey == null || levelKey.trim().isEmpty() ? "Unknown Level" : levelKey;
     }
   }
@@ -394,11 +412,24 @@ final class LevelCore {
       case "the_torment": return "The Torment / Level 0";
       case "red_rooms": return "Red Rooms / Level 0";
       case "1": return "Level 1 / Parking Zone";
+      case "1.2": return "Level 1.2 / Concrete Garden";
+      case "1.3": return "Level 1.3 / Malignance";
+      case "1.5": return "Level 1.5 / Inverted";
+      case "base_alpha": return "Base Alpha / Level 1";
+      case "traders_vault": return "Traders Vault / Level 1";
       case "2": return "Level 2 / Pipe Dreams";
+      case "2.1": return "Level 2.1 / Locked";
       case "3": return "Level 3 / The Electrical Station";
+      case "3.5": return "Level 3.5 / Electropolis";
       case "4": return "Level 4 / The Abandoned Office";
+      case "office_market": return "The Office Market / Level 4";
       case "5": return "Level 5 / Terror Hotel";
+      case "5.1": return "Level 5.1 / Terror Hotel Casino";
+      case "5.2": return "Level 5.2 / Scenic Views";
+      case "5.3": return "Level 5.3 / Promethei Bibliotheca";
       case "6": return "Level 6 / Lights Out";
+      case "6.1": return "Level 6.1 / The Snackrooms";
+      case "6.31": return "Level 6.31 / Pierce the Veil";
       default: return displayName(key);
     }
   }
@@ -463,8 +494,8 @@ final class LevelCore {
 
   private static String legacyNextRequiredLevelKey(String levelKey) {
     String key = normalizeKey(levelKey);
-    for (int i = 0; i < LEVEL_ZERO_PROGRESSION.length - 1; i++) {
-      if (LEVEL_ZERO_PROGRESSION[i].equals(key)) return LEVEL_ZERO_PROGRESSION[i + 1];
+    for (int i = 0; i < GAMEPLAY_PROGRESSION.length - 1; i++) {
+      if (GAMEPLAY_PROGRESSION[i].equals(key)) return GAMEPLAY_PROGRESSION[i + 1];
     }
     return null;
   }
@@ -507,9 +538,8 @@ final class LevelCore {
 
   private static boolean isKnownLevelKey(String key) {
     String normalized = normalizeKey(key);
-    if (normalized.matches("[0-6]")) return true;
-    for (String progressionKey : LEVEL_ZERO_PROGRESSION) {
-      if (progressionKey.equals(normalized)) return true;
+    for (String known : ALL_LEVEL_NODE_ORDER) {
+      if (known.equals(normalized)) return true;
     }
     return false;
   }
@@ -520,11 +550,13 @@ final class LevelCore {
 
   private static int parentLevel(String levelKey) {
     String key = normalizeKey(levelKey);
-    if (key.matches("[1-6]")) return Integer.parseInt(key);
+    if (key.matches("[1-6](?:\\.[0-9]+)?")) return Integer.parseInt(key.substring(0, 1));
+    if ("base_alpha".equals(key) || "traders_vault".equals(key)) return 1;
+    if ("office_market".equals(key)) return 4;
     return 0;
   }
 
-  private static String rawLevelKeyFromLocation(String location) {
+  static String rawLevelKeyFromLocation(String location) {
     String text = location == null ? "" : location.trim();
     if (text.isEmpty()) return "";
 
@@ -532,6 +564,9 @@ final class LevelCore {
     if (lower.contains("manila room")) return "manila_room";
     if (lower.contains("the torment") || lower.matches(".*\\btorment\\b.*")) return "the_torment";
     if (lower.contains("red rooms") || lower.contains("red room")) return "red_rooms";
+    if (lower.contains("base alpha")) return "base_alpha";
+    if (lower.contains("traders vault") || lower.contains("trader's vault")) return "traders_vault";
+    if (lower.contains("office market")) return "office_market";
 
     Matcher matcher = LEVEL_TOKEN.matcher(text);
     if (!matcher.find()) return "";
@@ -556,6 +591,11 @@ final class LevelCore {
     if ("manila".equals(key) || "manila_room".equals(key)) return "manila_room";
     if ("torment".equals(key) || "the_torment".equals(key)) return "the_torment";
     if ("red_room".equals(key) || "red_rooms".equals(key)) return "red_rooms";
+    if ("basealpha".equals(key) || "base_alpha".equals(key)) return "base_alpha";
+    if ("tradersvault".equals(key) || "traders_vault".equals(key) || "trader's_vault".equals(key))
+      return "traders_vault";
+    if ("officemarket".equals(key) || "office_market".equals(key) || "the_office_market".equals(key))
+      return "office_market";
     if (key.matches("0+[1-6]")) return String.valueOf(Integer.parseInt(key));
     if ("00".equals(key)) return "0";
     return normalizeNumericKey(key);

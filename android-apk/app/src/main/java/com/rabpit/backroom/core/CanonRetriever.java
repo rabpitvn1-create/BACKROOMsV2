@@ -275,8 +275,11 @@ public final class CanonRetriever {
     for (Section s : sections) {
       String heading = normalize(s.heading);
       String file = s.fileTerms;
+      String expectedLevelHeading = normalize(levelDisplayName);
       boolean belongs = "level".equals(parts[0])
-          ? (file.contains("world") && (heading.startsWith("tang " + key + " ") || heading.startsWith("level " + key + " ")))
+          ? (file.contains("world") && (heading.startsWith("tang " + key + " ")
+              || heading.startsWith("level " + key + " ")
+              || (!expectedLevelHeading.isEmpty() && heading.equals(expectedLevelHeading))))
           : "entity".equals(parts[0]) ? heading.equals(key) || file.equals(key)
           : file.startsWith(key) && (file.contains("codex") || heading.equals(key));
       if (belongs && !("level".equals(parts[0])

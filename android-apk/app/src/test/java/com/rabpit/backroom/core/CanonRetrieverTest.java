@@ -89,6 +89,21 @@ public class CanonRetrieverTest {
     assertFalse(packet.promptText().contains("Chaotic Structure"));
     assertFalse(packet.budgetExceeded);
   }
+
+  @Test public void nonNumericLevelDisplayNameCanProvideMandatoryWorldCore() throws Exception {
+    Map<String, String> files = wiki();
+    files.put("BACKROOMS_WORLD_SUBLEVELS_1_6.md",
+        "# Sublevels\n## Base Alpha\n<!-- canon: aliases=Base Alpha; core=true -->\n"
+            + "BASE_ALPHA_CANON_FACT.\n");
+    JSONObject state = new JSONObject().put("currentLevelKey", "base_alpha")
+        .put("party", new JSONArray());
+    CanonRetriever.CanonPacket packet = new CanonRetriever(files).retrieve(
+        state, "Tôi quan sát khu căn cứ.", 3000, true, "Base Alpha");
+    assertFalse(packet.missingMandatoryRefs.toString(),
+        packet.missingMandatoryRefs.contains("level:base_alpha"));
+    assertTrue(packet.promptText().contains("BASE_ALPHA_CANON_FACT"));
+  }
+
   @Test public void dependenciesCyclesMissingRefsAndBudgetAreVisible() throws Exception {
     Map<String, String> files = wiki();
     files.put("Extra.md", "# Extra\n## A\n<!-- canon: aliases=Alpha; requires=extra::extra_b -->\nA.\n"

@@ -71,6 +71,49 @@ public class LevelCoreTest {
         .put("location", location);
   }
 
+
+  @Test public void graphAddsCurrentLevelOneToSixSublevelsWithoutTrimmedNodes() throws Exception {
+    LevelGraph graph = LevelGraph.fromText(readRepoAsset("level_graph.json"));
+    String[] progression = {
+        "1","1.2","1.3","1.5","base_alpha","traders_vault",
+        "2","2.1","3","3.5","4","office_market",
+        "5","5.1","5.2","5.3","6","6.1"
+    };
+    for (int i = 0; i < progression.length; i++) {
+      assertTrue("Missing graph node " + progression[i], graph.contains(progression[i]));
+      if (i + 1 < progression.length) {
+        assertTrue("Missing required edge " + progression[i] + " -> " + progression[i + 1],
+            graph.allows(progression[i], progression[i + 1]));
+      }
+    }
+    assertTrue(graph.contains("6.31"));
+    assertTrue(graph.outgoing("6.31").isEmpty());
+    assertFalse(graph.allows("6.1", "6.31"));
+    for (String trimmed : new String[]{"1.1","office_space_el3a","6.2","6.3"}) {
+      assertFalse("Trimmed node must stay out of gameplay graph: " + trimmed, graph.contains(trimmed));
+    }
+  }
+
+  @Test public void namedSublevelTargetsAreParsedExplicitly() {
+    assertEquals("base_alpha", LevelCore.rawLevelKeyFromLocation("Cao Minh đi vào Base Alpha"));
+    assertEquals("traders_vault", LevelCore.rawLevelKeyFromLocation("Cao Minh sang Traders Vault"));
+    assertEquals("office_market", LevelCore.rawLevelKeyFromLocation("Cao Minh tiến vào The Office Market"));
+    assertEquals("6.31", LevelCore.rawLevelKeyFromLocation("Cao Minh đi vào Level 6.31"));
+  }
+
+  @Test public void fallbackProgressionCannotSkipLevelOneSublevels() throws Exception {
+    LevelCore core = new LevelCore(null, new SequenceRng(5));
+    JSONObject state = new JSONObject().put("currentLevel", 1).put("currentLevelKey", "1")
+        .put("turn", 1).put("location", "Level 1 / Parking Zone");
+    for (int turn = 1; turn <= LevelCore.ROUTE_REQUIRED_STREAK; turn++) {
+      state.put("turn", turn);
+      core.rollRouteForExplorerAction(state, ROUTE_ACTION);
+    }
+    assertFalse(core.applyPlayerTransitionIfRequested(state, "Cao Minh đi vào Level 2"));
+    assertTrue(core.applyPlayerTransitionIfRequested(state, "Cao Minh đi vào Level 1.2"));
+    assertEquals("1.2", state.getString(LevelCore.LEVEL_KEY));
+  }
+
   @Test public void structuredKnowledgeLoadsOnlyCurrentLevelBundle() throws Exception {
     String knowledge = new JSONObject()
         .put("schemaVersion", 2)
@@ -389,13 +432,18 @@ public class LevelCoreTest {
   }
 
   @Test public void stageIndexFollowsProgressionGraphNotDecimalNames() throws Exception {
-    String[] keys = {"0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms","1","2","3","4","5","6"};
+    String[] keys = {
+        "0","0.1","0.2","0.5","0.7","manila_room","the_torment","red_rooms",
+        "1","1.2","1.3","1.5","base_alpha","traders_vault",
+        "2","2.1","3","3.5","4","office_market","5","5.1","5.2","5.3","6","6.1","6.31"
+    };
     for (int i = 0; i < keys.length; i++) {
       assertEquals(keys[i], i, LevelCore.stageIndexForKey(keys[i]));
     }
     assertEquals(4, LevelCore.stageIndexForKey("0.7"));
     assertEquals(8, LevelCore.stageIndexForKey("1"));
-    assertEquals(13, LevelCore.stageIndexForKey("6"));
+    assertEquals(24, LevelCore.stageIndexForKey("6"));
+    assertEquals(26, LevelCore.stageIndexForKey("6.31"));
   }
 
   @Test public void actionAwareLevelContextSelectsRelevantSections() throws Exception {
