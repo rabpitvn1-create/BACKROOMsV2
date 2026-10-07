@@ -118,7 +118,8 @@ final class CharacterEncounterCore {
 
   void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
-    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);\n    if ("luc_tram".equals(id) || "luc tram".equals(id) || "lục trầm".equals(id)) id = "iris";
+    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
+    if ("luc_tram".equals(id) || "luc tram".equals(id) || "lục trầm".equals(id)) id = "iris";
     String levelKey = state.optString(LevelCore.LEVEL_KEY,
         String.valueOf(state.optInt("currentLevel", 0))).trim();
     if ("lucia".equals(id) && !"0".equals(levelKey)) {
