@@ -31,18 +31,22 @@ final class CharacterProgressionCore {
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
+    CharacterEncounterCore.migrateRetiredCompanion(state);
 
     JSONObject root = state.optJSONObject(ROOT_KEY);
     if (root == null) root = new JSONObject();
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);
     if (characters == null) characters = new JSONObject();
 
+    JSONObject retired = characters.optJSONObject("luc_tram");
+    if (retired != null) {
+      if (!state.has("retiredLucTramProgression")) state.put("retiredLucTramProgression", new JSONObject(retired.toString()));
+      if (!characters.has("iris")) characters.put("iris", new JSONObject(retired.toString()));
+      characters.remove("luc_tram");
+    }
+
     ensureProfileObject(state, characters, "cao_minh");
     ensureProfileObject(state, characters, "lucia");
-    if (!characters.has("iris") && characters.has("luc_tram")) {
-      characters.put("iris", characters.optJSONObject("luc_tram"));
-    }
-    characters.remove("luc_tram");
     ensureProfileObject(state, characters, "iris");
     ensureProfileObject(state, characters, "syvial");
 
@@ -520,7 +524,7 @@ final class CharacterProgressionCore {
     if (value.contains("cao_minh") || value.contains("cao minh")) return "cao_minh";
     if (value.contains("lucia") || value.contains("hứa thuý mai") || value.contains("hứa thúy mai")
         || value.contains("hua thuy mai")) return "lucia";
-    if (value.contains("iris") || value.contains("lục trầm") || value.contains("luc tram") || value.contains("luc_tram")) return "iris";
+    if (value.contains("iris")) return "iris";
     if (value.contains("syvial")) return "syvial";
     return value.replace(' ', '_');
   }

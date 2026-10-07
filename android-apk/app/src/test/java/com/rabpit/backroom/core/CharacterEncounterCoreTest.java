@@ -45,12 +45,12 @@ public class CharacterEncounterCoreTest {
         .getJSONArray("lastIntroduced").getString(0));
   }
 
-  @Test public void lucTramCannotActivateOnLevelZero() throws Exception {
+  @Test public void irisCannotActivateOnLevelZero() throws Exception {
     CharacterEncounterCore core = new CharacterEncounterCore();
     JSONObject state = state(0, 2).put(LevelCore.LEVEL_KEY, "0");
     try {
       core.activateEncounterCandidate(state, "iris");
-      fail("Level 0 must not allow Iris encounter.");
+      fail("Level 0 must not allow Iris reunion.");
     } catch (IllegalStateException expected) {
       assertEquals(0, state.getJSONArray("party").length());
     }
@@ -71,7 +71,7 @@ public class CharacterEncounterCoreTest {
   }
 
   @Test public void normalizationDeduplicatesCurrentCompanionsAndStripsShadowProgression() throws Exception {
-    JSONObject lucTram = new JSONObject()
+    JSONObject iris = new JSONObject()
         .put("id", "iris")
         .put("name", "Iris")
         .put("hp", 61)
@@ -81,7 +81,7 @@ public class CharacterEncounterCoreTest {
     JSONObject state = state(0, 12);
     state.put("party", new JSONArray()
         .put(new JSONObject().put("id", "cao_minh").put("name", "Cao Minh"))
-        .put(lucTram)
+        .put(iris)
         .put(new JSONObject().put("id", "iris").put("name", "Iris"))
         .put("Syvial"));
 
@@ -135,7 +135,7 @@ public class CharacterEncounterCoreTest {
         .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Test")));
   }
 
-  @Test public void irisPendingPromptIsFirstContact() throws Exception {
+  @Test public void irisPendingPromptIsFirstContactWithoutInheritedRelationship() throws Exception {
     JSONObject state = state(1, 5)
         .put("characterEncounter", new JSONObject()
             .put("pendingIntro", new JSONArray().put("iris"))
@@ -144,7 +144,66 @@ public class CharacterEncounterCoreTest {
     String prompt = core.promptContext(state);
 
     assertTrue(prompt.contains("Iris first contact is already committed"));
-    assertTrue(prompt.contains("without inventing prior shared history"));
+    assertFalse(prompt.contains("tense reunion"));
+    assertTrue(prompt.contains("Never import Kai romance"));
+  }
+
+  @Test public void retiredSaveMigratesLiveStateWithoutSwordLoreOrProgressLoss() throws Exception {
+    JSONObject oldProfile = new JSONObject().put("schema", "core_stats_v1")
+        .put("stats", new JSONObject().put("STR", 7).put("DEF", 5).put("SKL", 6).put("VIT", 8))
+        .put("baseMaxHp", 50).put("currentHp", 31);
+    JSONObject state = state(1, 5).put("gameTime", new JSONObject().put("elapsedSubjectiveMinutes", 30))
+        .put(CharacterProgressionCore.ROOT_KEY, new JSONObject().put("characters", new JSONObject().put("luc_tram", oldProfile)))
+        .put("party", new JSONArray().put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")
+            .put("avatar", "file:///android_asset/avatars/luctram_avatar.png").put("role", "Chân truyền Thiên Kiếm Môn")
+            .put("inventory", new JSONArray().put(new JSONObject().put("name", "Tịch Quang Kiếm"))
+                .put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"))
+                .put(new JSONObject().put("name", "Kỷ vật Tịch Quang")))))
+        .put("survival", new JSONObject().put("characters", new JSONObject().put("luc_tram", new JSONObject().put("lastFoodMinute", 17))))
+        .put("combat", new JSONObject().put("currentActor", "Lục Trầm")
+            .put("participants", new JSONArray().put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm").put("hp", 31)))
+            .put("currentUltimate", new JSONObject().put("name", "Thiên Kiếm Định Giới"))
+            .put("diceState", new JSONObject().put("rolls", 2)))
+        .put("characterEncounter", new JSONObject().put("pendingIntro", new JSONArray().put("luc_tram")));
+    CharacterProgressionCore progression = new CharacterProgressionCore();
+    progression.normalizeState(state);
+    new CharacterEncounterCore().normalizeState(state);
+    assertEquals(7, progression.profile(state, "iris").getJSONObject("stats").getInt("STR"));
+    assertEquals(31, progression.profile(state, "iris").getInt("currentHp"));
+    assertFalse(state.getJSONObject(CharacterProgressionCore.ROOT_KEY).getJSONObject("characters").has("luc_tram"));
+    JSONObject iris = state.getJSONArray("party").getJSONObject(0);
+    assertEquals("iris", iris.getString("id"));
+    assertFalse(iris.has("avatar"));
+    assertFalse(iris.has("role"));
+    String inventory = iris.getJSONArray("inventory").toString();
+    assertTrue(inventory.contains("Ivory"));
+    assertTrue(inventory.contains("Kỷ vật Tịch Quang"));
+    assertFalse(inventory.contains("Tịch Quang Kiếm"));
+    assertTrue(state.getJSONArray("retiredLucTramParty").toString().contains("Tịch Quang Kiếm"));
+    assertEquals(17, state.getJSONObject("survival").getJSONObject("characters").getJSONObject("iris").getInt("lastFoodMinute"));
+    assertEquals("iris", state.getJSONObject("combat").getJSONArray("participants").getJSONObject(0).getString("id"));
+    assertEquals("Iris", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals(2, state.getJSONObject("combat").getJSONObject("diceState").getInt("rolls"));
+    assertEquals("iris", state.getJSONObject("characterEncounter").getJSONArray("pendingIntro").getString(0));
+    String stable = state.toString();
+    progression.normalizeState(state);
+    new CharacterEncounterCore().normalizeState(state);
+    assertEquals(stable, state.toString());
+    new SurvivalCore().restoreFood(state, "iris", 100);
+    assertEquals(17, state.getJSONObject("retiredLucTramSurvival").getInt("lastFoodMinute"));
+  }
+
+  @Test public void existingIrisWinsIdentityAndStatsWhileLegacyInventoryIsPreserved() throws Exception {
+    JSONObject state = state(1, 5).put("party", new JSONArray()
+        .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")
+            .put("inventory", new JSONArray().put(new JSONObject().put("name", "Bandage"))))
+        .put(new JSONObject().put("id", "iris").put("name", "Iris").put("customMetadata", "existing")
+            .put("inventory", new JSONArray().put(new JSONObject().put("name", "Ivory")))));
+    new CharacterEncounterCore().normalizeState(state);
+    assertEquals(1, state.getJSONArray("party").length());
+    assertEquals("existing", state.getJSONArray("party").getJSONObject(0).getString("customMetadata"));
+    assertTrue(state.getJSONArray("party").getJSONObject(0).getJSONArray("inventory").toString().contains("Bandage"));
+    assertEquals(1, state.getJSONArray("retiredLucTramParty").length());
   }
 
 }

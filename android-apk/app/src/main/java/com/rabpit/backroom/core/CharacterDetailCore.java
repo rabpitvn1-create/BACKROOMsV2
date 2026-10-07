@@ -157,7 +157,7 @@ final class CharacterDetailCore {
     if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
         || raw.contains("hua thuy mai")) return "lucia";
-    if (raw.contains("iris") || raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "iris";
+    if (raw.contains("iris")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return member.optString("id", "").trim().toLowerCase(Locale.ROOT);
   }

@@ -568,6 +568,7 @@ final class NarrativeSkeleton {
     String key = safe(ref);
     if (key.isEmpty()) return "một yếu tố chưa định danh";
     if ("cao_minh".equals(key)) return "Cao Minh";
+    if ("iris".equals(key)) return "Iris";
     if ("luc_tram".equals(key)) return "Lục Trầm";
     if ("syvial".equals(key)) return "Syvial";
 

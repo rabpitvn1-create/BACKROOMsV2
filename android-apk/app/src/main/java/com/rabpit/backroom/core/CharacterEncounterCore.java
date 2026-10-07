@@ -23,6 +23,7 @@ final class CharacterEncounterCore {
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
+    migrateRetiredCompanion(state);
     JSONArray source = state.optJSONArray("party");
     Map<String, JSONObject> byId = new LinkedHashMap<>();
     if (source != null) {
@@ -50,6 +51,81 @@ final class CharacterEncounterCore {
     encounter.put(PENDING_INTRO, filterEncounterIds(encounter.optJSONArray(PENDING_INTRO), allowIris));
     encounter.put(JUST_ENCOUNTERED, filterEncounterIds(encounter.optJSONArray(JUST_ENCOUNTERED), allowIris));
     state.put(ENCOUNTER_STATE, encounter);
+  }
+
+  static void migrateRetiredCompanion(JSONObject state) throws Exception {
+    JSONArray party = state.optJSONArray("party");
+    if (party != null) for (int i = 0; i < party.length(); i++) {
+      Object raw = party.opt(i);
+      JSONObject member = raw instanceof JSONObject ? (JSONObject) raw : legacyStringMember(raw);
+      if (member == null) continue;
+      String identity = member.optString("id", "").trim().toLowerCase(Locale.ROOT);
+      if (identity.isEmpty()) identity = member.optString("name").toLowerCase(Locale.ROOT);
+      if (!identity.contains("luc_tram") && !identity.contains("lục trầm") && !identity.contains("luc tram")) continue;
+      JSONArray retired = state.optJSONArray("retiredLucTramParty");
+      if (retired == null) retired = new JSONArray();
+      retired.put(new JSONObject(member.toString()));
+      state.put("retiredLucTramParty", retired);
+      JSONArray inventory = defaultInventory("iris");
+      JSONArray old = member.optJSONArray("inventory");
+      if (old != null) for (int j = 0; j < old.length(); j++) {
+        Object item = old.opt(j);
+        String name = item instanceof JSONObject ? ((JSONObject) item).optString("name") : String.valueOf(item);
+        if (!"Tịch Quang Kiếm".equals(name) && !"Tịch Quang".equals(name)
+            && !"Thiên Cơ Bạch Kim Kiếm Khải".equals(name)) inventory.put(item);
+      }
+      member.put("id", "iris").put("name", "Iris").put("inventory", inventory);
+      member.remove("relationship");
+      member.remove("address");
+      member.remove("canon");
+      for (String key : new String[] {"avatar", "avatarRef", "overlay", "overlayRef"}) {
+        if (member.optString(key).toLowerCase(Locale.ROOT).contains("luctram")) member.remove(key);
+      }
+      if (member.optString("role").contains("Thiên Kiếm")) member.remove("role");
+      JSONObject existing = null;
+      for (int j = 0; j < party.length(); j++) {
+        JSONObject other = party.optJSONObject(j);
+        if (j != i && other != null && "iris".equals(other.optString("id"))) { existing = other; break; }
+      }
+      if (existing != null) {
+        JSONArray current = existing.optJSONArray("inventory");
+        if (current == null) current = defaultInventory("iris");
+        for (int j = 0; j < inventory.length(); j++) {
+          Object item = inventory.opt(j);
+          boolean present = false;
+          for (int k = 0; k < current.length(); k++) if (String.valueOf(item).equals(String.valueOf(current.opt(k)))) present = true;
+          if (!present) current.put(item);
+        }
+        existing.put("inventory", current);
+        party.remove(i--);
+      } else party.put(i, member);
+    }
+    JSONObject survival = state.optJSONObject("survival");
+    JSONObject profiles = survival == null ? null : survival.optJSONObject("characters");
+    if (profiles != null && profiles.has("luc_tram")) {
+      if (!state.has("retiredLucTramSurvival")) state.put("retiredLucTramSurvival", new JSONObject(profiles.getJSONObject("luc_tram").toString()));
+      if (!profiles.has("iris")) profiles.put("iris", profiles.get("luc_tram"));
+      profiles.remove("luc_tram");
+    }
+    JSONObject combat = state.optJSONObject("combat");
+    JSONArray participants = combat == null ? null : combat.optJSONArray("participants");
+    if (participants != null) for (int i = 0; i < participants.length(); i++) {
+      JSONObject actor = participants.optJSONObject(i);
+      if (actor != null && "luc_tram".equals(actor.optString("id"))) actor.put("id", "iris").put("name", "Iris");
+    }
+    if (combat != null && ("Lục Trầm".equals(combat.optString("currentActor"))
+        || "luc_tram".equals(combat.optString("currentActor")))) {
+      combat.put("currentActor", "Iris");
+      JSONObject skill = combat.optJSONObject("currentSkill");
+      if (skill != null) skill.put("name", "Twosome Time").put("description", "2 phát chéo góc; gameplay projection 155% damage.");
+      JSONObject ultimate = combat.optJSONObject("currentUltimate");
+      if (ultimate != null) ultimate.put("name", "ARGUS // Thousandfold Execution");
+    }
+    JSONObject encounter = state.optJSONObject(ENCOUNTER_STATE);
+    if (encounter != null) for (String key : new String[] {PENDING_INTRO, JUST_ENCOUNTERED, "lastIntroduced"}) {
+      JSONArray ids = encounter.optJSONArray(key);
+      if (ids != null) for (int i = 0; i < ids.length(); i++) if ("luc_tram".equals(ids.optString(i))) ids.put(i, "iris");
+    }
   }
 
   JSONArray situationCandidates(JSONObject state) throws Exception {
@@ -88,7 +164,7 @@ final class CharacterEncounterCore {
           .put("chancePercent", IRIS_ENCOUNTER_PERCENT)
           .put("payloadKey", "iris")
           .put("source", "CANON")
-          .put("publicSummary", "Iris xuất hiện; đây là first contact trừ khi continuity hiện hành đã xác lập khác.")
+          .put("publicSummary", "Iris xuất hiện; đây là lần đầu gặp Cao Minh trừ khi continuity đã xác lập khác.")
           .put("proposalRequired", false)
           .put("eligibilityRuleId", "canon:iris:after_level_0")
           .put("cooldownTurns", 24)
@@ -119,7 +195,6 @@ final class CharacterEncounterCore {
   void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
     String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
-    if ("luc_tram".equals(id) || "luc tram".equals(id) || "lục trầm".equals(id)) id = "iris";
     String levelKey = state.optString(LevelCore.LEVEL_KEY,
         String.valueOf(state.optInt("currentLevel", 0))).trim();
     if ("lucia".equals(id) && !"0".equals(levelKey)) {
@@ -193,14 +268,14 @@ final class CharacterEncounterCore {
           "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter selection and Party membership. " +
           "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
-          "Never alias, rename or merge Lucia Lục/Hứa Thuý Mai with Iris; runtime ids lucia and iris are distinct. " +
-          "Joined characters are authoritative. If pending includes Iris, depict FIRST CONTACT unless live continuity already establishes otherwise; do not import retired-character history, rivalry, equipment or xưng hô. " +
+          "Never alias, rename, merge or migrate Lucia Lục/Hứa Thuý Mai into Iris; runtime ids lucia and iris are distinct. " +
+          "Joined characters are authoritative. If pending includes Iris, depict FIRST CONTACT unless live continuity established contact; her relationship and address with Cao Minh are OPEN. Never import Kai romance or retired Lục Trầm rivalry. " +
           "If pending includes Lucia Lục, depict FIRST CONTACT; her relationship and address with Cao Minh are OPEN until continuity establishes them. " +
           "For Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
               ? "Return encounterDialogue as []."
               : pendingIris
-                  ? "Iris first contact is already committed. Depict the encounter in the current location without inventing prior shared history. " +
+                  ? "Iris first contact is already committed. Depict first contact in the current location; never assume prior intimacy or hostility. " +
                       "Return encounterDialogue with 2-5 short Vietnamese spoken lines total, canon-accurate and natural. " +
                       "Do not invent Cao Minh's dialogue/decision and do not ask the player to approve Party membership."
                   : pendingLucia
@@ -258,8 +333,10 @@ final class CharacterEncounterCore {
       inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
       inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
     } else if ("iris".equals(id)) {
-      inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
-      inventory.put(new JSONObject().put("name", "Blackblood Recon Frame"));
+      inventory.put(new JSONObject().put("name", "Ivory"));
+      inventory.put(new JSONObject().put("name", "Ebony"));
+      inventory.put(new JSONObject().put("name", "Recon Frame"));
+      inventory.put(new JSONObject().put("name", "Belial Core"));
     } else if ("syvial".equals(id)) {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));
@@ -272,9 +349,7 @@ final class CharacterEncounterCore {
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
       if ("iris".equals(id) && !allowIris) continue;
-      if (containsString(ids, id)
-          || ("iris".equals(id) && (containsString(ids, "luc_tram")
-              || containsString(ids, "luc tram") || containsString(ids, "lục trầm")))) result.put(id);
+      if (containsString(ids, id)) result.put(id);
     }
     return result;
   }
@@ -308,7 +383,7 @@ final class CharacterEncounterCore {
     if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
         || raw.contains("hua thuy mai")) return "lucia";
-    if (raw.contains("iris") || raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "iris";
+    if (raw.contains("iris")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return "";
   }
