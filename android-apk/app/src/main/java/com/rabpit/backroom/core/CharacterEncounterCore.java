@@ -333,10 +333,8 @@ final class CharacterEncounterCore {
       inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
       inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
     } else if ("iris".equals(id)) {
-      inventory.put(new JSONObject().put("name", "Ivory"));
-      inventory.put(new JSONObject().put("name", "Ebony"));
-      inventory.put(new JSONObject().put("name", "Recon Frame"));
-      inventory.put(new JSONObject().put("name", "Belial Core"));
+      inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
+      inventory.put(new JSONObject().put("name", "Blackblood Recon Frame R03"));
     } else if ("syvial".equals(id)) {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));

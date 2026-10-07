@@ -175,10 +175,13 @@ public class CharacterEncounterCoreTest {
     assertEquals("iris", iris.getString("id"));
     assertFalse(iris.has("avatar"));
     assertFalse(iris.has("role"));
-    String inventory = iris.getJSONArray("inventory").toString();
-    assertTrue(inventory.contains("Ivory"));
+    JSONArray migratedInventory = iris.getJSONArray("inventory");
+    assertEquals("Ivory & Ebony", migratedInventory.getJSONObject(0).getString("name"));
+    assertEquals("Blackblood Recon Frame R03", migratedInventory.getJSONObject(1).getString("name"));
+    String inventory = migratedInventory.toString();
     assertTrue(inventory.contains("Kỷ vật Tịch Quang"));
     assertFalse(inventory.contains("Tịch Quang Kiếm"));
+    assertFalse(inventory.contains("Belial Core"));
     assertTrue(state.getJSONArray("retiredLucTramParty").toString().contains("Tịch Quang Kiếm"));
     assertEquals(17, state.getJSONObject("survival").getJSONObject("characters").getJSONObject("iris").getInt("lastFoodMinute"));
     assertEquals("iris", state.getJSONObject("combat").getJSONArray("participants").getJSONObject(0).getString("id"));
@@ -198,7 +201,7 @@ public class CharacterEncounterCoreTest {
         .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")
             .put("inventory", new JSONArray().put(new JSONObject().put("name", "Bandage"))))
         .put(new JSONObject().put("id", "iris").put("name", "Iris").put("customMetadata", "existing")
-            .put("inventory", new JSONArray().put(new JSONObject().put("name", "Ivory")))));
+            .put("inventory", new JSONArray().put(new JSONObject().put("name", "Ivory & Ebony")))));
     new CharacterEncounterCore().normalizeState(state);
     assertEquals(1, state.getJSONArray("party").length());
     assertEquals("existing", state.getJSONArray("party").getJSONObject(0).getString("customMetadata"));

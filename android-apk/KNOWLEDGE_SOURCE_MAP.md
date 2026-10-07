@@ -56,7 +56,7 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục s
 | Identity | `IRIS-V2-MIGRATION-R01` / `iris` | Scout / Target Eliminator; half-human/half-demon; replaces retired Lục Trầm runtime slot. |
 | ARGUS | `01 · ARGUS / THOUSANDFOLD` | Direct observation + local sensors + terrain/route/cover/trace analysis; no wall vision, drone mesh or omniscience. |
 | Thousandfold | `01 · ARGUS / THOUSANDFOLD` | Information-processing acceleration only; not 1000x body speed. |
-| Equipment | `02 · TRANG BỊ` | Ivory & Ebony + Blackblood Recon Frame. |
+| Equipment | `02 · TRANG BỊ` | Ivory & Ebony + Blackblood Recon Frame R03. |
 | Encounter | `iris` | Core-owned 0.25% candidate after Level 0; first contact unless continuity says otherwise. |
 | Gameplay | `03 · GAMEPLAY PROJECTION` | Twosome Time + Iris proc set; ARGUS // Thousandfold Execution Ultimate. |
 | Visual | `avatars/Iris_avatar.jpg` | Party portrait. No dedicated Iris combat overlay yet. |

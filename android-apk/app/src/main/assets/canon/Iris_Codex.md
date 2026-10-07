@@ -22,7 +22,7 @@
 
 - **Ivory & Ebony:** cặp súng cơ khí đặc trưng; đạn hình thành từ quỷ lực của Iris.
 - Nguồn năng lượng không giới hạn không đồng nghĩa RPM, độ bền, damage, accuracy hoặc số Action vô hạn.
-- **Blackblood Recon Frame:** hỗ trợ bảo vệ, ổn định song súng và cảm biến trinh sát cục bộ; không có drone, missile, launcher hoặc remote camera mesh.
+- **Blackblood Recon Frame R03:** hỗ trợ bảo vệ, ổn định song súng và cảm biến trinh sát cục bộ; không có drone, missile, launcher hoặc remote camera mesh.
 
 ## 03 · GAMEPLAY PROJECTION
 
