@@ -25,6 +25,10 @@ public final class CombatChoiceEngine {
   private static final int HUYET_MA_24_HIT_COUNT = 24;
   private static final int LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT = 60;
   private static final int IRIS_ARGUS_EXECUTION_SHOT_COUNT = 12;
+  private static final int IRIS_ARGUS_EXECUTION_DAMAGE_PERCENT = 300;
+  private static final int IRIS_FULLY_EXPOSED_TURNS = 2;
+  private static final int IRIS_FULLY_EXPOSED_EVASION_REDUCTION_PERCENT = 25;
+  private static final int IRIS_FULLY_EXPOSED_ARMOR_REDUCTION_PERCENT = 20;
   private static final int CAO_MINH_BASE_ATTACK = 30;
   private static final int CRITICAL_DAMAGE_PERCENT = 150;
   private static final int ENTITY_BASE_CRITICAL_PERCENT = 5;
@@ -584,6 +588,8 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
             .put("stagePercent", scaled.getInt("stagePercent"))
             .put("criticalChancePercent", ENTITY_BASE_CRITICAL_PERCENT)
             .put("evasionPercent", ENTITY_BASE_EVASION_PERCENT)
+            .put("evasionBreakTurns", 0)
+            .put("evasionBreakPercent", 0)
             .put("resCriticalPercent", 0)
             .put("resEvasionPercent", 0)
             .put("bleedTurns", 0)
@@ -757,10 +763,27 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       // passive Critical/Evasion rolls multiply or nullify a rare hand outcome.
       int hpBefore = Math.max(0, entity.optInt("hp", 0));
       int currentDamage = basicDamage(baseAttack, str, 100);
-      int damage = ultimateDamage(currentDamage, ultimate.hitCount, ultimate.bonusPercent, handPercent);
+      boolean irisExecution = "iris".equals(actor.optString("id", ""));
+      int damage = irisExecution
+          ? scaledDamage(currentDamage, IRIS_ARGUS_EXECUTION_DAMAGE_PERCENT, handPercent)
+          : ultimateDamage(currentDamage, ultimate.hitCount, ultimate.bonusPercent, handPercent);
       applyEntityDamage(combat, entity, damage);
+      List<String> ultimateEffects = new ArrayList<>();
+      if (irisExecution && entity.optInt("hp", 0) > 0) {
+        applyStackingEffect(entity, "Xuyên giáp", IRIS_FULLY_EXPOSED_TURNS,
+            IRIS_FULLY_EXPOSED_ARMOR_REDUCTION_PERCENT);
+        entity.put("evasionBreakTurns",
+            Math.max(entity.optInt("evasionBreakTurns", 0), IRIS_FULLY_EXPOSED_TURNS));
+        entity.put("evasionBreakPercent",
+            Math.max(entity.optInt("evasionBreakPercent", 0),
+                IRIS_FULLY_EXPOSED_EVASION_REDUCTION_PERCENT));
+        ultimateEffects.add("Xuyên giáp");
+      }
       result.summary = actorBattleSummary(
-          hand, actorName, ultimate.name, true, false, entity, hpBefore, new ArrayList<String>());
+          hand, actorName, ultimate.name, true, false, entity, hpBefore, ultimateEffects);
+      if (irisExecution && entity.optInt("hp", 0) > 0) {
+        result.summary += " Fully Exposed: Evasion -25% và Armor -20% trong 2 lượt.";
+      }
       return result;
     }
 
@@ -797,8 +820,11 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
   }
 
   private static boolean entityEvadesActor(JSONObject combat, JSONObject actor, JSONObject entity) {
-    int chance = effectiveChance(
-        entity.optInt("evasionPercent", 0), actor.optInt("resEvasionPercent", 0));
+    int evasion = Math.max(0, entity.optInt("evasionPercent", 0));
+    if (entity.optInt("evasionBreakTurns", 0) > 0) {
+      evasion = Math.max(0, evasion - Math.max(0, entity.optInt("evasionBreakPercent", 0)));
+    }
+    int chance = effectiveChance(evasion, actor.optInt("resEvasionPercent", 0));
     return secondaryChanceTriggers(combat, chance,
         "entity-evasion:" + entity.optString("key", "") + ":" + actor.optString("id", ""));
   }
@@ -1119,6 +1145,13 @@ static int entitySkillProcRoll(int seed,int round,int actorIndex,int skillIndex)
       int remaining = armorTurns - 1;
       entity.put("armorBreakTurns", remaining);
       if (remaining == 0) entity.put("armorBreakPercent", 0);
+    }
+
+    int evasionBreakTurns = Math.max(0, entity.optInt("evasionBreakTurns", 0));
+    if (evasionBreakTurns > 0) {
+      int remaining = evasionBreakTurns - 1;
+      entity.put("evasionBreakTurns", remaining);
+      if (remaining == 0) entity.put("evasionBreakPercent", 0);
     }
   }
 

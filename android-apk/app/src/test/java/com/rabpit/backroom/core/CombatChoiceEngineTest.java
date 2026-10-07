@@ -80,13 +80,13 @@ public class CombatChoiceEngineTest {
 
     JSONArray participants = state.getJSONObject("combat").getJSONArray("participants");
     JSONObject cao = participants.getJSONObject(0);
-    JSONObject lucTram = participants.getJSONObject(1);
+    JSONObject iris = participants.getJSONObject(1);
     JSONObject syvial = participants.getJSONObject(2);
 
     assertEquals(50, cao.getInt("criticalChancePercent"));
-    assertEquals(55, lucTram.getInt("criticalChancePercent"));
+    assertEquals(55, iris.getInt("criticalChancePercent"));
     assertEquals(55, syvial.getInt("criticalChancePercent"));
-    assertEquals(50, lucTram.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
+    assertEquals(50, iris.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
     assertEquals(50, syvial.getInt("daiDaoMaTonAllyCriticalBonusPercent"));
   }
 
@@ -406,7 +406,7 @@ public class CombatChoiceEngineTest {
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
   }
 
-  @Test public void lucTramSsfUsesDynamicThienKiemDinhGioiUltimate() throws Exception {
+  @Test public void irisSsfUsesArgusThousandfoldExecution() throws Exception {
     JSONObject state = combatState(new JSONArray().put(member("iris", "Iris")));
     CombatChoiceEngine.start(state, "diep_minh", 0);
 
@@ -416,12 +416,16 @@ public class CombatChoiceEngineTest {
 
     JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
     int before = entity.getInt("hp");
-    int expected = CombatChoiceEngine.ultimateDamage(24, 12, 15, 100);
+    int expected = 72; // 24 current DMG * 300% total ARGUS execution damage.
 
     finalizeAs(state, 1,2,3,4,5);
     CombatChoiceEngine.resolveFinalized(state);
 
     assertEquals(Math.max(0, before - expected), entity.getInt("hp"));
+    assertEquals(2, entity.getInt("armorBreakTurns"));
+    assertEquals(20, entity.getInt("armorBreakPercent"));
+    assertEquals(2, entity.getInt("evasionBreakTurns"));
+    assertEquals(25, entity.getInt("evasionBreakPercent"));
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     boolean foundUltimate = false;
     for (int i = 0; i < battleLog.length(); i++) {

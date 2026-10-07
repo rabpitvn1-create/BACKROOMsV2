@@ -28,7 +28,7 @@
 
 - **Twosome Time — Skill:** 155% damage.
 - Proc runtime: **Twosome Time, Rain Storm, Honeycomb Fire, Charged Shot, Dead Angle**.
-- **ARGUS // Thousandfold Execution — Ultimate:** dùng projection Ultimate hiện hành của BACKROOMsV2 với 12 shot.
+- **ARGUS // Thousandfold Execution — Ultimate:** khi Poker Dice kích hoạt Ultimate, 12 shot gây tổng 300% Weapon DMG; Fully Exposed 2 lượt giảm 25% Evasion và 20% Armor.
 - Gameplay status/damage là lớp runtime; không tự mở rộng lore.
 
 ## 04 · VISUAL

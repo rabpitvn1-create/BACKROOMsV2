@@ -67,12 +67,12 @@ public class CharacterDetailCoreTest {
 
     JSONArray members = state.getJSONObject("partyDetails").getJSONArray("members");
     assertEquals(2, members.length());
-    JSONObject lucTram = members.getJSONObject(1);
-    assertEquals("iris", lucTram.getString("id"));
-    assertEquals(50, lucTram.getInt("maxHp"));
-    assertEquals(50, lucTram.getInt("baseMaxHp"));
-    assertEquals(5, lucTram.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
-    assertNotNull(lucTram.getJSONArray("inventory"));
+    JSONObject iris = members.getJSONObject(1);
+    assertEquals("iris", iris.getString("id"));
+    assertEquals(50, iris.getInt("maxHp"));
+    assertEquals(50, iris.getInt("baseMaxHp"));
+    assertEquals(5, iris.getJSONObject("stats").getJSONObject("VIT").getInt("effective"));
+    assertNotNull(iris.getJSONArray("inventory"));
   }
 
   @Test public void legacyThresholdsAndPercentagesRemainSurvivalOwned() throws Exception {
