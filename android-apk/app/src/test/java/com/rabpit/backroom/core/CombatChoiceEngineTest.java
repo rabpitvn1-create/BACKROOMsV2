@@ -74,7 +74,7 @@ public class CombatChoiceEngineTest {
 
   @Test public void daiDaoMaTonGrantsFiftyCriticalToAllCombatAlliesOnly() throws Exception {
     JSONObject state = combatState(new JSONArray()
-        .put(member("luc_tram", "Lục Trầm"))
+        .put(member("iris", "Iris"))
         .put(member("syvial", "Syvial")));
     CombatChoiceEngine.start(state, "hound", 0);
 
@@ -328,12 +328,12 @@ public class CombatChoiceEngineTest {
 
   @Test public void downedCharacterIsSkippedAndThreeSlotOrderWrapsRound() throws Exception {
     JSONArray party = new JSONArray()
-        .put(member("luc_tram", "Lục Trầm"))
+        .put(member("iris", "Iris"))
         .put(member("syvial", "Syvial"));
     JSONObject state = combatState(party);
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
-    progression.setCurrentHp(state, "luc_tram", 0);
+    progression.setCurrentHp(state, "iris", 0);
 
     CombatChoiceEngine.start(state, "diep_minh", 0);
     assertEquals(3, state.getJSONObject("combat").getJSONArray("participants").length());
@@ -400,23 +400,23 @@ public class CombatChoiceEngineTest {
     assertEquals(20, entity.getInt("baseDamage"));
   }
 
-  @Test public void caoMinhAndLucTramHaveAuthoritativeUltimateMappings() {
+  @Test public void caoMinhAndIrisHaveAuthoritativeUltimateMappings() {
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("cao_minh"));
-    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("luc_tram"));
+    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
     assertFalse(CombatChoiceEngine.hasAuthoritativeUltimate("syvial"));
   }
 
   @Test public void lucTramSsfUsesDynamicThienKiemDinhGioiUltimate() throws Exception {
-    JSONObject state = combatState(new JSONArray().put(member("luc_tram", "Lục Trầm")));
+    JSONObject state = combatState(new JSONArray().put(member("iris", "Iris")));
     CombatChoiceEngine.start(state, "diep_minh", 0);
 
     finalizeAs(state, 2,2,4,4,6);
     CombatChoiceEngine.resolveFinalized(state);
-    assertEquals("Lục Trầm", state.getJSONObject("combat").getString("currentActor"));
+    assertEquals("Iris", state.getJSONObject("combat").getString("currentActor"));
 
     JSONObject entity = state.getJSONObject("combat").getJSONObject("entity");
     int before = entity.getInt("hp");
-    int expected = CombatChoiceEngine.ultimateDamage(24, 60, 15, 100);
+    int expected = CombatChoiceEngine.ultimateDamage(24, 12, 15, 100);
 
     finalizeAs(state, 1,2,3,4,5);
     CombatChoiceEngine.resolveFinalized(state);
@@ -425,7 +425,7 @@ public class CombatChoiceEngineTest {
     JSONArray battleLog = state.getJSONArray("log").getJSONObject(0).getJSONArray("battleLog");
     boolean foundUltimate = false;
     for (int i = 0; i < battleLog.length(); i++) {
-      if (battleLog.getJSONObject(i).getString("text").contains("Thiên Kiếm Định Giới")) {
+      if (battleLog.getJSONObject(i).getString("text").contains("ARGUS // Thousandfold Execution")) {
         foundUltimate = true;
         break;
       }
@@ -563,16 +563,16 @@ public class CombatChoiceEngineTest {
     }
   }
 
-  @Test public void caoMinhAndLucTramEachHaveFiveCharacterProcsAndKaiHasNone() {
+  @Test public void caoMinhAndIrisEachHaveFiveCharacterProcsAndKaiHasNone() {
     assertEquals(5, CombatChoiceEngine.characterProcCount("cao_minh"));
-    assertEquals(5, CombatChoiceEngine.characterProcCount("luc_tram"));
+    assertEquals(5, CombatChoiceEngine.characterProcCount("iris"));
     assertEquals(0, CombatChoiceEngine.characterProcCount("kai"));
 
-    for (String id : new String[]{"cao_minh", "luc_tram"}) {
-      for (int i = 0; i < 5; i++) {
-        int chance = CombatChoiceEngine.characterProcPercent(id, i);
-        assertTrue(chance >= 45 && chance <= 55);
-      }
+    for (int i = 0; i < 5; i++) {
+      int caoChance = CombatChoiceEngine.characterProcPercent("cao_minh", i);
+      assertTrue(caoChance >= 45 && caoChance <= 55);
+      int irisChance = CombatChoiceEngine.characterProcPercent("iris", i);
+      assertTrue(irisChance >= 15 && irisChance <= 30);
     }
   }
 
