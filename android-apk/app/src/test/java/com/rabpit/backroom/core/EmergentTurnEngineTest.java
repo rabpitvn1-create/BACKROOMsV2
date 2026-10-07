@@ -232,16 +232,16 @@ public class EmergentTurnEngineTest {
         .put("location", "Level 1")
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(
-            new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm")));
+            new JSONObject().put("id", "iris").put("name", "Iris")));
     engine.normalizeState(state);
     String turnId = engine.nextTurnId(state, "continuity");
 
     JSONArray events = new JSONArray();
-    events.put(engine.event(turnId, events, "CHARACTER_REUNION", "SOCIAL", "luc_tram",
-        new JSONObject().put("factPredicate", "character_reunion")
-            .put("factValue", "luc_tram").put("observedByPlayer", true),
+    events.put(engine.event(turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", "iris",
+        new JSONObject().put("factPredicate", "character_encountered")
+            .put("factValue", "iris").put("observedByPlayer", true),
         new JSONArray().put(engine.threadEffect(
-            "LUC_TRAM_RELATIONSHIP", new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
+            "IRIS_RELATIONSHIP", new JSONArray().put("iris"), "SEED_OR_ADVANCE", null))));
     events.put(engine.event(turnId, events, "ROUTE_SEARCH_PROGRESS", "LOCAL", "1",
         new JSONObject().put("factPredicate", "route_search_result")
             .put("factValue", "PROGRESS").put("observedByPlayer", true),
@@ -255,7 +255,7 @@ public class EmergentTurnEngineTest {
         .getJSONObject(NarrativeSkeleton.ROOT_KEY);
     assertTrue(skeleton.getJSONArray("longTermTensions").toString().contains("summary"));
     assertEquals(0, skeleton.getJSONArray("anchorMysteries").length());
-    assertTrue(skeleton.getJSONArray("importantRelationships").toString().contains("Lục Trầm"));
+    assertTrue(skeleton.getJSONArray("importantRelationships").toString().contains("Iris"));
     assertTrue(skeleton.getJSONArray("unresolvedWorldQuestions").toString().contains("question"));
     assertTrue(skeleton.getJSONArray("attentionHints").toString().contains("keyRefs"));
   }
@@ -267,17 +267,17 @@ public class EmergentTurnEngineTest {
     String turnId = engine.nextTurnId(state, "hound continuity");
 
     JSONArray events = new JSONArray();
-    events.put(engine.event(turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", "luc_tram",
+    events.put(engine.event(turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", "iris",
         new JSONObject().put("factPredicate", "character_encountered")
-            .put("factValue", "luc_tram").put("observedByPlayer", true),
+            .put("factValue", "iris").put("observedByPlayer", true),
         new JSONArray().put(engine.threadEffect(
-            "LUC_TRAM_RELATIONSHIP", new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
+            "IRIS_RELATIONSHIP", new JSONArray().put("iris"), "SEED_OR_ADVANCE", null))));
     engine.commitAuthoritative(state, turnId, events, null);
     engine.catchUpProjections(state);
 
     JSONArray candidates = new JSONArray()
-        .put(engine.candidate("CHARACTER", "character:luc_tram", "SOCIAL", 10.0d,
-            "luc_tram", "luc_tram", false))
+        .put(engine.candidate("CHARACTER", "character:iris", "SOCIAL", 10.0d,
+            "iris", "iris", false))
         .put(engine.candidate("CHARACTER", "character:syvial", "SOCIAL", 10.0d,
             "syvial", "syvial", false));
     engine.selectCandidate(state, candidates,
@@ -288,19 +288,19 @@ public class EmergentTurnEngineTest {
     JSONArray traced = root.getJSONArray("selectionTrace")
         .getJSONObject(root.getJSONArray("selectionTrace").length() - 1)
         .getJSONArray("candidates");
-    JSONObject lucTram = null;
+    JSONObject iris = null;
     JSONObject syvial = null;
     for (int i = 0; i < traced.length(); i++) {
       JSONObject item = traced.optJSONObject(i);
       if (item == null) continue;
-      if ("character:luc_tram".equals(item.optString("situationKey"))) lucTram = item;
+      if ("character:iris".equals(item.optString("situationKey"))) iris = item;
       if ("character:syvial".equals(item.optString("situationKey"))) syvial = item;
     }
-    assertTrue(lucTram != null && syvial != null);
-    assertTrue(lucTram.getDouble("keyRefWeightModifier") > 1.0d);
-    assertTrue(lucTram.getDouble("keyRefWeightModifier") <= 1.35d);
+    assertTrue(iris != null && syvial != null);
+    assertTrue(iris.getDouble("keyRefWeightModifier") > 1.0d);
+    assertTrue(iris.getDouble("keyRefWeightModifier") <= 1.35d);
     assertEquals(1.0d, syvial.getDouble("keyRefWeightModifier"), 0.000001d);
-    assertTrue(lucTram.getDouble("finalWeight") > syvial.getDouble("finalWeight"));
+    assertTrue(iris.getDouble("finalWeight") > syvial.getDouble("finalWeight"));
 
     JSONObject noEligible = engine.selectCandidate(
         state, new JSONArray(), new TurnRng("turn-keyref-none", 0,
@@ -317,10 +317,10 @@ public class EmergentTurnEngineTest {
     engine.normalizeState(state);
     String turnId = engine.nextTurnId(state, "relevance");
     JSONArray events = new JSONArray();
-    events.put(engine.event(turnId, events, "CHARACTER_REUNION", "SOCIAL", "luc_tram",
-        new JSONObject().put("factPredicate", "character_reunion"),
-        new JSONArray().put(engine.threadEffect("LUC_TRAM_RELATIONSHIP",
-            new JSONArray().put("luc_tram"), "SEED_OR_ADVANCE", null))));
+    events.put(engine.event(turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", "iris",
+        new JSONObject().put("factPredicate", "character_encountered"),
+        new JSONArray().put(engine.threadEffect("IRIS_RELATIONSHIP",
+            new JSONArray().put("iris"), "SEED_OR_ADVANCE", null))));
     events.put(engine.event(turnId, events, "PLAYER_ACTION_RESOLVED", "LOCAL", "archive_key",
         new JSONObject().put("impactEligible", false),
         new JSONArray().put(engine.threadEffect("ORIGIN_MYSTERY",
@@ -350,7 +350,7 @@ public class EmergentTurnEngineTest {
 
     JSONObject narrative = root.getJSONObject(NarrativeSkeleton.ROOT_KEY);
     String serialized = narrative.toString();
-    assertTrue(serialized.contains("LUC_TRAM_RELATIONSHIP"));
+    assertTrue(serialized.contains("IRIS_RELATIONSHIP"));
     assertTrue(serialized.contains("ORIGIN_MYSTERY"));
     assertTrue(serialized.contains("world_consequence_archive_opened"));
     assertTrue(narrative.getJSONArray("anchorMysteries").toString().contains("archive_key"));
@@ -363,8 +363,8 @@ public class EmergentTurnEngineTest {
     assertEquals(1.0d, NarrativeSkeleton.keyRefWeightModifier(root,
         engine.candidate("ENTITY", "entity:hound", "DANGER", 10, "hound", "hound", false)), 0.000001d);
     assertTrue(NarrativeSkeleton.keyRefWeightModifier(root,
-        engine.candidate("CHARACTER", "character:luc_tram", "SOCIAL", 10,
-            "luc_tram", "luc_tram", false)) > 1.0d);
+        engine.candidate("CHARACTER", "character:iris", "SOCIAL", 10,
+            "iris", "iris", false)) > 1.0d);
     assertEquals(facts, root.getJSONArray("historicalFacts").length());
     assertEquals(threads, root.getJSONArray("threads").length());
     assertEquals(0, engine.schedulerCandidates(state, 8).length());
