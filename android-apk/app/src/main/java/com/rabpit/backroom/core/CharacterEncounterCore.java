@@ -81,8 +81,8 @@ final class CharacterEncounterCore {
 
     if (state.optInt("currentLevel", 0) > 0 && !containsPartyId(party, "iris")) {
       output.put(new JSONObject()
-          .put("candidateId", "character:luc_tram")
-          .put("situationKey", "character:luc_tram")
+          .put("candidateId", "character:iris")
+          .put("situationKey", "character:iris")
           .put("kind", "CHARACTER")
           .put("category", "SOCIAL")
           .put("chancePercent", IRIS_ENCOUNTER_PERCENT)
@@ -90,7 +90,7 @@ final class CharacterEncounterCore {
           .put("source", "CANON")
           .put("publicSummary", "Iris xuất hiện; đây là first contact trừ khi continuity hiện hành đã xác lập khác.")
           .put("proposalRequired", false)
-          .put("eligibilityRuleId", "canon:luc_tram:after_level_0")
+          .put("eligibilityRuleId", "canon:iris:after_level_0")
           .put("cooldownTurns", 24)
           .put("tags", new JSONArray().put("SOCIAL").put("CHARACTER").put("FIRST_CONTACT").put("iris"))
           .put("keyRefs", new JSONArray().put("iris")));
@@ -118,7 +118,7 @@ final class CharacterEncounterCore {
 
   void activateEncounterCandidate(JSONObject state, String rawId) throws Exception {
     normalizeState(state);
-    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);
+    String id = rawId == null ? "" : rawId.trim().toLowerCase(Locale.ROOT);\n    if ("luc_tram".equals(id) || "luc tram".equals(id) || "lục trầm".equals(id)) id = "iris";
     String levelKey = state.optString(LevelCore.LEVEL_KEY,
         String.valueOf(state.optInt("currentLevel", 0))).trim();
     if ("lucia".equals(id) && !"0".equals(levelKey)) {
@@ -192,8 +192,8 @@ final class CharacterEncounterCore {
           "Pending intro/reunion: " + (pendingNames.isEmpty() ? "none" : pendingNames) + ".\n" +
           "Core exclusively owns encounter selection and Party membership. " +
           "Never spawn a character from narration, add/remove/reorder Party, or change joined state from narration. " +
-          "Never alias, rename, merge or migrate Lucia Lục/Hứa Thuý Mai into Iris; runtime ids lucia and luc_tram are distinct. " +
-          "Joined characters are authoritative. If pending includes Iris, depict FIRST CONTACT unless live continuity already establishes otherwise; never import old Lục Trầm history, rivalry, equipment or xưng hô. " +
+          "Never alias, rename or merge Lucia Lục/Hứa Thuý Mai with Iris; runtime ids lucia and iris are distinct. " +
+          "Joined characters are authoritative. If pending includes Iris, depict FIRST CONTACT unless live continuity already establishes otherwise; do not import retired-character history, rivalry, equipment or xưng hô. " +
           "If pending includes Lucia Lục, depict FIRST CONTACT; her relationship and address with Cao Minh are OPEN until continuity establishes them. " +
           "For Syvial, pending means first contact. Narration must not decide whether anyone joined. " +
           (pendingNames.isEmpty()
@@ -257,8 +257,8 @@ final class CharacterEncounterCore {
       inventory.put(new JSONObject().put("name", "Dao găm chiến đấu"));
       inventory.put(new JSONObject().put("name", "Đồng hồ định vị quân sự"));
     } else if ("iris".equals(id)) {
-      inventory.put(new JSONObject().put("name", "Tịch Quang Kiếm"));
-      inventory.put(new JSONObject().put("name", "Thiên Cơ Bạch Kim Kiếm Khải"));
+      inventory.put(new JSONObject().put("name", "Ivory & Ebony"));
+      inventory.put(new JSONObject().put("name", "Blackblood Recon Frame"));
     } else if ("syvial".equals(id)) {
       inventory.put(new JSONObject().put("name", "GodKiller"));
       inventory.put(new JSONObject().put("name", "Lucifer Armor"));
@@ -271,7 +271,9 @@ final class CharacterEncounterCore {
     if (ids == null) return result;
     for (String id : CANONICAL_ORDER) {
       if ("iris".equals(id) && !allowIris) continue;
-      if (containsString(ids, id)) result.put(id);
+      if (containsString(ids, id)
+          || ("iris".equals(id) && (containsString(ids, "luc_tram")
+              || containsString(ids, "luc tram") || containsString(ids, "lục trầm")))) result.put(id);
     }
     return result;
   }
@@ -305,7 +307,7 @@ final class CharacterEncounterCore {
     if (raw.contains("cao_minh") ) return "cao_minh";
     if (raw.contains("lucia") || raw.contains("hứa thuý mai") || raw.contains("hứa thúy mai")
         || raw.contains("hua thuy mai")) return "lucia";
-    if (raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("iris")) return "iris";
+    if (raw.contains("iris") || raw.contains("lục trầm") || raw.contains("luc tram") || raw.contains("luc_tram")) return "iris";
     if (raw.contains("syvial")) return "syvial";
     return "";
   }
