@@ -5,7 +5,7 @@
 1. User instruction trong lượt hiện tại.
 2. Text Game / Game Master hard rules.
 3. Live save/campaign state.
-4. Explicit committed USER_RETCON canon (currently includes `DIEP_MINH_CANON.md` and the Lucia Lục ≠ Lục Trầm separation lock).
+4. Explicit committed USER_RETCON canon (currently includes `DIEP_MINH_CANON.md` and the Lục Trầm → Iris migration and Lucia Lục ≠ Iris separation lock).
 5. Current machine-readable character canon.
 6. On-demand world/level/entity canon.
 7. Legacy logs hoặc mirrors chỉ dùng khi không xung đột với nguồn mới hơn.
@@ -15,14 +15,14 @@
 - `app/src/main/assets/knowledge/characters_current.json`
 - `app/src/main/assets/knowledge/knowledge_db.json`
 
-Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục scoped restore R01** và **Lục Trầm R05 / Visual R02**. Lucia (`lucia`) và Lục Trầm (`luc_tram`) là hai nhân vật riêng; không được dùng mirror/save cũ để nhập hai id.
+Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục scoped restore R01** và **Iris V2 Migration R01**. Lucia (`lucia`) và Iris (`iris`) là hai nhân vật riêng; legacy `luc_tram` chỉ được migrate sang `iris`.
 
 ## Character Drive audit
 
 - `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
 - `Syvial_Codex.docx` — nguồn riêng của Syvial.
 - `Lucia_Codex.docx` — nguồn lịch sử của Lucia; hiện connector không truy cập được. Scoped source hiện hành: `app/src/main/assets/canon/Lucia_Codex.md`.
-- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R05.
+- `app/src/main/assets/canon/Iris_Codex.md` — nguồn hiện hành của Iris trong BACKROOMsV2.
 
 ### Cao Minh source map
 
@@ -43,32 +43,29 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục s
 
 | Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity | `LUCIA-LUC-RUNTIME-RESTORE-R01` / `lucia` | Lucia Lục / Hứa Thuý Mai là nhân vật riêng, không phải Lục Trầm. |
+| Identity | `LUCIA-LUC-RUNTIME-RESTORE-R01` / `lucia` | Lucia Lục / Hứa Thuý Mai là nhân vật riêng, không phải Iris. |
 | Equipment | `01 · TRANG BỊ RUNTIME ĐÃ XÁC NHẬN` | M4A1 cá nhân hóa, dao găm chiến đấu, đồng hồ định vị quân sự. |
 | Gameplay | `02 · GAMEPLAY PROJECTION` | M4A1 Joint Attack 150%; 5 proc súng lịch sử; Too Young To Die đúng 60 phát, current DMG +15% bonus mỗi phát. |
 | Encounter | `03 · ENCOUNTER CONTRACT` | Core-owned; 10% candidate trên Level 0; first contact nếu continuity chưa xác lập khác. |
-| Relationship | `04 · OPEN` | Quan hệ/xưng hô với Cao Minh OPEN; không nhập quan hệ Lục Trầm. |
+| Relationship | `04 · OPEN` | Quan hệ/xưng hô với Cao Minh OPEN; không nhập continuity của Iris. |
 
-### Lục Trầm source map
+### Iris source map
 
 | Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity | `LUC-TRAM-THIEN-KIEM-CODEX-R05` | Chân truyền đệ tử Thiên Kiếm Môn; Chính Đạo Kiếm Tu; cùng thế giới nguyên sinh với Cao Minh. |
-| Power scale | `01 · ĐỊNH DANH VÀ VỊ TRÍ` | Thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. |
-| Visual | `04 · NGOẠI HÌNH · VISUAL LOCK R02` | Tóc bạc–trắng cực dài, mắt lam xám, kiếm quan vàng–đen gắn tinh thể lam, Kiếm Khải trắng–bạc–vàng trên nền tối điểm sapphire, chiến bào phân mảnh và đúng một Tịch Quang đại kiếm cực dài trắng–bạc. |
-| Core ability | `07 · THIÊN KIẾM LINH TÂM` | Đọc quỹ đạo/trọng tâm/linh lực/điểm bất ổn; không toàn tri, không tự biết Entity/Level/quy luật. |
-| Weapon | `08 · TỊCH QUANG KIẾM` | Bản mệnh linh kiếm; kiếm niệm triệu hồi; không tự tái sinh vô hạn. |
-| Armor | `09 · THIÊN CƠ BẠCH KIM KIẾM KHẢI` | Pháp bảo tiên hiệp, không phải công nghệ/mecha thuần khoa học. |
-| Relationship | `13-20` | Cao Minh và Lục Trầm từng giao chiến nhiều lần; Backrooms là tái ngộ, không first contact; romance phải phát triển chậm. |
-| Backrooms | `14-15, 21` | Rơi vào Level 0 khác vị trí; runtime encounter chỉ sau Level 0; không có knowledge preload. |
-| Gameplay id | `luc_tram` | Runtime id hiện hành của Lục Trầm. |
-| Ultimate | `12 · THIÊN KIẾM ĐỊNH GIỚI` | Runtime giữ 60-hit Ultimate cũ như gameplay projection, đổi presentation sang Thiên Kiếm Định Giới. |
+| Identity | `IRIS-V2-MIGRATION-R01` / `iris` | Scout / Target Eliminator; half-human/half-demon; replaces retired Lục Trầm runtime slot. |
+| ARGUS | `01 · ARGUS / THOUSANDFOLD` | Direct observation + local sensors + terrain/route/cover/trace analysis; no wall vision, drone mesh or omniscience. |
+| Thousandfold | `01 · ARGUS / THOUSANDFOLD` | Information-processing acceleration only; not 1000x body speed. |
+| Equipment | `02 · TRANG BỊ` | Ivory & Ebony + Blackblood Recon Frame. |
+| Encounter | `iris` | Core-owned 0.25% candidate after Level 0; first contact unless continuity says otherwise. |
+| Gameplay | `03 · GAMEPLAY PROJECTION` | Twosome Time + Iris proc set; ARGUS // Thousandfold Execution Ultimate. |
+| Visual | `avatars/Iris_avatar.jpg` | Party portrait. No dedicated Iris combat overlay yet. |
 
 ### Relationship locks
 
 - Cao Minh ↔ Syvial: không có quan hệ có sẵn; first contact nếu gặp.
-- Cao Minh ↔ Lucia Lục: quan hệ/xưng hô OPEN; encounter mặc định first contact nếu live continuity chưa xác lập khác; tuyệt đối không nhập quan hệ Cao Minh ↔ Lục Trầm.
-- Cao Minh ↔ Lục Trầm: đã là tử địch/đối thủ từ thế giới nguyên sinh; trong Backrooms quan hệ phát triển chậm từ đối đầu đến hợp tác, tín nhiệm rồi mới có khả năng nảy sinh tình cảm. Không phải first contact.
+- Cao Minh ↔ Lucia Lục: quan hệ/xưng hô OPEN; encounter mặc định first contact nếu live continuity chưa xác lập khác; không nhập continuity của Iris.
+- Cao Minh ↔ Iris: mặc định first contact; không có lịch sử có sẵn với Cao Minh nếu live continuity chưa xác lập.
 - Cao Minh ↔ Diệp Minh: tử địch không đội trời chung. Diệp Minh trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố là một nguyên nhân quyết định khiến Cao Minh bước vào ma đạo. Không mặc định Diệp Minh là chủ mưu duy nhất; các chi tiết sâu hơn vẫn OPEN. Canon nguồn: `DIEP_MINH_CANON.md`.
 
 ## Diệp Minh R01 source map
