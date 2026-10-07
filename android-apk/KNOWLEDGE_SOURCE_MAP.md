@@ -1,3 +1,5 @@
+> USER_RETCON 2026-10-07: companion runtime `luc_tram` đã được thay bởi `iris`. Nguồn scoped hiện hành `app/src/main/assets/canon/Iris_Codex.md`; Iris ↔ Cao Minh FIRST CONTACT / OPEN. Mọi mục Lục Trầm bên dưới chỉ là lịch sử, không đưa vào canon runtime Iris. Lucia (`lucia`) vẫn riêng biệt.
+
 # The BACKROOMS — Drive Source Map for Runtime Knowledge
 
 ## Authority order
@@ -15,14 +17,14 @@
 - `app/src/main/assets/knowledge/characters_current.json`
 - `app/src/main/assets/knowledge/knowledge_db.json`
 
-Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục scoped restore R01** và **Lục Trầm R05 / Visual R02**. Lucia (`lucia`) và Lục Trầm (`luc_tram`) là hai nhân vật riêng; không được dùng mirror/save cũ để nhập hai id.
+Hai file trên hiện chứa **Cao Minh R15**, **Lucia Lục scoped restore R01**, **Syvial** và **Iris scoped restore 2026-10-07**. Iris (`iris`) và Lucia (`lucia`) riêng biệt. Lục Trầm đã nghỉ khỏi runtime; save cũ được lưu bản lịch sử trước khi chuyển slot/stats sang Iris.
 
 ## Character Drive audit
 
 - `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
 - `Syvial_Codex.docx` — nguồn riêng của Syvial.
 - `Lucia_Codex.docx` — nguồn lịch sử của Lucia; hiện connector không truy cập được. Scoped source hiện hành: `app/src/main/assets/canon/Lucia_Codex.md`.
-- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R05.
+- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn lịch sử của Lục Trầm R05, mirror tại `historical-canon/Lục_Trầm_Codex.md`, không nằm trong runtime retrieval.
 
 ### Cao Minh source map
 
@@ -49,7 +51,7 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục s
 | Encounter | `03 · ENCOUNTER CONTRACT` | Core-owned; 10% candidate trên Level 0; first contact nếu continuity chưa xác lập khác. |
 | Relationship | `04 · OPEN` | Quan hệ/xưng hô với Cao Minh OPEN; không nhập quan hệ Lục Trầm. |
 
-### Lục Trầm source map
+### Lục Trầm historical source map (retired runtime)
 
 | Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
@@ -89,3 +91,9 @@ Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục s
 - CharacterEncounterCore sở hữu spawn/join character.
 - Gameplay numbers không tự biến thành lore.
 - New-game canon version: `cao-minh-r15`; save thuộc canon cũ được reset về baseline R15 thay vì trộn hai continuity.
+
+## Current runtime artwork (2026-10-07)
+
+- `lucia_overlay.png`: byte-identical Drive `LUCIA_LUC_OVERLAY.png`, file ID `1cM_6OQ3LbQwZXX_uU3vdOK2JLxiL2w9l`; SHA-256 `66ae60dcd2a08eb644ccc67b953e0b7de62c4c28ddfd24c26cea143db1d3961b`.
+- `avatars/Iris_avatar.jpg`: original BACKROOMS commit `c7bbec230f8613f85bd3d0b63e157f8e7ece1ef8`.
+- Iris full-body combat artwork has not been sourced; use the character placeholder, never Lục Trầm artwork.

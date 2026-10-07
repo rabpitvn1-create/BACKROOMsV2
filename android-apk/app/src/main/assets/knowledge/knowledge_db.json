@@ -1314,106 +1314,144 @@
       ]
     },
     {
-      "id": "CHAR.LUC_TRAM.IDENTITY",
+      "id": "CHAR.IRIS.RUNTIME_CORE",
       "domain": "CHARACTER",
-      "kind": "identity",
-      "text": "Lục Trầm is the current R05 Chân truyền đệ tử of Thiên Kiếm Môn, a Chính Đạo Kiếm Tu from the same origin world as Cao Minh. She and Cao Minh already knew and fought each other before Backrooms. Runtime id is 'luc_tram'; encounter materialization is Core-owned and the reunion candidate rate is 0.25% after Level 0.",
+      "kind": "runtime-card",
+      "text": "Iris: official name has no locked surname; ARGUS is her Black Blood callsign. Half-human/half-demon daughter of Belial and a human mother; true age/origin era remain unknown. She is Scout / Target Eliminator and a real ranged combatant/Gunslinger, not a non-combatant intelligence station. Calm, decisive, sharp, brave and caring; with Kai she is more emotionally transparent but does not become childish or violent. Her knowledge is limited to what she/relevant equipment can actually observe. Preserve UNKNOWN fields and never infer her exact combat tier as UR+ from Kai/Syvial.",
       "source": {
-        "document": "02_CHARACTERS/Lục_Trầm_Codex",
-        "anchor": "LUC-TRAM-THIEN-KIEM-CODEX-R05; 01 · ĐỊNH DANH VÀ VỊ TRÍ"
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "CHAR.IRIS.RUNTIME_CORE"
       },
-      "authority": "USER_RETCON",
+      "authority": "CHARACTER_CANON",
       "mutability": "IMMUTABLE",
-      "priority": 55,
+      "priority": 22,
       "tags": [
-        "lục trầm",
-        "luc tram",
-        "thiên kiếm môn",
-        "chính đạo kiếm tu",
-        "luc_tram"
+        "iris",
+        "argus",
+        "present core",
+        "voice"
+      ],
+      "references": [],
+      "affordances": []
+    },
+    {
+      "id": "CHAR.IRIS.ARGUS",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "ARGUS Terrain Read combines Iris's direct observation, Recon Frame sensors and analysis of terrain, landmarks, approach/escape routes, lines of sight, cover, ambush points and abnormal traces. It is not omniscience, wall vision, remote-camera generation or automatic supernatural true-form detection. Distorted geometry and bad sensor data can mislead it, so confidence/evidence still matter.",
+      "source": {
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "CHAR.IRIS.ARGUS"
+      },
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 40,
+      "tags": [
+        "iris",
+        "argus",
+        "terrain read",
+        "trace",
+        "route",
+        "cover"
       ],
       "references": [],
       "affordances": [
-        "character_identity",
-        "relationship_context"
+        "trace_analysis"
       ]
     },
     {
-      "id": "CHAR.LUC_TRAM.VISUAL_R02",
+      "id": "CHAR.IRIS.THOUSANDFOLD",
       "domain": "CHARACTER",
-      "kind": "visual",
-      "text": "R02 visual lock: Lục Trầm has extremely long silver-white hair, cool blue-gray eyes, a gold-black sword-crown with blue crystals, white/silver/gold segmented Thiên Cơ Bạch Kim Kiếm Khải over dark flexible underlayers with restrained sapphire accents, split battle-cloth panels, and exactly one extremely long broad white-silver Tịch Quang greatsword with blue core details. Mechanical-looking armor details are cultivation-artifact design, not AI, electronics, reactor, servos, hidden firearms or missiles. Avatar path is avatars/luctram_avatar.png and combat overlay path is luctram_overlay.png.",
+      "kind": "ability",
+      "text": "Thousandfold Cognition accelerates Iris's reception, analysis and information processing up to 1:1000. It does not automatically accelerate her body 1000 times. Knowing the right response does not guarantee her body can physically execute it in time.",
       "source": {
-        "document": "02_CHARACTERS/Lục_Trầm_Codex",
-        "anchor": "04 · NGOẠI HÌNH · VISUAL LOCK R02"
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "CHAR.IRIS.THOUSANDFOLD"
       },
-      "authority": "USER_RETCON",
+      "authority": "CHARACTER_CANON",
       "mutability": "IMMUTABLE",
-      "priority": 55,
+      "priority": 48,
       "tags": [
-        "lục trầm",
-        "visual lock",
-        "tịch quang",
-        "thiên cơ bạch kim kiếm khải"
+        "iris",
+        "thousandfold",
+        "cognition"
       ],
-      "references": [
-        "CHAR.LUC_TRAM.IDENTITY"
-      ],
+      "references": [],
       "affordances": [
-        "visual_description"
+        "trace_analysis",
+        "target_analysis"
       ]
     },
     {
-      "id": "CHAR.LUC_TRAM.CAO_MINH_RELATIONSHIP",
+      "id": "CHAR.IRIS.IVORY_EBONY",
       "domain": "CHARACTER",
-      "kind": "relationship",
-      "text": "Lục Trầm initially regards Cao Minh as a sworn enemy because of Táng Kiếm Cốc. Their Backrooms meeting is a reunion, not first contact. Relationship progression must be slow and evidence-driven: hostility, reluctant cooperation, companionship, trust, then only later possible romantic feelings. The hidden truth of Táng Kiếm Cốc is backstage knowledge and must not be automatically known by Lục Trầm.",
+      "kind": "equipment",
+      "text": "Ivory & Ebony are Iris's two signature mechanical pistols, synchronized with Belial Core. Each shot forms directly from Iris's demon power, so carried ammunition quantity is not the limiting factor. Infinite source does not imply infinite rate of fire, weapon durability, per-shot damage or guaranteed hits; projectiles do not self-target or automatically distinguish manifestation from true body.",
       "source": {
-        "document": "02_CHARACTERS/Lục_Trầm_Codex",
-        "anchor": "13-20 · CAO MINH / QUAN HỆ / XƯNG HÔ"
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "CHAR.IRIS.IVORY_EBONY"
       },
-      "authority": "USER_RETCON",
+      "authority": "CHARACTER_CANON",
+      "mutability": "IMMUTABLE",
+      "priority": 48,
+      "tags": [
+        "iris",
+        "ivory",
+        "ebony",
+        "gunslinger"
+      ],
+      "references": [],
+      "affordances": [
+        "direct_threat"
+      ]
+    },
+    {
+      "id": "CHAR.IRIS.SUPPORT",
+      "domain": "CHARACTER",
+      "kind": "ability",
+      "text": "Iris has Field Galley and Field MedNet support skills. Field MedNet is battlefield medical capability, not magical healing. Field Galley is field cooking/logistics skill and does not create matter or conjure food.",
+      "source": {
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "CHAR.IRIS.SUPPORT"
+      },
+      "authority": "CHARACTER_CANON",
       "mutability": "IMMUTABLE",
       "priority": 55,
       "tags": [
-        "lục trầm",
-        "cao minh",
-        "táng kiếm cốc",
-        "tử địch",
+        "iris",
+        "field mednet",
+        "field galley",
+        "medical",
+        "food"
+      ],
+      "references": [],
+      "affordances": [
+        "field_medical",
+        "field_food"
+      ]
+    },
+    {
+      "id": "REL.CAO_MINH.IRIS.OPEN",
+      "domain": "CHARACTER",
+      "kind": "hard-lock",
+      "text": "Iris and Cao Minh default to first contact. Their relationship and address remain OPEN. Never transfer Iris↔Kai romance/address or Lục Trầm rivalry/gear/reunion to Iris. Candidate iris 0.25% after Level 0 is Core owned.",
+      "source": {
+        "document": "app/src/main/assets/canon/Iris_Codex.md",
+        "anchor": "00;02"
+      },
+      "authority": "USER_RETCON",
+      "mutability": "IMMUTABLE",
+      "priority": 10,
+      "tags": [
+        "iris",
+        "cao_minh",
         "relationship"
       ],
       "references": [
-        "CHAR.LUC_TRAM.IDENTITY"
+        "CHAR.IRIS.RUNTIME_CORE"
       ],
       "affordances": [
-        "relationship_context",
-        "dialogue_constraint"
-      ]
-    },
-    {
-      "id": "CHAR.LUC_TRAM.THIEN_KIEM_DINH_GIOI",
-      "domain": "CHARACTER",
-      "kind": "ultimate",
-      "text": "Thiên Kiếm Định Giới is Lục Trầm's current Poker Dice Ultimate presentation. Runtime mechanics preserve the existing 60-hit projection: exactly 60 hits, each using 100% of Lục Trầm's current DMG + 15% Bonus DMG in SSF, with existing FSF multiplier behavior unchanged. The 60-hit count is a gameplay projection; canonically Thiên Kiếm Định Giới establishes a local sword-domain through linked sword seals and does not grant absolute control over Backrooms space.",
-      "source": {
-        "document": "02_CHARACTERS/Lục_Trầm_Codex",
-        "anchor": "12 · TUYỆT KỸ — THIÊN KIẾM ĐỊNH GIỚI"
-      },
-      "authority": "USER_RETCON",
-      "mutability": "IMMUTABLE",
-      "priority": 55,
-      "tags": [
-        "lục trầm",
-        "thiên kiếm định giới",
-        "ultimate",
-        "60 hit",
-        "luc_tram"
-      ],
-      "references": [
-        "CHAR.LUC_TRAM.IDENTITY"
-      ],
-      "affordances": [
-        "direct_threat"
+        "dialogue"
       ]
     }
   ]

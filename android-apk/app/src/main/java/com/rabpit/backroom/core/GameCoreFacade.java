@@ -381,15 +381,11 @@ public final class GameCoreFacade implements AutoCloseable {
 
     if ("CHARACTER".equals(kind)) {
       characterEncounterCore.activateEncounterCandidate(working, payload);
-      boolean reunion = "luc_tram".equals(payload);
-      params.put("factPredicate", reunion ? "character_reunion" : "character_encountered")
-          .put("factValue", payload);
+      params.put("factPredicate", "character_encountered").put("factValue", payload);
       JSONArray effects = new JSONArray().put(emergentTurnEngine.threadEffect(
-          reunion ? "LUC_TRAM_RELATIONSHIP" : "SOCIAL_CONTACT",
-          new JSONArray().put(payload), "SEED_OR_ADVANCE", null));
+          "SOCIAL_CONTACT", new JSONArray().put(payload), "SEED_OR_ADVANCE", null));
       events.put(emergentTurnEngine.event(
-          turnId, events, reunion ? "CHARACTER_REUNION" : "CHARACTER_ENCOUNTERED",
-          "SOCIAL", payload, params, effects));
+          turnId, events, "CHARACTER_ENCOUNTERED", "SOCIAL", payload, params, effects));
       return;
     }
 

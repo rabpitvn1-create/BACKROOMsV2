@@ -16,19 +16,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class LuciaSeparationContractTest {
-  @Test public void luciaAndLucTramRemainDistinctAcrossRuntimeAndCanon() throws Exception {
+  @Test public void luciaAndIrisRemainDistinctAcrossRuntimeAndCanon() throws Exception {
     CharacterEncounterCore encounters = new CharacterEncounterCore();
 
     JSONObject partyState = state(0, "0").put("party", new JSONArray()
         .put(new JSONObject().put("id", "lucia").put("name", "Lucia Lục"))
-        .put(new JSONObject().put("id", "luc_tram").put("name", "Lục Trầm"))
+        .put(new JSONObject().put("id", "iris").put("name", "Iris"))
         .put(new JSONObject().put("id", "syvial").put("name", "Syvial")));
     encounters.normalizeState(partyState);
 
     JSONArray party = partyState.getJSONArray("party");
     assertEquals(3, party.length());
     assertEquals("lucia", party.getJSONObject(0).getString("id"));
-    assertEquals("luc_tram", party.getJSONObject(1).getString("id"));
+    assertEquals("iris", party.getJSONObject(1).getString("id"));
     assertEquals("syvial", party.getJSONObject(2).getString("id"));
 
     CharacterProgressionCore progression = new CharacterProgressionCore();
@@ -36,35 +36,35 @@ public class LuciaSeparationContractTest {
     assertTrue(partyState.getJSONObject(CharacterProgressionCore.ROOT_KEY)
         .getJSONObject(CharacterProgressionCore.CHARACTERS_KEY).has("lucia"));
     assertTrue(partyState.getJSONObject(CharacterProgressionCore.ROOT_KEY)
-        .getJSONObject(CharacterProgressionCore.CHARACTERS_KEY).has("luc_tram"));
+        .getJSONObject(CharacterProgressionCore.CHARACTERS_KEY).has("iris"));
     assertEquals("lucia", CharacterProgressionCore.normalizeCharacterId("Hứa Thuý Mai"));
-    assertEquals("luc_tram", CharacterProgressionCore.normalizeCharacterId("Lục Trầm"));
+    assertEquals("iris", CharacterProgressionCore.normalizeCharacterId("Iris"));
 
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
-    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("luc_tram"));
+    assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
     assertEquals(5, CombatChoiceEngine.characterProcCount("lucia"));
-    assertEquals(5, CombatChoiceEngine.characterProcCount("luc_tram"));
+    assertEquals(5, CombatChoiceEngine.characterProcCount("iris"));
 
     JSONArray levelZero = encounters.situationCandidates(state(0, "0"));
     assertEquals(10.0d, chance(levelZero, "character:lucia"), 0.0000001d);
-    assertFalse(levelZero.toString().contains("character:luc_tram"));
+    assertFalse(levelZero.toString().contains("character:iris"));
 
     JSONArray levelOne = encounters.situationCandidates(state(1, "1"));
-    assertEquals(0.25d, chance(levelOne, "character:luc_tram"), 0.0000001d);
+    assertEquals(0.25d, chance(levelOne, "character:iris"), 0.0000001d);
     assertFalse(levelOne.toString().contains("character:lucia"));
 
     String luciaCanon = readCanon("Lucia_Codex.md");
-    String lucTramCanon = readCanon("Lục_Trầm_Codex.md");
-    assertTrue(luciaCanon.contains("Lucia Lục / Hứa Thuý Mai và Lục Trầm là hai nhân vật khác nhau"));
-    assertTrue(lucTramCanon.contains("Lucia Lục / Hứa Thuý Mai là nhân vật riêng"));
-    assertFalse(lucTramCanon.contains(
+    String irisCanon = readCanon("Iris_Codex.md");
+    assertTrue(luciaCanon.contains("Lucia Lục / Hứa Thuý Mai và Iris là hai nhân vật khác nhau"));
+    assertTrue(irisCanon.contains("Iris và Lucia Lục (`lucia`) là hai nhân vật riêng"));
+    assertFalse(irisCanon.contains(
         "Lucia Lục / Hứa Thuý Mai và loadout quân nhân cũ là LEGACY / RETIRED"));
 
     Map<String, String> canon = new LinkedHashMap<>();
     canon.put("BACKROOMS_WORLD.md", "# World\n## Tầng 0 — Lobby\nYellow walls.\n");
     canon.put("Cao_Minh_Codex.md", "# Cao Minh\n## Định danh\nPlayer.\n");
     canon.put("Lucia_Codex.md", luciaCanon);
-    canon.put("Lục_Trầm_Codex.md", lucTramCanon);
+    canon.put("Iris_Codex.md", irisCanon);
     JSONObject retrievalState = state(0, "0").put("party", new JSONArray()
         .put(new JSONObject().put("id", "lucia").put("present", true)));
     CanonRetriever.CanonPacket packet =

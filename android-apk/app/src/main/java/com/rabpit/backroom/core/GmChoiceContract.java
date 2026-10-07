@@ -27,7 +27,7 @@ public final class GmChoiceContract {
       {"Cao Minh", "character"},
       {"Vạn Giới Ma Tôn", "character"},
       {"Syvial", "character"},
-      {"Lục Trầm", "character"},
+      {"Iris", "character"},
       {"Backrooms", "location"},
       {"Explorer", "stat"},
       {"EXP", "stat"},

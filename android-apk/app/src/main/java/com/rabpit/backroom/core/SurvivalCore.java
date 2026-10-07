@@ -14,6 +14,7 @@ final class SurvivalCore {
 
   void normalizeState(JSONObject state) throws Exception {
     if (state == null) return;
+    CharacterEncounterCore.migrateRetiredCompanion(state);
     JSONObject root = state.optJSONObject(ROOT_KEY);
     if (root == null) root = new JSONObject();
     JSONObject characters = root.optJSONObject(CHARACTERS_KEY);

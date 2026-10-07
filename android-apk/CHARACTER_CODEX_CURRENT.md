@@ -1,14 +1,17 @@
+> USER_RETCON 2026-10-07: companion runtime `luc_tram` đã được thay bởi `iris`. Nguồn scoped hiện hành `app/src/main/assets/canon/Iris_Codex.md`; Iris ↔ Cao Minh FIRST CONTACT / OPEN. Mọi mục Lục Trầm bên dưới chỉ là lịch sử, không đưa vào canon runtime Iris. Lucia (`lucia`) vẫn riêng biệt.
+
 # BACKROOMsV2 — Character Codex / Wiki hiện hành
 
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
-Đồng bộ: 2026-09-28.
+Đồng bộ runtime: 2026-10-07; các nguồn lịch sử giữ ngày/revision gốc.
 
 Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, nguồn Character Drive CURRENT có thẩm quyền cao hơn local mirror, save/log cũ và patch artifact, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` và khóa tách **Lucia Lục ≠ Lục Trầm** là các USER_RETCON có phạm vi hẹp. Nguồn Drive cũ của Lucia hiện không truy cập được, nên không tự bổ sung dữ kiện ngoài phần đã xác nhận trong repository.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
 - Lucia Lục / Hứa Thuý Mai: scoped USER_RETCON `app/src/main/assets/canon/Lucia_Codex.md`; historical Drive source currently unavailable.
-- Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
+- Iris: scoped restore `app/src/main/assets/canon/Iris_Codex.md`, nguồn facts từ BACKROOMS `CHAR.IRIS.*`; Drive CURRENT chưa được xác minh.
+- Lục Trầm (lịch sử, retired runtime): `historical-canon/Lục_Trầm_Codex.md`, nguồn Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
 
@@ -111,7 +114,7 @@ Gameplay phục hồi riêng cho `lucia`: **M4A1 Joint Attack 150%**, năm proc 
 
 CharacterEncounterCore sở hữu spawn/join; baseline phục hồi là **10% candidate trên Level 0**. Quan hệ và xưng hô với Cao Minh vẫn **OPEN** nếu continuity chưa xác lập.
 
-## Lục Trầm — R05
+## Lục Trầm — R05 (historical; retired runtime)
 
 Nguồn trực tiếp: `02_CHARACTERS/Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`.
 
@@ -164,3 +167,7 @@ Runtime id hiện hành là `luc_tram`.
 4. Gameplay stat như HP, EXP, Accuracy, Evasion, combat turn là lớp runtime; không được viết như tri thức diegetic của Cao Minh.
 5. Set mặc định của Cao Minh là Huyết Ma Kiếm + Huyết Ma Chiến Khải + Vạn Tàng Giới.
 6. Không khôi phục bất kỳ tên kỹ năng, vật phẩm, trang bị, thân phận hoặc quan hệ player-character đã bị R15 thay thế.
+
+## Iris — scoped runtime restore 2026-10-07
+
+ARGUS / Black Blood Scout và Gunslinger, bán nhân/bán quỷ; Ivory & Ebony, Recon Frame, Belial Core. ARGUS phụ thuộc dữ kiện quan sát/cảm biến; Thousandfold chỉ tăng xử lý thông tin. Iris ↔ Cao Minh OPEN / first contact, không nhập romance/xưng hô với Kai hoặc lịch sử Lục Trầm. Slot gameplay giữ số cân bằng cũ, không biến thành năng lực canon mới.

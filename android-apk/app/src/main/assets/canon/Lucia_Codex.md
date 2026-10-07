@@ -8,8 +8,8 @@
 ## 00 · CORE LOCK
 <!-- canon: core=true; aliases=Lucia Lục,Hứa Thuý Mai,Hứa Thúy Mai,Lucia -->
 
-- **Lucia Lục / Hứa Thuý Mai và Lục Trầm là hai nhân vật khác nhau.**
-- Runtime id của Lucia là `lucia`; runtime id của Lục Trầm là `luc_tram`. Không alias, rename, migrate hoặc merge hai id này.
+- **Lucia Lục / Hứa Thuý Mai và Iris là hai nhân vật khác nhau.**
+- Runtime id của Lucia là `lucia`; runtime id của Iris là `iris`. Không alias, rename, migrate hoặc merge hai id này.
 - Lucia là **con người bình thường được huấn luyện tốt**, thuộc nhánh chiến đấu hiện đại/tactical riflewoman đã có trong runtime cũ; cô **không phải** Chính Đạo Kiếm Tu, không thuộc Thiên Kiếm Môn và không sở hữu Tịch Quang hay Thiên Cơ Bạch Kim Kiếm Khải.
 - Quan hệ, lịch sử và xưng hô giữa Lucia với Cao Minh hiện `OPEN` cho tới khi continuity/save xác lập. Không nhập quan hệ Cao Minh ↔ Lục Trầm sang Lucia.
 - CharacterEncounterCore sở hữu việc xuất hiện và gia nhập Party. Gemini/narration không được tự spawn Lucia hoặc tự sửa Party.
@@ -43,7 +43,7 @@ Lucia vẫn là con người được huấn luyện tốt; các proc/status gam
 - Lucia dùng candidate `character:lucia`.
 - Baseline runtime được phục hồi: **10% trên Level 0**.
 - Đây là **first contact với Cao Minh trừ khi live continuity/save đã xác lập khác**.
-- Lục Trầm dùng candidate riêng `character:luc_tram`, với luật tái ngộ riêng sau Level 0. Hai candidate không thay thế nhau.
+- Iris dùng candidate riêng `character:iris`, 0.25% first contact sau Level 0. Không nhập lịch sử Lục Trầm vào Iris hoặc Lucia.
 
 ## 04 · OPEN / KHÔNG ĐƯỢC TỰ LẤP
 

@@ -158,7 +158,7 @@ jobs:
           node --check android-apk/app/src/main/assets/snapshot-ui.js
           node --check android-apk/app/src/main/assets/party-ui.js
           node --check android-apk/app/src/main/assets/prologue.js
-          node --test android-apk/tests/font-contract.test.cjs android-apk/tests/gm-choice-ui.test.cjs android-apk/tests/ma-ton-ui.test.cjs android-apk/tests/player-action-gm-contract.test.cjs android-apk/tests/prologue-contract.test.cjs android-apk/tests/viewport-layout.test.cjs
+          node --test android-apk/tests/font-contract.test.cjs android-apk/tests/gm-choice-ui.test.cjs android-apk/tests/ma-ton-ui.test.cjs android-apk/tests/player-action-gm-contract.test.cjs android-apk/tests/prologue-contract.test.cjs android-apk/tests/viewport-layout.test.cjs android-apk/tests/snapshot-layout.test.cjs android-apk/tests/snapshot-visibility.test.cjs
 
       - name: Validate Game Master configuration
         run: |
@@ -285,10 +285,10 @@ jobs:
           test "$(unzip -p Backroom-1.1.68.apk assets/avatars/cao_minh_avatar.jpg | sha256sum | awk '{print $1}')" = 'bddf46b160f690dcfe300d7ac603a2663ceb47fe2042424d8fe571b064f9fb67'
           ! unzip -l Backroom-1.1.68.apk | grep -q 'assets/avatars/kai_avatar.jpg'
           ! unzip -l Backroom-1.1.68.apk | grep -q 'assets/avatars/kai_avatar.png'
-          unzip -l Backroom-1.1.68.apk | grep -q 'assets/avatars/luctram_avatar.png'
-          unzip -l Backroom-1.1.68.apk | grep -q 'assets/luctram_overlay.png'
-          cmp <(unzip -p Backroom-1.1.68.apk assets/avatars/luctram_avatar.png) android-apk/app/src/main/assets/avatars/luctram_avatar.png
-          cmp <(unzip -p Backroom-1.1.68.apk assets/luctram_overlay.png) android-apk/app/src/main/assets/luctram_overlay.png
+          unzip -l Backroom-1.1.68.apk | grep -q 'assets/avatars/Iris_avatar.jpg'
+          unzip -l Backroom-1.1.68.apk | grep -q 'assets/lucia_overlay.png'
+          cmp <(unzip -p Backroom-1.1.68.apk assets/avatars/Iris_avatar.jpg) android-apk/app/src/main/assets/avatars/Iris_avatar.jpg
+          cmp <(unzip -p Backroom-1.1.68.apk assets/lucia_overlay.png) android-apk/app/src/main/assets/lucia_overlay.png
           unzip -l Backroom-1.1.68.apk | grep -q 'assets/chest_overlay.png'
           ! unzip -l Backroom-1.1.68.apk | grep -q 'assets/status/status_'
           unzip -l Backroom-1.1.68.apk | grep -q 'assets/fonts/Play-Bold.ttf'

@@ -28,7 +28,7 @@ public class NarrationGuardTest {
   @Test public void acceptsBoundedDialogueForPendingEncounter() throws Exception {
     JSONObject state = new JSONObject()
         .put("characterEncounter", new JSONObject()
-            .put("pendingIntro", new JSONArray().put("luc_tram")));
+            .put("pendingIntro", new JSONArray().put("iris")));
     JSONObject generated = new JSONObject()
         .put("reply", "Hai người đối mặt.")
         .put("choices", new JSONArray())

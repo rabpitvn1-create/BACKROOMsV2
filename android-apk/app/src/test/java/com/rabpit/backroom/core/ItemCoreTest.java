@@ -145,26 +145,26 @@ public class ItemCoreTest {
   }
 
   @Test public void selectedCompanionUsesOwnInventoryWithoutTouchingCaoMinhInventory() throws Exception {
-    JSONObject lucTram = new JSONObject()
-        .put("id", "luc_tram").put("name", "Lục Trầm").put("joined", true)
+    JSONObject iris = new JSONObject()
+        .put("id", "iris").put("name", "Iris").put("joined", true)
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.BANDAGE_ID).put("name", "Băng Gạc Y Tế").put("quantity", 1)));
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("inventory", new JSONArray().put(new JSONObject()
             .put("id", ItemCore.ALMOND_WATER_ID).put("name", "Almond Water").put("quantity", 1)))
-        .put("party", new JSONArray().put(lucTram));
+        .put("party", new JSONArray().put(iris));
 
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
-    progression.setCurrentHp(state, "luc_tram", 10);
+    progression.setCurrentHp(state, "iris", 10);
 
     String reply = new ItemCore().applyItemAction(
-        state, "luc_tram", ItemCore.BANDAGE_ID, "use", "", 1);
+        state, "iris", ItemCore.BANDAGE_ID, "use", "", 1);
 
-    assertEquals(25, progression.profile(state, "luc_tram").getInt("currentHp"));
-    assertTrue(reply.contains("Lục Trầm"));
-    assertEquals(0, lucTram.getJSONArray("inventory").length());
+    assertEquals(25, progression.profile(state, "iris").getInt("currentHp"));
+    assertTrue(reply.contains("Iris"));
+    assertEquals(0, iris.getJSONArray("inventory").length());
     assertEquals(1, state.getJSONArray("inventory").length());
     assertEquals(ItemCore.ALMOND_WATER_ID,
         state.getJSONArray("inventory").getJSONObject(0).getString("id"));
@@ -174,20 +174,20 @@ public class ItemCoreTest {
     JSONObject state = new JSONObject()
         .put("player", new JSONObject().put("name", "Cao Minh"))
         .put("party", new JSONArray().put(new JSONObject()
-            .put("id", "luc_tram").put("name", "Lục Trầm").put("joined", true)));
+            .put("id", "iris").put("name", "Iris").put("joined", true)));
     CharacterProgressionCore progression = new CharacterProgressionCore();
     progression.normalizeState(state);
-    progression.setCurrentHp(state, "luc_tram", 0);
+    progression.setCurrentHp(state, "iris", 0);
     ItemCore.grantChestLootItem(state, 2);
 
     try {
-      new ItemCore().applyItemAction(state, ItemCore.FIRST_AID_KIT_ID, "share", "luc_tram", 1);
+      new ItemCore().applyItemAction(state, ItemCore.FIRST_AID_KIT_ID, "share", "iris", 1);
       fail("Expected downed companion healing to be rejected");
     } catch (IllegalStateException expected) {
       assertTrue(expected.getMessage().contains("10 Explorer Turn"));
     }
 
-    assertEquals(0, progression.profile(state, "luc_tram").getInt("currentHp"));
+    assertEquals(0, progression.profile(state, "iris").getInt("currentHp"));
     assertEquals(1, state.getJSONArray("inventory").length());
   }
   private static final class SequenceRng implements ItemCore.IntRng {

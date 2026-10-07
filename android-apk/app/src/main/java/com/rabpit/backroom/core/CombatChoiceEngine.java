@@ -24,7 +24,7 @@ public final class CombatChoiceEngine {
   private static final int ULTIMATE_BONUS_DAMAGE_PERCENT = 15;
   private static final int HUYET_MA_24_HIT_COUNT = 24;
   private static final int LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT = 60;
-  private static final int LUC_TRAM_THIEN_KIEM_HIT_COUNT = 60;
+  private static final int IRIS_GAMEPLAY_HIT_COUNT = 60;
   private static final int CAO_MINH_BASE_ATTACK = 30;
   private static final int CRITICAL_DAMAGE_PERCENT = 150;
   private static final int ENTITY_BASE_CRITICAL_PERCENT = 5;
@@ -265,9 +265,9 @@ public final class CombatChoiceEngine {
     skills("lucia",
         skill("M4A1 Joint Attack", "Phối hợp hỏa lực M4A1.", 150, "", 0, 0));
 
-    skills("luc_tram",
-        skill("Tịch Quang Hợp Kích",
-            "Kiếm thế hợp kích bằng Tịch Quang; giữ nguyên projection 150% damage.", 150, "", 0, 0));
+    skills("iris",
+        skill("Ivory & Ebony Joint Attack",
+            "Hỏa lực song súng; gameplay projection 150% damage.", 150, "", 0, 0));
 
     // Independent proc skills may trigger after a basic attack or normal Skill, never an Ultimate.
     // Kai is Legacy and deliberately has no entry in this authoritative pool.
@@ -283,12 +283,12 @@ public final class CombatChoiceEngine {
         characterProc("Concussive Burst", 46, 15, "Choáng", 1, 0),
         characterProc("Rending Burst", 49, 20, "Chảy máu", 2, 3),
         characterProc("Corrosive Burst", 51, 20, "Trúng độc", 2, 4));
-    characterProcs("luc_tram",
-        characterProc("Tịch Quang Phản Kiếm", 52, 25, "Trúng độc", 2, 3),
-        characterProc("Nhất Tuyến Phá Vọng", 55, 20, "Xuyên giáp", 2, 10),
-        characterProc("Thiên Kiếm Chấn", 46, 15, "Choáng", 1, 0),
-        characterProc("Bạch Hồng Quán Nhật", 49, 20, "Chảy máu", 2, 3),
-        characterProc("Vạn Kiếm Quy Tâm", 51, 20, "Trúng độc", 2, 4));
+    characterProcs("iris",
+        characterProc("Ivory & Ebony Toxic Burst", 52, 25, "Trúng độc", 2, 3),
+        characterProc("Ivory & Ebony Armor-Piercing Burst", 55, 20, "Xuyên giáp", 2, 10),
+        characterProc("Ivory & Ebony Concussive Burst", 46, 15, "Choáng", 1, 0),
+        characterProc("Ivory & Ebony Rending Burst", 49, 20, "Chảy máu", 2, 3),
+        characterProc("Ivory & Ebony Corrosive Burst", 51, 20, "Trúng độc", 2, 4));
 
     // Ultimate damage derives from each character's current basic DMG instead of a fixed HP value.
     // SSF uses the listed total; FSF keeps the Poker Dice 200% Ultimate multiplier.
@@ -298,8 +298,8 @@ public final class CombatChoiceEngine {
     ULTIMATES.put("lucia",
         new Ultimate("Too Young To Die", LUCIA_TOO_YOUNG_TO_DIE_SHOT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
-    ULTIMATES.put("luc_tram",
-        new Ultimate("Thiên Kiếm Định Giới", LUC_TRAM_THIEN_KIEM_HIT_COUNT,
+    ULTIMATES.put("iris",
+        new Ultimate("Ivory & Ebony Barrage", IRIS_GAMEPLAY_HIT_COUNT,
             ULTIMATE_BONUS_DAMAGE_PERCENT));
   }
 
