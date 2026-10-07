@@ -135,7 +135,7 @@ public class CharacterEncounterCoreTest {
         .put("log", new JSONArray().put(new JSONObject().put("role", "gm").put("text", "Test")));
   }
 
-  @Test public void lucTramPendingPromptIsReunionNotFirstContact() throws Exception {
+  @Test public void irisPendingPromptIsFirstContact() throws Exception {
     JSONObject state = state(1, 5)
         .put("characterEncounter", new JSONObject()
             .put("pendingIntro", new JSONArray().put("iris"))
@@ -143,8 +143,8 @@ public class CharacterEncounterCoreTest {
     CharacterEncounterCore core = new CharacterEncounterCore();
     String prompt = core.promptContext(state);
 
-    assertTrue(prompt.contains("tense reunion"));
-    assertTrue(prompt.contains("never frame it as first contact"));
+    assertTrue(prompt.contains("Iris first contact is already committed"));
+    assertTrue(prompt.contains("without inventing prior shared history"));
   }
 
 }
