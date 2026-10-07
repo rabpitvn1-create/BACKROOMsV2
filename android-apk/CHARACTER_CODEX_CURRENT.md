@@ -3,12 +3,12 @@
 Nguồn thẩm quyền: Google Drive `02_CHARACTERS`.
 Đồng bộ: 2026-09-28.
 
-Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, nguồn Character Drive CURRENT có thẩm quyền cao hơn local mirror, save/log cũ và patch artifact, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` và khóa tách **Lucia Lục ≠ Lục Trầm** là các USER_RETCON có phạm vi hẹp. Nguồn Drive cũ của Lucia hiện không truy cập được, nên không tự bổ sung dữ kiện ngoài phần đã xác nhận trong repository.
+Tài liệu này là bản wiki gọn dùng để audit repository. Khi có xung đột, nguồn Character Drive CURRENT có thẩm quyền cao hơn local mirror, save/log cũ và patch artifact, **ngoại trừ retcon người dùng mới hơn đã được khóa rõ trong repository**. Hiện tại, `DIEP_MINH_CANON.md` và retcon **Lục Trầm → Iris; Lucia Lục ≠ Iris** là các USER_RETCON có phạm vi hẹp. Nguồn Drive cũ của Lucia hiện không truy cập được, nên không tự bổ sung dữ kiện ngoài phần đã xác nhận trong repository.
 
 - Cao Minh: `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq`
 - Syvial: `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY`
 - Lucia Lục / Hứa Thuý Mai: scoped USER_RETCON `app/src/main/assets/canon/Lucia_Codex.md`; historical Drive source currently unavailable.
-- Lục Trầm: `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`
+- Iris: `app/src/main/assets/canon/Iris_Codex.md` — migrated from the prior BACKROOMS Iris canon/runtime
 
 `UNKNOWN`, `OPEN`, `CHƯA KHÓA` phải giữ nguyên là chưa biết. `KNOWLEDGE_LOCK` là canon hậu trường cho GM/người viết, không tự biến thành kiến thức mà nhân vật trong truyện biết.
 
@@ -93,7 +93,7 @@ Nguồn hiện hành: `DIEP_MINH_CANON.md`.
 
 ## Campaign relationship override — Cao Minh R15
 
-Cao Minh không có quan hệ có sẵn với Syvial. Mọi lần gặp Syvial trong campaign phải là first contact trừ khi live state về sau xác lập khác. Với Lucia, quan hệ/lịch sử/xưng hô vẫn OPEN và encounter mặc định là first contact trừ khi live continuity xác lập khác. Không ánh xạ quan hệ Cao Minh ↔ Lục Trầm sang Lucia. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
+Cao Minh không có quan hệ có sẵn với Syvial. Mọi lần gặp Syvial trong campaign phải là first contact trừ khi live state về sau xác lập khác. Với Lucia, quan hệ/lịch sử/xưng hô vẫn OPEN và encounter mặc định là first contact trừ khi live continuity xác lập khác. Không ánh xạ continuity của Iris sang Lucia. Các quan hệ legacy của nhân vật khác với danh tính player đã nghỉ hưu không được ánh xạ sang Cao Minh.
 
 ## Syvial
 
@@ -103,58 +103,27 @@ Syvial giữ canon độc lập từ tài liệu riêng. Trong campaign R15, kh�
 
 Nguồn hiện hành trong repository: `app/src/main/assets/canon/Lucia_Codex.md`. Nguồn Drive lịch sử `Lucia_Codex.docx` hiện không truy cập được, vì vậy chỉ khóa các dữ kiện đã xác nhận trong lịch sử repo và yêu cầu người dùng mới nhất.
 
-**IDENTITY HARD LOCK:** Lucia Lục / Hứa Thuý Mai và Lục Trầm là **hai nhân vật khác nhau**. Runtime id tương ứng là `lucia` và `luc_tram`; không alias, rename, migrate hoặc merge.
+**IDENTITY HARD LOCK:** Lucia Lục / Hứa Thuý Mai và Iris là **hai nhân vật khác nhau**. Runtime id tương ứng là `lucia` và `iris`; không alias, rename hoặc merge.
 
-Lucia là con người hiện đại được huấn luyện tốt theo vai trò tactical riflewoman đã có trong runtime cũ. Bộ trang bị runtime được xác nhận gồm **M4A1 cá nhân hóa**, **dao găm chiến đấu** và **đồng hồ định vị quân sự**. Không chuyển Tịch Quang, Kiếm Khải, Thiên Kiếm Môn hoặc quan hệ Táng Kiếm Cốc sang Lucia.
+Lucia là con người hiện đại được huấn luyện tốt theo vai trò tactical riflewoman đã có trong runtime cũ. Bộ trang bị runtime được xác nhận gồm **M4A1 cá nhân hóa**, **dao găm chiến đấu** và **đồng hồ định vị quân sự**. Không chuyển Ivory & Ebony, Blackblood Recon Frame hoặc continuity của Iris sang Lucia.
 
 Gameplay phục hồi riêng cho `lucia`: **M4A1 Joint Attack 150%**, năm proc súng lịch sử và **Too Young To Die** đúng **60 phát**, mỗi phát dùng **100% DMG hiện tại + 15% Bonus DMG** trong SSF. Đây là gameplay projection; Lucia không nhận năng lực siêu nhiên mới.
 
 CharacterEncounterCore sở hữu spawn/join; baseline phục hồi là **10% candidate trên Level 0**. Quan hệ và xưng hô với Cao Minh vẫn **OPEN** nếu continuity chưa xác lập.
 
-## Lục Trầm — R05
+## Iris — V2 Migration R01
 
-Nguồn trực tiếp: `02_CHARACTERS/Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s`.
+Nguồn hiện hành: `app/src/main/assets/canon/Iris_Codex.md`, được đưa từ canon/runtime Iris đã tồn tại trong repository BACKROOMS trước đây.
 
-Lục Trầm là **Chân truyền đệ tử Thiên Kiếm Môn**, một **Chính Đạo Kiếm Tu** cùng thế giới nguyên sinh với Cao Minh. Cô từng xem **Vạn Giới Ma Tôn** là tử địch không đội trời chung và đã nhiều lần truy sát hắn trước Backrooms. Vì vậy lần gặp trong Backrooms là **tái ngộ**, không phải first contact.
+Iris thay thế slot Lục Trầm đã retired. Runtime id hiện hành là `iris`; legacy id `luc_tram` chỉ normalize sang `iris` để tương thích save cũ.
 
-**POWER SCALE HARD LOCK:** Lục Trầm là thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. Cô có thể khiến hắn nghiêm túc khi giao thủ, nhưng không được tự nâng thành đệ nhất cường giả hoặc ép hai người thành “cặp cân sức” chỉ để phục vụ romance.
+Iris là nữ bán nhân/bán quỷ, **Scout / Target Eliminator**, thiên về ranged combat. **ARGUS Terrain Read** chỉ dùng quan sát trực tiếp, cảm biến Recon Frame và dấu vết/địa hình hợp lệ; không nhìn xuyên tường, không drone mesh và không toàn tri. **Thousandfold Cognition** tăng tốc xử lý thông tin, không làm cơ thể hoặc súng nhanh hơn cùng tỷ lệ.
 
-### Thiên Kiếm Môn và Táng Kiếm Cốc
+Trang bị chính: **Ivory & Ebony** và **Blackblood Recon Frame**. Nguồn quỷ lực không giới hạn không đồng nghĩa RPM, damage, accuracy, durability hoặc Action vô hạn.
 
-Giáo nghĩa cốt lõi của Thiên Kiếm Môn là **kiếm phải chịu trách nhiệm cho nơi nó chém xuống**. Điểm gãy lớn nhất giữa Lục Trầm và Cao Minh là **Táng Kiếm Cốc**: theo điều cô biết, Cao Minh phá đại trận và sư phụ cô chết trong biến cố. Sự thật hậu trường về **Huyết Tế Kiếm Trận** thuộc KNOWLEDGE LOCK và không được tự tiết lộ cho Lục Trầm.
+CharacterEncounterCore sở hữu spawn/join. Baseline Iris là **0.25% candidate sau Level 0** và **first contact với Cao Minh** trừ khi live continuity xác lập khác.
 
-Quan hệ động phải phát triển chậm: **tử địch → hợp tác bất đắc dĩ → đồng hành → tín nhiệm → tình cảm hình thành**. Không dùng một lần cứu mạng hoặc một cuộc tranh luận để biến thù thành yêu. Không biến Thiên Kiếm Môn thành phe ác toàn diện, cũng không biến Cao Minh thành người tốt hoàn hảo.
-
-### Ngoại hình — Visual Lock R02
-
-Silhouette chính: nữ kiếm tu trưởng thành trẻ tuổi, cao ráo, cân đối, thanh thoát nhưng khỏe khoắn; tóc bạc–trắng cực dài gom cao với nhiều lọn dài chuyển động; mắt lam xám lạnh; kiếm quan vàng–đen gắn tinh thể lam; **Thiên Cơ Bạch Kim Kiếm Khải** trắng–bạc–vàng trên lớp nền tối với điểm nhấn sapphire tiết chế; hệ chiến bào phân mảnh tỏa từ hông; đúng một **Tịch Quang đại kiếm** cực dài, thẳng, bản rộng, trắng–bạc với lõi/rãnh lam và hộ thủ vàng–đen.
-
-Các chi tiết giống cơ khí trên Kiếm Khải chỉ là hình thức của **pháp bảo tiên hiệp**, không phải AI, reactor, servo, exoskeleton công nghệ, súng ẩn, tên lửa hoặc HUD. Không tự thêm cánh năng lượng, halo, mũ giáp, mặt nạ, súng hoặc over-glow.
-
-### Năng lực và trang bị
-
-**Thiên Kiếm Linh Tâm:** hợp nhất thần niệm, linh lực, cảm giác không gian và kiếm ý; hỗ trợ đọc quỹ đạo, trọng tâm, dao động linh lực và điểm bất ổn trong thế kiếm/trận pháp/hộ thể. Không đọc suy nghĩ, không xác định thiện ác, không tự nhận dạng Entity, không biết trước luật Backrooms và không miễn nhiễm thao túng ký ức.
-
-**Tịch Quang Kiếm:** bản mệnh linh kiếm, thiên về đường kiếm sạch, đổi góc nhanh, phá điểm mất cân bằng, dẫn lực và bảo hộ. Visual Lock R02 thể hiện đúng một đại kiếm cực dài, thẳng, bản rộng, trắng–bạc với lõi/rãnh lam và hộ thủ vàng–đen. Có thể triệu hồi bằng kiếm niệm trong phạm vi cảm nhận hợp lệ; không tự tái sinh vô hạn.
-
-**Thiên Cơ Bạch Kim Kiếm Khải:** pháp bảo chiến đấu cấp cao của Thiên Kiếm Môn, tăng chịu lực, hỗ trợ thân pháp và phân phối phản lực; không phải powered armor công nghệ.
-
-**Thiên Kiếm Thất Thức:** hiện khóa các biểu hiện **Nhất Tuyến Phá Vọng**, **Bạch Hồng Quán Nhật**, **Tịch Quang Phản Kiếm** và **Vạn Kiếm Quy Tâm**.
-
-### Backrooms và encounter
-
-Lục Trầm rơi vào Level 0 ở vị trí khác Cao Minh và không gặp hắn ngay tại đây. Runtime giữ **0.25% encounter roll** nhưng chỉ cho phép tái ngộ sau khi đã rời Level 0; Gemini không được tự spawn hoặc mutate Party.
-
-Khi tái ngộ, hai người phải nhận ra nhau từ thế giới cũ và bắt đầu trong trạng thái cảnh giác/thù địch. Không cho Lục Trầm tự biết Entity, Level, Almond Water hoặc quy luật Backrooms nếu chưa quan sát, được cung cấp thông tin hoặc suy luận có căn cứ.
-
-### Gameplay presentation — giữ nguyên cơ chế, thay tên/cách thể hiện
-
-Runtime id hiện hành là `luc_tram`.
-
-- **Tịch Quang Hợp Kích — Skill:** giữ nguyên projection **150% damage** của kỹ năng active legacy tương ứng.
-- Năm proc giữ nguyên toàn bộ tỷ lệ, bonus damage, status, duration và value; chỉ đổi cách thể hiện thành **Tịch Quang Phản Kiếm**, **Nhất Tuyến Phá Vọng**, **Thiên Kiếm Chấn**, **Bạch Hồng Quán Nhật**, **Vạn Kiếm Quy Tâm**.
-- **Thiên Kiếm Định Giới — Ultimate:** giữ nguyên cơ chế Ultimate **60 hit**. Mỗi hit dùng **100% DMG hiện tại của Lục Trầm + 15% Bonus DMG** trong SSF; FSF vẫn dùng multiplier của Poker Dice. Con số 60 hit và các status proc là **gameplay projection**, không tự biến thành lore mới ngoài Codex.
-- Avatar hiện hành: `avatars/luctram_avatar.png`. Combat overlay hiện hành: `luctram_overlay.png`.
+Gameplay projection: **Twosome Time 155%**, các proc **Twosome Time / Rain Storm / Honeycomb Fire / Charged Shot / Dead Angle**, Ultimate **ARGUS // Thousandfold Execution**. Party avatar: `avatars/Iris_avatar.jpg`. Chưa có dedicated Iris combat overlay; runtime dùng placeholder.
 
 ## Runtime contract
 
