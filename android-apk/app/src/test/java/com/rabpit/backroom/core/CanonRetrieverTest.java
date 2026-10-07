@@ -16,7 +16,7 @@ public class CanonRetrieverTest {
     Map<String, String> files = new LinkedHashMap<>();
     files.put("BACKROOMS_WORLD.md", "# World\n## Tầng 0 — Lobby\nYellow walls.\n");
     files.put("Cao_Minh_Codex.md", "# Cao Minh\n## Định danh\nA player.\n");
-    files.put("Lục_Trầm_Codex.md", "# Lục Trầm\n## Hồ sơ nhanh\nA sword user.\n");
+    files.put("Iris_Codex.md", "# Iris\n## Hồ sơ nhanh\nA ranged scout.\n");
     files.put("Entity.md", "# Entity\n## Wretch\nA hostile entity.\n");
     files.put("Other.md", "# Other\n## Táng Kiếm Cốc\nA different file.\n"
         + "<!-- canon: aliases=Valley of Buried Swords -->\n");
@@ -24,7 +24,7 @@ public class CanonRetrieverTest {
   }
   private static JSONObject state() throws Exception {
     return new JSONObject().put("currentLevelKey", "0")
-        .put("party", new JSONArray().put(new JSONObject().put("id", "luc_tram").put("present", true))
+        .put("party", new JSONArray().put(new JSONObject().put("id", "iris").put("present", true))
             .put(new JSONObject().put("id", "absent_friend").put("present", false)))
         .put("flags", new JSONObject().put("entityEncounterKey", "wretch"));
   }
