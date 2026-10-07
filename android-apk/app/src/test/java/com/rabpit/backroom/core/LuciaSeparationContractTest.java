@@ -58,8 +58,7 @@ public class LuciaSeparationContractTest {
     String irisCanon = readCanon("Iris_Codex.md");
     assertTrue(luciaCanon.contains("Lucia Lục / Hứa Thuý Mai và Iris là hai nhân vật khác nhau"));
     assertTrue(irisCanon.contains("Runtime id hiện hành: `iris`"));
-    assertFalse(irisCanon.contains(
-        "Lucia Lục / Hứa Thuý Mai và loadout quân nhân cũ là LEGACY / RETIRED"));
+    assertFalse(irisCanon.contains("Thiên Kiếm Môn"));
 
     Map<String, String> canon = new LinkedHashMap<>();
     canon.put("BACKROOMS_WORLD.md", "# World\n## Tầng 0 — Lobby\nYellow walls.\n");
