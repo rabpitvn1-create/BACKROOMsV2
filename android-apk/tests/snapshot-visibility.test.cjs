@@ -74,3 +74,18 @@ test('simultaneous floating damage uses separate vertical lanes instead of one a
 test('snapshot runtime has no scripted NPC overlay hooks',()=>{
  assert.doesNotMatch(source,/snapshot-npc|storyPrimaryNpc|__backroomStoryVisuals/);
 });
+
+
+test('Lucia combat uses her own Drive sprite; Iris never borrows Luc Tram artwork',()=>{
+ const r=boot({stateOverride:{flags:{},combat:{active:true,participants:[{id:'lucia',name:'Lucia Lục'},{id:'iris',name:'Iris'}]}}});
+ r.ctx.backroomSetCombatVisualActor(0,'deathmoth');
+ const lucia=r.elements.find(e=>e.className.includes('snapshot-combat-character'));
+ assert.equal(lucia.src,'file:///android_asset/lucia_luc_overlay.png');
+ assert.equal(lucia.dataset.combatActor,'lucia');
+ visible(lucia);
+ assert.equal(r.reads(),0);
+ r.ctx.backroomSetCombatVisualActor(1,'deathmoth');
+ const iris=r.elements.find(e=>e.className.includes('snapshot-combat-character'));
+ assert.equal(iris.tagName,'DIV');
+ assert.equal(r.elements.some(e=>/luctram_overlay/.test(e.src||'')),false);
+});

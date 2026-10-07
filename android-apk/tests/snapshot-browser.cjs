@@ -13,13 +13,13 @@ await page.route('http://overlay.test/**',async route=>{
  const file=path.join(assets,name);return route.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.png')?'image/png':'image/webp'});
 });
 await page.goto('http://overlay.test/');
-await page.evaluate(()=>{window.state={flags:{},combat:{active:false,participants:[{id:'cao_minh'},{id:'lucia'},{id:'iris'}]}};window.Android={levelSnapshot:()=>JSON.stringify({path:'http://overlay.test/level_snapshots/drive/level_0/01.webp',level:0})};});
+await page.evaluate(()=>{window.state={flags:{},combat:{active:false,participants:[{id:'cao_minh'},{id:'lucia'},{id:'syvial'}]}};window.Android={levelSnapshot:()=>JSON.stringify({path:'http://overlay.test/level_snapshots/drive/level_0/01.webp',level:0})};});
 await page.addScriptTag({content:fs.readFileSync(assets+'/snapshot-ui.js','utf8').replaceAll('file:///android_asset/','http://overlay.test/')});
 const results=[];
 for(const [w,h] of [[280,250],[350,250],[372,250],[620,450],[240,400],[800,250]]){
  await page.evaluate(([w,h])=>{const s=document.querySelector('#snapshot');s.style.width=w+'px';s.style.height=h+'px'},[w,h]);
- for(const mode of ['standing','aiming','lucia','iris','hound']){
-  await page.evaluate(mode=>{state.flags={};state.combat.active=mode!=='standing';if(mode==='standing')backroomClearCombatVisualActor();else backroomSetCombatVisualActor(mode==='lucia'?1:mode==='iris'?2:0,mode==='hound'?'hound':'deathmoth');},mode);
+ for(const mode of ['standing','aiming','lucia','syvial','hound']){
+  await page.evaluate(mode=>{state.flags={};state.combat.active=mode!=='standing';if(mode==='standing')backroomClearCombatVisualActor();else backroomSetCombatVisualActor(mode==='lucia'?1:mode==='syvial'?2:0,mode==='hound'?'hound':'deathmoth');},mode);
   await page.waitForFunction(()=>[...document.querySelectorAll('.snapshot-grounded')].every(i=>i.complete&&i.naturalWidth&&i.style.visibility==='visible'));
   const data=await page.evaluate(()=>{
    const box=document.querySelector('#snapshot'),w=box.clientWidth,h=box.clientHeight;
