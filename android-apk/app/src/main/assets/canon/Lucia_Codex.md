@@ -8,10 +8,10 @@
 ## 00 · CORE LOCK
 <!-- canon: core=true; aliases=Lucia Lục,Hứa Thuý Mai,Hứa Thúy Mai,Lucia -->
 
-- **Lucia Lục / Hứa Thuý Mai và Lục Trầm là hai nhân vật khác nhau.**
-- Runtime id của Lucia là `lucia`; runtime id của Lục Trầm là `luc_tram`. Không alias, rename, migrate hoặc merge hai id này.
-- Lucia là **con người bình thường được huấn luyện tốt**, thuộc nhánh chiến đấu hiện đại/tactical riflewoman đã có trong runtime cũ; cô **không phải** Chính Đạo Kiếm Tu, không thuộc Thiên Kiếm Môn và không sở hữu Tịch Quang hay Thiên Cơ Bạch Kim Kiếm Khải.
-- Quan hệ, lịch sử và xưng hô giữa Lucia với Cao Minh hiện `OPEN` cho tới khi continuity/save xác lập. Không nhập quan hệ Cao Minh ↔ Lục Trầm sang Lucia.
+- **Lucia Lục / Hứa Thuý Mai và Iris là hai nhân vật khác nhau.**
+- Runtime id của Lucia là `lucia`; runtime id của Iris là `iris`. Không alias, rename, migrate hoặc merge hai id này.
+- Lucia là **con người bình thường được huấn luyện tốt**, thuộc nhánh chiến đấu hiện đại/tactical riflewoman đã có trong runtime cũ; cô **không phải Iris** và không sở hữu Ivory & Ebony hay Blackblood Recon Frame.
+- Quan hệ, lịch sử và xưng hô giữa Lucia với Cao Minh hiện `OPEN` cho tới khi continuity/save xác lập. Không nhập quan hệ Cao Minh ↔ Iris sang Lucia.
 - CharacterEncounterCore sở hữu việc xuất hiện và gia nhập Party. Gemini/narration không được tự spawn Lucia hoặc tự sửa Party.
 
 ## 01 · TRANG BỊ RUNTIME ĐÃ XÁC NHẬN
@@ -22,7 +22,7 @@ Bộ mặc định được phục hồi từ runtime trước retcon:
 - **Dao găm chiến đấu**;
 - **Đồng hồ định vị quân sự**.
 
-Các món trên không được đổi thành Tịch Quang Kiếm, Kiếm Khải hoặc pháp bảo của Lục Trầm.
+Các món trên không được đổi thành Ivory & Ebony hoặc Blackblood Recon Frame của Iris.
 
 ## 02 · GAMEPLAY PROJECTION
 
@@ -43,7 +43,7 @@ Lucia vẫn là con người được huấn luyện tốt; các proc/status gam
 - Lucia dùng candidate `character:lucia`.
 - Baseline runtime được phục hồi: **10% trên Level 0**.
 - Đây là **first contact với Cao Minh trừ khi live continuity/save đã xác lập khác**.
-- Lục Trầm dùng candidate riêng `character:luc_tram`, với luật tái ngộ riêng sau Level 0. Hai candidate không thay thế nhau.
+- Iris dùng candidate riêng `character:iris`, với luật first-contact riêng sau Level 0. Hai candidate không thay thế nhau.
 
 ## 04 · OPEN / KHÔNG ĐƯỢC TỰ LẤP
 
@@ -53,6 +53,6 @@ Ngoài các dữ kiện đã khóa ở trên, không tự dựng:
 - ngoại hình hiện hành nếu không có nguồn thị giác CURRENT;
 - quan hệ hoặc xưng hô có sẵn với Cao Minh;
 - năng lực, trang bị hoặc bí mật mới;
-- bất kỳ mối liên hệ bản thể nào với Lục Trầm.
+- bất kỳ mối liên hệ bản thể nào với Iris.
 
-Nếu nguồn Lucia CURRENT mới xuất hiện, nguồn đó được dùng để mở rộng/thay thế phạm vi tương ứng; **khóa phân biệt Lucia ≠ Lục Trầm vẫn giữ cho tới khi người dùng retcon trực tiếp**.
+Nếu nguồn Lucia CURRENT mới xuất hiện, nguồn đó được dùng để mở rộng/thay thế phạm vi tương ứng; **khóa phân biệt Lucia ≠ Iris vẫn giữ cho tới khi người dùng retcon trực tiếp**.
