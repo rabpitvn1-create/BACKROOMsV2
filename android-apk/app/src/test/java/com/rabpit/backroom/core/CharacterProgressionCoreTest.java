@@ -14,7 +14,7 @@ public class CharacterProgressionCoreTest {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
-    for (String id : new String[]{"cao_minh","luc_tram","syvial"}) {
+    for (String id : new String[]{"cao_minh","iris","syvial"}) {
       JSONObject stats = core.profile(state, id).getJSONObject("stats");
       assertEquals(5, stats.getInt("STR"));
       assertEquals(5, stats.getInt("DEF"));
@@ -54,18 +54,38 @@ public class CharacterProgressionCoreTest {
     assertEquals(once, state.getJSONObject(CharacterProgressionCore.ROOT_KEY).toString());
   }
 
+  @Test public void legacyLucTramProgressionMigratesToIris() throws Exception {
+    JSONObject legacy = new JSONObject()
+        .put("id", "luc_tram")
+        .put("schema", "core_stats_v1")
+        .put("stats", new JSONObject()
+            .put("STR", 5).put("DEF", 5).put("SKL", 5).put("VIT", 5))
+        .put("baseMaxHp", 50)
+        .put("currentHp", 31);
+    JSONObject state = baseState().put(CharacterProgressionCore.ROOT_KEY,
+        new JSONObject().put("characters", new JSONObject().put("luc_tram", legacy)));
+
+    new CharacterProgressionCore().normalizeState(state);
+
+    JSONObject characters = state.getJSONObject(CharacterProgressionCore.ROOT_KEY)
+        .getJSONObject("characters");
+    assertFalse(characters.has("luc_tram"));
+    assertEquals("iris", characters.getJSONObject("iris").getString("id"));
+    assertEquals(31, characters.getJSONObject("iris").getInt("currentHp"));
+  }
+
   @Test public void vitScalesFromCurrentRuntimeBaseHp() throws Exception {
     CharacterProgressionCore core = new CharacterProgressionCore();
     JSONObject state = baseState();
     core.normalizeState(state);
     assertEquals(50, core.profile(state, "cao_minh").getInt("baseMaxHp"));
     assertEquals(545, core.profile(state, "cao_minh").getInt("maxHp"));
-    assertEquals(50, core.profile(state, "luc_tram").getInt("baseMaxHp"));
-    assertEquals(50, core.profile(state, "luc_tram").getInt("maxHp"));
+    assertEquals(50, core.profile(state, "iris").getInt("baseMaxHp"));
+    assertEquals(50, core.profile(state, "iris").getInt("maxHp"));
 
     core.grantCore(state, 1);
-    core.upgradeStat(state, "luc_tram", "VIT");
-    assertEquals(55, core.profile(state, "luc_tram").getInt("maxHp"));
+    core.upgradeStat(state, "iris", "VIT");
+    assertEquals(55, core.profile(state, "iris").getInt("maxHp"));
   }
 
   @Test public void vitUpgradeAddsItsMaxHpGainToCurrentHp() throws Exception {
@@ -143,10 +163,10 @@ public class CharacterProgressionCoreTest {
     core.upgradeStat(state, "cao_minh", "STR");
     core.upgradeStat(state, "cao_minh", "STR");
     assertEquals(7, core.profile(state, "cao_minh").getJSONObject("stats").getInt("STR"));
-    assertEquals(5, core.profile(state, "luc_tram").getJSONObject("stats").getInt("STR"));
+    assertEquals(5, core.profile(state, "iris").getJSONObject("stats").getInt("STR"));
     assertEquals(1, core.coreCount(state));
     assertEquals(1, CharacterProgressionCore.upgradeCost(
-        core.profile(state, "luc_tram").getJSONObject("stats").getInt("STR")));
+        core.profile(state, "iris").getJSONObject("stats").getInt("STR")));
   }
 
   @Test public void insufficientCoreRejectsUpgradeWithoutMutation() throws Exception {
