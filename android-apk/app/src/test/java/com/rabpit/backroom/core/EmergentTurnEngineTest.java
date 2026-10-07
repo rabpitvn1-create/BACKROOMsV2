@@ -223,50 +223,6 @@ public class EmergentTurnEngineTest {
         .getJSONArray("attentionHints").length());
   }
 
-  @Test public void retiredLucTramContinuityDoesNotResurfaceInNarrativeSkeleton() throws Exception {
-    EmergentTurnEngine engine = new EmergentTurnEngine();
-    JSONObject state = new JSONObject()
-        .put("turn", 12)
-        .put("currentLevel", 1)
-        .put("currentLevelKey", "1")
-        .put("player", new JSONObject().put("name", "Cao Minh"))
-        .put("party", new JSONArray().put(
-            new JSONObject().put("id", "iris").put("name", "Iris")));
-    engine.normalizeState(state);
-    JSONObject root = state.getJSONObject(EmergentTurnEngine.ROOT_KEY);
-    root.put("commitSequence", 1);
-    root.getJSONArray("threads").put(new JSONObject()
-        .put("threadId", "legacy-luc-tram")
-        .put("threadType", "LUC_TRAM_RELATIONSHIP")
-        .put("keyRefs", new JSONArray().put("luc_tram"))
-        .put("objectiveState", new JSONObject())
-        .put("knowledgeState", new JSONObject())
-        .put("resolutionConditions", new JSONArray())
-        .put("status", "ACTIVE")
-        .put("lastTouchedTurn", 3));
-    root.getJSONArray("historicalFacts").put(new JSONObject()
-        .put("factId", "legacy-luc-tram-fact")
-        .put("eventId", "legacy")
-        .put("subjectRef", "luc_tram")
-        .put("predicate", "character_reunion")
-        .put("value", "luc_tram")
-        .put("turn", 3)
-        .put("impactScope", "SOCIAL")
-        .put("causedBy", "world")
-        .put("impactEligible", true));
-    root.getJSONObject(NarrativeSkeleton.ROOT_KEY).put("schemaVersion", 3);
-
-    engine.normalizeState(state);
-    engine.catchUpProjections(state);
-
-    JSONObject skeleton = root.getJSONObject(NarrativeSkeleton.ROOT_KEY);
-    String projected = skeleton.toString();
-    assertFalse(projected.contains("luc_tram"));
-    assertFalse(projected.contains("Lục Trầm"));
-    assertEquals(1, root.getJSONArray("threads").length());
-    assertEquals(1, root.getJSONArray("historicalFacts").length());
-  }
-
   @Test public void narrativeSkeletonCarriesReadableCommittedContinuity() throws Exception {
     EmergentTurnEngine engine = new EmergentTurnEngine();
     JSONObject state = new JSONObject()

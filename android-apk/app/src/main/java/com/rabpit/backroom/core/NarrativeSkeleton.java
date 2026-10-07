@@ -15,7 +15,7 @@ import java.util.Locale;
  */
 final class NarrativeSkeleton {
   static final String ROOT_KEY = "narrativeSkeleton";
-  static final int SCHEMA_VERSION = 4;
+  static final int SCHEMA_VERSION = 3;
   private static final double MAX_KEY_REF_WEIGHT_MODIFIER = 1.35d;
 
   private static final String[] TOP_LEVEL_FIELDS = {
@@ -64,7 +64,6 @@ final class NarrativeSkeleton {
         String threadType = thread.optString("threadType", "").trim();
         String status = thread.optString("status", "ACTIVE");
         JSONArray refs = copyArray(thread.optJSONArray("keyRefs"));
-        if (retiredLucTramThread(threadType, refs)) continue;
         if (!threadId.isEmpty()) {
           tensions.put(new JSONObject()
               .put("tensionKey", "thread:" + threadId)
@@ -109,7 +108,6 @@ final class NarrativeSkeleton {
         String threadType = tags == null ? "" : tags.optString(0, "");
         if (!narrativeThread(threadType)) continue;
         JSONArray refs = copyArray(residue.optJSONArray("keyRefs"));
-        if (retiredLucTramThread(threadType, refs)) continue;
         tensions.put(new JSONObject()
             .put("tensionKey", "residue:" + threadId)
             .put("sourceType", "ARCHIVED_THREAD_RESIDUE")
@@ -129,9 +127,9 @@ final class NarrativeSkeleton {
         JSONObject fact = facts.optJSONObject(i);
         if (fact == null) continue;
         String predicate = fact.optString("predicate", "");
-        JSONArray refs = refsForFact(fact);
-        if (containsRetiredLucTramRef(refs) || !narrativeFact(fact)) continue;
+        if (!narrativeFact(fact)) continue;
         String factId = fact.optString("factId", "");
+        JSONArray refs = refsForFact(fact);
 
         if (isRelationshipPredicate(predicate)) {
           addRelationship(relationships, refs, "fact:" + factId,
@@ -333,22 +331,10 @@ final class NarrativeSkeleton {
         || upper.contains("ORIGIN") || upper.contains("IDENTITY");
   }
 
-  private static boolean retiredLucTramThread(String type, JSONArray refs) {
-    return "LUC_TRAM_RELATIONSHIP".equals(safe(type).toUpperCase(Locale.ROOT))
-        || containsRetiredLucTramRef(refs);
-  }
-
-  private static boolean containsRetiredLucTramRef(JSONArray refs) {
-    if (refs == null) return false;
-    for (int i = 0; i < refs.length(); i++) {
-      if ("luc_tram".equals(safe(refs.optString(i)).toLowerCase(Locale.ROOT))) return true;
-    }
-    return false;
-  }
-
   private static boolean isRelationshipType(String type) {
     String upper = safe(type).toUpperCase(Locale.ROOT);
-    return "SOCIAL_CONTACT".equals(upper) || upper.contains("RELATIONSHIP");
+    return "SOCIAL_CONTACT".equals(upper) || "LUC_TRAM_RELATIONSHIP".equals(upper)
+        || upper.contains("RELATIONSHIP");
   }
 
   private static boolean isRelationshipPredicate(String predicate) {
@@ -412,6 +398,8 @@ final class NarrativeSkeleton {
         return "Một chiếc rương tại " + subject + " vẫn là nguồn tài nguyên chưa được xử lý.";
       case "LEVEL_ROUTE_SEARCH":
         return "Việc tìm lối ra khỏi " + subject + " vẫn chưa được giải quyết.";
+      case "LUC_TRAM_RELATIONSHIP":
+        return "Cuộc tái ngộ giữa Cao Minh và Lục Trầm đã trở thành một quan hệ dài hạn đang mở.";
       case "SOCIAL_CONTACT":
         return "Mối liên hệ giữa Cao Minh và " + subject + " vẫn đang mở.";
       default:
@@ -428,6 +416,8 @@ final class NarrativeSkeleton {
         return "Nguồn tài nguyên tại " + subject + " đã được xử lý chưa?";
       case "LEVEL_ROUTE_SEARCH":
         return "Lối ra khỏi " + subject + " đã được xác định chưa?";
+      case "LUC_TRAM_RELATIONSHIP":
+        return "Quan hệ giữa Cao Minh và Lục Trầm hiện đang ở trạng thái nào?";
       case "SOCIAL_CONTACT":
         return "Mối liên hệ giữa Cao Minh và " + subject + " hiện đã ổn định ở trạng thái nào?";
       default:
@@ -443,10 +433,14 @@ final class NarrativeSkeleton {
   }
 
   private static String relationshipKind(String type) {
-    return "SOCIAL_CONTACT";
+    return "LUC_TRAM_RELATIONSHIP".equals(safe(type).toUpperCase(Locale.ROOT))
+        ? "REUNION_CONTINUITY" : "SOCIAL_CONTACT";
   }
 
   private static String relationshipSummary(String type, JSONArray refs, JSONObject state) {
+    if ("LUC_TRAM_RELATIONSHIP".equals(safe(type).toUpperCase(Locale.ROOT))) {
+      return "Cao Minh và Lục Trầm đã tái ngộ; mối quan hệ giữa họ tiếp tục phát triển từ state đã commit.";
+    }
     return "Cao Minh đã gặp " + firstRefLabel(state, refs)
         + "; mối liên hệ này đang tồn tại trong continuity đã commit.";
   }
@@ -575,6 +569,7 @@ final class NarrativeSkeleton {
     if (key.isEmpty()) return "một yếu tố chưa định danh";
     if ("cao_minh".equals(key)) return "Cao Minh";
     if ("iris".equals(key)) return "Iris";
+    if ("luc_tram".equals(key)) return "Lục Trầm";
     if ("syvial".equals(key)) return "Syvial";
 
     JSONObject player = state == null ? null : state.optJSONObject("player");
