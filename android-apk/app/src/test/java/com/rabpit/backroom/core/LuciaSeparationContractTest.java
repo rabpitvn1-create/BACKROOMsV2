@@ -38,7 +38,8 @@ public class LuciaSeparationContractTest {
     assertTrue(partyState.getJSONObject(CharacterProgressionCore.ROOT_KEY)
         .getJSONObject(CharacterProgressionCore.CHARACTERS_KEY).has("iris"));
     assertEquals("lucia", CharacterProgressionCore.normalizeCharacterId("Hứa Thuý Mai"));
-    assertEquals("iris", CharacterProgressionCore.normalizeCharacterId("Iris"));\n    assertEquals("iris", CharacterProgressionCore.normalizeCharacterId("Lục Trầm"));
+    assertEquals("iris", CharacterProgressionCore.normalizeCharacterId("Iris"));
+    assertEquals("iris", CharacterProgressionCore.normalizeCharacterId("Lục Trầm"));
 
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("lucia"));
     assertTrue(CombatChoiceEngine.hasAuthoritativeUltimate("iris"));
