@@ -1,5 +1,0 @@
-Backroom 1.1.46
-- Cleans up character Equipment and Inventory labels so internal IDs are hidden and readable names are shown in uppercase.
-- Adds an independent 2% Jeff the Killer encounter roll on eligible physical turns, with validated state authority.
-- Increases normal Entity encounter probability by 8 percentage points per Level: 8.05%, 10%, 11.5%, 11.5%, 8.1%, 12%, 8.05% for Levels 0-6.
-- Serializes Android validation so release-related workflows do not compete for the same build/release chain.

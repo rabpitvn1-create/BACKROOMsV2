@@ -1,11 +1,12 @@
 package com.rabpit.backroom.core;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class GameCoreRules {
-  private static final Pattern OMNIVAULT_WITHDRAW = Pattern.compile(
-      "(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:omnivault|nhẫn|kho)",
+  private static final Pattern VAN_TANG_WITHDRAW = Pattern.compile(
+      "(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:vạn\\s+tàng|giới\\s+chỉ|nhẫn|kho)",
       Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern DIRECT_PICKUP = Pattern.compile(
       "(?:^|\\s)(?:nhặt|lượm|cầm\\s+lên|lấy(?:\\s+lên)?|thu\\s+hồi|tịch\\s+thu|nhận(?:\\s+lấy)?|pick\\s+up|take|receive)(?:\\s|$)",
@@ -25,12 +26,22 @@ final class GameCoreRules {
   private static final Pattern LONG_REST = Pattern.compile("(?:ngủ|sleep)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern REST = Pattern.compile("(?:nghỉ|rest)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
   private static final Pattern MOVE = Pattern.compile("(?:đi|chạy|di chuyển|leo|bò|walk|run|move)", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern ROUTE_EXPLORATION = Pattern.compile(
+      "(?:^|\\s|[.,;:!?])(?:"
+          + "đi|chạy|di\\s+chuyển|tiến|rẽ|leo|bò|"
+          + "khám\\s+phá|khảo\\s+sát|thăm\\s+dò|dò\\s+đường|"
+          + "tìm\\s+(?:đường|lối(?:\\s+ra)?)|"
+          + "theo\\s+(?:hướng|lối|hành\\s+lang|dấu)|men\\s+theo|"
+          + "tiếp\\s+tục(?:\\s+đi)?|walk|run|move|explore|follow"
+          + ")(?:\\s|$|[.,;:!?])",
+      Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+  private static final Pattern LEVEL_LOCATION = Pattern.compile("(?i)(?:^|\\b)level\\s*([0-6])(?:\\b|\\s|/|—|-)");
 
   private GameCoreRules() {}
 
   static boolean isDirectPlayerPickupAction(String action) {
     String text = action == null ? "" : action.trim();
-    if (text.isEmpty() || OMNIVAULT_WITHDRAW.matcher(text).find()) return false;
+    if (text.isEmpty() || VAN_TANG_WITHDRAW.matcher(text).find()) return false;
     return DIRECT_PICKUP.matcher(text).find() || INVENTORY_ASSERTION.matcher(text).find();
   }
 
@@ -50,6 +61,11 @@ final class GameCoreRules {
     return PARTY_QUERY.matcher(action == null ? "" : action).find();
   }
 
+  static boolean isRouteExplorationAction(String action) {
+    String text = action == null ? "" : action.trim();
+    return !text.isEmpty() && ROUTE_EXPLORATION.matcher(text).find();
+  }
+
   static int estimateMinutes(String action) {
     String text = action == null ? "" : action.trim();
     if (text.isEmpty()) return 0;
@@ -57,6 +73,33 @@ final class GameCoreRules {
     if (REST.matcher(text).find()) return 10;
     if (MOVE.matcher(text).find()) return 5;
     return Math.min(5, Math.max(1, text.length() / 80 + 1));
+  }
+
+  static int levelFromLocation(String location) {
+    Matcher matcher = LEVEL_LOCATION.matcher(location == null ? "" : location);
+    if (!matcher.find()) return -1;
+    try {
+      return Integer.parseInt(matcher.group(1));
+    } catch (Exception ignored) {
+      return -1;
+    }
+  }
+
+  static boolean levelTransitionAllowed(int from, int to) {
+    if (from < 0 || from > 6 || to < 0 || to > 6) return false;
+    if (from == to) return true;
+    // Level 0 <-> Level 1 is no longer a direct edge. LevelCore owns the mandatory
+    // Level 0 -> 0.1 -> 0.2 -> 0.5 -> 0.7 -> Manila -> Torment -> Red Rooms -> Level 1 chain.
+    return edge(from, to, 1, 2)
+        || edge(from, to, 2, 3)
+        || edge(from, to, 3, 4)
+        || edge(from, to, 3, 6)
+        || edge(from, to, 4, 5)
+        || edge(from, to, 5, 6);
+  }
+
+  private static boolean edge(int from, int to, int a, int b) {
+    return (from == a && to == b) || (from == b && to == a);
   }
 
   static String stableItemId(String name) {

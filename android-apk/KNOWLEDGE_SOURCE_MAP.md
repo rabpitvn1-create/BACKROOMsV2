@@ -1,140 +1,91 @@
 # The BACKROOMS — Drive Source Map for Runtime Knowledge
 
-Status: CURRENT SOURCE MAP
-Last character sync: 2026-09-17
-
-This file maps runtime knowledge to its authoritative Google Drive source. Local mirrors, old saves/logs and retired patch artifacts are not canon authorities when they conflict with a newer Drive source.
-
 ## Authority order
 
-1. Latest explicit user instruction.
-2. Current Text Game rules and current campaign state for runtime facts.
-3. Current Character Codex for immutable identity, personality, abilities, equipment, knowledge limits, relationship baselines, address rules and hard locks.
-4. Current World canon for world/level/entity/item facts.
-5. Current story/continuity for mutable campaign state.
-6. Writing rules for prose/dialogue/POV/knowledge boundaries.
-7. Reference/benchmark material only where its own source says it applies.
-
-`UNKNOWN`, `OPEN`, `CHƯA KHÓA` or equivalent remains unknown. Runtime must not fill these fields by inference.
+1. User instruction trong lượt hiện tại.
+2. Text Game / Game Master hard rules.
+3. Live save/campaign state.
+4. Explicit committed USER_RETCON canon (currently includes `DIEP_MINH_CANON.md` and the Lucia Lục ≠ Lục Trầm separation lock).
+5. Current machine-readable character canon.
+6. On-demand world/level/entity canon.
+7. Legacy logs hoặc mirrors chỉ dùng khi không xung đột với nguồn mới hơn.
 
 ## Current machine-readable character canon
 
-Runtime character source: `app/src/main/assets/knowledge/characters_current.json`.
-Human audit wiki: `CHARACTER_CODEX_CURRENT.md`.
+- `app/src/main/assets/knowledge/characters_current.json`
+- `app/src/main/assets/knowledge/knowledge_db.json`
 
-The old `app/src/main/assets/knowledge/knowledge_db.json` predates the 2026-09-17 Characters Drive sync and contains legacy character rows. Those legacy character rows are **not authoritative** for Kai/Iris/Syvial/Lucia. World/level/entity records in that file may still be used only when they do not conflict with a newer Drive source.
-
-Current game state embeds the compact current character canon so the Java-only Gemini path receives the latest character locks without restoring the retired Kotlin/LiteRT knowledge engine.
+Hai file trên đã được đồng bộ sang **Cao Minh R15**, **Lucia Lục scoped restore R01** và **Lục Trầm R05 / Visual R02**. Lucia (`lucia`) và Lục Trầm (`luc_tram`) là hai nhân vật riêng; không được dùng mirror/save cũ để nhập hai id.
 
 ## Character Drive audit
 
-Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
+- `Cao_Minh_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — R15.
+- `Syvial_Codex.docx` — nguồn riêng của Syvial.
+- `Lucia_Codex.docx` — nguồn lịch sử của Lucia; hiện connector không truy cập được. Scoped source hiện hành: `app/src/main/assets/canon/Lucia_Codex.md`.
+- `Lục_Trầm_Codex` — Drive ID `1TCyLifr0usajTt6Gp3f2o_nWsAdrwqtfd4N9t0KeK3s` — nguồn hiện hành của Lục Trầm R05.
 
-- `Kai_Codex.docx` — Drive ID `1TDBphEo1wxrdlRXTI9WUOJPinmWv1PHq` — current revision R12.
-- `Iris_Codex.docx` — Drive ID `1rx00_WLp1fmf-GPDMw8-ewxwgLaHeJ9k` — current revision R07.
-- `Syvial_Codex.docx` — Drive ID `1Bqg24Nix78nhzSoE-YuiUdEt4oWrvdCY` — current Drive canon.
-- `Lucia_Codex.docx` — Drive ID `1pv5gvg51oHqNtcCaz5xbjUie5xvxDM6wKCvlAlKFiUQ` — current revision R03.
+### Cao Minh source map
 
-### Kai source map
-
-| Runtime concept | Source anchor | Current lock |
+| Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity / organization | `KAI-ID-01`, quick lock | Kai Akechi / Twilight; SRU Captain in anti-anomalous police. Legacy Black Blood/Vatican organization continuity is not current. Public SRU classification is human; half-human/half-demon son of Sparda and Eve is KNOWLEDGE_LOCK. Origin era 2299 is not birth year; true age unknown. |
-| Sparda Core | `KAI-CORE-SPARDA-01` | Infinite demon power; no intrinsic depletion/cooldown/corruption/berserk. Powers regeneration and self-repair of all currently equipped gear. |
-| Devil Trigger | `KAI-DT-01` | No intrinsic duration cap/cooldown/backlash/control loss. |
-| Guilty Crown Override | `KAI-ULT-GCO-01` | Exactly 24 Sparda demonic 5.56×45 mm shots through SRU Assault Rifle MK19 while external time is fully stopped. |
-| SRU Assault Rifle MK19 | `KAI-EQP-SRU-AR-MK19-01` | Current signature weapon. Physical 5.56×45 NATO, 30-round physical magazine, 700–950 rpm, 368 mm barrel, effective range about 500–600 m; physical ammo finite. Sparda demonic 5.56×45 forms directly from Core and does not consume physical ammo. |
-| SRU-MK20 | `KAI-EQP-SRU-MK20-01` | Current powered armor. R12 visual lock: black/gunmetal + ivory, small brass/gold accents, head/face exposed, very long silver-white high ponytail. |
-| Omnivault | `KAI-EQP-OMNIVAULT-01`, `KAI-WEAK-01` | Infinite storage/retrieval for inanimate objects + Restore of the same existing equipment. 24h per-item Restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed. |
+| Identity | `CAO-QUICK-01` | Cao Minh / Vạn Giới Ma Tôn; Ma Đạo Kiếm Tu thuần tiên hiệp; không có thân phận quân sự/công nghệ hiện đại hoặc tương lai. |
+| Backrooms entry | `CAO-BACKROOMS-01` | Đã đứng ở đỉnh cao thế giới nguyên sinh, rơi vào Level 0 ngoài ý muốn, rồi chủ động khám phá vì Backrooms là một thế giới chưa hiểu. |
+| Vạn Quỷ Ma Tâm | `CAO-CORE-VQM-01` | Ma nguyên gần như vô tận; hồi phục và tự phục hồi trang bị bản mệnh; không tự thêm mana/cooldown/tha hóa. |
+| Vạn Quỷ Ma Thân | `CAO-VQMT-01` | Giải phóng toàn diện, không mất lý trí hoặc quyền kiểm soát. |
+| Huyết Ma Kiếm | `CAO-EQP-HUYET-MA-KIEM-01` | Đại kiếm bản mệnh, kiếm thể + Huyết Sát Ma Khí + ngự kiếm. |
+| Huyết Ma Chiến Khải | `CAO-EQP-HUYET-MA-KHAI-01` | Ma khải từ Ma Kim/ma văn/tinh huyết/ma nguyên, không phải công nghệ. |
+| Vạn Tàng Giới | `CAO-EQP-VAN-TANG-01` | Kho tiểu không gian vật vô tri + Phản Bổn; không copy/create sinh linh hoặc vật mới. |
+| Ultimate | `CAO-ULT-HUYETMA24-01` | Huyết Ma Nhị Thập Tứ Trảm: đúng 24 trảm, ngoại giới dừng hoàn toàn. |
+| Diệp Minh | `DIEP-MINH-CAO-REL-01` | Tử địch huyết hải thâm cừu; Diệp Minh góp phần thảm sát Cao gia, biến cố góp phần quyết định đẩy Cao Minh vào ma đạo. Chủ mưu/động cơ/chi tiết sát hại/kết cục vẫn OPEN. |
 
-### Iris source map
 
-| Runtime concept | Source anchor | Current lock |
+### Lucia Lục source map
+
+| Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity / organization | `IRIS-QUICK-01`, identity sections | Iris has no locked surname; ARGUS is SRU combat callsign. Scout / Target Eliminator in Kai's SRU team. |
-| Origin | `IRIS-BELIAL-01`, `IRIS-ORIGIN-KAI-01` | Half-human/half-demon daughter of Belial and a deceased human mother. Mother's identity/details and Iris's birth era remain UNKNOWN. Kai was the first SRU member to discover her; SRU later standardized Project 07. |
-| ARGUS Terrain Read | `IRIS-SCOUT-TERRAIN-01`, `IRIS-SCOUT-GROUND-01`, `IRIS-SCOUT-TARGET-01` | Direct observation + local Recon Frame sensors + terrain/route/cover/trace analysis. No omniscience, wall vision, remote cameras or automatic true-form detection. |
-| Thousandfold Cognition | `IRIS-THOUSANDFOLD-01` | Information processing up to 1:1000; does not accelerate body/weapon mechanics 1000x. |
-| Ivory & Ebony | `IRIS-COMBAT-TWIN-01`, `IRIS-AMMO-DEMONIC-01` | Twin mechanical pistols; bullets form directly from Iris's demon power. Infinite source does not mean infinite ROF/durability/damage/accuracy. |
-| Recon Frame | `IRIS-EQP-ARMOR-01` | Current SRU Recon Frame R03, mobile scout/ranged-combat configuration. |
-| Unknown combat tier | `IRIS-UNKNOWN-01`, canon gate | Exact combat tier remains UNKNOWN; do not infer UR+ from Kai/Syvial. |
-| Kai relationship | `IRIS-REL-KAI-01` | Iris has romantic feelings for Kai; Kai knows but reciprocation is not locked. Iris uses `anh–em` with Kai. |
-| Syvial relationship | `IRIS-REL-SYVIAL-01` | Friends/trusted teammates with romantic rivalry; not enemies. Exact Iris↔Syvial address remains UNKNOWN. |
+| Identity | `LUCIA-LUC-RUNTIME-RESTORE-R01` / `lucia` | Lucia Lục / Hứa Thuý Mai là nhân vật riêng, không phải Lục Trầm. |
+| Equipment | `01 · TRANG BỊ RUNTIME ĐÃ XÁC NHẬN` | M4A1 cá nhân hóa, dao găm chiến đấu, đồng hồ định vị quân sự. |
+| Gameplay | `02 · GAMEPLAY PROJECTION` | M4A1 Joint Attack 150%; 5 proc súng lịch sử; Too Young To Die đúng 60 phát, current DMG +15% bonus mỗi phát. |
+| Encounter | `03 · ENCOUNTER CONTRACT` | Core-owned; 10% candidate trên Level 0; first contact nếu continuity chưa xác lập khác. |
+| Relationship | `04 · OPEN` | Quan hệ/xưng hô với Cao Minh OPEN; không nhập quan hệ Lục Trầm. |
 
-### Syvial source map
+### Lục Trầm source map
 
-| Runtime concept | Source anchor | Current lock |
+| Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity / organization | `SYVIAL-ID-01`, `SYVIAL-OVERVIEW-01` | Half-human/half-demon daughter of Lucifer; mother unknown. Origin era 2299, true age unknown. UR+, same overall tier as Kai. SRU deputy leader of Kai's team. |
-| Personality / yandere | `SYVIAL-YANDERE-01`, relationship/action locks | Heavy yandere toward Kai while lucid, intelligent and socially capable. Values Kai's voluntary choice; no random murder, mission sabotage, mind-control or memory erasure merely to keep him. |
-| Lucifer Core | `SYVIAL-CORE-LUCIFER-01` | Infinite demon power; powers/enhances established physiology, armor and GodKiller. Not a second intelligence. |
-| Devil Trigger | `SYVIAL-DT-01` | No invented intrinsic duration/cooldown/control loss. |
-| GodKiller | `SYVIAL-EQP-GODKILLER-01` | Massive purely mechanical greatsword; never a gun/gunblade. Can be recalled unless its link is directly blocked. |
-| Lucifer Armor | `SYVIAL-EQP-LUCIFER-ARMOR-01` | Mobile black/gunmetal/silver mecha armor with magenta accents. Pointed head modules are mechanical. Very durable and fast self-repairing, not absolutely indestructible. |
-| GodKiller Override | `SYVIAL-ULT-GKO-01` | Exactly 24 cuts while external time is fully stopped. |
+| Identity | `LUC-TRAM-THIEN-KIEM-CODEX-R05` | Chân truyền đệ tử Thiên Kiếm Môn; Chính Đạo Kiếm Tu; cùng thế giới nguyên sinh với Cao Minh. |
+| Power scale | `01 · ĐỊNH DANH VÀ VỊ TRÍ` | Thiên tài hàng đầu thế hệ trẻ nhưng không ngang Cao Minh. |
+| Visual | `04 · NGOẠI HÌNH · VISUAL LOCK R02` | Tóc bạc–trắng cực dài, mắt lam xám, kiếm quan vàng–đen gắn tinh thể lam, Kiếm Khải trắng–bạc–vàng trên nền tối điểm sapphire, chiến bào phân mảnh và đúng một Tịch Quang đại kiếm cực dài trắng–bạc. |
+| Core ability | `07 · THIÊN KIẾM LINH TÂM` | Đọc quỹ đạo/trọng tâm/linh lực/điểm bất ổn; không toàn tri, không tự biết Entity/Level/quy luật. |
+| Weapon | `08 · TỊCH QUANG KIẾM` | Bản mệnh linh kiếm; kiếm niệm triệu hồi; không tự tái sinh vô hạn. |
+| Armor | `09 · THIÊN CƠ BẠCH KIM KIẾM KHẢI` | Pháp bảo tiên hiệp, không phải công nghệ/mecha thuần khoa học. |
+| Relationship | `13-20` | Cao Minh và Lục Trầm từng giao chiến nhiều lần; Backrooms là tái ngộ, không first contact; romance phải phát triển chậm. |
+| Backrooms | `14-15, 21` | Rơi vào Level 0 khác vị trí; runtime encounter chỉ sau Level 0; không có knowledge preload. |
+| Gameplay id | `luc_tram` | Runtime id hiện hành của Lục Trầm. |
+| Ultimate | `12 · THIÊN KIẾM ĐỊNH GIỚI` | Runtime giữ 60-hit Ultimate cũ như gameplay projection, đổi presentation sang Thiên Kiếm Định Giới. |
 
-### Lucia source map
+### Relationship locks
 
-| Runtime concept | Source anchor | Current lock |
+- Cao Minh ↔ Syvial: không có quan hệ có sẵn; first contact nếu gặp.
+- Cao Minh ↔ Lucia Lục: quan hệ/xưng hô OPEN; encounter mặc định first contact nếu live continuity chưa xác lập khác; tuyệt đối không nhập quan hệ Cao Minh ↔ Lục Trầm.
+- Cao Minh ↔ Lục Trầm: đã là tử địch/đối thủ từ thế giới nguyên sinh; trong Backrooms quan hệ phát triển chậm từ đối đầu đến hợp tác, tín nhiệm rồi mới có khả năng nảy sinh tình cảm. Không phải first contact.
+- Cao Minh ↔ Diệp Minh: tử địch không đội trời chung. Diệp Minh trực tiếp góp phần vào đại kiếp thảm sát Cao gia; biến cố là một nguyên nhân quyết định khiến Cao Minh bước vào ma đạo. Không mặc định Diệp Minh là chủ mưu duy nhất; các chi tiết sâu hơn vẫn OPEN. Canon nguồn: `DIEP_MINH_CANON.md`.
+
+## Diệp Minh R01 source map
+
+| Domain | Anchor / runtime key | Current lock |
 | --- | --- | --- |
-| Identity | R03 identity / quick lock | Legal name Hứa Thuý Mai. Lucia Lục is military nickname/callsign. Human Vietnamese woman, age 19, Hoa Kiều, great-great-granddaughter of the Hứa family. |
-| Background | R03 quick lock | One year military service/training via Vietnam + USA; entrance result excellent. Skilled human tactical riflewoman, not supernatural/UR+. |
-| Story ownership | Level 0 encounter lock | Fixed story-owned Level 0 encounter; not random/quest spawn and not model-created on demand. Not part of the initial SRU Async group; initial group is Kai/Iris/Syvial. |
-| Gameplay stats | R03 gameplay lock | HP 100, STR 7, DF 7, AGI 8, CRIT 7; +2 HP after every 3 separately completed turns with save/load persistence. |
-| Equipment | R03 equipment sections | Personalized M4A1, combat dagger, military navigation watch. Baseline M4A1 physical ammo: 60 in main magazines + 90 reserve = 150. Black handgun visible in thigh holster but exact model/ammo/gameplay remain OPEN. |
-| Inventory | R03 gameplay lock | 8 item types, maximum 100 units each; Equipment separate from Inventory. |
-| Relationship/address | R03 open fields | Kai relationship and address remain OPEN. |
+| Identity | `DIEP-MINH-ID-01` | Tử địch không đội trời chung của Cao Minh; tông môn/cảnh giới/xuất thân chi tiết vẫn OPEN. |
+| Visual | `DIEP-MINH-VIS-01` | Nam tử tóc đen; pháp giáp đen–vàng ở nửa phải, ma thể đen–đỏ dị hóa ở nửa trái; mắt trái đỏ; trường kiếm kim quang; phù vàng và biểu tượng đạo gia. |
+| Blood feud | `DIEP-MINH-CAO-REL-01` | Góp phần thảm sát Cao gia; biến cố đẩy Cao Minh vào tuyệt vọng và là nguyên nhân quyết định dẫn tới ma đạo. |
+| Backrooms ontology | `DIEP-MINH-BACKROOMS-01` | Bản thể cũ đã chết; manifestation Backrooms giữ ký ức/huyết cừu nhưng bản chất tàn hồn/bản sao/tái tạo vẫn OPEN. |
+| Runtime | `diep_minh` / `DIEP-MINH-RUNTIME-01` | Legacy/boss-only; không auto-spawn, không có ratePercent. |
 
-## Relationship / address locks
+## Runtime notes
 
-- `Iris -> Kai`: `anh–em`.
-- `Syvial -> Kai`: Syvial uses `em`, normally calls him `anh` or `Kai`; continuity controls deeper romantic address.
-- `Kai -> Syvial`: Kai uses `anh`, calls her `Syvial` or `em`.
-- `Iris <-> Syvial`: exact address remains UNKNOWN unless a newer source locks it.
-- `Lucia <-> Kai`: relationship/address remain OPEN.
-
-## World source map
-
-World data remains sourced from Drive, independent of the character sync:
-
-| Runtime domain | Source |
-| --- | --- |
-| World core | `01_WORLD/world.md` |
-| Levels | `01_WORLD/level.md` |
-| Entities | `01_WORLD/entity.md` |
-| Items/resources | `01_WORLD/items.md` |
-
-Adding future levels/entities remains append-only. Character codex must not be used to invent world facts.
-
-## Game / story sources
-
-| Domain | Source |
-| --- | --- |
-| Text Game hard rules | `05_TextGame/RULES/TEXT_GAME_RULES.md` |
-| GM fairness / consequences | `05_TextGame/RULES/GAME_MASTER_RULES.md` |
-| Main campaign premise/objectives | `05_TextGame/STORY/MAIN_STORY.md` |
-| Mutable campaign facts | Live validated save / committed runtime continuity |
-
-## Writing sources
-
-| Domain | Source |
-| --- | --- |
-| Dialogue generation/address discipline | `00_RULES/CONVERSATION.MD` + character relationship locks |
-| Knowledge boundary | `00_RULES/worldcodex.md` + forbidden-writing rules |
-| Competence preservation | forbidden-writing rules + `worldcodex.md` + GM rules |
-| POV/prose | `00_RULES/WayOfWriting.md` |
-| Horror | `00_RULES/Supernatural_Horror_Craft_Guide.md` |
-| Intimacy | `00_RULES/Intimacy_Writing_Guide.md` |
-
-## Java-only runtime notes
-
-The former patch-generated Kotlin/LiteRT knowledge pipeline is retired. Current Android runtime is Java 17 plus WebView HTML/JavaScript. Character canon is injected into the game state as a compact `characterCanon` block so the existing Java Gemini orchestration receives it every AI turn without Python, Kotlin or LiteRT.
-
-Rules:
-
-1. Current Drive character canon overrides conflicting legacy character facts in old logs/local mirrors.
-2. Runtime campaign state still controls mutable facts such as current location, injuries, acquired/lost items and relationship development when those facts do not contradict immutable character canon.
-3. KNOWLEDGE_LOCK never becomes character knowledge automatically.
-4. UNKNOWN/OPEN stays unknown.
-5. Lucia's codex is knowledge that she exists in the setting; it is not permission to spawn her outside her fixed Level 0 story encounter.
-6. New Turn 1 baseline uses SRU Assault Rifle MK19 + SRU-MK20 + Omnivault Ring. Untouched Turn 1 saves with the old White Wraith baseline are migrated; progressed campaigns are not blindly rewritten.
+- Internal player id: `cao_minh`.
+- Combat skills: Huyết Ma Tứ Liên, Ma Tâm Trấn Hồn, Huyết Ảnh Ma Độn, Thiên Ma Bộ, Huyết Ma Nhị Thập Tứ Trảm.
+- Default equipment set: Huyết Ma Kiếm, Huyết Ma Chiến Khải, Vạn Tàng Giới.
+- CharacterEncounterCore sở hữu spawn/join character.
+- Gameplay numbers không tự biến thành lore.
+- New-game canon version: `cao-minh-r15`; save thuộc canon cũ được reset về baseline R15 thay vì trộn hai continuity.
