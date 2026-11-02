@@ -51,6 +51,7 @@
 // globals (render/backroomTurn/backroomError) the inline script defines —
 // the static equivalent of native's onPageFinished injection.
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -71,6 +72,25 @@ function swap(html, from, to, expected, label) {
   if (n !== expected) fail(`patch "${label}": expected ${expected} occurrence(s), found ${n}`);
   return html.split(from).join(to);
 }
+
+// ── Cache-busting build version (owner request, 2026-11-03) ─────────────
+// GitHub Pages serves every file with Cache-Control: max-age=600, so a
+// phone that loaded the game just before a deploy keeps showing the old
+// build for up to 10 minutes. One version for the whole web overlay —
+// the sha256 of every web source file — is appended as ?v= to each
+// script URL in the page and to each relative import specifier inside
+// the copied module files: any change to any web file changes every
+// URL, so the first load after a deploy fetches the overlay fresh.
+// (The HTML shell itself can still be cached for up to 10 minutes;
+// once it refreshes, nothing beneath it can be stale.)
+const WEB_FILES = [
+  "config.js", "glue.mjs", "core-adapter.js", "shim.js",
+  "save-store.js", "save-boot.js", "ui-enhancements.js",
+  "core/index.js", "core/facade.js", "core/rules.js",
+];
+const buildVersion = createHash("sha256")
+  .update(WEB_FILES.map((f) => f + "\0" + readFileSync(join(webDir, f), "utf8")).join("\0"))
+  .digest("hex").slice(0, 12);
 
 // ── 1. Patch the game's index.html in memory ──────────────────────────────
 const sourceHtml = readFileSync(join(assetsDir, "index.html"), "utf8");
@@ -121,21 +141,21 @@ if (html.includes("localStorage")) fail("patched index.html still references loc
 
 // ── 2. Inject the web script tags and assert the final order ─────────────
 const PRE = [
-  '<script src="config.js"></script>',
-  '<script src="save-store.js"></script>',
-  '<script src="save-boot.js"></script>',
-  '<script type="module" src="glue.mjs"></script>',
-  '<script src="core-adapter.js"></script>',
-  '<script src="shim.js"></script>',
+  `<script src="config.js?v=${buildVersion}"></script>`,
+  `<script src="save-store.js?v=${buildVersion}"></script>`,
+  `<script src="save-boot.js?v=${buildVersion}"></script>`,
+  `<script type="module" src="glue.mjs?v=${buildVersion}"></script>`,
+  `<script src="core-adapter.js?v=${buildVersion}"></script>`,
+  `<script src="shim.js?v=${buildVersion}"></script>`,
 ].join("\n");
 html = swap(html, "<script>", PRE + "\n<script>", 1, "pre-script injection");
-html = swap(html, "</script>\n</body>", '</script>\n<script src="ui-enhancements.js"></script>\n</body>', 1, "ui injection");
+html = swap(html, "</script>\n</body>", `</script>\n<script src="ui-enhancements.js?v=${buildVersion}"></script>\n</body>`, 1, "ui injection");
 {
   const markers = [
-    'src="config.js"', 'src="save-store.js"', 'src="save-boot.js"',
-    'src="glue.mjs"', 'src="core-adapter.js"', 'src="shim.js"',
+    'src="config.js?v=', 'src="save-store.js?v=', 'src="save-boot.js?v=',
+    'src="glue.mjs?v=', 'src="core-adapter.js?v=', 'src="shim.js?v=',
     "<script>\n", // the game's own inline script (bare tag)
-    'src="ui-enhancements.js"',
+    'src="ui-enhancements.js?v=',
   ];
   let prev = -1;
   for (const m of markers) {
@@ -150,11 +170,6 @@ html = swap(html, "</script>\n</body>", '</script>\n<script src="ui-enhancements
 }
 
 // ── 3. Write the site ──────────────────────────────────────────────────────
-const WEB_FILES = [
-  "config.js", "glue.mjs", "core-adapter.js", "shim.js",
-  "save-store.js", "save-boot.js", "ui-enhancements.js",
-  "core/index.js", "core/facade.js", "core/rules.js",
-];
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 cpSync(assetsDir, outDir, { recursive: true });
@@ -164,6 +179,20 @@ for (const f of WEB_FILES) {
   cpSync(join(webDir, f), dest);
 }
 writeFileSync(join(outDir, "index.html"), html);
+
+// Stamp the same ?v= onto every relative import specifier inside the
+// copied module files, so a changed core module is never served stale
+// behind a fresh importer (see the build-version note above).
+for (const f of WEB_FILES) {
+  if (!/\.m?js$/.test(f)) continue;
+  const dest = join(outDir, f);
+  const src = readFileSync(dest, "utf8");
+  const stamped = src.replace(
+    /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(["'])(\.\.?\/[^"']+?\.m?js)\2/g,
+    (m, kw, q, spec) => kw + q + spec + "?v=" + buildVersion + q
+  );
+  if (stamped !== src) writeFileSync(dest, stamped);
+}
 
 // Byte-identity spot law: every copied asset except the patched
 // index.html must match its source size exactly.
@@ -184,4 +213,4 @@ let files = 0, bytes = 0;
 for (const f of WEB_FILES) {
   if (!existsSync(join(outDir, f))) fail(`web file missing from site: ${f}`);
 }
-console.log(`assemble: OK — ${files} asset files (${bytes} bytes) byte-sized, index.html patched, ${WEB_FILES.length} web files, order verified → ${outDir}`);
+console.log(`assemble: OK — ${files} asset files (${bytes} bytes) byte-sized, index.html patched, ${WEB_FILES.length} web files @ v=${buildVersion}, order verified → ${outDir}`);
