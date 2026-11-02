@@ -1,0 +1,1 @@
+{"description":"Node tests for the web build overlay (C2 shim, C3 UI, C4 save layer, assembled-site smoke). Not part of the assembled site.","devDependencies":{"fake-indexeddb":"^6.2.7","jsdom":"^30.1.3"},"name":"backroomsv2-web-tests","private":true}
