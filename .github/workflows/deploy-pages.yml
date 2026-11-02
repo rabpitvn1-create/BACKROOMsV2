@@ -1,0 +1,52 @@
+name: Deploy GitHub Pages
+
+# Web build only: assembles the static site from the game's own assets
+# (android-apk/app/src/main/assets, read-only) plus the web/ overlay and
+# deploys it to GitHub Pages. There are no secrets in this build — the
+# game's AI runs through the owner's public Render proxies, whose URLs are
+# committed in web/config.js — so there is no config injection and no key
+# gate. This workflow must never create or edit a GitHub Release.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'android-apk/app/src/main/assets/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Assemble site (workspace copy only; repo tree untouched)
+        run: |
+          set -euo pipefail
+          node web/assemble.mjs site
+          test -s site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
