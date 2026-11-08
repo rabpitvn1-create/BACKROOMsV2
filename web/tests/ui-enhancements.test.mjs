@@ -123,8 +123,8 @@ function boot(storedSnapshot) {
   const { window, errors } = boot(null);
   const doc = window.document;
   await sleep(50);
-  check("B: placeholder rendered when cache is empty",
-    !!doc.querySelector("#snapshot .snapshot-placeholder"));
+  check("B: no snapshot art layer when cache is empty, VN stage intact",
+    !doc.querySelector("#snapshot .snapshot-art") && !!doc.querySelector("#snapshot .stage-character-wrap"));
   await sleep(900); // native auto-snapshot timer is 700 ms
   check("B: auto-snapshot fired and reported the missing bridge (inert-safe)",
     doc.getElementById("status").textContent === "Không tìm thấy Android snapshot bridge.");

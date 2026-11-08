@@ -43,7 +43,7 @@ const server = createServer(async (req, res) => {
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const url = `http://127.0.0.1:${server.address().port}/`;
 
-const GM_REPLY = "Kai bước vào hành lang vàng bất tận.";
+const GM_REPLY = "Cao Minh bước vào hành lang vàng bất tận.";
 function makeFetchStub(calls) {
   return async (u, opts = {}) => {
     const method = opts.method || "GET";
@@ -51,7 +51,7 @@ function makeFetchStub(calls) {
     if (String(u).endsWith("/gemini")) {
       const candidate = {
         reply: GM_REPLY, title: "", location: "Level 0 — hành lang",
-        player: { name: "Kai Akechi", hp: 100 }, party: [], inventory: [], flags: {}
+        player: { name: "Cao Minh", hp: 100 }, party: [], inventory: [], flags: {}
       };
       return {
         ok: true, status: 200,

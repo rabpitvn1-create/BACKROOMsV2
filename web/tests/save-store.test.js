@@ -31,10 +31,10 @@ function raw(key, value) {
 }
 
 const stateA = JSON.stringify({ title: "BACKROOMS", turn: 3, mode: "DIALOGUE", location: "Level 0",
-  player: { name: "Kai Akechi", condition: "Ổn định" }, party: [], inventory: [{ id: "white-wraith", name: "White Wraith", quantity: 1 }],
+  player: { name: "Cao Minh", condition: "Ổn định" }, party: [], inventory: [{ id: "white-wraith", name: "White Wraith", quantity: 1 }],
   flags: { communication: { sru: "OFFLINE" } }, log: [{ role: "gm", text: "MỞ ĐẦU — ă ơ ư đ Đ" }], saveVersion: 3 });
 const stateB = JSON.stringify({ title: "BACKROOMS", turn: 4, mode: "EXPLORE", location: "Level 1",
-  player: { name: "Kai Akechi", condition: "Mệt" }, party: [], inventory: [], flags: {},
+  player: { name: "Cao Minh", condition: "Mệt" }, party: [], inventory: [], flags: {},
   log: [{ role: "player", text: "Đi tiếp về phía bắc." }], saveVersion: 3 });
 const stateC = JSON.stringify({ turn: 10, log: [] });
 const stateD = JSON.stringify({ turn: 11, log: [{ role: "gm", text: "…" }] });

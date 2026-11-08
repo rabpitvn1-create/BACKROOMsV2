@@ -23,8 +23,8 @@ const SNAPSHOT_MSG = "Snapshot chưa khả dụng trên bản web.";
 
 const STATE = {
   turn: 1, mode: "story", title: "Backrooms", location: "Level 0",
-  player: { name: "Kai Akechi", hp: 100 }, party: [], inventory: [],
-  flags: {}, log: [{ role: "gm", text: "Prologue." }], characterCanon: { kai: {} }
+  player: { name: "Cao Minh", hp: 100 }, party: [], inventory: [],
+  flags: {}, log: [{ role: "gm", text: "Prologue." }], characterCanon: { cao_minh: {} }
 };
 const ACTION = "đi về phía cánh cửa";
 
@@ -97,7 +97,7 @@ test("warm-up pings GET /health on both proxies at load", async () => {
 test("success turn: request body field-by-field + committed callback payload", async () => {
   const candidate = {
     reply: "Bạn bước tới cánh cửa màu vàng.", title: "", location: "Level 0 — hành lang",
-    player: { name: "Kai Akechi", hp: 100 }, party: [], inventory: [], flags: {}
+    player: { name: "Cao Minh", hp: 100 }, party: [], inventory: [], flags: {}
   };
   const { sandbox, calls, events } = loadWorld(
     async (url) => (url.endsWith("/gemini") ? geminiOk(JSON.stringify(candidate)) : { ok: true, status: 200, text: async () => "{}" }),
@@ -113,7 +113,7 @@ test("success turn: request body field-by-field + committed callback payload", a
   assert.deepEqual(posts[0].body.generationConfig, { responseMimeType: "application/json", temperature: 0.8 });
   const expectedPrompt =
     "Bạn là Game Master của text game Backrooms. Xử lý đúng một lượt và trả DUY NHẤT JSON hợp lệ, không markdown. " +
-    "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Kai Akechi. " +
+    "Viết tiếng Việt tự nhiên, đầy đủ ý. Không trả lời bằng câu rỗng. Không thay đổi dữ kiện chưa có căn cứ. Người chơi chỉ điều khiển Cao Minh. " +
     "State hiện tại: " + JSON.stringify(STATE) + "\nHành động: " + ACTION +
     "\nJSON bắt buộc: {\"reply\":\"phản hồi Game Master\",\"title\":\"giữ nguyên hoặc cập nhật\",\"location\":\"vị trí sau lượt\",\"player\":{},\"party\":[],\"inventory\":[],\"flags\":{}}";
   assert.deepEqual(posts[0].body.contents, [{ role: "user", parts: [{ text: expectedPrompt }] }]);

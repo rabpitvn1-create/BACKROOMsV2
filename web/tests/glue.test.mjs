@@ -16,7 +16,7 @@ assert.equal(typeof window.GameCore.processValidatedCandidate, "function");
 // is handled locally with the facade's canned reply.
 const state = {
   turn: 1, mode: "story", title: "Backrooms", location: "Level 0",
-  player: { name: "Kai Akechi" }, party: [],
+  player: { name: "Cao Minh" }, party: [],
   inventory: [{ name: "Almond Water", quantity: 2 }],
   flags: {}, log: []
 };

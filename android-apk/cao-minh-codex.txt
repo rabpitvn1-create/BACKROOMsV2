@@ -1,0 +1,26 @@
+CAO MINH — CURRENT MAIN CHARACTER CANON (owner ruling 2026-11-09)
+
+Cao Minh đã thay thế hoàn toàn nhân vật chính tiền nhiệm ở mọi tầng: canon,
+ID, vật phẩm, trang bị và kỹ năng. Không còn nhân vật chính nào khác trong
+canon hiện hành của BACKROOMsV2.
+
+Authority:
+- Owner canon — Cao Minh (chốt trực tiếp bởi chủ nhân, 2026-11-09)
+- Hồ sơ rút gọn phía Hui-s-Family: src/character-snapshot.js (id gao-minh)
+
+Repository mirrors:
+- CHARACTER_CODEX_CURRENT.md
+- app/src/main/assets/knowledge/characters_current.json (key "cao_minh")
+- KNOWLEDGE_SOURCE_MAP.md
+
+Current locks:
+- Cao Minh, tôn hiệu Vạn Giới Ma Tổ, Đạo Tổ của Vạn Ma Đạo Môn; cảnh giới
+  Chí Tôn Đại Viên Mãn.
+- Người Trái Đất trọng sinh; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực
+  sụp đổ (Lục Trầm hy sinh mở đường — prologue gốc của dòng Backrooms).
+- Trang bị: song kiếm Thái Cổ Song Sát (thanh mặt quỷ + thanh lõi đỏ, đổi
+  qua lại dạng equipment) và giáp Hắc Long Chiến Khải.
+- Kiếm pháp đã khóa tên: Thiên Kiếm Thất Thức. Chi tiết từng thức là
+  UNKNOWN/OPEN trong canon hiện có tại repo — không tự điền.
+
+Do not add new canon to this file beyond the owner's locked facts above.

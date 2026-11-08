@@ -20,8 +20,8 @@ function javaPattern(source) {
   return new RegExp(source.replaceAll("\\s", JAVA_WS), "iu");
 }
 
-const OMNIVAULT_WITHDRAW = javaPattern(
-  String.raw`(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:omnivault|nhẫn|kho)`);
+const STORAGE_WITHDRAW = javaPattern(
+  String.raw`(?:lấy|rút|triệu hồi).*(?:ra khỏi|khỏi|từ).*(?:nhẫn|kho)`);
 const DIRECT_PICKUP = javaPattern(
   String.raw`(?:^|\s)(?:nhặt|lượm|cầm\s+lên|lấy(?:\s+lên)?|thu\s+hồi|tịch\s+thu|nhận(?:\s+lấy)?|pick\s+up|take|receive)(?:\s|$)`);
 const INVENTORY_ASSERTION = javaPattern(
@@ -43,7 +43,7 @@ export function javaTrim(text) {
 
 export function isDirectPlayerPickupAction(action) {
   const text = action == null ? "" : javaTrim(action);
-  if (text === "" || OMNIVAULT_WITHDRAW.test(text)) return false;
+  if (text === "" || STORAGE_WITHDRAW.test(text)) return false;
   return DIRECT_PICKUP.test(text) || INVENTORY_ASSERTION.test(text);
 }
 

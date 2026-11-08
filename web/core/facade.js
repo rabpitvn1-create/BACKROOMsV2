@@ -223,8 +223,8 @@ function inventoryReply(inventory) {
 }
 
 function partyReply(party) {
-  if (party == null || party.length === 0) return "Kai hiện không có đồng đội trong party.";
-  let reply = "Party hiện có Kai";
+  if (party == null || party.length === 0) return "Cao Minh hiện không có đồng đội trong party.";
+  let reply = "Party hiện có Cao Minh";
   for (const raw of party) {
     const member = isObject(raw) ? raw : null;
     if (member == null) continue;

@@ -1,0 +1,30 @@
+CAO MINH — EQUIPMENT & SKILLS PROFILE
+STATUS: CURRENT CANON (owner ruling 2026-11-09 — thay thế hoàn toàn bộ
+vật phẩm / trang bị / kỹ năng của nhân vật chính tiền nhiệm)
+
+TRANG BỊ
+
+1. THÁI CỔ SONG SÁT (song kiếm — vũ khí chuẩn)
+- Hai thanh: thanh mặt quỷ và thanh lõi đỏ.
+- Tại một thời điểm, Cao Minh cầm một trong hai thanh; thanh còn lại lơ
+  lửng sau lưng. Hai thanh đổi qua lại dạng equipment (cơ chế đổi kiếm như
+  phía Hui-s-Family): thanh đang cầm được lưu trong state tại
+  flags.equippedSword ("demon-face" | "red-core", mặc định "demon-face").
+
+2. HẮC LONG CHIẾN KHẢI (giáp hộ thân)
+- Giáp chuẩn hiện hành của Cao Minh, mặc cùng Thái Cổ Song Sát.
+
+KỸ NĂNG
+
+1. THIÊN KIẾM THẤT THỨC
+- Kiếm pháp đã khóa tên của Cao Minh.
+- Chi tiết từng thức (tên riêng, cơ chế, thông số) chưa được khóa trong
+  canon hiện có tại repo: UNKNOWN/OPEN. Không tự đặt tên kỹ năng mới —
+  theo luật chia việc của chủ nhân, quyền đặt tên thuộc về GPT; khi cần
+  tên mới, dùng nhãn trung tính trong code và ghi "chờ GPT đặt tên".
+
+GHI CHÚ THAY THẾ
+- Toàn bộ bộ kỹ năng súng tự động, vũ khí súng, powered armor và nhẫn lưu
+  trữ của nhân vật chính tiền nhiệm đã bị gỡ khỏi canon và runtime.
+- Cơ chế lưu trữ kiểu nhẫn không còn tồn tại; inventory thường (nhặt/giữ
+  đồ trong game) giữ nguyên luật chung.

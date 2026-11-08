@@ -5,33 +5,163 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Backroom</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#eef1f3;font:15px system-ui,sans-serif}.shell{min-height:100vh;padding:10px;background:radial-gradient(circle at top,#161b20,#07090b 75%)}.game,.card{border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007}.topbar{display:flex;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid #2b3137}.eyebrow,.role{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em}h1{margin:4px 0 0;font-size:23px}.turn{color:#9aa4ad;font-size:12px;letter-spacing:.1em}.turn strong{font-size:21px;color:white}.snapshot{height:170px;margin:10px;border:1px solid #252b31;display:grid;place-items:center;background:#0b0d0f;color:#69737c}.snapshot img{width:100%;height:100%;object-fit:cover}.log{height:42vh;overflow:auto;padding:10px;display:grid;gap:10px}.message{border-left:3px solid #454e56;padding:11px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.role{margin-bottom:6px}.text{white-space:pre-wrap;line-height:1.55}.composer{display:grid;gap:8px;padding:10px}textarea,button{font:inherit}textarea{min-height:80px;background:#090c0f;color:white;border:1px solid #30373e;padding:10px}button{border:1px solid #3a4249;background:#1a2025;color:#eff2f4;padding:12px;font-weight:700}.status{border-top:1px solid #252b31;padding:10px;color:#9aa4ad;font-size:12px}.side{display:grid;gap:10px;margin-top:10px}.card{padding:14px}.card h2{font-size:13px;letter-spacing:.1em;margin:0 0 10px}.row{display:grid;grid-template-columns:90px 1fr;padding:6px 0;border-bottom:1px solid #22282d;color:#dce2e5}.row b{color:#78838c;font-weight:400}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions .wide{grid-column:1/-1}.danger{background:#241616;color:#e6b1b1;border-color:#663b3b}.chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{border:1px solid #313940;padding:5px 7px;font-size:12px}
+*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#eef1f3;font:15px system-ui,sans-serif}.shell{min-height:100vh;padding:10px;background:radial-gradient(circle at top,#161b20,#07090b 75%)}
+.campaign-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007}.eyebrow,.role{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em}h1{margin:4px 0 0;font-size:23px}.turn{color:#9aa4ad;font-size:12px;letter-spacing:.1em;white-space:nowrap}.turn strong{font-size:21px;color:white}
+button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;padding:12px;font-weight:700;cursor:pointer}textarea{font:inherit}
+.burger-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}.burger-line{display:block;width:20px;height:2px;background:#eef1f3}.burger-text{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8f9aa4}
+.snapshot-stage{position:relative;height:clamp(300px,82vw,340px);margin-top:10px}
+.stage-bg{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid #252b31;background:#0b0d0f;box-shadow:0 20px 60px #0007}
+#stage-background{position:absolute;inset:0;background-size:cover;background-position:center bottom}
+.snapshot-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.stage-figure{position:absolute;bottom:0;z-index:2;pointer-events:none}.stage-figure img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain;border:0;background:transparent}
+.stage-nameplate{position:absolute;left:50%;bottom:calc(100% - 5px);transform:translateX(-50%);z-index:4;padding:.12rem .5rem;border:1px solid #2b3137;border-radius:.35rem;background:rgba(8,10,12,.85);color:#eef1f3;font-size:.68rem;font-weight:600;letter-spacing:.05em;white-space:nowrap;pointer-events:none}
+#stage-entity-figure{left:0;height:92%;max-width:55%;opacity:0;visibility:hidden;transition:opacity 260ms ease,visibility 260ms ease}
+#stage-entity-figure.stage-entity-on{opacity:1;visibility:visible}
+#stage-companion-figure{left:0;height:92%;max-width:55%;opacity:0;visibility:hidden;transition:opacity 600ms ease,visibility 600ms ease,left 600ms ease}
+#stage-companion-figure.stage-companion-on{opacity:1;visibility:visible}
+#stage-companion-figure.stage-companion-shifted{left:25%;z-index:1}
+.stage-character-wrap{position:absolute;right:0;bottom:0;transform:translateX(10px);z-index:3;height:100%;aspect-ratio:1086/1448;max-width:62%}
+#stage-character{position:relative;z-index:2;display:block;width:100%;height:100%;object-fit:contain;border:0;background:transparent;pointer-events:none;transition:opacity 160ms ease}
+#stage-character.is-swapping{opacity:0}
+.stage-sword{position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.stage-sword img{display:block;height:67%;width:auto;border:0;background:transparent;filter:drop-shadow(0 6px 14px rgba(0,0,0,.55))}
+.stage-sword-b img{height:70%}
+.stage-sword-a{animation:sword-hover-a 3.8s ease-in-out infinite alternate}
+.stage-sword-b{animation:sword-hover-b 4.37s ease-in-out infinite alternate}
+.stage-sword.dimmed{opacity:.45}
+@keyframes sword-hover-a{from{transform:translate(-32%,-10.5%)}to{transform:translate(-32%,-4.5%)}}
+@keyframes sword-hover-b{from{transform:translate(32%,-4.5%)}to{transform:translate(32%,-10.5%)}}
+.stage-caption{position:absolute;left:50%;bottom:.6rem;z-index:4;transform:translateX(-50%);max-width:calc(100% - 2rem);padding:.38rem .8rem;border:1px solid #2b3137;border-radius:999px;color:#eef1f3;background:rgba(8,10,12,.72);font-size:.72rem;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.story-panel{margin-top:10px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007;padding:10px}
+.log{height:42vh;overflow:auto;display:grid;gap:10px;align-content:start}
+.message{display:flex;gap:10px;border-left:3px solid #454e56;padding:11px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message-body{flex:1;min-width:0}.role{margin-bottom:6px}.text{white-space:pre-wrap;line-height:1.55}
+.message.reading{outline:1px solid #77828c}
+.dialogue-avatar{width:2.8rem;height:2.8rem;flex:none;object-fit:cover;border:1px solid #2b3137;border-radius:.35rem;background:#090c0f}
+.dialogue-avatar-crop{width:2.8rem;height:2.8rem;flex:none;overflow:hidden;padding:0;position:relative}
+.dialogue-avatar-crop>img{display:block;height:385%;width:auto;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
+body.fast-read *,body.fast-read *::before,body.fast-read *::after{animation-duration:.01s!important;transition-duration:.01s!important}
+.choice-deck{margin-top:10px;border-top:1px solid #252b31;padding-top:10px}.choice-deck-tools{display:flex;flex-wrap:wrap;gap:8px}.choices{display:grid;gap:8px;margin-top:8px}.choices[hidden]{display:none}.choice{text-align:left}
+.composer{display:grid;gap:8px;padding:10px 0 0}textarea{min-height:80px;background:#090c0f;color:white;border:1px solid #30373e;padding:10px}
+.status{border-top:1px solid #252b31;padding:10px 0 0;margin-top:10px;color:#9aa4ad;font-size:12px}
+.intel-scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:119}.intel-scrim[hidden]{display:none}
+.intel-panel{position:fixed;top:0;right:0;z-index:120;width:min(420px,92vw);height:100dvh;background:#0e1114;border-left:1px solid #2b3137;transform:translateX(105%);visibility:hidden;transition:transform 260ms ease,visibility 260ms ease;display:flex;flex-direction:column}
+body.intel-open .intel-panel{transform:none;visibility:visible}
+.intel-header{display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid #2b3137}.intel-header h2{margin:0;font-size:15px;letter-spacing:.08em}
+.intel-scroll{overflow:auto;padding:10px;display:grid;gap:10px;align-content:start}
+.card{border:1px solid #2b3137;background:#0e1114;padding:14px}.card h2{font-size:13px;letter-spacing:.1em;margin:0 0 10px}
+.row{display:grid;grid-template-columns:90px 1fr;padding:6px 0;border-bottom:1px solid #22282d;color:#dce2e5}.row b{color:#78838c;font-weight:400}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions .wide{grid-column:1/-1}.danger{background:#241616;color:#e6b1b1;border-color:#663b3b}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips span{border:1px solid #313940;padding:5px 7px;font-size:12px}.chips .chip{border:1px solid #313940;padding:5px 7px;font-size:12px;font-weight:400}
+.profile-card{display:flex;gap:12px;width:100%;padding:12px;border:1px solid #2b3137;background:#0b0d0f;color:inherit;text-align:left;cursor:pointer}
+.portrait-frame{width:84px;height:84px;flex:none;overflow:hidden;border:1px solid #2b3137}.portrait-frame img{width:100%;height:100%;object-fit:cover}
+.micro-label{margin:0;color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em}
+.profile-copy h2{margin:4px 0;font-size:17px}.profile-copy h2 span{color:#8f9aa4;font-size:12px;font-weight:500}.profile-copy p{margin:0;color:#9aa4ad;font-size:12px;line-height:1.45}
+.profile-list{display:grid;gap:8px}.profile-list button{text-align:left}
+.backlog-overlay{position:fixed;inset:0;z-index:130;display:grid;place-items:center}.backlog-overlay[hidden]{display:none}
+.backlog-scrim{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.backlog-card{position:relative;width:min(680px,94vw);max-height:86dvh;overflow:auto;background:#0e1114;border:1px solid #2b3137;padding:16px}
+.backlog-head{display:flex;justify-content:space-between;align-items:center}.backlog-head h2{margin:0;font-size:16px}.backlog-note{color:#9aa4ad;font-size:12px}
+.backlog-list{display:grid;gap:10px}.backlog-item{border-left:3px solid #454e56;padding:8px 10px;background:#111519;font-size:13px;white-space:pre-wrap;line-height:1.5}.backlog-item.player{border-left-color:#8b949e}
+.character-overlay{position:fixed;inset:0;z-index:140;display:grid;place-items:center}.character-overlay[hidden]{display:none}
+.character-overlay-scrim{position:absolute;inset:0;background:rgba(0,0,0,.65);border:0;padding:0}
+.character-overlay-card{position:relative;width:min(560px,94vw);max-height:88dvh;overflow:auto;background:#0e1114;border:1px solid #2b3137;padding:16px}
+.character-overlay-close{position:absolute;top:8px;right:8px;z-index:2;padding:6px 10px}
+.character-overlay-portrait img{width:100%;max-height:300px;object-fit:cover;object-position:50% 25%;display:block}
+.character-overlay-copy h2{margin:6px 0;font-size:22px}.character-overlay-copy h2 span{color:#8f9aa4;font-size:13px;font-weight:500}
+.character-overlay-copy p{color:#c9d1d8;line-height:1.55}
+.equip-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.equip-btn[aria-pressed="true"]{background:#303840;border-color:#77828c}
 </style>
 </head>
 <body>
 <main class="shell">
-<section class="game">
-<header class="topbar"><div><div class="eyebrow">BACKROOM TEXT GAME</div><h1 id="title"></h1></div><div class="turn">TURN <strong id="turn"></strong></div></header>
-<div class="snapshot" id="snapshot">SNAPSHOT — Android bản đầu chưa tạo ảnh tự động</div>
+<header class="campaign-header">
+<button id="intel-toggle" class="burger-toggle" type="button" aria-label="Hồ sơ" aria-controls="intel-panel" aria-expanded="false"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span><span class="burger-text">Hồ sơ</span></button>
+<div><div class="eyebrow">BACKROOM TEXT GAME</div><h1 id="title"></h1></div>
+<div class="turn">TURN <strong id="turn"></strong></div>
+</header>
+<section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
+<div class="stage-bg"><div id="stage-background"></div></div>
+<div class="stage-figure" id="stage-entity-figure"><img id="stage-entity" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-entity-name"></span></div>
+<div class="stage-figure" id="stage-companion-figure"><img id="stage-companion" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-companion-name"></span></div>
+<div class="stage-character-wrap">
+<span class="stage-sword stage-sword-a" aria-hidden="true"><img src="cao_minh_sword_demon_face.png" alt=""></span>
+<span class="stage-sword stage-sword-b" aria-hidden="true"><img src="cao_minh_sword_red_core.png" alt=""></span>
+<img id="stage-character" src="cao_minh_snapshot_overlay.png" alt="Cao Minh">
+</div>
+<div class="stage-caption"><span id="stage-scene-name"></span></div>
+</section>
+<section class="story-panel" id="story-panel">
 <div class="log" id="log"></div>
-<form class="composer" id="form"><textarea id="action" placeholder="Kai làm gì trong Turn hiện tại?" rows="3"></textarea><button id="submit">THỰC HIỆN</button></form>
+<section class="choice-deck" aria-label="Thao tác">
+<div class="choice-deck-tools">
+<button id="actions-toggle" type="button" aria-expanded="true">Thao Tác</button>
+<button id="backlog-open" type="button">Lịch sử đọc</button>
+<button id="auto-toggle" type="button" aria-pressed="false">Tự chạy</button>
+<button id="skip-toggle" type="button" aria-pressed="false">Đọc nhanh</button>
+</div>
+<div id="choices" class="choices">
+<button type="button" class="choice" data-action="xem inventory">Xem inventory</button>
+<button type="button" class="choice" data-action="xem đội hình">Xem đội hình</button>
+</div>
+</section>
+<form class="composer" id="form"><textarea id="action" placeholder="Cao Minh làm gì trong Turn hiện tại?" rows="3"></textarea><button id="submit">THỰC HIỆN</button></form>
 <div class="status" id="status"></div>
 </section>
-<aside class="side">
+</main>
+<div id="intel-scrim" class="intel-scrim" hidden></div>
+<aside id="intel-panel" class="intel-panel" aria-label="Hồ sơ" aria-hidden="true">
+<header class="intel-header"><h2>HỒ SƠ</h2><button id="intel-close" type="button" aria-label="Đóng hồ sơ">×</button></header>
+<div class="intel-scroll">
+<button class="profile-card" type="button" data-profile-open="cao_minh">
+<span class="portrait-frame"><img src="avatars/cao_minh_avatar.jpg" alt="Chân dung Cao Minh, tôn hiệu Vạn Giới Ma Tổ"></span>
+<span class="profile-copy"><span class="micro-label">ĐẠO TỔ · VẠN MA ĐẠO MÔN</span><h2>Cao Minh <span>/ Vạn Giới Ma Tổ</span></h2><p>Đạo Tổ · song kiếm Thái Cổ Song Sát · Hắc Long Chiến Khải</p></span>
+</button>
 <div class="card"><h2>Trạng thái</h2><div class="row"><b>Vị trí</b><span id="location"></span></div><div class="row"><b>Chế độ</b><span id="mode"></span></div><div class="row"><b>Nhân vật</b><span id="player"></span></div></div>
-<div class="card"><h2>Save / Load</h2><div class="actions"><button onclick="save()">Lưu</button><button onclick="load()">Tải</button><button class="wide" onclick="resetGame()">Bắt đầu lại từ đầu</button><button class="wide danger" onclick="clearSave()">Xóa save trên máy</button></div></div>
 <div class="card"><h2>Party</h2><div class="chips" id="party"></div></div>
 <div class="card"><h2>Inventory</h2><div class="chips" id="inventory"></div></div>
+<div class="card"><h2>Hồ sơ nhân vật</h2><div class="profile-list">
+<button type="button" data-profile-open="cao_minh">Cao Minh</button>
+<button type="button" data-profile-open="iris">Iris</button>
+<button type="button" data-profile-open="syvial">Syvial</button>
+<button type="button" data-profile-open="lucia">Lucia</button>
+</div></div>
+<div class="card"><h2>Save / Load</h2><div class="actions"><button onclick="save()">Lưu</button><button onclick="load()">Tải</button><button class="wide" onclick="resetGame()">Bắt đầu lại từ đầu</button><button class="wide danger" onclick="clearSave()">Xóa save trên máy</button></div></div>
+</div>
 </aside>
-</main>
+<div id="backlog-overlay" class="backlog-overlay" hidden>
+<div class="backlog-scrim"></div>
+<section class="backlog-card" role="dialog" aria-modal="true" aria-labelledby="backlog-title">
+<header class="backlog-head"><h2 id="backlog-title">Lịch sử đọc</h2><button id="backlog-close" type="button" aria-label="Đóng lịch sử đọc">×</button></header>
+<p class="backlog-note">Nguyên văn những gì đã hiển thị trong lượt chơi này — giữ tối đa 200 mục gần nhất.</p>
+<div id="backlog-list" class="backlog-list"></div>
+</section>
+</div>
+<div id="character-overlay" class="character-overlay" hidden>
+<button class="character-overlay-scrim" type="button" aria-label="Đóng hồ sơ nhân vật"></button>
+<section class="character-overlay-card" role="dialog" aria-modal="true" aria-labelledby="character-overlay-name">
+<button id="character-overlay-close" class="character-overlay-close" type="button" aria-label="Đóng hồ sơ nhân vật">×</button>
+<div class="character-overlay-portrait"><img id="character-overlay-image" src="avatars/cao_minh_avatar.jpg" alt="Cao Minh"></div>
+<div class="character-overlay-copy">
+<p id="character-overlay-role" class="micro-label"></p>
+<h2 id="character-overlay-name"><span id="character-overlay-name-text"></span> <span id="character-overlay-alias"></span></h2>
+<p id="character-overlay-summary"></p>
+<div id="character-overlay-equip" hidden>
+<h3>Trang bị</h3>
+<p>Thái Cổ Song Sát — chọn thanh đang cầm (thanh còn lại lơ lửng sau lưng):</p>
+<div class="equip-row"><button id="equip-sword-a" class="equip-btn" type="button" aria-pressed="true">Thanh mặt quỷ</button><button id="equip-sword-b" class="equip-btn" type="button" aria-pressed="false">Thanh lõi đỏ</button></div>
+<p>Hắc Long Chiến Khải — giáp đang mặc.</p>
+</div>
+</div>
+</section>
+</div>
 <script>
 const prologue=`Bữa tối bắt đầu như bao lần khác.
 
-Nhà hàng nằm trên một tầng cao của khu thương mại, đủ yên để người ta nghe rõ tiếng dao chạm vào đĩa nhưng không đến mức phải giữ giọng. Qua lớp kính lớn sát tường, thành phố trải xuống bên dưới bằng những dải đèn trắng, vàng và đỏ. Nhân viên phục vụ đi lại nhẹ đến mức chỉ khi một chiếc ly được đặt xuống, Kai mới để ý có người vừa tới gần bàn.
+Nhà hàng nằm trên một tầng cao của khu thương mại, đủ yên để người ta nghe rõ tiếng dao chạm vào đĩa nhưng không đến mức phải giữ giọng. Qua lớp kính lớn sát tường, thành phố trải xuống bên dưới bằng những dải đèn trắng, vàng và đỏ. Nhân viên phục vụ đi lại nhẹ đến mức chỉ khi một chiếc ly được đặt xuống, Cao Minh mới để ý có người vừa tới gần bàn.
 
 Hắn đang cắt nốt phần thịt trong đĩa thì nhận ra Syvial lại nhìn sang.
 
-Kai vẫn cúi đầu.
+Cao Minh vẫn cúi đầu.
 
 “Em nhìn tiếp cũng vô ích. Miếng cuối này không tự chạy sang đĩa em đâu.”
 
@@ -41,7 +171,7 @@ Syvial nhướng mày. “Ai bảo em nhìn miếng thịt?”
 
 “Đúng. Em chỉ đang thắc mắc tại sao một người ăn chậm như anh lại nhất quyết giữ phần cuối đến tận bây giờ.”
 
-Kai đưa nĩa lên, ăn luôn miếng thịt trước khi cô kịp nói thêm. “Hết thắc mắc chưa?”
+Cao Minh đưa nĩa lên, ăn luôn miếng thịt trước khi cô kịp nói thêm. “Hết thắc mắc chưa?”
 
 Syvial nhìn chiếc đĩa trống, rồi nhìn hắn. “Anh làm thế chỉ để chọc em đúng không?”
 
@@ -55,7 +185,7 @@ Syvial quay sang. “Đếm à?”
 
 “Không cần.”
 
-Kai dựa lưng vào ghế, để mặc hai người nhìn nhau qua mặt bàn. “Anh đề nghị đổi chủ đề trước khi bữa tối biến thành một cuộc điều tra về quyền sở hữu thức ăn.”
+Cao Minh dựa lưng vào ghế, để mặc hai người nhìn nhau qua mặt bàn. “Anh đề nghị đổi chủ đề trước khi bữa tối biến thành một cuộc điều tra về quyền sở hữu thức ăn.”
 
 Syvial chống cằm. “Muộn rồi. Em sẽ nhớ chuyện này.”
 
@@ -63,35 +193,35 @@ Syvial chống cằm. “Muộn rồi. Em sẽ nhớ chuyện này.”
 
 “Anh cứ tiếp tục thử xem.”
 
-Kai bật cười khẽ. Iris lắc đầu, nhưng vẻ mặt cũng đã bớt nghiêm hơn lúc mới ngồi xuống.
+Cao Minh bật cười khẽ. Iris lắc đầu, nhưng vẻ mặt cũng đã bớt nghiêm hơn lúc mới ngồi xuống.
 
 Đèn trên trần chớp một lần.
 
 Không ai ở những bàn xung quanh phản ứng. Một nhân viên vẫn nghiêng chai rượu, dòng chất lỏng đỏ sẫm chảy đều vào ly. Bản nhạc trong nhà hàng tiếp tục trôi qua, chỉ có một nốt trầm vừa rồi nghe hơi lệch.
 
-Kai ngẩng lên.
+Cao Minh ngẩng lên.
 
 Đèn chớp lần thứ hai.
 
 Lần này Iris cũng dừng tay. Cô không nhìn lên trần mà quay sang phía cửa kính, như thể đang cố xác định một âm thanh vừa lọt khỏi chỗ của nó.
 
-“Anh Kai.”
+“Anh Cao Minh.”
 
 “Anh nghe rồi.”
 
 Syvial thôi cười. Sự thay đổi trên gương mặt cô diễn ra rất nhanh; vẻ thư thả còn đó một giây trước đã biến mất khi cô nhìn quanh căn phòng.
 
-Kai không nghe thấy tiếng động lạ nào rõ ràng. Điều khiến hắn chú ý là những âm thanh vốn phải có đang mất dần phần vang của chúng. Tiếng trò chuyện ở bàn gần nhất trở nên phẳng một cách khó chịu. Nhạc vẫn phát, nhưng các nốt thấp kéo dài như bị bóp méo. Ngay cả tiếng dao nĩa cũng nghe gần hơn khoảng cách thực tế.
+Cao Minh không nghe thấy tiếng động lạ nào rõ ràng. Điều khiến hắn chú ý là những âm thanh vốn phải có đang mất dần phần vang của chúng. Tiếng trò chuyện ở bàn gần nhất trở nên phẳng một cách khó chịu. Nhạc vẫn phát, nhưng các nốt thấp kéo dài như bị bóp méo. Ngay cả tiếng dao nĩa cũng nghe gần hơn khoảng cách thực tế.
 
 Một người đàn ông cách họ vài bàn đang nói chuyện thì khựng lại. Chiếc ly trong tay ông trượt khỏi những ngón tay.
 
-Kai nhìn theo phản xạ.
+Cao Minh nhìn theo phản xạ.
 
 Chiếc ly rơi xuống được nửa quãng rồi biến mất.
 
 Không vỡ. Không bị hất sang bên. Không có ánh sáng hay khói che khuất. Trong một khoảnh khắc nó vẫn còn ở đó, khoảnh khắc tiếp theo chỉ còn khoảng không.
 
-Kai đứng dậy ngay.
+Cao Minh đứng dậy ngay.
 
 “Đứng lên. Ra khỏi đây.”
 
@@ -99,29 +229,29 @@ Iris đã rời ghế trước khi hắn nói hết câu. Syvial đẩy ghế l�
 
 Họ không kịp đi bước nào.
 
-Mặt sàn dưới chân Kai không nứt, không sập và cũng không hề rung. Nó chỉ đột ngột thôi cản cơ thể hắn lại.
+Mặt sàn dưới chân Cao Minh không nứt, không sập và cũng không hề rung. Nó chỉ đột ngột thôi cản cơ thể hắn lại.
 
 Chân hắn xuyên qua lớp gỗ như xuyên qua một hình ảnh không có khối lượng.
 
-Kai giật tay về phía mép bàn. Những ngón tay chỉ kịp quệt qua cạnh bàn trước khi cả người rơi xuống. Phía trên, Iris lao tới theo phản xạ. Syvial cũng xoay người chụp lấy hắn, nhưng đúng lúc đó phần sàn dưới chân hai người họ cũng mất độ rắn.
+Cao Minh giật tay về phía mép bàn. Những ngón tay chỉ kịp quệt qua cạnh bàn trước khi cả người rơi xuống. Phía trên, Iris lao tới theo phản xạ. Syvial cũng xoay người chụp lấy hắn, nhưng đúng lúc đó phần sàn dưới chân hai người họ cũng mất độ rắn.
 
-Khoảnh khắc cuối cùng Kai còn nhìn thấy nhà hàng là một mớ hình ảnh nghiêng lệch: chiếc bàn trượt khỏi tầm mắt, bàn tay Iris đưa ra nhưng không chạm tới, mái tóc Syvial quét qua vai khi cô rơi, những thực khách phía xa vẫn chưa hiểu chuyện gì đang xảy ra.
+Khoảnh khắc cuối cùng Cao Minh còn nhìn thấy nhà hàng là một mớ hình ảnh nghiêng lệch: chiếc bàn trượt khỏi tầm mắt, bàn tay Iris đưa ra nhưng không chạm tới, mái tóc Syvial quét qua vai khi cô rơi, những thực khách phía xa vẫn chưa hiểu chuyện gì đang xảy ra.
 
 Rồi ánh sáng biến mất.
 
-Không có cảm giác rơi tự do. Không có gió quất vào người, không có lực kéo tăng dần, cũng không còn khái niệm rõ ràng về trên hay dưới. Cơ thể Kai vẫn ở đó, nhưng khoảng cách xung quanh hắn dường như không còn được đo theo cách quen thuộc.
+Không có cảm giác rơi tự do. Không có gió quất vào người, không có lực kéo tăng dần, cũng không còn khái niệm rõ ràng về trên hay dưới. Cơ thể Cao Minh vẫn ở đó, nhưng khoảng cách xung quanh hắn dường như không còn được đo theo cách quen thuộc.
 
 Cảm giác ấy kéo dài chưa tới một nhịp tim.
 
 Trọng lực trở lại đột ngột.
 
-Kai chạm xuống một bề mặt mềm hơn sàn nhà hàng. Hắn chống một chân, hạ thấp trọng tâm và giữ được thăng bằng gần như ngay lập tức.
+Cao Minh chạm xuống một bề mặt mềm hơn sàn nhà hàng. Hắn chống một chân, hạ thấp trọng tâm và giữ được thăng bằng gần như ngay lập tức.
 
 Mùi ẩm mốc xộc vào trước tiên.
 
 Sau đó là mùi giấy cũ, bụi, keo dán và thứ hóa chất tẩy rửa nhạt đến mức chỉ còn bám lại trong không khí. Trên đầu, hàng đèn huỳnh quang tỏa ánh sáng trắng nhợt. Tiếng ù đều đều của chúng lấp kín căn phòng.
 
-Kai đứng thẳng lên.
+Cao Minh đứng thẳng lên.
 
 Nhà hàng đã biến mất.
 
@@ -131,7 +261,7 @@ Không có cửa sổ. Không có bàn ghế. Không có dấu vết của thàn
 
 Và không có Iris hay Syvial.
 
-Kai quay một vòng, nhìn kỹ từng lối mở trước khi gọi.
+Cao Minh quay một vòng, nhìn kỹ từng lối mở trước khi gọi.
 
 “Iris?”
 
@@ -141,9 +271,9 @@ Chỉ có tiếng đèn.
 
 Giọng hắn đi qua hai căn phòng, dội lại rất yếu rồi chìm mất trong một khoảng không không cho thấy điểm cuối.
 
-Kai không gọi lần thứ ba. Hắn chuyển sang liên lạc.
+Cao Minh không gọi lần thứ ba. Hắn chuyển sang liên lạc.
 
-Kênh trực tiếp của đội không trả lời. Kênh nội bộ SRU im lặng. Kênh chỉ huy, kênh khẩn cấp và các đường truyền dự phòng mã hóa cũng không nhận được bất kỳ tín hiệu hồi đáp nào.
+Kênh trực tiếp của đội không trả lời. Kênh nội bộ của đội im lặng. Kênh chỉ huy, kênh khẩn cấp và các đường truyền dự phòng mã hóa cũng không nhận được bất kỳ tín hiệu hồi đáp nào.
 
 Hắn kiểm tra lại từng kênh một lần nữa, lần này tách riêng lỗi thiết bị khỏi lỗi đường truyền.
 
@@ -153,55 +283,58 @@ Kết quả không thay đổi.
 
 Chỉ có im lặng.
 
-Chưa đầy một phút trước, Iris và Syvial còn ngồi trong tầm tay hắn. Kai đã thấy cả hai cùng rơi khi mặt sàn mất đi dưới chân họ. Đó là điều duy nhất hắn có thể chắc chắn.
+Chưa đầy một phút trước, Iris và Syvial còn ngồi trong tầm tay hắn. Cao Minh đã thấy cả hai cùng rơi khi mặt sàn mất đi dưới chân họ. Đó là điều duy nhất hắn có thể chắc chắn.
 
 Hắn không biết họ đã rơi tới đâu.
 
 Không biết họ có ở cùng nơi này hay không.
 
-Không biết SRU còn có thể tìm thấy dấu vết của ba người từ phía bên kia hay không.
+Không biết đội còn có thể tìm thấy dấu vết của ba người từ phía bên kia hay không.
 
 Không có tọa độ để đối chiếu. Không có tín hiệu định vị. Không có dữ liệu trạng thái từ hai người còn lại. Và trước mắt, không có bất kỳ lời giải thích nào cho căn phòng vàng vô tận đang mở ra quanh hắn.
 
-Kai đứng yên thêm vài giây để nghe.
+Cao Minh đứng yên thêm vài giây để nghe.
 
 Tiếng đèn vẫn ù trên đầu. Thảm vẫn ẩm dưới đế giày. Ở phía trước, một hành lang rẽ sang trái sau lớp tường vàng; bên phải là một ô cửa khác dẫn vào căn phòng gần như giống hệt nơi hắn đang đứng.
 
 Không có tiếng gọi đáp lại.
 
-Kai chỉ còn những gì mình đang mang theo, những gì chính mắt hắn có thể kiểm chứng, và một việc phải làm trước tiên: xác định mình đang ở đâu, rồi tìm Iris và Syvial.`;
-
+Cao Minh chỉ còn những gì mình đang mang theo, những gì chính mắt hắn có thể kiểm chứng, và một việc phải làm trước tiên: xác định mình đang ở đâu, rồi tìm Iris và Syvial.`;
 const CURRENT_CHARACTER_CANON={
-  version:"drive-characters-2026-09-17",
+  version:"characters-2026-11-09",
   instruction:"Current Google Drive character canon. This overrides conflicting legacy character facts in old logs/local mirrors. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN must remain unknown. Lucia is a fixed Level 0 story encounter and must never be auto-spawned just because the model knows her codex.",
-  kai:"Kai Akechi / Twilight is current SRU captain in the anti-anomalous police force, UR+, origin era 2299 but true age unknown. Public SRU record says human; KNOWLEDGE_LOCK: half-human/half-demon son of Sparda and Eve. Sparda Core gives infinite demon power with no intrinsic depletion/cooldown/corruption/berserk and self-repairs all currently equipped items. Current signature weapon is SRU Assault Rifle MK19: physical 5.56x45 NATO, 30-round physical mags, 700-950 rpm, ~500-600 m effective; physical ammo is finite. It also fires Sparda demonic 5.56x45 formed directly from Core, no physical ammo use. SRU-MK20 is current powered armor. Devil Trigger has no intrinsic cap. Guilty Crown Override = exactly 24 MK19 demonic shots while external time is fully stopped. Omnivault now ONLY stores/retrieves inanimate objects and Restores the same existing equipment, with 24h per-item restore cooldown. Old Scan/Copy/Create/Marked/Upgrade mechanics are removed.",
-  iris:"Iris / ARGUS is SRU Scout / Target Eliminator in Kai's team, a real ranged Gunslinger. No surname locked. Half-human/half-demon daughter of Belial and a deceased human mother; mother details, birth era and exact combat tier remain UNKNOWN. Belial Core provides infinite demon power for established functions. ARGUS Terrain Read uses direct observation plus local Recon Frame sensors for terrain/routes/LOS/cover/ambush/traces; no omniscience, wall vision, remote cameras or automatic true-form detection. Thousandfold Cognition is up to 1:1000 information processing, not body speed. Current gear: SRU Recon Frame R03 and Ivory & Ebony, whose bullets form from Iris's demon power. Iris loves Kai; Kai knows but reciprocation is not canonically established. Iris uses anh-em with Kai; Iris and Syvial are trusted friends/teammates with romantic rivalry, not enemies.",
-  syvial:"Syvial is half-human/half-demon daughter of Lucifer, origin era 2299, true age unknown, UR+ and same overall tier as Kai. Current organization: SRU anti-anomalous police; deputy leader of Kai's team. Lucifer Core supplies infinite demon power; Devil Trigger does not remove control or have an invented intrinsic cap/cooldown. GodKiller is a massive purely mechanical greatsword, never a gun/gunblade. Lucifer Armor is mobile black/gunmetal/silver mecha armor with magenta accents; pointed head modules are mechanical, not biological horns; very durable/fast self-repairing but not absolutely indestructible. GodKiller Override / Twenty-Four Severance = exactly 24 cuts while external time is fully stopped. Syvial is intensely yandere toward Kai but lucid and socially/tactically competent; she values Kai's voluntary choice and does not randomly murder, sabotage missions, erase memory or mind-control him.",
-  lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia is a fixed story-owned Level 0 encounter, not random/quest spawn and not part of the initial SRU group (Kai/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Kai remain OPEN."
+  cao_minh:"Cao Minh / Vạn Giới Ma Tổ is the main character: Đạo Tổ of Vạn Ma Đạo Môn, realm Chí Tôn Đại Viên Mãn. Earthling reincarnated; fell into the Backrooms through the rift when Lôi Thiên Vực collapsed (Lục Trầm sacrificed himself to open the way). Equipment: Thái Cổ Song Sát twin swords (demon-face blade + red-core blade; he holds one at a time while the other hovers behind his back; swappable as equipment) and Hắc Long Chiến Khải armor. Named sword art: Thiên Kiếm Thất Thức — per-form details UNKNOWN/OPEN, do not invent. No guns, no powered armor, no storage ring.",
+  iris:"Iris / ARGUS is SRU Scout / Target Eliminator in Cao Minh's team, a real ranged Gunslinger. No surname locked. Half-human/half-demon daughter of Belial and a deceased human mother; mother details, birth era and exact combat tier remain UNKNOWN. Belial Core provides infinite demon power for established functions. ARGUS Terrain Read uses direct observation plus local Recon Frame sensors for terrain/routes/LOS/cover/ambush/traces; no omniscience, wall vision, remote cameras or automatic true-form detection. Thousandfold Cognition is up to 1:1000 information processing, not body speed. Current gear: SRU Recon Frame R03 and Ivory & Ebony, whose bullets form from Iris's demon power. Iris loves Cao Minh; Cao Minh knows but reciprocation is not canonically established. Iris uses anh-em with Cao Minh; Iris and Syvial are trusted friends/teammates with romantic rivalry, not enemies.",
+  syvial:"Syvial is half-human/half-demon daughter of Lucifer, origin era 2299, true age unknown, UR+ and same overall tier as Cao Minh. Current organization: SRU anti-anomalous police; deputy leader of Cao Minh's team. Lucifer Core supplies infinite demon power; Devil Trigger does not remove control or have an invented intrinsic cap/cooldown. GodKiller is a massive purely mechanical greatsword, never a gun/gunblade. Lucifer Armor is mobile black/gunmetal/silver mecha armor with magenta accents; pointed head modules are mechanical, not biological horns; very durable/fast self-repairing but not absolutely indestructible. GodKiller Override / Twenty-Four Severance = exactly 24 cuts while external time is fully stopped. Syvial is intensely yandere toward Cao Minh but lucid and socially/tactically competent; she values Cao Minh's voluntary choice and does not randomly murder, sabotage missions, erase memory or mind-control him.",
+  lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia is a fixed story-owned Level 0 encounter, not random/quest spawn and not part of the initial SRU group (Cao Minh/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Cao Minh remain OPEN."
 };
-
+const PROFILES={
+  cao_minh:{name:"Cao Minh",alias:"Vạn Giới Ma Tổ",role:"ĐẠO TỔ · VẠN MA ĐẠO MÔN",image:"avatars/cao_minh_avatar.jpg",summary:"Người Trái Đất trọng sinh sau một đêm tăng ca quá độ; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực sụp đổ; song kiếm Thái Cổ Song Sát, Hắc Long Chiến Khải hộ thân."},
+  iris:{name:"Iris",alias:"ARGUS",role:"SCOUT / TARGET ELIMINATOR",image:"avatars/Iris_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Belial. Xạ thủ tầm xa của đội; ARGUS Terrain Read phân tích địa hình từ quan sát trực tiếp và cảm biến tại chỗ."},
+  syvial:{name:"Syvial",alias:"",role:"ĐỘI PHÓ",image:"avatars/Syvial_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Lucifer, cấp UR+. Kiếm sĩ siêu nhiên tốc độ cao với đại kiếm cơ khí GodKiller và Lucifer Armor."},
+  lucia:{name:"Hứa Thuý Mai / Lucia Lục",alias:"",role:"FIXED ENCOUNTER — LEVEL 0",image:"avatars/lucia_avatar.jpg",summary:"Quân nhân loài người 19 tuổi, chít nội Gia tộc Họ Hứa. Tay súng chiến thuật với M4A1 cá nhân hóa; encounter cố định do story sở hữu tại Level 0."}
+};
 const initial={
-  title:"MAIN_BACKROOMS — Kai Akechi",
+  title:"MAIN_BACKROOMS — Cao Minh",
   turn:1,
   mode:"local APK",
   location:"Level 0 / The Lobby — khu phòng vàng ban đầu sau no-clip",
-  player:{name:"Kai Akechi",condition:"Ổn định"},
+  player:{name:"Cao Minh",condition:"Ổn định"},
   party:[],
   inventory:[
-    {name:"SRU Assault Rifle MK19"},
-    {name:"SRU-MK20 Powered Armor"},
-    {name:"Omnivault Ring / Nhẫn Vạn Tàng"}
+    {name:"Thái Cổ Song Sát"},
+    {name:"Hắc Long Chiến Khải"}
   ],
-  flags:{communication:{sru:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
+  flags:{communication:{team:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"},equippedSword:"demon-face"},
   characterCanon:CURRENT_CHARACTER_CANON,
   log:[
     {role:"gm",text:"MỞ ĐẦU\n\n"+prologue},
-    {role:"gm",text:"LƯỢT 1\n\nKhông có liên lạc với Iris, Syvial hay SRU. Bạn điều khiển Kai từ đây."}
+    {role:"gm",text:"LƯỢT 1\n\nKhông có liên lạc với Iris, Syvial hay đội. Bạn điều khiển Cao Minh từ đây."}
   ]
 };
-
 const byId=id=>document.getElementById(id);
 const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
+const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
@@ -209,13 +342,15 @@ state.characterCanon=CURRENT_CHARACTER_CANON;
 const oldPrologueSignature="Không beacon. Không telemetry.";
 if(state.turn===1){
   const currentOpening=String(state.log?.[0]?.text||"");
-  const oldInventory=Array.isArray(state.inventory)&&state.inventory.some(x=>String(x?.name||"").includes("White Wraith"));
+  const oldInventory=Array.isArray(state.inventory)&&state.inventory.some(x=>{const n=String(x?.name||"");return n.includes("White Wraith")||n.includes("SRU")||n.includes("Omnivault")});
   if(oldInventory) state.inventory=JSON.parse(JSON.stringify(initial.inventory));
-  if(state.flags?.communication?.blackBlood!==undefined){
-    delete state.flags.communication.blackBlood;
-    state.flags.communication.sru="OFFLINE";
+  if(state.player&&String(state.player.name||"").includes("Kai")) state.player.name="Cao Minh";
+  if(state.title&&state.title.includes("Kai")) state.title=initial.title;
+  const comm=state.flags&&state.flags.communication;
+  if(comm&&(comm.team===undefined||comm.blackBlood!==undefined)){
+    state.flags.communication={team:"OFFLINE",iris:comm.iris||"OFFLINE",syvial:comm.syvial||"OFFLINE"};
   }
-  if(state.log?.[0]&&(currentOpening.length<1000||currentOpening.includes(oldPrologueSignature)||currentOpening.includes("Black Blood"))){
+  if(state.log?.[0]&&(currentOpening.length<1000||currentOpening.includes(oldPrologueSignature)||currentOpening.includes("Black Blood")||currentOpening.includes("Kai"))){
     state.log[0]=initial.log[0];
     if(state.log[1]) state.log[1]=initial.log[1];
   }
@@ -224,11 +359,72 @@ localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
-function render(){titleEl.textContent=state.title;turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Kai Akechi";partyEl.innerHTML=chips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></article>").join("");logEl.scrollTop=logEl.scrollHeight;statusEl.textContent="Save được lưu riêng trên thiết bị này."}
+function profileKeyOf(name){const n=String(name||"").toLowerCase();if(n.includes("cao minh"))return"cao_minh";if(n.includes("iris"))return"iris";if(n.includes("syvial"))return"syvial";if(n.includes("lucia")||n.includes("thuý mai")||n.includes("thúy mai"))return"lucia";return""}
+function partyChips(items){if(!items||!items.length)return"<span>Trống.</span>";return items.map(x=>{const name=typeof x==="string"?x:x.name||"—";const k=profileKeyOf(name);return k?"<button type='button' class='chip' data-profile-open='"+k+"'>"+esc(name)+"</button>":"<span>"+esc(name)+"</span>"}).join("")}
+function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));return m?Math.min(6,Math.max(0,parseInt(m[1],10))):0}
+function flagKey(v){if(!v)return"";const raw=typeof v==="string"?v:(v.id||v.key||v.name||"");return String(raw).toLowerCase().trim().replace(/\s+/g,"_")}
+function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):flagKey(v).replace(/[_-]+/g," ");return raw?raw.replace(/\b\w/g,c=>c.toUpperCase()):""}
+let stagePose="";
+function renderStage(){
+  stageBgEl.style.backgroundImage="url('level_snapshots/level_"+levelOf(state.location)+".webp')";
+  captionEl.textContent=state.location||"";
+  const flags=state.flags||{};
+  const ek=flagKey(flags.entity)||flagKey(flags.encounter);
+  const ck=flagKey(flags.companion);
+  const encounter=!!ek;
+  if(encounter){entityImgEl.src="entity/"+ek+".png";entityNameEl.textContent=flagName(flags.entity||flags.encounter);entityFigEl.classList.add("stage-entity-on")}else{entityFigEl.classList.remove("stage-entity-on")}
+  if(ck&&ck!==ek){companionImgEl.src="entity/"+ck+".png";companionNameEl.textContent=flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
+  const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
+  if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
+  const eq=flags.equippedSword==="red-core"?"red-core":"demon-face";
+  swordAEl.classList.toggle("dimmed",eq!=="demon-face");
+  swordBEl.classList.toggle("dimmed",eq!=="red-core");
+}
+function avatarHtml(x){
+  if(x.role==="player")return"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>";
+  const flags=state.flags||{};
+  const ek=flagKey(flags.entity)||flagKey(flags.encounter);
+  if(ek)return"<span class='dialogue-avatar dialogue-avatar-crop'><img src='entity/"+ek+".png' alt=''></span>";
+  return"";
+}
+function render(){titleEl.textContent=state.title;turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'>"+avatarHtml(x)+"<div class='message-body'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></div></article>").join("");logEl.scrollTop=logEl.scrollHeight;statusEl.textContent="Save được lưu riêng trên thiết bị này.";renderStage()}
 function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
 function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
+function curState(){try{return state}catch(e){return null}}
+const overlayEl=byId("character-overlay"),ovImg=byId("character-overlay-image"),ovRole=byId("character-overlay-role"),ovNameText=byId("character-overlay-name-text"),ovAlias=byId("character-overlay-alias"),ovSummary=byId("character-overlay-summary"),ovEquip=byId("character-overlay-equip"),ovSwordA=byId("equip-sword-a"),ovSwordB=byId("equip-sword-b");
+function syncEquipButtons(){const s=curState();const eq=s&&s.flags&&s.flags.equippedSword==="red-core"?"red-core":"demon-face";ovSwordA.setAttribute("aria-pressed",eq==="demon-face"?"true":"false");ovSwordB.setAttribute("aria-pressed",eq==="red-core"?"true":"false")}
+function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;ovEquip.hidden=key!=="cao_minh";if(key==="cao_minh")syncEquipButtons();overlayEl.hidden=false}
+function closeProfile(){overlayEl.hidden=true}
+function setSword(which){const s=curState();if(!s)return;if(!s.flags)s.flags={};s.flags.equippedSword=which;save();syncEquipButtons();renderStage();statusEl.textContent=which==="red-core"?"Đã đổi sang thanh lõi đỏ.":"Đã đổi sang thanh mặt quỷ."}
+document.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-profile-open]"):null;if(t)openProfile(t.getAttribute("data-profile-open"))});
+byId("character-overlay-close").addEventListener("click",closeProfile);
+overlayEl.querySelector(".character-overlay-scrim").addEventListener("click",closeProfile);
+ovSwordA.addEventListener("click",()=>setSword("demon-face"));
+ovSwordB.addEventListener("click",()=>setSword("red-core"));
+entityImgEl.addEventListener("error",()=>entityFigEl.classList.remove("stage-entity-on"));
+companionImgEl.addEventListener("error",()=>companionFigEl.classList.remove("stage-companion-on"));
+const intelPanel=byId("intel-panel"),intelScrim=byId("intel-scrim"),intelToggle=byId("intel-toggle");
+function setIntel(open){document.body.classList.toggle("intel-open",open);intelPanel.setAttribute("aria-hidden",open?"false":"true");intelToggle.setAttribute("aria-expanded",open?"true":"false");intelScrim.hidden=!open}
+intelToggle.addEventListener("click",()=>setIntel(!document.body.classList.contains("intel-open")));
+byId("intel-close").addEventListener("click",()=>setIntel(false));
+intelScrim.addEventListener("click",()=>setIntel(false));
+const backlogEl=byId("backlog-overlay"),backlogList=byId("backlog-list");
+function openBacklog(){const s=curState();const items=s&&Array.isArray(s.log)?s.log.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div>"+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
+byId("backlog-open").addEventListener("click",openBacklog);
+byId("backlog-close").addEventListener("click",()=>{backlogEl.hidden=true});
+backlogEl.querySelector(".backlog-scrim").addEventListener("click",()=>{backlogEl.hidden=true});
+const choicesEl=byId("choices"),actionsToggle=byId("actions-toggle");
+actionsToggle.addEventListener("click",()=>{const show=choicesEl.hidden;choicesEl.hidden=!show;actionsToggle.setAttribute("aria-expanded",show?"true":"false")});
+choicesEl.addEventListener("click",e=>{const b=e.target.closest?e.target.closest("[data-action]"):null;if(!b)return;actionEl.value=b.getAttribute("data-action");if(formEl.requestSubmit)formEl.requestSubmit();else formEl.dispatchEvent(new Event("submit",{bubbles:true,cancelable:true}))});
+let autoOn=false,autoTimer=null,readIdx=0;
+const autoToggle=byId("auto-toggle"),skipToggle=byId("skip-toggle");
+function stopAuto(){autoOn=false;autoToggle.setAttribute("aria-pressed","false");if(autoTimer){clearInterval(autoTimer);autoTimer=null}logEl.querySelectorAll(".reading").forEach(n=>n.classList.remove("reading"))}
+function stepAuto(){const items=logEl.querySelectorAll("article");if(!items.length||readIdx>=items.length){stopAuto();return}logEl.querySelectorAll(".reading").forEach(n=>n.classList.remove("reading"));const el=items[readIdx++];el.classList.add("reading");if(el.scrollIntoView)el.scrollIntoView({block:"nearest"})}
+function autoInterval(){return document.body.classList.contains("fast-read")?400:2600}
+autoToggle.addEventListener("click",()=>{if(autoOn){stopAuto();return}autoOn=true;autoToggle.setAttribute("aria-pressed","true");readIdx=0;stepAuto();autoTimer=setInterval(stepAuto,autoInterval())});
+skipToggle.addEventListener("click",()=>{const on=document.body.classList.toggle("fast-read");skipToggle.setAttribute("aria-pressed",on?"true":"false");logEl.scrollTop=logEl.scrollHeight;if(autoOn){clearInterval(autoTimer);autoTimer=setInterval(stepAuto,autoInterval())}});
 formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Gemini đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
 window.backroomTurn=json=>{state=JSON.parse(json);state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
 window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi Gemini: "+message};

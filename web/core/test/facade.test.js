@@ -16,7 +16,7 @@ function baseState() {
     turn: 5,
     mode: "story",
     location: "Level 0",
-    player: { name: "Kai", hp: 80 },
+    player: { name: "Cao Minh", hp: 80 },
     party: [],
     inventory: [{ id: "almond-water", name: "Almond Water", quantity: 2 }],
     flags: {},
@@ -31,14 +31,14 @@ function baseState() {
 test("processRule: direct pickup rejected, turn unchanged, log appended", () => {
   const state = baseState();
   const snapshot = clone(state);
-  const res = processRule(state, "Kai nhặt chai Almond Water lên");
+  const res = processRule(state, "Cao Minh nhặt chai Almond Water lên");
   assert.equal(res.handled, true);
   assert.equal(res.reason, "validation_rejected");
   assert.equal(res.error, "player_pickup_unavailable");
   assert.equal(res.reply, "[Warning] This action is not available.");
   const expected = baseState();
   expected.log.push(
-    { role: "player", text: "Kai nhặt chai Almond Water lên" },
+    { role: "player", text: "Cao Minh nhặt chai Almond Water lên" },
     { role: "gm", text: "[Warning] This action is not available." },
   );
   assert.deepEqual(res.state, expected); // turn still 5, gameTime untouched
@@ -85,21 +85,21 @@ test("processRule: party query commits with canned reply", () => {
   const res = processRule(state, "party có ai");
   assert.equal(res.handled, true);
   assert.equal(res.reason, "committed");
-  assert.equal(res.reply, "Party hiện có Kai, Lucia.");
+  assert.equal(res.reply, "Party hiện có Cao Minh, Lucia.");
   assert.equal(res.state.turn, 6);
   assert.equal(res.state.gameTime.elapsedSubjectiveMinutes, 121);
 });
 
 test("processRule: party query on empty party and id-only member name fallback", () => {
-  assert.equal(processRule(baseState(), "xem đội hình").reply, "Kai hiện không có đồng đội trong party.");
+  assert.equal(processRule(baseState(), "xem đội hình").reply, "Cao Minh hiện không có đồng đội trong party.");
   const state = baseState();
   state.party = [{ id: "iris", present: true }];
-  assert.equal(processRule(state, "xem đội hình").reply, "Party hiện có Kai, iris.");
+  assert.equal(processRule(state, "xem đội hình").reply, "Party hiện có Cao Minh, iris.");
 });
 
 test("processRule: normal action falls back with state untouched", () => {
   const state = baseState();
-  const res = processRule(state, "Kai kiểm tra hành lang phía trước");
+  const res = processRule(state, "Cao Minh kiểm tra hành lang phía trước");
   assert.equal(res.handled, false);
   assert.equal(res.reason, "fallback_required");
   assert.equal(res.error, undefined);
@@ -134,7 +134,7 @@ function beforeState() {
     turn: 5,
     mode: "ai",
     location: "Level 0",
-    player: { name: "Kai", hp: 80 },
+    player: { name: "Cao Minh", hp: 80 },
     party: [{ id: "lucia", name: "Lucia", present: true }],
     inventory: [{ id: "almond-water", name: "Almond Water", quantity: 2 }],
     flags: {},
@@ -164,11 +164,11 @@ test("candidate: normal GM commit — normalization, party gate, stamps", () => 
     { id: "iris", name: "Iris", joinConfirmed: true, present: true }, // confirmed join: kept
     { id: "ghost", name: "Ghost", joinConfirmed: true, present: false }, // not present: dropped
     { id: "syvial", name: "Syvial", present: true }, // unconfirmed: dropped
-    { name: "Kai Clone" }, // no id, unconfirmed: dropped
+    { name: "Cao Minh Clone" }, // no id, unconfirmed: dropped
   ];
   const candidateSnapshot = clone(candidate);
 
-  const res = processValidatedCandidate(before, candidate, "Kai đi tiếp");
+  const res = processValidatedCandidate(before, candidate, "Cao Minh đi tiếp");
   assert.equal(res.handled, true);
   assert.equal(res.reason, "gemini_delta_committed");
   assert.equal(res.error, undefined);
@@ -184,7 +184,7 @@ test("candidate: normal GM commit — normalization, party gate, stamps", () => 
   ]);
   assert.equal(res.state.saveVersion, 3);
   assert.equal(res.state.turn, 6);
-  // gameTime rebuilt from BEFORE (120) + MOVE estimate for "Kai đi tiếp" (5),
+  // gameTime rebuilt from BEFORE (120) + MOVE estimate for "Cao Minh đi tiếp" (5),
   // never from the candidate's forged 9999.
   assert.deepEqual(res.state.gameTime, {
     elapsedSubjectiveMinutes: 125,
@@ -196,7 +196,7 @@ test("candidate: normal GM commit — normalization, party gate, stamps", () => 
 });
 
 test("candidate: mutation-locked actions restore inventory from before", () => {
-  for (const action of ["Kai nhặt hộp đạn lên", "hoàn nguyên vật thể trong nhẫn"]) {
+  for (const action of ["Cao Minh nhặt hộp đạn lên", "hoàn nguyên vật thể trong nhẫn"]) {
     const candidate = beforeState();
     candidate.inventory = [{ name: "Súng Lục", quantity: 1 }];
     const res = processValidatedCandidate(beforeState(), candidate, action);
@@ -209,28 +209,28 @@ test("candidate: locked + before has no inventory key -> key removed from result
   const before = beforeState();
   delete before.inventory;
   const candidate = beforeState(); // has an inventory
-  const res = processValidatedCandidate(before, candidate, "Kai nhặt hộp đạn lên");
+  const res = processValidatedCandidate(before, candidate, "Cao Minh nhặt hộp đạn lên");
   assert.equal("inventory" in res.state, false);
 });
 
 test("candidate: no inventory key in candidate -> copied from before", () => {
   const candidate = beforeState();
   delete candidate.inventory;
-  const res = processValidatedCandidate(beforeState(), candidate, "Kai đi tiếp");
+  const res = processValidatedCandidate(beforeState(), candidate, "Cao Minh đi tiếp");
   assert.deepEqual(res.state.inventory, beforeState().inventory);
 });
 
 test("candidate: inventory explicitly null -> normalized to empty array", () => {
   const candidate = beforeState();
   candidate.inventory = null; // org.json has("inventory") is true for JSON null
-  const res = processValidatedCandidate(beforeState(), candidate, "Kai đi tiếp");
+  const res = processValidatedCandidate(beforeState(), candidate, "Cao Minh đi tiếp");
   assert.deepEqual(res.state.inventory, []);
 });
 
 test("candidate: missing party in candidate -> stamped as empty array", () => {
   const candidate = beforeState();
   delete candidate.party;
-  const res = processValidatedCandidate(beforeState(), candidate, "Kai đi tiếp");
+  const res = processValidatedCandidate(beforeState(), candidate, "Cao Minh đi tiếp");
   assert.deepEqual(res.state.party, []);
 });
 
@@ -239,18 +239,18 @@ test("candidate: party membership by lowercased name when id is absent", () => {
   before.party = [{ name: "Lucia Lục", present: true }];
   const candidate = beforeState();
   candidate.party = [{ name: "Lucia Lục", hp: 50 }]; // no id, no joinConfirmed — but existing
-  const res = processValidatedCandidate(before, candidate, "Kai đi tiếp");
+  const res = processValidatedCandidate(before, candidate, "Cao Minh đi tiếp");
   assert.deepEqual(res.state.party, [{ name: "Lucia Lục", hp: 50 }]);
 });
 
 test("candidate: accepts JSON strings for before and candidate", () => {
   const candidate = beforeState();
   candidate.turn = 6;
-  const viaObjects = processValidatedCandidate(beforeState(), candidate, "Kai đi tiếp");
+  const viaObjects = processValidatedCandidate(beforeState(), candidate, "Cao Minh đi tiếp");
   const viaStrings = processValidatedCandidate(
     JSON.stringify(beforeState()),
     JSON.stringify(candidate),
-    "Kai đi tiếp",
+    "Cao Minh đi tiếp",
   );
   assert.deepEqual(viaStrings, viaObjects);
 });
@@ -258,7 +258,7 @@ test("candidate: accepts JSON strings for before and candidate", () => {
 test("candidate: unparseable candidate JSON validates the empty object", () => {
   // Java parseState() swallows parse errors into {} — the commit then carries
   // before's inventory, an empty party, and the stamps. Faithful by design.
-  const res = processValidatedCandidate(beforeState(), "{not json", "Kai đi tiếp");
+  const res = processValidatedCandidate(beforeState(), "{not json", "Cao Minh đi tiếp");
   assert.equal(res.handled, true);
   assert.deepEqual(res.state.inventory, beforeState().inventory);
   assert.deepEqual(res.state.party, []);
