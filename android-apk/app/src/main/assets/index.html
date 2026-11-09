@@ -82,8 +82,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <main class="shell">
 <header class="campaign-header">
 <button id="intel-toggle" class="burger-toggle" type="button" aria-label="Hồ sơ" aria-controls="intel-panel" aria-expanded="false"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span><span class="burger-text">Hồ sơ</span></button>
-<div><div class="eyebrow">BACKROOM TEXT GAME</div><h1 id="title"></h1></div>
-<div class="turn">TURN <strong id="turn"></strong></div>
+<div><div class="eyebrow">BACKROOMS — VISUAL NOVEL</div><h1 id="title"></h1></div>
 </header>
 <section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
 <div class="stage-bg"><div id="stage-background"></div></div>
@@ -105,12 +104,8 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <button id="auto-toggle" type="button" aria-pressed="false">Tự chạy</button>
 <button id="skip-toggle" type="button" aria-pressed="false">Đọc nhanh</button>
 </div>
-<div id="choices" class="choices">
-<button type="button" class="choice" data-action="xem inventory">Xem inventory</button>
-<button type="button" class="choice" data-action="xem đội hình">Xem đội hình</button>
-</div>
+<div id="choices" class="choices"></div>
 </section>
-<form class="composer" id="form"><textarea id="action" placeholder="Cao Minh làm gì trong Turn hiện tại?" rows="3"></textarea><button id="submit">THỰC HIỆN</button></form>
 <div class="status" id="status"></div>
 </section>
 </main>
@@ -155,155 +150,6 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 </section>
 </div>
 <script>
-const prologue=`Yến tiệc đêm ấy, mở đầu cũng như bao đêm khác.
-
-Hoa Mãn Lâu là tửu lâu cao nhất trấn, tầng cao nhất tĩnh lặng đến độ nghe rõ tiếng chén khua vào đĩa, song chưa đến mức khiến người ta phải hạ thấp giọng. Ngoài dãy lan can chạm trổ, đèn hoa khắp trấn trải dài phía dưới, điểm từng vệt sáng đỏ vàng lên nền đêm. Thị nữ qua lại nhẹ nhàng không tiếng động, chỉ khi một bình rượu được đặt xuống mặt bàn, Cao Minh mới hay có người vừa đến bên.
-
-Hắn đang cắt nốt miếng thịt cuối trong đĩa, chợt nhận ra Tử Xích Lão Quân lại đang nhìn sang.
-
-Cao Minh vẫn cúi đầu, ung dung như thường.
-
-“Lão có nhìn nữa cũng vô ích. Miếng cuối này, há lại tự chạy sang đĩa của lão sao?”
-
-Tử Xích Lão Quân nhướng mày. “Ai nói lão phu nhìn miếng thịt?”
-
-“Vậy là bổn tọa hiểu lầm rồi.”
-
-“Phải. Lão phu chỉ lấy làm lạ, vì cớ gì Đạo Tổ giữ miếng cuối đến tận bây giờ, như sợ có kẻ tranh mất vậy.”
-
-Cao Minh gắp miếng thịt lên, thản nhiên ăn trước mặt lão. “Giờ hết thắc mắc chưa?”
-
-Tử Xích Lão Quân ngó chiếc đĩa đã trống, lại ngó hắn. “Đạo Tổ làm vậy, chẳng qua chỉ để chọc lão phu, phải không?”
-
-Trương Lão đặt bình rượu xuống, khóe miệng hơi động. “Muốn ăn thì gọi thêm một đĩa. Chớ nhìn đĩa của Đạo Tổ mãi như thế.”
-
-“Ta nào có nhìn mãi.”
-
-“Đủ lâu để người cùng bàn đều nhận ra rồi.”
-
-Tử Xích Lão Quân quay sang. “Ngươi đếm đấy à?”
-
-“Không cần đếm.”
-
-Cao Minh tựa lưng vào ghế, mặc cho hai người nhìn nhau qua mặt bàn. “Bổn tọa đề nghị đổi sang chuyện khác, kẻo bữa tiệc này lại hóa thành một cuộc tra hỏi về quyền sở hữu thức ăn.”
-
-Tử Xích Lão Quân chống cằm. “Muộn rồi. Chuyện này, lão phu sẽ ghi nhớ.”
-
-“Sổ nợ của lão, vẫn còn chỗ trống sao?”
-
-“Ngài cứ việc tiếp tục thử.”
-
-Cao Minh khẽ bật cười. Trương Lão lắc đầu, song thần sắc cũng đã dịu đi nhiều so với lúc mới nhập tiệc.
-
-Chợt, lửa trong dãy đèn lồng đồng loạt lụi xuống, rồi lại bùng lên.
-
-Khắp lầu, không một ai phản ứng. Thị nữ vẫn nghiêng bình rót rượu, dòng rượu đỏ sẫm chảy đều vào chén. Tiếng đàn sáo từ tầng dưới vẫn vọng lên không ngớt, chỉ có một nốt trầm vừa rồi nghe hơi lạc đi.
-
-Cao Minh ngước mắt lên.
-
-Lửa trong đèn lồng lại lụi xuống lần thứ hai.
-
-Lần này, Tử Xích Lão Quân cũng dừng tay. Lão chẳng nhìn lên đèn, mà ngoảnh về phía góc lầu, như đang cố truy tìm một thanh âm vừa lạc khỏi chỗ của nó.
-
-“Đạo Tổ.”
-
-“Bổn tọa nghe thấy rồi.”
-
-Tử Xích Lão Quân thu lại nét cười. Sắc mặt lão biến đổi rất nhanh; vẻ thư thả mới một khắc trước đã tan biến, ánh mắt quét khắp tửu lâu.
-
-Cao Minh chẳng nghe thấy tiếng động lạ nào rõ rệt. Điều khiến hắn lưu tâm là những thanh âm vốn phải có đang dần mất đi phần vang của chúng. Tiếng người trò chuyện ở bàn gần nhất trở nên bằng phẳng đến khó chịu. Tiếng đàn vẫn chảy, song những nốt thấp kéo dài như bị bóp nghẹt. Ngay cả tiếng chén đĩa khua nhau cũng nghe gần hơn khoảng cách thực tế rất nhiều.
-
-Một lão khách ngồi cách đó vài bàn đang nói dở câu, bỗng khựng lại. Chiếc chén trong tay ông ta trượt khỏi những ngón tay.
-
-Cao Minh theo phản xạ nhìn sang.
-
-Chiếc chén rơi xuống mới được nửa quãng, đã biến mất.
-
-Chẳng vỡ. Chẳng bị hất sang bên. Cũng chẳng có ánh sáng hay làn khói nào che khuất. Một khoảnh khắc trước nó vẫn còn đó, khoảnh khắc sau, chỉ còn lại khoảng không.
-
-Cao Minh lập tức đứng dậy.
-
-“Đứng lên. Rời khỏi nơi này.”
-
-Trương Lão đã rời ghế trước cả khi hắn dứt lời. Tử Xích Lão Quân cũng đứng lên theo, mắt vẫn quét khắp mặt sàn cùng các lối ra.
-
-Song bọn họ chẳng kịp bước đi bước nào.
-
-Mặt sàn dưới chân Cao Minh không nứt, không sập, cũng chẳng hề rung động. Nó chỉ đột nhiên thôi không nâng đỡ thân thể hắn nữa.
-
-Bàn chân hắn xuyên qua lớp ván gỗ, tựa xuyên qua một ảo ảnh không có khối lượng.
-
-Cao Minh giật tay về phía mép bàn, những ngón tay chỉ kịp quệt qua cạnh bàn trước khi cả người rơi xuống. Phía trên, Trương Lão lao tới, bàn tay gần như đã chạm được vào vạt áo hắn. Tử Xích Lão Quân cũng vươn tay theo, nhưng đúng khoảnh khắc ấy, khoảng không quanh Cao Minh bỗng gập lại, như thể chính nơi đó vừa bị rút đi mất; hai người bị một luồng lực vô hình đẩy bật lại nửa bước.
-
-Khoảnh khắc cuối cùng Cao Minh còn trông thấy Hoa Mãn Lâu, chỉ là một mớ hình ảnh nghiêng lệch: chiếc bàn trượt khỏi tầm mắt, bàn tay Trương Lão đưa ra mà không chạm tới, tay áo tím của Tử Xích Lão Quân quét qua khoảng không, và những thực khách ở xa vẫn chưa hiểu chuyện gì đang xảy ra.
-
-Rồi ánh sáng vụt tắt.
-
-Không có cảm giác rơi tự do. Không có gió quất vào người, không có lực kéo mỗi lúc một tăng, cũng chẳng còn khái niệm rõ ràng về trên dưới. Theo bản năng, thần thức của hắn vươn ra tìm một điểm tựa, liền bị cắt cụt giữa chừng, tựa một sợi dây bị kẻ nào lặng lẽ cắt đứt. Thân thể Cao Minh vẫn còn đó, song khoảng cách xung quanh hắn dường như chẳng còn được đo theo cách quen thuộc nữa.
-
-Cảm giác ấy kéo dài chưa đầy một nhịp tim.
-
-Trọng lực đột ngột trở lại.
-
-Cao Minh chạm xuống một bề mặt mềm hơn sàn lầu. Hắn theo phản xạ hạ thấp trọng tâm, đứng vững ngay tức khắc, thân hình không hề loạn.
-
-Mùi ẩm mốc xộc đến trước tiên.
-
-Kế đó là mùi giấy cũ, mùi bụi, mùi keo dán, cùng một thứ mùi hóa chất tẩy rửa nhạt đến mức chỉ còn vương lại trong không khí. Trên đỉnh đầu là một hàng vật dài tỏa ánh sáng trắng nhợt, kèm tiếng ù đều đều lấp kín cả căn phòng. Cao Minh chẳng biết thứ đó là gì — chúng sáng mà không cần lửa, kêu mà bên trong chẳng có gì.
-
-Cao Minh đứng thẳng người dậy.
-
-Hoa Mãn Lâu đã biến mất.
-
-Quanh hắn là những bức tường phủ giấy màu vàng nhạt, hoa văn lặp lại đến phát ngấy. Tấm thảm dưới chân ẩm lạnh, dù chẳng thấy nước chảy từ đâu. Trần nhà ghép bằng những tấm vuông giống hệt nhau, kéo dài qua các ô cửa mở sang những căn phòng kế tiếp.
-
-Không cửa sổ. Không bàn ghế. Cũng không còn dấu vết nào của trấn nhỏ dưới chân núi.
-
-Và không có Tử Xích Lão Quân, cũng không có Trương Lão.
-
-Cao Minh xoay người một vòng, xem kỹ từng lối mở, rồi mới cất tiếng gọi.
-
-“Tử Xích Lão Quân?”
-
-Đáp lại chỉ có tiếng ù của những vật phát sáng kia.
-
-“Trương Lão?”
-
-Giọng hắn truyền qua hai căn phòng, dội lại rất yếu, rồi chìm hẳn vào một khoảng không không thấy điểm cuối.
-
-Cao Minh không gọi lần thứ ba. Hắn chuyển sang truyền âm.
-
-Truyền âm phát ra, chẳng nhận được hồi đáp. Ngọc phù liên lạc vẫn còn ấm, linh quang chưa tắt, vậy mà không một dao động nào trả về. Thần thức của hắn vươn ra xa hơn, liền mỏng dần đi, như bị thứ gì lặng lẽ nuốt lấy; vừa chạm tới vách tường trước mặt đã như đâm vào một lớp bông dày, không sao đi xa hơn được nữa.
-
-Hắn kiểm tra lại từng thứ một lần nữa, lần này phân tách rõ ràng: ngọc phù hỏng, hay là đường truyền đã hỏng.
-
-Kết quả vẫn không đổi.
-
-Đây chẳng giống truyền âm quá yếu. Cũng chẳng giống một vùng cấm chế thông thường. Không dao động méo mó, không hồi âm giả tạo, cũng không chút dấu hiệu cho thấy đầu bên kia đã nhận được lời gọi rồi bất lực không trả lời nổi.
-
-Chỉ có im lặng.
-
-Song kiếm vẫn ở sau lưng hắn. Thái Cổ Song Sát, hai thanh lơ lửng đúng vị trí cũ; Hắc Long Chiến Khải trên người không một vết xước. Ít nhất, thứ vừa nuốt chửng hắn vẫn chưa lấy được gì của hắn — hoặc là chưa lấy.
-
-Chưa đầy một phút trước, hai người kia còn ở trong tầm tay hắn. Cao Minh đã trông thấy bàn tay Trương Lão gần chạm được vạt áo mình, ngay trước khi khoảng không gập lại. Đó là điều duy nhất hắn có thể chắc chắn.
-
-Hắn không biết giờ hai người họ đang ở đâu.
-
-Không biết họ còn ở phía bên kia, hay cũng đã bị đưa tới một nơi nào khác.
-
-Không biết từ phía Hoa Mãn Lâu, liệu có ai lần ra được dấu vết của hắn hay không.
-
-Không dấu tích nào để đối chiếu. Không hồi âm nào để lần theo. Và trước mắt, chẳng có lời giải thích nào cho căn phòng vàng vô tận đang mở ra quanh hắn.
-
-Cao Minh đứng yên thêm mấy giây, lắng nghe.
-
-Tiếng ù vẫn đều đều trên đỉnh đầu. Tấm thảm vẫn ẩm dưới đế giày. Phía trước, một hành lang rẽ sang trái sau lớp tường vàng; bên phải là một ô cửa khác, dẫn vào căn phòng gần như giống hệt nơi hắn đang đứng.
-
-Không có tiếng gọi nào đáp lại.
-
-Cao Minh khẽ cười. “Lâu lắm rồi, mới có một nơi dám không trả lời bổn tọa.”
-
-Cao Minh chỉ còn lại những gì đang mang theo bên mình, những gì chính mắt hắn có thể kiểm chứng, cùng một việc phải làm trước tiên: xác định nơi này rốt cuộc là đâu. Còn Tử Xích Lão Quân và Trương Lão đang ở đâu, và thứ vừa mở ra dưới chân hắn là gì, đều là những câu hỏi để lại về sau.`;
 const CURRENT_CHARACTER_CANON={
   version:"characters-2026-11-09",
   instruction:"Current Google Drive character canon. This overrides conflicting legacy character facts in old logs/local mirrors. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN must remain unknown. Lucia is a fixed Level 0 story encounter and must never be auto-spawned just because the model knows her codex.",
@@ -319,46 +165,36 @@ const PROFILES={
   lucia:{name:"Hứa Thuý Mai / Lucia Lục",alias:"",role:"FIXED ENCOUNTER — LEVEL 0",image:"avatars/lucia_avatar.jpg",summary:"Quân nhân loài người 19 tuổi, chít nội Gia tộc Họ Hứa. Tay súng chiến thuật với M4A1 cá nhân hóa; encounter cố định do story sở hữu tại Level 0."}
 };
 const initial={
+  v:2,
   title:"MAIN_BACKROOMS — Cao Minh",
-  turn:1,
-  mode:"local APK",
-  location:"Level 0 / The Lobby — khu phòng vàng ban đầu sau no-clip",
+  mode:"Truyện viết sẵn",
+  location:"Level 0",
   player:{name:"Cao Minh",condition:"Ổn định"},
   party:[],
   inventory:[
     {name:"Thái Cổ Song Sát"},
     {name:"Hắc Long Chiến Khải"}
   ],
-  flags:{communication:{team:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
-  characterCanon:CURRENT_CHARACTER_CANON,
-  log:[
-    {role:"gm",text:"MỞ ĐẦU\n\n"+prologue},
-    {role:"gm",text:"LƯỢT 1\n\nKhông có hồi âm từ Tử Xích Lão Quân hay Trương Lão. Bạn điều khiển Cao Minh từ đây."}
-  ]
+  flags:{},
+  scene:null,
+  history:[],
+  characterCanon:CURRENT_CHARACTER_CANON
 };
 const byId=id=>document.getElementById(id);
-const titleEl=byId("title"),turnEl=byId("turn"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status"),formEl=byId("form"),actionEl=byId("action"),submitEl=byId("submit");
+const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status");
 const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
 state.characterCanon=CURRENT_CHARACTER_CANON;
-const oldPrologueSignature="Không beacon. Không telemetry.";
-if(state.turn===1){
-  const currentOpening=String(state.log?.[0]?.text||"");
-  const oldInventory=Array.isArray(state.inventory)&&state.inventory.some(x=>{const n=String(x?.name||"");return n.includes("White Wraith")||n.includes("SRU")||n.includes("Omnivault")});
-  if(oldInventory) state.inventory=JSON.parse(JSON.stringify(initial.inventory));
-  if(state.player&&String(state.player.name||"").includes("Kai")) state.player.name="Cao Minh";
-  if(state.title&&state.title.includes("Kai")) state.title=initial.title;
-  const comm=state.flags&&state.flags.communication;
-  if(comm&&(comm.team===undefined||comm.blackBlood!==undefined)){
-    state.flags.communication={team:"OFFLINE",iris:comm.iris||"OFFLINE",syvial:comm.syvial||"OFFLINE"};
-  }
-  if(state.log?.[0]&&(currentOpening.length<1000||currentOpening.includes(oldPrologueSignature)||currentOpening.includes("Black Blood")||currentOpening.includes("Kai"))){
-    state.log[0]=initial.log[0];
-    if(state.log[1]) state.log[1]=initial.log[1];
-  }
-}
+// Save format v2 is fixed-scene progress ({scene, flags, history}); any older
+// turn/log save is discarded and play restarts at the first scene.
+if(!state||state.v!==2||!Array.isArray(state.history))state=JSON.parse(JSON.stringify(initial));
+if(state===initial)state=JSON.parse(JSON.stringify(initial));
+loadStory().then(function(){
+  if(state.scene&&scenesById[state.scene])render();
+  else{state.history=[];enterScene(story.start)}
+},function(){statusEl.textContent="Không tải được dữ liệu truyện (story/opening-chapter.json)."});
 localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
@@ -382,18 +218,35 @@ function renderStage(){
   const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
   if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
 }
-function avatarHtml(x){
-  if(x.role==="player")return"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>";
-  const flags=state.flags||{};
-  const ek=flagKey(flags.entity)||flagKey(flags.encounter);
-  if(ek)return"<span class='dialogue-avatar dialogue-avatar-crop'><img src='"+entitySrc(ek)+"' alt=''></span>";
-  return"";
+function lineHtml(x){
+  const av=x.speaker==="Cao Minh"?"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>":"";
+  const role=x.speaker?"<div class='role'>"+esc(x.speaker.toUpperCase())+"</div>":"";
+  return"<article class='message'>"+av+"<div class='message-body'>"+role+"<div class='text'>"+esc(x.text)+"</div></div></article>";
 }
-function render(){titleEl.textContent=state.title;turnEl.textContent=state.turn;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.log||[]).map(x=>"<article class='message "+(x.role==="player"?"player":"")+"'>"+avatarHtml(x)+"<div class='message-body'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div><div class='text'>"+esc(x.text)+"</div></div></article>").join("");logEl.scrollTop=logEl.scrollHeight;statusEl.textContent="Save được lưu riêng trên thiết bị này.";renderStage()}
-function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu save trên máy."}
+function render(){titleEl.textContent=state.title;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.history||[]).map(lineHtml).join("");logEl.scrollTop=logEl.scrollHeight;renderChoices();renderStage()}
+let story=null;const scenesById={};
+function loadStory(){
+  const got=(typeof fetch==="function")?fetch("story/opening-chapter.json").then(function(r){if(!r.ok)throw new Error("story http");return r.json()}):Promise.reject(new Error("no fetch"));
+  return got.catch(function(){return new Promise(function(res,rej){const x=new XMLHttpRequest();x.open("GET","story/opening-chapter.json");x.onload=function(){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}};x.onerror=rej;x.send()})}).then(function(data){story=data;for(const sc of data.scenes)scenesById[sc.id]=sc;return data});
+}
+function enterScene(id){
+  const sc=scenesById[id];if(!sc)return;
+  state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;
+  for(const ln of sc.lines)state.history.push({speaker:ln.speaker||"",text:ln.text});
+  save();render();
+}
+function choose(c){if(c.set)state.flags=Object.assign({},state.flags,c.set);enterScene(c.next)}
+function restart(){state=JSON.parse(JSON.stringify(initial));if(story)enterScene(story.start);else render()}
+function renderChoices(){
+  const sc=story&&state.scene?scenesById[state.scene]:null;
+  if(!sc){choicesEl.innerHTML="";return}
+  if(!sc.choices.length){choicesEl.innerHTML="<div class='text'>— Hết phần nội dung hiện có —</div><button type='button' class='choice' data-restart='1'>Đọc lại từ đầu</button>";return}
+  choicesEl.innerHTML=sc.choices.map(function(c,i){return"<button type='button' class='choice' data-choice='"+i+"'>"+esc(c.label)+"</button>"}).join("");
+}
+function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu tiến trình trên máy."}
 function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}
-function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
-function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
+function resetGame(){if(confirm("Bắt đầu lại từ đầu?"))restart()}
+function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");restart()}}
 function curState(){try{return state}catch(e){return null}}
 const overlayEl=byId("character-overlay"),ovImg=byId("character-overlay-image"),ovRole=byId("character-overlay-role"),ovNameText=byId("character-overlay-name-text"),ovAlias=byId("character-overlay-alias"),ovSummary=byId("character-overlay-summary");
 function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;overlayEl.hidden=false}
@@ -409,13 +262,13 @@ intelToggle.addEventListener("click",()=>setIntel(!document.body.classList.conta
 byId("intel-close").addEventListener("click",()=>setIntel(false));
 intelScrim.addEventListener("click",()=>setIntel(false));
 const backlogEl=byId("backlog-overlay"),backlogList=byId("backlog-list");
-function openBacklog(){const s=curState();const items=s&&Array.isArray(s.log)?s.log.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item "+(x.role==="player"?"player":"")+"'><div class='role'>"+(x.role==="player"?"BẠN":"GAME MASTER")+"</div>"+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
+function openBacklog(){const s=curState();const items=s&&Array.isArray(s.history)?s.history.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item'>"+(x.speaker?"<div class='role'>"+esc(x.speaker.toUpperCase())+"</div>":"")+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
 byId("backlog-open").addEventListener("click",openBacklog);
 byId("backlog-close").addEventListener("click",()=>{backlogEl.hidden=true});
 backlogEl.querySelector(".backlog-scrim").addEventListener("click",()=>{backlogEl.hidden=true});
 const choicesEl=byId("choices"),actionsToggle=byId("actions-toggle");
 actionsToggle.addEventListener("click",()=>{const show=choicesEl.hidden;choicesEl.hidden=!show;actionsToggle.setAttribute("aria-expanded",show?"true":"false")});
-choicesEl.addEventListener("click",e=>{const b=e.target.closest?e.target.closest("[data-action]"):null;if(!b)return;actionEl.value=b.getAttribute("data-action");if(formEl.requestSubmit)formEl.requestSubmit();else formEl.dispatchEvent(new Event("submit",{bubbles:true,cancelable:true}))});
+choicesEl.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-choice],[data-restart]"):null;if(!t)return;if(t.hasAttribute("data-restart")){restart();return}const sc=scenesById[state.scene];const c=sc&&sc.choices[+t.getAttribute("data-choice")];if(c)choose(c)});
 let autoOn=false,autoTimer=null,readIdx=0;
 const autoToggle=byId("auto-toggle"),skipToggle=byId("skip-toggle");
 function stopAuto(){autoOn=false;autoToggle.setAttribute("aria-pressed","false");if(autoTimer){clearInterval(autoTimer);autoTimer=null}logEl.querySelectorAll(".reading").forEach(n=>n.classList.remove("reading"))}
@@ -423,9 +276,6 @@ function stepAuto(){const items=logEl.querySelectorAll("article");if(!items.leng
 function autoInterval(){return document.body.classList.contains("fast-read")?400:2600}
 autoToggle.addEventListener("click",()=>{if(autoOn){stopAuto();return}autoOn=true;autoToggle.setAttribute("aria-pressed","true");readIdx=0;stepAuto();autoTimer=setInterval(stepAuto,autoInterval())});
 skipToggle.addEventListener("click",()=>{const on=document.body.classList.toggle("fast-read");skipToggle.setAttribute("aria-pressed",on?"true":"false");logEl.scrollTop=logEl.scrollHeight;if(autoOn){clearInterval(autoTimer);autoTimer=setInterval(stepAuto,autoInterval())}});
-formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
-window.backroomTurn=json=>{state=JSON.parse(json);state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
-window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi: "+message};
 render();
 </script>
 </body>

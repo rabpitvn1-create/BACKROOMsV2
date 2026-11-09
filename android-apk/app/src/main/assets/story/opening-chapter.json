@@ -1,0 +1,300 @@
+{
+  "start": "pro_01",
+  "scenes": [
+    {
+      "id": "pro_01",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Yến tiệc đêm ấy, mở đầu cũng như bao đêm khác."
+        },
+        {
+          "text": "Hoa Mãn Lâu là tửu lâu cao nhất trấn, tầng cao nhất tĩnh lặng đến độ nghe rõ tiếng chén khua vào đĩa, song chưa đến mức khiến người ta phải hạ thấp giọng. Ngoài dãy lan can chạm trổ, đèn hoa khắp trấn trải dài phía dưới, điểm từng vệt sáng đỏ vàng lên nền đêm. Thị nữ qua lại nhẹ nhàng không tiếng động, chỉ khi một bình rượu được đặt xuống mặt bàn, Cao Minh mới hay có người vừa đến bên."
+        },
+        {
+          "text": "Hắn đang cắt nốt miếng thịt cuối trong đĩa, chợt nhận ra Tử Xích Lão Quân lại đang nhìn sang."
+        },
+        {
+          "text": "Cao Minh vẫn cúi đầu, ung dung như thường."
+        },
+        {
+          "text": "“Lão có nhìn nữa cũng vô ích. Miếng cuối này, há lại tự chạy sang đĩa của lão sao?”"
+        },
+        {
+          "text": "Tử Xích Lão Quân nhướng mày. “Ai nói lão phu nhìn miếng thịt?”"
+        },
+        {
+          "text": "“Vậy là bổn tọa hiểu lầm rồi.”"
+        },
+        {
+          "text": "“Phải. Lão phu chỉ lấy làm lạ, vì cớ gì Đạo Tổ giữ miếng cuối đến tận bây giờ, như sợ có kẻ tranh mất vậy.”"
+        },
+        {
+          "text": "Cao Minh gắp miếng thịt lên, thản nhiên ăn trước mặt lão. “Giờ hết thắc mắc chưa?”"
+        },
+        {
+          "text": "Tử Xích Lão Quân ngó chiếc đĩa đã trống, lại ngó hắn. “Đạo Tổ làm vậy, chẳng qua chỉ để chọc lão phu, phải không?”"
+        },
+        {
+          "text": "Trương Lão đặt bình rượu xuống, khóe miệng hơi động. “Muốn ăn thì gọi thêm một đĩa. Chớ nhìn đĩa của Đạo Tổ mãi như thế.”"
+        },
+        {
+          "text": "“Ta nào có nhìn mãi.”"
+        },
+        {
+          "text": "“Đủ lâu để người cùng bàn đều nhận ra rồi.”"
+        },
+        {
+          "text": "Tử Xích Lão Quân quay sang. “Ngươi đếm đấy à?”"
+        },
+        {
+          "text": "“Không cần đếm.”"
+        },
+        {
+          "text": "Cao Minh tựa lưng vào ghế, mặc cho hai người nhìn nhau qua mặt bàn. “Bổn tọa đề nghị đổi sang chuyện khác, kẻo bữa tiệc này lại hóa thành một cuộc tra hỏi về quyền sở hữu thức ăn.”"
+        },
+        {
+          "text": "Tử Xích Lão Quân chống cằm. “Muộn rồi. Chuyện này, lão phu sẽ ghi nhớ.”"
+        },
+        {
+          "text": "“Sổ nợ của lão, vẫn còn chỗ trống sao?”"
+        },
+        {
+          "text": "“Ngài cứ việc tiếp tục thử.”"
+        },
+        {
+          "text": "Cao Minh khẽ bật cười. Trương Lão lắc đầu, song thần sắc cũng đã dịu đi nhiều so với lúc mới nhập tiệc."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "pro_02"
+        }
+      ]
+    },
+    {
+      "id": "pro_02",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Chợt, lửa trong dãy đèn lồng đồng loạt lụi xuống, rồi lại bùng lên."
+        },
+        {
+          "text": "Khắp lầu, không một ai phản ứng. Thị nữ vẫn nghiêng bình rót rượu, dòng rượu đỏ sẫm chảy đều vào chén. Tiếng đàn sáo từ tầng dưới vẫn vọng lên không ngớt, chỉ có một nốt trầm vừa rồi nghe hơi lạc đi."
+        },
+        {
+          "text": "Cao Minh ngước mắt lên."
+        },
+        {
+          "text": "Lửa trong đèn lồng lại lụi xuống lần thứ hai."
+        },
+        {
+          "text": "Lần này, Tử Xích Lão Quân cũng dừng tay. Lão chẳng nhìn lên đèn, mà ngoảnh về phía góc lầu, như đang cố truy tìm một thanh âm vừa lạc khỏi chỗ của nó."
+        },
+        {
+          "text": "“Đạo Tổ.”"
+        },
+        {
+          "text": "“Bổn tọa nghe thấy rồi.”"
+        },
+        {
+          "text": "Tử Xích Lão Quân thu lại nét cười. Sắc mặt lão biến đổi rất nhanh; vẻ thư thả mới một khắc trước đã tan biến, ánh mắt quét khắp tửu lâu."
+        },
+        {
+          "text": "Cao Minh chẳng nghe thấy tiếng động lạ nào rõ rệt. Điều khiến hắn lưu tâm là những thanh âm vốn phải có đang dần mất đi phần vang của chúng. Tiếng người trò chuyện ở bàn gần nhất trở nên bằng phẳng đến khó chịu. Tiếng đàn vẫn chảy, song những nốt thấp kéo dài như bị bóp nghẹt. Ngay cả tiếng chén đĩa khua nhau cũng nghe gần hơn khoảng cách thực tế rất nhiều."
+        },
+        {
+          "text": "Một lão khách ngồi cách đó vài bàn đang nói dở câu, bỗng khựng lại. Chiếc chén trong tay ông ta trượt khỏi những ngón tay."
+        },
+        {
+          "text": "Cao Minh theo phản xạ nhìn sang."
+        },
+        {
+          "text": "Chiếc chén rơi xuống mới được nửa quãng, đã biến mất."
+        },
+        {
+          "text": "Chẳng vỡ. Chẳng bị hất sang bên. Cũng chẳng có ánh sáng hay làn khói nào che khuất. Một khoảnh khắc trước nó vẫn còn đó, khoảnh khắc sau, chỉ còn lại khoảng không."
+        },
+        {
+          "text": "Cao Minh lập tức đứng dậy."
+        },
+        {
+          "text": "“Đứng lên. Rời khỏi nơi này.”"
+        },
+        {
+          "text": "Trương Lão đã rời ghế trước cả khi hắn dứt lời. Tử Xích Lão Quân cũng đứng lên theo, mắt vẫn quét khắp mặt sàn cùng các lối ra."
+        },
+        {
+          "text": "Song bọn họ chẳng kịp bước đi bước nào."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "pro_03"
+        }
+      ]
+    },
+    {
+      "id": "pro_03",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Mặt sàn dưới chân Cao Minh không nứt, không sập, cũng chẳng hề rung động. Nó chỉ đột nhiên thôi không nâng đỡ thân thể hắn nữa."
+        },
+        {
+          "text": "Bàn chân hắn xuyên qua lớp ván gỗ, tựa xuyên qua một ảo ảnh không có khối lượng."
+        },
+        {
+          "text": "Cao Minh giật tay về phía mép bàn, những ngón tay chỉ kịp quệt qua cạnh bàn trước khi cả người rơi xuống. Phía trên, Trương Lão lao tới, bàn tay gần như đã chạm được vào vạt áo hắn. Tử Xích Lão Quân cũng vươn tay theo, nhưng đúng khoảnh khắc ấy, khoảng không quanh Cao Minh bỗng gập lại, như thể chính nơi đó vừa bị rút đi mất; hai người bị một luồng lực vô hình đẩy bật lại nửa bước."
+        },
+        {
+          "text": "Khoảnh khắc cuối cùng Cao Minh còn trông thấy Hoa Mãn Lâu, chỉ là một mớ hình ảnh nghiêng lệch: chiếc bàn trượt khỏi tầm mắt, bàn tay Trương Lão đưa ra mà không chạm tới, tay áo tím của Tử Xích Lão Quân quét qua khoảng không, và những thực khách ở xa vẫn chưa hiểu chuyện gì đang xảy ra."
+        },
+        {
+          "text": "Rồi ánh sáng vụt tắt."
+        },
+        {
+          "text": "Không có cảm giác rơi tự do. Không có gió quất vào người, không có lực kéo mỗi lúc một tăng, cũng chẳng còn khái niệm rõ ràng về trên dưới. Theo bản năng, thần thức của hắn vươn ra tìm một điểm tựa, liền bị cắt cụt giữa chừng, tựa một sợi dây bị kẻ nào lặng lẽ cắt đứt. Thân thể Cao Minh vẫn còn đó, song khoảng cách xung quanh hắn dường như chẳng còn được đo theo cách quen thuộc nữa."
+        },
+        {
+          "text": "Cảm giác ấy kéo dài chưa đầy một nhịp tim."
+        },
+        {
+          "text": "Trọng lực đột ngột trở lại."
+        },
+        {
+          "text": "Cao Minh chạm xuống một bề mặt mềm hơn sàn lầu. Hắn theo phản xạ hạ thấp trọng tâm, đứng vững ngay tức khắc, thân hình không hề loạn."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "pro_04"
+        }
+      ]
+    },
+    {
+      "id": "pro_04",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Mùi ẩm mốc xộc đến trước tiên."
+        },
+        {
+          "text": "Kế đó là mùi giấy cũ, mùi bụi, mùi keo dán, cùng một thứ mùi hóa chất tẩy rửa nhạt đến mức chỉ còn vương lại trong không khí. Trên đỉnh đầu là một hàng vật dài tỏa ánh sáng trắng nhợt, kèm tiếng ù đều đều lấp kín cả căn phòng. Cao Minh chẳng biết thứ đó là gì — chúng sáng mà không cần lửa, kêu mà bên trong chẳng có gì."
+        },
+        {
+          "text": "Cao Minh đứng thẳng người dậy."
+        },
+        {
+          "text": "Hoa Mãn Lâu đã biến mất."
+        },
+        {
+          "text": "Quanh hắn là những bức tường phủ giấy màu vàng nhạt, hoa văn lặp lại đến phát ngấy. Tấm thảm dưới chân ẩm lạnh, dù chẳng thấy nước chảy từ đâu. Trần nhà ghép bằng những tấm vuông giống hệt nhau, kéo dài qua các ô cửa mở sang những căn phòng kế tiếp."
+        },
+        {
+          "text": "Không cửa sổ. Không bàn ghế. Cũng không còn dấu vết nào của trấn nhỏ dưới chân núi."
+        },
+        {
+          "text": "Và không có Tử Xích Lão Quân, cũng không có Trương Lão."
+        },
+        {
+          "text": "Cao Minh xoay người một vòng, xem kỹ từng lối mở, rồi mới cất tiếng gọi."
+        },
+        {
+          "text": "“Tử Xích Lão Quân?”"
+        },
+        {
+          "text": "Đáp lại chỉ có tiếng ù của những vật phát sáng kia."
+        },
+        {
+          "text": "“Trương Lão?”"
+        },
+        {
+          "text": "Giọng hắn truyền qua hai căn phòng, dội lại rất yếu, rồi chìm hẳn vào một khoảng không không thấy điểm cuối."
+        },
+        {
+          "text": "Cao Minh không gọi lần thứ ba. Hắn chuyển sang truyền âm."
+        },
+        {
+          "text": "Truyền âm phát ra, chẳng nhận được hồi đáp. Ngọc phù liên lạc vẫn còn ấm, linh quang chưa tắt, vậy mà không một dao động nào trả về. Thần thức của hắn vươn ra xa hơn, liền mỏng dần đi, như bị thứ gì lặng lẽ nuốt lấy; vừa chạm tới vách tường trước mặt đã như đâm vào một lớp bông dày, không sao đi xa hơn được nữa."
+        },
+        {
+          "text": "Hắn kiểm tra lại từng thứ một lần nữa, lần này phân tách rõ ràng: ngọc phù hỏng, hay là đường truyền đã hỏng."
+        },
+        {
+          "text": "Kết quả vẫn không đổi."
+        },
+        {
+          "text": "Đây chẳng giống truyền âm quá yếu. Cũng chẳng giống một vùng cấm chế thông thường. Không dao động méo mó, không hồi âm giả tạo, cũng không chút dấu hiệu cho thấy đầu bên kia đã nhận được lời gọi rồi bất lực không trả lời nổi."
+        },
+        {
+          "text": "Chỉ có im lặng."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "pro_05"
+        }
+      ]
+    },
+    {
+      "id": "pro_05",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Song kiếm vẫn ở sau lưng hắn. Thái Cổ Song Sát, hai thanh lơ lửng đúng vị trí cũ; Hắc Long Chiến Khải trên người không một vết xước. Ít nhất, thứ vừa nuốt chửng hắn vẫn chưa lấy được gì của hắn — hoặc là chưa lấy."
+        },
+        {
+          "text": "Chưa đầy một phút trước, hai người kia còn ở trong tầm tay hắn. Cao Minh đã trông thấy bàn tay Trương Lão gần chạm được vạt áo mình, ngay trước khi khoảng không gập lại. Đó là điều duy nhất hắn có thể chắc chắn."
+        },
+        {
+          "text": "Hắn không biết giờ hai người họ đang ở đâu."
+        },
+        {
+          "text": "Không biết họ còn ở phía bên kia, hay cũng đã bị đưa tới một nơi nào khác."
+        },
+        {
+          "text": "Không biết từ phía Hoa Mãn Lâu, liệu có ai lần ra được dấu vết của hắn hay không."
+        },
+        {
+          "text": "Không dấu tích nào để đối chiếu. Không hồi âm nào để lần theo. Và trước mắt, chẳng có lời giải thích nào cho căn phòng vàng vô tận đang mở ra quanh hắn."
+        },
+        {
+          "text": "Cao Minh đứng yên thêm mấy giây, lắng nghe."
+        },
+        {
+          "text": "Tiếng ù vẫn đều đều trên đỉnh đầu. Tấm thảm vẫn ẩm dưới đế giày. Phía trước, một hành lang rẽ sang trái sau lớp tường vàng; bên phải là một ô cửa khác, dẫn vào căn phòng gần như giống hệt nơi hắn đang đứng."
+        },
+        {
+          "text": "Không có tiếng gọi nào đáp lại."
+        },
+        {
+          "text": "Cao Minh khẽ cười. “Lâu lắm rồi, mới có một nơi dám không trả lời bổn tọa.”"
+        },
+        {
+          "text": "Cao Minh chỉ còn lại những gì đang mang theo bên mình, những gì chính mắt hắn có thể kiểm chứng, cùng một việc phải làm trước tiên: xác định nơi này rốt cuộc là đâu. Còn Tử Xích Lão Quân và Trương Lão đang ở đâu, và thứ vừa mở ra dưới chân hắn là gì, đều là những câu hỏi để lại về sau."
+        }
+      ],
+      "choices": []
+    }
+  ]
+}
