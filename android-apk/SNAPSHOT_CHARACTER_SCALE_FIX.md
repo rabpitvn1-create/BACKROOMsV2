@@ -64,3 +64,5 @@ Pending at document creation time. Final verification must record actual command
 
 ## Remaining work
 Run the repository's final checks once, inspect any failures together, fix all discovered issues, then rerun the final check. Merge to main only after main is rechecked against origin/main and verification is clean.
+
+CI trigger branch note: this verification-only branch carries the same runtime and test code as fix/snapshot-character-scale.
