@@ -336,6 +336,429 @@
       "choices": [
         {
           "label": "Tiếp tục",
+          "next": "R01_00_01_01"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_01",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Hắn đi chưa được bao xa thì dừng lại."
+        },
+        {
+          "text": "Không phải vì đường cụt — nơi này làm gì có đường cụt, chỉ có những hành lang vàng nối vào nhau như một câu nói không dấu chấm. Hắn dừng vì thứ đang tràn vào theo từng hơi thở."
+        },
+        {
+          "text": "Linh khí."
+        },
+        {
+          "text": "Ở thế giới của hắn, linh khí nồng đến mức này chỉ có trong những động phủ thượng đẳng nhất — loại động phủ mà các tông môn sẵn sàng đổ máu tranh nhau, tu sĩ tầm thường cả đời không được bước qua cửa. Nơi đó phải có linh mạch chôn sâu dưới lòng đất, có đại trận tụ linh giữ gìn từng tia, có người canh giữ ngày đêm. Còn ở đây, nó cứ thế mà có. Tràn trong không khí. Bám trên giấy dán tường. Ngấm xuống tấm thảm ẩm dưới chân. Không ai trồng, không ai giữ, không ai thèm."
+        },
+        {
+          "text": "Cao Minh hít vào một hơi chậm. Linh khí theo hơi thở tràn vào kinh mạch, đầy và sệt như nước suối đầu nguồn — rồi hắn nhíu mày, rất khẽ."
+        },
+        {
+          "text": "Có tạp chất."
+        },
+        {
+          "text": "Lẫn trong dòng linh khí ấy là một thứ gì đó không sạch. Không nhiều, không rõ hình, chỉ là một cái gợn rất mảnh ở nơi sâu nhất của cảm nhận, như một hạt cát nằm trong chén rượu quý. Kẻ khác có lẽ không nhận ra. Hắn thì nhận ra ngay, như đầu lưỡi nhận ra vị lạ trong món ăn quen thuộc."
+        },
+        {
+          "text": "Một nơi linh khí vượt mọi động phủ hắn từng biết, lại mang theo thứ tạp chất không rõ nguồn gốc. Một thế giới mà hắn chưa biết tên, chưa biết luật, chưa biết nó định làm gì với những kẻ lạc vào."
+        },
+        {
+          "text": "Khóe miệng Cao Minh hơi cong lên."
+        },
+        {
+          "text": "Đã rất lâu rồi hắn không gặp một thứ gì khiến mình phải tự hỏi câu tiếp theo là gì."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_02"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_02",
+      "stage": {
+        "level": 0,
+        "entity": "hound"
+      },
+      "lines": [
+        {
+          "text": "Bóng đen ấy nấp sau bức tường từ lúc nào, hắn biết. Hắn chỉ không buồn để ý."
+        },
+        {
+          "text": "Nó bước ra chậm rãi, như thể đã quen với việc con mồi không nhận ra mình cho tới khi quá muộn. Thân hình gầy rộc và dài ngoằng, bốn chân chạm đất mà khớp xương cong theo những hướng không nên cong, đầu cúi thấp, mõm khép hờ để lộ hàm răng ướt. Nó không có mắt — hoặc mắt nó đã thoái hóa thành hai hốc tối om, vì nơi này chẳng có bóng tối nào để mà nhìn. Nó đánh hơi bằng cả thân người, cổ vươn ra từng nhịp, ngửi thứ mùi không thuộc về nơi này: mùi của một kẻ còn sống và không hề sợ."
+        },
+        {
+          "text": "Cao Minh đứng yên, nhìn nó như nhìn một món đồ lạ bày trong quầy hàng."
+        },
+        {
+          "text": "Nó lao tới."
+        },
+        {
+          "text": "Với người thường, đó là khoảnh khắc cuối cùng của đời mình: một vệt đen xé gió, móng vuốt và răng nanh cùng lúc ập xuống, nhanh đến mức tiếng gào chưa kịp ra khỏi cổ họng. Với Cao Minh, đòn tấn công ấy chậm như một cuốn phim quay chậm đến buồn ngủ. Hắn thấy rõ từng nhịp cơ bắp co lại dưới lớp da xám, thấy đầu nó nghiêng đi nửa tấc để căn góc cắn, thấy cả giọt nước dãi kéo thành sợi rồi đứt giữa không trung. Hắn có thừa thời gian để nghĩ rằng tư thế lao của nó thật ra không tệ — nếu đối thủ của nó là một thứ gì đó chậm hơn."
+        },
+        {
+          "text": "Hắn phẩy tay."
+        },
+        {
+          "text": "Không tiếng nổ. Không ánh sáng. Chỉ một cái phẩy tay hờ hững như đuổi một con ruồi khỏi mâm cơm. Thứ vừa lao tới biến mất giữa chừng — không phải bị đánh văng, mà là không còn nguyên vẹn để mà văng: một bãi máu và thịt vụn trải dài trên tấm thảm vàng, kéo thành vệt theo đúng hướng nó vừa lao."
+        },
+        {
+          "text": "Cao Minh hạ tay xuống, liếc qua bãi máu một cái."
+        },
+        {
+          "text": "Nơi này có răng. Tốt. Một nơi không có gì cắn lại thì chán lắm."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_03"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_03",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Hắn đi tiếp."
+        },
+        {
+          "text": "Qua một ngã rẽ. Qua một hành lang dài nữa, hai bên vẫn là thứ giấy dán tường hoa văn cũ kỹ ấy, vẫn những bóng đèn rè rè trên đầu, vẫn mùi ẩm mốc không đổi. Hắn không đi nhanh. Hắn đang đếm, theo cách của riêng mình: số ngã rẽ đã qua, số lần họa tiết trên giấy lặp lại, quãng đường ước lượng bằng bước chân."
+        },
+        {
+          "text": "Rồi hắn nhìn xuống và dừng lại."
+        },
+        {
+          "text": "Bãi máu."
+        },
+        {
+          "text": "Bãi máu của chính hắn — của thứ hắn vừa giết — nằm trải trên tấm thảm ngay trước mặt, vệt thịt vụn kéo dài đúng hướng lao tới, không sai một ly. Hắn chưa từng quay đầu. Hắn cũng chưa từng rẽ theo một đường nào có thể vòng lại. Vậy mà nơi này đặt nó lại trước mặt hắn, gọn gàng như đặt lại một món đồ lên kệ."
+        },
+        {
+          "text": "Cao Minh đứng nhìn bãi máu một lúc lâu."
+        },
+        {
+          "text": "Hắn đã đi qua những mê cung giết người, những đại trận không gian do chính tay các bậc tiền nhân dựng lên để giam cầm thần tiên. Những thứ đó có cửa vào, có cửa ra, có quy luật để phá. Còn nơi này — nó không giam hắn. Nó chỉ đơn giản là không quan tâm hắn đi hướng nào. Hắn đi thẳng, nó trả hắn về chỗ cũ, không một tiếng động, không một dấu hiệu, như thể việc di chuyển ở đây vốn không thuộc về người đi."
+        },
+        {
+          "text": "\"Ra là vậy.\""
+        },
+        {
+          "text": "Hắn nói rất khẽ, không phải nói với ai. Rồi hắn ngồi xuống."
+        },
+        {
+          "text": "Không phải ngồi nghỉ. Hắn chọn một chỗ thảm khô ráo hơn, sạch hơn, khoanh chân, nhắm mắt — bộ dạng của một kẻ vừa quyết định rằng đi bộ không phải là cách tìm hiểu nơi này."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_04"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_04",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Thần thức của hắn tỏa ra."
+        },
+        {
+          "text": "Không ồn ào, không hình tướng — chỉ là sự hiện diện của hắn lan đi như mặt nước phẳng bị một giọt mưa chạm vào, vòng sau nối vòng trước, phủ qua từng hành lang, từng căn phòng trống, từng ngã rẽ giống hệt nhau. Với thần thức, mê cung vàng không còn là thứ mắt thường nhìn thấy. Nó hiện ra như một tấm vải bị gấp đi gấp lại quá nhiều lần: không gian ở đây không trải phẳng, mà gập vỡ thành nhiều tầng chồng lên nhau, tầng này lồng vào tầng kia theo những góc mà kiến trúc của con người không thể nào dựng nổi."
+        },
+        {
+          "text": "Hắn \"nhìn\" thấy những hành lang mình vừa đi qua nằm chồng lên những hành lang hắn chưa tới. Thấy những khoảng không gian bị vặn xoắn như ruột của một con thú khổng lồ đang ngủ. Thấy cả những chỗ mà thần thức trượt qua như trượt trên mặt băng — những vùng mà ngay cả cảm nhận của hắn cũng không bám vào được."
+        },
+        {
+          "text": "Và sâu hơn nữa, mơ hồ hơn nữa, là cảm giác rằng những gì hắn đang chạm tới chỉ là lớp ngoài cùng của một thứ còn lớn hơn rất nhiều."
+        },
+        {
+          "text": "Cao Minh mở mắt."
+        },
+        {
+          "text": "Hắn ngồi yên trong ánh đèn vàng, giữa một mê cung mà thần thức của một vị Ma Tổ cũng không dò tới đáy, và cảm thấy một thứ đã lâu không ghé thăm mình: sự chờ đợi được xem tiếp."
+        },
+        {
+          "text": "Thú vị."
+        },
+        {
+          "text": "Hắn chưa kịp thu thần thức về thì ở rìa xa nhất của cảm nhận, có một thứ vừa động đậy. Một thứ đang tiến lại phía hắn — chậm, lệch nhịp, và rất rõ ràng là đang sống."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_05"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_05",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Kẻ đó xuất hiện ở đầu hành lang, và điều đầu tiên khiến Cao Minh chú ý không phải con dao trên tay hắn."
+        },
+        {
+          "text": "Là bộ quần áo."
+        },
+        {
+          "text": "Áo choàng len dày đã sờn đến mức không còn màu gốc, thắt lưng da nứt nẻ, một thứ trang phục thuộc về châu Âu thời trung cổ — xa xôi đến mức ở thế giới của Cao Minh, nó chỉ còn tồn tại trong những bức họa cổ mà người ta treo cho có chuyện. Người đàn ông gầy và bẩn, râu tóc bết lại thành từng mảng, đôi mắt trũng sâu của kẻ đã lâu không ngủ một giấc trọn vẹn. Hắn đứng khựng lại khi thấy Cao Minh, và sự kinh ngạc trên mặt hắn lộ rõ đến mức gần như buồn cười: giữa một mê cung vàng vô tận đầy quái vật, thứ khiến hắn sững sờ nhất lại là một người có quần áo sạch sẽ."
+        },
+        {
+          "text": "Hắn mở miệng nói. Một tràng âm thanh rời rạc, gằn và lạ — một thứ ngôn ngữ mà Cao Minh không nhận ra thuộc về thời nào, nước nào. Hắn nói nhanh, tay chỉ vào Cao Minh, rồi chỉ vào chính mình, rồi chỉ về phía hành lang sau lưng, như đang cố giải thích một điều gì đó rất khẩn cấp. Trong lúc nói, bàn tay còn lại của hắn vẫn nắm chặt con dao ngắn — lưỡi dao đã rỉ sét đến mức lốm đốm đỏ nâu, thứ vũ khí của một kẻ đã dùng nó để sống sót qua những ngày không nên sống sót."
+        },
+        {
+          "text": "Cao Minh nghe hết tràng âm thanh ấy với vẻ mặt của kẻ nghe tiếng mưa rơi trên mái nhà người khác."
+        },
+        {
+          "text": "Rồi hắn phất tay. Một cái phất tay gọn và rõ nghĩa ở mọi thời đại, mọi ngôn ngữ: đi đi."
+        },
+        {
+          "text": "Người đàn ông im bặt."
+        },
+        {
+          "text": "Hắn nhìn cái phất tay ấy, rồi nhìn lại gương mặt bình thản của Cao Minh, và có một thứ gì đó trong mắt hắn đổi màu — như thể hắn vừa hiểu ra một điều hoàn toàn khác với điều Cao Minh muốn nói."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_06"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_06",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Tiếng gào bật ra trước, rồi mới đến người."
+        },
+        {
+          "text": "Người đàn ông lao tới với con dao rỉ giơ cao, gào một thứ gì đó mà có lẽ ở quê hương xa xôi của hắn là lời nguyền, là tiếng thét xung trận, là cách kẻ yếu tự bơm can đảm vào đôi chân đang run. Mặt hắn méo đi vì sợ và vì điên — hai thứ ở nơi này thường đến cùng nhau. Có lẽ hắn tin rằng kẻ áo sạch này là một thứ quái vật đội lốt người. Có lẽ hắn không còn tin được bất cứ thứ gì biết đi bằng hai chân nữa. Cũng có thể hắn chẳng nghĩ gì cả; ở đây đủ lâu, đôi khi tay ra đòn trước cả đầu."
+        },
+        {
+          "text": "Cao Minh không đứng dậy."
+        },
+        {
+          "text": "Một thanh kiếm rời khỏi sau lưng hắn — không tiếng rút kiếm, không ánh thép lóe lên để báo trước, chỉ một vệt sáng lạnh xé qua không khí nhanh đến mức mắt người chỉ kịp nhận ra nó sau khi mọi thứ đã xong. Thanh Sát Thần Kiếm đi qua người đàn ông đang lao tới như đi qua một tờ giấy mỏng."
+        },
+        {
+          "text": "Hắn bị chém thành hàng chục mảnh."
+        },
+        {
+          "text": "Máu bắn tung tóe khắp một vùng rộng, văng lên giấy dán tường, nhuộm đỏ một mảng thảm vàng, và nát vụn cùng những mảnh áo choàng len sờn trên nền đất. Tiếng gào tắt giữa chừng, gọn như bị ai đó cắt dây."
+        },
+        {
+          "text": "Thanh kiếm quay về sau lưng Cao Minh, lưỡi kiếm không dính một giọt máu."
+        },
+        {
+          "text": "Hắn nhìn đống hỗn độn trước mặt một lúc. Hắn đã phất tay. Ở bất cứ thế giới nào, đó cũng là một lần cảnh cáo hào phóng hơn kẻ kia xứng đáng được nhận. Kẻ đã được cảnh cáo mà vẫn lao vào, thì kết cục nằm trong tay kẻ đó, không nằm trong tay hắn."
+        },
+        {
+          "text": "Từ rất xa, qua nhiều lớp hành lang và nhiều tầng không gian gập vỡ, có những tiếng động bắt đầu vọng lại. Không phải một tiếng. Nhiều tiếng. Chúng đang tụ về một hướng."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_07"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_07",
+      "stage": {
+        "level": 0,
+        "entity": "hound"
+      },
+      "lines": [
+        {
+          "text": "Chúng đến vì mùi máu, vì tiếng động, hay vì cả hai — Cao Minh không buồn phân biệt."
+        },
+        {
+          "text": "Hơn một chục con. Những thân hình gầy rộc dài ngoằng tràn ra từ hai đầu hành lang và một căn phòng trống bên cạnh, móng vuốt cào trên thảm thành một thứ âm thanh khô khốc dồn dập. Chúng không lao lên ngay. Chúng tản ra, cúi đầu đánh hơi bãi máu còn ấm, vòng qua những mảnh xác người, và từng đôi hốc mắt tối om lần lượt hướng về phía kẻ đang ngồi khoanh chân giữa hành lang — kẻ duy nhất ở đây còn nguyên vẹn và còn thở. Vài con gầm gừ rất khẽ trong cổ họng, thứ âm thanh của bầy thú đã học được rằng con mồi lớn thì phải dồn chung mới hạ được."
+        },
+        {
+          "text": "Chúng chưa từng gặp thứ gì không phải con mồi."
+        },
+        {
+          "text": "Cao Minh nhìn bầy quái vật đang khép vòng vây, và thở dài."
+        },
+        {
+          "text": "Không phải thở dài vì nguy hiểm. Là thứ thở dài của một người vừa mới ngồi xuống yên vị chưa được bao lâu đã lại bị làm phiền. Hắn giơ một tay lên, lòng bàn tay hướng ra ngoài, động tác lười biếng như người ta xua một làn khói."
+        },
+        {
+          "text": "Chưởng phong quét ra."
+        },
+        {
+          "text": "Âm thanh đến sau hình ảnh một nhịp: cả chục thân thể bị nhổ bật khỏi mặt đất cùng lúc, văng ngược ra sau như bị một bàn tay vô hình khổng lồ quạt trúng, đập vào tường, xuyên qua tường. Giấy dán tường, vữa và cả mảng trần phía sau chúng vỡ tung, để lại một khoảng phá hủy lớn hun hút — hành lang vàng hoàn hảo từ lúc hắn đặt chân vào, lần đầu tiên mang một vết thương không tự lành lại được. Bụi và mảnh vụn rơi lả tả trong ánh đèn, lẫn với máu đen của những thứ không còn nguyên hình."
+        },
+        {
+          "text": "Im lặng quay lại, đặc quánh hơn trước."
+        },
+        {
+          "text": "Cao Minh phủi một hạt bụi không hề tồn tại trên tay áo, đứng dậy."
+        },
+        {
+          "text": "Chơi thế đủ rồi."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_08"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_08",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Lần này hắn đi chậm."
+        },
+        {
+          "text": "Không phải để dò đường — chuyện dò đường, hắn vừa học được rằng nơi này không cho phép theo cách thông thường. Không phải để tìm lối ra — lối ra, nếu có, cũng không chạy đi đâu mà phải vội. Hắn đi chậm vì hắn đang tận hưởng."
+        },
+        {
+          "text": "Đã bao lâu rồi hắn không ở trong một nơi mà mình không biết điều gì chờ ở ngã rẽ tiếp theo? Ở thế giới của hắn, mọi thứ đều nằm trong tính toán: kẻ thù mạnh yếu thế nào, tông môn nào đang mưu đồ gì, một bước đi này sẽ dội lại mười năm sau ra sao — tất cả đều rõ như nhìn lòng bàn tay, và vì rõ nên nhạt. Đỉnh cao là một nơi rất ít bất ngờ. Người ta leo lên đó để không còn gì làm mình giật mình được nữa, rồi mới nhận ra cái giá của nó là chẳng còn gì làm mình giật mình được nữa."
+        },
+        {
+          "text": "Còn nơi này thì khác. Nó im lặng nuốt tiếng bước chân của hắn. Nó gấp không gian lại như gấp một tờ giấy. Nó thả những thứ quái vật buồn cười ra cắn hắn, giấu những con người từ các thời đại xa lạ vào các ngõ ngách của nó, và giữ linh khí quý hơn động phủ thượng đẳng trong một thứ không khí có độc. Mỗi ngã rẽ là một câu hỏi mà hắn chưa có đáp án."
+        },
+        {
+          "text": "Cao Minh bước qua một căn phòng trống khác, tay chắp sau lưng, dáng đi thong thả như một vị khách đang dạo trong vườn nhà người lạ mà không cần xin phép chủ nhà."
+        },
+        {
+          "text": "Đi được một quãng, bước chân hắn chậm lại."
+        },
+        {
+          "text": "Trên bức tường phía trước, có một thứ không thuộc về họa tiết của giấy dán tường."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_09"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_09",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Vết cào."
+        },
+        {
+          "text": "Hàng chục vết cào chằng chịt trên giấy dán tường, xé rách lớp giấy, cào sâu vào tận lớp tường bên dưới — những vệt dài, song song, tuyệt vọng, ở độ cao của một người đang đứng. Có những vết bắt đầu từ rất cao rồi trượt dài xuống thấp dần, như thể kẻ cào chúng đã từ từ quỵ xuống trong lúc vẫn cố cào tiếp. Giấy vụn và bụi tường còn vương trên thảm, dù những thứ đó chắc chắn đã nằm đây từ rất lâu rồi."
+        },
+        {
+          "text": "Dưới chân bức tường là một cái xác."
+        },
+        {
+          "text": "Hoặc từng là một cái xác. Thứ còn lại chỉ là bộ xương và ít da thịt khô quắt bám vào những chỗ khuất — phần còn lại đã bị ăn sạch, sạch đến mức những đốt xương dài trắng hếu như được ai đó mút kỹ. Cái xác ngồi dựa vào tường, đầu gục sang một bên, và trên lòng nó, được giữ bằng những ngón tay xương xẩu cong lại, là một cuốn sổ."
+        },
+        {
+          "text": "Cao Minh cúi xuống, gỡ cuốn sổ ra khỏi tay người chết. Không một chút ghê tởm — hắn đã thấy những thứ còn tệ hơn cái chết này rất nhiều."
+        },
+        {
+          "text": "Sổ ghi chép chằng chịt bằng một thứ chữ lạ, nét bút run và gấp, nhiều trang chữ đè lên chữ như kẻ viết không còn giấy mà vẫn còn quá nhiều điều phải nói. Hắn không đọc được một từ nào. Nhưng giữa những trang chữ ấy có kẹp một tấm hình — một bức ảnh chụp một hành lang vàng, giống hệt nơi hắn đang đứng, ánh đèn huỳnh quang hắt xuống hai dãy tường vô tận."
+        },
+        {
+          "text": "Và ở cuối hành lang trong tấm ảnh, đứng lẫn vào ánh sáng vàng, là một cái bóng."
+        },
+        {
+          "text": "Một cái bóng cao và gầy, mang hình dáng của những khúc cây vặn vẹo đan vào nhau — những \"cánh tay\" phân nhánh như cành khô, cái \"đầu\" không rõ hình thù nghiêng một góc không thuộc về con người. Nó đứng yên giữa hành lang, quay về phía người chụp."
+        },
+        {
+          "text": "Cao Minh nhìn tấm ảnh rất lâu."
+        },
+        {
+          "text": "Người chụp tấm ảnh này, có lẽ chính là kẻ đang ngồi dựa tường sau lưng hắn."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_01_10"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_01_10",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Hắn gấp cuốn sổ lại, đặt nó trở vào lòng người chết."
+        },
+        {
+          "text": "Không phải vì thương hại. Kẻ này đã chết theo cách của kẻ này, ở một nơi không có thói quen trả lại thứ nó đã lấy. Nhưng cuốn sổ và tấm ảnh là những gì còn sót lại chứng minh kẻ đó từng tồn tại — lấy đi thì cũng chẳng để làm gì, mà để lại thì đúng chỗ của nó hơn."
+        },
+        {
+          "text": "Cái bóng trong ảnh mới là thứ hắn mang theo."
+        },
+        {
+          "text": "Một sinh vật mang hình cây — nếu điều hắn đoán là đúng. Ở thế giới của hắn, những sinh linh tu luyện thành hình từ cỏ cây thường là thứ khó gặp nhất: chúng sống lâu, ẩn sâu, và phần tinh túy nhất của chúng nằm trong thứ gỗ đã hấp thụ linh khí qua hàng ngàn năm. Thần mộc. Loại vật liệu mà các bậc luyện khí sư sẵn sàng đánh đổi cả một tòa linh sơn để lấy một khúc."
+        },
+        {
+          "text": "Mà nơi này, linh khí nồng đến mức động phủ thượng đẳng cũng không sánh bằng."
+        },
+        {
+          "text": "Khóe miệng Cao Minh lại cong lên, theo đúng cái cách mà bất cứ ai quen biết hắn cũng sẽ nhận ra là hắn vừa tìm được một thú vui mới."
+        },
+        {
+          "text": "Nếu ở đây thật sự có một người cây, biết đâu lại có thần mộc. Thu thập một ít mang về — làm củi đốt cũng tốt."
+        },
+        {
+          "text": "Hắn đứng dậy, phủi tay, và bước tiếp vào mê cung vàng với bước chân còn thong thả hơn trước. Nhưng đi chưa được mấy bước, cái gợn rất mảnh trong không khí lại lướt qua cảm nhận của hắn — thứ tạp chất lẫn trong linh khí, dai dẳng như một nốt nhạc lạc điệu không chịu tan. Từ lúc đặt chân vào đây, nó chưa từng rời khỏi rìa cảm nhận của hắn một khắc nào."
+        },
+        {
+          "text": "Cao Minh dừng bước."
+        },
+        {
+          "text": "Được rồi. Trước khi đi tìm người cây, hắn muốn nhìn cho rõ thứ đang lẫn trong hơi thở của cả thế giới này — rốt cuộc là cái gì."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
           "next": "R01_00_02"
         }
       ]
