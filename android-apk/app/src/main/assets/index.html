@@ -152,8 +152,10 @@ html,body{width:100%;overscroll-behavior:none}
 .shell{width:100%;max-width:none;margin:0}
 .campaign-header{margin:0;padding:calc(10px + var(--safe-top)) max(12px,var(--safe-right)) 10px max(12px,var(--safe-left));box-shadow:none}
 .snapshot-stage{top:auto;margin:0;width:100%;height:min(67.114vw,42dvh);aspect-ratio:auto}
-.reader-divider{flex:none;height:3px;margin:0;border:0;border-top:1px solid #a1875a;border-bottom:1px solid #28443c;background:#080e10}
-.game-layout{overflow-x:hidden;isolation:isolate}
+/* Opaque fixed boundary: every part of the moving story is clipped below it. */
+.reader-divider{position:relative;z-index:7;flex:0 0 12px;width:100%;height:12px;margin:0;border:0;background:#0a1012}
+.reader-divider:after{content:"";position:absolute;left:0;right:0;top:5px;height:2px;background:#a1875a;box-shadow:0 1px 0 #28443c}
+.game-layout{position:relative;z-index:0;overflow-x:hidden;contain:paint;isolation:isolate}
 .story-panel{margin:0;min-width:0;padding-left:max(10px,var(--safe-left));padding-right:max(10px,var(--safe-right));padding-bottom:max(14px,var(--safe-bottom))}
 .scene-header{margin-left:calc(-1 * max(10px,var(--safe-left)));margin-right:calc(-1 * max(10px,var(--safe-right)));padding-left:max(10px,var(--safe-left));padding-right:max(10px,var(--safe-right))}
 .intel-panel{width:100%;height:100vh;height:100dvh;border-left:0;box-shadow:none}
