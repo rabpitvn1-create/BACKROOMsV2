@@ -121,11 +121,11 @@ function assertCommonSceneState(window, label) {
   const savedRaw = window.localStorage.getItem("backroom-apk-state");
   const saved = JSON.parse(savedRaw);
   assert.equal(saved.v, 2); assert.equal(saved.scene, "R01_09_05");
-  assert.equal(saved.history.length, 1219, "part1: all 1219 lines of the first-choice path recorded");
+  assert.equal(saved.history.length, 1291, "part1: all 1291 lines of the first-choice path recorded");
   console.log("part 1a OK: standalone fresh playthrough → end state");
 
   ({ window, errors } = await bootPage(base, html, { seedLocalSave: savedRaw }));
-  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 1219, "part1: restore does not duplicate history");
+  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 1291, "part1: restore does not duplicate history");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: restored at terminal scene");
   console.log("part 1b OK: standalone save restore at R01_09_05");
 
