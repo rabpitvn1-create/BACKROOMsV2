@@ -28,7 +28,6 @@ button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;pa
 .stage-sword-b img{height:70%}
 .stage-sword-a{animation:sword-hover-a 3.8s ease-in-out infinite alternate}
 .stage-sword-b{animation:sword-hover-b 4.37s ease-in-out infinite alternate}
-.stage-sword.dimmed{opacity:.45}
 @keyframes sword-hover-a{from{transform:translate(-32%,-10.5%)}to{transform:translate(-32%,-4.5%)}}
 @keyframes sword-hover-b{from{transform:translate(32%,-4.5%)}to{transform:translate(32%,-10.5%)}}
 .stage-caption{position:absolute;left:50%;bottom:.6rem;z-index:4;transform:translateX(-50%);max-width:calc(100% - 2rem);padding:.38rem .8rem;border:1px solid #2b3137;border-radius:999px;color:#eef1f3;background:rgba(8,10,12,.72);font-size:.72rem;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -69,7 +68,6 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 .character-overlay-portrait img{width:100%;max-height:300px;object-fit:cover;object-position:50% 25%;display:block}
 .character-overlay-copy h2{margin:6px 0;font-size:22px}.character-overlay-copy h2 span{color:#8f9aa4;font-size:13px;font-weight:500}
 .character-overlay-copy p{color:#c9d1d8;line-height:1.55}
-.equip-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.equip-btn[aria-pressed="true"]{background:#303840;border-color:#77828c}
 </style>
 </head>
 <body>
@@ -145,12 +143,6 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <p id="character-overlay-role" class="micro-label"></p>
 <h2 id="character-overlay-name"><span id="character-overlay-name-text"></span> <span id="character-overlay-alias"></span></h2>
 <p id="character-overlay-summary"></p>
-<div id="character-overlay-equip" hidden>
-<h3>Trang bị</h3>
-<p>Thái Cổ Song Sát — chọn thanh đang cầm (thanh còn lại lơ lửng sau lưng):</p>
-<div class="equip-row"><button id="equip-sword-a" class="equip-btn" type="button" aria-pressed="true">Thanh mặt quỷ</button><button id="equip-sword-b" class="equip-btn" type="button" aria-pressed="false">Thanh lõi đỏ</button></div>
-<p>Hắc Long Chiến Khải — giáp đang mặc.</p>
-</div>
 </div>
 </section>
 </div>
@@ -307,7 +299,7 @@ Cao Minh chỉ còn lại những gì đang mang theo bên mình, những gì ch
 const CURRENT_CHARACTER_CANON={
   version:"characters-2026-11-09",
   instruction:"Current Google Drive character canon. This overrides conflicting legacy character facts in old logs/local mirrors. KNOWLEDGE_LOCK is writer/GM canon, not automatic in-world knowledge. UNKNOWN/OPEN must remain unknown. Lucia is a fixed Level 0 story encounter and must never be auto-spawned just because the model knows her codex.",
-  cao_minh:"Cao Minh / Vạn Giới Ma Tổ is the main character: Đạo Tổ of Vạn Ma Đạo Môn, realm Chí Tôn Đại Viên Mãn. Earthling reincarnated; fell into the Backrooms through the rift when Lôi Thiên Vực collapsed (Lục Trầm sacrificed himself to open the way). Equipment: Thái Cổ Song Sát twin swords (demon-face blade + red-core blade; he holds one at a time while the other hovers behind his back; swappable as equipment) and Hắc Long Chiến Khải armor. Named sword art: Thiên Kiếm Thất Thức — per-form details UNKNOWN/OPEN, do not invent. No guns, no powered armor, no storage ring.",
+  cao_minh:"Cao Minh / Vạn Giới Ma Tổ is the main character: Đạo Tổ of Vạn Ma Đạo Môn, realm Chí Tôn Đại Viên Mãn. Earthling reincarnated; fell into the Backrooms through the rift when Lôi Thiên Vực collapsed (Lục Trầm sacrificed himself to open the way). Equipment: Thái Cổ Song Sát twin swords (demon-face blade + red-core blade; both hover behind his back) and Hắc Long Chiến Khải armor. Named sword art: Thiên Kiếm Thất Thức — per-form details UNKNOWN/OPEN, do not invent. No guns, no powered armor, no storage ring.",
   iris:"Iris / ARGUS is SRU Scout / Target Eliminator in Cao Minh's team, a real ranged Gunslinger. No surname locked. Half-human/half-demon daughter of Belial and a deceased human mother; mother details, birth era and exact combat tier remain UNKNOWN. Belial Core provides infinite demon power for established functions. ARGUS Terrain Read uses direct observation plus local Recon Frame sensors for terrain/routes/LOS/cover/ambush/traces; no omniscience, wall vision, remote cameras or automatic true-form detection. Thousandfold Cognition is up to 1:1000 information processing, not body speed. Current gear: SRU Recon Frame R03 and Ivory & Ebony, whose bullets form from Iris's demon power. Iris loves Cao Minh; Cao Minh knows but reciprocation is not canonically established. Iris uses anh-em with Cao Minh; Iris and Syvial are trusted friends/teammates with romantic rivalry, not enemies.",
   syvial:"Syvial is half-human/half-demon daughter of Lucifer, origin era 2299, true age unknown, UR+ and same overall tier as Cao Minh. Current organization: SRU anti-anomalous police; deputy leader of Cao Minh's team. Lucifer Core supplies infinite demon power; Devil Trigger does not remove control or have an invented intrinsic cap/cooldown. GodKiller is a massive purely mechanical greatsword, never a gun/gunblade. Lucifer Armor is mobile black/gunmetal/silver mecha armor with magenta accents; pointed head modules are mechanical, not biological horns; very durable/fast self-repairing but not absolutely indestructible. GodKiller Override / Twenty-Four Severance = exactly 24 cuts while external time is fully stopped. Syvial is intensely yandere toward Cao Minh but lucid and socially/tactically competent; she values Cao Minh's voluntary choice and does not randomly murder, sabotage missions, erase memory or mind-control him.",
   lucia:"Hứa Thuý Mai is the legal/real name; Lucia Lục is a military nickname/callsign. She is a 19-year-old HUMAN Vietnamese woman of Hoa Kiều background, great-great-granddaughter of the Hứa family, with one year military training/service via Vietnam + USA and excellent entrance result. She is a capable human tactical riflewoman, not supernatural/UR+. Lucia is a fixed story-owned Level 0 encounter, not random/quest spawn and not part of the initial SRU group (Cao Minh/Iris/Syvial). Gameplay baseline: HP100 STR7 DF7 AGI8 CRIT7, +2 HP after each 3 separately completed turns. Main weapon personalized M4A1; baseline physical ammo 60 in main mags + 90 reserve = 150; combat dagger and military navigation watch. Relationship/address with Cao Minh remain OPEN."
@@ -329,7 +321,7 @@ const initial={
     {name:"Thái Cổ Song Sát"},
     {name:"Hắc Long Chiến Khải"}
   ],
-  flags:{communication:{team:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"},equippedSword:"demon-face"},
+  flags:{communication:{team:"OFFLINE",iris:"OFFLINE",syvial:"OFFLINE"}},
   characterCanon:CURRENT_CHARACTER_CANON,
   log:[
     {role:"gm",text:"MỞ ĐẦU\n\n"+prologue},
@@ -380,9 +372,6 @@ function renderStage(){
   if(ck&&ck!==ek){companionImgEl.src="entity/"+ck+".png";companionNameEl.textContent=flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
   const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
   if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
-  const eq=flags.equippedSword==="red-core"?"red-core":"demon-face";
-  swordAEl.classList.toggle("dimmed",eq!=="demon-face");
-  swordBEl.classList.toggle("dimmed",eq!=="red-core");
 }
 function avatarHtml(x){
   if(x.role==="player")return"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>";
@@ -397,16 +386,12 @@ function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"nu
 function resetGame(){if(confirm("Bắt đầu lại từ Turn 1?")){state=JSON.parse(JSON.stringify(initial));save();render()}}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");state=JSON.parse(JSON.stringify(initial));render()}}
 function curState(){try{return state}catch(e){return null}}
-const overlayEl=byId("character-overlay"),ovImg=byId("character-overlay-image"),ovRole=byId("character-overlay-role"),ovNameText=byId("character-overlay-name-text"),ovAlias=byId("character-overlay-alias"),ovSummary=byId("character-overlay-summary"),ovEquip=byId("character-overlay-equip"),ovSwordA=byId("equip-sword-a"),ovSwordB=byId("equip-sword-b");
-function syncEquipButtons(){const s=curState();const eq=s&&s.flags&&s.flags.equippedSword==="red-core"?"red-core":"demon-face";ovSwordA.setAttribute("aria-pressed",eq==="demon-face"?"true":"false");ovSwordB.setAttribute("aria-pressed",eq==="red-core"?"true":"false")}
-function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;ovEquip.hidden=key!=="cao_minh";if(key==="cao_minh")syncEquipButtons();overlayEl.hidden=false}
+const overlayEl=byId("character-overlay"),ovImg=byId("character-overlay-image"),ovRole=byId("character-overlay-role"),ovNameText=byId("character-overlay-name-text"),ovAlias=byId("character-overlay-alias"),ovSummary=byId("character-overlay-summary");
+function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;overlayEl.hidden=false}
 function closeProfile(){overlayEl.hidden=true}
-function setSword(which){const s=curState();if(!s)return;if(!s.flags)s.flags={};s.flags.equippedSword=which;save();syncEquipButtons();renderStage();statusEl.textContent=which==="red-core"?"Đã đổi sang thanh lõi đỏ.":"Đã đổi sang thanh mặt quỷ."}
 document.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-profile-open]"):null;if(t)openProfile(t.getAttribute("data-profile-open"))});
 byId("character-overlay-close").addEventListener("click",closeProfile);
 overlayEl.querySelector(".character-overlay-scrim").addEventListener("click",closeProfile);
-ovSwordA.addEventListener("click",()=>setSword("demon-face"));
-ovSwordB.addEventListener("click",()=>setSword("red-core"));
 entityImgEl.addEventListener("error",()=>entityFigEl.classList.remove("stage-entity-on"));
 companionImgEl.addEventListener("error",()=>companionFigEl.classList.remove("stage-companion-on"));
 const intelPanel=byId("intel-panel"),intelScrim=byId("intel-scrim"),intelToggle=byId("intel-toggle");

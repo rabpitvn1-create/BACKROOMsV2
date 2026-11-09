@@ -40,7 +40,7 @@ Directly opened from the Google Drive folder `02_CHARACTERS` before this sync:
 | Runtime concept | Source anchor | Current lock |
 | --- | --- | --- |
 | Identity | Owner canon 2026-11-09; `cao-minh-codex.txt` | Cao Minh / Vạn Giới Ma Tổ; Đạo Tổ của Vạn Ma Đạo Môn; cảnh giới Chí Tôn Đại Viên Mãn. Người Trái Đất trọng sinh; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực sụp đổ (Lục Trầm hy sinh mở đường). |
-| Thái Cổ Song Sát | Owner canon 2026-11-09; `cao-minh-equipment-skills.txt` | Song kiếm: thanh mặt quỷ + thanh lõi đỏ. Cầm một trong hai thanh tại một thời điểm, thanh còn lại lơ lửng sau lưng; đổi qua lại dạng equipment. |
+| Thái Cổ Song Sát | Owner canon 2026-11-09; `cao-minh-equipment-skills.txt` | Song kiếm: thanh mặt quỷ + thanh lõi đỏ. Cả hai thanh cùng lơ lửng sau lưng hắn. |
 | Hắc Long Chiến Khải | Owner canon 2026-11-09 | Giáp hộ thân chuẩn hiện hành. |
 | Thiên Kiếm Thất Thức | Owner canon 2026-11-09 | Kiếm pháp đã khóa tên. Chi tiết từng thức UNKNOWN/OPEN — không tự điền, không tự đặt tên mới (quyền đặt tên thuộc GPT). |
 

@@ -18,7 +18,7 @@ Cao Minh, tôn hiệu **Vạn Giới Ma Tổ**, Đạo Tổ của **Vạn Ma Đ�
 
 Ngoài nguy hiểm, Cao Minh ung dung, ngạo nghễ, hay trêu người; gặp nguy hiểm thật sự thì quyết đoán và ưu tiên bảo vệ người vô tội/đồng đội.
 
-Trang bị hiện hành: **Thái Cổ Song Sát** — song kiếm gồm thanh mặt quỷ và thanh lõi đỏ; tại một thời điểm hắn cầm một trong hai thanh, thanh còn lại lơ lửng sau lưng; hai thanh đổi qua lại dạng equipment. Giáp hộ thân: **Hắc Long Chiến Khải**.
+Trang bị hiện hành: **Thái Cổ Song Sát** — song kiếm gồm thanh mặt quỷ và thanh lõi đỏ; cả hai thanh cùng lơ lửng sau lưng hắn. Giáp hộ thân: **Hắc Long Chiến Khải**.
 
 Kiếm pháp đã khóa tên: **Thiên Kiếm Thất Thức**. Chi tiết từng thức vẫn UNKNOWN/OPEN — không tự điền.
 

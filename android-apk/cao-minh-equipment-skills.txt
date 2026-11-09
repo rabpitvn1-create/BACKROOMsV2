@@ -6,10 +6,9 @@ TRANG BỊ
 
 1. THÁI CỔ SONG SÁT (song kiếm — vũ khí chuẩn)
 - Hai thanh: thanh mặt quỷ và thanh lõi đỏ.
-- Tại một thời điểm, Cao Minh cầm một trong hai thanh; thanh còn lại lơ
-  lửng sau lưng. Hai thanh đổi qua lại dạng equipment (cơ chế đổi kiếm như
-  phía Hui-s-Family): thanh đang cầm được lưu trong state tại
-  flags.equippedSword ("demon-face" | "red-core", mặc định "demon-face").
+- Cả hai thanh cùng lơ lửng sau lưng Cao Minh. Không có cơ chế
+  chọn/đổi thanh đang cầm: chủ nhân đã gỡ cơ chế đó ngày 2026-11-09,
+  khớp trạng thái cuối bên Hui-s-Family (hai thanh lơ lửng, tay không).
 
 2. HẮC LONG CHIẾN KHẢI (giáp hộ thân)
 - Giáp chuẩn hiện hành của Cao Minh, mặc cùng Thái Cổ Song Sát.
