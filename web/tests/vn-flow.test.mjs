@@ -94,6 +94,15 @@ function assertCommonSceneState(window, label) {
   let { window, errors } = await bootPage(base, html);
   assert.deepEqual(errors, [], "part1 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part1");
+  // Fixed app frame (owner ruling): the page itself never scrolls — the
+  // shell is a fixed-height column, the snapshot is a rigid frame child
+  // and ONLY the story text region scrolls internally, so the choice
+  // deck stays pinned on screen instead of sitting screens below the
+  // scene text (regression: page-flow layout hid the choices on phones).
+  assert.match(html, /\.shell\{[^}]*height:100dvh[^}]*display:flex[^}]*flex-direction:column/, "part1: shell is a fixed-height flex column (app frame)");
+  assert.match(html, /\.snapshot-stage\{[^}]*flex:none/, "part1: snapshot stage is a rigid frame child");
+  assert.match(html, /\.log\{[^}]*overflow-y:auto/, "part1: story text region scrolls internally");
+  assert.match(html, /\.choice-deck\{[^}]*flex:none/, "part1: choice deck is pinned in the frame");
   const clicks = await playToEnd(window);
   assert.equal(clicks, 75, "part1: 75 clicks across 76 scenes");
   let doc = window.document;
@@ -149,6 +158,52 @@ function assertCommonSceneState(window, label) {
   console.log("part 2b OK: assembled site save restore at R01_09_05");
   server.close();
   rmSync(siteDir, { recursive: true, force: true });
+}
+
+// ── Part 3: user-path clicks (real event dispatch, not .click()) ──────
+// The harness above uses el.click(), which fires even on buttons a user
+// could never reach. This part walks the whole story dispatching real
+// bubbling click events through the delegated #choices listener, and at
+// the R01_00_03 branch point asserts both choices are presented (not
+// hidden, not display:none) and that choosing the SECOND one advances
+// the scene and sets its flag — the exact path a phone user takes.
+{
+  const server = await serve(assetsDir);
+  const base = `http://127.0.0.1:${server.address().port}/`;
+  const html = await (await fetch(base)).text();
+  const { window, errors } = await bootPage(base, html);
+  assert.deepEqual(errors, [], "part3 fresh boot errors: " + errors.join(" | "));
+  const doc = window.document;
+  let clicks = 0, branchChecked = false;
+  while (doc.querySelector("#choices [data-choice]") && clicks < 500) {
+    const before = JSON.parse(window.localStorage.getItem("backroom-apk-state"));
+    const btns = doc.querySelectorAll("#choices [data-choice]");
+    let btn = btns[0];
+    if (before.scene === "R01_00_03") {
+      assert.equal(btns.length, 2, "part3: R01_00_03 presents both choices");
+      assert.equal(doc.getElementById("choices").hidden, false, "part3: choices container is not hidden");
+      for (const b of btns) {
+        const cs = window.getComputedStyle(b);
+        assert.notEqual(cs.display, "none", "part3: choice button is displayed");
+        assert.notEqual(cs.visibility, "hidden", "part3: choice button is visible");
+      }
+      btn = btns[1]; // the "silent" branch
+    }
+    btn.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    await sleep(40);
+    clicks++;
+    if (before.scene === "R01_00_03") {
+      const after = JSON.parse(window.localStorage.getItem("backroom-apk-state"));
+      assert.equal(after.scene, "R01_00_04", "part3: dispatched click advances R01_00_03 → R01_00_04");
+      assert.equal(after.flags.r01_khai_first_impression, "silent", "part3: dispatched click sets the branch flag");
+      branchChecked = true;
+    }
+  }
+  assert.equal(clicks, 75, "part3: 75 dispatched clicks across 76 scenes");
+  assert.ok(branchChecked, "part3: branch point R01_00_03 was exercised");
+  assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part3: clean end-of-content state");
+  console.log("part 3 OK: full playthrough via dispatched click events; R01_00_03 branch sets flag");
+  server.close();
 }
 
 console.log("VN FLOW TEST PASSED");
