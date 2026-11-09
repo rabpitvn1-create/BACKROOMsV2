@@ -174,6 +174,32 @@ function assertCommonSceneState(window, label) {
   const { window, errors } = await bootPage(base, html);
   assert.deepEqual(errors, [], "part3 fresh boot errors: " + errors.join(" | "));
   const doc = window.document;
+  // Profile drawer (QA L1): the drawer list is generated from PROFILES —
+  // its buttons match the PROFILES keys exactly (no dead old-cast buttons),
+  // and clicking Hạ Liên's button — a path the old static list never
+  // offered — opens her profile overlay with her name and overlay image.
+  const tap = (el) => el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+  const profileKeys = [...window.eval("Object.keys(PROFILES)")]; // spread: jsdom-realm array → Node realm for deepEqual
+  const listBtns = [...doc.querySelectorAll("#profile-list [data-profile-open]")];
+  assert.deepEqual(listBtns.map((b) => b.getAttribute("data-profile-open")), profileKeys, "part3: drawer profile buttons match PROFILES keys");
+  for (const dead of ["iris", "syvial", "lucia"]) {
+    assert.equal(doc.querySelector(`#intel-panel [data-profile-open="${dead}"]`), null, "part3: no " + dead + " profile button in the drawer");
+    assert.ok(!html.includes(`data-profile-open="${dead}"`), "part3: no static " + dead + " profile button in the markup");
+  }
+  tap(doc.getElementById("intel-toggle"));
+  assert.ok(doc.body.classList.contains("intel-open"), "part3: intel drawer opens");
+  const ov = doc.getElementById("character-overlay");
+  tap(doc.querySelector("#profile-list [data-profile-open='ha_lien']"));
+  assert.equal(ov.hidden, false, "part3: Hạ Liên profile overlay opens from the drawer");
+  assert.equal(doc.getElementById("character-overlay-name-text").textContent, "Hạ Liên", "part3: overlay shows Hạ Liên's name");
+  assert.ok(doc.getElementById("character-overlay-image").getAttribute("src").includes("ha_lien_overlay.webp"), "part3: overlay shows Hạ Liên's overlay image");
+  tap(doc.getElementById("character-overlay-close"));
+  assert.equal(ov.hidden, true, "part3: profile overlay closes");
+  tap(doc.querySelector("#profile-list [data-profile-open='cao_minh']"));
+  assert.equal(ov.hidden, false, "part3: Cao Minh profile overlay still opens from the drawer list");
+  assert.equal(doc.getElementById("character-overlay-name-text").textContent, "Cao Minh", "part3: overlay shows Cao Minh's name");
+  tap(doc.getElementById("character-overlay-close"));
+  tap(doc.getElementById("intel-close"));
   let clicks = 0, branchChecked = false;
   while (doc.querySelector("#choices [data-choice]") && clicks < 500) {
     const before = JSON.parse(window.localStorage.getItem("backroom-apk-state"));

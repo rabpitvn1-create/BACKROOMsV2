@@ -127,12 +127,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <div class="card"><h2>Trạng thái</h2><div class="row"><b>Vị trí</b><span id="location"></span></div><div class="row"><b>Chế độ</b><span id="mode"></span></div><div class="row"><b>Nhân vật</b><span id="player"></span></div></div>
 <div class="card"><h2>Party</h2><div class="chips" id="party"></div></div>
 <div class="card"><h2>Inventory</h2><div class="chips" id="inventory"></div></div>
-<div class="card"><h2>Hồ sơ nhân vật</h2><div class="profile-list">
-<button type="button" data-profile-open="cao_minh">Cao Minh</button>
-<button type="button" data-profile-open="iris">Iris</button>
-<button type="button" data-profile-open="syvial">Syvial</button>
-<button type="button" data-profile-open="lucia">Lucia</button>
-</div></div>
+<div class="card"><h2>Hồ sơ nhân vật</h2><div class="profile-list" id="profile-list"></div></div>
 <div class="card"><h2>Save / Load</h2><div class="actions"><button onclick="save()">Lưu</button><button onclick="load()">Tải</button><button class="wide" onclick="resetGame()">Bắt đầu lại từ đầu</button><button class="wide danger" onclick="clearSave()">Xóa save trên máy</button></div></div>
 </div>
 </aside>
@@ -167,10 +162,7 @@ const CURRENT_CHARACTER_CANON={
 };
 const PROFILES={
   cao_minh:{name:"Cao Minh",alias:"Vạn Giới Ma Tổ",role:"ĐẠO TỔ · VẠN MA ĐẠO MÔN",image:"avatars/cao_minh_avatar.jpg",summary:"Người Trái Đất trọng sinh sau một đêm tăng ca quá độ; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực sụp đổ; song kiếm Thái Cổ Song Sát, Hắc Long Chiến Khải hộ thân."},
-  ha_lien:{name:"Hạ Liên",alias:"Hạ Liên Tiên Tử",role:"NỮ VƯƠNG · HIÊN VIÊN TRIỀU",image:"ha_lien_overlay.webp",summary:"Nữ Vương của thiên triều Hiên Viên Triều, tu vi Chí Tôn cảnh viên mãn; vợ của Cao Minh. Tái ngộ phu quân tại Level 1 của Backrooms và đồng hành cùng Vạn Ma Đạo Môn từ đó."},
-  iris:{name:"Iris",alias:"ARGUS",role:"SCOUT / TARGET ELIMINATOR",image:"avatars/Iris_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Belial. Xạ thủ tầm xa của đội; ARGUS Terrain Read phân tích địa hình từ quan sát trực tiếp và cảm biến tại chỗ."},
-  syvial:{name:"Syvial",alias:"",role:"ĐỘI PHÓ",image:"avatars/Syvial_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Lucifer, cấp UR+. Kiếm sĩ siêu nhiên tốc độ cao với đại kiếm cơ khí GodKiller và Lucifer Armor."},
-  lucia:{name:"Hứa Thuý Mai / Lucia Lục",alias:"",role:"FIXED ENCOUNTER — LEVEL 0",image:"avatars/lucia_avatar.jpg",summary:"Quân nhân loài người 19 tuổi, chít nội Gia tộc Họ Hứa. Tay súng chiến thuật với M4A1 cá nhân hóa; encounter cố định do story sở hữu tại Level 0."}
+  ha_lien:{name:"Hạ Liên",alias:"Hạ Liên Tiên Tử",role:"NỮ VƯƠNG · HIÊN VIÊN TRIỀU",image:"ha_lien_overlay.webp",summary:"Nữ Vương của thiên triều Hiên Viên Triều, tu vi Chí Tôn cảnh viên mãn; vợ của Cao Minh. Tái ngộ phu quân tại Level 1 của Backrooms và đồng hành cùng Vạn Ma Đạo Môn từ đó."}
 };
 const initial={
   v:2,
@@ -189,7 +181,7 @@ const initial={
   characterCanon:CURRENT_CHARACTER_CANON
 };
 const byId=id=>document.getElementById(id);
-const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status");
+const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),profileListEl=byId("profile-list"),logEl=byId("log"),statusEl=byId("status");
 const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
 const kickerEl=byId("scene-kicker"),progressEl=byId("scene-progress");
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
@@ -239,6 +231,8 @@ function visibleLines(sc){return sc.lines.filter(function(ln){return !ln.if||Obj
 let lastRenderedScene=null;
 function render(){
   titleEl.textContent=state.title;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);
+  // Drawer profile buttons are generated from PROFILES: a character gets a button exactly when it has a profile entry.
+  profileListEl.innerHTML=Object.keys(PROFILES).map(k=>"<button type='button' data-profile-open='"+k+"'>"+esc(PROFILES[k].name)+"</button>").join("");
   // Hui model: the story frame holds ONLY the current scene's segment;
   // everything already read lives in state.history (backlog + save).
   const sc=story&&state.scene?scenesById[state.scene]:null;
