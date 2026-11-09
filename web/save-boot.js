@@ -44,9 +44,12 @@
  *    they are routed automatically.)
  *
  * 5. load() — replace the whole body:
- *        state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
- *        state.characterCanon=CURRENT_CHARACTER_CANON;render()
- *      → SaveBoot.loadString().then(function(s){state=JSON.parse(s||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()});
+ *        const s=JSON.parse(localStorage.getItem("backroom-apk-state")||"null");
+ *        state=<s if it is a valid v2 state, else a fresh copy of initial>;
+ *        state.characterCanon=CURRENT_CHARACTER_CANON;currentEntry=-1;
+ *        migrateState();ensureSceneEntry();render();resetReaderScroll()
+ *      → the same body reading through SaveBoot.loadString() instead:
+ *        SaveBoot.loadString().then(function(s){const p=JSON.parse(s||"null"); ... });
  *
  * 6. clearSave() — one call swapped:
  *        localStorage.removeItem("backroom-apk-state");

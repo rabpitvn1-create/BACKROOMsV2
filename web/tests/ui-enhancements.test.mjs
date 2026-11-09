@@ -105,7 +105,8 @@ function boot() {
   btn.click();
   check("A: snapshot click sets the exact local status message",
     doc.getElementById("status").textContent === SNAPSHOT_MSG);
-  check("A: snapshot click scrolls the stage into view", doc.getElementById("snapshot").__scrolled === true);
+  check("A: snapshot click does NOT scrollIntoView (transferred mechanism bans scroll positioning)",
+    doc.getElementById("snapshot").__scrolled !== true);
   window.requestSnapshot();
   check("A: window.requestSnapshot is the same local action",
     doc.getElementById("status").textContent === SNAPSHOT_MSG);

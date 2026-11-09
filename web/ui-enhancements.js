@@ -22,8 +22,11 @@
  * machinery at all — no cache, no generated art, no bridge call. The VN
  * stage above the story panel IS the snapshot (level background +
  * figures from local assets), so window.requestSnapshot is the purely
- * local showSnapshot: it points the status line at the stage and
- * scrolls it into view. The "Tạo Snapshot" button calls exactly that.
+ * local showSnapshot: it points the status line at the stage. The stage
+ * is sticky at the top of the reading scroller (transferred Hui
+ * mechanism), so no scrolling is needed — and scrollIntoView must not
+ * be used to position the Snapshot or the story panel. The "Tạo
+ * Snapshot" button calls exactly that.
  * The fixed-scene VN engine runs entirely inside the page, so the
  * payload no longer carries any turn machinery: the pending bubbles,
  * the backroomTurn/backroomError wrappers and the form-submit hook of
@@ -39,4 +42,4 @@
  * The injected <style> travels inside the payload (the native code builds
  * it as a style element), so there is no separate .css file.
  */
-(function(){if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;var st=document.createElement('style');st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}#snapshot .stage-bg{border-radius:20px}';document.head.appendChild(st);function showSnapshot(){var s=document.getElementById('status');if(s)s.textContent='Snapshot hiển thị trực tiếp ở khung phía trên — nền theo Level, nhân vật và thực thể đều là ảnh trên máy.';var box=document.getElementById('snapshot');if(box&&box.scrollIntoView)box.scrollIntoView({block:'start'});}window.requestSnapshot=showSnapshot;var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',showSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}})();
+(function(){if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;var st=document.createElement('style');st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}#snapshot .stage-bg{border-radius:20px}';document.head.appendChild(st);function showSnapshot(){var s=document.getElementById('status');if(s)s.textContent='Snapshot hiển thị trực tiếp ở khung phía trên — nền theo Level, nhân vật và thực thể đều là ảnh trên máy.';}window.requestSnapshot=showSnapshot;var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',showSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}})();

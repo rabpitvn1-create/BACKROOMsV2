@@ -94,15 +94,20 @@ function assertCommonSceneState(window, label) {
   let { window, errors } = await bootPage(base, html);
   assert.deepEqual(errors, [], "part1 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part1");
-  // Fixed app frame (owner ruling): the page itself never scrolls — the
-  // shell is a fixed-height column, the snapshot is a rigid frame child
-  // and ONLY the story text region scrolls internally, so the choice
-  // deck stays pinned on screen instead of sitting screens below the
-  // scene text (regression: page-flow layout hid the choices on phones).
-  assert.match(html, /\.shell\{[^}]*height:100dvh[^}]*display:flex[^}]*flex-direction:column/, "part1: shell is a fixed-height flex column (app frame)");
-  assert.match(html, /\.snapshot-stage\{[^}]*flex:none/, "part1: snapshot stage is a rigid frame child");
-  assert.match(html, /\.log\{[^}]*overflow-y:auto/, "part1: story text region scrolls internally");
-  assert.match(html, /\.choice-deck\{[^}]*flex:none/, "part1: choice deck is pinned in the frame");
+  // Transferred Hui scroll mechanism (owner ruling, mechanism spec v2):
+  // the document is locked (html,body height + body overflow hidden),
+  // .game-layout is the single reading scroller holding BOTH the sticky
+  // Snapshot and the story panel, the story text itself never scrolls
+  // independently, and the choice deck flows at the end of the panel
+  // instead of being pinned (the old app-frame assertions encoded the
+  // banned patch architecture and are replaced by these mechanism ones).
+  assert.match(html, /\.shell\{[^}]*height:100dvh[^}]*display:flex[^}]*flex-direction:column/, "part1: shell is a fixed-height flex column");
+  assert.match(html, /html,body\{[^}]*height:100%/, "part1: document height is locked");
+  assert.match(html, /body\{[^}]*overflow:hidden/, "part1: document scroll is locked");
+  assert.match(html, /\.game-layout\{[^}]*overflow-y:auto/, "part1: .game-layout is the single reading scroller");
+  assert.match(html, /\.snapshot-stage\{[^}]*position:sticky/, "part1: snapshot sticks inside the scroller");
+  assert.doesNotMatch(html, /\.log\{[^}]*overflow-y:auto/, "part1: story text is NOT an independent scroll region");
+  assert.doesNotMatch(html, /\.choice-deck\{[^}]*flex:none/, "part1: choice deck flows at the end of the story panel, not pinned");
   const clicks = await playToEnd(window);
   assert.equal(clicks, 75, "part1: 75 clicks across 76 scenes");
   let doc = window.document;

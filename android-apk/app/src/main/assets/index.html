@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="game-build" content="unversioned">
 <title>Backroom</title>
 <style>
 /* Quicksand (Google Fonts, OFL) — bundled locally, same font set as Hui-s-Family.
@@ -13,11 +14,15 @@
 @font-face{font-family:"Quicksand";src:url("fonts/Quicksand-700.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
 :root{--font-display:"Quicksand","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--font-reading:"Quicksand","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--font-ui:"Quicksand","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;--font-code:"Quicksand","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
 h1,h2{font-family:var(--font-display)}
-*{box-sizing:border-box}body{margin:0;background:#080a0c;color:#eef1f3;font:15px var(--font-ui)}.shell{height:100vh;height:100dvh;display:flex;flex-direction:column;padding:10px;background:radial-gradient(circle at top,#161b20,#07090b 75%)}
-.campaign-header{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007}.eyebrow,.role{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em;font-family:var(--font-code)}h1{margin:4px 0 0;font-size:23px}.turn{color:#9aa4ad;font-size:12px;letter-spacing:.1em;white-space:nowrap}.turn strong{font-size:21px;color:white}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;overflow:hidden;background:#080a0c;color:#eef1f3;font:15px var(--font-ui)}.shell{height:100vh;height:100dvh;display:flex;flex-direction:column;background:radial-gradient(circle at top,#161b20,#07090b 75%)}
+.campaign-header{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 10px 0;padding:12px 16px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007}
+.game-layout{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;overflow-x:clip;scrollbar-width:none;-ms-overflow-style:none;display:flex;flex-direction:column}
+.game-layout::-webkit-scrollbar{display:none;width:0;height:0}
+@media (max-width:760px){.campaign-header{margin:8px 8px 0;padding:12px}.campaign-header .eyebrow{display:none}.campaign-header>div{min-width:0}.campaign-header h1{font-size:17px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.burger-toggle{padding:7px 10px}.burger-text{display:none}}.eyebrow,.role{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em;font-family:var(--font-code)}h1{margin:4px 0 0;font-size:23px}.turn{color:#9aa4ad;font-size:12px;letter-spacing:.1em;white-space:nowrap}.turn strong{font-size:21px;color:white}
 button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;padding:12px;font-weight:700;cursor:pointer}textarea{font:inherit}
 .burger-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}.burger-line{display:block;width:20px;height:2px;background:#eef1f3}.burger-text{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8f9aa4}
-.snapshot-stage{flex:none;position:relative;height:clamp(300px,82vw,340px);margin-top:10px}
+.snapshot-stage{position:sticky;top:0;z-index:6;flex:0 0 auto;overflow:hidden;height:min(72vw,19rem);margin:10px 10px 0}
+@media (max-width:760px){.snapshot-stage{top:12px;width:calc(100% - 21px);height:auto;min-height:0;aspect-ratio:1080/740;margin:12px auto 0}}
 .stage-bg{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid #252b31;background:#0b0d0f;box-shadow:0 20px 60px #0007}
 #stage-background{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
 .snapshot-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
@@ -39,23 +44,23 @@ button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;pa
 @keyframes sword-hover-a{from{transform:translate(-32%,-10.5%) rotate(0deg)}to{transform:translate(-32%,-4.5%) rotate(0deg)}}
 @keyframes sword-hover-b{from{transform:translate(32%,-4.5%) rotate(0deg)}to{transform:translate(32%,-10.5%) rotate(0deg)}}
 .stage-caption{position:absolute;left:50%;bottom:.6rem;z-index:4;transform:translateX(-50%);max-width:calc(100% - 2rem);padding:.38rem .8rem;border:1px solid #2b3137;border-radius:999px;color:#eef1f3;background:rgba(8,10,12,.72);font-size:.72rem;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.story-panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;margin-top:10px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007;padding:10px}
+.story-panel{flex:0 0 auto;margin:10px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007;padding:10px}
+.story-panel.choices-collapsed .choice-deck{display:none}
 .scene-header{flex:none;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:2px 2px 10px;border-bottom:1px solid #252b31;margin-bottom:12px}
 .scene-kicker{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em;font-family:var(--font-code)}
 .scene-seal{color:#9aa4ad;font-size:11px;letter-spacing:.1em;white-space:nowrap}.scene-seal strong{color:#eef1f3;font-size:14px}
-.log{flex:1 1 auto;min-height:0;overflow-y:auto;display:grid;gap:10px;align-content:start}
+.log{display:grid;gap:10px;align-content:start}
 .story-line{margin:0}
 .dialogue{display:flex;gap:10px;border-left:3px solid #8b949e;padding:11px;background:#111519}.message-body{flex:1;min-width:0}
 .speaker{display:block;margin-bottom:6px;color:#c9d1d8;font-size:12px;font-weight:700;letter-spacing:.06em}
 .text{white-space:pre-wrap;line-height:1.55;font-family:var(--font-reading)}
-#log article.reading{outline:1px solid #77828c}
+.dialogue-avatar-fallback{display:grid;place-items:center;font-weight:700;font-size:13px;color:#c9d1d8}
 .dialogue-avatar{width:2.8rem;height:2.8rem;flex:none;object-fit:cover;border:1px solid #2b3137;border-radius:.35rem;background:#090c0f}
 .dialogue-avatar-crop{width:2.8rem;height:2.8rem;flex:none;overflow:hidden;padding:0;position:relative}
 .dialogue-avatar-crop>img{display:block;height:385%;width:auto;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
-body.fast-read .story-panel *,body.fast-read .story-panel *::before,body.fast-read .story-panel *::after{animation-duration:.01s!important;transition-duration:.01s!important}
-.choice-deck{flex:none;margin-top:10px;border-top:1px solid #252b31;padding-top:10px}.choice-deck-tools{display:flex;flex-wrap:wrap;gap:8px}.choices{display:grid;gap:8px;margin-top:8px}.choices[hidden]{display:none}.choice{text-align:left}
+.choice-deck{margin-top:10px;border-top:1px solid #252b31;padding-top:10px}.choice-deck-tools{display:flex;flex-wrap:wrap;gap:8px}.choices{display:grid;gap:8px;margin-top:8px}.choices[hidden]{display:none}.choice{text-align:left}
 .composer{display:grid;gap:8px;padding:10px 0 0}textarea{min-height:80px;background:#090c0f;color:white;border:1px solid #30373e;padding:10px}
-.status{flex:none;border-top:1px solid #252b31;padding:10px 0 0;margin-top:10px;color:#9aa4ad;font-size:12px}
+.status{border-top:1px solid #252b31;padding:10px 0 0;margin-top:10px;color:#9aa4ad;font-size:12px}
 .intel-scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:119}.intel-scrim[hidden]{display:none}
 .intel-panel{position:fixed;top:0;right:0;z-index:120;width:min(420px,92vw);height:100dvh;background:#0e1114;border-left:1px solid #2b3137;transform:translateX(105%);visibility:hidden;transition:transform 260ms ease,visibility 260ms ease;display:flex;flex-direction:column}
 body.intel-open .intel-panel{transform:none;visibility:visible}
@@ -90,6 +95,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <button id="intel-toggle" class="burger-toggle" type="button" aria-label="Hồ sơ" aria-controls="intel-panel" aria-expanded="false"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span><span class="burger-text">Hồ sơ</span></button>
 <div><div class="eyebrow">BACKROOMS — VISUAL NOVEL</div><h1 id="title"></h1></div>
 </header>
+<div class="game-layout" id="game-layout">
 <section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
 <div class="stage-bg"><img id="stage-background" src="level_snapshots/level_0.webp" alt=""></div>
 <div class="stage-figure" id="stage-entity-figure"><img id="stage-entity" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-entity-name"></span></div>
@@ -103,7 +109,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 </section>
 <section class="story-panel" id="story-panel">
 <header class="scene-header"><span class="scene-kicker" id="scene-kicker"></span><span class="scene-seal">CẢNH <strong id="scene-progress">00</strong></span></header>
-<div class="log" id="log"></div>
+<div class="log story-text" id="log"></div>
 <section class="choice-deck" aria-label="Thao tác">
 <div class="choice-deck-tools">
 <button id="actions-toggle" type="button" aria-expanded="true">Thao Tác</button>
@@ -115,6 +121,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 </section>
 <div class="status" id="status"></div>
 </section>
+</div>
 </main>
 <div id="intel-scrim" class="intel-scrim" hidden></div>
 <aside id="intel-panel" class="intel-panel" aria-label="Hồ sơ" aria-hidden="true">
@@ -124,7 +131,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <span class="portrait-frame"><img src="avatars/cao_minh_avatar.jpg" alt="Chân dung Cao Minh, tôn hiệu Vạn Giới Ma Tổ"></span>
 <span class="profile-copy"><span class="micro-label">ĐẠO TỔ · VẠN MA ĐẠO MÔN</span><h2>Cao Minh <span>/ Vạn Giới Ma Tổ</span></h2><p>Đạo Tổ · song kiếm Thái Cổ Song Sát · Hắc Long Chiến Khải</p></span>
 </button>
-<div class="card"><h2>Trạng thái</h2><div class="row"><b>Vị trí</b><span id="location"></span></div><div class="row"><b>Chế độ</b><span id="mode"></span></div><div class="row"><b>Nhân vật</b><span id="player"></span></div></div>
+<div class="card"><h2>Trạng thái</h2><div class="row"><b>Vị trí</b><span id="location"></span></div><div class="row"><b>Chế độ</b><span id="mode"></span></div><div class="row"><b>Nhân vật</b><span id="player"></span></div><div class="row"><b>Build</b><span id="build-id"></span></div></div>
 <div class="card"><h2>Party</h2><div class="chips" id="party"></div></div>
 <div class="card"><h2>Inventory</h2><div class="chips" id="inventory"></div></div>
 <div class="card"><h2>Hồ sơ nhân vật</h2><div class="profile-list" id="profile-list"></div></div>
@@ -178,12 +185,38 @@ const initial={
   flags:{},
   scene:null,
   history:[],
+  historyFormat:2,
+  sceneHistory:[],
+  runId:null,
+  legacyHistoryCount:0,
   characterCanon:CURRENT_CHARACTER_CANON
 };
 const byId=id=>document.getElementById(id);
 const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),profileListEl=byId("profile-list"),logEl=byId("log"),statusEl=byId("status");
 const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
 const kickerEl=byId("scene-kicker"),progressEl=byId("scene-progress");
+const V=window.__V||"";
+document.documentElement.dataset.build=(document.querySelector('meta[name="game-build"]')||{}).content||"";
+const buildIdEl=byId("build-id"),gameLayoutEl=byId("game-layout");
+function newRunId(){return"run-"+Date.now().toString(36)+"-"+Math.floor(Math.random()*1e6).toString(36)}
+let saveBlocked=false;
+function migrateState(){
+  // Additive v2 history migration: the legacy per-line history is kept
+  // verbatim; per-scene history (historyFormat 2) only records from here.
+  try{
+    if(state.historyFormat===2&&Array.isArray(state.sceneHistory)&&state.runId)return;
+    state.historyFormat=2;
+    if(!Array.isArray(state.sceneHistory))state.sceneHistory=[];
+    if(!state.runId)state.runId=newRunId();
+    if(typeof state.legacyHistoryCount!=="number")state.legacyHistoryCount=(state.history||[]).length;
+  }catch(e){saveBlocked=true;statusEl.textContent="Không bổ sung được định dạng lịch sử mới — đã chặn ghi đè để bảo toàn save cũ."}
+}
+function resetReaderScroll(){
+  // .game-layout is the reading scroller; the page itself is fixed (Hui mechanism).
+  if(!gameLayoutEl)return;
+  gameLayoutEl.scrollTop=0;
+  window.requestAnimationFrame(()=>{gameLayoutEl.scrollTop=0});
+}
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
@@ -192,9 +225,10 @@ state.characterCanon=CURRENT_CHARACTER_CANON;
 // turn/log save is discarded and play restarts at the first scene.
 if(!state||state.v!==2||!Array.isArray(state.history))state=JSON.parse(JSON.stringify(initial));
 if(state===initial)state=JSON.parse(JSON.stringify(initial));
+migrateState();
 loadStory().then(function(){
-  if(state.scene&&scenesById[state.scene])render();
-  else{state.history=[];enterScene(story.start)}
+  if(state.scene&&scenesById[state.scene]){ensureSceneEntry();render()}
+  else{state.history=[];state.sceneHistory=[];enterScene(story.start)}
 },function(){statusEl.textContent="Không tải được dữ liệu truyện (story/opening-chapter.json)."});
 localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
@@ -206,11 +240,11 @@ function partyChips(items){if(!items||!items.length)return"<span>Trống.</span>
 function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));if(!m)return 0;const n=Math.min(9,Math.max(0,parseInt(m[1],10)));return n===8?7:n}
 function flagKey(v){if(!v)return"";const raw=typeof v==="string"?v:(v.id||v.key||v.name||"");return String(raw).toLowerCase().trim().replace(/\s+/g,"_")}
 function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):flagKey(v).replace(/[_-]+/g," ");return raw?raw.replace(/\b\w/g,c=>c.toUpperCase()):""}
-function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")}
-function companionSrc(k){return k==="ha_lien"?"ha_lien_overlay.webp":entitySrc(k)}
+function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")+V}
+function companionSrc(k){return k==="ha_lien"?"ha_lien_overlay.webp"+V:entitySrc(k)}
 let stagePose="";
 function renderStage(){
-  const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp";
+  const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp"+V;
   if(stageBgEl.getAttribute("src")!==bgSrc)stageBgEl.src=bgSrc;
   captionEl.textContent=state.location||"";
   const flags=state.flags||{};
@@ -220,12 +254,22 @@ function renderStage(){
   if(encounter){entityImgEl.src=entitySrc(ek);entityNameEl.textContent=flagName(flags.entity||flags.encounter);entityFigEl.classList.add("stage-entity-on")}else{entityFigEl.classList.remove("stage-entity-on")}
   if(ck&&ck!==ek){companionImgEl.src=companionSrc(ck);companionNameEl.textContent=(PROFILES[ck]&&PROFILES[ck].name)||flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
   const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
-  if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
+  if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose+V;charImgEl.classList.remove("is-swapping")},160)}
+}
+function initialsFor(name){const w=String(name||"?").trim().split(/\s+/).filter(Boolean);return w.length?w.slice(0,2).map(x=>x[0].toUpperCase()).join(""):"?"}
+// Dialogue avatars resolve from PROFILES data (Hui model): a dedicated
+// portrait under avatars/ is used as-is; any other profile image is the
+// character's full-body overlay, shown through the shoulder-to-head crop
+// frame. A speaker with no profile entry gets an initials fallback.
+function avatarHtml(speaker){
+  const p=Object.values(PROFILES).find(x=>x.name===speaker);
+  if(!p)return"<span class='dialogue-avatar dialogue-avatar-fallback' role='img' aria-label='Avatar của "+esc(speaker)+"'>"+esc(initialsFor(speaker))+"</span>";
+  if(p.image.indexOf("avatars/")===0)return"<img class='dialogue-avatar' src='"+p.image+V+"' alt='"+esc(p.name)+"'>";
+  return"<span class='dialogue-avatar-crop'><img src='"+p.image+V+"' alt='"+esc(p.name)+"'></span>";
 }
 function lineHtml(x){
   if(!x.speaker)return"<article class='story-line'><div class='text'>"+esc(x.text)+"</div></article>";
-  const av=x.speaker==="Cao Minh"?"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>":x.speaker==="Hạ Liên"?"<span class='dialogue-avatar-crop'><img src='ha_lien_overlay.webp' alt='Hạ Liên'></span>":"";
-  return"<article class='dialogue'>"+av+"<div class='message-body'><span class='speaker'>"+esc(x.speaker)+"</span><div class='text'>"+esc(x.text)+"</div></div></article>";
+  return"<article class='dialogue'>"+avatarHtml(x.speaker)+"<div class='message-body'><span class='speaker'>"+esc(x.speaker)+"</span><div class='text'>"+esc(x.text)+"</div></div></article>";
 }
 function visibleLines(sc){return sc.lines.filter(function(ln){return !ln.if||Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]})})}
 let lastRenderedScene=null;
@@ -239,61 +283,136 @@ function render(){
   logEl.innerHTML=(sc?visibleLines(sc):(state.history||[])).map(lineHtml).join("");
   kickerEl.textContent=sc?"BACKROOMS // "+String(state.location||"").toUpperCase():"";
   progressEl.textContent=sc?String(sceneIndex[sc.id]||0).padStart(2,"0"):"00";
-  if(sc&&lastRenderedScene!==sc.id){lastRenderedScene=sc.id;logEl.scrollTop=0}
-  renderChoices();renderStage();
+  if(buildIdEl)buildIdEl.textContent=document.documentElement.dataset.build||"unversioned";
+  if(sc&&lastRenderedScene!==sc.id){lastRenderedScene=sc.id;resetReaderScroll()}
+  renderChoices();renderStage();scheduleAuto();
 }
 let story=null;const scenesById={};const sceneIndex={};
 function loadStory(){
-  const got=(typeof fetch==="function")?fetch("story/opening-chapter.json").then(function(r){if(!r.ok)throw new Error("story http");return r.json()}):Promise.reject(new Error("no fetch"));
-  return got.catch(function(){return new Promise(function(res,rej){const x=new XMLHttpRequest();x.open("GET","story/opening-chapter.json");x.onload=function(){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}};x.onerror=rej;x.send()})}).then(function(data){story=data;data.scenes.forEach(function(sc,i){scenesById[sc.id]=sc;sceneIndex[sc.id]=i+1});return data});
+  const got=(typeof fetch==="function")?fetch("story/opening-chapter.json"+V).then(function(r){if(!r.ok)throw new Error("story http");return r.json()}):Promise.reject(new Error("no fetch"));
+  return got.catch(function(){return new Promise(function(res,rej){const x=new XMLHttpRequest();x.open("GET","story/opening-chapter.json"+V);x.onload=function(){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}};x.onerror=rej;x.send()})}).then(function(data){story=data;data.scenes.forEach(function(sc,i){scenesById[sc.id]=sc;sceneIndex[sc.id]=i+1});return data});
+}
+let currentEntry=-1;
+function sceneTitle(sc){return"BACKROOMS // LEVEL "+sc.stage.level+" — CẢNH "+String(sceneIndex[sc.id]||0).padStart(2,"0")}
+function beginSceneEntry(sc){
+  if(!state.runId)state.runId=newRunId();
+  if(!Array.isArray(state.sceneHistory))state.sceneHistory=[];
+  state.sceneHistory.push({sceneId:sc.id,title:sceneTitle(sc),lines:visibleLines(sc).map(ln=>({speaker:ln.speaker||"",text:ln.text})),selectedChoice:null,runId:state.runId});
+  if(state.sceneHistory.length>200)state.sceneHistory=state.sceneHistory.slice(-200);
+  currentEntry=state.sceneHistory.length-1;
+}
+function ensureSceneEntry(){
+  const sc=story&&state.scene?scenesById[state.scene]:null;if(!sc)return;
+  const last=Array.isArray(state.sceneHistory)?state.sceneHistory[state.sceneHistory.length-1]:null;
+  if(last&&last.sceneId===sc.id){currentEntry=state.sceneHistory.length-1;return}
+  beginSceneEntry(sc);
 }
 function enterScene(id){
   const sc=scenesById[id];if(!sc)return;
   state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;state.flags.companion=sc.stage.companion||null;
   for(const ln of visibleLines(sc))state.history.push({speaker:ln.speaker||"",text:ln.text});
+  beginSceneEntry(sc);
   save();render();
 }
-function choose(c){if(c.set)state.flags=Object.assign({},state.flags,c.set);enterScene(c.next)}
-function restart(){state=JSON.parse(JSON.stringify(initial));if(story)enterScene(story.start);else render()}
+function choose(c,idx){
+  const e=Array.isArray(state.sceneHistory)?state.sceneHistory[currentEntry]:null;
+  if(e&&e.sceneId===state.scene)e.selectedChoice={choiceIndex:idx,choiceLabel:c.label,nextSceneId:c.next,choiceSet:c.set?JSON.parse(JSON.stringify(c.set)):null};
+  if(c.set)state.flags=Object.assign({},state.flags,c.set);
+  enterScene(c.next);
+}
+function restart(){stopPlayback();state=JSON.parse(JSON.stringify(initial));currentEntry=-1;if(story)enterScene(story.start);else render()}
 function renderChoices(){
   const sc=story&&state.scene?scenesById[state.scene]:null;
   if(!sc){choicesEl.innerHTML="";return}
   if(!sc.choices.length){choicesEl.innerHTML="<div class='text'>— Hết phần nội dung hiện có —</div><button type='button' class='choice' data-restart='1'>Đọc lại từ đầu</button>";return}
   choicesEl.innerHTML=sc.choices.map(function(c,i){return"<button type='button' class='choice' data-choice='"+i+"'>"+esc(c.label)+"</button>"}).join("");
 }
-function save(){localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu tiến trình trên máy."}
-function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}
+function save(){if(saveBlocked)return;localStorage.setItem("backroom-apk-state",JSON.stringify(state));statusEl.textContent="Đã lưu tiến trình trên máy."}
+function load(){const s=JSON.parse(localStorage.getItem("backroom-apk-state")||"null");state=s&&s.v===2&&Array.isArray(s.history)?s:JSON.parse(JSON.stringify(initial));state.characterCanon=CURRENT_CHARACTER_CANON;currentEntry=-1;migrateState();ensureSceneEntry();render();resetReaderScroll()}
 function resetGame(){if(confirm("Bắt đầu lại từ đầu?"))restart()}
 function clearSave(){if(confirm("Xóa save trên máy?")){localStorage.removeItem("backroom-apk-state");restart()}}
 function curState(){try{return state}catch(e){return null}}
 const overlayEl=byId("character-overlay"),ovImg=byId("character-overlay-image"),ovRole=byId("character-overlay-role"),ovNameText=byId("character-overlay-name-text"),ovAlias=byId("character-overlay-alias"),ovSummary=byId("character-overlay-summary");
-function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;overlayEl.hidden=false}
-function closeProfile(){overlayEl.hidden=true}
-document.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-profile-open]"):null;if(t)openProfile(t.getAttribute("data-profile-open"))});
+let lastProfileOpener=null;
+function openProfile(key){const p=PROFILES[key];if(!p)return;ovImg.src=p.image+V;ovImg.alt=p.name;ovRole.textContent=p.role;ovNameText.textContent=p.name;ovAlias.textContent=p.alias?"/ "+p.alias:"";ovSummary.textContent=p.summary;overlayEl.hidden=false;setTimeout(()=>byId("character-overlay-close").focus(),50)}
+function closeProfile(){overlayEl.hidden=true;if(lastProfileOpener)lastProfileOpener.focus({preventScroll:true})}
+document.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-profile-open]"):null;if(t){lastProfileOpener=t;openProfile(t.getAttribute("data-profile-open"))}});
 byId("character-overlay-close").addEventListener("click",closeProfile);
 overlayEl.querySelector(".character-overlay-scrim").addEventListener("click",closeProfile);
 entityImgEl.addEventListener("error",()=>entityFigEl.classList.remove("stage-entity-on"));
 companionImgEl.addEventListener("error",()=>companionFigEl.classList.remove("stage-companion-on"));
 const intelPanel=byId("intel-panel"),intelScrim=byId("intel-scrim"),intelToggle=byId("intel-toggle");
-function setIntel(open){document.body.classList.toggle("intel-open",open);intelPanel.setAttribute("aria-hidden",open?"false":"true");intelToggle.setAttribute("aria-expanded",open?"true":"false");intelScrim.hidden=!open}
+function setIntel(open){document.body.classList.toggle("intel-open",open);intelPanel.setAttribute("aria-hidden",open?"false":"true");intelToggle.setAttribute("aria-expanded",open?"true":"false");intelScrim.hidden=!open;if(open)setTimeout(()=>byId("intel-close").focus(),50);else intelToggle.focus({preventScroll:true})}
 intelToggle.addEventListener("click",()=>setIntel(!document.body.classList.contains("intel-open")));
 byId("intel-close").addEventListener("click",()=>setIntel(false));
 intelScrim.addEventListener("click",()=>setIntel(false));
 const backlogEl=byId("backlog-overlay"),backlogList=byId("backlog-list");
-function openBacklog(){const s=curState();const items=s&&Array.isArray(s.history)?s.history.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item'>"+(x.speaker?"<span class='speaker'>"+esc(x.speaker)+"</span>":"")+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
+function backlogLine(x){return"<div class='backlog-item'>"+(x.speaker?"<span class='speaker'>"+esc(x.speaker)+"</span>":"")+esc(x.text)+"</div>"}
+function openBacklog(){
+  const s=curState();const parts=[];
+  const hist=s&&Array.isArray(s.history)?s.history:[];
+  const legacy=s&&typeof s.legacyHistoryCount==="number"?Math.min(s.legacyHistoryCount,hist.length):0;
+  if(legacy>0)parts.push("<p class='backlog-note'>Lịch sử kế thừa — phần đọc trước khi lịch sử được ghi theo cảnh; không có ranh giới cảnh chính xác.</p>",hist.slice(0,legacy).map(backlogLine).join(""));
+  const entries=s&&Array.isArray(s.sceneHistory)?s.sceneHistory:[];
+  for(const e of entries){
+    const body=e.lines.map(ln=>(ln.speaker?ln.speaker+": ":"")+ln.text).join("\n")+(e.selectedChoice?"\n→ Đã chọn: "+e.selectedChoice.choiceLabel:"");
+    parts.push("<div class='backlog-item'><span class='speaker'>"+esc(e.title)+"</span>"+esc(body)+"</div>");
+  }
+  if(!entries.length&&!legacy)parts.push(hist.length?hist.slice(-200).map(backlogLine).join(""):"<p>Chưa có nội dung.</p>");
+  backlogList.innerHTML=parts.join("");
+  backlogEl.hidden=false;
+}
 byId("backlog-open").addEventListener("click",openBacklog);
 byId("backlog-close").addEventListener("click",()=>{backlogEl.hidden=true});
 backlogEl.querySelector(".backlog-scrim").addEventListener("click",()=>{backlogEl.hidden=true});
-const choicesEl=byId("choices"),actionsToggle=byId("actions-toggle");
-actionsToggle.addEventListener("click",()=>{const show=choicesEl.hidden;choicesEl.hidden=!show;actionsToggle.setAttribute("aria-expanded",show?"true":"false")});
-choicesEl.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-choice],[data-restart]"):null;if(!t)return;if(t.hasAttribute("data-restart")){restart();return}const sc=scenesById[state.scene];const c=sc&&sc.choices[+t.getAttribute("data-choice")];if(c)choose(c)});
-let autoOn=false,autoTimer=null,readIdx=0;
+const choicesEl=byId("choices"),actionsToggle=byId("actions-toggle"),storyPanelEl=byId("story-panel");
+actionsToggle.addEventListener("click",()=>{const collapsed=storyPanelEl.classList.toggle("choices-collapsed");actionsToggle.setAttribute("aria-expanded",collapsed?"false":"true")});
+choicesEl.addEventListener("click",e=>{const t=e.target.closest?e.target.closest("[data-choice],[data-restart]"):null;if(!t)return;stopPlayback();if(t.hasAttribute("data-restart")){restart();return}const sc=scenesById[state.scene];const idx=+t.getAttribute("data-choice");const c=sc&&sc.choices[idx];if(c)choose(c,idx)});
+// ── Playback: Tự chạy / Đọc nhanh (Hui mechanism) ───────────────────────
+// Autoplay may only take a scene's single choice when that choice has a
+// valid next and no real set — anything else is the player's decision.
+// Skip replays the choice recorded in sceneHistory for the current scene,
+// validated against the live choice data; no valid record → stops quietly.
+// Picking a choice by hand (click or number key) stops both modes.
+let autoOn=false,autoTimer=null,skipOn=false,skipTimer=null;
 const autoToggle=byId("auto-toggle"),skipToggle=byId("skip-toggle");
-function stopAuto(){autoOn=false;autoToggle.setAttribute("aria-pressed","false");if(autoTimer){clearInterval(autoTimer);autoTimer=null}logEl.querySelectorAll(".reading").forEach(n=>n.classList.remove("reading"))}
-function stepAuto(){const items=logEl.querySelectorAll("article");if(!items.length||readIdx>=items.length){stopAuto();return}logEl.querySelectorAll(".reading").forEach(n=>n.classList.remove("reading"));const el=items[readIdx++];el.classList.add("reading");if(el.scrollIntoView)el.scrollIntoView({block:"nearest"})}
-function autoInterval(){return document.body.classList.contains("fast-read")?400:2600}
-autoToggle.addEventListener("click",()=>{if(autoOn){stopAuto();return}autoOn=true;autoToggle.setAttribute("aria-pressed","true");readIdx=0;stepAuto();autoTimer=setInterval(stepAuto,autoInterval())});
-skipToggle.addEventListener("click",()=>{const on=document.body.classList.toggle("fast-read");skipToggle.setAttribute("aria-pressed",on?"true":"false");logEl.scrollTop=logEl.scrollHeight;if(autoOn){clearInterval(autoTimer);autoTimer=setInterval(stepAuto,autoInterval())}});
+function syncPlayback(){autoToggle.setAttribute("aria-pressed",autoOn?"true":"false");skipToggle.setAttribute("aria-pressed",skipOn?"true":"false")}
+function stopPlayback(){autoOn=false;skipOn=false;if(autoTimer){clearTimeout(autoTimer);autoTimer=null}if(skipTimer){clearTimeout(skipTimer);skipTimer=null}syncPlayback()}
+function hasRealSet(c){return!!(c&&c.set&&Object.keys(c.set).length)}
+function scheduleAuto(){
+  if(autoTimer){clearTimeout(autoTimer);autoTimer=null}
+  if(!autoOn)return;
+  const sc=story&&state.scene?scenesById[state.scene]:null;
+  if(!sc||sc.choices.length!==1||!sc.choices[0].next||hasRealSet(sc.choices[0])){autoOn=false;syncPlayback();return}
+  const words=visibleLines(sc).reduce((n,ln)=>n+String(ln.text||"").split(/\s+/).length,0);
+  const delay=Math.min(12000,Math.max(3000,2200+words*42));
+  const c=sc.choices[0];
+  autoTimer=setTimeout(()=>{if(autoOn)choose(c,0)},delay);
+}
+function sameChoiceSet(a,b){return JSON.stringify(a||null)===JSON.stringify(b||null)}
+function skipStep(){
+  if(!skipOn)return;
+  const sc=story&&state.scene?scenesById[state.scene]:null;
+  let rec=null;
+  if(sc&&Array.isArray(state.sceneHistory))for(let i=state.sceneHistory.length-1;i>=0;i--){const e=state.sceneHistory[i];if(e.sceneId===sc.id&&e.selectedChoice){rec=e.selectedChoice;break}}
+  const c=rec?sc.choices[rec.choiceIndex]:null;
+  if(!c||c.label!==rec.choiceLabel||c.next!==rec.nextSceneId||!sameChoiceSet(c.set,rec.choiceSet)){skipOn=false;syncPlayback();return}
+  choose(c,rec.choiceIndex);
+  if(skipOn)skipTimer=setTimeout(skipStep,420);
+}
+autoToggle.addEventListener("click",()=>{if(autoOn){stopPlayback();return}stopPlayback();autoOn=true;syncPlayback();scheduleAuto()});
+skipToggle.addEventListener("click",()=>{if(skipOn){stopPlayback();return}stopPlayback();skipOn=true;syncPlayback();skipStep()});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){
+    if(!overlayEl.hidden){closeProfile();return}
+    if(!backlogEl.hidden){backlogEl.hidden=true;return}
+    if(document.body.classList.contains("intel-open"))setIntel(false);
+    return;
+  }
+  if(/^[1-9]$/.test(e.key)&&overlayEl.hidden&&backlogEl.hidden&&!document.body.classList.contains("intel-open")&&!/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||"")){
+    const b=choicesEl.querySelector("[data-choice='"+(Number(e.key)-1)+"']");if(b)b.click();
+  }
+});
 render();
 </script>
 </body>

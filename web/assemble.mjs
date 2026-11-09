@@ -70,22 +70,42 @@ function swap(html, from, to, expected, label) {
   return html.split(from).join(to);
 }
 
-// ── Cache-busting build version (owner request, 2026-11-03) ─────────────
+// ── Build ID (owner request 2026-11-03; global scope, cluster D) ────────
 // GitHub Pages serves every file with Cache-Control: max-age=600, so a
 // phone that loaded the game just before a deploy keeps showing the old
-// build for up to 10 minutes. One version for the whole web overlay —
-// the sha256 of every web source file — is appended as ?v= to each
-// script URL in the page and to each relative import specifier inside
-// the copied module files: any change to any web file changes every
-// URL, so the first load after a deploy fetches the overlay fresh.
-// (The HTML shell itself can still be cached for up to 10 minutes;
-// once it refreshes, nothing beneath it can be stale.)
+// build for up to 10 minutes. ONE build ID covers the whole artifact:
+// the sha256 of every build input — the game's entire assets tree (HTML
+// shell with its inline CSS, story JSON, images, fonts), the web overlay
+// files and this assembler itself — walked in a stable sorted order over
+// real content bytes. The ID is embedded in the deployed HTML (meta +
+// data-build + window.__GAME_BUILD__) and appended as ?v= to every
+// resource the page can reference, so any input change changes every
+// URL and a stale shell is detectable from the page itself. (The HTML
+// shell can still be cached for up to 10 minutes; the ID detects that,
+// it does not erase the cache. No service worker is added.)
 const WEB_FILES = [
   "save-store.js", "save-boot.js", "ui-enhancements.js",
 ];
-const buildVersion = createHash("sha256")
-  .update(WEB_FILES.map((f) => f + "\0" + readFileSync(join(webDir, f), "utf8")).join("\0"))
-  .digest("hex").slice(0, 12);
+function collectInputs(dir, base, out) {
+  for (const name of readdirSync(dir).sort()) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) { collectInputs(p, base, out); continue; }
+    out.push(relative(base, p));
+  }
+  return out;
+}
+const buildHash = createHash("sha256");
+for (const rel of collectInputs(assetsDir, assetsDir, [])) {
+  buildHash.update("assets/" + rel + "\0");
+  buildHash.update(readFileSync(join(assetsDir, rel)));
+  buildHash.update("\0");
+}
+for (const f of [...WEB_FILES, "assemble.mjs"]) {
+  buildHash.update("web/" + f + "\0");
+  buildHash.update(readFileSync(join(webDir, f)));
+  buildHash.update("\0");
+}
+const buildVersion = buildHash.digest("hex").slice(0, 16);
 
 // ── 1. Patch the game's index.html in memory ──────────────────────────────
 const sourceHtml = readFileSync(join(assetsDir, "index.html"), "utf8");
@@ -97,8 +117,8 @@ let html = sourceHtml;
 // Step 5 — load(): whole-body swap (before step 2, whose anchor also
 // appears inside load()'s original body).
 html = swap(html,
-  'function load(){state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()}',
-  'function load(){SaveBoot.loadString().then(function(s){state=JSON.parse(s||"null")||initial;state.characterCanon=CURRENT_CHARACTER_CANON;render()})}',
+  'function load(){const s=JSON.parse(localStorage.getItem("backroom-apk-state")||"null");state=s&&s.v===2&&Array.isArray(s.history)?s:JSON.parse(JSON.stringify(initial));state.characterCanon=CURRENT_CHARACTER_CANON;currentEntry=-1;migrateState();ensureSceneEntry();render();resetReaderScroll()}',
+  'function load(){SaveBoot.loadString().then(function(s){const p=JSON.parse(s||"null");state=p&&p.v===2&&Array.isArray(p.history)?p:JSON.parse(JSON.stringify(initial));state.characterCanon=CURRENT_CHARACTER_CANON;currentEntry=-1;migrateState();ensureSceneEntry();render();resetReaderScroll()})}',
   1, "load()");
 // Step 6 — clearSave(): removeItem → SaveBoot.clear().
 html = swap(html,
@@ -156,6 +176,33 @@ html = swap(html, "</script>\n</body>", `</script>\n<script src="ui-enhancements
   }
   if (count(html, "SaveBoot.ready.then(function (savedString) {") !== 1) {
     fail("order check: boot wrap missing");
+  }
+}
+
+// ── 2b. Embed the build ID and version every static reference ────────────
+// The source shell carries a placeholder meta; the deployed copy carries
+// the real build ID in the meta, on <html data-build>, and as
+// window.__GAME_BUILD__ / window.__V — the query the page appends to
+// every URL it builds at runtime (story JSON, stage backgrounds,
+// entity/companion/character images, avatars, profile images). Static
+// src=/url() references in the shell are stamped here directly. The APK
+// copy keeps the placeholder and no __V, so its URLs stay plain local
+// file names that the WebView asset loader resolves unchanged.
+html = swap(html,
+  '<meta name="game-build" content="unversioned">',
+  `<meta name="game-build" content="${buildVersion}">\n<script>window.__GAME_BUILD__="${buildVersion}";window.__V="?v=${buildVersion}";document.documentElement.dataset.build="${buildVersion}";</script>`,
+  1, "build id embed");
+html = html.replace(/src="([^"?]+)"/g, (m, u) => (/^(?:https?:|data:)/.test(u) ? m : `src="${u}?v=${buildVersion}"`));
+html = html.replace(/url\("([^"?]+)"\)/g, (m, u) => `url("${u}?v=${buildVersion}")`);
+{
+  // Consistency (cluster D4): the deployed shell must not reference any
+  // relative resource without the build version, and the story JSON
+  // must be routed through the page's version hook (fetch + XHR alike).
+  const unstamped = [...html.matchAll(/src="([^"]+)"/g)].map((m) => m[1])
+    .filter((u) => !/^(?:https?:|data:)/.test(u) && !u.includes("?v=" + buildVersion));
+  if (unstamped.length) fail("build id: unstamped resource reference(s): " + unstamped.join(", "));
+  if (count(html, 'story/opening-chapter.json"+V') !== 2) {
+    fail("build id: story JSON is not routed through the version hook");
   }
 }
 
