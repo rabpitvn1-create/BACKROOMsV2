@@ -167,6 +167,7 @@ const CURRENT_CHARACTER_CANON={
 };
 const PROFILES={
   cao_minh:{name:"Cao Minh",alias:"Vạn Giới Ma Tổ",role:"ĐẠO TỔ · VẠN MA ĐẠO MÔN",image:"avatars/cao_minh_avatar.jpg",summary:"Người Trái Đất trọng sinh sau một đêm tăng ca quá độ; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực sụp đổ; song kiếm Thái Cổ Song Sát, Hắc Long Chiến Khải hộ thân."},
+  ha_lien:{name:"Hạ Liên",alias:"Hạ Liên Tiên Tử",role:"NỮ VƯƠNG · HIÊN VIÊN TRIỀU",image:"ha_lien_overlay.webp",summary:"Nữ Vương của thiên triều Hiên Viên Triều, tu vi Chí Tôn cảnh viên mãn; vợ của Cao Minh. Tái ngộ phu quân tại Level 1 của Backrooms và đồng hành cùng Vạn Ma Đạo Môn từ đó."},
   iris:{name:"Iris",alias:"ARGUS",role:"SCOUT / TARGET ELIMINATOR",image:"avatars/Iris_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Belial. Xạ thủ tầm xa của đội; ARGUS Terrain Read phân tích địa hình từ quan sát trực tiếp và cảm biến tại chỗ."},
   syvial:{name:"Syvial",alias:"",role:"ĐỘI PHÓ",image:"avatars/Syvial_avatar.jpg",summary:"Bán nhân/bán quỷ, con gái của Lucifer, cấp UR+. Kiếm sĩ siêu nhiên tốc độ cao với đại kiếm cơ khí GodKiller và Lucifer Armor."},
   lucia:{name:"Hứa Thuý Mai / Lucia Lục",alias:"",role:"FIXED ENCOUNTER — LEVEL 0",image:"avatars/lucia_avatar.jpg",summary:"Quân nhân loài người 19 tuổi, chít nội Gia tộc Họ Hứa. Tay súng chiến thuật với M4A1 cá nhân hóa; encounter cố định do story sở hữu tại Level 0."}
@@ -207,13 +208,14 @@ localStorage.setItem("backroom-apk-state",JSON.stringify(state));
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML}
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
-function profileKeyOf(name){const n=String(name||"").toLowerCase();if(n.includes("cao minh"))return"cao_minh";if(n.includes("iris"))return"iris";if(n.includes("syvial"))return"syvial";if(n.includes("lucia")||n.includes("thuý mai")||n.includes("thúy mai"))return"lucia";return""}
+function profileKeyOf(name){const n=String(name||"").toLowerCase();if(n.includes("cao minh"))return"cao_minh";if(n.includes("hạ liên"))return"ha_lien";if(n.includes("iris"))return"iris";if(n.includes("syvial"))return"syvial";if(n.includes("lucia")||n.includes("thuý mai")||n.includes("thúy mai"))return"lucia";return""}
 function partyChips(items){if(!items||!items.length)return"<span>Trống.</span>";return items.map(x=>{const name=typeof x==="string"?x:x.name||"—";const k=profileKeyOf(name);return k?"<button type='button' class='chip' data-profile-open='"+k+"'>"+esc(name)+"</button>":"<span>"+esc(name)+"</span>"}).join("")}
 // shortcut: L8 reuses the L7 background by plan, and L9 has no asset yet so it falls back to the nearest existing one (L7); split the mapping when level_9.webp lands
 function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));if(!m)return 0;const n=Math.min(9,Math.max(0,parseInt(m[1],10)));return n>=8?7:n}
 function flagKey(v){if(!v)return"";const raw=typeof v==="string"?v:(v.id||v.key||v.name||"");return String(raw).toLowerCase().trim().replace(/\s+/g,"_")}
 function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):flagKey(v).replace(/[_-]+/g," ");return raw?raw.replace(/\b\w/g,c=>c.toUpperCase()):""}
 function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")}
+function companionSrc(k){return k==="ha_lien"?"ha_lien_overlay.webp":entitySrc(k)}
 let stagePose="";
 function renderStage(){
   const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp";
@@ -224,13 +226,13 @@ function renderStage(){
   const ck=flagKey(flags.companion);
   const encounter=!!ek;
   if(encounter){entityImgEl.src=entitySrc(ek);entityNameEl.textContent=flagName(flags.entity||flags.encounter);entityFigEl.classList.add("stage-entity-on")}else{entityFigEl.classList.remove("stage-entity-on")}
-  if(ck&&ck!==ek){companionImgEl.src=entitySrc(ck);companionNameEl.textContent=flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
+  if(ck&&ck!==ek){companionImgEl.src=companionSrc(ck);companionNameEl.textContent=(PROFILES[ck]&&PROFILES[ck].name)||flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
   const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
   if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
 }
 function lineHtml(x){
   if(!x.speaker)return"<article class='story-line'><div class='text'>"+esc(x.text)+"</div></article>";
-  const av=x.speaker==="Cao Minh"?"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>":"";
+  const av=x.speaker==="Cao Minh"?"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>":x.speaker==="Hạ Liên"?"<span class='dialogue-avatar-crop'><img src='ha_lien_overlay.webp' alt='Hạ Liên'></span>":"";
   return"<article class='dialogue'>"+av+"<div class='message-body'><span class='speaker'>"+esc(x.speaker)+"</span><div class='text'>"+esc(x.text)+"</div></div></article>";
 }
 function visibleLines(sc){return sc.lines.filter(function(ln){return !ln.if||Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]})})}
@@ -253,7 +255,7 @@ function loadStory(){
 }
 function enterScene(id){
   const sc=scenesById[id];if(!sc)return;
-  state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;
+  state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;state.flags.companion=sc.stage.companion||null;
   for(const ln of visibleLines(sc))state.history.push({speaker:ln.speaker||"",text:ln.text});
   save();render();
 }

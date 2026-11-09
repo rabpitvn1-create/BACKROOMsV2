@@ -693,7 +693,8 @@
       "id": "R01_01_02",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -735,7 +736,8 @@
       "id": "R01_01_03",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -794,7 +796,8 @@
       "id": "R01_01_04",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -838,7 +841,8 @@
       "id": "R01_01_05",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -946,7 +950,8 @@
       "id": "R01_01_07",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -1157,7 +1162,8 @@
       "id": "R01_02_04",
       "stage": {
         "level": 2,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -1238,7 +1244,8 @@
       "id": "R01_03_01",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -1476,7 +1483,8 @@
       "id": "R01_03_05",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -1732,7 +1740,8 @@
       "id": "R01_04_04",
       "stage": {
         "level": 4,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -1988,7 +1997,8 @@
       "id": "R01_05_04",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2062,7 +2072,8 @@
       "id": "R01_05_05",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2117,7 +2128,8 @@
       "id": "R01_05_06",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2176,7 +2188,8 @@
       "id": "R01_05_07",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2293,7 +2306,8 @@
       "id": "R01_05_09",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2392,7 +2406,8 @@
       "id": "R01_05_10",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2450,7 +2465,8 @@
       "id": "R01_05_11",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2534,7 +2550,8 @@
       "id": "R01_05_12",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -2640,7 +2657,8 @@
       "id": "R01_06_02",
       "stage": {
         "level": 6,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -3434,7 +3452,8 @@
       "id": "R01_07_08",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -3749,7 +3768,8 @@
       "id": "R01_07_12",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -3882,7 +3902,8 @@
       "id": "R01_08_02",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -4366,7 +4387,8 @@
       "id": "R01_08_08",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -4512,7 +4534,8 @@
       "id": "R01_09_02",
       "stage": {
         "level": 9,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -4585,7 +4608,8 @@
       "id": "R01_09_03",
       "stage": {
         "level": 9,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {
@@ -4649,7 +4673,8 @@
       "id": "R01_09_04",
       "stage": {
         "level": 9,
-        "entity": null
+        "entity": null,
+        "companion": "ha_lien"
       },
       "lines": [
         {

@@ -68,6 +68,7 @@ jobs:
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/diep_minh.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_entity_overlay.png'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/ha_lien_overlay.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

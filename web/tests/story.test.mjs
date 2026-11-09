@@ -29,6 +29,8 @@ for (const sc of story.scenes) {
     `${sc.id}: stage.level must be an integer 0..9`);
   assert.ok(sc.stage.entity === null || typeof sc.stage.entity === "string",
     `${sc.id}: stage.entity must be a canonical key string or null`);
+  assert.ok(sc.stage.companion === undefined || sc.stage.companion === null || typeof sc.stage.companion === "string",
+    `${sc.id}: stage.companion must be a canonical key string or null when present`);
   assert.ok(Array.isArray(sc.lines) && sc.lines.length > 0, `${sc.id}: lines must be a non-empty array`);
   for (const ln of sc.lines) {
     assert.ok(typeof ln.text === "string" && ln.text.length > 0, `${sc.id}: every line needs text`);
