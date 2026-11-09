@@ -6,8 +6,8 @@
 // Builds the static site from two inputs, never modifying either:
 //   - android-apk/app/src/main/assets/  — the game's own shell + data,
 //     copied byte-identical (the copied index.html is then patched, below);
-//   - web/                              — this overlay (core port, shim,
-//     save layer, injected-UI recreation).
+//   - web/                              — this overlay (save layer,
+//     injected-UI recreation).
 // Everything is computed and asserted in memory BEFORE anything is written;
 // any failed check aborts with a non-zero exit and no site is produced.
 //
@@ -38,17 +38,14 @@
 // remains (asserted below: the patched page contains no "localStorage").
 //
 // ── Script load order (asserted on the final bytes, fail-closed) ─────────
-//   save-store.js → save-boot.js → glue.mjs (module) →
-//   core-adapter.js → shim.js → [the game's inline script] →
+//   save-store.js → save-boot.js → [the game's inline script] →
 //   ui-enhancements.js
-// window.Android MUST exist before the game's inline script runs (the page
-// hard-stops without the bridge — audit A2), so save/shim all sit
-// ahead of it. glue.mjs is a module: it executes deferred, after parsing,
-// which is safe because core-adapter.js probes window.GameCore lazily at
-// turn time, never at load. save-boot.js must precede the inline script so
-// SaveBoot.ready is already in flight when the boot wrap registers.
-// ui-enhancements.js must follow the inline script: it wraps the page
-// globals (render/backroomTurn/backroomError) the inline script defines —
+// The bridge/core overlay (glue.mjs, core-adapter.js, shim.js, core/) is
+// gone with the fixed-scene VN conversion: the page no longer submits
+// free-action turns, so window.Android is not needed at all. save-boot.js
+// must precede the inline script so SaveBoot.ready is already in flight
+// when the boot wrap registers. ui-enhancements.js must follow the inline
+// script: it wraps the page globals (render) the inline script defines —
 // the static equivalent of native's onPageFinished injection.
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -84,9 +81,7 @@ function swap(html, from, to, expected, label) {
 // (The HTML shell itself can still be cached for up to 10 minutes;
 // once it refreshes, nothing beneath it can be stale.)
 const WEB_FILES = [
-  "glue.mjs", "core-adapter.js", "shim.js",
   "save-store.js", "save-boot.js", "ui-enhancements.js",
-  "core/index.js", "core/facade.js", "core/rules.js",
 ];
 const buildVersion = createHash("sha256")
   .update(WEB_FILES.map((f) => f + "\0" + readFileSync(join(webDir, f), "utf8")).join("\0"))
@@ -143,16 +138,12 @@ if (html.includes("localStorage")) fail("patched index.html still references loc
 const PRE = [
   `<script src="save-store.js?v=${buildVersion}"></script>`,
   `<script src="save-boot.js?v=${buildVersion}"></script>`,
-  `<script type="module" src="glue.mjs?v=${buildVersion}"></script>`,
-  `<script src="core-adapter.js?v=${buildVersion}"></script>`,
-  `<script src="shim.js?v=${buildVersion}"></script>`,
 ].join("\n");
 html = swap(html, "<script>", PRE + "\n<script>", 1, "pre-script injection");
 html = swap(html, "</script>\n</body>", `</script>\n<script src="ui-enhancements.js?v=${buildVersion}"></script>\n</body>`, 1, "ui injection");
 {
   const markers = [
     'src="save-store.js?v=', 'src="save-boot.js?v=',
-    'src="glue.mjs?v=', 'src="core-adapter.js?v=', 'src="shim.js?v=',
     "<script>\n", // the game's own inline script (bare tag)
     'src="ui-enhancements.js?v=',
   ];

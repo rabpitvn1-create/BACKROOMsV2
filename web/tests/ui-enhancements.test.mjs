@@ -49,7 +49,7 @@ function boot() {
   return { window, errors };
 }
 
-// ── Scenario A: install + turn flow + local snapshot ─────────────────────
+// ── Scenario A: install + no turn machinery + local snapshot ─────────────
 {
   const { window, errors } = boot();
   const doc = window.document;
@@ -62,13 +62,17 @@ function boot() {
     !!btn && btn.parentElement.classList.contains("actions") &&
     btn.nextElementSibling && btn.nextElementSibling.classList.contains("wide"));
   check("A: payload globals defined",
-    ["requestSnapshot", "backroomTurn", "backroomError", "render"]
+    ["requestSnapshot", "render"]
       .every((k) => typeof window[k] === "function"));
+  check("A: payload carries no GM/turn machinery",
+    !ui.includes("GAME MASTER") && !ui.includes("window.backroomTurn") &&
+    !ui.includes("window.backroomError") && !ui.includes("data-pending"));
   check("A: snapshot-image globals are gone",
     typeof window.backroomSnapshot === "undefined" && typeof window.backroomSnapshotError === "undefined");
   const styles = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
   check("A: web-only A3 radius rule present in the injected style", styles.includes("#snapshot .stage-bg{border-radius:20px}"));
   check("A: no .snapshot-placeholder rule (removed with the image machinery)", !styles.includes("snapshot-placeholder"));
+  check("A: no .message.pending rule (removed with the turn machinery)", !styles.includes(".message.pending"));
   check("A: nothing written to localStorage snapshot key", window.localStorage.getItem("backroom-apk-snapshot") === null);
   check("A: VN stage intact (no snapshot-art layer)", !doc.querySelector("#snapshot .snapshot-art") && !!doc.querySelector("#snapshot .stage-character-wrap"));
 
@@ -78,25 +82,12 @@ function boot() {
   check("A: no auto-snapshot fires after boot", doc.getElementById("status").textContent === statusAtBoot);
   check("A: no errors while idle", errors.length === 0);
 
-  // Pending bubbles on submit (bridge absent: page handler bails, bubbles still appear).
+  // No turn machinery left: submitting the (legacy) form must not make
+  // the payload add pending bubbles or any GM placeholder.
   doc.getElementById("action").value = "đi về phía cửa";
   doc.getElementById("form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
-  const pending = doc.querySelectorAll('[data-pending="1"]');
-  check("A: submit creates 2 pending bubbles", pending.length === 2);
-  check("A: player bubble carries the typed action",
-    pending.length === 2 && pending[0].querySelector(".text").textContent === "đi về phía cửa");
-  check("A: GM bubble shows the native pending text",
-    pending.length === 2 && pending[1].querySelector(".text").textContent === "Đang xử lý lượt…");
-
-  // Turn completes: wrapper clears bubbles and reports the offline save line.
-  const st = JSON.parse(window.eval("JSON.stringify(state)"));
-  st.turn = 2;
-  window.backroomTurn(JSON.stringify(st));
-  await sleep(50);
-  check("A: backroomTurn wrapper clears pending bubbles", doc.querySelectorAll('[data-pending="1"]').length === 0);
-  check("A: status reports the local save line (no snapshot suffix)",
-    doc.getElementById("status").textContent === "Turn 2 đã lưu trên máy.");
-  check("A: no errors after turn", errors.length === 0);
+  check("A: submit creates no pending bubbles", doc.querySelectorAll('[data-pending="1"]').length === 0);
+  check("A: no errors after submit", errors.length === 0);
 
   // Snapshot button: purely local showSnapshot — status + scroll, no bridge.
   btn.click();
@@ -107,12 +98,6 @@ function boot() {
   check("A: window.requestSnapshot is the same local action",
     doc.getElementById("status").textContent === SNAPSHOT_MSG);
 
-  // Error wrapper clears pending bubbles too.
-  doc.getElementById("action").value = "thử lại";
-  doc.getElementById("form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
-  check("A: bubbles reappear on a new submit", doc.querySelectorAll('[data-pending="1"]').length === 2);
-  window.backroomError("Không thể xử lý lượt.");
-  check("A: backroomError wrapper clears pending bubbles", doc.querySelectorAll('[data-pending="1"]').length === 0);
   check("A: no errors at end of scenario A", errors.length === 0);
 
   // Double injection is a no-op (native guard).

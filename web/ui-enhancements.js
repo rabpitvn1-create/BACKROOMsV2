@@ -2,13 +2,13 @@
  * ui-enhancements.js — static recreation of the UI that the APK's
  * MainActivity.installUiEnhancements() injects via evaluateJavascript at
  * onPageFinished. The payload below mirrors the Java string in
- * MainActivity.java (offline build) function for function, with the
- * adaptations listed here — nothing else differs from the native payload.
+ * MainActivity.java function for function, with the adaptations listed
+ * here — nothing else differs from the native payload.
  *
  * Load order: this file must load AFTER the game's inline <script> in
  * index.html (the assembler's job). That is the static equivalent of
  * onPageFinished: the page globals the payload wraps or reads (state,
- * render, backroomTurn, backroomError) already exist.
+ * render) already exist.
  * (Adaptation A1 — timing only, no code change.)
  *
  * Adaptation A3 — owner-requested cosmetic (2026-11-03, web only): the
@@ -24,15 +24,17 @@
  * figures from local assets), so window.requestSnapshot is the purely
  * local showSnapshot: it points the status line at the stage and
  * scrolls it into view. The "Tạo Snapshot" button calls exactly that.
+ * The fixed-scene VN engine runs entirely inside the page, so the
+ * payload no longer carries any turn machinery: the pending bubbles,
+ * the backroomTurn/backroomError wrappers and the form-submit hook of
+ * the free-action/GM model were removed on both sides.
  *
  * Globals: this file defines exactly the globals the native payload
  * defines — window.__backroomEnhancements (its double-injection guard)
- * and window.requestSnapshot — and wraps the page's own window.render /
- * window.backroomTurn / window.backroomError the same way native does.
- * No other names are introduced; index.html defines none of the
- * payload-only names (checked against its inline script).
+ * and window.requestSnapshot — and wraps the page's own window.render
+ * the same way native does. No other names are introduced.
  *
  * The injected <style> travels inside the payload (the native code builds
  * it as a style element), so there is no separate .css file.
  */
-(function(){if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;var st=document.createElement('style');st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}.message.pending{opacity:.72}.message.pending .text{color:#aeb7be}#snapshot .stage-bg{border-radius:20px}';document.head.appendChild(st);function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}function showSnapshot(){var s=document.getElementById('status');if(s)s.textContent='Snapshot hiển thị trực tiếp ở khung phía trên — nền theo Level, nhân vật và thực thể đều là ảnh trên máy.';var box=document.getElementById('snapshot');if(box&&box.scrollIntoView)box.scrollIntoView({block:'start'});}window.requestSnapshot=showSnapshot;var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',showSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){oldRender();scrollBottom();};}var oldTurn=window.backroomTurn;window.backroomTurn=function(json){if(typeof oldTurn==='function')oldTurn(json);document.querySelectorAll('[data-pending="1"]').forEach(function(n){n.remove();});var s=document.getElementById('status');if(s)s.textContent='Turn '+state.turn+' đã lưu trên máy.';scrollBottom();};var oldError=window.backroomError;window.backroomError=function(message){document.querySelectorAll('[data-pending="1"]').forEach(function(n){n.remove();});if(typeof oldError==='function')oldError(message);scrollBottom();};var f=document.getElementById('form');if(f){f.addEventListener('submit',function(){var a=document.getElementById('action');var text=a?a.value.trim():'';if(!text)return;var l=document.getElementById('log');if(!l)return;var player=document.createElement('article');player.className='message player pending';player.setAttribute('data-pending','1');player.innerHTML='<div class="role">BẠN</div><div class="text"></div>';player.querySelector('.text').textContent=text;l.appendChild(player);var gm=document.createElement('article');gm.className='message pending';gm.setAttribute('data-pending','1');gm.innerHTML='<div class="role">GAME MASTER</div><div class="text">Đang xử lý lượt…</div>';l.appendChild(gm);scrollBottom();},true);}scrollBottom();})();
+(function(){if(window.__backroomEnhancements)return;window.__backroomEnhancements=true;var st=document.createElement('style');st.textContent='button{transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,255,255,.12)}button:active:not(:disabled){transform:scale(.965);background:#303840;border-color:#77828c}button:disabled{opacity:.48;cursor:not-allowed}#snapshot .stage-bg{border-radius:20px}';document.head.appendChild(st);function scrollBottom(){var l=document.getElementById('log');if(l)requestAnimationFrame(function(){l.scrollTop=l.scrollHeight;});}function showSnapshot(){var s=document.getElementById('status');if(s)s.textContent='Snapshot hiển thị trực tiếp ở khung phía trên — nền theo Level, nhân vật và thực thể đều là ảnh trên máy.';var box=document.getElementById('snapshot');if(box&&box.scrollIntoView)box.scrollIntoView({block:'start'});}window.requestSnapshot=showSnapshot;var actions=document.querySelector('.actions');if(actions&&!document.getElementById('snapshotButton')){var b=document.createElement('button');b.id='snapshotButton';b.type='button';b.textContent='Tạo Snapshot';b.addEventListener('click',showSnapshot);var wide=actions.querySelector('.wide');if(wide)actions.insertBefore(b,wide);else actions.appendChild(b);}var oldRender=window.render;if(typeof oldRender==='function'){window.render=function(){oldRender();scrollBottom();};}scrollBottom();})();
