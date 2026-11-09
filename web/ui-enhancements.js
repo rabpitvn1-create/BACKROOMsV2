@@ -23,8 +23,7 @@
  * stage above the story panel IS the snapshot (level background +
  * figures from local assets), so window.requestSnapshot is the purely
  * local showSnapshot: it points the status line at the stage. The stage
- * is sticky at the top of the reading scroller (transferred Hui
- * mechanism), so no scrolling is needed — and scrollIntoView must not
+ * is a fixed sibling above the reading scroller, so no scrolling is needed — and scrollIntoView must not
  * be used to position the Snapshot or the story panel. The "Tạo
  * Snapshot" button calls exactly that.
  * The fixed-scene VN engine runs entirely inside the page, so the

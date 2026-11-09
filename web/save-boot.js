@@ -63,7 +63,8 @@
 (function (global) {
   var cache = null; // last known save string, byte-verbatim; null = no save
 
-  var ready = SaveStore.load().then(function (s) { cache = s; return s; });
+  var ready = global.__MOBILE_WEB_ALLOWED__ === false ? Promise.resolve(null)
+    : SaveStore.load().then(function (s) { cache = s; return s; });
 
   function saveString(str) {
     cache = str;

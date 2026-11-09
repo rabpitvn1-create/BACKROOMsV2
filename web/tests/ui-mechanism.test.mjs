@@ -1,7 +1,7 @@
 /*
  * Transferred-Hui-mechanism test — the behavioural half of the mechanism
  * transfer spec v2 (the layout half is measured in real Chromium):
- *   - DOM relations: header outside .game-layout; Snapshot + story panel
+ *   - DOM relations: header + Snapshot outside .game-layout; story panel
  *     inside it; #log is story content, not a scroller; the choice deck
  *     flows at the end of the story panel.
  *   - The 8 mandated Tự chạy / Đọc nhanh cases (spec §4.3).
@@ -76,6 +76,7 @@ async function bootStub(seed, { useIDB } = {}) {
   const dom = new JSDOM(html, {
     url: "http://127.0.0.1/", runScripts: "dangerously", resources: "usable", pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(window) {
+      Object.defineProperty(window.navigator, "userAgent", { value: "Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36" });
       window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve(STUB) });
       window.HTMLElement.prototype.scrollIntoView = function () {};
       if (useIDB) window.indexedDB = fakeIndexedDB;
@@ -99,7 +100,13 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   const gl = doc.querySelector(".game-layout");
   assert.ok(gl, "dom: .game-layout exists");
   assert.ok(!gl.contains(doc.querySelector(".campaign-header")), "dom: header is outside .game-layout");
-  assert.ok(gl.contains(doc.getElementById("snapshot")), "dom: snapshot is inside .game-layout");
+  assert.ok(!gl.contains(doc.getElementById("snapshot")), "dom: snapshot is outside the reader");
+  assert.equal(doc.getElementById("snapshot").parentElement, gl.parentElement, "dom: snapshot and reader share fixed shell");
+  assert.ok(doc.getElementById("snapshot").nextElementSibling.matches(".reader-divider"), "dom: divider follows snapshot");
+  assert.equal(doc.querySelector(".reader-divider").nextElementSibling, gl, "dom: reader starts below divider");
+  gl.scrollTop = 350;
+  window.resetReaderScroll();
+  assert.equal(gl.scrollTop, 0, "dom: new-scene reset targets only the reader");
   assert.ok(gl.contains(doc.getElementById("story-panel")), "dom: story panel is inside .game-layout");
   assert.ok(doc.getElementById("snapshot").compareDocumentPosition(doc.getElementById("story-panel")) & window.Node.DOCUMENT_POSITION_FOLLOWING, "dom: story panel follows snapshot");
   assert.ok(doc.getElementById("story-panel").contains(doc.getElementById("log")), "dom: #log is inside the story panel");
@@ -305,6 +312,7 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   const dom = new JSDOM(pageHtml, {
     url: base, runScripts: "dangerously", resources: "usable", pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(window) {
+      Object.defineProperty(window.navigator, "userAgent", { value: "Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36" });
       window.fetch = (u, o) => fetch(new URL(u, base), o);
       window.HTMLElement.prototype.scrollIntoView = function () {};
       window.indexedDB = fakeIndexedDB;
@@ -333,6 +341,27 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   assert.ok(Array.isArray(main.sceneHistory), "idb migration: main gained sceneHistory");
   assert.equal(main.scene, "pro_01", "idb migration: still at the saved scene");
   window.close();
+
+  // Desktop must not boot the story or touch a saved game, even at phone width.
+  const beforeDesktop = await readRec("main");
+  let desktopFetches = 0;
+  const desktop = new JSDOM(pageHtml, {
+    url: base, runScripts: "dangerously", resources: "usable", pretendToBeVisual: true,
+    beforeParse(w) {
+      w.indexedDB = fakeIndexedDB;
+      w.fetch = () => { desktopFetches++; return Promise.reject(new Error("desktop must not fetch story")); };
+    },
+  });
+  await new Promise((resolve) => desktop.window.addEventListener("load", resolve, { once: true }));
+  const desktopDoc = desktop.window.document;
+  assert.equal(desktopDoc.documentElement.dataset.mobileWeb, "blocked", "desktop: device gate blocks desktop UA");
+  assert.equal(desktop.window.getComputedStyle(desktopDoc.querySelector(".shell")).display, "none", "desktop: entire game shell hidden");
+  assert.notEqual(desktop.window.getComputedStyle(desktopDoc.querySelector(".mobile-required")).display, "none", "desktop: phone-only notice visible");
+  assert.equal(desktopDoc.querySelector("#choices button"), null, "desktop: no game boot");
+  assert.equal(desktopFetches, 0, "desktop: story is never fetched");
+  assert.equal(await readRec("main"), beforeDesktop, "desktop: saved game untouched");
+  desktop.window.close();
+  console.log("desktop gate + save preservation OK");
   server.close();
   rmSync(siteDir, { recursive: true, force: true });
   console.log("assembled build ID + IDB migration rotation OK");

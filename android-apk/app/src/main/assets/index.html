@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1012">
 <meta name="game-build" content="unversioned">
 <title>Backroom</title>
 <style>
@@ -21,7 +22,7 @@ h1,h2{font-family:var(--font-display)}
 @media (max-width:760px){.campaign-header{margin:8px 8px 0;padding:12px}.campaign-header .eyebrow{display:none}.campaign-header>div{min-width:0}.campaign-header h1{font-size:17px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.burger-toggle{padding:7px 10px}.burger-text{display:none}}.eyebrow,.role{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em;font-family:var(--font-code)}h1{margin:4px 0 0;font-size:23px}.turn{color:#9aa4ad;font-size:12px;letter-spacing:.1em;white-space:nowrap}.turn strong{font-size:21px;color:white}
 button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;padding:12px;font-weight:700;cursor:pointer}textarea{font:inherit}
 .burger-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}.burger-line{display:block;width:20px;height:2px;background:#eef1f3}.burger-text{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8f9aa4}
-.snapshot-stage{position:sticky;top:0;z-index:6;flex:0 0 auto;overflow:hidden;height:min(72vw,19rem);margin:10px 10px 0}
+.snapshot-stage{position:relative;z-index:6;flex:0 0 auto;overflow:hidden;height:min(72vw,19rem);margin:10px 10px 0}
 @media (max-width:760px){.snapshot-stage{top:12px;width:calc(100% - 21px);height:auto;min-height:0;aspect-ratio:1080/740;margin:12px auto 0}}
 .stage-bg{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid #252b31;background:#0b0d0f;box-shadow:0 20px 60px #0007}
 #stage-background{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
@@ -119,11 +120,12 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .dialogue{background:transparent;border:0;padding:0}.dialogue .text{color:var(--paper)}.speaker{color:#d1bb7c}.dialogue-avatar,.dialogue-avatar-crop{border-color:#46675a}
 .choice-deck{border-top:1px solid #ffffff21;padding-top:8px}.choice-deck-tools{gap:7px}
 .choice-deck-tools button{min-height:42px;padding:10px 12px;border:0;border-image:none;border-radius:3px;background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;color:#fff5a5;box-shadow:0 0 8px #d8c93c33;font-size:15px;font-weight:700;line-height:1.4;text-shadow:0 0 8px #e0cb4e55}
-.actions button{background-image:linear-gradient(#153d3677,#0c211e77),url("ui/ink-paper.svg");border:10px solid transparent;border-image:url("ui/jade-frame.png") 110 / 10px stretch;padding:1px 3px;color:#fff5a5;box-shadow:0 0 7px #c3a63244;font-weight:700}
+.actions button{min-height:44px;background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;border:0;padding:10px 12px;color:#fff5a5;box-shadow:0 0 7px #c3a63244;font-weight:700}
+.actions button:active:not(:disabled){background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;filter:brightness(1.15)}
 .choice-deck-tools button:active:not(:disabled){background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;filter:brightness(1.18)}
 .choice-deck-tools button[aria-pressed="true"]{filter:brightness(1.2);box-shadow:0 0 10px #eee87788}
-.choices{gap:7px;margin-top:8px}.profile-list button{position:relative;background:#1b2225;border:3px double #997953;box-shadow:inset 0 0 0 2px #1f5348;border-radius:5px;padding:10px 36px 10px 9px;color:#fff6b8}
-.profile-list button:after{content:"☁";position:absolute;right:6px;bottom:2px;font-size:27px;font-weight:400;color:#aa916a;opacity:.65}
+.choices{gap:7px;margin-top:8px}.profile-list button{position:relative;min-height:44px;background:transparent url("ui/profile-row-v3.png") center 49.61% / 102% 215.27% no-repeat;border:0;box-shadow:none;border-radius:0;padding:11px 14px;color:#fff6b8}
+.profile-list button:active:not(:disabled){background:transparent url("ui/profile-row-v3.png") center 49.61% / 102% 215.27% no-repeat;filter:brightness(1.15)}
 /* Keep the raster cloud proportional when a choice grows wider or wraps. */
 .choice{position:relative;min-height:42px;padding:10px 82px 10px 12px;border:2px solid #967550;border-image:none;border-radius:7px;background:#1a2023;box-shadow:inset 0 0 0 2px #102424,inset 0 0 0 3px #427267;color:#fff6b8;font-size:15px;line-height:1.4;text-shadow:0 0 7px #d6b54f45}
 .choice:after{content:"";position:absolute;right:0;top:0;bottom:0;width:76px;pointer-events:none;border-radius:0 5px 5px 0;background:url("ui/choice-copper-v2.png") right 49.244% / auto 276.718% no-repeat}
@@ -134,7 +136,7 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .intel-header h2,.backlog-head h2{color:#fff09a;text-shadow:0 0 10px #e1ca4166;letter-spacing:.08em;font-size:15px}
 #intel-close,#backlog-close,.character-overlay-close{font-size:26px;line-height:1;width:40px;height:42px;padding:0;border:8px solid transparent;border-image:url("ui/jade-frame.png") 110 / 8px stretch;background:#171c1b;color:#fff181}
 .intel-scroll{padding:10px;gap:9px}.card{position:relative;padding:13px;border:1px solid #9a7953}.card h2{color:#e7d29b;font-size:13px;letter-spacing:.12em}
-.card:after{content:"";position:absolute;inset:0;pointer-events:none;border:14px solid transparent;border-image:url("ui/jade-frame.png") 110 / 14px stretch;opacity:.45}
+.card:after{content:"";position:absolute;inset:-1px;pointer-events:none;border:12px solid transparent;border-image:url("ui/profile-row-v3.png") 205 135 220 135 / 12px stretch;opacity:.45}
 .row{grid-template-columns:84px 1fr;padding:7px 0;border-color:#ffffff17;color:#dededb;font-size:14px}.row:last-child{border-bottom:0}.row b{color:#8f918b}
 .chips span,.chips .chip{border-color:#876d50;color:#bbb8aa;font-size:12px;background:#101718}
 .profile-card{border:2px solid #365d50;border-radius:3px;background:#0a1414;padding:9px;gap:10px;box-shadow:inset 0 0 12px #35564866}
@@ -144,7 +146,22 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .backlog-item{padding:10px 11px;border:2px solid #8e7852;border-radius:6px;background:linear-gradient(#0c1515bb,#0b1213bb),url("ui/ink-paper.svg");font-size:13px;line-height:1.55;color:#fff4c6;text-shadow:0 0 7px #dfbd5844;box-shadow:inset 0 0 0 2px #25473d}
 .backlog-item .speaker{font-size:12px;color:#d8b16a;letter-spacing:0}
 .character-overlay-card{border:2px solid #9e8055;color:var(--paper)}.character-overlay-copy p{color:#ddd3b1}
-@media(min-width:761px){.shell{max-width:1100px;margin:auto}.campaign-header{padding:14px 20px}.snapshot-stage{width:min(740px,calc(100% - 24px));max-height:500px}.story-panel{margin:14px 12px 0;padding:0 20px 15px}.text{font-size:19px}.scene-kicker{font-size:13px}.scene-seal{font-size:14px}.scene-header{padding:16px 12px;min-height:48px;margin-left:-20px;margin-right:-20px}.intel-panel{width:420px}}
+/* Full-bleed paint; safe insets protect controls without creating an outer gutter. */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-right:env(safe-area-inset-right,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--safe-left:env(safe-area-inset-left,0px)}
+html,body{width:100%;overscroll-behavior:none}
+.shell{width:100%;max-width:none;margin:0}
+.campaign-header{margin:0;padding:calc(10px + var(--safe-top)) max(12px,var(--safe-right)) 10px max(12px,var(--safe-left));box-shadow:none}
+.snapshot-stage{top:auto;margin:0;width:100%;height:min(67.114vw,42dvh);aspect-ratio:auto}
+.reader-divider{flex:none;height:3px;margin:0;border:0;border-top:1px solid #a1875a;border-bottom:1px solid #28443c;background:#080e10}
+.game-layout{overflow-x:hidden;isolation:isolate}
+.story-panel{margin:0;min-width:0;padding-left:max(10px,var(--safe-left));padding-right:max(10px,var(--safe-right));padding-bottom:max(14px,var(--safe-bottom))}
+.scene-header{margin-left:calc(-1 * max(10px,var(--safe-left)));margin-right:calc(-1 * max(10px,var(--safe-right)));padding-left:max(10px,var(--safe-left));padding-right:max(10px,var(--safe-right))}
+.intel-panel{width:100%;height:100vh;height:100dvh;border-left:0;box-shadow:none}
+.intel-header{flex:none;padding:calc(12px + var(--safe-top)) max(12px,var(--safe-right)) 12px max(12px,var(--safe-left))}
+.intel-scroll{min-height:0;flex:1;padding:10px max(10px,var(--safe-right)) max(18px,var(--safe-bottom)) max(10px,var(--safe-left));overscroll-behavior:contain}
+.backlog-card,.character-overlay-card{width:100%;max-height:100vh;max-height:100dvh;padding:calc(14px + var(--safe-top)) max(14px,var(--safe-right)) max(18px,var(--safe-bottom)) max(14px,var(--safe-left));overscroll-behavior:contain}
+.character-overlay-close{top:calc(8px + var(--safe-top));right:max(8px,var(--safe-right))}
+.row{grid-template-columns:minmax(70px,26%) minmax(0,1fr)}.row span,.chips,.profile-copy{overflow-wrap:anywhere}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(prefers-reduced-motion:reduce){.stage-sword{animation:none}.intel-panel,.stage-figure,#stage-character,button{transition:none!important}}
 
 </style>
@@ -155,7 +172,6 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 <button id="intel-toggle" class="burger-toggle" type="button" aria-label="Hồ sơ" aria-controls="intel-panel" aria-expanded="false"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span><span class="burger-text">Hồ sơ</span></button>
 <div><div class="eyebrow">BACKROOMS — VISUAL NOVEL</div><h1 id="title"></h1></div>
 </header>
-<div class="game-layout" id="game-layout">
 <section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
 <div class="stage-bg"><img id="stage-background" src="level_snapshots/level_0.webp" alt=""></div>
 <div class="stage-figure" id="stage-entity-figure"><img id="stage-entity" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-entity-name"></span></div>
@@ -167,6 +183,8 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 </div>
 <div class="stage-caption"><span id="stage-scene-name"></span></div>
 </section>
+<hr class="reader-divider" aria-hidden="true">
+<div class="game-layout" id="game-layout" role="region" aria-label="Nội dung truyện" tabindex="0">
 <section class="story-panel" id="story-panel">
 <header class="scene-header"><span class="scene-kicker" id="scene-kicker"></span><span class="scene-seal">CẢNH <strong id="scene-progress">00</strong></span></header>
 <div class="log story-text" id="log"></div>

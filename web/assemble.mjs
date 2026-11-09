@@ -84,7 +84,7 @@ function swap(html, from, to, expected, label) {
 // shell can still be cached for up to 10 minutes; the ID detects that,
 // it does not erase the cache. No service worker is added.)
 const WEB_FILES = [
-  "save-store.js", "save-boot.js", "ui-enhancements.js",
+  "save-store.js", "save-boot.js", "ui-enhancements.js", "mobile-only.js",
 ];
 function collectInputs(dir, base, out) {
   for (const name of readdirSync(dir).sort()) {
@@ -137,6 +137,7 @@ html = swap(html,
   'let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;',
   "let state,busy;\n" +
   "SaveBoot.ready.then(function (savedString) {\n" +
+  'if(window.__MOBILE_WEB_ALLOWED__===false)return;\n' +
   'state=JSON.parse(savedString||"null")||initial;',
   1, "boot wrap open + read");
 html = swap(html, "let busy=false;", "busy=false;", 1, "busy hoist");
@@ -178,6 +179,17 @@ html = swap(html, "</script>\n</body>", `</script>\n<script src="ui-enhancements
     fail("order check: boot wrap missing");
   }
 }
+
+// Disable the web game on desktop before its first paint and before save boot.
+// The shared offline APK shell has no device gate.
+html = swap(html, "</head>", `<style>
+html:not([data-mobile-web="allowed"]) body > :not(.mobile-required){display:none!important}
+.mobile-required{display:grid;place-content:center;min-height:100vh;min-height:100dvh;margin:0;padding:24px;text-align:center;color:#fff6ca;background:#0a1012}
+html[data-mobile-web="allowed"] .mobile-required{display:none}
+</style>
+<script src="mobile-only.js?v=${buildVersion}"></script>
+</head>`, 1, "mobile-only gate");
+html = swap(html, "<body>", '<body>\n<section class="mobile-required" role="status"><h1>Chỉ hỗ trợ điện thoại</h1><p>Vui lòng mở game bằng trình duyệt trên điện thoại di động.</p></section>', 1, "desktop notice");
 
 // ── 2b. Embed the build ID and version every static reference ────────────
 // The source shell carries a placeholder meta; the deployed copy carries
