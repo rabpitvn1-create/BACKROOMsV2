@@ -202,8 +202,8 @@ function esc(s){const d=document.createElement("div");d.textContent=s||"";return
 function chips(items){return items&&items.length?items.map(x=>"<span>"+esc(typeof x==="string"?x:x.name||"—")+"</span>").join(""):"<span>Trống.</span>"}
 function profileKeyOf(name){const n=String(name||"").toLowerCase();if(n.includes("cao minh"))return"cao_minh";if(n.includes("hạ liên"))return"ha_lien";if(n.includes("iris"))return"iris";if(n.includes("syvial"))return"syvial";if(n.includes("lucia")||n.includes("thuý mai")||n.includes("thúy mai"))return"lucia";return""}
 function partyChips(items){if(!items||!items.length)return"<span>Trống.</span>";return items.map(x=>{const name=typeof x==="string"?x:x.name||"—";const k=profileKeyOf(name);return k?"<button type='button' class='chip' data-profile-open='"+k+"'>"+esc(name)+"</button>":"<span>"+esc(name)+"</span>"}).join("")}
-// shortcut: L8 reuses the L7 background by plan, and L9 has no asset yet so it falls back to the nearest existing one (L7); split the mapping when level_9.webp lands
-function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));if(!m)return 0;const n=Math.min(9,Math.max(0,parseInt(m[1],10)));return n>=8?7:n}
+// shortcut: L8 reuses the L7 background by plan; L9 has its own asset
+function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));if(!m)return 0;const n=Math.min(9,Math.max(0,parseInt(m[1],10)));return n===8?7:n}
 function flagKey(v){if(!v)return"";const raw=typeof v==="string"?v:(v.id||v.key||v.name||"");return String(raw).toLowerCase().trim().replace(/\s+/g,"_")}
 function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):flagKey(v).replace(/[_-]+/g," ");return raw?raw.replace(/\b\w/g,c=>c.toUpperCase()):""}
 function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")}
