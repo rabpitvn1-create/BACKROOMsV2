@@ -98,8 +98,9 @@ body{color:var(--paper);background:#090e10;font-size:15px}
 .campaign-header{position:relative;justify-content:space-between;margin:0;padding:10px 12px;min-height:clamp(58px,15.3vw,72px);border:0;background:#101416;box-shadow:none;isolation:isolate}
 /* Show the painted header band within the unmodified ImageGen alpha canvas. */
 .campaign-header:after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("ui/campaign-header-v3.png") center 46.34% / 100% 211.7% no-repeat}
-.campaign-header>div{position:relative;z-index:1;min-width:0}.campaign-header .eyebrow{display:none}
-.campaign-header h1{margin:0;color:#fffa8d;font-size:clamp(13px,4vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 8px #e8d43b80}
+.campaign-header>div{position:relative;z-index:1;min-width:0;flex:1}.campaign-header .eyebrow{display:none}
+.campaign-header h1{margin:0;line-height:0}
+.campaign-logo{display:block;width:100%;height:clamp(38px,11vw,48px);object-fit:contain}
 button{color:var(--paper);background-color:#101b1c;border:1px solid var(--bronze);text-shadow:0 0 7px #d9b96d55;border-radius:2px}
 button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .burger-toggle{position:relative;z-index:1;width:46px;height:38px;flex:none;justify-content:center;align-items:center;padding:7px;gap:4px;border:2px solid #94704b;border-radius:5px;background:linear-gradient(135deg,#29291f,#111a19);box-shadow:inset 0 0 0 2px #3e3426,0 1px 4px #0009}
@@ -173,7 +174,7 @@ html,body{width:100%;overscroll-behavior:none}
 <main class="shell">
 <header class="campaign-header">
 <button id="intel-toggle" class="burger-toggle" type="button" aria-label="Hồ sơ" aria-controls="intel-panel" aria-expanded="false"><span class="burger-line"></span><span class="burger-line"></span><span class="burger-line"></span><span class="burger-text">Hồ sơ</span></button>
-<div><div class="eyebrow">BACKROOMS — VISUAL NOVEL</div><h1 id="title"></h1></div>
+<div><h1 id="title"><img class="campaign-logo" src="ui/backrooms-logo.png" alt="Backrooms"></h1></div>
 </header>
 <section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
 <div class="stage-bg"><img id="stage-background" src="level_snapshots/level_0.webp" alt=""></div>
@@ -277,7 +278,7 @@ const initial={
   characterCanon:CURRENT_CHARACTER_CANON
 };
 const byId=id=>document.getElementById(id);
-const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),profileListEl=byId("profile-list"),logEl=byId("log"),statusEl=byId("status");
+const locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),profileListEl=byId("profile-list"),logEl=byId("log"),statusEl=byId("status");
 const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
 const kickerEl=byId("scene-kicker"),progressEl=byId("scene-progress");
 const V=window.__V||"";
@@ -362,7 +363,7 @@ function lineHtml(x){
 function visibleLines(sc){return sc.lines.filter(function(ln){return !ln.if||Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]})})}
 let lastRenderedScene=null;
 function render(){
-  titleEl.textContent=state.title;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);
+  locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);
   // Drawer profile buttons are generated from PROFILES: a character gets a button exactly when it has a profile entry.
   profileListEl.innerHTML=Object.keys(PROFILES).map(k=>"<button type='button' data-profile-open='"+k+"'>"+esc(PROFILES[k].name)+"</button>").join("");
   // Hui model: the story frame holds ONLY the current scene's segment;
