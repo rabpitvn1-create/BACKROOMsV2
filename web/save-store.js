@@ -8,11 +8,10 @@
  * unbounded narrative log), and blanks the page when the stored string is
  * corrupt (the page's boot JSON.parse has no try/catch).
  *
- * DB "backroomsv2-web", one object store, three records:
+ * DB "backroomsv2-web", one object store, two records:
  *   main      — the game's save string, byte-verbatim (exactly what the page's
  *               JSON.stringify(state) produced; no envelope, no codec)
  *   main.prev — the previous main, rotated in the same transaction as a write
- *   snapshot  — the {turn, model, dataUri} snapshot object
  *
  * The Java SharedPreferences shadow store is deliberately NOT ported: nothing
  * in the APK ever reads it (audit A4 §1). One store, one truth.
@@ -20,8 +19,8 @@
 (function (global) {
   var DB_NAME = "backroomsv2-web";
   var STORE = "saves";
-  // Synthesis §6.4: the Render proxy rejects request bodies over 1 MB and the
-  // GM request body is dominated by this state string — warn before it gets there.
+  // The save carries the full, unbounded narrative log — warn while it is
+  // still cheap to notice, long before it strains the storage quota.
   var SIZE_WARN_BYTES = 800 * 1024;
 
   var dbPromise = null;
@@ -82,8 +81,7 @@
     var bytes = new TextEncoder().encode(stateString).length;
     var oversize = bytes > SIZE_WARN_BYTES;
     if (oversize) {
-      console.warn("SaveStore: save string is " + bytes + " bytes (> " + SIZE_WARN_BYTES +
-        "); GM turns may hit the proxy's 1 MB body limit.");
+      console.warn("SaveStore: save string is " + bytes + " bytes (> " + SIZE_WARN_BYTES + ").");
     }
     return { bytes: bytes, oversize: oversize };
   }
@@ -143,35 +141,7 @@
     });
   }
 
-  // The snapshot object ({turn, model, dataUri}) as a record of its own —
-  // same write-then-verify discipline, no prev rotation.
-  function saveSnapshot(obj) {
-    return run(function (db) {
-      return txPromise(db, "readwrite", function (store, ctl) {
-        store.put(obj, "snapshot");
-        var verify = store.get("snapshot");
-        verify.onsuccess = function () {
-          var v = verify.result;
-          if (v && v.turn === obj.turn && v.model === obj.model && v.dataUri === obj.dataUri) ctl.done(obj);
-          else ctl.fail(new Error("SaveStore: snapshot read-back mismatch"));
-        };
-        verify.onerror = function () { ctl.fail(verify.error); };
-      });
-    });
-  }
-
-  function loadSnapshot() {
-    return run(function (db) {
-      return txPromise(db, "readonly", function (store, ctl) {
-        var g = store.get("snapshot");
-        g.onsuccess = function () { ctl.done(g.result || null); };
-        g.onerror = function () { ctl.fail(g.error); };
-      });
-    }).catch(function () { return null; }); // a snapshot miss must never block a turn
-  }
-
-  // clearSave: delete both state records (the snapshot record is left alone,
-  // exactly as the APK's clearSave leaves its snapshot key alone).
+  // clearSave: delete both state records.
   function clear() {
     return run(function (db) {
       return txPromise(db, "readwrite", function (store, ctl) {
@@ -187,8 +157,6 @@
     save: save,
     load: load,
     clear: clear,
-    saveSnapshot: saveSnapshot,
-    loadSnapshot: loadSnapshot,
     checkSize: checkSize,
     SIZE_WARN_BYTES: SIZE_WARN_BYTES
   };

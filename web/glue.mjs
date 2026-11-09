@@ -8,6 +8,6 @@
 // lands after document parsing — safe because core-adapter probes the
 // global lazily on the first turn, never at load, and the page cannot
 // submit a turn before boot completes.
-import { processRule, processValidatedCandidate } from "./core/index.js";
+import { processRule } from "./core/index.js";
 
-window.GameCore = { processRule, processValidatedCandidate };
+window.GameCore = { processRule };

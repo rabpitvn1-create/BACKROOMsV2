@@ -52,17 +52,9 @@
  *        localStorage.removeItem("backroom-apk-state");
  *      → SaveBoot.clear();
  *
- * Snapshot routing (the injected UI, cluster C3, keeps its image in the
- * localStorage key "backroom-apk-snapshot" in the APK): its two touch-points
- * route here instead —
- *        localStorage.setItem("backroom-apk-snapshot",JSON.stringify(obj))
- *      → SaveBoot.saveSnapshot(obj);
- *        JSON.parse(localStorage.getItem("backroom-apk-snapshot")||"null")
- *      → the value resolved by SaveBoot.loadSnapshot() (a promise; the
- *        injected UI's cache read becomes .then(obj => ...) with the same
- *        turn-matching logic applied to the resolved object).
- *
- * After this patch nothing game-owned remains in localStorage.
+ * After this patch nothing game-owned remains in localStorage. (The
+ * offline build has no snapshot record at all: the VN stage is composed
+ * from local assets, so there is nothing to route here.)
  * ───────────────────────────────────────────────────────────────────────────
  */
 (function (global) {
@@ -87,8 +79,6 @@
     saveString: saveString,
     loadString: loadString,
     clear: clear,
-    saveSnapshot: function (obj) { return SaveStore.saveSnapshot(obj); },
-    loadSnapshot: function () { return SaveStore.loadSnapshot(); },
     cachedString: function () { return cache; }
   };
   if (typeof module !== "undefined" && module.exports) module.exports = global.SaveBoot;

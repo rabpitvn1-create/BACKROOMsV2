@@ -38,11 +38,11 @@
 // remains (asserted below: the patched page contains no "localStorage").
 //
 // ── Script load order (asserted on the final bytes, fail-closed) ─────────
-//   config.js → save-store.js → save-boot.js → glue.mjs (module) →
+//   save-store.js → save-boot.js → glue.mjs (module) →
 //   core-adapter.js → shim.js → [the game's inline script] →
 //   ui-enhancements.js
 // window.Android MUST exist before the game's inline script runs (the page
-// hard-stops without the bridge — audit A2), so config/save/shim all sit
+// hard-stops without the bridge — audit A2), so save/shim all sit
 // ahead of it. glue.mjs is a module: it executes deferred, after parsing,
 // which is safe because core-adapter.js probes window.GameCore lazily at
 // turn time, never at load. save-boot.js must precede the inline script so
@@ -84,7 +84,7 @@ function swap(html, from, to, expected, label) {
 // (The HTML shell itself can still be cached for up to 10 minutes;
 // once it refreshes, nothing beneath it can be stale.)
 const WEB_FILES = [
-  "config.js", "glue.mjs", "core-adapter.js", "shim.js",
+  "glue.mjs", "core-adapter.js", "shim.js",
   "save-store.js", "save-boot.js", "ui-enhancements.js",
   "core/index.js", "core/facade.js", "core/rules.js",
 ];
@@ -141,7 +141,6 @@ if (html.includes("localStorage")) fail("patched index.html still references loc
 
 // ── 2. Inject the web script tags and assert the final order ─────────────
 const PRE = [
-  `<script src="config.js?v=${buildVersion}"></script>`,
   `<script src="save-store.js?v=${buildVersion}"></script>`,
   `<script src="save-boot.js?v=${buildVersion}"></script>`,
   `<script type="module" src="glue.mjs?v=${buildVersion}"></script>`,
@@ -152,7 +151,7 @@ html = swap(html, "<script>", PRE + "\n<script>", 1, "pre-script injection");
 html = swap(html, "</script>\n</body>", `</script>\n<script src="ui-enhancements.js?v=${buildVersion}"></script>\n</body>`, 1, "ui injection");
 {
   const markers = [
-    'src="config.js?v=', 'src="save-store.js?v=', 'src="save-boot.js?v=',
+    'src="save-store.js?v=', 'src="save-boot.js?v=',
     'src="glue.mjs?v=', 'src="core-adapter.js?v=', 'src="shim.js?v=',
     "<script>\n", // the game's own inline script (bare tag)
     'src="ui-enhancements.js?v=',

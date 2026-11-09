@@ -76,16 +76,7 @@ const stateD = JSON.stringify({ turn: 11, log: [{ role: "gm", text: "…" }] });
   assert.strictEqual(await SaveStore.load(), stateD);
   ok("failed transaction leaves main and main.prev intact");
 
-  // 6. Snapshot record round-trips (and overwrites by value).
-  const snap = { turn: 11, model: "gemini-3.1-flash-image", dataUri: "data:image/jpeg;base64,/9j/4AAQ" };
-  await SaveStore.saveSnapshot(snap);
-  assert.deepStrictEqual(await SaveStore.loadSnapshot(), snap);
-  const snap2 = { turn: 12, model: "gemini-3.1-flash-image", dataUri: "data:image/jpeg;base64,BBBB" };
-  await SaveStore.saveSnapshot(snap2);
-  assert.deepStrictEqual(await SaveStore.loadSnapshot(), snap2);
-  ok("snapshot round-trip");
-
-  // 7. Payload guard: >800 KB state string warns and flags oversize.
+  // 6. Payload guard: >800 KB state string warns and flags oversize.
   const big = JSON.stringify({ turn: 99, log: [{ role: "gm", text: "x".repeat(900 * 1024) }] });
   assert.strictEqual(SaveStore.checkSize(stateA).oversize, false);
   let warns = 0;
@@ -100,14 +91,12 @@ const stateD = JSON.stringify({ turn: 11, log: [{ role: "gm", text: "…" }] });
   assert.strictEqual(await SaveStore.load(), big);
   ok(">800 KB warning fires (console + returned flag)");
 
-  // 8. clear() deletes both state records; the snapshot record survives,
-  //    matching the APK clearSave leaving its snapshot key alone.
+  // 7. clear() deletes both state records.
   await SaveStore.clear();
   assert.strictEqual(await SaveStore.load(), null);
   assert.strictEqual(await raw("main"), undefined);
   assert.strictEqual(await raw("main.prev"), undefined);
-  assert.deepStrictEqual(await SaveStore.loadSnapshot(), snap2);
-  ok("clear() deletes main + main.prev only");
+  ok("clear() deletes main + main.prev");
 
-  console.log("\n" + n + "/8 scenarios passed");
+  console.log("\n" + n + "/7 scenarios passed");
 })().catch((e) => { console.error("FAIL:", e); process.exit(1); });

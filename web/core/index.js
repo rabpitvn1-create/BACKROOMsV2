@@ -10,4 +10,4 @@ export {
   javaTrim,
   stableItemId,
 } from "./rules.js";
-export { processRule, processValidatedCandidate } from "./facade.js";
+export { processRule } from "./facade.js";

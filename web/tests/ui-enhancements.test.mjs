@@ -1,9 +1,10 @@
 /*
- * Headless parity test for web/ui-enhancements.js (cluster C3).
+ * Headless parity test for web/ui-enhancements.js (cluster C3) against the
+ * offline native payload in MainActivity.installUiEnhancements().
  * Loads the REAL android-apk/app/src/main/assets/index.html in jsdom,
- * stubs C4's window.SaveBoot adapter, leaves window.Android ABSENT
- * (inert-safe path), then injects ui-enhancements.js the way the
- * assembler will: as a script running after the game's inline script.
+ * leaves window.Android ABSENT (the payload needs no bridge at all now),
+ * then injects ui-enhancements.js the way the assembler will: as a script
+ * running after the game's inline script.
  *
  * Run:  cd web/tests && npm install && node ui-enhancements.test.mjs
  */
@@ -16,6 +17,8 @@ const here = path.dirname(url.fileURLToPath(import.meta.url));
 const html = fs.readFileSync(path.join(here, "../../android-apk/app/src/main/assets/index.html"), "utf8");
 const ui = fs.readFileSync(path.join(here, "../ui-enhancements.js"), "utf8");
 
+const SNAPSHOT_MSG = "Snapshot hiển thị trực tiếp ở khung phía trên — nền theo Level, nhân vật và thực thể đều là ảnh trên máy.";
+
 let failures = 0;
 function check(name, cond) {
   console.log((cond ? "PASS " : "FAIL ") + name);
@@ -23,7 +26,7 @@ function check(name, cond) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-function boot(storedSnapshot) {
+function boot() {
   const errors = [];
   const vc = new VirtualConsole();
   vc.on("jsdomError", (e) => errors.push(String(e.detail && e.detail.message || e.message)));
@@ -35,23 +38,20 @@ function boot(storedSnapshot) {
   });
   const { window } = dom;
   window.addEventListener("error", (e) => errors.push(e.message));
-  // C4 adapter stub — stateful, promise-based, per save-boot.js header.
-  const calls = { saved: [] };
-  let stored = storedSnapshot;
-  window.SaveBoot = {
-    loadSnapshot: () => Promise.resolve(stored),
-    saveSnapshot: (obj) => { calls.saved.push(obj); stored = obj; return Promise.resolve({}); },
-  };
-  // window.Android deliberately absent.
+  // jsdom does not implement scrollIntoView; the payload calls it on the
+  // stage when the snapshot button is clicked. Record instead of throwing.
+  window.HTMLElement.prototype.scrollIntoView = function () { this.__scrolled = true; };
+  // window.Android deliberately absent; no SaveBoot stub — the offline
+  // payload touches neither.
   const s = window.document.createElement("script");
   s.textContent = ui;
   window.document.body.appendChild(s);
-  return { window, errors, calls };
+  return { window, errors };
 }
 
-// ── Scenario A: cached snapshot exists for the current turn ──────────────
+// ── Scenario A: install + turn flow + local snapshot ─────────────────────
 {
-  const { window, errors, calls } = boot({ turn: 1, model: "Stub", dataUri: "data:image/jpeg;base64,QUJD" });
+  const { window, errors } = boot();
   const doc = window.document;
   await sleep(50);
 
@@ -62,11 +62,21 @@ function boot(storedSnapshot) {
     !!btn && btn.parentElement.classList.contains("actions") &&
     btn.nextElementSibling && btn.nextElementSibling.classList.contains("wide"));
   check("A: payload globals defined",
-    ["requestSnapshot", "backroomSnapshot", "backroomSnapshotError", "backroomTurn", "backroomError", "render"]
+    ["requestSnapshot", "backroomTurn", "backroomError", "render"]
       .every((k) => typeof window[k] === "function"));
-  const img = doc.querySelector("#snapshot img");
-  check("A: cached snapshot rendered as <img> via SaveBoot", !!img && img.src === "data:image/jpeg;base64,QUJD");
+  check("A: snapshot-image globals are gone",
+    typeof window.backroomSnapshot === "undefined" && typeof window.backroomSnapshotError === "undefined");
+  const styles = [...doc.querySelectorAll("style")].map((s) => s.textContent).join("\n");
+  check("A: web-only A3 radius rule present in the injected style", styles.includes("#snapshot .stage-bg{border-radius:20px}"));
+  check("A: no .snapshot-placeholder rule (removed with the image machinery)", !styles.includes("snapshot-placeholder"));
   check("A: nothing written to localStorage snapshot key", window.localStorage.getItem("backroom-apk-snapshot") === null);
+  check("A: VN stage intact (no snapshot-art layer)", !doc.querySelector("#snapshot .snapshot-art") && !!doc.querySelector("#snapshot .stage-character-wrap"));
+
+  // No auto-snapshot timer anymore: the status line must stay untouched.
+  const statusAtBoot = doc.getElementById("status").textContent;
+  await sleep(900);
+  check("A: no auto-snapshot fires after boot", doc.getElementById("status").textContent === statusAtBoot);
+  check("A: no errors while idle", errors.length === 0);
 
   // Pending bubbles on submit (bridge absent: page handler bails, bubbles still appear).
   doc.getElementById("action").value = "đi về phía cửa";
@@ -78,57 +88,38 @@ function boot(storedSnapshot) {
   check("A: GM bubble shows the native pending text",
     pending.length === 2 && pending[1].querySelector(".text").textContent === "Đang xử lý lượt…");
 
-  // Turn completes: wrapper must clear bubbles (state here is the page's own).
+  // Turn completes: wrapper clears bubbles and reports the offline save line.
   const st = JSON.parse(window.eval("JSON.stringify(state)"));
   st.turn = 2;
   window.backroomTurn(JSON.stringify(st));
   await sleep(50);
   check("A: backroomTurn wrapper clears pending bubbles", doc.querySelectorAll('[data-pending="1"]').length === 0);
+  check("A: status reports the local save line (no snapshot suffix)",
+    doc.getElementById("status").textContent === "Turn 2 đã lưu trên máy.");
   check("A: no errors after turn", errors.length === 0);
 
-  // Snapshot delivery routes to SaveBoot.saveSnapshot with the native object shape.
-  window.backroomSnapshot(JSON.stringify({ turn: 2, model: "Gemini", dataUri: "data:image/png;base64,WFla" }));
-  await sleep(50);
-  check("A: SaveBoot.saveSnapshot got {turn, model, dataUri}",
-    calls.saved.length === 1 && calls.saved[0].turn === 2 && calls.saved[0].model === "Gemini" &&
-    calls.saved[0].dataUri === "data:image/png;base64,WFla");
-  check("A: localStorage snapshot key still untouched", window.localStorage.getItem("backroom-apk-snapshot") === null);
-  const img2 = doc.querySelector("#snapshot img");
-  check("A: fresh snapshot re-rendered from the adapter", !!img2 && img2.src === "data:image/png;base64,WFla");
+  // Snapshot button: purely local showSnapshot — status + scroll, no bridge.
+  btn.click();
+  check("A: snapshot click sets the exact local status message",
+    doc.getElementById("status").textContent === SNAPSHOT_MSG);
+  check("A: snapshot click scrolls the stage into view", doc.getElementById("snapshot").__scrolled === true);
+  window.requestSnapshot();
+  check("A: window.requestSnapshot is the same local action",
+    doc.getElementById("status").textContent === SNAPSHOT_MSG);
 
-  // Stale-turn payload is dropped, as native.
-  window.backroomSnapshot(JSON.stringify({ turn: 99, model: "Gemini", dataUri: "data:image/png;base64,U1RBTEU=" }));
-  await sleep(20);
-  check("A: stale-turn snapshot dropped", calls.saved.length === 1);
-
-  // Snapshot error callback: matching turn reports, stale turn ignored.
-  window.backroomSnapshotError(JSON.stringify({ turn: 2, message: "hết quota" }));
-  check("A: snapshot error reaches the status line",
-    doc.getElementById("status").textContent === "Snapshot lỗi: hết quota");
-  window.backroomSnapshotError(JSON.stringify({ turn: 99, message: "stale" }));
-  check("A: stale snapshot error ignored",
-    doc.getElementById("status").textContent === "Snapshot lỗi: hết quota");
+  // Error wrapper clears pending bubbles too.
+  doc.getElementById("action").value = "thử lại";
+  doc.getElementById("form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+  check("A: bubbles reappear on a new submit", doc.querySelectorAll('[data-pending="1"]').length === 2);
+  window.backroomError("Không thể xử lý lượt.");
+  check("A: backroomError wrapper clears pending bubbles", doc.querySelectorAll('[data-pending="1"]').length === 0);
+  check("A: no errors at end of scenario A", errors.length === 0);
 
   // Double injection is a no-op (native guard).
   const s2 = doc.createElement("script");
   s2.textContent = ui;
   doc.body.appendChild(s2);
   check("A: second load does not duplicate the button", doc.querySelectorAll("#snapshotButton").length === 1);
-  check("A: no errors at end of scenario A", errors.length === 0);
-  window.close();
-}
-
-// ── Scenario B: no cached snapshot → placeholder + auto-snapshot attempt ─
-{
-  const { window, errors } = boot(null);
-  const doc = window.document;
-  await sleep(50);
-  check("B: no snapshot art layer when cache is empty, VN stage intact",
-    !doc.querySelector("#snapshot .snapshot-art") && !!doc.querySelector("#snapshot .stage-character-wrap"));
-  await sleep(900); // native auto-snapshot timer is 700 ms
-  check("B: auto-snapshot fired and reported the missing bridge (inert-safe)",
-    doc.getElementById("status").textContent === "Không tìm thấy Android snapshot bridge.");
-  check("B: no script errors", errors.length === 0);
   window.close();
 }
 

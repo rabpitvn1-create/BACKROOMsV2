@@ -10,7 +10,7 @@ await import("../glue.mjs");
 
 assert.equal(typeof window.GameCore, "object", "glue assigns window.GameCore");
 assert.equal(typeof window.GameCore.processRule, "function");
-assert.equal(typeof window.GameCore.processValidatedCandidate, "function");
+assert.equal(window.GameCore.processValidatedCandidate, undefined, "no candidate lane in the offline core");
 
 // The assigned functions are the real core, not stubs: an inventory query
 // is handled locally with the facade's canned reply.

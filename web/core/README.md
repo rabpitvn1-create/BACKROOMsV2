@@ -5,37 +5,36 @@ Line-faithful port of `android-apk/app/src/main/java/com/rabpit/backroom/core/`:
 | Java | JS | Notes |
 |---|---|---|
 | `GameCoreRules.java` (69 lines) | `rules.js` | All 9 patterns + 7 helpers |
-| `GameCoreFacade.java` (~270 logic lines) | `facade.js` | Minus Android glue (below) |
+| `GameCoreFacade.java` | `facade.js` | Minus Android glue (below) |
 | `GameCoreRulesTest.java` (33 lines) | `test/rules.test.js` | Assertions re-expressed verbatim, plus fixture extension |
-| — | `test/facade.test.js` | (state, action) / (before, candidate, action) fixture corpus |
+| — | `test/facade.test.js` | (state, action) fixture corpus |
 
 NOT ported, deliberately: the facade's SharedPreferences touchpoints
 (`persist`, `currentCoreState`, `clear`) and `Log.d` — persistence belongs to
 the C4 save layer; this module is pure in-memory computation, like the Java
-logic it mirrors. `MainActivity`'s orchestration (prompt, proxy call, log
-append after commit) is C2's, not here.
+logic it mirrors. `MainActivity`'s bridge (submitTurn → processRule →
+backroomTurn/backroomError) is mirrored by C2's shim, not here.
 
 ## API (for the C2 shim)
 
-All functions are synchronous and side-effect free. State/candidate inputs
+All functions are synchronous and side-effect free. State inputs
 accept a plain object **or** a JSON string; inputs are never mutated.
 
 ```js
-import { processRule, processValidatedCandidate } from "./core/index.js";
+import { processRule } from "./core/index.js";
 
-// 1) Local rules first — mirrors GameCoreFacade.processRule.
+// Local rules — mirrors GameCoreFacade.processRule. The offline build has
+// no GM lane: every non-blank action is handled here.
 const r = processRule(state, action);
 // r = { handled, state, reason, error?, reply? }
-//   reason "committed"            -> handled, r.state is the new state, r.reply is the canned reply
+//   reason "committed"            -> handled, r.state is the new state, r.reply is the reply
 //   reason "validation_rejected"  -> handled, error "player_pickup_unavailable", turn NOT incremented
-//   reason "fallback_required"    -> not handled: run the GM pipeline, then step 2
+//   reason "fallback_required"    -> not handled: blank action only (the Java empty-text branch)
 //   reason "core_error"           -> not handled, r.error carries the message
-
-// 2) Validate a GM-proposed candidate — mirrors processValidatedCandidate.
-const v = processValidatedCandidate(beforeState, candidateJson, action);
-// v = { handled, state, reason }  reason: "gemini_delta_committed" | "gemini_delta_rejected"
-//   On commit, v.state already carries: inventory locked-or-normalized,
-//   party sanitized, saveVersion = 3, gameTime rebuilt from the BEFORE state.
+//
+// A free action commits immediately: turn +1, game time advanced, and the
+// reply is the facade's neutral localActionReply — the action text plus
+// the current location / party / inventory lines, nothing invented.
 ```
 
 `rules.js` also exports the individual classifiers (`isDirectPlayerPickupAction`,
@@ -70,10 +69,10 @@ const v = processValidatedCandidate(beforeState, candidateJson, action);
 - **parseState leniency.** org.json's tokener accepts some non-strict JSON
   (e.g. unquoted keys); `JSON.parse` does not, and unparseable input becomes
   `{}` — identical to the Java outcome for every machine-generated input this
-  game actually produces (page `JSON.stringify`, GM JSON output).
-- **copyField** deep-copies the copied value where Java shares the reference
-  into the response; serialization-equivalent, and it keeps the caller's
-  `before` state safe from later mutation of the committed state.
+  game actually produces (the page's `JSON.stringify`).
+- **Deep copies** stand in wherever Java shares a reference into the
+  response; serialization-equivalent, and it keeps the caller's input
+  state safe from later mutation of the committed state.
 
 ## Tests
 

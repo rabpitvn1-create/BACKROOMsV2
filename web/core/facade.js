@@ -1,13 +1,13 @@
-// Port of com.rabpit.backroom.core.GameCoreFacade (290 lines) minus the Android
+// Port of com.rabpit.backroom.core.GameCoreFacade minus the Android
 // glue: the SharedPreferences persist()/currentCoreState()/clear() and Log.d are
 // NOT ported — persistence is the web save layer's job (cluster C4). Everything
 // else mirrors the Java control flow function for function.
 //
-// Inputs: state/candidate may be a plain JS object or a JSON string (the Java
+// Inputs: state may be a plain JS object or a JSON string (the Java
 // signatures are String-in/String-out; C2's shim passes parsed objects).
 // Inputs are never mutated: every mutation happens on a deep copy, exactly as
 // the Java deepCopy() discipline does. Fallback/rejection results return the
-// (unmutated) input state object itself, mirroring the Java `legacy`/`before`
+// (unmutated) input state object itself, mirroring the Java `legacy`
 // reference in the response.
 //
 // org.json semantics are hand-matched by the opt* helpers below (AOSP org.json):
@@ -16,28 +16,22 @@
 // - optInt/optLong: Number -> Java (int)/(long) cast (truncate toward zero,
 //   clamp, NaN -> 0); numeric String -> parsed as double then cast; anything
 //   else -> default.
-// - optBoolean: Boolean -> itself; String "true"/"false" (case-insensitive);
-//   else default.
 // - optJSONObject/optJSONArray: wrong type -> null (never a fresh {} / []).
-// - has(): true when the key exists, even if its value is JSON null.
 // Known residual: a JSON literal like 5.0 parses to Double in org.json
 // (optString -> "5.0") but to 5 in JS (optString -> "5"). Only reachable if a
 // string-typed field (name/id) carries a decimal-form number — not in real data.
 
 import {
   estimateMinutes,
-  inventoryMutationLocked,
   isDirectPlayerPickupAction,
   isInventoryQuery,
   isPartyQuery,
   javaTrim,
-  stableItemId,
 } from "./rules.js";
 
 const CURRENT_SAVE_VERSION = 3;
 
 const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
-const has = (o, key) => Object.prototype.hasOwnProperty.call(o, key);
 
 function optString(o, key, fallback) {
   const v = o[key];
@@ -77,17 +71,6 @@ function optLong(o, key, fallback) {
   return fallback;
 }
 
-function optBoolean(o, key, fallback) {
-  const v = o[key];
-  if (typeof v === "boolean") return v;
-  if (typeof v === "string") {
-    const s = v.toLowerCase();
-    if (s === "true") return true;
-    if (s === "false") return false;
-  }
-  return fallback;
-}
-
 function optJSONObject(o, key) {
   const v = o[key];
   return isObject(v) ? v : null;
@@ -117,65 +100,6 @@ function deepCopy(source) {
   return JSON.parse(JSON.stringify(source));
 }
 
-function copyField(source, target, key) {
-  // Java puts the source's value reference; a deep copy is serialization-
-  // equivalent here and cannot alias the caller's `before` state.
-  if (source != null && has(source, key)) target[key] = deepCopy(source[key]);
-  else delete target[key];
-}
-
-function normalizeInventory(input) {
-  const output = [];
-  if (input == null) return output;
-  const deduplicated = new Map(); // LinkedHashMap: overwrite keeps first position
-  for (const raw of input) {
-    const item = isObject(raw) ? raw : null;
-    if (item == null) continue;
-    const name = javaTrim(optString(item, "name", ""));
-    if (name === "") continue;
-    let id = javaTrim(optString(item, "id", ""));
-    if (id === "") id = stableItemId(name);
-    const quantity = Math.max(1, optInt(item, "quantity", 1));
-    const normalized = deepCopy(item);
-    normalized.id = id;
-    normalized.name = name;
-    normalized.quantity = quantity;
-    deduplicated.set(id, normalized);
-  }
-  for (const value of deduplicated.values()) output.push(value);
-  return output;
-}
-
-function memberId(member) {
-  const id = javaTrim(optString(member, "id", ""));
-  if (id !== "") return id;
-  return javaTrim(optString(member, "name", "")).toLowerCase();
-}
-
-function sanitizeParty(before, candidate) {
-  const safeBefore = before == null ? [] : before;
-  const safeCandidate = candidate == null ? [] : candidate;
-  const existing = new Map();
-  for (const raw of safeBefore) {
-    const member = isObject(raw) ? raw : null;
-    if (member == null) continue;
-    const id = memberId(member);
-    if (id !== "") existing.set(id, member);
-  }
-  const output = [];
-  for (const raw of safeCandidate) {
-    const member = isObject(raw) ? raw : null;
-    if (member == null) continue;
-    const id = memberId(member);
-    if (id === "") continue;
-    const alreadyMember = existing.has(id);
-    const confirmedJoin =
-      optBoolean(member, "joinConfirmed", false) && optBoolean(member, "present", false);
-    if (alreadyMember || confirmedJoin) output.push(deepCopy(member));
-  }
-  return output;
-}
-
 function incrementTurn(state) {
   state.turn = Math.max(1, optInt(state, "turn", 1)) + 1;
 }
@@ -190,17 +114,6 @@ function advanceGameTime(state, action) {
   gameTime.lastAdvanceReason = "player_action";
   state.gameTime = gameTime;
   state.saveVersion = CURRENT_SAVE_VERSION;
-}
-
-function advanceGameTimeFromBefore(before, candidate, action) {
-  const prior = optJSONObject(before, "gameTime");
-  const elapsed = prior == null ? 0 : Math.max(0, optLong(prior, "elapsedSubjectiveMinutes", 0));
-  const minutes = estimateMinutes(action);
-  candidate.gameTime = {
-    elapsedSubjectiveMinutes: elapsed + minutes,
-    lastAdvanceMinutes: minutes,
-    lastAdvanceReason: "player_action",
-  };
 }
 
 function inventoryReply(inventory) {
@@ -234,6 +147,17 @@ function partyReply(party) {
   return reply + ".";
 }
 
+// Neutral offline reply for a free action: the action itself plus the
+// current state's location, party and inventory — nothing invented.
+function localActionReply(state, action) {
+  let reply = "Cao Minh thực hiện hành động: \"" + action + "\".";
+  const location = javaTrim(optString(state, "location", ""));
+  if (location !== "") reply += "\nVị trí hiện tại: " + location + ".";
+  reply += "\n" + partyReply(optJSONArray(state, "party"));
+  reply += "\n" + inventoryReply(optJSONArray(state, "inventory"));
+  return reply;
+}
+
 function appendLog(state, action, reply) {
   let log = optJSONArray(state, "log");
   if (log == null) log = [];
@@ -257,13 +181,16 @@ function safeMessage(e) {
 }
 
 /**
- * Port of GameCoreFacade.processRule. Tries local handling of the action.
+ * Port of GameCoreFacade.processRule. Handles the action fully locally
+ * (offline build: no GM lane exists). A free action is committed at once
+ * with the neutral localActionReply composed from the current state.
  * @param {object|string} stateInput current game state (object or JSON string)
  * @param {string} action raw player action text
  * @returns {{handled: boolean, state: object, reason: string, error?: string, reply?: string}}
  *   reason: "committed" | "validation_rejected" | "fallback_required" | "core_error".
- *   On "fallback_required" the caller (C2 orchestration) runs the GM pipeline
- *   and then calls processValidatedCandidate.
+ *   "fallback_required" is returned only for a blank action (the Java
+ *   facade's empty-text branch); the bridge then reports the core error
+ *   or the native catch-all message.
  */
 export function processRule(stateInput, action) {
   const legacy = parseState(stateInput);
@@ -296,41 +223,15 @@ export function processRule(stateInput, action) {
       return response(true, result, null, "committed", reply);
     }
 
-    return response(false, legacy, null, "fallback_required", null);
+    // Offline build: no GM lane exists. A free action is committed
+    // locally with a neutral reply composed from the current state.
+    const result = deepCopy(legacy);
+    incrementTurn(result);
+    advanceGameTime(result, text);
+    const reply = localActionReply(result, text);
+    appendLog(result, text, reply);
+    return response(true, result, null, "committed", reply);
   } catch (e) {
     return response(false, legacy, safeMessage(e), "core_error", null);
-  }
-}
-
-/**
- * Port of GameCoreFacade.processValidatedCandidate. Validates/sanitizes a
- * GM-proposed candidate state against the pre-turn state and commits it.
- * @param {object|string} beforeInput state before the turn
- * @param {object|string} candidateInput GM-proposed next state
- * @param {string} action the player action that produced the candidate
- * @returns {{handled: boolean, state: object, reason: string, error?: string}}
- *   reason: "gemini_delta_committed" | "gemini_delta_rejected".
- */
-export function processValidatedCandidate(beforeInput, candidateInput, action) {
-  const before = parseState(beforeInput);
-  try {
-    const candidate = parseState(candidateInput);
-    const sanitized = deepCopy(candidate);
-
-    if (inventoryMutationLocked(action)) {
-      copyField(before, sanitized, "inventory");
-    } else if (has(candidate, "inventory")) {
-      sanitized.inventory = normalizeInventory(optJSONArray(candidate, "inventory"));
-    } else {
-      copyField(before, sanitized, "inventory");
-    }
-
-    sanitized.party = sanitizeParty(optJSONArray(before, "party"), optJSONArray(candidate, "party"));
-    sanitized.saveVersion = CURRENT_SAVE_VERSION;
-    advanceGameTimeFromBefore(before, sanitized, action);
-
-    return response(true, sanitized, null, "gemini_delta_committed", null);
-  } catch (e) {
-    return response(false, before, safeMessage(e), "gemini_delta_rejected", null);
   }
 }
