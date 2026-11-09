@@ -97,6 +97,11 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   const { window, errors } = await bootStub(seedState());
   assert.deepEqual(errors, [], "dom boot errors: " + errors.join(" | "));
   const doc = window.document;
+  const logo = doc.querySelector(".campaign-header #title img.campaign-logo");
+  assert.ok(logo && logo.getAttribute("src").includes("ui/backrooms-logo.png"), "header: supplied logo replaces campaign text");
+  assert.equal(logo.alt, "Backrooms", "header: logo has an accessible name");
+  window.render();
+  assert.equal(doc.querySelector("#title img"), logo, "header: scene rendering preserves the logo");
   const gl = doc.querySelector(".game-layout");
   assert.ok(gl, "dom: .game-layout exists");
   assert.ok(!gl.contains(doc.querySelector(".campaign-header")), "dom: header is outside .game-layout");

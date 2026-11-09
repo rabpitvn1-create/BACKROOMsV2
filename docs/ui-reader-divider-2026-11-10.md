@@ -57,3 +57,15 @@ Use case: precise-object-edit. Asset type: ONE reusable empty header skin for mo
 Đích là khớp mẫu, chưa khẳng định pixel-perfect khi chưa có screenshot trên điện thoại. Kết quả kiểm lại header ghi dưới đây; phần kiểm divider phía trên là kết quả trước lần bổ sung.
 
 Kiểm lại sau bổ sung header: assemble thành công 58 asset, build ef8163c6ce5ff985; UI mechanism test pass, 0 fail; git diff --check sạch; script inline giữ nguyên. Lệnh như lượt kiểm trên, output assemble lần này là /workspace/scratch/d5e16f829b8b/header-check-site. Chưa kiểm pixel hoặc hiệu ứng cuộn trên Moto Edge 70 thật.
+
+## Bổ sung cuối trong cùng PR: thay tiêu đề bằng logo 378.png
+
+Theo yêu cầu mới của chủ nhân, phần quyết định giữ chữ tiêu đề ở mục header phía trên được thay bằng logo đính kèm 378.png. Dùng nguyên file PNG RGBA 2172×724, góc có alpha 0; không tạo lại, không chỉnh/cắt ảnh. Bản tích hợp: android-apk/app/src/main/assets/ui/backrooms-logo.png.
+
+HTML h1#title chứa img.campaign-logo với alt Backrooms. Ảnh giữ tỷ lệ bằng object-fit:contain, cao clamp(38px,11vw,48px) và nằm giữa phần còn lại bên cạnh nút menu; không dùng dòng MAIN_BACKROOMS và tên nhân vật ở header nữa. Khung header, nút menu và divider giữ nguyên. State title và save vẫn giữ dữ liệu cũ; render UI bỏ riêng phép gán titleEl.textContent để không xóa ảnh sau mỗi lần đổi cảnh. Không thay logic scene, lựa chọn, lịch sử hoặc save.
+
+File bổ sung: ui/backrooms-logo.png; index.html sửa CSS/markup và hai chỗ tham chiếu UI title; web/tests/ui-mechanism.test.mjs kiểm logo có alt, dùng đúng asset và không bị render thay mất. Bàn giao tiếp tục dùng tài liệu này, người viết/review như trên. Không sinh ImageGen cho logo vì dùng đúng ảnh chủ nhân cung cấp.
+
+Kiểm lại logo ghi dưới đây; kết quả script-inline-giữ-nguyên ở các mục trước thuộc phiên bản trước khi thay logo. Phiên bản này có thay hai dòng render UI như đã nêu.
+
+Kết quả kiểm lại logo: assemble thành công 59 asset, build 8a1dac3c0c009f55; UI mechanism và VN flow đều pass (2/2, 0 fail), gồm playthrough 147 cảnh/146 lựa chọn, save restore, logo tồn tại sau render và alt Backrooms. git diff --check sạch. Lệnh: node web/assemble.mjs /workspace/scratch/d5e16f829b8b/logo-check-site; node --test web/tests/ui-mechanism.test.mjs web/tests/vn-flow.test.mjs; git diff --check. Chưa có screenshot trên Moto Edge 70 thật.
