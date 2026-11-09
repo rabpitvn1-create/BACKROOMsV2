@@ -1134,30 +1134,6 @@
         "direct_threat",
         "trace_analysis"
       ]
-    },
-    {
-      "id": "ENTITY.JEFF",
-      "domain": "ENTITY",
-      "kind": "entity",
-      "text": "Jeff the Killer is a very rare roaming humanoid predator permitted as an incursion across Levels 0-6, not a resident of Levels 0/4/6. Origin remains UNKNOWN; Project does not confirm creepypasta-original identity, former Frontrooms humanity, Backrooms copy, or that all sightings are one metaphysical individual. Gameplay continuity does lock that killing one manifestation never permanently removes Jeff; the ontology of respawn remains OPEN. Jeff only hunts humans, uses long-term tactical observation and must never become neutral ally/trader/rescuer.",
-      "source": {
-        "document": "01_WORLD/entity.md",
-        "anchor": "ENT-R01 — JEFF THE KILLER"
-      },
-      "authority": "WORLD_CANON",
-      "mutability": "IMMUTABLE",
-      "priority": 54,
-      "tags": [
-        "jeff",
-        "jeff the killer"
-      ],
-      "references": [
-        "ENTITY.GLOBAL_HARD_LOCK"
-      ],
-      "affordances": [
-        "direct_threat",
-        "trace_analysis"
-      ]
     }
   ]
 }

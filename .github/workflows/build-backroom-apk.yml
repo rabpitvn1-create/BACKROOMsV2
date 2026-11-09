@@ -64,7 +64,6 @@ jobs:
           "$BUILD_TOOLS/zipalign" -c -P 16 -v 4 Backroom-1.1.65.apk
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/index.html'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/hound.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/diep_minh.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_entity_overlay.png'

@@ -23,9 +23,6 @@ Runtime chỉ dùng canonical Entity key trùng chính xác với tên file bỏ
 | `cable_mimic` | `cable_mimic.png` |
 | `the_beast_of_level_5` | `the_beast_of_level_5.png` |
 | `hotel_corpse_lure` | `hotel_corpse_lure.png` |
-| `jeff_the_killer` | `jeff_the_killer.png` |
-| `jane_the_killer` | `jane_the_killer.png` |
-| `slenderman` | `slenderman.png` |
 | `diep_minh` | `diep_minh.png` |
 
 `diep_minh` là boss unique dùng roll xuất hiện độc lập 3%, không nằm trong shared roaming Entity pool.
