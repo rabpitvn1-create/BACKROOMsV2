@@ -112,6 +112,20 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   // Avatar resolver: narration has no avatar; Cao Minh uses his portrait;
   // a speaker with no PROFILES entry gets the initials fallback.
   assert.ok(!doc.querySelector("#log .dialogue-avatar"), "dom: stub narration renders no avatar");
+  // Avatar resolver against the real cast (R01 overlay wave): every other
+  // profiled speaker's overlay becomes a shoulder-to-head crop avatar.
+  for (const [speaker, file] of [["Hạ Liên", "ha_lien_overlay.webp"], ["Trần Khải", "tran_khai_overlay.webp"], ["Trần Yến", "tran_yen_overlay.webp"], ["Dạ Yến Linh", "da_yen_linh_overlay.webp"], ["Cao Lâm", "cao_lam_overlay.webp"]]) {
+    const h = window.eval(`avatarHtml(${JSON.stringify(speaker)})`);
+    assert.ok(h.includes("dialogue-avatar-crop") && h.includes(file), "dom: " + speaker + " avatar crops " + file);
+  }
+  assert.ok(window.eval('avatarHtml("Cao Minh")').includes("avatars/cao_minh_avatar.jpg"), "dom: Cao Minh avatar uses his portrait");
+  const fb = window.eval('avatarHtml("Người Lạ")');
+  assert.ok(fb.includes("dialogue-avatar-fallback") && fb.includes(">NL<"), "dom: unprofiled speaker gets the initials fallback");
+  // Companion sources resolve to the root overlay files: profiled cast via
+  // their PROFILES image, unprofiled generics via <key>_overlay.webp.
+  for (const k of ["ha_lien", "tran_khai", "tran_yen", "da_yen_linh", "cao_lam", "wanderer", "mortal"]) {
+    assert.equal(window.eval(`companionSrc("${k}")`), `${k}_overlay.webp`, "dom: companionSrc(" + k + ")");
+  }
   window.close();
   console.log("DOM relations OK");
 }

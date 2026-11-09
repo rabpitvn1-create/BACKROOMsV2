@@ -169,7 +169,11 @@ const CURRENT_CHARACTER_CANON={
 };
 const PROFILES={
   cao_minh:{name:"Cao Minh",alias:"Vạn Giới Ma Tổ",role:"ĐẠO TỔ · VẠN MA ĐẠO MÔN",image:"avatars/cao_minh_avatar.jpg",summary:"Người Trái Đất trọng sinh sau một đêm tăng ca quá độ; rơi vào Backrooms qua khe nứt khi Lôi Thiên Vực sụp đổ; song kiếm Thái Cổ Song Sát, Hắc Long Chiến Khải hộ thân."},
-  ha_lien:{name:"Hạ Liên",alias:"Hạ Liên Tiên Tử",role:"NỮ VƯƠNG · HIÊN VIÊN TRIỀU",image:"ha_lien_overlay.webp",summary:"Nữ Vương của thiên triều Hiên Viên Triều, tu vi Chí Tôn cảnh viên mãn; vợ của Cao Minh. Tái ngộ phu quân tại Level 1 của Backrooms và đồng hành cùng Vạn Ma Đạo Môn từ đó."}
+  ha_lien:{name:"Hạ Liên",alias:"Hạ Liên Tiên Tử",role:"NỮ VƯƠNG · HIÊN VIÊN TRIỀU",image:"ha_lien_overlay.webp",summary:"Nữ Vương của thiên triều Hiên Viên Triều, tu vi Chí Tôn cảnh viên mãn; vợ của Cao Minh. Tái ngộ phu quân tại Level 1 của Backrooms và đồng hành cùng Vạn Ma Đạo Môn từ đó."},
+  tran_khai:{name:"Trần Khải",role:"ĐỆ TỬ · VẠN MA ĐẠO MÔN",image:"tran_khai_overlay.webp",summary:"Đệ tử đầu tiên của Cao Minh, nhận cùng em gái ruột Trần Yến tại Level 0. Được truyền pháp môn lọc linh khí và tẩy thể bước vào Luyện Khí; luôn là người đứng chắn trước cho em gái."},
+  tran_yen:{name:"Trần Yến",role:"ĐỆ TỬ · VẠN MA ĐẠO MÔN",image:"tran_yen_overlay.webp",summary:"Đệ tử đầu tiên của Cao Minh, nhận cùng anh ruột Trần Khải tại Level 0. Được truyền pháp môn lọc linh khí và tẩy thể bước vào Luyện Khí."},
+  da_yen_linh:{name:"Dạ Yến Linh",role:"NGƯỜI KIẾP TRƯỚC · ĐƯỢC TRUYỀN PHÁP",image:"da_yen_linh_overlay.webp",summary:"Bạn gái của Cao Minh trong kiếp phàm nhân; gặp lại tại Level 5 khi thân thể đã bị linh khí ăn mòn. Được Cao Minh cho sống và truyền pháp để tự tu luyện sinh tồn — không phải đệ tử của Vạn Ma Đạo Môn. Sở trường đọc người."},
+  cao_lam:{name:"Cao Lâm",role:"EM TRAI · NGƯỜI NHÀ",image:"cao_lam_overlay.webp",summary:"Em trai ruột của Cao Minh; gặp lại tại Level 7, là người đã chôn anh, cha và mẹ ở kiếp phàm nhân. Được anh trấn áp linh khí ăn mòn và tẩy thể bước vào Luyện Khí; là người nhà, không bái sư, vẫn gọi Cao Minh là anh."}
 };
 const initial={
   v:2,
@@ -241,7 +245,10 @@ function levelOf(loc){const m=/level\s*(\d+)/i.exec(String(loc||""));if(!m)retur
 function flagKey(v){if(!v)return"";const raw=typeof v==="string"?v:(v.id||v.key||v.name||"");return String(raw).toLowerCase().trim().replace(/\s+/g,"_")}
 function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):flagKey(v).replace(/[_-]+/g," ");return raw?raw.replace(/\b\w/g,c=>c.toUpperCase()):""}
 function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")+V}
-function companionSrc(k){return k==="ha_lien"?"ha_lien_overlay.webp"+V:entitySrc(k)}
+// Companion overlays follow the avatar resolver's convention: a profiled
+// character's non-portrait profile image IS the overlay file; unprofiled
+// generics resolve by the <key>_overlay.webp naming convention.
+function companionSrc(k){const p=PROFILES[k];return p&&p.image.indexOf("avatars/")!==0?p.image+V:k+"_overlay.webp"+V}
 let stagePose="";
 function renderStage(){
   const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp"+V;

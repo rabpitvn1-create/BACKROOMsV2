@@ -69,6 +69,12 @@ jobs:
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_entity_overlay.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/ha_lien_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/tran_khai_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/tran_yen_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/da_yen_linh_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_lam_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/wanderer_overlay.webp'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/mortal_overlay.webp'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

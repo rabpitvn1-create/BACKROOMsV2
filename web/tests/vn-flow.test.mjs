@@ -204,10 +204,36 @@ function assertCommonSceneState(window, label) {
   assert.equal(ov.hidden, false, "part3: Cao Minh profile overlay still opens from the drawer list");
   assert.equal(doc.getElementById("character-overlay-name-text").textContent, "Cao Minh", "part3: overlay shows Cao Minh's name");
   tap(doc.getElementById("character-overlay-close"));
+  // R01 overlay wave: a newly profiled character opens the same way.
+  tap(doc.querySelector("#profile-list [data-profile-open='tran_khai']"));
+  assert.equal(ov.hidden, false, "part3: Trần Khải profile overlay opens from the drawer");
+  assert.equal(doc.getElementById("character-overlay-name-text").textContent, "Trần Khải", "part3: overlay shows Trần Khải's name");
+  assert.ok(doc.getElementById("character-overlay-image").getAttribute("src").includes("tran_khai_overlay.webp"), "part3: overlay shows Trần Khải's overlay image");
+  tap(doc.getElementById("character-overlay-close"));
   tap(doc.getElementById("intel-close"));
   let clicks = 0, branchChecked = false;
+  const companionSeen = new Set();
+  let khaiAvatarChecked = false;
   while (doc.querySelector("#choices [data-choice]") && clicks < 500) {
     const before = JSON.parse(window.localStorage.getItem("backroom-apk-state"));
+    // Companion spot-checks on the walk: the staged figure is on, in the
+    // left slot, with the right overlay file (Khải's debut scene, Cao
+    // Lâm's debut scene).
+    if (before.scene === "R01_00_03" || before.scene === "R01_07_01") {
+      const want = before.scene === "R01_00_03" ? "tran_khai_overlay.webp" : "cao_lam_overlay.webp";
+      assert.ok(doc.getElementById("stage-companion-figure").classList.contains("stage-companion-on"), "part3: companion figure is on at " + before.scene);
+      assert.ok(doc.getElementById("stage-companion").getAttribute("src").includes(want), "part3: companion at " + before.scene + " is " + want);
+      companionSeen.add(before.scene);
+    }
+    // The first rendered Trần Khải dialogue line carries his crop avatar.
+    if (!khaiAvatarChecked) {
+      const art = [...doc.querySelectorAll("#log article")].find((a) => { const s = a.querySelector(".speaker"); return s && s.textContent === "Trần Khải"; });
+      if (art) {
+        const img = art.querySelector(".dialogue-avatar-crop img");
+        assert.ok(img && img.getAttribute("src").includes("tran_khai_overlay.webp"), "part3: Trần Khải dialogue avatar crops his overlay");
+        khaiAvatarChecked = true;
+      }
+    }
     const btns = doc.querySelectorAll("#choices [data-choice]");
     let btn = btns[0];
     if (before.scene === "R01_00_03") {
@@ -232,6 +258,8 @@ function assertCommonSceneState(window, label) {
   }
   assert.equal(clicks, 75, "part3: 75 dispatched clicks across 76 scenes");
   assert.ok(branchChecked, "part3: branch point R01_00_03 was exercised");
+  assert.ok(companionSeen.has("R01_00_03") && companionSeen.has("R01_07_01"), "part3: companion spot-check scenes were visited");
+  assert.ok(khaiAvatarChecked, "part3: a Trần Khải dialogue line was rendered and avatar-checked");
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part3: clean end-of-content state");
   console.log("part 3 OK: full playthrough via dispatched click events; R01_00_03 branch sets flag");
   server.close();

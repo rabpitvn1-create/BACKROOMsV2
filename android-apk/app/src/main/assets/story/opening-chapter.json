@@ -392,7 +392,8 @@
       "id": "R01_00_03",
       "stage": {
         "level": 0,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -447,7 +448,8 @@
       "id": "R01_00_04",
       "stage": {
         "level": 0,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -560,7 +562,8 @@
       "id": "R01_00_06",
       "stage": {
         "level": 0,
-        "entity": null
+        "entity": null,
+        "companion": "tran_yen"
       },
       "lines": [
         {
@@ -608,7 +611,8 @@
       "id": "R01_00_07",
       "stage": {
         "level": 0,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -651,7 +655,8 @@
       "id": "R01_01_01",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "tran_yen"
       },
       "lines": [
         {
@@ -896,7 +901,8 @@
       "id": "R01_01_06",
       "stage": {
         "level": 1,
-        "entity": null
+        "entity": null,
+        "companion": "wanderer"
       },
       "lines": [
         {
@@ -1012,7 +1018,8 @@
       "id": "R01_02_01",
       "stage": {
         "level": 2,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1029,7 +1036,7 @@
         },
         {
           "text": "Tầng này nóng như cái lò vậy...",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Nhưng cái nóng chưa phải điều đáng ngại nhất."
@@ -1059,7 +1066,8 @@
       "id": "R01_02_02",
       "stage": {
         "level": 2,
-        "entity": "hound"
+        "entity": "hound",
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1082,7 +1090,7 @@
         },
         {
           "text": "Tới rồi. Lần này để bọn con lo.",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Trần Yến đứng sát phía sau anh, mắt không rời đàn Hound. Cô không đáp. Cô đang đếm — đếm số lượng, đếm khoảng cách, đếm nhịp lao tới — như cách cô vẫn làm với mọi thứ nguy hiểm từ ngày đầu tiên bước vào nơi này. Với Yến, một thứ đã đếm được là một thứ đã bớt đáng sợ đi một phần; con số là cách cô giữ cho đầu mình tỉnh giữa hơi nóng và tiếng gầm gừ đang dồn tới."
@@ -1195,7 +1203,7 @@
         },
         {
           "text": "Sư phụ vừa dùng thuật gì vậy?",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Bổn Toạ hắt hơi.",
@@ -1301,7 +1309,7 @@
         },
         {
           "text": "Sư phụ...",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Đánh.",
@@ -1331,7 +1339,8 @@
       "id": "R01_03_02",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1380,7 +1389,8 @@
       "id": "R01_03_03",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1429,7 +1439,8 @@
       "id": "R01_03_04",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "tran_yen"
       },
       "lines": [
         {
@@ -1450,7 +1461,7 @@
         },
         {
           "text": "Ừ. Thắng rồi.",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Hạ Liên đứng bên cạnh, đã quan sát toàn bộ từ đầu tới cuối. Nàng không khen. Cũng không chê. Ánh mắt nàng dừng ở hai đứa một lúc — đủ lâu để ghi nhận cả vết thương lẫn sự thay đổi — rồi chuyển sang người đàn ông đang đứng phía sau chúng."
@@ -1557,7 +1568,8 @@
       "id": "R01_03_06",
       "stage": {
         "level": 3,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1596,7 +1608,8 @@
       "id": "R01_04_01",
       "stage": {
         "level": 4,
-        "entity": "hound"
+        "entity": "hound",
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -1830,7 +1843,8 @@
       "id": "R01_05_01",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "da_yen_linh"
       },
       "lines": [
         {
@@ -1878,7 +1892,8 @@
       "id": "R01_05_02",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "tran_yen"
       },
       "lines": [
         {
@@ -2258,7 +2273,8 @@
       "id": "R01_05_08",
       "stage": {
         "level": 5,
-        "entity": null
+        "entity": null,
+        "companion": "da_yen_linh"
       },
       "lines": [
         {
@@ -2612,7 +2628,8 @@
       "id": "R01_06_01",
       "stage": {
         "level": 6,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -2697,7 +2714,8 @@
       "id": "R01_06_03",
       "stage": {
         "level": 6,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -2748,7 +2766,8 @@
       "id": "R01_06_04",
       "stage": {
         "level": 6,
-        "entity": null
+        "entity": null,
+        "companion": "wanderer"
       },
       "lines": [
         {
@@ -2762,7 +2781,7 @@
         },
         {
           "text": "Nói rõ xem. Mấy người từ đâu tới, đằng trước có cái gì?",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Câu hỏi của hắn thẳng và cứng, đúng cách một người vừa bị tách khỏi chỗ dựa của mình chọn để không lộ ra sự bất an. Phía bên kia đáp lại rất nhanh. Nhanh và trơn tru: một lộ trình được kể lại gọn gàng, thứ tự rõ ràng, không ngập ngừng, không có những khoảng mờ mà một người thật sự vừa đi qua một đoạn đường trong bóng tối không thể tránh khỏi."
@@ -2811,7 +2830,8 @@
       "id": "R01_06_05",
       "stage": {
         "level": 6,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -2858,7 +2878,7 @@
         },
         {
           "text": "...Cô ta có ích thật.",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Người phụ nữ hắn không thích lại hữu dụng. Nói ra câu đó không dễ hơn việc đánh một trận — nhưng nó là sự thật, và Khải không phải kẻ trốn sự thật. Câu thừa nhận ấy không mang theo chút thiện cảm nào. Nó là một ghi nhận, miễn cưỡng và chính xác, của một người lính về một thứ vũ khí vừa chứng minh được giá trị của nó — dù hắn vẫn không muốn thứ vũ khí đó nằm trong tay nhóm mình lâu hơn mức cần thiết."
@@ -2887,7 +2907,8 @@
       "id": "R01_07_01",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -2974,7 +2995,8 @@
       "id": "R01_07_02",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3035,7 +3057,8 @@
       "id": "R01_07_03",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3136,7 +3159,8 @@
       "id": "R01_07_04",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3215,7 +3239,8 @@
       "id": "R01_07_05",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -3286,7 +3311,8 @@
       "id": "R01_07_06",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "tran_yen"
       },
       "lines": [
         {
@@ -3375,7 +3401,8 @@
       "id": "R01_07_07",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3547,7 +3574,8 @@
       "id": "R01_07_09",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3633,7 +3661,8 @@
       "id": "R01_07_10",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3696,7 +3725,8 @@
       "id": "R01_07_11",
       "stage": {
         "level": 7,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -3971,7 +4001,8 @@
       "id": "R01_08_03",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -4074,7 +4105,8 @@
       "id": "R01_08_04",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "mortal"
       },
       "lines": [
         {
@@ -4134,7 +4166,8 @@
       "id": "R01_08_05",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "da_yen_linh"
       },
       "lines": [
         {
@@ -4181,7 +4214,7 @@
         },
         {
           "text": "Người đằng kia thì nói chuyện được. Hai người còn lại cứ giữ khoảng cách ra. Bất kể ai nói gì, đồ đạc vật tư tuyệt đối không được rời người.",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Không đuổi đánh, không kết tội, cũng không ngây thơ. Người thật lòng được ngồi lại trao đổi như một đối tác. Hai kẻ còn lại được phép đứng đó, nhưng trong một khoảng cách mà ý đồ của chúng trở nên vô dụng."
@@ -4213,7 +4246,8 @@
       "id": "R01_08_06",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "tran_khai"
       },
       "lines": [
         {
@@ -4271,7 +4305,8 @@
       "id": "R01_08_07",
       "stage": {
         "level": 8,
-        "entity": null
+        "entity": null,
+        "companion": "cao_lam"
       },
       "lines": [
         {
@@ -4322,7 +4357,7 @@
         },
         {
           "text": "Không.",
-          "speaker": "Khải"
+          "speaker": "Trần Khải"
         },
         {
           "text": "Được.",
