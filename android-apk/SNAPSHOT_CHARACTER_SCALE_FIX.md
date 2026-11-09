@@ -60,7 +60,27 @@ Added regression assertions for:
 * the hard scale cap for sparse assets.
 
 ## Verification status
-Pending at document creation time. Final verification must record actual commands or CI checks and their results before merge.
+Verified on 2026-11-09 against runtime/test code commit 77cec84e9407effb649e02b9cabe908867f58ec1.
+
+Source checks on fix/snapshot-character-scale:
+* Inline game script parsed successfully with the JavaScript parser.
+* Exactly one companion calibration helper and one image load hook are present.
+* The companion container remains height:92%; calibration changes only the image.
+* Regression assertions cover 87% visible-height artwork, bottom transparent padding and the scale cap.
+* Diff from main is limited to the runtime file, the regression test and this handoff document.
+
+Repository CI verification used release/snapshot-character-scale, carrying the same runtime and test code:
+* GitHub Actions run 42595677781, Build Backroom APK.
+* Verify Java-only baseline: success.
+* gradle :app:testDebugUnitTest :app:assembleDebug --no-daemon: success.
+* Prepare APK: success.
+* Verify packaged APK, including signature, package metadata, zipalign and required assets: success.
+* Upload APK artifact: success.
+* Publish GitHub Release and Verify published APK: skipped because the verification branch is not main.
+
+Not verified:
+* No real-phone screenshot comparison was possible from the branch because GitHub Pages deploys only from main.
+* The added web regression assertions were source-checked but the repository has no pull-request/release-branch workflow that executes web/tests/ui-mechanism.test.mjs.
 
 ## Remaining work
-Run the repository's final checks once, inspect any failures together, fix all discovered issues, then rerun the final check. Merge to main only after main is rechecked against origin/main and verification is clean.
+Muse review is still pending. Main remains untouched. Merging to main requires an explicit owner decision because a main push triggers public GitHub Pages deployment and the APK workflow's release steps.
