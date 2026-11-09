@@ -82,7 +82,7 @@ function assertCommonSceneState(window, label) {
   assert.equal(doc.querySelector("textarea"), null, label + ": free-text input must be gone");
   assert.ok(!doc.body.textContent.includes("GAME MASTER"), label + ": no GAME MASTER framing");
   assert.ok(doc.querySelector("#log .text").textContent.startsWith("Yến tiệc đêm ấy"), label + ": prologue opens the story");
-  assert.ok(doc.querySelector("#stage-background").style.backgroundImage.includes("level_0.webp"), label + ": stage background follows scene level");
+  assert.ok(doc.querySelector("#stage-background").getAttribute("src").includes("level_0.webp"), label + ": stage background follows scene level");
 }
 
 // ── Part 1: standalone APK page ─────────────────────────────────────────
@@ -98,6 +98,12 @@ function assertCommonSceneState(window, label) {
   assert.equal(clicks, 75, "part1: 75 clicks across 76 scenes");
   let doc = window.document;
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: clean end-of-content state");
+  // Hui-style segmentation: the story frame holds ONLY the current scene's
+  // segment (28 visible lines at R01_09_05 on the first-choice path); the
+  // full run lives in state.history/backlog, not in the frame.
+  assert.equal(doc.querySelectorAll("#log article").length, 28, "part1: frame shows only the terminal scene's segment");
+  assert.ok(doc.querySelector("#log .text").textContent.startsWith("Cần nói rõ một điều"), "part1: frame opens with the terminal scene's first line");
+  assert.ok(!doc.querySelector("#log").textContent.includes("Yến tiệc đêm ấy"), "part1: earlier scenes are not in the story frame");
   const savedRaw = window.localStorage.getItem("backroom-apk-state");
   const saved = JSON.parse(savedRaw);
   assert.equal(saved.v, 2); assert.equal(saved.scene, "R01_09_05");
@@ -138,7 +144,8 @@ function assertCommonSceneState(window, label) {
 
   ({ window, errors } = await bootPage(base, html, { useIDB: true }));
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part2: IndexedDB save restores at terminal scene");
-  assert.equal(window.document.querySelectorAll("#log article").length, 1090, "part2: restored history has all 1090 lines, no duplicates");
+  assert.equal(window.document.querySelectorAll("#log article").length, 28, "part2: restored frame shows only the terminal scene's segment (full history stays in the save/backlog)");
+  assert.ok(!window.document.querySelector("#log").textContent.includes("Yến tiệc đêm ấy"), "part2: earlier scenes are not in the story frame");
   console.log("part 2b OK: assembled site save restore at R01_09_05");
   server.close();
   rmSync(siteDir, { recursive: true, force: true });

@@ -19,7 +19,7 @@ button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;pa
 .burger-toggle{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:10px 12px}.burger-line{display:block;width:20px;height:2px;background:#eef1f3}.burger-text{font-size:10px;font-weight:800;letter-spacing:.12em;color:#8f9aa4}
 .snapshot-stage{position:relative;height:clamp(300px,82vw,340px);margin-top:10px}
 .stage-bg{position:absolute;inset:0;border-radius:12px;overflow:hidden;border:1px solid #252b31;background:#0b0d0f;box-shadow:0 20px 60px #0007}
-#stage-background{position:absolute;inset:0;background-size:cover;background-position:center bottom}
+#stage-background{display:block;width:100%;height:100%;object-fit:cover;object-position:center bottom}
 .snapshot-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
 .stage-figure{position:absolute;bottom:0;z-index:2;pointer-events:none}.stage-figure img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain;border:0;background:transparent}
 .stage-nameplate{position:absolute;left:50%;bottom:calc(100% - 5px);transform:translateX(-50%);z-index:4;padding:.12rem .5rem;border:1px solid #2b3137;border-radius:.35rem;background:rgba(8,10,12,.85);color:#eef1f3;font-size:.68rem;font-weight:600;letter-spacing:.05em;white-space:nowrap;pointer-events:none}
@@ -40,9 +40,15 @@ button{font:inherit;border:1px solid #3a4249;background:#1a2025;color:#eff2f4;pa
 @keyframes sword-hover-b{from{transform:translate(32%,-4.5%) rotate(0deg)}to{transform:translate(32%,-10.5%) rotate(0deg)}}
 .stage-caption{position:absolute;left:50%;bottom:.6rem;z-index:4;transform:translateX(-50%);max-width:calc(100% - 2rem);padding:.38rem .8rem;border:1px solid #2b3137;border-radius:999px;color:#eef1f3;background:rgba(8,10,12,.72);font-size:.72rem;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .story-panel{margin-top:10px;border:1px solid #2b3137;background:#0e1114;box-shadow:0 20px 60px #0007;padding:10px}
-.log{height:42vh;overflow:auto;display:grid;gap:10px;align-content:start}
-.message{display:flex;gap:10px;border-left:3px solid #454e56;padding:11px;background:#111519}.message.player{border-left-color:#8b949e;background:#15191d}.message-body{flex:1;min-width:0}.role{margin-bottom:6px}.text{white-space:pre-wrap;line-height:1.55;font-family:var(--font-reading)}
-.message.reading{outline:1px solid #77828c}
+.scene-header{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;padding:2px 2px 10px;border-bottom:1px solid #252b31;margin-bottom:12px}
+.scene-kicker{color:#8f9aa4;font-size:10px;font-weight:800;letter-spacing:.16em;font-family:var(--font-code)}
+.scene-seal{color:#9aa4ad;font-size:11px;letter-spacing:.1em;white-space:nowrap}.scene-seal strong{color:#eef1f3;font-size:14px}
+.log{display:grid;gap:10px;align-content:start}
+.story-line{margin:0}
+.dialogue{display:flex;gap:10px;border-left:3px solid #8b949e;padding:11px;background:#111519}.message-body{flex:1;min-width:0}
+.speaker{display:block;margin-bottom:6px;color:#c9d1d8;font-size:12px;font-weight:700;letter-spacing:.06em}
+.text{white-space:pre-wrap;line-height:1.55;font-family:var(--font-reading)}
+#log article.reading{outline:1px solid #77828c}
 .dialogue-avatar{width:2.8rem;height:2.8rem;flex:none;object-fit:cover;border:1px solid #2b3137;border-radius:.35rem;background:#090c0f}
 .dialogue-avatar-crop{width:2.8rem;height:2.8rem;flex:none;overflow:hidden;padding:0;position:relative}
 .dialogue-avatar-crop>img{display:block;height:385%;width:auto;max-width:none;position:relative;left:50%;transform:translateX(-50%)}
@@ -85,7 +91,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <div><div class="eyebrow">BACKROOMS — VISUAL NOVEL</div><h1 id="title"></h1></div>
 </header>
 <section id="snapshot" class="snapshot-stage" aria-label="Khung Snapshot minh họa">
-<div class="stage-bg"><div id="stage-background"></div></div>
+<div class="stage-bg"><img id="stage-background" src="level_snapshots/level_0.webp" alt=""></div>
 <div class="stage-figure" id="stage-entity-figure"><img id="stage-entity" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-entity-name"></span></div>
 <div class="stage-figure" id="stage-companion-figure"><img id="stage-companion" src="entity/smiler.png" alt="" aria-hidden="true"><span class="stage-nameplate" id="stage-companion-name"></span></div>
 <div class="stage-character-wrap">
@@ -96,6 +102,7 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 <div class="stage-caption"><span id="stage-scene-name"></span></div>
 </section>
 <section class="story-panel" id="story-panel">
+<header class="scene-header"><span class="scene-kicker" id="scene-kicker"></span><span class="scene-seal">CẢNH <strong id="scene-progress">00</strong></span></header>
 <div class="log" id="log"></div>
 <section class="choice-deck" aria-label="Thao tác">
 <div class="choice-deck-tools">
@@ -183,6 +190,7 @@ const initial={
 const byId=id=>document.getElementById(id);
 const titleEl=byId("title"),locationEl=byId("location"),modeEl=byId("mode"),playerEl=byId("player"),partyEl=byId("party"),inventoryEl=byId("inventory"),logEl=byId("log"),statusEl=byId("status");
 const stageBgEl=byId("stage-background"),entityFigEl=byId("stage-entity-figure"),entityImgEl=byId("stage-entity"),entityNameEl=byId("stage-entity-name"),companionFigEl=byId("stage-companion-figure"),companionImgEl=byId("stage-companion"),companionNameEl=byId("stage-companion-name"),charImgEl=byId("stage-character"),captionEl=byId("stage-scene-name"),swordAEl=document.querySelector(".stage-sword-a"),swordBEl=document.querySelector(".stage-sword-b");
+const kickerEl=byId("scene-kicker"),progressEl=byId("scene-progress");
 let state=JSON.parse(localStorage.getItem("backroom-apk-state")||"null")||initial;
 let busy=false;
 
@@ -208,7 +216,8 @@ function flagName(v){const raw=v&&typeof v==="object"&&v.name?String(v.name):fla
 function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")}
 let stagePose="";
 function renderStage(){
-  stageBgEl.style.backgroundImage="url('level_snapshots/level_"+levelOf(state.location)+".webp')";
+  const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp";
+  if(stageBgEl.getAttribute("src")!==bgSrc)stageBgEl.src=bgSrc;
   captionEl.textContent=state.location||"";
   const flags=state.flags||{};
   const ek=flagKey(flags.entity)||flagKey(flags.encounter);
@@ -220,20 +229,32 @@ function renderStage(){
   if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose;charImgEl.classList.remove("is-swapping")},160)}
 }
 function lineHtml(x){
+  if(!x.speaker)return"<article class='story-line'><div class='text'>"+esc(x.text)+"</div></article>";
   const av=x.speaker==="Cao Minh"?"<img class='dialogue-avatar' src='avatars/cao_minh_avatar.jpg' alt='Cao Minh'>":"";
-  const role=x.speaker?"<div class='role'>"+esc(x.speaker.toUpperCase())+"</div>":"";
-  return"<article class='message'>"+av+"<div class='message-body'>"+role+"<div class='text'>"+esc(x.text)+"</div></div></article>";
+  return"<article class='dialogue'>"+av+"<div class='message-body'><span class='speaker'>"+esc(x.speaker)+"</span><div class='text'>"+esc(x.text)+"</div></div></article>";
 }
-function render(){titleEl.textContent=state.title;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);logEl.innerHTML=(state.history||[]).map(lineHtml).join("");logEl.scrollTop=logEl.scrollHeight;renderChoices();renderStage()}
-let story=null;const scenesById={};
+function visibleLines(sc){return sc.lines.filter(function(ln){return !ln.if||Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]})})}
+let lastRenderedScene=null;
+function render(){
+  titleEl.textContent=state.title;locationEl.textContent=state.location;modeEl.textContent=state.mode;playerEl.textContent=state.player?.name||"Cao Minh";partyEl.innerHTML=partyChips(state.party);inventoryEl.innerHTML=chips(state.inventory);
+  // Hui model: the story frame holds ONLY the current scene's segment;
+  // everything already read lives in state.history (backlog + save).
+  const sc=story&&state.scene?scenesById[state.scene]:null;
+  logEl.innerHTML=(sc?visibleLines(sc):(state.history||[])).map(lineHtml).join("");
+  kickerEl.textContent=sc?"BACKROOMS // "+String(state.location||"").toUpperCase():"";
+  progressEl.textContent=sc?String(sceneIndex[sc.id]||0).padStart(2,"0"):"00";
+  if(sc&&lastRenderedScene!==sc.id){lastRenderedScene=sc.id;const snap=byId("snapshot");if(snap&&snap.scrollIntoView)snap.scrollIntoView({block:"start"})}
+  renderChoices();renderStage();
+}
+let story=null;const scenesById={};const sceneIndex={};
 function loadStory(){
   const got=(typeof fetch==="function")?fetch("story/opening-chapter.json").then(function(r){if(!r.ok)throw new Error("story http");return r.json()}):Promise.reject(new Error("no fetch"));
-  return got.catch(function(){return new Promise(function(res,rej){const x=new XMLHttpRequest();x.open("GET","story/opening-chapter.json");x.onload=function(){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}};x.onerror=rej;x.send()})}).then(function(data){story=data;for(const sc of data.scenes)scenesById[sc.id]=sc;return data});
+  return got.catch(function(){return new Promise(function(res,rej){const x=new XMLHttpRequest();x.open("GET","story/opening-chapter.json");x.onload=function(){try{res(JSON.parse(x.responseText))}catch(e){rej(e)}};x.onerror=rej;x.send()})}).then(function(data){story=data;data.scenes.forEach(function(sc,i){scenesById[sc.id]=sc;sceneIndex[sc.id]=i+1});return data});
 }
 function enterScene(id){
   const sc=scenesById[id];if(!sc)return;
   state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;
-  for(const ln of sc.lines){if(ln.if&&!Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]}))continue;state.history.push({speaker:ln.speaker||"",text:ln.text})}
+  for(const ln of visibleLines(sc))state.history.push({speaker:ln.speaker||"",text:ln.text});
   save();render();
 }
 function choose(c){if(c.set)state.flags=Object.assign({},state.flags,c.set);enterScene(c.next)}
@@ -263,7 +284,7 @@ intelToggle.addEventListener("click",()=>setIntel(!document.body.classList.conta
 byId("intel-close").addEventListener("click",()=>setIntel(false));
 intelScrim.addEventListener("click",()=>setIntel(false));
 const backlogEl=byId("backlog-overlay"),backlogList=byId("backlog-list");
-function openBacklog(){const s=curState();const items=s&&Array.isArray(s.history)?s.history.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item'>"+(x.speaker?"<div class='role'>"+esc(x.speaker.toUpperCase())+"</div>":"")+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
+function openBacklog(){const s=curState();const items=s&&Array.isArray(s.history)?s.history.slice(-200):[];backlogList.innerHTML=items.length?items.map(x=>"<div class='backlog-item'>"+(x.speaker?"<span class='speaker'>"+esc(x.speaker)+"</span>":"")+esc(x.text)+"</div>").join(""):"<p>Chưa có nội dung.</p>";backlogEl.hidden=false}
 byId("backlog-open").addEventListener("click",openBacklog);
 byId("backlog-close").addEventListener("click",()=>{backlogEl.hidden=true});
 backlogEl.querySelector(".backlog-scrim").addEventListener("click",()=>{backlogEl.hidden=true});
