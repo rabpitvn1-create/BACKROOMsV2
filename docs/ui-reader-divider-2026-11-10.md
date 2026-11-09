@@ -39,3 +39,21 @@ git diff --check
 Đạt: assemble 57 asset, build ebf1ebef4bfc0d68; bộ UI mechanism pass, 0 fail. Các kiểm tra quan hệ DOM, 8 tình huống autoplay/skip, 3 tình huống migration, build ID và chặn desktop đều đạt. Đối chiếu nội dung script inline với HEAD bằng Python xác nhận script game không thay đổi. Diff không có lỗi whitespace.
 
 Không chạy lại bộ playthrough toàn truyện vì thay đổi chỉ nằm trong 4 dòng CSS và main hiện tại đã qua lượt kiểm 147 cảnh ở bước merge PR #175. Chưa có bằng chứng pixel hoặc cuộn trên thiết bị thật; không coi kết quả test DOM là thay thế cho kiểm tra đó.
+
+## Bổ sung trong cùng PR #176: sửa header theo ảnh 377
+
+Chủ nhân yêu cầu header trong ảnh 377 khớp ảnh mẫu ban đầu 362. Header hiện tại dùng border-image jade-frame.png của Snapshot nên có dải ngọc và hoa văn dày không đúng loại. Bổ sung này giữ phần divider đã làm, giữ phạm vi cùng PR, không mở PR mới.
+
+Thay .campaign-header:after bằng skin riêng campaign-header-v3.png do ImageGen tạo theo ảnh 362; nền đen, viền đồng mảnh, mây bốn góc và đuôi mây thấp hai bên. Bỏ border-image Snapshot và nền mực có vết loang trên header. Header cao clamp(58px,15.3vw,72px), nút menu 46×38px thay 40×34px, viền đồng và ba nét vàng. Chữ vẫn là HTML thật; giữ màu/font/title và bố trí trái menu, phải tiêu đề. Giữ nền phủ mép và safe-area padding hiện có.
+
+File bổ sung: android-apk/app/src/main/assets/ui/campaign-header-v3.png. File index.html sửa CSS header ngoài CSS divider. Người viết/review như trên; chưa có review Muse.
+
+Dùng image_gen tích hợp, một ảnh duy nhất, tham chiếu 362.png, transparent_background=true. Output 2172×724 có alpha ngoài dải header; CSS background-size 100% 211.7%, background-position center 46.34% hiển thị dải được vẽ mà không chỉnh/cắt file ảnh.
+
+Prompt:
+
+Use case: precise-object-edit. Asset type: ONE reusable empty header skin for mobile game UI. Input image is the exact STYLE REFERENCE. Reconstruct ONLY the uppermost thin rectangular header surrounding the hamburger menu and MAIN_BACKROOMS title. Remove all text and remove hamburger button entirely, leaving blank interior. This is NOT the green jade scene/snapshot frame below. Match original header: near-black charcoal #101416, subtle fine paper grain, extremely thin weathered desaturated antique brass/bronze outer outline with small rounded corners; delicate faint continuous bronze cloud-scroll linework tucked into all four corners, with longer low horizontal curled cloud tails along bottom left and bottom right. No jade green band, no bright gold, no thick rim, no ornate inset panel, no heavy ink crack or ink blot. Huge quiet black empty center for real HTML title and button. Flat orthographic single horizontal bar, aspect ratio 6.4:1 (e.g. 2048 x 320 actual painted rectangle). Make the bar full-bleed to canvas edges, under 1 percent exterior padding, with truly transparent exterior only beyond the rounded corners, interior opaque. No lettering, numbers, symbols, button, screenshot, scene, characters, sword, phone or watermark. Faithful copy of ONLY the TOP HEADER from reference; do not borrow the lower jade snapshot frame.
+
+Đích là khớp mẫu, chưa khẳng định pixel-perfect khi chưa có screenshot trên điện thoại. Kết quả kiểm lại header ghi dưới đây; phần kiểm divider phía trên là kết quả trước lần bổ sung.
+
+Kiểm lại sau bổ sung header: assemble thành công 58 asset, build ef8163c6ce5ff985; UI mechanism test pass, 0 fail; git diff --check sạch; script inline giữ nguyên. Lệnh như lượt kiểm trên, output assemble lần này là /workspace/scratch/d5e16f829b8b/header-check-site. Chưa kiểm pixel hoặc hiệu ứng cuộn trên Moto Edge 70 thật.

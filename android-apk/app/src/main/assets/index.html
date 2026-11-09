@@ -95,14 +95,15 @@ body.intel-open .intel-panel{transform:none;visibility:visible}
 body{color:var(--paper);background:#090e10;font-size:15px}
 .shell{background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),#0a1012}
 .campaign-header,.story-panel,.intel-panel,.backlog-card,.character-overlay-card,.card{background-color:var(--ink);background-image:url("ui/ink-paper.svg");background-size:100% auto}
-.campaign-header{position:relative;justify-content:space-between;margin:7px 3px 0;padding:10px 12px;min-height:54px;border:1px solid var(--bronze);box-shadow:inset 0 0 0 3px #0c1113,inset 0 0 0 4px #78654666}
-.campaign-header:after{content:"";position:absolute;inset:0;pointer-events:none;border:12px solid transparent;border-image:url("ui/jade-frame.png") 110 / 12px stretch;opacity:.65}
-.campaign-header>div{min-width:0}.campaign-header .eyebrow{display:none}
+.campaign-header{position:relative;justify-content:space-between;margin:0;padding:10px 12px;min-height:clamp(58px,15.3vw,72px);border:0;background:#101416;box-shadow:none;isolation:isolate}
+/* Show the painted header band within the unmodified ImageGen alpha canvas. */
+.campaign-header:after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:url("ui/campaign-header-v3.png") center 46.34% / 100% 211.7% no-repeat}
+.campaign-header>div{position:relative;z-index:1;min-width:0}.campaign-header .eyebrow{display:none}
 .campaign-header h1{margin:0;color:#fffa8d;font-size:clamp(13px,4vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 8px #e8d43b80}
 button{color:var(--paper);background-color:#101b1c;border:1px solid var(--bronze);text-shadow:0 0 7px #d9b96d55;border-radius:2px}
 button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
-.burger-toggle{position:relative;z-index:1;width:40px;height:34px;flex:none;justify-content:center;align-items:center;padding:7px;gap:4px;border-radius:4px;background:linear-gradient(135deg,#202625,#121b1c);box-shadow:inset 0 0 0 2px #6e5036,0 0 8px #000}
-.burger-line{width:18px;height:2px;background:#e8ca6e;border-radius:2px}.burger-text{display:none}
+.burger-toggle{position:relative;z-index:1;width:46px;height:38px;flex:none;justify-content:center;align-items:center;padding:7px;gap:4px;border:2px solid #94704b;border-radius:5px;background:linear-gradient(135deg,#29291f,#111a19);box-shadow:inset 0 0 0 2px #3e3426,0 1px 4px #0009}
+.burger-line{width:20px;height:2px;background:#e8ca6e;border-radius:2px}.burger-text{display:none}
 .snapshot-stage{margin:10px auto 0;width:calc(100% - 8px);height:auto;aspect-ratio:1.49;max-height:none;top:10px;isolation:isolate;overflow:hidden;border-radius:15px;background:#102d28}
 .snapshot-stage:after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:url("ui/jade-frame.png") center/100% 100% no-repeat}
 #snapshot .stage-bg{inset:7px;border:0;border-radius:12px;box-shadow:none}
