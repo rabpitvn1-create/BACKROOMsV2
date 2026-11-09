@@ -6,10 +6,6 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-
 public final class GameCoreFacade implements AutoCloseable {
   private static final String TAG = "BackroomGameCore";
   private static final String PREFS = "backroom_game_core";
@@ -63,36 +59,18 @@ public final class GameCoreFacade implements AutoCloseable {
         return response(true, result, null, "committed", reply);
       }
 
-      return response(false, legacy, null, "fallback_required", null);
+      // Offline build: no GM lane exists. A free action is committed
+      // locally with a neutral reply composed from the current state.
+      JSONObject result = deepCopy(legacy);
+      incrementTurn(result);
+      advanceGameTime(result, text);
+      String reply = localActionReply(result, text);
+      appendLog(result, text, reply);
+      persist(result);
+      return response(true, result, null, "committed", reply);
     } catch (Exception e) {
       debug("processRule failed: " + e.getMessage());
       return response(false, legacy, safeMessage(e), "core_error", null);
-    }
-  }
-
-  public synchronized String processValidatedCandidate(String beforeJson, String candidateJson, String action) {
-    JSONObject before = parseState(beforeJson);
-    try {
-      JSONObject candidate = parseState(candidateJson);
-      JSONObject sanitized = deepCopy(candidate);
-
-      if (GameCoreRules.inventoryMutationLocked(action)) {
-        copyField(before, sanitized, "inventory");
-      } else if (candidate.has("inventory")) {
-        sanitized.put("inventory", normalizeInventory(candidate.optJSONArray("inventory")));
-      } else {
-        copyField(before, sanitized, "inventory");
-      }
-
-      sanitized.put("party", sanitizeParty(before.optJSONArray("party"), candidate.optJSONArray("party")));
-      sanitized.put("saveVersion", CURRENT_SAVE_VERSION);
-      advanceGameTimeFromBefore(before, sanitized, action);
-
-      persist(sanitized);
-      return response(true, sanitized, null, "gemini_delta_committed", null);
-    } catch (Exception e) {
-      debug("processValidatedCandidate failed: " + e.getMessage());
-      return response(false, before, safeMessage(e), "gemini_delta_rejected", null);
     }
   }
 
@@ -125,76 +103,6 @@ public final class GameCoreFacade implements AutoCloseable {
     }
   }
 
-  private void copyField(JSONObject source, JSONObject target, String key) throws Exception {
-    if (source != null && source.has(key)) target.put(key, source.get(key));
-    else target.remove(key);
-  }
-
-  private JSONArray normalizeInventory(JSONArray input) {
-    JSONArray output = new JSONArray();
-    if (input == null) return output;
-    Map<String, JSONObject> deduplicated = new LinkedHashMap<>();
-    for (int i = 0; i < input.length(); i++) {
-      JSONObject item = input.optJSONObject(i);
-      if (item == null) continue;
-      String name = item.optString("name", "").trim();
-      if (name.isEmpty()) continue;
-      String id = item.optString("id", "").trim();
-      if (id.isEmpty()) id = GameCoreRules.stableItemId(name);
-      int quantity = Math.max(1, item.optInt("quantity", 1));
-      JSONObject normalized;
-      try {
-        normalized = new JSONObject(item.toString());
-      } catch (Exception e) {
-        normalized = new JSONObject();
-      }
-      try {
-        normalized.put("id", id);
-        normalized.put("name", name);
-        normalized.put("quantity", quantity);
-      } catch (Exception ignored) {}
-      deduplicated.put(id, normalized);
-    }
-    for (JSONObject value : deduplicated.values()) output.put(value);
-    return output;
-  }
-
-  private JSONArray sanitizeParty(JSONArray before, JSONArray candidate) {
-    JSONArray safeBefore = before == null ? new JSONArray() : before;
-    JSONArray safeCandidate = candidate == null ? new JSONArray() : candidate;
-    Map<String, JSONObject> existing = new LinkedHashMap<>();
-    for (int i = 0; i < safeBefore.length(); i++) {
-      JSONObject member = safeBefore.optJSONObject(i);
-      if (member == null) continue;
-      String id = memberId(member);
-      if (!id.isEmpty()) existing.put(id, member);
-    }
-
-    JSONArray output = new JSONArray();
-    for (int i = 0; i < safeCandidate.length(); i++) {
-      JSONObject member = safeCandidate.optJSONObject(i);
-      if (member == null) continue;
-      String id = memberId(member);
-      if (id.isEmpty()) continue;
-      boolean alreadyMember = existing.containsKey(id);
-      boolean confirmedJoin = member.optBoolean("joinConfirmed", false) && member.optBoolean("present", false);
-      if (alreadyMember || confirmedJoin) {
-        try {
-          output.put(new JSONObject(member.toString()));
-        } catch (Exception ignored) {
-          output.put(member);
-        }
-      }
-    }
-    return output;
-  }
-
-  private String memberId(JSONObject member) {
-    String id = member.optString("id", "").trim();
-    if (!id.isEmpty()) return id;
-    return member.optString("name", "").trim().toLowerCase(Locale.ROOT);
-  }
-
   private void incrementTurn(JSONObject state) throws Exception {
     state.put("turn", Math.max(1, state.optInt("turn", 1)) + 1);
   }
@@ -211,15 +119,15 @@ public final class GameCoreFacade implements AutoCloseable {
     state.put("saveVersion", CURRENT_SAVE_VERSION);
   }
 
-  private void advanceGameTimeFromBefore(JSONObject before, JSONObject candidate, String action) throws Exception {
-    JSONObject prior = before.optJSONObject("gameTime");
-    long elapsed = prior == null ? 0L : Math.max(0L, prior.optLong("elapsedSubjectiveMinutes", 0L));
-    int minutes = GameCoreRules.estimateMinutes(action);
-    JSONObject gameTime = new JSONObject();
-    gameTime.put("elapsedSubjectiveMinutes", elapsed + minutes);
-    gameTime.put("lastAdvanceMinutes", minutes);
-    gameTime.put("lastAdvanceReason", "player_action");
-    candidate.put("gameTime", gameTime);
+  // Neutral offline reply for a free action: the action itself plus the
+  // current state's location, party and inventory — nothing invented.
+  private String localActionReply(JSONObject state, String action) {
+    StringBuilder reply = new StringBuilder("Cao Minh thực hiện hành động: \"").append(action).append("\".");
+    String location = state.optString("location", "").trim();
+    if (!location.isEmpty()) reply.append("\nVị trí hiện tại: ").append(location).append('.');
+    reply.append('\n').append(partyReply(state.optJSONArray("party")));
+    reply.append('\n').append(inventoryReply(state.optJSONArray("inventory")));
+    return reply.toString();
   }
 
   private String inventoryReply(JSONArray inventory) {

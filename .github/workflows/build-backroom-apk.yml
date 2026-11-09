@@ -20,12 +20,6 @@ concurrency:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
-    env:
-      GEMINI_API_KEY_1: ${{ secrets.GEMINI_API_KEY_1 || secrets.GEMINI_API_KEY }}
-      GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
-      GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
-      GEMINI_API_KEY_4: ${{ secrets.GEMINI_API_KEY_4 }}
-      GEMINI_API_KEY_5: ${{ secrets.GEMINI_API_KEY_5 }}
 
     steps:
       - uses: actions/checkout@v4
@@ -41,13 +35,6 @@ jobs:
           test ! -d android-apk/ml
           test ! -e android-apk/app/src/main/assets/models/backroom_intent_labels.txt
           ! grep -R -n -E 'org\.jetbrains\.kotlin|LiteRTIntentInterpreter|com\.google\.ai\.edge\.litert' android-apk --include='*.gradle' --include='*.java'
-
-      - name: Validate Game Master configuration
-        run: |
-          set -euo pipefail
-          for name in GEMINI_API_KEY_1 GEMINI_API_KEY_2 GEMINI_API_KEY_3 GEMINI_API_KEY_4 GEMINI_API_KEY_5; do
-            test -n "${!name:-}" || (echo "Missing GitHub Secret: $name" && exit 1)
-          done
 
       - uses: actions/setup-java@v5
         with:
@@ -79,8 +66,8 @@ jobs:
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/hound.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/slenderman.png'
           unzip -l Backroom-1.1.65.apk | grep -q 'assets/entity/diep_minh.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_snapshot_overlay.png'
-          unzip -l Backroom-1.1.65.apk | grep -q 'assets/kai_entity_overlay.png'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_snapshot_overlay.png'
+          unzip -l Backroom-1.1.65.apk | grep -q 'assets/cao_minh_entity_overlay.png'
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

@@ -24,7 +24,7 @@ Human audit wiki: `CHARACTER_CODEX_CURRENT.md`.
 
 The old `app/src/main/assets/knowledge/knowledge_db.json` predates the 2026-09-17 Characters Drive sync and contains legacy character rows. Those legacy character rows are **not authoritative** for Cao Minh/Iris/Syvial/Lucia. World/level/entity records in that file may still be used only when they do not conflict with a newer Drive source.
 
-Current game state embeds the compact current character canon so the Java-only Gemini path receives the latest character locks without restoring the retired Kotlin/LiteRT knowledge engine.
+Current game state embeds the compact current character canon so the Java-only local core receives the latest character locks without restoring the retired Kotlin/LiteRT knowledge engine.
 
 ## Character Drive audit
 
@@ -125,7 +125,7 @@ Adding future levels/entities remains append-only. Character codex must not be u
 
 ## Java-only runtime notes
 
-The former patch-generated Kotlin/LiteRT knowledge pipeline is retired. Current Android runtime is Java 17 plus WebView HTML/JavaScript. Character canon is injected into the game state as a compact `characterCanon` block so the existing Java Gemini orchestration receives it every AI turn without Python, Kotlin or LiteRT.
+The former patch-generated Kotlin/LiteRT knowledge pipeline is retired. Current Android runtime is Java 17 plus WebView HTML/JavaScript. Character canon is injected into the game state as a compact `characterCanon` block so the local Java core and the page receive it every turn without Python, Kotlin or LiteRT.
 
 Rules:
 

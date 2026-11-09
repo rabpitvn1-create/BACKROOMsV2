@@ -425,9 +425,9 @@ function stepAuto(){const items=logEl.querySelectorAll("article");if(!items.leng
 function autoInterval(){return document.body.classList.contains("fast-read")?400:2600}
 autoToggle.addEventListener("click",()=>{if(autoOn){stopAuto();return}autoOn=true;autoToggle.setAttribute("aria-pressed","true");readIdx=0;stepAuto();autoTimer=setInterval(stepAuto,autoInterval())});
 skipToggle.addEventListener("click",()=>{const on=document.body.classList.toggle("fast-read");skipToggle.setAttribute("aria-pressed",on?"true":"false");logEl.scrollTop=logEl.scrollHeight;if(autoOn){clearInterval(autoTimer);autoTimer=setInterval(stepAuto,autoInterval())}});
-formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Gemini đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
+formEl.addEventListener("submit",e=>{e.preventDefault();const a=actionEl.value.trim();if(!a||busy)return;if(!window.Android){statusEl.textContent="Không tìm thấy Android bridge.";return}busy=true;submitEl.disabled=true;statusEl.textContent="Đang xử lý lượt…";window.Android.submitTurn(JSON.stringify(state),a)});
 window.backroomTurn=json=>{state=JSON.parse(json);state.characterCanon=CURRENT_CHARACTER_CANON;actionEl.value="";busy=false;submitEl.disabled=false;save();statusEl.textContent="Turn "+state.turn+" đã lưu trên máy.";render()};
-window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi Gemini: "+message};
+window.backroomError=message=>{busy=false;submitEl.disabled=false;statusEl.textContent="Lỗi: "+message};
 render();
 </script>
 </body>

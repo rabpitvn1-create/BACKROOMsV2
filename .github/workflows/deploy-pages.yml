@@ -2,10 +2,9 @@ name: Deploy GitHub Pages
 
 # Web build only: assembles the static site from the game's own assets
 # (android-apk/app/src/main/assets, read-only) plus the web/ overlay and
-# deploys it to GitHub Pages. There are no secrets in this build — the
-# game's AI runs through the owner's public Render proxies, whose URLs are
-# committed in web/config.js — so there is no config injection and no key
-# gate. This workflow must never create or edit a GitHub Release.
+# deploys it to GitHub Pages. The game is fully offline — no network
+# calls, no secrets, no config injection, no key gate. This workflow
+# must never create or edit a GitHub Release.
 
 on:
   push:
