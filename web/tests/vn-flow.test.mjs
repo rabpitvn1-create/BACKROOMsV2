@@ -109,7 +109,7 @@ function assertCommonSceneState(window, label) {
   assert.doesNotMatch(html, /\.log\{[^}]*overflow-y:auto/, "part1: story text is NOT an independent scroll region");
   assert.doesNotMatch(html, /\.choice-deck\{[^}]*flex:none/, "part1: choice deck flows at the end of the story panel, not pinned");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 85, "part1: 85 clicks across 86 scenes");
+  assert.equal(clicks, 81, "part1: 81 clicks across 82 scenes");
   let doc = window.document;
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: clean end-of-content state");
   // Hui-style segmentation: the story frame holds ONLY the current scene's
@@ -151,7 +151,7 @@ function assertCommonSceneState(window, label) {
   assert.deepEqual(errors, [], "part2 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part2");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 85, "part2: 85 clicks across 86 scenes");
+  assert.equal(clicks, 81, "part2: 81 clicks across 82 scenes");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part2: clean end-of-content state");
   await sleep(150); // let the async SaveBoot write settle
   console.log("part 2a OK: assembled site fresh playthrough → end state");
@@ -256,7 +256,7 @@ function assertCommonSceneState(window, label) {
       branchChecked = true;
     }
   }
-  assert.equal(clicks, 85, "part3: 85 dispatched clicks across 86 scenes");
+  assert.equal(clicks, 81, "part3: 81 dispatched clicks across 82 scenes");
   assert.ok(branchChecked, "part3: branch point R01_00_03 was exercised");
   assert.ok(companionSeen.has("R01_00_03") && companionSeen.has("R01_07_01"), "part3: companion spot-check scenes were visited");
   assert.ok(khaiAvatarChecked, "part3: a Trần Khải dialogue line was rendered and avatar-checked");

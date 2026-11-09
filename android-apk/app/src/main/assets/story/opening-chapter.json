@@ -67,22 +67,7 @@
         },
         {
           "text": "Cao Minh khẽ bật cười. Trương Lão lắc đầu, song thần sắc cũng đã dịu đi nhiều so với lúc mới nhập tiệc."
-        }
-      ],
-      "choices": [
-        {
-          "label": "Tiếp tục",
-          "next": "pro_02"
-        }
-      ]
-    },
-    {
-      "id": "pro_02",
-      "stage": {
-        "level": 0,
-        "entity": null
-      },
-      "lines": [
+        },
         {
           "text": "Chợt, lửa trong dãy đèn lồng đồng loạt lụi xuống, rồi lại bùng lên."
         },
@@ -133,22 +118,7 @@
         },
         {
           "text": "Song bọn họ chẳng kịp bước đi bước nào."
-        }
-      ],
-      "choices": [
-        {
-          "label": "Tiếp tục",
-          "next": "pro_03"
-        }
-      ]
-    },
-    {
-      "id": "pro_03",
-      "stage": {
-        "level": 0,
-        "entity": null
-      },
-      "lines": [
+        },
         {
           "text": "Mặt sàn dưới chân Cao Minh không nứt, không sập, cũng chẳng hề rung động. Nó chỉ đột nhiên thôi không nâng đỡ thân thể hắn nữa."
         },
@@ -175,22 +145,7 @@
         },
         {
           "text": "Cao Minh chạm xuống một bề mặt mềm hơn sàn lầu. Hắn theo phản xạ hạ thấp trọng tâm, đứng vững ngay tức khắc, thân hình không hề loạn."
-        }
-      ],
-      "choices": [
-        {
-          "label": "Tiếp tục",
-          "next": "pro_04"
-        }
-      ]
-    },
-    {
-      "id": "pro_04",
-      "stage": {
-        "level": 0,
-        "entity": null
-      },
-      "lines": [
+        },
         {
           "text": "Mùi ẩm mốc xộc đến trước tiên."
         },
@@ -244,22 +199,7 @@
         },
         {
           "text": "Chỉ có im lặng."
-        }
-      ],
-      "choices": [
-        {
-          "label": "Tiếp tục",
-          "next": "pro_05"
-        }
-      ]
-    },
-    {
-      "id": "pro_05",
-      "stage": {
-        "level": 0,
-        "entity": null
-      },
-      "lines": [
+        },
         {
           "text": "Song kiếm vẫn ở sau lưng hắn. Thái Cổ Song Sát, hai thanh lơ lửng đúng vị trí cũ; Hắc Long Chiến Khải trên người không một vết xước. Ít nhất, thứ vừa nuốt chửng hắn vẫn chưa lấy được gì của hắn — hoặc là chưa lấy."
         },
