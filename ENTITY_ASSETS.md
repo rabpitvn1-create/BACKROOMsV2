@@ -8,7 +8,7 @@ Runtime chỉ dùng canonical Entity key trùng chính xác với tên file bỏ
 
 | Canonical Entity key | Local asset |
 |---|---|
-| `hound` | `hound.png` |
+| `hound` | `hound.webp` |
 | `clump` | `clump.png` |
 | `duller` | `duller.png` |
 | `deathmoth` | `deathmoth.png` |
