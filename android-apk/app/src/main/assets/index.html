@@ -95,7 +95,7 @@ body{color:var(--paper);background:#090e10;font-size:15px}
 .shell{background:repeating-linear-gradient(0deg,#ffffff02 0 1px,transparent 1px 4px),#0a1012}
 .campaign-header,.story-panel,.intel-panel,.backlog-card,.character-overlay-card,.card{background-color:var(--ink);background-image:url("ui/ink-paper.svg");background-size:100% auto}
 .campaign-header{position:relative;justify-content:space-between;margin:7px 3px 0;padding:10px 12px;min-height:54px;border:1px solid var(--bronze);box-shadow:inset 0 0 0 3px #0c1113,inset 0 0 0 4px #78654666}
-.campaign-header:after,.scene-header:after{content:"";position:absolute;inset:0;pointer-events:none;border:12px solid transparent;border-image:url("ui/jade-frame.png") 110 / 12px stretch;opacity:.65}
+.campaign-header:after{content:"";position:absolute;inset:0;pointer-events:none;border:12px solid transparent;border-image:url("ui/jade-frame.png") 110 / 12px stretch;opacity:.65}
 .campaign-header>div{min-width:0}.campaign-header .eyebrow{display:none}
 .campaign-header h1{margin:0;color:#fffa8d;font-size:clamp(13px,4vw,22px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 8px #e8d43b80}
 button{color:var(--paper);background-color:#101b1c;border:1px solid var(--bronze);text-shadow:0 0 7px #d9b96d55;border-radius:2px}
@@ -110,17 +110,22 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 #stage-companion-figure.stage-companion-shifted{left:25%}
 .stage-nameplate{top:0;bottom:auto;background:#17160ee6;border-color:#b0914d77;color:#f7ebbc;border-radius:0 0 6px 6px;font-size:11px;padding:1px 8px;letter-spacing:0}
 .stage-caption{bottom:9px;padding:5px 13px;color:#f6e79e;font-size:12px;background:#201b0ee8;border:1px solid #9b7548;box-shadow:0 0 0 2px #221d19aa;letter-spacing:0}
-.story-panel{position:relative;margin:9px 4px 0;padding:0 10px 8px;border:4px double #9b8b6699;box-shadow:inset 0 0 0 2px #080c0e}
-.scene-header{position:relative;padding:10px 0 9px;margin:0 -2px 10px;border-bottom:1px solid #9c85556b}
+.story-panel{position:relative;margin:9px 4px 0;padding:0 10px 8px;border:4px double #827e6a88;box-shadow:inset 0 0 0 2px #080c0e;background-image:url("ui/story-ink-v2.png");background-size:100% auto}
+/* ImageGen exported the narrow skins within transparent canvases; CSS shows only their painted bands. */
+.scene-header{position:relative;min-height:40px;padding:12px 10px 10px;margin:0 -10px 10px;border:0;background:url("ui/scene-header-v2.png") 50% 47.672% / 100% 265.201% no-repeat}
 .scene-kicker{font-size:10px;letter-spacing:.12em;color:#d9c68b;text-shadow:0 0 6px #c6a75055}
 .scene-seal{font-size:11px;color:#e4d6a2}.scene-seal strong{font-size:14px;color:#fbefa8}
 .log{gap:12px}.text{font-size:15px;line-height:1.55;text-shadow:0 0 7px #d6b54f45;font-weight:500}
 .dialogue{background:transparent;border:0;padding:0}.dialogue .text{color:var(--paper)}.speaker{color:#d1bb7c}.dialogue-avatar,.dialogue-avatar-crop{border-color:#46675a}
 .choice-deck{border-top:1px solid #ffffff21;padding-top:8px}.choice-deck-tools{gap:7px}
-.choice-deck-tools button,.actions button{background-image:linear-gradient(#153d3677,#0c211e77),url("ui/ink-paper.svg");border:10px solid transparent;border-image:url("ui/jade-frame.png") 110 / 10px stretch;padding:1px 3px;color:#fff5a5;box-shadow:0 0 7px #c3a63244;font-weight:700}
-.choice-deck-tools button[aria-pressed="true"]{background-color:#426456;box-shadow:0 0 10px #eee87788}
-.choices{gap:7px;margin-top:8px}.choice,.profile-list button{position:relative;background:#1b2225;border:3px double #997953;box-shadow:inset 0 0 0 2px #1f5348;border-radius:5px;padding:10px 36px 10px 9px;color:#fff6b8}
-.choice:after,.profile-list button:after{content:"☁";position:absolute;right:6px;bottom:2px;font-size:27px;font-weight:400;color:#aa916a;opacity:.65}
+.choice-deck-tools button{min-height:42px;padding:10px 12px;border:0;border-image:none;border-radius:3px;background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;color:#fff5a5;box-shadow:0 0 8px #d8c93c33;font-size:15px;font-weight:700;line-height:1.4;text-shadow:0 0 8px #e0cb4e55}
+.actions button{background-image:linear-gradient(#153d3677,#0c211e77),url("ui/ink-paper.svg");border:10px solid transparent;border-image:url("ui/jade-frame.png") 110 / 10px stretch;padding:1px 3px;color:#fff5a5;box-shadow:0 0 7px #c3a63244;font-weight:700}
+.choice-deck-tools button:active:not(:disabled){background:transparent url("ui/function-jade-v2.png") center / 100% 100% no-repeat;filter:brightness(1.18)}
+.choice-deck-tools button[aria-pressed="true"]{filter:brightness(1.2);box-shadow:0 0 10px #eee87788}
+.choices{gap:7px;margin-top:8px}.profile-list button{position:relative;background:#1b2225;border:3px double #997953;box-shadow:inset 0 0 0 2px #1f5348;border-radius:5px;padding:10px 36px 10px 9px;color:#fff6b8}
+.profile-list button:after{content:"☁";position:absolute;right:6px;bottom:2px;font-size:27px;font-weight:400;color:#aa916a;opacity:.65}
+.choice{min-height:42px;padding:10px 52px 10px 12px;border:0;border-image:none;border-radius:6px;background:transparent url("ui/choice-copper-v2.png") 50% 49.244% / 100% 276.718% no-repeat;box-shadow:none;color:#fff6b8;font-size:15px;line-height:1.4;text-shadow:0 0 7px #d6b54f45}
+.choice:active:not(:disabled){background:transparent url("ui/choice-copper-v2.png") 50% 49.244% / 100% 276.718% no-repeat;filter:brightness(1.15)}
 .status{border-color:#ffffff21;font-size:11px;color:#93948a;padding-top:7px;margin-top:8px}
 .intel-scrim{background:#0009}.intel-panel{width:min(420px,93vw);border-left:1px solid #9e8055;box-shadow:-8px 0 40px #0008}
 .intel-header{position:relative;padding:12px;border:1px solid #a68b5d;min-height:65px;box-shadow:inset 0 0 0 2px #090e10}
@@ -137,7 +142,7 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .backlog-item{padding:10px 11px;border:2px solid #8e7852;border-radius:6px;background:linear-gradient(#0c1515bb,#0b1213bb),url("ui/ink-paper.svg");font-size:13px;line-height:1.55;color:#fff4c6;text-shadow:0 0 7px #dfbd5844;box-shadow:inset 0 0 0 2px #25473d}
 .backlog-item .speaker{font-size:12px;color:#d8b16a;letter-spacing:0}
 .character-overlay-card{border:2px solid #9e8055;color:var(--paper)}.character-overlay-copy p{color:#ddd3b1}
-@media(min-width:761px){.shell{max-width:1100px;margin:auto}.campaign-header{padding:14px 20px}.snapshot-stage{width:min(740px,calc(100% - 24px));max-height:500px}.story-panel{margin:14px 12px 0;padding:0 20px 15px}.text{font-size:19px}.scene-kicker{font-size:13px}.scene-seal{font-size:14px}.scene-header{padding:14px 0}.intel-panel{width:420px}}
+@media(min-width:761px){.shell{max-width:1100px;margin:auto}.campaign-header{padding:14px 20px}.snapshot-stage{width:min(740px,calc(100% - 24px));max-height:500px}.story-panel{margin:14px 12px 0;padding:0 20px 15px}.text{font-size:19px}.scene-kicker{font-size:13px}.scene-seal{font-size:14px}.scene-header{padding:16px 12px;min-height:48px;margin-left:-20px;margin-right:-20px}.intel-panel{width:420px}}
 @media(prefers-reduced-motion:reduce){.stage-sword{animation:none}.intel-panel,.stage-figure,#stage-character,button{transition:none!important}}
 
 </style>
