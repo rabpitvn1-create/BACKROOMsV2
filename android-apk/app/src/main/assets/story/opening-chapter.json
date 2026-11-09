@@ -747,6 +747,211 @@
       "choices": [
         {
           "label": "Tiếp tục",
+          "next": "R01_00_02_01"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_01",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Đi thêm chừng một canh giờ, hắn nghe thấy tiếng lẩm nhẩm trước khi nhìn thấy người."
+        },
+        {
+          "text": "Dưới tiếng rè không dứt của đèn huỳnh quang, có một nhịp thứ hai: rất khẽ, đều đều, lặp đi lặp lại như một sợi chỉ bị kéo qua kéo lại cùng một lỗ kim. Hắn đi theo nhịp ấy qua một khúc quanh, và thấy người đàn bà đứng ở cuối hành lang, quay mặt vào tường."
+        },
+        {
+          "text": "Quần áo trên người bà ta rách đến mức chỉ còn giữ được cái dáng: đường may thẳng tắp của máy móc, cổ áo, khuy cài — trang phục của một thời hiện đại nào đó, gần giống với thế giới cũ của hắn, trước khi hắn chuyển sinh thành Ma Tôn. Một người của thời đại ấy, lạc vào mê cung vàng này, đứng nói chuyện với giấy dán tường."
+        },
+        {
+          "text": "Trán bà ta gần như chạm vào tường. Ngay trước mặt, ở đúng tầm miệng, giấy dán tường sẫm hơn hẳn xung quanh — một mảng ố ẩm to bằng bàn tay, hơi thở của một người đã đứng yên ở đây rất lâu phả thành. Hai tay bà ta buông thõng; thỉnh thoảng một ngón tay co lại rất khẽ, đếm theo nhịp những âm tiết không thành lời đang tuôn ra đều đều."
+        },
+        {
+          "text": "Cao Minh dừng lại cách bà ta vài bước."
+        },
+        {
+          "text": "Hắn không gọi."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_02_02"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_02",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Loạn thần, hay lời nguyền?"
+        },
+        {
+          "text": "Ở Dạ Môn có một trận pháp tên là U Tiên Trận. Kẻ bước vào không chết, cũng không bị thương: cảm quan của hắn bị trận vặn xoắn từng chút một, cho đến khi không còn phân biệt nổi đâu là thật, đâu là thứ đầu óc mình tự vẽ ra — rồi phát điên ngay trong cái mê cung do chính tâm trí mình dựng nên. Người đàn bà đứng nói chuyện với bức tường kia giống hệt những kẻ đã lọt vào trận ấy."
+        },
+        {
+          "text": "Nếu nơi này là một trận pháp, nó phải có trận nhãn."
+        },
+        {
+          "text": "Cao Minh khép mắt. Thần thức tỏa ra, quét qua những tầng không gian gập vỡ, lần dọc các hành lang chồng lấn, tìm một điểm tụ — một chỗ mà mọi sự vặn xoắn bám vào, một dấu tay của kẻ bày trận."
+        },
+        {
+          "text": "Không có."
+        },
+        {
+          "text": "Không trận nhãn, không điểm tụ, không bàn tay nào cả. Cái vặn xoắn ở đây không bám vào thứ gì; nó nằm trong từng tấc tường, tấc thảm, tấc không khí, đều khắp như nhau. Người đàn bà kia không trúng trận của ai. Bà ta chỉ đứng ở đây quá lâu, thở thứ không khí này quá lâu — và đầu óc phàm nhân thì có hạn của nó."
+        },
+        {
+          "text": "Hắn mở mắt."
+        },
+        {
+          "text": "Trận pháp còn có nhãn mà phá. Thứ này không có nhãn."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_02_03"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_03",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Một bước chân của hắn chạm xuống chỗ thảm ẩm. Tiếng lép xẹp rất khẽ ấy len vào vòng lẩm nhẩm và làm nó khựng lại giữa chừng."
+        },
+        {
+          "text": "Người đàn bà quay đầu, chậm như kẻ ngoi lên khỏi mặt nước. Đôi mắt đục ngầu chạm phải hắn rồi trượt đi — qua vạt áo dài, qua tay áo, qua thứ trang phục không thuộc về bất cứ điều gì bà ta còn nhớ nổi — quay lại gương mặt hắn, rồi lại trượt đi. Không có chỗ nào nơi hắn để cái nhìn ấy bám vào mà gọi thành một cái tên. Giữa vòng âm tiết đứt quãng của bà ta có một khoảnh khắc tưởng như sắp thành một tiếng người — rồi vỡ ra."
+        },
+        {
+          "text": "Bàn tay đang tì vào tường rời ra, để lại trên giấy dán tường một vệt ẩm hình bàn tay."
+        },
+        {
+          "text": "Rồi bà ta bỏ chạy. Không một tiếng hét — chỉ có tiếng chân, một bên trần, một bên giày mòn, quệt dồn dập trên mặt thảm; tiếng ú ớ vẫn đều đều tuôn theo nhịp chạy, nhỏ dần, mất hẳn sau ngã rẽ."
+        },
+        {
+          "text": "Hành lang lại chỉ còn tiếng đèn rè."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_02_04"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_04",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Trên giấy dán tường, vệt ẩm hình bàn tay đang nhạt dần, mép vệt đã khô."
+        },
+        {
+          "text": "Hắn nhìn nó một thoáng, thở ra một hơi rất nhẹ qua mũi. Ngán ngẩm — chỉ có thế."
+        },
+        {
+          "text": "Một đầu óc đã vỡ đến mức bỏ chạy trước cả một người đứng yên, ở trong mê cung này, sớm muộn gì cũng thành mồi cho thứ gì đó đang đói. Hôm nay hay ngày mai cũng vậy thôi: nơi này không vội, và những thứ sống trong nó cũng không vội."
+        },
+        {
+          "text": "Hắn quay người, đi tiếp."
+        },
+        {
+          "text": "Bước chân lại thong dong, nhàn nhã như trước; người đàn bà, vòng lẩm nhẩm của bà ta, cái chết đang chờ bà ta ở một ngã rẽ nào đó — tất cả ở lại phía sau lưng hắn, không thứ gì chạm được vào gấu áo hắn mang theo. Đi được một quãng, mặt thảm dưới chân hắn sẫm màu dần: ẩm hơn hẳn những đoạn đã qua."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_02_05"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_05",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Đoạn thảm này, bước chân lún xuống mềm hơn, và trong mùi ẩm mốc quen thuộc có thêm mùi nước đọng lâu ngày."
+        },
+        {
+          "text": "Trên đầu hắn, từ một khe trần, nước rỉ xuống từng giọt — chậm và đều, cách nhau đủ lâu để nghe rõ từng tiếng tách khẽ khi giọt nước chạm mặt thảm đã sũng. Ngay dưới chỗ rỉ, ai đó đã đặt một cái chai thủy tinh."
+        },
+        {
+          "text": "Thân chai đục ngầu; bên ngoài dán một mảnh giấy nhãn ố vàng, trên đó vẽ hình một trái hạnh nhân. Cái chai đứng thẳng, miệng hướng lên, hứng đúng vào đường giọt rơi, không lệch một phân. Nước trong chai trắng đục, và trên mặt nước nổi lềnh bềnh những cợn trắng nhỏ — thứ mà nước sạch để yên quá lâu giữa hơi ẩm mới sinh ra."
+        },
+        {
+          "text": "Cao Minh cúi xuống, cầm cái chai lên. Thủy tinh lạnh và nhớt trong tay. Hắn vặn nắp."
+        },
+        {
+          "text": "Mùi hôi chua xộc thẳng ra, như thể cái chai đã giữ nó rất lâu chỉ để chờ một người mở. Cổ họng hắn co lại — lợm giọng, một phản xạ thuần túy của xác thịt mà bao nhiêu năm tu luyện cũng không mài hết được. Hắn nheo mắt, nhìn thứ nước đục trong chai một cái, như nhìn một trò đùa kém vui."
+        },
+        {
+          "text": "Rồi hắn buông tay. Cái chai rơi xuống thảm, lăn đi một đoạn, nước sánh ra ngoài miệng chai thành một vệt trắng nhờ."
+        },
+        {
+          "text": "Hắn bước qua, đi tiếp."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
+          "next": "R01_00_02_06"
+        }
+      ]
+    },
+    {
+      "id": "R01_00_02_06",
+      "stage": {
+        "level": 0,
+        "entity": null
+      },
+      "lines": [
+        {
+          "text": "Sau đó là một quãng đường dài mà mê cung không buồn thay đổi nữa."
+        },
+        {
+          "text": "Cùng một họa tiết giấy dán tường lặp lại đến mức hắn thôi không nhìn. Cùng một tiếng đèn rè — nghe mãi, nó hóa thành im lặng. Có lúc hắn thấy mình đang đếm các khúc quanh theo thói quen, và hắn bỏ đếm giữa chừng: nơi này không đáng để hắn giữ cho nó một phép đếm."
+        },
+        {
+          "text": "Đúng lúc ấy, thần thức của hắn chạm phải một thứ, ở tít rìa xa của cảm nhận."
+        },
+        {
+          "text": "Cách hắn khoảng hai trăm trượng, qua không biết bao nhiêu lớp tường và không gian gập chồng lên nhau — hai luồng sinh khí. Yếu ớt, lay lắt như hai ngọn đèn dầu treo trước cơn bão: lửa còn cháy, mà mỗi nhịp gió quét qua đều như muốn dập tắt. Không phải sinh khí tán loạn của kẻ đã điên, cũng không phải hơi thở của quái thú. Hai ngọn lửa người, ở gần nhau, và đang lụi dần theo từng nhịp."
+        },
+        {
+          "text": "Bước chân Cao Minh dừng lại."
+        },
+        {
+          "text": "Hắn quay người về phía hai ngọn lửa ấy. Khóe miệng chậm rãi cong lên."
+        },
+        {
+          "speaker": "Cao Minh",
+          "text": "Thú vị, hãy chờ đấy, Ma Tổ đại nhân ta đến đây."
+        }
+      ],
+      "choices": [
+        {
+          "label": "Tiếp tục",
           "next": "R01_00_03"
         }
       ]
