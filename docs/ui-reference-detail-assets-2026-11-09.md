@@ -66,3 +66,14 @@ Kết quả thực tế: assemble thành công với 56 asset; cả 5 bộ test 
 Chưa kiểm chứng: screenshot so sánh pixel trên điện thoại. Chromium cục bộ từng bị chặn Unix socket nên không dùng kết quả jsdom để tuyên bố pixel-perfect. Chưa build APK cục bộ vì thiếu Gradle; cần xem workflow trên GitHub sau merge.
 
 Chưa coi ảnh raster tái dựng là bằng chứng khớp 100%; còn cần đối chiếu giao diện ở kích thước điện thoại. Kiểm tra APK thật phụ thuộc workflow build và thiết bị. Không tuyên bố Muse đã review.
+
+
+## Đối chiếu bản web và vòng sửa bổ sung
+
+PR #173 đã merge bằng rebase tại 7f6eed2. Workflow build/phát hành APK và Pages đều success. Trình duyệt công khai đã tải đúng build b505014cc11a5a1e, hiển thị header mới, nền mực và bốn thẻ ngọc; mở/đóng lịch sử hoạt động.
+
+Quan sát trên màn hình rộng phát hiện mây bên phải lựa chọn bị giãn ngang khi background raster co giãn theo toàn chiều rộng thanh. Vòng sửa bổ sung giữ khung đồng/ngọc bằng CSS, hiển thị riêng phần bên phải của raster theo chiều cao với width:auto, không co giãn mây theo chiều rộng lựa chọn. Pseudo-element không có chữ, không chặn input; có padding riêng để không đè nội dung. Giữ nguyên asset ImageGen.
+
+Trong lúc triển khai, main có commit story bf2ebc1 của công việc khác. Vòng sửa lấy main mới này làm nền, giữ nguyên nội dung story đó. Người viết vẫn là ChatGPT, chưa có review Muse cho UI. Kiểm tra lại sau vòng sửa được ghi trong báo cáo cuối và PR tiếp theo; chưa coi desktop screenshot là xác nhận pixel-perfect trên điện thoại.
+
+Kết quả kiểm lại vòng sửa tỷ lệ: assemble thành công (build dbb2aa20c619c069); cả 5 bộ test pass, 0 fail; script engine giữ nguyên so với main bf2ebc1; git diff --check sạch.

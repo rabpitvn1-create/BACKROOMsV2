@@ -124,8 +124,10 @@ button:focus-visible{outline:2px solid #fff39a;outline-offset:3px}
 .choice-deck-tools button[aria-pressed="true"]{filter:brightness(1.2);box-shadow:0 0 10px #eee87788}
 .choices{gap:7px;margin-top:8px}.profile-list button{position:relative;background:#1b2225;border:3px double #997953;box-shadow:inset 0 0 0 2px #1f5348;border-radius:5px;padding:10px 36px 10px 9px;color:#fff6b8}
 .profile-list button:after{content:"☁";position:absolute;right:6px;bottom:2px;font-size:27px;font-weight:400;color:#aa916a;opacity:.65}
-.choice{min-height:42px;padding:10px 52px 10px 12px;border:0;border-image:none;border-radius:6px;background:transparent url("ui/choice-copper-v2.png") 50% 49.244% / 100% 276.718% no-repeat;box-shadow:none;color:#fff6b8;font-size:15px;line-height:1.4;text-shadow:0 0 7px #d6b54f45}
-.choice:active:not(:disabled){background:transparent url("ui/choice-copper-v2.png") 50% 49.244% / 100% 276.718% no-repeat;filter:brightness(1.15)}
+/* Keep the raster cloud proportional when a choice grows wider or wraps. */
+.choice{position:relative;min-height:42px;padding:10px 82px 10px 12px;border:2px solid #967550;border-image:none;border-radius:7px;background:#1a2023;box-shadow:inset 0 0 0 2px #102424,inset 0 0 0 3px #427267;color:#fff6b8;font-size:15px;line-height:1.4;text-shadow:0 0 7px #d6b54f45}
+.choice:after{content:"";position:absolute;right:0;top:0;bottom:0;width:76px;pointer-events:none;border-radius:0 5px 5px 0;background:url("ui/choice-copper-v2.png") right 49.244% / auto 276.718% no-repeat}
+.choice:active:not(:disabled){background:#202a2b;filter:brightness(1.15)}
 .status{border-color:#ffffff21;font-size:11px;color:#93948a;padding-top:7px;margin-top:8px}
 .intel-scrim{background:#0009}.intel-panel{width:min(420px,93vw);border-left:1px solid #9e8055;box-shadow:-8px 0 40px #0008}
 .intel-header{position:relative;padding:12px;border:1px solid #a68b5d;min-height:65px;box-shadow:inset 0 0 0 2px #090e10}
