@@ -109,7 +109,7 @@ function assertCommonSceneState(window, label) {
   assert.doesNotMatch(html, /\.log\{[^}]*overflow-y:auto/, "part1: story text is NOT an independent scroll region");
   assert.doesNotMatch(html, /\.choice-deck\{[^}]*flex:none/, "part1: choice deck flows at the end of the story panel, not pinned");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 87, "part1: 87 clicks across 88 scenes");
+  assert.equal(clicks, 146, "part1: 146 clicks across 147 scenes");
   let doc = window.document;
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: clean end-of-content state");
   // Hui-style segmentation: the story frame holds ONLY the current scene's
@@ -121,11 +121,11 @@ function assertCommonSceneState(window, label) {
   const savedRaw = window.localStorage.getItem("backroom-apk-state");
   const saved = JSON.parse(savedRaw);
   assert.equal(saved.v, 2); assert.equal(saved.scene, "R01_09_05");
-  assert.equal(saved.history.length, 1291, "part1: all 1291 lines of the first-choice path recorded");
+  assert.equal(saved.history.length, 2093, "part1: all 2093 lines of the first-choice path recorded");
   console.log("part 1a OK: standalone fresh playthrough → end state");
 
   ({ window, errors } = await bootPage(base, html, { seedLocalSave: savedRaw }));
-  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 1291, "part1: restore does not duplicate history");
+  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 2093, "part1: restore does not duplicate history");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: restored at terminal scene");
   console.log("part 1b OK: standalone save restore at R01_09_05");
 
@@ -151,7 +151,7 @@ function assertCommonSceneState(window, label) {
   assert.deepEqual(errors, [], "part2 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part2");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 87, "part2: 87 clicks across 88 scenes");
+  assert.equal(clicks, 146, "part2: 146 clicks across 147 scenes");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part2: clean end-of-content state");
   await sleep(150); // let the async SaveBoot write settle
   console.log("part 2a OK: assembled site fresh playthrough → end state");
@@ -169,7 +169,7 @@ function assertCommonSceneState(window, label) {
 // The harness above uses el.click(), which fires even on buttons a user
 // could never reach. This part walks the whole story dispatching real
 // bubbling click events through the delegated #choices listener, and at
-// the R01_00_03 branch point asserts both choices are presented (not
+// the R01_00_02_16 branch point asserts both choices are presented (not
 // hidden, not display:none) and that choosing the SECOND one advances
 // the scene and sets its flag — the exact path a phone user takes.
 {
@@ -219,8 +219,8 @@ function assertCommonSceneState(window, label) {
     // Companion spot-checks on the walk: the staged figure is on, in the
     // left slot, with the right overlay file (Khải's debut scene, Cao
     // Lâm's debut scene).
-    if (before.scene === "R01_00_03" || before.scene === "R01_07_01") {
-      const want = before.scene === "R01_00_03" ? "tran_khai_overlay.webp" : "cao_lam_overlay.webp";
+    if (before.scene === "R01_00_02_16" || before.scene === "R01_07_01") {
+      const want = before.scene === "R01_00_02_16" ? "tran_khai_overlay.webp" : "cao_lam_overlay.webp";
       assert.ok(doc.getElementById("stage-companion-figure").classList.contains("stage-companion-on"), "part3: companion figure is on at " + before.scene);
       assert.ok(doc.getElementById("stage-companion").getAttribute("src").includes(want), "part3: companion at " + before.scene + " is " + want);
       companionSeen.add(before.scene);
@@ -236,8 +236,8 @@ function assertCommonSceneState(window, label) {
     }
     const btns = doc.querySelectorAll("#choices [data-choice]");
     let btn = btns[0];
-    if (before.scene === "R01_00_03") {
-      assert.equal(btns.length, 2, "part3: R01_00_03 presents both choices");
+    if (before.scene === "R01_00_02_16") {
+      assert.equal(btns.length, 2, "part3: R01_00_02_16 presents both choices");
       assert.equal(doc.getElementById("choices").hidden, false, "part3: choices container is not hidden");
       for (const b of btns) {
         const cs = window.getComputedStyle(b);
@@ -249,19 +249,19 @@ function assertCommonSceneState(window, label) {
     btn.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
     await sleep(40);
     clicks++;
-    if (before.scene === "R01_00_03") {
+    if (before.scene === "R01_00_02_16") {
       const after = JSON.parse(window.localStorage.getItem("backroom-apk-state"));
-      assert.equal(after.scene, "R01_00_04", "part3: dispatched click advances R01_00_03 → R01_00_04");
+      assert.equal(after.scene, "R01_00_02_17", "part3: dispatched click advances R01_00_02_16 → R01_00_02_17");
       assert.equal(after.flags.r01_khai_first_impression, "silent", "part3: dispatched click sets the branch flag");
       branchChecked = true;
     }
   }
-  assert.equal(clicks, 87, "part3: 87 dispatched clicks across 88 scenes");
-  assert.ok(branchChecked, "part3: branch point R01_00_03 was exercised");
-  assert.ok(companionSeen.has("R01_00_03") && companionSeen.has("R01_07_01"), "part3: companion spot-check scenes were visited");
+  assert.equal(clicks, 146, "part3: 146 dispatched clicks across 147 scenes");
+  assert.ok(branchChecked, "part3: branch point R01_00_02_16 was exercised");
+  assert.ok(companionSeen.has("R01_00_02_16") && companionSeen.has("R01_07_01"), "part3: companion spot-check scenes were visited");
   assert.ok(khaiAvatarChecked, "part3: a Trần Khải dialogue line was rendered and avatar-checked");
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part3: clean end-of-content state");
-  console.log("part 3 OK: full playthrough via dispatched click events; R01_00_03 branch sets flag");
+  console.log("part 3 OK: full playthrough via dispatched click events; R01_00_02_16 branch sets flag");
   server.close();
 }
 
