@@ -69,7 +69,7 @@ async function bootPage(base, html, { seedLocalSave, useIDB } = {}) {
 async function playToEnd(window) {
   const doc = window.document;
   let clicks = 0;
-  while (doc.querySelector("#choices [data-choice]") && clicks < 20) {
+  while (doc.querySelector("#choices [data-choice]") && clicks < 500) {
     doc.querySelector("#choices [data-choice]").click();
     await sleep(40);
     clicks++;
@@ -95,19 +95,19 @@ function assertCommonSceneState(window, label) {
   assert.deepEqual(errors, [], "part1 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part1");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 4, "part1: 4 continue clicks across 5 scenes");
+  assert.equal(clicks, 75, "part1: 75 clicks across 76 scenes");
   let doc = window.document;
   assert.ok(doc.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: clean end-of-content state");
   const savedRaw = window.localStorage.getItem("backroom-apk-state");
   const saved = JSON.parse(savedRaw);
-  assert.equal(saved.v, 2); assert.equal(saved.scene, "pro_05");
-  assert.equal(saved.history.length, 75, "part1: all 75 prologue lines recorded");
+  assert.equal(saved.v, 2); assert.equal(saved.scene, "R01_09_05");
+  assert.equal(saved.history.length, 1090, "part1: all 1090 lines of the first-choice path recorded");
   console.log("part 1a OK: standalone fresh playthrough → end state");
 
   ({ window, errors } = await bootPage(base, html, { seedLocalSave: savedRaw }));
-  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 75, "part1: restore does not duplicate history");
+  assert.equal(JSON.parse(window.localStorage.getItem("backroom-apk-state")).history.length, 1090, "part1: restore does not duplicate history");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part1: restored at terminal scene");
-  console.log("part 1b OK: standalone save restore at pro_05");
+  console.log("part 1b OK: standalone save restore at R01_09_05");
 
   const oldSave = JSON.stringify({ title: "MAIN_BACKROOMS — Cao Minh", turn: 7, mode: "local APK", location: "Level 0", player: { name: "Cao Minh" }, party: [], inventory: [], flags: {}, log: [{ role: "gm", text: "MỞ ĐẦU cũ" }] });
   ({ window, errors } = await bootPage(base, html, { seedLocalSave: oldSave }));
@@ -131,15 +131,15 @@ function assertCommonSceneState(window, label) {
   assert.deepEqual(errors, [], "part2 fresh boot errors: " + errors.join(" | "));
   assertCommonSceneState(window, "part2");
   const clicks = await playToEnd(window);
-  assert.equal(clicks, 4, "part2: 4 continue clicks across 5 scenes");
+  assert.equal(clicks, 75, "part2: 75 clicks across 76 scenes");
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part2: clean end-of-content state");
   await sleep(150); // let the async SaveBoot write settle
   console.log("part 2a OK: assembled site fresh playthrough → end state");
 
   ({ window, errors } = await bootPage(base, html, { useIDB: true }));
   assert.ok(window.document.querySelector("#choices").textContent.includes("Hết phần nội dung hiện có"), "part2: IndexedDB save restores at terminal scene");
-  assert.equal(window.document.querySelectorAll("#log article").length, 75, "part2: restored history has all 75 lines, no duplicates");
-  console.log("part 2b OK: assembled site save restore at pro_05");
+  assert.equal(window.document.querySelectorAll("#log article").length, 1090, "part2: restored history has all 1090 lines, no duplicates");
+  console.log("part 2b OK: assembled site save restore at R01_09_05");
   server.close();
   rmSync(siteDir, { recursive: true, force: true });
 }

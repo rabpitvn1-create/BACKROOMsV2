@@ -232,7 +232,7 @@ function loadStory(){
 function enterScene(id){
   const sc=scenesById[id];if(!sc)return;
   state.scene=id;state.location="Level "+sc.stage.level;state.flags.entity=sc.stage.entity||null;
-  for(const ln of sc.lines)state.history.push({speaker:ln.speaker||"",text:ln.text});
+  for(const ln of sc.lines){if(ln.if&&!Object.keys(ln.if).every(function(k){return state.flags[k]===ln.if[k]}))continue;state.history.push({speaker:ln.speaker||"",text:ln.text})}
   save();render();
 }
 function choose(c){if(c.set)state.flags=Object.assign({},state.flags,c.set);enterScene(c.next)}
