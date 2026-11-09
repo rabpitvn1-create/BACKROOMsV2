@@ -126,6 +126,16 @@ const pressed = (window, id) => window.document.getElementById(id).getAttribute(
   for (const k of ["ha_lien", "tran_khai", "tran_yen", "da_yen_linh", "cao_lam", "wanderer", "mortal"]) {
     assert.equal(window.eval(`companionSrc("${k}")`), `${k}_overlay.webp`, "dom: companionSrc(" + k + ")");
   }
+  // Generated full-body overlays carry different transparent padding.
+  // Calibration normalizes visible alpha height inside the unchanged 92%
+  // slot, keeps feet on one baseline, and caps pathological assets.
+  const cal87 = JSON.parse(window.eval("JSON.stringify(companionCalibrationFromBounds(100,13,99))"));
+  assert.ok(Math.abs(cal87.scale - (100 / 87)) < 0.0001, "dom: 87% visible asset expands to fill the companion slot");
+  assert.ok(cal87.topPct < -14.9 && cal87.topPct > -15, "dom: zero bottom padding shifts only by the added top scale");
+  const calBottom = JSON.parse(window.eval("JSON.stringify(companionCalibrationFromBounds(100,10,97))"));
+  assert.ok(calBottom.topPct < -11.3 && calBottom.topPct > -11.5, "dom: bottom padding is compensated while preserving the baseline");
+  const calCap = JSON.parse(window.eval("JSON.stringify(companionCalibrationFromBounds(100,50,99))"));
+  assert.equal(calCap.scale, 107 / 92, "dom: sparse/bad assets are capped instead of exploding the Snapshot");
   window.close();
   console.log("DOM relations OK");
 }

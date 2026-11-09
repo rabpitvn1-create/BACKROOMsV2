@@ -249,6 +249,52 @@ function entitySrc(k){return"entity/"+k+(k==="hound"?".webp":".png")+V}
 // character's non-portrait profile image IS the overlay file; unprofiled
 // generics resolve by the <key>_overlay.webp naming convention.
 function companionSrc(k){const p=PROFILES[k];return p&&p.image.indexOf("avatars/")!==0?p.image+V:k+"_overlay.webp"+V}
+// Companion files share one canvas size, but their transparent top/bottom
+// padding differs. Measure alpha bounds once so the visible person, not
+// the canvas margins, fills the existing 92% companion slot.
+const COMPANION_VISIBLE_TARGET=92,COMPANION_FRAME_MAX=107;
+const companionCalibrationCache=Object.create(null);
+function companionCalibrationFromBounds(sampleHeight,top,bottom){
+  const visible=bottom>=top?bottom-top+1:0;
+  if(!sampleHeight||!visible)return null;
+  const scale=Math.min(COMPANION_FRAME_MAX/COMPANION_VISIBLE_TARGET,Math.max(1,sampleHeight/visible));
+  return{scale:scale,topPct:(1-scale*(bottom+1)/sampleHeight)*100}
+}
+function resetCompanionCalibration(img){
+  img.style.height="";
+  img.style.position="";
+  img.style.top="";
+  img.style.maxWidth="";
+}
+function applyCompanionCalibration(img,cal){
+  if(!cal)return;
+  img.style.height=(cal.scale*100).toFixed(3)+"%";
+  img.style.position="relative";
+  img.style.top=cal.topPct.toFixed(3)+"%";
+  img.style.maxWidth="none";
+}
+function calibrateCompanionImage(img){
+  const src=img.currentSrc||img.src||"";
+  if(companionCalibrationCache[src]){applyCompanionCalibration(img,companionCalibrationCache[src]);return}
+  if(!img.naturalWidth||!img.naturalHeight||typeof CanvasRenderingContext2D!=="function")return;
+  try{
+    const ratio=Math.min(1,256/img.naturalHeight),canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
+    const ctx=canvas.getContext("2d",{willReadFrequently:true});
+    if(!ctx)return;
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const px=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let top=canvas.height,bottom=-1;
+    for(let y=0;y<canvas.height;y++)for(let x=0;x<canvas.width;x++){
+      if(px[(y*canvas.width+x)*4+3]>=16){if(y<top)top=y;if(y>bottom)bottom=y}
+    }
+    const cal=companionCalibrationFromBounds(canvas.height,top,bottom);
+    if(!cal)return;
+    companionCalibrationCache[src]=cal;
+    applyCompanionCalibration(img,cal);
+  }catch(e){resetCompanionCalibration(img)}
+}
 let stagePose="";
 function renderStage(){
   const bgSrc="level_snapshots/level_"+levelOf(state.location)+".webp"+V;
@@ -259,7 +305,14 @@ function renderStage(){
   const ck=flagKey(flags.companion);
   const encounter=!!ek;
   if(encounter){entityImgEl.src=entitySrc(ek);entityNameEl.textContent=flagName(flags.entity||flags.encounter);entityFigEl.classList.add("stage-entity-on")}else{entityFigEl.classList.remove("stage-entity-on")}
-  if(ck&&ck!==ek){companionImgEl.src=companionSrc(ck);companionNameEl.textContent=(PROFILES[ck]&&PROFILES[ck].name)||flagName(flags.companion);companionFigEl.classList.add("stage-companion-on");companionFigEl.classList.toggle("stage-companion-shifted",encounter)}else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
+  if(ck&&ck!==ek){
+    const cs=companionSrc(ck);
+    if(companionImgEl.getAttribute("src")!==cs){resetCompanionCalibration(companionImgEl);companionImgEl.src=cs}
+    if(companionImgEl.complete)calibrateCompanionImage(companionImgEl);
+    companionNameEl.textContent=(PROFILES[ck]&&PROFILES[ck].name)||flagName(flags.companion);
+    companionFigEl.classList.add("stage-companion-on");
+    companionFigEl.classList.toggle("stage-companion-shifted",encounter);
+  }else{companionFigEl.classList.remove("stage-companion-on","stage-companion-shifted")}
   const pose=encounter?"cao_minh_entity_overlay.png":"cao_minh_snapshot_overlay.png";
   if(stagePose!==pose){stagePose=pose;charImgEl.classList.add("is-swapping");setTimeout(()=>{charImgEl.src=pose+V;charImgEl.classList.remove("is-swapping")},160)}
 }
@@ -347,7 +400,8 @@ document.addEventListener("click",e=>{const t=e.target.closest?e.target.closest(
 byId("character-overlay-close").addEventListener("click",closeProfile);
 overlayEl.querySelector(".character-overlay-scrim").addEventListener("click",closeProfile);
 entityImgEl.addEventListener("error",()=>entityFigEl.classList.remove("stage-entity-on"));
-companionImgEl.addEventListener("error",()=>companionFigEl.classList.remove("stage-companion-on"));
+companionImgEl.addEventListener("load",()=>calibrateCompanionImage(companionImgEl));
+companionImgEl.addEventListener("error",()=>{resetCompanionCalibration(companionImgEl);companionFigEl.classList.remove("stage-companion-on")});
 const intelPanel=byId("intel-panel"),intelScrim=byId("intel-scrim"),intelToggle=byId("intel-toggle");
 function setIntel(open){document.body.classList.toggle("intel-open",open);intelPanel.setAttribute("aria-hidden",open?"false":"true");intelToggle.setAttribute("aria-expanded",open?"true":"false");intelScrim.hidden=!open;if(open)setTimeout(()=>byId("intel-close").focus(),50);else intelToggle.focus({preventScroll:true})}
 intelToggle.addEventListener("click",()=>setIntel(!document.body.classList.contains("intel-open")));
